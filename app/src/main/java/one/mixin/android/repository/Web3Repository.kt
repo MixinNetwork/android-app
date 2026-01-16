@@ -379,5 +379,4 @@ constructor(
     suspend fun outputsByAddressForSigning(address: String, assetId: String): List<WalletOutput> =
         walletOutputDao.outputsByAddressForSigning(address, assetId)
 
-    suspend fun outputsByHash(hash: String, assetId: String): WalletOutput? = walletOutputDao.outputsByHash(hash, assetId)
 }

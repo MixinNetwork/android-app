@@ -15,6 +15,7 @@ import org.bitcoinj.script.Script
 import org.bitcoinj.script.ScriptBuilder
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.nio.ByteBuffer
 
 object BtcTransactionBuilder {
 
@@ -229,7 +230,7 @@ object BtcTransactionBuilder {
         additionalFeeSatoshis: Long = 0L,
     ): String {
         val cleanedRawHex: String = rawTransactionHex.removePrefix("0x").trim()
-        val originalTx: BtcTransaction = BtcTransaction.read(java.nio.ByteBuffer.wrap(cleanedRawHex.hexStringToByteArray()))
+        val originalTx: BtcTransaction = BtcTransaction.read(ByteBuffer.wrap(cleanedRawHex.hexStringToByteArray()))
         val originalInputs: List<TransactionInput> = originalTx.inputs
         val extraUtxos: List<WalletOutput> = findAdditionalUtxos(originalInputs, localUtxos, maxExtraInputs)
         val selfScript: Script = buildP2wpkhScript(fromAddress)

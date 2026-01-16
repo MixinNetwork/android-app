@@ -10,14 +10,11 @@ import java.math.BigDecimal
 
 @Dao
 interface WalletOutputDao: BaseDao<WalletOutput> {
-    @Query("SELECT * FROM outputs WHERE address = :address AND asset_id = :assetId AND status='unspent' ORDER BY created_at DESC")
+    @Query("SELECT * FROM outputs WHERE address = :address AND asset_id = :assetId AND status IN ('unspent', 'pending') ORDER BY created_at DESC")
     suspend fun outputsByAddress(address: String, assetId: String): List<WalletOutput>
 
     @Query("SELECT * FROM outputs WHERE address = :address AND asset_id = :assetId ORDER BY created_at DESC")
     fun observeOutputsByAddress(address: String, assetId: String): Flow<List<WalletOutput>>
-
-    @Query("SELECT amount FROM outputs WHERE address = :address AND asset_id = :assetId AND status='unspent'")
-    suspend fun findUnspentAmounts(address: String, assetId: String): List<String>
 
     @Query("SELECT amount FROM outputs WHERE address = :address AND asset_id = :assetId AND status IN ('unspent', 'pending')")
     suspend fun findPendingAndUnspentAmounts(address: String, assetId: String): List<String>
@@ -25,13 +22,10 @@ interface WalletOutputDao: BaseDao<WalletOutput> {
     @Query("SELECT * FROM outputs WHERE address = :address AND asset_id = :assetId AND status IN ('unspent', 'signed') ORDER BY created_at DESC")
     suspend fun outputsByAddressForSigning(address: String, assetId: String): List<WalletOutput>
 
-    @Query("SELECT * FROM outputs WHERE transaction_hash = :hash AND asset_id = :assetId AND status='unspent'")
-    suspend fun outputsByHash(hash: String, assetId: String): WalletOutput?
-
     @Query("SELECT * FROM outputs WHERE transaction_hash = :hash AND output_index = :outputIndex AND asset_id = :assetId LIMIT 1")
     suspend fun outputByOutpoint(hash: String, outputIndex: Long, assetId: String): WalletOutput?
 
-    @Query("DELETE FROM outputs WHERE transaction_hash = :hash AND address = :address AND asset_id = :assetId AND status='unspent' || status = 'pending'")
+    @Query("DELETE FROM outputs WHERE transaction_hash = :hash AND address = :address AND asset_id = :assetId AND status ='unspent' || status = 'pending'")
     suspend fun deletePendingAndUnspentByHashAndAddress(hash: String, address: String, assetId: String): Int
 
     @Query("DELETE FROM outputs WHERE address = :address AND asset_id = :assetId")
@@ -72,17 +66,6 @@ interface WalletOutputDao: BaseDao<WalletOutput> {
         if (localUnspentNotInRemote.isNotEmpty()) {
             updateOutputsToSigned(localUnspentNotInRemote)
         }
-    }
-
-    suspend fun sumUnspentAmount(address: String, assetId: String): BigDecimal {
-        val amounts: List<String> = findUnspentAmounts(address, assetId)
-        if (amounts.isEmpty()) return BigDecimal.ZERO
-        var total: BigDecimal = BigDecimal.ZERO
-        for (amount: String in amounts) {
-            val value: BigDecimal = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
-            total = total.add(value)
-        }
-        return total
     }
 
     suspend fun sumPendingAndUnspentAmount(address: String, assetId: String): BigDecimal {

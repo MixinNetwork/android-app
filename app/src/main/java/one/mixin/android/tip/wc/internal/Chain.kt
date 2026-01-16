@@ -36,7 +36,7 @@ sealed class Chain(
 
     object Solana : Chain(SOLANA_CHAIN_ID, "solana", "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ", "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ", "Solana", "SOL", listOf("https://api.mainnet-beta.solana.com"))
 
-    object Bitcoin : Chain(BITCOIN_CHAIN_ID, "BTC", "", "", "BitCoin", "BTC", listOf(""))
+    object Bitcoin : Chain(BITCOIN_CHAIN_ID, "BTC", "", "", "Bitcoin", "BTC", listOf(""))
 
     val chainId: String
         get() {

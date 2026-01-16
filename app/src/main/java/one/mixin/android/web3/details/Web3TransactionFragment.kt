@@ -62,6 +62,7 @@ import org.bitcoinj.script.Script
 import org.bitcoinj.script.ScriptBuilder
 import org.web3j.crypto.TransactionDecoder
 import org.web3j.utils.Numeric
+import timber.log.Timber
 import java.math.BigDecimal
 import java.nio.ByteBuffer
 import javax.inject.Inject
@@ -533,19 +534,14 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
     }
     
     private fun handleCancelTransaction(rawTransaction: Web3RawTransaction) {
+        val localRate: BigDecimal? = rawTransaction.nonce.toBigDecimalOrNull()
+        if (localRate == null) {
+            toast(R.string.Data_error)
+            return
+        }
         lifecycleScope.launch {
             if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-                val localRateString: String = rawTransaction.nonce
-                val currentRate: BigDecimal? = getCurrentBtcFeeRate(rawTransaction.raw, localRateString)
-                val localRate: BigDecimal? = localRateString.toBigDecimalOrNull()
-                val shouldUseApiRate: Boolean = currentRate != null && localRate != null && currentRate > localRate
-                val selectedRate: BigDecimal? = if (shouldUseApiRate) {
-                    currentRate
-                } else {
-                    localRate ?: currentRate
-                }
-                val additionalFeeSatoshis: Long = if (shouldUseApiRate) 0L else 1L
-                val jsSignMessage = createBtcCancelMessage(rawTransaction, selectedRate, additionalFeeSatoshis)
+                val jsSignMessage = createBtcCancelMessage(rawTransaction, localRate)
                 val fromAddress: String = transaction.getFromAddress()
                 showBrowserBottomSheetDialogFragment(
                     requireActivity(),
@@ -573,7 +569,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             }
         }
     }
-    
+
     private fun createSpeedUpMessage(rawTransaction: Web3RawTransaction): JsSignMessage {
         val decodedTx = TransactionDecoder.decode(rawTransaction.raw)
         
@@ -650,30 +646,34 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
 
     private suspend fun createBtcCancelMessage(
         rawTransaction: Web3RawTransaction,
-        feeRate: BigDecimal?,
-        additionalFeeSatoshis: Long,
+        localRate: BigDecimal
     ): JsSignMessage {
         val fromAddress: String = transaction.getFromAddress()
         val localUtxos: List<WalletOutput> = web3ViewModel.outputsByAddressForSigning(fromAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
-        val unsignedReplacementHex: String = if (feeRate == null) {
-            buildBtcCancelTransactionHex(rawTransaction.raw, fromAddress, localUtxos)
+        val apiRate: BigDecimal? = getCurrentBtcFeeRate(rawTransaction.raw, localRate.toString())
+        val cleanedRawHex: String = rawTransaction.raw.removePrefix("0x").trim()
+        val originalTx: BtcTransaction = BtcTransaction.read(ByteBuffer.wrap(cleanedRawHex.hexStringToByteArray()))
+        val currentFeeSatoshis: Long = calculateBtcFeeSatoshis(originalTx.inputs, originalTx.outputs, localUtxos)
+        val shouldUseApiRate: Boolean = apiRate != null && apiRate > localRate
+        val selectedRate: BigDecimal = if (shouldUseApiRate) {
+            apiRate
         } else {
-            BtcTransactionBuilder.buildCancelReplacement(
-                rawTransactionHex = rawTransaction.raw,
-                fromAddress = fromAddress,
-                localUtxos = localUtxos,
-                feeRate = feeRate,
-                minimumChangeSatoshis = BTC_MINIMUM_CHANGE_SATOSHIS,
-                additionalFeeSatoshis = additionalFeeSatoshis,
-            )
+            localRate
         }
-        val estimatedFeeBtc: BigDecimal = if (feeRate == null) {
-            estimateBtcFeeFromUnsignedTransaction(unsignedReplacementHex, localUtxos)
-        } else {
-            val tx: BtcTransaction = BtcTransaction.read(ByteBuffer.wrap(unsignedReplacementHex.hexStringToByteArray()))
-            val feeSatoshi: BigDecimal = BigDecimal.valueOf(calculateBtcFeeSatoshis(tx.inputs, tx.outputs, localUtxos))
-            feeSatoshi.divide(BTC_SATOSHIS_PER_BTC)
-        }
+        val additionalFeeSatoshis: Long = if (shouldUseApiRate) 0L else 1L
+        val unsignedReplacementHex: String = BtcTransactionBuilder.buildCancelReplacement(
+            rawTransactionHex = rawTransaction.raw,
+            fromAddress = fromAddress,
+            localUtxos = localUtxos,
+            feeRate = selectedRate,
+            minimumChangeSatoshis = BTC_MINIMUM_CHANGE_SATOSHIS,
+            additionalFeeSatoshis = additionalFeeSatoshis,
+        )
+        val cleanedUnsignedReplacementHex: String = unsignedReplacementHex.removePrefix("0x").trim()
+        val replacementTx: BtcTransaction = BtcTransaction.read(ByteBuffer.wrap(cleanedUnsignedReplacementHex.hexStringToByteArray()))
+        val estimatedFeeSatoshis: Long = calculateBtcFeeSatoshis(replacementTx.inputs, replacementTx.outputs, localUtxos)
+        val estimatedFeeBtc: BigDecimal = BigDecimal.valueOf(estimatedFeeSatoshis).divide(BTC_SATOSHIS_PER_BTC)
+        Timber.e("apiRate:$apiRate localRate:$localRate selectedRate:$selectedRate additionalFeeSatoshis:$additionalFeeSatoshis currentFeeSatoshis:$currentFeeSatoshis estimatedFeeBtc:$estimatedFeeBtc")
         return JsSignMessage(
             callbackId = System.currentTimeMillis(),
             type = JsSignMessage.TYPE_BTC_TRANSACTION,
