@@ -544,7 +544,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                 }
                                 val transaction = if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
                                     runCatching {
-                                        token.buildTransaction(rpc, fromAddress, toAddress, amount, web3ViewModel.outputsByAddress(fromAddress, token.assetId), rate)
+                                        token.buildTransaction(rpc, fromAddress, toAddress, amount, web3ViewModel.outputsByAddress(fromAddress, token.assetId), rate, miniFee)
                                     }.onFailure { e ->
                                         if (e is EmptyUtxoException) {
                                             ErrorHandler.handleError(e)
@@ -1079,6 +1079,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private var gas: BigDecimal? = null
     private var rate: BigDecimal? = null
+    private var miniFee: String? = null
 
     private suspend fun refreshFee(t: TokenItem) {
         val toAddress = toAddress?: return
@@ -1260,7 +1261,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         val transaction =
             try {
                 if (t.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-                    t.buildTransaction(rpc, fromAddress, toAddress, (tokenBalance.toBigDecimalOrNull()?: BigDecimal.ZERO).divide(BigDecimal.valueOf(2L)).setScale(8, RoundingMode.CEILING).toPlainString(), web3ViewModel.outputsByAddress(fromAddress, t.assetId), rate)
+                    t.buildTransaction(rpc, fromAddress, toAddress, (tokenBalance.toBigDecimalOrNull()?: BigDecimal.ZERO).divide(BigDecimal.valueOf(2L)).setScale(8, RoundingMode.CEILING).toPlainString(), web3ViewModel.outputsByAddress(fromAddress, t.assetId), rate, miniFee)
                 } else {
                     t.buildTransaction(rpc, fromAddress, toAddress, tokenBalance)
                 }
@@ -1275,10 +1276,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
           delay(3000)
           refreshGas(t)
         } else if (isAdded) {
-            web3ViewModel.calcFee(t, transaction, fromAddress).let {
-                gas = it.first
-                rate = it.second
-            }
+            val estimate= web3ViewModel.calcFee(t, transaction, fromAddress)
+            gas = estimate.fee
+            rate = estimate.rate
+            miniFee = estimate.minFee
             if (gas == null) {
                 delay(3000)
                 if (dialog.isShowing) {

@@ -21,9 +21,9 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.request.web3.EstimateFeeRequest
-import one.mixin.android.api.response.web3.WalletOutput
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.web3.StakeAccount
+import one.mixin.android.api.response.web3.WalletOutput
 import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.db.web3.vo.Web3RawTransaction
 import one.mixin.android.db.web3.vo.Web3TokenItem
@@ -69,9 +69,7 @@ import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
-class Web3ViewModel
-@Inject
-internal constructor(
+class Web3ViewModel @Inject constructor(
     private val accountRepository: AccountRepository,
     private val userRepository: UserRepository,
     private val assetRepository: AssetRepository,
@@ -286,11 +284,18 @@ internal constructor(
             web3Repository.refreshBitcoinTokenAmount(walletId, fromAddress)
         }
     }
+
+    data class FeeEstimateResult(
+        val fee: BigDecimal?,
+        val rate: BigDecimal?,
+        val minFee: String?,
+    )
+
     suspend fun calcFee(
         token: Web3TokenItem,
         transaction: JsSignMessage,
         fromAddress: String,
-    ): Pair<BigDecimal?, BigDecimal?> {
+    ): FeeEstimateResult {
         if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
             val localUtxos = withContext(Dispatchers.IO) { outputsByAddress(fromAddress, token.assetId) }
             val jsMsg = token.buildTransaction(rpc, fromAddress, fromAddress, "0.00000001", localUtxos)
@@ -309,16 +314,17 @@ internal constructor(
                     )
                 }.getOrNull()
             }
-            if (response?.isSuccess != true || response.data == null) return Pair(null, null)
+            if (response?.isSuccess != true || response.data == null) return FeeEstimateResult(null, null, null)
             val feeRate: String? = response.data!!.feeRate
-            if (feeRate.isNullOrBlank() || virtualSize == null || virtualSize <= 0) return Pair(null, null)
-            return Pair(estimateFeeInBtc(feeRate, virtualSize), feeRate.toBigDecimalOrNull())
+            val minFee: String? = response.data!!.minFee
+            if (feeRate.isNullOrBlank() || virtualSize == null || virtualSize <= 0) return FeeEstimateResult(null, null, minFee)
+            return FeeEstimateResult(estimateFeeInBtc(feeRate, virtualSize), feeRate.toBigDecimalOrNull(), minFee)
         }
         val chain = token.getChainFromName()
         if (chain == Chain.Solana) {
             val tx = VersionedTransactionCompat.from(transaction.data ?: "")
             val fee = tx.calcFee(fromAddress)
-            return Pair(fee, null)
+            return FeeEstimateResult(fee, null, null)
         } else {
             val r = withContext(Dispatchers.IO) {
                 runCatching {
@@ -334,10 +340,10 @@ internal constructor(
                     )
                 }.getOrNull()
             }
-            if (r?.isSuccess != true) return Pair(null, null)
+            if (r?.isSuccess != true) return FeeEstimateResult(null, null, null)
             return withContext(Dispatchers.IO) {
                 val tipGas = buildTipGas(chain.chainId, r.data!!)
-                Pair(tipGas.displayValue(transaction.wcEthereumTransaction?.maxFeePerGas) ?: BigDecimal.ZERO, null)
+                FeeEstimateResult(tipGas.displayValue(transaction.wcEthereumTransaction?.maxFeePerGas) ?: BigDecimal.ZERO, null, null)
             }
         }
     }

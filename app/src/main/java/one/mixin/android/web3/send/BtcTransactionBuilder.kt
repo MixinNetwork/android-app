@@ -34,7 +34,41 @@ object BtcTransactionBuilder {
         amountBtc: String,
         localUtxos: List<WalletOutput>,
         feeRate: BigDecimal,
+        minFeeBtc: BigDecimal? = null,
         minimumChangeSatoshis: Long = 1000L,
+    ): BuiltBtcTransaction {
+        val built: BuiltBtcTransaction = buildSendTransactionInternal(
+            fromAddress = fromAddress,
+            toAddress = toAddress,
+            amountBtc = amountBtc,
+            localUtxos = localUtxos,
+            feeRate = feeRate,
+            minimumChangeSatoshis = minimumChangeSatoshis,
+        )
+        val resolvedMinFeeBtc: BigDecimal = minFeeBtc ?: return built
+        if (built.virtualSize <= 0) return built
+        if (built.feeBtc >= resolvedMinFeeBtc) return built
+        val minFeeSatoshis: BigDecimal = resolvedMinFeeBtc.multiply(satoshisPerBtc).setScale(0, RoundingMode.UP)
+        val requiredFeeRate: BigDecimal = minFeeSatoshis
+            .divide(BigDecimal(built.virtualSize), 8, RoundingMode.UP)
+            .max(feeRate)
+        return buildSendTransactionInternal(
+            fromAddress = fromAddress,
+            toAddress = toAddress,
+            amountBtc = amountBtc,
+            localUtxos = localUtxos,
+            feeRate = requiredFeeRate,
+            minimumChangeSatoshis = minimumChangeSatoshis,
+        )
+    }
+
+    private fun buildSendTransactionInternal(
+        fromAddress: String,
+        toAddress: String,
+        amountBtc: String,
+        localUtxos: List<WalletOutput>,
+        feeRate: BigDecimal,
+        minimumChangeSatoshis: Long,
     ): BuiltBtcTransaction {
         val addressParser = AddressParser.getDefault()
         val changeAddress = addressParser.parseAddress(fromAddress)

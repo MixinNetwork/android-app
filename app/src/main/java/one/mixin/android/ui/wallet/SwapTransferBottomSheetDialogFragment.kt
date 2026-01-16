@@ -847,14 +847,15 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                     rate = BigDecimal.ONE,
                                 )
                                 val estimatedFee = web3ViewModel.calcFee(token, zeroFeeTx, fromAddress)
-                                btcFee = estimatedFee.first ?: BigDecimal.ZERO
+                                btcFee = estimatedFee.fee ?: BigDecimal.ZERO
                                 token.buildTransaction(
                                     rpc = rpc,
                                     fromAddress = fromAddress,
                                     toAddress = depositDestination,
                                     v = inputAmount,
                                     localUtxos = localUtxos,
-                                    rate = estimatedFee.second,
+                                    rate = estimatedFee.rate,
+                                    minFee = estimatedFee.minFee,
                                 )
                             } else {
                                 token.buildTransaction(

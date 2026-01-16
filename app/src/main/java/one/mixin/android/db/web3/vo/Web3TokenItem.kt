@@ -231,6 +231,7 @@ suspend fun Web3TokenItem.buildTransaction(
     v: String,
     localUtxos: List<WalletOutput>? = null,
     rate: BigDecimal? = BigDecimal.ONE,
+    minFee: String? = null,
 ): JsSignMessage {
     if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
         Web3Signer.useSolana()
@@ -336,13 +337,14 @@ suspend fun Web3TokenItem.buildTransaction(
     } else if (chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
         if (!localUtxos.isNullOrEmpty()) {
             val feeRate: BigDecimal = rate ?: BigDecimal.ONE
+            val minFeeBtc: BigDecimal? = minFee?.toBigDecimalOrNull()
             val built: BtcTransactionBuilder.BuiltBtcTransaction = BtcTransactionBuilder.buildSendTransaction(
                 fromAddress = fromAddress,
                 toAddress = toAddress,
                 amountBtc = v,
                 localUtxos = localUtxos,
                 feeRate = feeRate,
-                minimumChangeSatoshis = 1000L,
+                minFeeBtc = minFeeBtc,
             )
             // Todo remove debug logs
             Timber.e("rawTxHex: ${built.rawHex} virtualSize: ${built.virtualSize} rate: $rate")
