@@ -124,45 +124,21 @@ constructor(
         return changeOutputs.size
     }
 
-    suspend fun deleteBitcoinUnspentChangeOutputs(fromAddress: String, rawTransactionHex: String, shouldDeleteInputs: Boolean): Int {
+    suspend fun deleteBitcoinUnspentChangeOutputs(fromAddress: String, rawTransactionHex: String): Int {
         val cleanedHex: String = rawTransactionHex.removePrefix("0x").trim()
         if (fromAddress.isBlank() || cleanedHex.isBlank()) return 0
         val tx: Transaction = runCatching {
             Transaction.read(ByteBuffer.wrap(cleanedHex.hexStringToByteArray()))
         }.getOrNull() ?: return 0
         val txHash: String = tx.txId.toString()
-        val params = MainNetParams.get()
-        val fromParsedAddress: Address = runCatching {
-            Address.fromString(params, fromAddress)
-        }.getOrNull() ?: return 0
-        val fromScript: Script = runCatching {
-            ScriptBuilder.createOutputScript(fromParsedAddress)
-        }.getOrNull() ?: return 0
-        val fromScriptBytes: ByteArray = fromScript.program()
-        val hasChangeOutput: Boolean = tx.outputs.any { output -> output.scriptBytes.contentEquals(fromScriptBytes) }
-        var deletedInputsCount: Int = 0
-        if (shouldDeleteInputs) {
-            for (input in tx.inputs) {
-                val outPoint = input.outpoint ?: continue
-                val previousHash: String = outPoint.hash().toString()
-                val outputIndex: Long = outPoint.index()
-                deletedInputsCount += walletOutputDao.deleteSignedByOutpoint(previousHash, outputIndex, fromAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
-            }
-        }
-        val deletedChangeOutputsCount: Int = if (hasChangeOutput) {
-            walletOutputDao.deletePendingAndUnspentByHashAndAddress(txHash, fromAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
-        } else {
-            0
-        }
-        return deletedChangeOutputsCount + deletedInputsCount
+        val deletedOutputsCount: Int = walletOutputDao.deleteByTransactionHash(txHash, Constants.ChainId.BITCOIN_CHAIN_ID)
+        return deletedOutputsCount
     }
 
     suspend fun web3TokenItemByAddress(address: String) = web3TokenDao.web3TokenItemByAddress(address)
 
-    suspend fun web3TokenItemById(walletId: String, assetId: String) = web3TokenDao.web3TokenItemById(walletId, assetId)
+    fun web3TokenItemById(walletId: String, assetId: String) = web3TokenDao.web3TokenItemById(walletId, assetId)
     
-    suspend fun findWeb3TokenItemsByIds(walletId: String, assetIds: List<String>) = web3TokenDao.findWeb3TokenItemsByIds(walletId, assetIds)
-
     fun web3TokensExcludeHidden(walletId: String) = web3TokenDao.web3TokenItemsExcludeHidden(walletId)
 
     fun web3TokensExcludeHiddenRaw(walletId: String, defaultIconUrl: String = Constants.DEFAULT_ICON_URL) = web3TokenDao.web3TokenItemsExcludeHiddenRaw(

@@ -58,6 +58,7 @@ import org.bitcoinj.base.Sha256Hash
 import org.bitcoinj.core.TransactionInput
 import org.bitcoinj.core.TransactionOutPoint
 import org.bitcoinj.core.TransactionOutput
+import java.math.RoundingMode
 import org.bitcoinj.script.Script
 import org.bitcoinj.script.ScriptBuilder
 import org.web3j.crypto.TransactionDecoder
@@ -498,7 +499,12 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         lifecycleScope.launch {
             if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
                 val localRateString: String = rawTransaction.nonce
-                val currentRate: BigDecimal? = getCurrentBtcFeeRate(rawTransaction.raw, localRateString)
+                val estimateFeeResponse = web3ViewModel.estimateBtcFeeRate(rawTransaction.raw, localRateString)
+                    ?: run {
+                        toast(R.string.error_connection_error)
+                        return@launch
+                    }
+                val currentRate: BigDecimal? = estimateFeeResponse.feeRate?.toBigDecimalOrNull()
                 val localRate: BigDecimal? = localRateString.toBigDecimalOrNull()
                 if (currentRate != null && localRate != null && currentRate.compareTo(localRate) == 0) {
                     toast(getString(R.string.web3_btc_speed_up_not_needed))
@@ -514,7 +520,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                     currentTitle = getString(R.string.Speed_Up_Transaction),
                     onDone = { _ ->
                         lifecycleScope.launch {
-                            web3ViewModel.deleteBitcoinUnspentChangeOutputs(wallet.id, fromAddress, rawTransaction.raw, shouldDeleteInputs = false)
+                            web3ViewModel.deleteBitcoinUnspentChangeOutputs(wallet.id, fromAddress, rawTransaction.raw)
                         }
                     },
                 )
@@ -541,7 +547,17 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         }
         lifecycleScope.launch {
             if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-                val jsSignMessage = createBtcCancelMessage(rawTransaction, localRate)
+                val estimateFeeResponse = web3ViewModel.estimateBtcFeeRate(rawTransaction.raw, localRate.toPlainString())
+                    ?: run {
+                        toast(R.string.error_connection_error)
+                        return@launch
+                    }
+                val apiRate: BigDecimal? = estimateFeeResponse.feeRate?.toBigDecimalOrNull()
+                if (apiRate == null) {
+                    toast(R.string.Data_error)
+                    return@launch
+                }
+                val jsSignMessage = createBtcCancelMessage(rawTransaction, localRate, apiRate)
                 val fromAddress: String = transaction.getFromAddress()
                 showBrowserBottomSheetDialogFragment(
                     requireActivity(),
@@ -551,7 +567,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                     currentTitle = getString(R.string.Cancel_Transaction),
                     onDone = { _ ->
                         lifecycleScope.launch {
-                            web3ViewModel.deleteBitcoinUnspentChangeOutputs(wallet.id, fromAddress, rawTransaction.raw, shouldDeleteInputs = false)
+                            web3ViewModel.deleteBitcoinUnspentChangeOutputs(wallet.id, fromAddress, rawTransaction.raw)
                         }
                     },
                 )
@@ -632,6 +648,12 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         )
     }
 
+    private fun parseBtcToSatoshis(valueBtc: String?): Long? {
+        if (valueBtc.isNullOrBlank()) return null
+        val value: BigDecimal = valueBtc.toBigDecimalOrNull() ?: return null
+        return value.multiply(BTC_SATOSHIS_PER_BTC).setScale(0, RoundingMode.UP).toLong()
+    }
+
     private fun calculateBtcFeeSatoshis(
         inputs: List<TransactionInput>,
         outputs: List<TransactionOutput>,
@@ -646,34 +668,33 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
 
     private suspend fun createBtcCancelMessage(
         rawTransaction: Web3RawTransaction,
-        localRate: BigDecimal
+        localRate: BigDecimal,
+        apiRate: BigDecimal,
     ): JsSignMessage {
         val fromAddress: String = transaction.getFromAddress()
         val localUtxos: List<WalletOutput> = web3ViewModel.outputsByAddressForSigning(fromAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
-        val apiRate: BigDecimal? = getCurrentBtcFeeRate(rawTransaction.raw, localRate.toString())
         val cleanedRawHex: String = rawTransaction.raw.removePrefix("0x").trim()
         val originalTx: BtcTransaction = BtcTransaction.read(ByteBuffer.wrap(cleanedRawHex.hexStringToByteArray()))
         val currentFeeSatoshis: Long = calculateBtcFeeSatoshis(originalTx.inputs, originalTx.outputs, localUtxos)
-        val shouldUseApiRate: Boolean = apiRate != null && apiRate > localRate
+
+        val shouldUseApiRate: Boolean = apiRate > localRate
         val selectedRate: BigDecimal = if (shouldUseApiRate) {
             apiRate
         } else {
-            localRate
+            localRate + BigDecimal.ONE
         }
-        val additionalFeeSatoshis: Long = if (shouldUseApiRate) 0L else 1L
         val unsignedReplacementHex: String = BtcTransactionBuilder.buildCancelReplacement(
             rawTransactionHex = rawTransaction.raw,
             fromAddress = fromAddress,
             localUtxos = localUtxos,
             feeRate = selectedRate,
             minimumChangeSatoshis = BTC_MINIMUM_CHANGE_SATOSHIS,
-            additionalFeeSatoshis = additionalFeeSatoshis,
         )
         val cleanedUnsignedReplacementHex: String = unsignedReplacementHex.removePrefix("0x").trim()
         val replacementTx: BtcTransaction = BtcTransaction.read(ByteBuffer.wrap(cleanedUnsignedReplacementHex.hexStringToByteArray()))
         val estimatedFeeSatoshis: Long = calculateBtcFeeSatoshis(replacementTx.inputs, replacementTx.outputs, localUtxos)
         val estimatedFeeBtc: BigDecimal = BigDecimal.valueOf(estimatedFeeSatoshis).divide(BTC_SATOSHIS_PER_BTC)
-        Timber.e("apiRate:$apiRate localRate:$localRate selectedRate:$selectedRate additionalFeeSatoshis:$additionalFeeSatoshis currentFeeSatoshis:$currentFeeSatoshis estimatedFeeBtc:$estimatedFeeBtc")
+        Timber.e("apiRate:$apiRate localRate:$localRate selectedRate:$selectedRate currentFeeSatoshis:$currentFeeSatoshis estimatedFeeBtc:$estimatedFeeBtc")
         return JsSignMessage(
             callbackId = System.currentTimeMillis(),
             type = JsSignMessage.TYPE_BTC_TRANSACTION,
@@ -853,10 +874,6 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         val multiplied: Coin = currentFee.multiply(BTC_SPEED_UP_MULTIPLIER_NUMERATOR).divide(BTC_SPEED_UP_MULTIPLIER_DENOMINATOR)
         val minimum: Coin = currentFee.add(BTC_SPEED_UP_MINIMUM_INCREMENT)
         return if (multiplied.isGreaterThan(minimum)) multiplied else minimum
-    }
-
-    private suspend fun getCurrentBtcFeeRate(rawTransactionHex: String, localRate: String?): BigDecimal? {
-        return web3ViewModel.estimateBtcFeeRate(rawTransactionHex, localRate)
     }
 
     private fun estimateBtcFeeFromUnsignedTransaction(

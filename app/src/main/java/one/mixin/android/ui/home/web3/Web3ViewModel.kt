@@ -21,6 +21,7 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.request.web3.EstimateFeeRequest
+import one.mixin.android.api.request.web3.EstimateFeeResponse
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.web3.StakeAccount
 import one.mixin.android.api.response.web3.WalletOutput
@@ -117,7 +118,7 @@ class Web3ViewModel @Inject constructor(
         }
     }
 
-    suspend fun estimateBtcFeeRate(rawTransactionHex: String, currentRate: String?): BigDecimal? {
+    suspend fun estimateBtcFeeRate(rawTransactionHex: String, currentRate: String?): EstimateFeeResponse? {
         val cleanedRawHex: String = rawTransactionHex.removePrefix("0x").trim()
         val response = withContext(Dispatchers.IO) {
             runCatching {
@@ -132,7 +133,7 @@ class Web3ViewModel @Inject constructor(
             }.getOrNull()
         }
         if (response?.isSuccess != true || response.data == null) return null
-        return response.data!!.feeRate?.toBigDecimalOrNull()
+        return response.data!!
     }
 
     fun disconnect(
@@ -266,9 +267,9 @@ class Web3ViewModel @Inject constructor(
         web3Repository.deleteOutputsByAddress(address, assetId)
     }
 
-    suspend fun deleteBitcoinUnspentChangeOutputs(walletId: String, fromAddress: String, rawTransactionHex: String, shouldDeleteInputs: Boolean): Int {
+    suspend fun deleteBitcoinUnspentChangeOutputs(walletId: String, fromAddress: String, rawTransactionHex: String): Int {
         return withContext(Dispatchers.IO) {
-            val deletedCount: Int = web3Repository.deleteBitcoinUnspentChangeOutputs(fromAddress, rawTransactionHex, shouldDeleteInputs)
+            val deletedCount: Int = web3Repository.deleteBitcoinUnspentChangeOutputs(fromAddress, rawTransactionHex)
             if (deletedCount > 0) {
                 web3Repository.refreshBitcoinTokenAmount(walletId, fromAddress)
             }
@@ -318,7 +319,10 @@ class Web3ViewModel @Inject constructor(
             val feeRate: String? = response.data!!.feeRate
             val minFee: String? = response.data!!.minFee
             if (feeRate.isNullOrBlank() || virtualSize == null || virtualSize <= 0) return FeeEstimateResult(null, null, minFee)
-            return FeeEstimateResult(estimateFeeInBtc(feeRate, virtualSize), feeRate.toBigDecimalOrNull(), minFee)
+            val estimatedFee: BigDecimal = estimateFeeInBtc(feeRate, virtualSize)
+            val minFeeValue: BigDecimal? = minFee?.toBigDecimalOrNull()
+            val finalFee: BigDecimal = if (minFeeValue == null) estimatedFee else estimatedFee.max(minFeeValue)
+            return FeeEstimateResult(finalFee, feeRate.toBigDecimalOrNull(), minFee)
         }
         val chain = token.getChainFromName()
         if (chain == Chain.Solana) {

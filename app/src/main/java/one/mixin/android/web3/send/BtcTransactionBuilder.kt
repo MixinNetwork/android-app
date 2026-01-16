@@ -20,7 +20,23 @@ import java.nio.ByteBuffer
 object BtcTransactionBuilder {
 
     private const val BTC_RBF_SEQUENCE: Long = 0xfffffffdL
+    private const val INCREMENTAL_RELAY_FEE_SAT_PER_VB: Long = 1L
+    private const val RBF_SAFETY_EXTRA_SATOSHIS: Long = 300L
     private val satoshisPerBtc: BigDecimal = BigDecimal("100000000")
+
+    private fun calculateRbfRequiredTotalFeeSatoshis(
+        oldTotalFeeSatoshis: Long,
+        replacementVirtualSize: Int,
+        targetFeeRateSatPerVb: Long,
+    ): Long {
+        if (replacementVirtualSize <= 0) {
+            throw IllegalArgumentException("invalid transaction")
+        }
+        val feeByTargetRate: Long = replacementVirtualSize.toLong() * targetFeeRateSatPerVb
+        val feeByRbfIncrement: Long = oldTotalFeeSatoshis + (replacementVirtualSize.toLong() * INCREMENTAL_RELAY_FEE_SAT_PER_VB)
+        val feeBySafetyExtra: Long = oldTotalFeeSatoshis + RBF_SAFETY_EXTRA_SATOSHIS
+        return maxOf(feeByTargetRate, feeByRbfIncrement, feeBySafetyExtra)
+    }
 
     data class BuiltBtcTransaction(
         val rawHex: String,
@@ -153,12 +169,16 @@ object BtcTransactionBuilder {
         val fromScriptBytes: ByteArray = buildP2wpkhScript(fromAddress).program()
         val originalInputs: List<TransactionInput> = originalTx.inputs
         val originalOutputs: List<TransactionOutput> = originalTx.outputs
+        val originalInputAmount: Coin = calculateInputAmount(originalInputs, localUtxos)
+        val originalOutputAmount: Coin = originalOutputs.fold(Coin.ZERO) { acc, output -> acc.add(output.value) }
+        val oldTotalFeeSatoshis: Long = originalInputAmount.subtract(originalOutputAmount).value
+        val targetFeeRateSatPerVb: Long = feeRate.setScale(0, RoundingMode.UP).longValueExact()
         val extraUtxos: List<WalletOutput> = findAdditionalUtxos(originalInputs, localUtxos, maxExtraInputs)
         val minimumChangeAmount: Coin = Coin.valueOf(minimumChangeSatoshis)
         for (extraCount: Int in 0..extraUtxos.size) {
             val usedExtraUtxos: List<WalletOutput> = extraUtxos.take(extraCount)
             val extraInputAmount: Coin = usedExtraUtxos.fold(Coin.ZERO) { acc, utxo -> acc.add(Coin.parseCoin(utxo.amount)) }
-            val inputAmount: Coin = calculateInputAmount(originalInputs, localUtxos).add(extraInputAmount)
+            val inputAmount: Coin = originalInputAmount.add(extraInputAmount)
             val outputAmount: Coin = originalOutputs.fold(Coin.ZERO) { acc, output -> acc.add(output.value) }
             val currentFee: Coin = inputAmount.subtract(outputAmount)
             val candidateTx = BtcTransaction()
@@ -167,8 +187,12 @@ object BtcTransactionBuilder {
                 candidateTx.addOutput(output.value, Script.parse(output.scriptBytes))
             }
             val virtualSize: Int = candidateTx.virtualSize()
-            val desiredFeeSats: BigDecimal = feeRate.multiply(BigDecimal(virtualSize)).setScale(0, RoundingMode.UP)
-            val desiredFee: Coin = Coin.valueOf(desiredFeeSats.longValueExact())
+            val desiredTotalFeeSatoshis: Long = calculateRbfRequiredTotalFeeSatoshis(
+                oldTotalFeeSatoshis = oldTotalFeeSatoshis,
+                replacementVirtualSize = virtualSize,
+                targetFeeRateSatPerVb = targetFeeRateSatPerVb,
+            )
+            val desiredFee: Coin = Coin.valueOf(desiredTotalFeeSatoshis)
             val feeDelta: Coin = desiredFee.subtract(currentFee)
             if (feeDelta.isZero || feeDelta.isNegative) {
                 return cleanedRawHex
@@ -227,64 +251,45 @@ object BtcTransactionBuilder {
         feeRate: BigDecimal,
         minimumChangeSatoshis: Long = 1000L,
         maxExtraInputs: Int = 2,
-        additionalFeeSatoshis: Long = 0L,
     ): String {
         val cleanedRawHex: String = rawTransactionHex.removePrefix("0x").trim()
         val originalTx: BtcTransaction = BtcTransaction.read(ByteBuffer.wrap(cleanedRawHex.hexStringToByteArray()))
         val originalInputs: List<TransactionInput> = originalTx.inputs
         val extraUtxos: List<WalletOutput> = findAdditionalUtxos(originalInputs, localUtxos, maxExtraInputs)
         val selfScript: Script = buildP2wpkhScript(fromAddress)
-        val originalOutputValues: List<Coin> = originalTx.outputs.map { it.value }
         val minimumChangeAmount: Coin = Coin.valueOf(minimumChangeSatoshis)
+        val originalInputAmount: Coin = calculateInputAmount(originalInputs, localUtxos)
+        val originalOutputAmount: Coin = originalTx.outputs.fold(Coin.ZERO) { acc: Coin, output: TransactionOutput ->
+            acc.add(output.value)
+        }
+        val oldTotalFeeSatoshis: Long = originalInputAmount.subtract(originalOutputAmount).value
+        val targetFeeRateSatPerVb: Long = feeRate.setScale(0, RoundingMode.UP).longValueExact()
         for (extraCount: Int in 0..extraUtxos.size) {
             val usedExtraUtxos: List<WalletOutput> = extraUtxos.take(extraCount)
-            val candidateInputAmount: Coin = calculateInputAmount(originalInputs, localUtxos).add(
-                usedExtraUtxos.fold(Coin.ZERO) { acc, utxo -> acc.add(Coin.parseCoin(utxo.amount)) }
+            val extraInputAmount: Coin = usedExtraUtxos.fold(Coin.ZERO) { acc: Coin, utxo: WalletOutput ->
+                acc.add(Coin.parseCoin(utxo.amount))
+            }
+            val candidateInputAmount: Coin = originalInputAmount.add(extraInputAmount)
+            val sizeTx = BtcTransaction()
+            addInputs(sizeTx, originalInputs, usedExtraUtxos)
+            sizeTx.addOutput(minimumChangeAmount, selfScript)
+            val replacementVSize: Int = sizeTx.virtualSize()
+            val desiredTotalFeeSatoshis: Long = calculateRbfRequiredTotalFeeSatoshis(
+                oldTotalFeeSatoshis = oldTotalFeeSatoshis,
+                replacementVirtualSize = replacementVSize,
+                targetFeeRateSatPerVb = targetFeeRateSatPerVb,
             )
-            val replacementTx = BtcTransaction()
-            addInputs(replacementTx, originalInputs, usedExtraUtxos)
-            for (value: Coin in originalOutputValues) {
-                replacementTx.addOutput(value, selfScript)
-            }
-            val virtualSize: Int = replacementTx.virtualSize()
-            val desiredFeeSats: BigDecimal = feeRate
-                .multiply(BigDecimal(virtualSize))
-                .setScale(0, RoundingMode.UP)
-                .add(BigDecimal.valueOf(additionalFeeSatoshis))
-            val desiredFee: Coin = Coin.valueOf(desiredFeeSats.longValueExact())
-            val currentFee: Coin = candidateInputAmount.subtract(originalTx.outputs.fold(Coin.ZERO) { acc, output -> acc.add(output.value) })
-            val feeDelta: Coin = desiredFee.subtract(currentFee)
-            if (feeDelta.isZero || feeDelta.isNegative) {
-                return cleanedRawHex
-            }
-            val maxIndex: Int = originalOutputValues.indices.maxByOrNull { index -> originalOutputValues[index].value } ?: -1
-            if (maxIndex < 0) {
-                throw IllegalArgumentException("insufficient balance")
-            }
-            val adjustedMax: Coin = originalOutputValues[maxIndex].subtract(feeDelta)
-            if (adjustedMax.isNegative || adjustedMax.isZero) {
-                continue
-            }
-            if (adjustedMax.isLessThan(minimumChangeAmount)) {
+            val sendToSelf: Coin = candidateInputAmount.subtract(Coin.valueOf(desiredTotalFeeSatoshis))
+            if (sendToSelf.isNegative || sendToSelf.isZero || sendToSelf.isLessThan(minimumChangeAmount)) {
                 if (extraCount < extraUtxos.size) {
                     continue
                 }
-                val sendToSelf: Coin = candidateInputAmount.subtract(desiredFee)
-                if (sendToSelf.isNegative || sendToSelf.isZero || sendToSelf.isLessThan(minimumChangeAmount)) {
-                    throw IllegalArgumentException("insufficient balance")
-                }
-                val oneOutputTx = BtcTransaction()
-                addInputs(oneOutputTx, originalInputs, usedExtraUtxos)
-                oneOutputTx.addOutput(sendToSelf, selfScript)
-                return oneOutputTx.serialize().toHex()
+                throw IllegalArgumentException("insufficient balance")
             }
-            val adjustedTx = BtcTransaction()
-            addInputs(adjustedTx, originalInputs, usedExtraUtxos)
-            originalOutputValues.forEachIndexed { index, value ->
-                val outputValue: Coin = if (index == maxIndex) adjustedMax else value
-                adjustedTx.addOutput(outputValue, selfScript)
-            }
-            return adjustedTx.serialize().toHex()
+            val oneOutputTx = BtcTransaction()
+            addInputs(oneOutputTx, originalInputs, usedExtraUtxos)
+            oneOutputTx.addOutput(sendToSelf, selfScript)
+            return oneOutputTx.serialize().toHex()
         }
         throw IllegalArgumentException("insufficient balance")
     }

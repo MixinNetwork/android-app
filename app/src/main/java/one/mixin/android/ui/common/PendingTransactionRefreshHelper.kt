@@ -8,6 +8,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.db.web3.vo.TransactionStatus
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshWeb3BitCoinJob
 import one.mixin.android.job.RefreshWeb3TransactionsJob
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.web3.js.Web3Signer
@@ -71,8 +72,8 @@ object PendingTransactionRefreshHelper {
                                         walletId = walletId,
                                         fromAddress = transition.account,
                                         rawTransactionHex = transition.raw,
-                                        shouldDeleteInputs = true,
                                     )
+                                    jobManager.addJobInBackground(RefreshWeb3BitCoinJob(walletId))
                                 }
                                 if (r.data?.state != TransactionStatus.SUCCESS.value) {
                                     web3ViewModel.updateTransaction(transition.hash, r.data?.state!!, transition.chainId)

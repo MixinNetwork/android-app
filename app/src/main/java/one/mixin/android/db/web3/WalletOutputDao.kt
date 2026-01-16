@@ -10,7 +10,7 @@ import java.math.BigDecimal
 
 @Dao
 interface WalletOutputDao: BaseDao<WalletOutput> {
-    @Query("SELECT * FROM outputs WHERE address = :address AND asset_id = :assetId AND status IN ('unspent', 'pending') ORDER BY created_at DESC")
+    @Query("SELECT * FROM outputs WHERE address = :address AND asset_id = :assetId AND status IN ('unspent', 'pending') ORDER BY created_at ASC")
     suspend fun outputsByAddress(address: String, assetId: String): List<WalletOutput>
 
     @Query("SELECT * FROM outputs WHERE address = :address AND asset_id = :assetId ORDER BY created_at DESC")
@@ -25,8 +25,14 @@ interface WalletOutputDao: BaseDao<WalletOutput> {
     @Query("SELECT * FROM outputs WHERE transaction_hash = :hash AND output_index = :outputIndex AND asset_id = :assetId LIMIT 1")
     suspend fun outputByOutpoint(hash: String, outputIndex: Long, assetId: String): WalletOutput?
 
-    @Query("DELETE FROM outputs WHERE transaction_hash = :hash AND address = :address AND asset_id = :assetId AND status ='unspent' || status = 'pending'")
-    suspend fun deletePendingAndUnspentByHashAndAddress(hash: String, address: String, assetId: String): Int
+    @Query("SELECT DISTINCT transaction_hash FROM outputs WHERE address = :address AND asset_id = :assetId AND status = 'pending'")
+    suspend fun findPendingTransactionHashes(address: String, assetId: String): List<String>
+
+    @Query("DELETE FROM outputs WHERE address = :address AND asset_id = :assetId AND status = 'pending' AND transaction_hash IN (:hashes)")
+    suspend fun deletePendingByTransactionHashes(address: String, assetId: String, hashes: List<String>): Int
+
+    @Query("DELETE FROM outputs WHERE transaction_hash = :hash AND asset_id = :assetId")
+    suspend fun deleteByTransactionHash(hash: String, assetId: String): Int
 
     @Query("DELETE FROM outputs WHERE address = :address AND asset_id = :assetId")
     suspend fun deleteByAddress(address: String, assetId: String)
@@ -48,6 +54,12 @@ interface WalletOutputDao: BaseDao<WalletOutput> {
 
     @Transaction
     suspend fun mergeOutputsForAddress(address: String, assetId: String, remoteOutputs: List<WalletOutput>) {
+        val pendingTransactionHashes: Set<String> = findPendingTransactionHashes(address, assetId).toSet()
+        val remoteTransactionHashes: Set<String> = remoteOutputs.map { it.transactionHash }.toSet()
+        val pendingTransactionHashesToOverwrite: List<String> = pendingTransactionHashes.intersect(remoteTransactionHashes).toList()
+        if (pendingTransactionHashesToOverwrite.isNotEmpty()) {
+            deletePendingByTransactionHashes(address, assetId, pendingTransactionHashesToOverwrite)
+        }
         val remoteOutputIds: List<String> = remoteOutputs.map { it.outputId }
         val signedOutputIds: List<String> = if (remoteOutputIds.isEmpty()) emptyList() else findSignedOutputIds(remoteOutputIds)
         val outputsToInsert: List<WalletOutput> = if (signedOutputIds.isEmpty()) {
