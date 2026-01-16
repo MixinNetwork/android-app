@@ -195,7 +195,7 @@ object Web3Signer {
     ) {
         if (walletId.isNotBlank()) {
             val addresses = queryAddress(walletId)
-            path = addresses.firstOrNull()?.path ?: ""
+            path = addresses.firstOrNull { it.chainId in Constants.Web3ChainIds || it.chainId == SOLANA_CHAIN_ID }?.path ?: ""
             evmAddress =
                 addresses.firstOrNull { it.chainId in Constants.Web3ChainIds }?.destination
                     ?: ""

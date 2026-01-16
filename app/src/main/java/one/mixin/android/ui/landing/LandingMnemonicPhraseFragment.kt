@@ -7,6 +7,7 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.crypto.mnemonicChecksum
 import one.mixin.android.databinding.FragmentComposeBinding
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
@@ -14,6 +15,7 @@ import one.mixin.android.ui.landing.components.MnemonicPhraseInput
 import one.mixin.android.ui.landing.components.MnemonicState
 import one.mixin.android.ui.logs.LogViewerBottomSheet
 import one.mixin.android.ui.web.WebFragment
+import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.viewBinding
 import timber.log.Timber
 
@@ -36,6 +38,7 @@ class LandingMnemonicPhraseFragment : BaseFragment(R.layout.fragment_landing_mne
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        SystemUIManager.setSafePadding(requireActivity().window, color = requireActivity().colorFromAttribute(R.attr.bg_white), imePadding = false)
         Timber.e("LandingMnemonicPhraseFragment onViewCreated")
         binding.titleView.leftIb.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()

@@ -47,15 +47,7 @@ object PendingTransactionRefreshHelper {
         try {
             while (true) {
                 val pendingRawTransaction = web3ViewModel.getPendingRawTransactions(walletId)
-                if (pendingRawTransaction.isEmpty()) {
-                    val pendingTransaction = web3ViewModel.getPendingTransactions(walletId)
-                    if (pendingTransaction.isNotEmpty()) {
-                        jobManager.addJobInBackground(RefreshWeb3TransactionsJob())
-                        delay(5_000)
-                    } else {
-                        delay(10_000)
-                    }
-                } else {
+                if (pendingRawTransaction.isEmpty().not()) {
                     pendingRawTransaction.forEach { transition ->
                         val r = web3ViewModel.transaction(transition.hash, transition.chainId)
                         if (r.isSuccess && (r.data?.state == TransactionStatus.SUCCESS.value || 
@@ -72,7 +64,7 @@ object PendingTransactionRefreshHelper {
                                r.isSuccess && r.data?.state == TransactionStatus.NOT_FOUND.value || 
                                r.data?.state == TransactionStatus.SUCCESS.value) {
                                 if (r.data?.state == TransactionStatus.SUCCESS.value) {
-                                    jobManager.addJobInBackground(RefreshWeb3TransactionsJob())
+                                    jobManager.addJobInBackground(RefreshWeb3TransactionsJob(walletId))
                                 }
                                 if (transition.chainId == Constants.ChainId.BITCOIN_CHAIN_ID && r.data?.state == TransactionStatus.NOT_FOUND.value) {
                                     web3ViewModel.deleteBitcoinUnspentChangeOutputs(
@@ -90,6 +82,9 @@ object PendingTransactionRefreshHelper {
                         }
                     }
                     delay(5_000)
+                } else {
+                    jobManager.addJobInBackground(RefreshWeb3TransactionsJob(walletId))
+                    delay(15_000)
                 }
             }
         } catch (e: Exception) {
