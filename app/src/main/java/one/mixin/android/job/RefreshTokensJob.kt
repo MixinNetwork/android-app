@@ -3,7 +3,6 @@ package one.mixin.android.job
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.db.flow.MessageFlow
-import one.mixin.android.db.web3.vo.Web3Chain
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.Token
 import timber.log.Timber

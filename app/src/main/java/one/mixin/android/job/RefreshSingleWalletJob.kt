@@ -5,9 +5,9 @@ import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.RxBus
+import one.mixin.android.db.web3.vo.WalletItem
 import one.mixin.android.db.web3.vo.Web3Chain
 import one.mixin.android.db.web3.vo.Web3TokensExtra
-import one.mixin.android.db.web3.vo.WalletItem
 import one.mixin.android.event.WalletOperationType
 import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI

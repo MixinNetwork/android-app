@@ -27,7 +27,6 @@ import one.mixin.android.tip.wc.internal.WcSolanaTransaction
 import one.mixin.android.tip.wc.internal.ethTransactionSerializer
 import one.mixin.android.tip.wc.internal.getSupportedNamespaces
 import one.mixin.android.tip.wc.internal.supportChainList
-import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.encodeToBase58String
 import one.mixin.android.util.reportException
@@ -46,6 +45,11 @@ import java.util.concurrent.TimeUnit
 
 object WalletConnectV2 : WalletConnect() {
     const val TAG = "WalletConnectV2"
+
+    private const val CHAIN_TYPE_ETH: String = "eth"
+    private const val CHAIN_TYPE_POLYGON: String = "polygon"
+    private const val CHAIN_TYPE_BSC: String = "bsc"
+    private const val CHAIN_TYPE_SOLANA: String = "solana"
 
     private val gson =
         GsonBuilder()
@@ -158,10 +162,10 @@ object WalletConnectV2 : WalletConnect() {
                         }
                     val chainType =
                         when {
-                            requireChain is Chain.Solana -> WalletUnlockBottomSheetDialogFragment.TYPE_SOLANA
-                            requireChain is Chain.BinanceSmartChain -> WalletUnlockBottomSheetDialogFragment.TYPE_BSC
-                            requireChain is Chain.Polygon -> WalletUnlockBottomSheetDialogFragment.TYPE_POLYGON
-                            else -> WalletUnlockBottomSheetDialogFragment.TYPE_ETH
+                            requireChain is Chain.Solana -> CHAIN_TYPE_SOLANA
+                            requireChain is Chain.BinanceSmartChain -> CHAIN_TYPE_BSC
+                            requireChain is Chain.Polygon -> CHAIN_TYPE_POLYGON
+                            else -> CHAIN_TYPE_ETH
                         }
 
                     if (hasSupportChain) {

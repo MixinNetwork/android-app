@@ -140,6 +140,7 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
             val evmAddress = bottomViewModel.getTipAddress(requireContext(), pin, ETHEREUM_CHAIN_ID)
             PropertyHelper.updateKeyValue(EVM_ADDRESS, evmAddress)
             Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Ethereum.name, evmAddress)
+            bottomViewModel.ensureClassicWallet(pin)
             AnalyticsTracker.trackLoginEnd()
         }
         return r
