@@ -61,7 +61,7 @@ fun MnemonicPhrasePage(
                         R.string.Create_Mnemonic_Phrase
                     } else if (isSign){
                         R.string.Signing_in_to_your_account
-                    }else{
+                    } else {
                         R.string.Creating_your_account
                     }
                 ),

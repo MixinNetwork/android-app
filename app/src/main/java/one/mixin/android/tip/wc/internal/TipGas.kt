@@ -33,7 +33,7 @@ data class TipGas(
 }
 
 fun buildTipGas(assetId: String, response: EstimateFeeResponse): TipGas {
-    return TipGas(assetId, response.gasLimit!!.toBigInteger(), response.maxFeePerGas!!.toBigInteger(), response.maxPriorityFeePerGas!!.toBigInteger(), )
+    return TipGas(assetId, response.gasLimit!!.toBigInteger(), response.maxFeePerGas!!.toBigInteger(), response.maxPriorityFeePerGas!!.toBigInteger())
 }
 private fun estimateFeeInSatoshi(feeRate: String, transactionSize: Int): BigDecimal {
     return try {

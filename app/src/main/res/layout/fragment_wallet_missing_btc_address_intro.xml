@@ -77,7 +77,7 @@
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/ic_wallet_saemless" />
+                    android:src="@drawable/ic_wallet_seamless" />
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -113,7 +113,7 @@
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/ic_wallet_compatibillity" />
+                    android:src="@drawable/ic_wallet_compatibility" />
 
                 <LinearLayout
                     android:layout_width="0dp"

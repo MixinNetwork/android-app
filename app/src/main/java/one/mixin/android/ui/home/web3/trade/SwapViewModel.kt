@@ -105,7 +105,7 @@ class SwapViewModel
     ) : Result<QuoteResult?> {
         val type = if(source.isEmpty()){
             TradeQuoteType.LIMIT
-        }else{
+        } else {
             TradeQuoteType.SWAP
         }
         return if (amount.isNotBlank() && inputMint != null && outputMint != null) {
