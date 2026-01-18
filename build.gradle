@@ -113,7 +113,7 @@ buildscript {
 
         ext.sumsubVersion = '1.39.1'
         ext.checkoutFramesVersion = '4.2.3'
-        ext.checkoutSecureVersion = '3.2.6'
+        ext.checkoutSecureVersion = '3.3.0'
         ext.checkoutRiskVersion = '1.0.6'
 
         ext.playWalletVersion = '19.4.0'
