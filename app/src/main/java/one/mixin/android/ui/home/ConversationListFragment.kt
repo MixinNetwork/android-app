@@ -75,7 +75,12 @@ import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapter
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment
+import one.mixin.android.ui.home.reminder.VerifyMobileReminderBottomSheetDialogFragment
 import one.mixin.android.ui.search.SearchFragment
+import one.mixin.android.ui.search.SearchMessageFragment
+import one.mixin.android.ui.search.SearchSingleFragment
+import one.mixin.android.ui.wallet.AllTransactionsFragment
+import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.analytics.AnalyticsTracker
@@ -752,6 +757,18 @@ class ConversationListFragment : LinkFragment() {
         lifecycleScope.launch {
             val totalUsd = conversationListViewModel.findTotalUSDBalance()
             if (isAdded && !parentFragmentManager.isStateSaved) {
+                if (parentFragmentManager.findFragmentByTag(VerifyMobileReminderBottomSheetDialogFragment.TAG) != null) return@launch
+                if (VerifyMobileReminderBottomSheetDialogFragment.shouldShow(requireContext())) {
+                    try {
+                        VerifyMobileReminderBottomSheetDialogFragment().show(
+                            parentFragmentManager,
+                            VerifyMobileReminderBottomSheetDialogFragment.TAG,
+                        )
+                    } catch (e: IllegalStateException) {
+                        // Fragment state already saved, skip showing dialog
+                    }
+                    return@launch
+                }
                 ReminderBottomSheetDialogFragment.getType(requireContext(), totalUsd)
                     .let { type ->
                         val existingDialog = parentFragmentManager.findFragmentByTag(ReminderBottomSheetDialogFragment.TAG) as? ReminderBottomSheetDialogFragment
