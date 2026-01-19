@@ -146,6 +146,7 @@ import one.mixin.android.web3.js.Web3Signer
 import retrofit2.Call
 import retrofit2.Response
 import timber.log.Timber
+import java.math.BigDecimal
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -585,9 +586,7 @@ class TokenRepository
             orderDao.deleteAllOrders()
         }
 
-        suspend fun getRawTransactionByHashAndChain(hash: String, chainId: String) = web3RawTransactionDao.getRawTransactionByHashAndChain(Web3Signer.currentWalletId, hash, chainId)
-
-        fun snapshotsByUserId(opponentId: String) = safeSnapshotDao.snapshotsByUserId(opponentId)
+        suspend fun getRawTransactionByHashAndChain(walletId: String, hash: String, chainId: String) = web3RawTransactionDao.getRawTransactionByHashAndChain(walletId, hash, chainId)
 
         fun observeOrder(orderId: String) = orderDao.observeOrder(orderId)
 
@@ -1080,11 +1079,19 @@ class TokenRepository
 
         suspend fun simulateWeb3Tx(parseTxRequest: Web3RawTransactionRequest): MixinResponse<ParsedTx> = routeService.simulateWeb3Tx(parseTxRequest)
 
-        suspend fun postRawTx(rawTxRequest: Web3RawTransactionRequest, assetId: String? = null): MixinResponse<Web3RawTransaction> {
+        suspend fun postRawTx(rawTxRequest: Web3RawTransactionRequest, assetId: String? = null, rate: String? = null): MixinResponse<Web3RawTransaction> {
             val r = routeService.postWeb3Tx(rawTxRequest)
             if (r.isSuccess) {
                 val raw = r.data!!
-                web3RawTransactionDao.insertSuspend(raw)
+                if (rate.isNullOrBlank()) {
+                    web3RawTransactionDao.insertSuspend(raw)
+                } else {
+                    web3RawTransactionDao.insertSuspend(
+                        raw.copy(
+                            nonce = rate
+                        )
+                    )
+                }
                 web3TransactionDao.deletePending(raw.hash, raw.chainId)
 
                 val senders = mutableListOf<AssetChange>()
@@ -1128,6 +1135,7 @@ class TokenRepository
                 var receiveAssetId: String? = null
 
                 val txType = when {
+                    assetId == Constants.ChainId.BITCOIN_CHAIN_ID -> TransactionType.TRANSFER_OUT.value
                     raw.simulateTx?.approves?.isNotEmpty() == true -> TransactionType.APPROVAL.value
                     (raw.simulateTx?.balanceChanges?.size ?: 0) > 1 -> TransactionType.SWAP.value
                     raw.simulateTx?.balanceChanges?.size == 1 -> TransactionType.TRANSFER_OUT.value
@@ -1139,9 +1147,9 @@ class TokenRepository
                         raw.simulateTx?.balanceChanges?.forEach { bc ->
                             val amt = bc.amount.toBigDecimalOrNull()
                             if (amt != null) {
-                                if (amt < java.math.BigDecimal.ZERO) {
+                                if (amt < BigDecimal.ZERO) {
                                     sendAssetId = bc.assetId
-                                } else if (amt > java.math.BigDecimal.ZERO) {
+                                } else if (amt > BigDecimal.ZERO) {
                                     receiveAssetId = bc.assetId
                                 }
                             }
@@ -1149,7 +1157,7 @@ class TokenRepository
                     }
                     TransactionType.TRANSFER_OUT.value -> {
                         raw.simulateTx?.balanceChanges?.firstOrNull {
-                            it.amount.toBigDecimalOrNull()?.let { amt -> amt < java.math.BigDecimal.ZERO } == true
+                            it.amount.toBigDecimalOrNull()?.let { amt -> amt < BigDecimal.ZERO } == true
                         }?.let {
                             sendAssetId = it.assetId
                             receiveAssetId = it.assetId
@@ -1161,6 +1169,10 @@ class TokenRepository
                     }
                 }
 
+                if (assetId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                    sendAssetId = Constants.ChainId.BITCOIN_CHAIN_ID
+                    receiveAssetId = Constants.ChainId.BITCOIN_CHAIN_ID
+                }
                 web3TransactionDao.insert(
                     Web3Transaction(
                         transactionHash = raw.hash,
@@ -1462,12 +1474,7 @@ class TokenRepository
 
     suspend fun getPendingTransactions(walletId: String) = web3TransactionDao.getPendingTransactions(walletId)
 
-    suspend fun getPendingRawTransactions(walletId: String, chainId: String) = web3RawTransactionDao.getPendingRawTransactions(
-        walletId, chainId)
-
-    suspend fun deletePending(hash: String, chainId: String) = web3TransactionDao.deletePending(hash, chainId)
-
-    suspend fun updateTransaction(hash: String, status: String, chainId: String) = web3TransactionDao.updateTransaction(hash, status, chainId)
+    fun updateTransaction(hash: String, status: String, chainId: String) = web3TransactionDao.updateTransaction(hash, status, chainId)
 
     suspend fun insertWeb3RawTransaction(raw: Web3RawTransaction) = web3RawTransactionDao.insertSuspend(raw)
 

@@ -5,8 +5,10 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.db.web3.vo.TransactionStatus
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshWeb3BitCoinJob
 import one.mixin.android.job.RefreshWeb3TransactionsJob
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.web3.js.Web3Signer
@@ -52,12 +54,26 @@ object PendingTransactionRefreshHelper {
                         if (r.isSuccess && (r.data?.state == TransactionStatus.SUCCESS.value || 
                                            r.data?.state == TransactionStatus.FAILED.value || 
                                            r.isSuccess && r.data?.state == TransactionStatus.NOT_FOUND.value)) {
-                            web3ViewModel.insertRawTransaction(r.data!!)
-                            if (r.data?.state == TransactionStatus.FAILED.value || 
+                            r.data?.let {
+                                if (it.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                                    web3ViewModel.insertRawTransaction(it.copy(nonce = transition.nonce))
+                                } else {
+                                    web3ViewModel.insertRawTransaction(it)
+                                }
+                            }
+                            if (r.data?.state == TransactionStatus.FAILED.value ||
                                r.isSuccess && r.data?.state == TransactionStatus.NOT_FOUND.value || 
                                r.data?.state == TransactionStatus.SUCCESS.value) {
                                 if (r.data?.state == TransactionStatus.SUCCESS.value) {
                                     jobManager.addJobInBackground(RefreshWeb3TransactionsJob(walletId))
+                                }
+                                if (transition.chainId == Constants.ChainId.BITCOIN_CHAIN_ID && r.data?.state == TransactionStatus.NOT_FOUND.value) {
+                                    web3ViewModel.deleteBitcoinUnspentChangeOutputs(
+                                        walletId = walletId,
+                                        fromAddress = transition.account,
+                                        rawTransactionHex = transition.raw,
+                                    )
+                                    jobManager.addJobInBackground(RefreshWeb3BitCoinJob(walletId))
                                 }
                                 if (r.data?.state != TransactionStatus.SUCCESS.value) {
                                     web3ViewModel.updateTransaction(transition.hash, r.data?.state!!, transition.chainId)

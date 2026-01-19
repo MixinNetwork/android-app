@@ -7,8 +7,8 @@ import one.mixin.android.RxBus
 import one.mixin.android.api.response.SafeAsset
 import one.mixin.android.api.response.UserSafe
 import one.mixin.android.db.web3.vo.SafeChain
-import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.SafeWallets
+import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.event.WalletOperationType
 import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.nowInUtc
@@ -91,7 +91,8 @@ class RefreshSafeAccountsJob : BaseJob(
             val tokens = account.assets.mapNotNull { asset ->
                 convertSafeAssetToWeb3Token(walletId, asset)
             }
-            web3TokenDao.insertList(tokens)
+            val tokensToInsert = applyBitcoinTokenBalanceBeforeInsert(walletId, tokens)
+            web3TokenDao.insertList(tokensToInsert)
             web3TokenDao.deleteNotIn(account.accountId, tokens.map { it.assetId })
             Timber.d("Saved ${tokens.size} tokens for wallet $walletId")
         } else {

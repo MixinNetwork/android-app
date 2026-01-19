@@ -32,6 +32,9 @@ open class ErrorHandler {
                     is HttpException -> {
                         handleErrorCode(throwable.code(), ctx)
                     }
+                    is UtxoException -> {
+                        toast(R.string.no_available_utxo)
+                    }
                     is IOException ->
                         when (throwable) {
                             is SocketTimeoutException -> toast(R.string.error_connection_timeout)
