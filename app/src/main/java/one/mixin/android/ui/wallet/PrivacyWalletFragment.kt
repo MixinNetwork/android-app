@@ -140,8 +140,7 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                             val phoneVerifiedAt: String? = Session.getAccount()?.phoneVerifiedAt
                             val shouldVerifyMobile: Boolean = phoneVerifiedAt.isNullOrBlank() || runCatching {
                                 val verifiedAtMillis: Long = Instant.parse(phoneVerifiedAt).toEpochMilli()
-                                val sixtyDaysMillis: Long = 60L * 24L * 60L * 60L * 1000L
-                                System.currentTimeMillis() - verifiedAtMillis > sixtyDaysMillis
+                                System.currentTimeMillis() - verifiedAtMillis > Constants.INTERVAL_60_DAYS
                             }.getOrDefault(true)
                             if (shouldVerifyMobile) {
                                 LandingActivity.showVerifyMobile(requireContext())

@@ -26,10 +26,7 @@ import one.mixin.android.extension.putString
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.session.Session
 import one.mixin.android.session.decryptPinToken
-import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.landing.InitializeActivity
-import one.mixin.android.ui.landing.LandingActivity
-import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_VERIFY_MOBILE_REMINDER
 import one.mixin.android.ui.landing.RestoreActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.database.clearDatabase
@@ -142,14 +139,6 @@ abstract class PinCodeFragment(
 
         hideLoading()
         action.invoke()
-
-        val shouldReturnToMainActivity: Boolean =
-            (activity is LandingActivity) &&
-                (activity?.intent?.getIntExtra(LandingActivity.ARGS_FROM, -1) == FROM_VERIFY_MOBILE_REMINDER)
-        if (shouldReturnToMainActivity) {
-            activity?.finish()
-            return@withContext
-        }
 
         when {
             account.fullName.isNullOrBlank() -> {

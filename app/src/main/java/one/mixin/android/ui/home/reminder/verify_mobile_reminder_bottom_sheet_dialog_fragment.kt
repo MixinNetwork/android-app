@@ -29,7 +29,6 @@ class VerifyMobileReminderBottomSheetDialogFragment : MixinComposeBottomSheetDia
     companion object {
         const val TAG: String = "VerifyMobileReminderBottomSheetDialogFragment"
         private const val PREF_VERIFY_MOBILE_REMINDER_SNOOZE: String = "pref_verify_mobile_reminder_snooze"
-        private const val VERIFY_MOBILE_INTERVAL_MILLIS: Long = 60L * 24L * 60L * 60L * 1000L
 
         fun shouldShow(context: Context): Boolean {
             if (!Session.hasPhone()) return false
@@ -41,7 +40,7 @@ class VerifyMobileReminderBottomSheetDialogFragment : MixinComposeBottomSheetDia
             val verifiedAtMillis: Long = runCatching {
                 Instant.parse(phoneVerifiedAt).toEpochMilli()
             }.getOrNull() ?: return true
-            return System.currentTimeMillis() - verifiedAtMillis > VERIFY_MOBILE_INTERVAL_MILLIS
+            return System.currentTimeMillis() - verifiedAtMillis > Constants.INTERVAL_60_DAYS
         }
     }
 
