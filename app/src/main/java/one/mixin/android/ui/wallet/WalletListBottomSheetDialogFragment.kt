@@ -205,7 +205,7 @@ fun WalletListScreen(
     val hasAll = remember(allWallets) { allWallets.any { it.isMixinSafe().not() && it.id != excludeWalletId } }
     val hasSafe = remember(allWallets) { allWallets.any { it.safeChainId == chainId } }
     val hasImported = remember(wallets) { allWallets.any { it.isImported() && excludeWalletId != it.id} }
-    val hasCreated = remember(wallets) { (chainId == Constants.ChainId.SOLANA_CHAIN_ID || chainId in Constants.Web3ChainIds) && allWallets.any { it.isClassic() && it.id != excludeWalletId } }
+    val hasCreated = remember(wallets) { (chainId == Constants.ChainId.SOLANA_CHAIN_ID || chainId in Constants.Web3ChainIds || chainId == Constants.ChainId.BITCOIN_CHAIN_ID) && allWallets.any { it.isClassic() && it.id != excludeWalletId } }
     val hasWatch = remember(wallets) { allWallets.any { it.isWatch() } }
     var selectedCategory by remember(hasAll, hasSafe, hasCreated, hasImported, hasWatch) {
         mutableStateOf(
@@ -213,8 +213,8 @@ fun WalletListScreen(
                 hasAll -> null
                 hasSafe -> WalletCategory.MIXIN_SAFE.value
                 hasCreated -> WalletCategory.CLASSIC.value
-                hasSafe -> "import"
-                hasSafe -> "watch"
+                hasImported -> "import"
+                hasWatch -> "watch"
                 else -> null
             }
         )
@@ -260,7 +260,7 @@ fun WalletListScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
-            if (hasAll || hasWatch || hasSafe || hasWatch || hasCreated) {
+            if (hasAll || hasSafe || hasImported || hasWatch || hasCreated) {
                 WalletCategoryFilter(
                     selectedCategory = selectedCategory,
                     hasAll = hasAll,
