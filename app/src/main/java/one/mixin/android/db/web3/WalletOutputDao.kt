@@ -46,7 +46,7 @@ interface WalletOutputDao: BaseDao<WalletOutput> {
     @Query("SELECT output_id FROM outputs WHERE address = :address AND asset_id = :assetId AND status = 'unspent'")
     suspend fun findLocalUnspentOutputIds(address: String, assetId: String): List<String>
 
-    @Query("UPDATE outputs SET status = 'signed' WHERE output_id IN (:outputIds) AND status != 'pending'")
+    @Query("UPDATE outputs SET status = 'signed' WHERE output_id IN (:outputIds) AND status != 'signed'")
     suspend fun updateOutputsToSigned(outputIds: List<String>): Int
 
     @Query("DELETE FROM outputs WHERE transaction_hash = :hash AND output_index = :outputIndex AND address = :address AND asset_id = :assetId AND status = 'signed'")
