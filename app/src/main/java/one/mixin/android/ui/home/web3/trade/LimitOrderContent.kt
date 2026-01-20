@@ -97,7 +97,7 @@ enum class FocusedField { NONE, IN_AMOUNT, OUT_AMOUNT, PRICE }
 private const val MAX_DISPLAY_ORDER_COUNT: Int = 10
 
 enum class ExpiryOption(@get:StringRes val labelRes: Int) {
-    NEVER(R.string.expiry_never), MIN_10(R.string.expiry_10_min), HOUR_1(R.string.expiry_1_hour), DAY_1(R.string.expiry_1_day), DAY_3(R.string.expiry_3_days), WEEK_1(R.string.expiry_1_week), MONTH_1(R.string.expiry_1_month);
+    NEVER(R.string.expiry_never), MIN_10(R.string.expiry_10_min), HOUR_1(R.string.expiry_1_hour), DAY_1(R.string.expiry_1_day), DAY_3(R.string.expiry_3_days), WEEK_1(R.string.expiry_1_week), MONTH_1(R.string.expiry_1_month), YEAR_1(R.string.expiry_1_year);
 
     fun toDuration(): Duration {
         return when (this) {
@@ -108,6 +108,7 @@ enum class ExpiryOption(@get:StringRes val labelRes: Int) {
             DAY_3 -> Duration.ofDays(3)
             WEEK_1 -> Duration.ofDays(7)
             MONTH_1 -> Duration.ofDays(30)
+            YEAR_1 -> Duration.ofDays(365)
         }
     }
 }
@@ -119,6 +120,8 @@ fun LimitOrderContent(
     inMixin: Boolean,
     initialAmount: String?,
     lastOrderTime: Long?,
+    switchFromSwapPayload: SwitchToLimitOrderPayload?,
+    onConsumeSwitchFromSwapPayload: () -> Unit,
     onSelectToken: (Boolean, SelectTokenType) -> Unit,
     onLimitReview: (SwapToken, SwapToken, CreateLimitOrderResponse) -> Unit,
     onDeposit: (SwapToken) -> Unit,
@@ -154,6 +157,20 @@ fun LimitOrderContent(
         mutableStateOf(if (isReverse) from else to)
     }
 
+    LaunchedEffect(switchFromSwapPayload) {
+        val payload: SwitchToLimitOrderPayload = switchFromSwapPayload ?: return@LaunchedEffect
+        isReverse = false
+        inputText = payload.inputText
+        outputText = ""
+        limitPriceText = ""
+        marketPriceClickTime = lastOrderTime
+        priceMultiplier = null
+        focusedField = FocusedField.PRICE
+        fromToken = payload.fromToken
+        toToken = payload.toToken
+        onConsumeSwitchFromSwapPayload()
+    }
+
     var isButtonEnabled by remember { mutableStateOf(true) }
     var isSubmitting by remember { mutableStateOf(false) }
 
@@ -162,10 +179,10 @@ fun LimitOrderContent(
         limitOrders.take(MAX_DISPLAY_ORDER_COUNT)
     }
 
-    var expiryOption by remember { mutableStateOf(ExpiryOption.NEVER) }
+    var expiryOption by remember { mutableStateOf(ExpiryOption.YEAR_1) }
 
     LaunchedEffect(lastOrderTime) {
-        expiryOption = ExpiryOption.NEVER
+        expiryOption = ExpiryOption.YEAR_1
     }
 
     val keyboardController = LocalSoftwareKeyboardController.current
