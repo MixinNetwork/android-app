@@ -506,12 +506,18 @@ fun QuoteInfoBox(
                     ),
                 )
                 val mixinError: TradeQuoteMixinErrorException? = quoteError as? TradeQuoteMixinErrorException
-                val canSwitchToLimitOrder: Boolean = mixinError != null &&
+                val canSwitchToLimitOrder: Boolean = if (mixinError == null) {
+                    false
+                } else if (mixinError.code == ErrorHandler.INVALID_QUOTE_AMOUNT) {
+                    val inputAmount: BigDecimal? = inputText.toBigDecimalOrNull()
+                    val maxAmount: BigDecimal? = mixinError.max?.toBigDecimalOrNull()
+                    inputAmount != null && maxAmount != null && inputAmount > maxAmount
+                } else {
                     mixinError.code in setOf(
                         ErrorHandler.INVALID_SWAP,
-                        ErrorHandler.INVALID_QUOTE_AMOUNT,
                         ErrorHandler.NO_AVAILABLE_QUOTE,
                     )
+                }
                 if (canSwitchToLimitOrder) {
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(

@@ -120,8 +120,6 @@ fun LimitOrderContent(
     inMixin: Boolean,
     initialAmount: String?,
     lastOrderTime: Long?,
-    switchFromSwapPayload: SwitchToLimitOrderPayload?,
-    onConsumeSwitchFromSwapPayload: () -> Unit,
     onSelectToken: (Boolean, SelectTokenType) -> Unit,
     onLimitReview: (SwapToken, SwapToken, CreateLimitOrderResponse) -> Unit,
     onDeposit: (SwapToken) -> Unit,
@@ -155,20 +153,6 @@ fun LimitOrderContent(
     }
     var toToken by remember(from, to, isReverse) {
         mutableStateOf(if (isReverse) from else to)
-    }
-
-    LaunchedEffect(switchFromSwapPayload) {
-        val payload: SwitchToLimitOrderPayload = switchFromSwapPayload ?: return@LaunchedEffect
-        isReverse = false
-        inputText = payload.inputText
-        outputText = ""
-        limitPriceText = ""
-        marketPriceClickTime = lastOrderTime
-        priceMultiplier = null
-        focusedField = FocusedField.PRICE
-        fromToken = payload.fromToken
-        toToken = payload.toToken
-        onConsumeSwitchFromSwapPayload()
     }
 
     var isButtonEnabled by remember { mutableStateOf(true) }

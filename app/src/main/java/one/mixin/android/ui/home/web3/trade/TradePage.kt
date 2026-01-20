@@ -58,12 +58,6 @@ import one.mixin.android.ui.home.web3.components.OutlinedTab
 import one.mixin.android.vo.WalletCategory
 import java.math.BigDecimal
 
-data class SwitchToLimitOrderPayload(
-    val inputText: String,
-    val fromToken: SwapToken,
-    val toToken: SwapToken,
-)
-
 @OptIn(ExperimentalFoundationApi::class)
 @FlowPreview
 @Composable
@@ -88,6 +82,7 @@ fun TradePage(
     onOrderList: (String, Boolean) -> Unit,
     onDismissLimitOrderTabBadge: () -> Unit,
     onTabChanged: (Int) -> Unit,
+    onSwitchToLimitOrder: (String, SwapToken, SwapToken) -> Unit,
     pop: () -> Unit,
     onLimitOrderClick: (String) -> Unit,
 ) {
@@ -96,7 +91,6 @@ fun TradePage(
     val viewModel = hiltViewModel<SwapViewModel>()
     var walletDisplayName by remember { mutableStateOf<String?>(null) }
     var pendingOrderCount by remember { mutableIntStateOf(0) }
-    var switchToLimitOrderPayload by remember { mutableStateOf<SwitchToLimitOrderPayload?>(null) }
 
     val currentWalletId = walletId ?: Session.getAccountId() ?: ""
     val pendingCount by viewModel.getPendingOrderCountByWallet(currentWalletId).collectAsStateWithLifecycle(initialValue = 0)
@@ -140,11 +134,7 @@ fun TradePage(
                 onReview = onReview,
                 onDeposit = onDeposit,
                 onSwitchToLimitOrder = { inputText, fromToken, toToken ->
-                    switchToLimitOrderPayload = SwitchToLimitOrderPayload(
-                        inputText = inputText,
-                        fromToken = fromToken,
-                        toToken = toToken,
-                    )
+                    onSwitchToLimitOrder(inputText, fromToken, toToken)
                     coroutineScope.launch {
                         pagerState.animateScrollToPage(1)
                     }
@@ -160,10 +150,6 @@ fun TradePage(
                 inMixin,
                 initialAmount,
                 lastOrderTime,
-                switchToLimitOrderPayload,
-                {
-                    switchToLimitOrderPayload = null
-                },
                 { isReverse, type -> onSelectToken(isReverse, type, true) },
                 onLimitReview,
                 onDeposit,
