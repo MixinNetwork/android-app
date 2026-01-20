@@ -23,8 +23,8 @@ import one.mixin.android.Constants.INTERVAL_10_MINS
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RegisterRequest
-import one.mixin.android.api.request.web3.Web3AddressRequest
 import one.mixin.android.api.request.web3.WalletRequest
+import one.mixin.android.api.request.web3.Web3AddressRequest
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.crypto.initFromSeedAndSign
@@ -32,8 +32,10 @@ import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.crypto.removeValueFromEncryptedPreferences
 import one.mixin.android.databinding.FragmentTipBinding
 import one.mixin.android.db.property.PropertyHelper
+import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.extension.buildBulletLines
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.hexString
 import one.mixin.android.extension.highlightStarTag
@@ -45,15 +47,14 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshSingleWalletJob
 import one.mixin.android.repository.Web3Repository
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
+import one.mixin.android.tip.bip44.Bip44Path
 import one.mixin.android.tip.exception.DifferentIdentityException
 import one.mixin.android.tip.exception.NotAllSignerSuccessException
 import one.mixin.android.tip.exception.TipNotAllWatcherSuccessException
 import one.mixin.android.tip.getTipExceptionMsg
-import one.mixin.android.tip.bip44.Bip44Path
 import one.mixin.android.tip.privateKeyToAddress
 import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.ui.common.BaseFragment
@@ -68,8 +69,6 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.viewBinding
-import one.mixin.android.db.web3.vo.Web3Wallet
-import one.mixin.android.extension.decodeBase64
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.Web3Signer
@@ -684,7 +683,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 path = Bip44Path.bitcoinSegwitPathString(classicIndex),
                 privateKey = tipPrivToPrivateKey(spendKey, Constants.ChainId.BITCOIN_CHAIN_ID, classicIndex),
                 category = WalletCategory.CLASSIC.value
-            ),
+            )
         )
         val walletRequest = WalletRequest(
             name = walletName,

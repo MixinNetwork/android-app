@@ -76,6 +76,7 @@ import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.db.web3.SafeWalletsDao
+import one.mixin.android.db.web3.WalletOutputDao
 import one.mixin.android.db.web3.Web3AddressDao
 import one.mixin.android.db.web3.Web3ChainDao
 import one.mixin.android.db.web3.Web3RawTransactionDao
@@ -83,7 +84,7 @@ import one.mixin.android.db.web3.Web3TokenDao
 import one.mixin.android.db.web3.Web3TokensExtraDao
 import one.mixin.android.db.web3.Web3TransactionDao
 import one.mixin.android.db.web3.Web3WalletDao
-import one.mixin.android.db.web3.WalletOutputDao
+import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.di.ApplicationScope
 import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.repository.ConversationRepository
@@ -97,7 +98,6 @@ import java.io.IOException
 import java.math.BigDecimal
 import java.net.SocketTimeoutException
 import javax.inject.Inject
-import one.mixin.android.db.web3.vo.Web3Token
 
 abstract class BaseJob(params: Params) : Job(params) {
     @InstallIn(SingletonComponent::class)

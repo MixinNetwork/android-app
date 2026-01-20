@@ -20,7 +20,6 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.vo.WalletCategory
-import one.mixin.android.vo.foursquare.Category
 import timber.log.Timber
 
 class RefreshWeb3Job : BaseJob(

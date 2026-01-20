@@ -1,33 +1,14 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants
-import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
-import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
-import one.mixin.android.MixinApplication
-import one.mixin.android.RxBus
-import one.mixin.android.api.request.web3.WalletRequest
-import one.mixin.android.api.request.web3.Web3AddressRequest
 import one.mixin.android.api.response.web3.WalletOutput
-import one.mixin.android.db.property.PropertyHelper
-import one.mixin.android.db.web3.vo.Web3Chain
-import one.mixin.android.db.web3.vo.Web3TokensExtra
-import one.mixin.android.db.web3.vo.Web3Wallet
-import one.mixin.android.event.WalletRefreshedEvent
-import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
-import one.mixin.android.vo.WalletCategory
-import one.mixin.android.R
 import one.mixin.android.db.web3.vo.isClassic
 import one.mixin.android.db.web3.vo.isImported
-import one.mixin.android.event.WalletOperationType
-import one.mixin.android.tip.bip44.Bip44Path
-import one.mixin.android.web3.js.Web3Signer
+import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import timber.log.Timber
-import kotlin.collections.isNullOrEmpty
-import kotlin.collections.take
 
 class RefreshWeb3BitCoinJob(val walletId: String) : BaseJob(
     Params(PRIORITY_UI_HIGH).singleInstanceBy(GROUP).requireNetwork(),
