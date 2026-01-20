@@ -44,52 +44,6 @@ class RefreshWeb3Job : BaseJob(
         }
     }
 
-    private suspend fun createWallet(name: String, category: String, addresses: List<Web3AddressRequest>) {
-        val walletRequest = WalletRequest(
-            name = name,
-            category = category,
-            addresses = addresses
-        )
-
-        requestRouteAPI(
-            invokeNetwork = {
-                routeService.createWallet(walletRequest)
-            },
-            successBlock = { response ->
-                val wallet = response.data
-                if (wallet != null) {
-                    val w = Web3Wallet(wallet.id, wallet.category, wallet.name, wallet.createdAt, wallet.updatedAt)
-                    web3WalletDao.insert(w)
-                    Timber.d("Created ${wallet.category} wallet with ID: ${wallet.id}")
-                    wallet.addresses?.let {
-                        web3AddressDao.insertList(it)
-                        Timber.d("Inserted wallet with ID: ${wallet.id}, ${addresses.size} addresses")
-                    }
-                    fetchChain()
-                    fetchWalletAssets(w.id)
-                    Web3Signer.init(
-                        { w.id },
-                        { walletId ->
-                            runBlocking(Dispatchers.IO) { web3AddressDao.getAddressesByWalletId(walletId) }
-                        }, { walletId ->
-                            runBlocking(Dispatchers.IO) { web3WalletDao.getWalletById(walletId) }
-                        }
-                    )
-                } else {
-                    Timber.e("Failed to create $category wallet: response data is null")
-                }
-            },
-            failureBlock = { response ->
-                Timber.e("Failed to create $category wallet: ${response.errorCode} - ${response.errorDescription}")
-                false
-            },
-            requestSession = {
-                userService.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID))
-            },
-            defaultErrorHandle = {}
-        )
-    }
-
     private suspend fun fetchWalletAddresses(walletId: String) {
         requestRouteAPI(
             invokeNetwork = {
