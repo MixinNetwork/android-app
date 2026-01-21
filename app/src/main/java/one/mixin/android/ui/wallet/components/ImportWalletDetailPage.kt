@@ -103,7 +103,7 @@ fun ImportWalletDetailPage(
     }
 
     var selectedNetworkName by remember(initialNetworkName) {
-        mutableStateOf(initialNetworkName ?: networks.keys.first())
+        mutableStateOf(initialNetworkName ?: "Ethereum")
     }
 
 
