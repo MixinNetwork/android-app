@@ -24,7 +24,6 @@ import one.mixin.android.db.web3.vo.Web3RawTransaction
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.Web3Wallet
-import one.mixin.android.db.web3.vo.virtualSize
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.forEachWithIndex
@@ -58,13 +57,13 @@ import org.bitcoinj.base.Sha256Hash
 import org.bitcoinj.core.TransactionInput
 import org.bitcoinj.core.TransactionOutPoint
 import org.bitcoinj.core.TransactionOutput
-import java.math.RoundingMode
 import org.bitcoinj.script.Script
 import org.bitcoinj.script.ScriptBuilder
 import org.web3j.crypto.TransactionDecoder
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.nio.ByteBuffer
 import javax.inject.Inject
 import org.bitcoinj.core.Transaction as BtcTransaction
@@ -387,6 +386,24 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         }
     }
 
+    private fun canCancelBtcTransaction(
+        rawTransactionHex: String,
+        fromAddress: String,
+    ): Boolean {
+        val cleanedHex: String = rawTransactionHex.removePrefix("0x").trim()
+        if (cleanedHex.isBlank()) return false
+        val parsedTransaction: BtcTransaction = runCatching {
+            BtcTransaction.read(ByteBuffer.wrap(cleanedHex.hexStringToByteArray()))
+        }.getOrNull() ?: return false
+        if (parsedTransaction.outputs.size != 1) return true
+        val addressParser = AddressParser.getDefault()
+        val parsedAddress = runCatching { addressParser.parseAddress(fromAddress) }.getOrNull() ?: return true
+        val expectedScript: Script = runCatching { ScriptBuilder.createOutputScript(parsedAddress) }.getOrNull() ?: return true
+        val output: TransactionOutput = parsedTransaction.outputs.firstOrNull() ?: return true
+        val isOnlyOutputToSelf: Boolean = output.scriptBytes.contentEquals(expectedScript.program())
+        return !isOnlyOutputToSelf
+    }
+
     private fun updateActions() {
         lifecycleScope.launch {
             binding.apply {
@@ -547,6 +564,12 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         }
         lifecycleScope.launch {
             if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                val fromAddress: String = transaction.getFromAddress()
+                val canCancelBtcTransaction: Boolean = canCancelBtcTransaction(rawTransaction.raw, fromAddress)
+                if (!canCancelBtcTransaction) {
+                    toast(R.string.web3_btc_cancel_not_possible)
+                    return@launch
+                }
                 val estimateFeeResponse = web3ViewModel.estimateBtcFeeRate(rawTransaction.raw, localRate.toPlainString())
                     ?: run {
                         toast(R.string.error_connection_error)
@@ -558,7 +581,6 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                     return@launch
                 }
                 val jsSignMessage = createBtcCancelMessage(rawTransaction, localRate, apiRate)
-                val fromAddress: String = transaction.getFromAddress()
                 showBrowserBottomSheetDialogFragment(
                     requireActivity(),
                     jsSignMessage,
@@ -645,6 +667,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             solanaTxSource = SolanaTxSource.InnerTransfer,
             isSpeedUp = true,
             fee = estimatedFeeBtc,
+            rate = feeRate
         )
     }
 
@@ -702,55 +725,8 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             solanaTxSource = SolanaTxSource.InnerTransfer,
             isCancelTx = true,
             fee = estimatedFeeBtc,
+            rate = selectedRate
         )
-    }
-
-    private fun buildBtcCancelTransactionHex(
-        rawTransactionHex: String,
-        fromAddress: String,
-        localUtxos: List<WalletOutput>,
-    ): String {
-        val cleanedRawHex: String = rawTransactionHex.removePrefix("0x").trim()
-        val originalTx: BtcTransaction = BtcTransaction.read(ByteBuffer.wrap(cleanedRawHex.hexStringToByteArray()))
-        val originalInputs: List<TransactionInput> = originalTx.inputs
-        val inputAmount: Coin = calculateInputAmount(originalInputs, localUtxos)
-        val originalOutputAmount: Coin = originalTx.outputs.fold(Coin.ZERO) { acc, output -> acc.add(output.value) }
-        val currentFee: Coin = inputAmount.subtract(originalOutputAmount)
-        val desiredFee: Coin = calculateDesiredBtcSpeedUpFee(currentFee)
-        val feeDelta: Coin = desiredFee.subtract(currentFee)
-        val replacementTx = BtcTransaction()
-        for (input: TransactionInput in originalInputs) {
-            val outPoint = TransactionOutPoint(input.outpoint.index(), input.outpoint.hash())
-            val txInput = TransactionInput(replacementTx, byteArrayOf(), outPoint)
-            txInput.withSequence(BTC_RBF_SEQUENCE)
-            replacementTx.addInput(txInput)
-        }
-        val selfScript: Script = buildP2wpkhScript(fromAddress)
-        val originalOutputValues: List<Coin> = originalTx.outputs.map { it.value }
-        if (feeDelta.isZero || feeDelta.isNegative) {
-            for (value: Coin in originalOutputValues) {
-                replacementTx.addOutput(value, selfScript)
-            }
-            return replacementTx.serialize().toHex()
-        }
-        val maxIndex: Int = originalOutputValues.indices.maxByOrNull { index -> originalOutputValues[index].value } ?: -1
-        if (maxIndex < 0) {
-            throw IllegalArgumentException("insufficient balance")
-        }
-        val adjustedMax: Coin = originalOutputValues[maxIndex].subtract(feeDelta)
-        if (adjustedMax.isNegative || adjustedMax.isZero || adjustedMax.isLessThan(BTC_DUST_THRESHOLD)) {
-            val sendToSelf: Coin = inputAmount.subtract(desiredFee)
-            if (sendToSelf.isNegative || sendToSelf.isZero || sendToSelf.isLessThan(BTC_DUST_THRESHOLD)) {
-                throw IllegalArgumentException("insufficient balance")
-            }
-            replacementTx.addOutput(sendToSelf, selfScript)
-            return replacementTx.serialize().toHex()
-        }
-        originalOutputValues.forEachWithIndex { index, value ->
-            val outputValue: Coin = if (index == maxIndex) adjustedMax else value
-            replacementTx.addOutput(outputValue, selfScript)
-        }
-        return replacementTx.serialize().toHex()
     }
 
     private fun buildBtcReplacementTransactionHex(

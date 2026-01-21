@@ -481,8 +481,6 @@ abstract class BaseJob(params: Params) : Job(params) {
     protected suspend fun applyBitcoinTokenBalanceBeforeInsert(walletId: String, tokens: List<Web3Token>): List<Web3Token> {
         if (tokens.none { it.assetId == Constants.ChainId.BITCOIN_CHAIN_ID }) return tokens
         val btcAddress: String = web3AddressDao.getAddressesByChainId(walletId, Constants.ChainId.BITCOIN_CHAIN_ID)?.destination ?: return tokens
-        val amounts: List<String> = walletOutputDao.findPendingAndUnspentAmounts(btcAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
-        if (amounts.isEmpty()) return tokens
         val totalAmount: BigDecimal = walletOutputDao.sumPendingAndUnspentAmount(btcAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
         val amount: String = totalAmount.stripTrailingZeros().toPlainString()
         return tokens.map { token ->
