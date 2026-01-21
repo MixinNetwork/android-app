@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="?attr/bg_white"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_round_top_white"
     android:orientation="vertical">
 
     <one.mixin.android.widget.RoundTitleView
@@ -15,7 +15,6 @@
         android:id="@+id/debug"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
         android:padding="16dp">
 
         <ImageView
@@ -31,7 +30,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="70dp"
+        android:layout_marginTop="24dp"
         android:layout_marginBottom="@dimen/activity_vertical_margin"
         android:textColor="?attr/text_primary"
         android:text="@string/For_your_security"
@@ -40,14 +39,9 @@
 
     <one.mixin.android.ui.common.biometric.BiometricLayout
         android:id="@+id/biometric_layout"
-        android:layout_marginTop="87dp"
+        android:layout_marginTop="24dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
-
-    <View
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_weight="1"/>
 
     <one.mixin.android.widget.Keyboard
         android:id="@+id/keyboard"

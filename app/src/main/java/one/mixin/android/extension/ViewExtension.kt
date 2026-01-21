@@ -27,6 +27,8 @@ import android.view.animation.Interpolator
 import android.view.inputmethod.InputMethodManager
 import android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT
 import android.widget.EditText
+import android.widget.HorizontalScrollView
+import android.widget.RadioGroup
 import androidx.annotation.ColorInt
 import androidx.annotation.LayoutRes
 import androidx.appcompat.widget.PopupMenu
@@ -49,6 +51,7 @@ import timber.log.Timber
 import java.io.IOException
 import java.lang.reflect.Field
 import kotlin.math.hypot
+import kotlin.math.max
 
 const val ANIMATION_DURATION_SHORT = 260L
 const val ANIMATION_DURATION_SHORTEST = 120L
@@ -526,4 +529,23 @@ fun View.expandTouchArea(horizontal: Int = 8.dp, vertical: Int = 8.dp) {
         rect.bottom += vertical
         parent.touchDelegate = TouchDelegate(rect, this)
     }
+}
+
+fun HorizontalScrollView.scrollToCenter(targetView: View) {
+    post {
+        val containerView: View? = getChildAt(0)
+        if (containerView == null) return@post
+        val targetCenterX: Int = targetView.left + (targetView.width / 2)
+        val scrollToX: Int = targetCenterX - (width / 2)
+        val maxScrollX: Int = max(0, containerView.width - width)
+        smoothScrollTo(scrollToX.coerceIn(0, maxScrollX), 0)
+    }
+}
+
+fun HorizontalScrollView.scrollToCenterCheckedRadio(radioGroup: RadioGroup) {
+    val checkedId: Int = radioGroup.checkedRadioButtonId
+    if (checkedId == View.NO_ID) return
+    val checkedView: View? = radioGroup.findViewById(checkedId)
+    if (checkedView == null) return
+    scrollToCenter(checkedView)
 }
