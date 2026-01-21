@@ -510,6 +510,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
     }
 
     private fun refreshToken(assetId: String) {
+        if (assetId == Constants.ChainId.BITCOIN_CHAIN_ID) return
         jobManager.addJobInBackground(RefreshWeb3TokenJob(null, assetId, address))
     }
 
