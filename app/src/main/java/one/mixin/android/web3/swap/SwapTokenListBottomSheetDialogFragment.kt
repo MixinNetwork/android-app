@@ -40,6 +40,7 @@ import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.scrollToCenterCheckedRadio
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.trade.SwapViewModel
@@ -137,6 +138,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             radioToncoin.isVisible = inMixin()
             radioStock.isVisible = stocks.isNotEmpty()
             radioAll.isChecked = true
+            radio.scrollToCenterCheckedRadio(radioGroup)
             radioGroup.setOnCheckedChangeListener { _, id ->
                 when (id) {
                     R.id.radio_stock -> {
@@ -191,6 +193,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                         }
                     }
                 }
+                radio.scrollToCenterCheckedRadio(radioGroup)
                 loadData()
             }
         }
