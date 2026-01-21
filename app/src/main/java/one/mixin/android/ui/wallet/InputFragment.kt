@@ -535,7 +535,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                 },
                             ) {
                                 if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-                                    val minBtcAmount = BigDecimal("0.0001")
+                                    val minBtcAmount = BigDecimal("0.00001") // 1,000 sat
                                     val inputAmount: BigDecimal = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
                                     if (inputAmount < minBtcAmount) {
                                         toast(getString(R.string.single_transaction_should_be_greater_than, minBtcAmount.toPlainString(), token.symbol))
