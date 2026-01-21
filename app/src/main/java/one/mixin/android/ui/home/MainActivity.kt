@@ -387,7 +387,8 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         } else {
             if (Session.hasSafe()) {
                 jobManager.addJobInBackground(RefreshAccountJob(checkTip = true))
-                if (defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false)) {
+                val isLoginVerified: Boolean = defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false)
+                if (isLoginVerified) {
                     AnalyticsTracker.trackLoginPinVerify("pin_verify")
                     LoginVerifyBottomSheetDialogFragment.newInstance().apply {
                         onDismissCallback = { success ->
@@ -531,8 +532,10 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             jobManager.addJobInBackground(RefreshContactJob())
             jobManager.addJobInBackground(RefreshSafeAccountsJob())
 
-            val hasClassicWallet: Boolean = web3Repository.getClassicWalletId() != null
-            if (!defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false) && !hasClassicWallet) {
+            val isLoginVerified: Boolean = defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false)
+            val hasClassicWallet: Boolean = web3Repository.getClassicWalletId()?.let { true } ?: false
+            // Only show login verify when it has not been verified and there is no classic wallet.
+            if (!isLoginVerified && !hasClassicWallet) {
                 lifecycleScope.launch {
                     withContext(Dispatchers.Main) {
                         try {
