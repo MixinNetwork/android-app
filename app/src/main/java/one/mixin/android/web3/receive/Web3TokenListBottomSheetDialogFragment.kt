@@ -215,7 +215,7 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                     )
         }
 
-        walletId?.let { it ->
+        walletId?.let {
             bottomViewModel.web3TokenItemsExcludeHidden(it, PREF_WALLET_SEND == this.key).observe(this) { items ->
                 defaultAssets = if (type == TYPE_FROM_SEND)
                     items.filter { t ->
@@ -244,8 +244,8 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     override fun onStart() {
         super.onStart()
         binding.apply {
-            root.findViewById<ComposeView>(composeId).let {
-                if (it == null) {
+            root.findViewById<ComposeView>(composeId).let { compose ->
+                if (compose == null) {
                     val composeView = ComposeView(requireContext()).apply {
                         id = composeId
                         setContent {
