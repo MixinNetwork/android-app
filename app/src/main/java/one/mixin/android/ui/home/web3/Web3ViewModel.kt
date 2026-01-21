@@ -481,6 +481,24 @@ class Web3ViewModel @Inject constructor(
     suspend fun insertRawTransaction(raw: Web3RawTransaction) =
         withContext(Dispatchers.IO) { tokenRepository.insertWeb3RawTransaction(raw) }
 
+    suspend fun insertRawTransactionAndUpdateTransactionStatus(
+        raw: Web3RawTransaction,
+        hash: String,
+        chainId: String,
+        status: String,
+        btcRawTransactionHexToDeleteOutputs: String?,
+    ) {
+        withContext(Dispatchers.IO) {
+            tokenRepository.insertRawTransactionAndUpdateTransactionStatus(
+                raw = raw,
+                hash = hash,
+                status = status,
+                chainId = chainId,
+                btcRawTransactionHexToDeleteOutputs = btcRawTransactionHexToDeleteOutputs,
+            )
+        }
+    }
+
     suspend fun anyAddressExists(destinations: List<String>) = web3Repository.anyAddressExists(destinations)
     suspend fun isAddressMatch(walletId: String?, address: String): Boolean {
         if (walletId == null) return false

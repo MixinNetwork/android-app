@@ -75,6 +75,7 @@ import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
 import one.mixin.android.db.property.Web3PropertyHelper
 import one.mixin.android.db.provider.DataProvider
+import one.mixin.android.db.web3.WalletOutputDao
 import one.mixin.android.db.web3.Web3AddressDao
 import one.mixin.android.db.web3.Web3RawTransactionDao
 import one.mixin.android.db.web3.Web3TokenDao
@@ -147,10 +148,14 @@ import retrofit2.Call
 import retrofit2.Response
 import timber.log.Timber
 import java.math.BigDecimal
+import java.math.RoundingMode
+import java.nio.ByteBuffer
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.String
+import org.bitcoinj.core.Transaction
+import org.sol4kt.VersionedTransactionCompat
 
 @Singleton
 class TokenRepository
@@ -185,6 +190,7 @@ class TokenRepository
         private val web3TokenDao: Web3TokenDao,
         private val web3TransactionDao: Web3TransactionDao,
         private val web3RawTransactionDao: Web3RawTransactionDao,
+        private val walletOutputDao: WalletOutputDao,
         private val web3WalletDao: Web3WalletDao,
         private val jobManager: MixinJobManager,
         private val safeBox: DataStore<SafeBox>,
@@ -1477,6 +1483,27 @@ class TokenRepository
     fun updateTransaction(hash: String, status: String, chainId: String) = web3TransactionDao.updateTransaction(hash, status, chainId)
 
     suspend fun insertWeb3RawTransaction(raw: Web3RawTransaction) = web3RawTransactionDao.insertSuspend(raw)
+
+    suspend fun insertRawTransactionAndUpdateTransactionStatus(
+        raw: Web3RawTransaction,
+        hash: String,
+        status: String,
+        chainId: String,
+        btcRawTransactionHexToDeleteOutputs: String?,
+    ) {
+        appDatabase.withTransaction {
+            web3RawTransactionDao.insertSuspend(raw)
+            web3TransactionDao.updateTransaction(hash, status, chainId)
+            if (btcRawTransactionHexToDeleteOutputs.isNullOrBlank()) return@withTransaction
+            val cleanedHex: String = btcRawTransactionHexToDeleteOutputs.removePrefix("0x").trim()
+            if (cleanedHex.isBlank()) return@withTransaction
+            val tx: Transaction = runCatching {
+                Transaction.read(ByteBuffer.wrap(cleanedHex.hexStringToByteArray()))
+            }.getOrNull() ?: return@withTransaction
+            val txHash: String = tx.txId.toString()
+            walletOutputDao.deleteByTransactionHash(txHash, Constants.ChainId.BITCOIN_CHAIN_ID)
+        }
+    }
 
     fun getPendingTransactionCount(walletId: String): LiveData<Int> = web3TransactionDao.getPendingTransactionCount(walletId)
 
