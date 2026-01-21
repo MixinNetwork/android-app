@@ -456,7 +456,7 @@ fun QuoteInfoBox(
         buildSwapDisplayedErrorInfo(context, quoteError)
     }
     Box(
-        modifier = if(availableHeight == null) Modifier.heightIn(48.dp) else Modifier
+        modifier = if (availableHeight == null) Modifier.heightIn(48.dp) else Modifier
     ) {
         if (displayedErrorInfo.isNullOrBlank()) {
             Column(
