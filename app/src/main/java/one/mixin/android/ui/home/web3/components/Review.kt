@@ -46,6 +46,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -481,9 +482,15 @@ private fun ApproveChangeItem(
 private fun SingleBalanceChangeItem(
     bc: BalanceChange
 ) {
-    val viewModel = hiltViewModel<Web3ViewModel>()
-    val priceUsd: String? by viewModel.getTokenPriceUsdFlow(bc.assetId)
-        .collectAsStateWithLifecycle(initialValue = null)
+    val isInPreview: Boolean = LocalInspectionMode.current
+    val priceUsd: String? = if (isInPreview) {
+        null
+    } else {
+        val viewModel: Web3ViewModel = hiltViewModel()
+        val collectedPriceUsd: String? by viewModel.getTokenPriceUsdFlow(bc.assetId)
+            .collectAsStateWithLifecycle(initialValue = null)
+        collectedPriceUsd
+    }
     val fiatPrice = bc.formatPrice(priceUsd)
 
     Row(
@@ -528,9 +535,15 @@ private fun SingleBalanceChangeItem(
 private fun BalanceChangeItem(
     balanceChange: BalanceChange,
 ) {
-    val viewModel = hiltViewModel<Web3ViewModel>()
-    val priceUsd: String? by viewModel.getTokenPriceUsdFlow(balanceChange.assetId)
-        .collectAsStateWithLifecycle(initialValue = null)
+    val isInPreview: Boolean = LocalInspectionMode.current
+    val priceUsd: String? = if (isInPreview) {
+        null
+    } else {
+        val viewModel: Web3ViewModel = hiltViewModel()
+        val collectedPriceUsd: String? by viewModel.getTokenPriceUsdFlow(balanceChange.assetId)
+            .collectAsStateWithLifecycle(initialValue = null)
+        collectedPriceUsd
+    }
     val fiatPrice = balanceChange.formatPrice(priceUsd)
     Row(
         modifier = Modifier.fillMaxWidth(),
