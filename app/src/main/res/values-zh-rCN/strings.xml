@@ -1329,6 +1329,7 @@
         <item quantity="other">已选择 %1$d 个</item>
     </plurals>
     <string name="user_deleted_hint">该用户已经删除了账号。</string>
+    <string name="error_transfer_to_deleted_account">ERROR 20160: 无法给已经删除的账号转账。</string>
     <string name="Debit_Credit_Card">借记卡 / 信用卡</string>
     <string name="Add_debit_or_credit_card">添加 借记卡 或 信用卡</string>
     <string name="Buy">买币</string>
