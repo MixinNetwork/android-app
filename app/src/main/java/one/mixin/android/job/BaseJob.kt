@@ -85,6 +85,7 @@ import one.mixin.android.db.web3.Web3TokensExtraDao
 import one.mixin.android.db.web3.Web3TransactionDao
 import one.mixin.android.db.web3.Web3WalletDao
 import one.mixin.android.db.web3.vo.Web3Token
+import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.di.ApplicationScope
 import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.repository.ConversationRepository
@@ -453,6 +454,8 @@ abstract class BaseJob(params: Params) : Job(params) {
 
     protected suspend fun refreshBitcoinTokenAmountByOutputs(walletId: String, address: String) {
         if (walletId.isBlank() || address.isBlank()) return
+        val wallet = web3WalletDao.getWalletById(walletId) ?:return
+        if (wallet.isWatch()) return
         val totalAmount: BigDecimal = walletOutputDao.sumPendingAndUnspentAmount(address, Constants.ChainId.BITCOIN_CHAIN_ID)
         val amount: String = totalAmount.stripTrailingZeros().toPlainString()
         web3TokenDao.updateTokenAmount(walletId, Constants.ChainId.BITCOIN_CHAIN_ID, amount)
@@ -480,6 +483,8 @@ abstract class BaseJob(params: Params) : Job(params) {
 
     protected suspend fun applyBitcoinTokenBalanceBeforeInsert(walletId: String, tokens: List<Web3Token>): List<Web3Token> {
         if (tokens.none { it.assetId == Constants.ChainId.BITCOIN_CHAIN_ID }) return tokens
+        val wallet = web3WalletDao.getWalletById(walletId) ?:return tokens
+        if (wallet.isWatch()) return tokens
         val btcAddress: String = web3AddressDao.getAddressesByChainId(walletId, Constants.ChainId.BITCOIN_CHAIN_ID)?.destination ?: return tokens
         val totalAmount: BigDecimal = walletOutputDao.sumPendingAndUnspentAmount(btcAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
         val amount: String = totalAmount.stripTrailingZeros().toPlainString()

@@ -348,6 +348,8 @@ fun WalletCard(
                             val address = viewModel.getAddresses(walletId)
                             if (address.any { it.chainId == Constants.ChainId.SOLANA_CHAIN_ID }) {
                                 listOf(R.drawable.ic_chain_sol)
+                            } else if (address.any { it.chainId == Constants.ChainId.BITCOIN_CHAIN_ID }) {
+                                listOf(R.drawable.ic_chain_btc)
                             } else {
                                 evmChain
                             }

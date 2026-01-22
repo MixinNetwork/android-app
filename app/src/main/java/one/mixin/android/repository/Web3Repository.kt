@@ -32,6 +32,7 @@ import one.mixin.android.db.web3.vo.Web3TokensExtra
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.db.web3.vo.WalletItem
+import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.ui.wallet.Web3FilterParams
@@ -72,6 +73,8 @@ constructor(
 
     suspend fun refreshBitcoinTokenAmount(walletId: String, address: String) {
         if (walletId.isBlank() || address.isBlank()) return
+        val wallet = web3WalletDao.getWalletById(walletId) ?:return
+        if (wallet.isWatch()) return
         val totalAmount: BigDecimal = walletOutputDao.sumPendingAndUnspentAmount(address, Constants.ChainId.BITCOIN_CHAIN_ID)
         val amount: String = totalAmount.stripTrailingZeros().toPlainString()
         web3TokenDao.updateTokenAmount(walletId, Constants.ChainId.BITCOIN_CHAIN_ID, amount)

@@ -6,6 +6,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.db.web3.vo.Web3Chain
 import one.mixin.android.db.web3.vo.Web3TokensExtra
+import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import timber.log.Timber
 
@@ -85,6 +86,13 @@ class RefreshWeb3TokenJob(
     }
 
     private suspend fun fetchAsset(assetId: String, address: String) {
+        if (assetId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+            val wallet = web3AddressDao.getWalletByDestination(address)
+            val isWatchWallet: Boolean = wallet?.isWatch() == true
+            if (!isWatchWallet) {
+                return
+            }
+        }
         requestRouteAPI(
             invokeNetwork = {
                 routeService.getAssetByAddress(assetId, address)
