@@ -1654,6 +1654,7 @@
     <string name="swap_message_success">您的交易已发送至网络，将很快被处理。</string>
     <string name="swap_not_supported">不支持 %1$s 交易</string>
     <string name="web3_btc_speed_up_not_needed">当前费率相同，无需加速</string>
+    <string name="web3_btc_cancel_not_possible">此比特币交易无法取消。</string>
     <string name="Price_data_unavailable">暂无价格数据</string>
     <string name="Balance">余额</string>
     <string name="Market">行情</string>
