@@ -553,6 +553,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     runCatching {
                                         token.buildTransaction(rpc, fromAddress, toAddress, amount, web3ViewModel.outputsByAddress(fromAddress, token.assetId), rate, miniFee)
                                     }.onFailure { e ->
+                                        Timber.e("Build Transaction Error: ${e.message}")
                                         if (e is EmptyUtxoException) {
                                             ErrorHandler.handleError(e)
                                         }
