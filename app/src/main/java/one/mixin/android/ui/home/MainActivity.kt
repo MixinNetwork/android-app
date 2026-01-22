@@ -541,7 +541,10 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                         try {
                             if (!isFinishing && !supportFragmentManager.isStateSaved && !supportFragmentManager.isDestroyed) {
                                 LoginVerifyBottomSheetDialogFragment.newInstance().apply {
-                                    onDismissCallback = { _ ->
+                                    onDismissCallback = { success ->
+                                        if (success) {
+                                            defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, false)
+                                        }
                                         jobManager.addJobInBackground(RefreshWeb3Job())
                                     }
                                 }.show(supportFragmentManager, LoginVerifyBottomSheetDialogFragment.TAG)
