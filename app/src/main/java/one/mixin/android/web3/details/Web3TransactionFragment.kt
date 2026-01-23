@@ -667,7 +667,6 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             solanaTxSource = SolanaTxSource.InnerTransfer,
             isSpeedUp = true,
             fee = estimatedFeeBtc,
-            rate = feeRate
         )
     }
 
@@ -725,7 +724,6 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             solanaTxSource = SolanaTxSource.InnerTransfer,
             isCancelTx = true,
             fee = estimatedFeeBtc,
-            rate = selectedRate
         )
     }
 

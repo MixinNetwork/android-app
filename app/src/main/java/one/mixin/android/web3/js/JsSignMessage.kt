@@ -7,7 +7,9 @@ import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.util.GsonHelper
 import org.web3j.utils.Numeric
+import timber.log.Timber
 import java.math.BigDecimal
+import java.math.RoundingMode
 
 @Parcelize
 class JsSignMessage(
@@ -19,7 +21,6 @@ class JsSignMessage(
     val isSpeedUp: Boolean = false,
     val isCancelTx: Boolean = false,
     val fee: BigDecimal? = null, // only btc
-    val rate: BigDecimal? = null, // only btc
     val virtualSize: Int? = null, // only btc, vbytes
 ) : Parcelable {
     companion object {
@@ -34,8 +35,17 @@ class JsSignMessage(
 
         fun isSignMessage(type: Int): Boolean =
             type == TYPE_MESSAGE || type == TYPE_TYPED_MESSAGE || type == TYPE_PERSONAL_MESSAGE || type == TYPE_SIGN_IN
-
     }
+
+    val rate: BigDecimal?
+        get() {
+            val sizeValue = virtualSize?.toBigDecimal()
+            if (fee == null || sizeValue == null || sizeValue <= BigDecimal.ZERO) {
+                return null
+            }
+            val feeInSatoshi: BigDecimal = fee.multiply(BigDecimal(100_000_000))
+            return feeInSatoshi.divide(sizeValue, 2, RoundingMode.DOWN).stripTrailingZeros()
+        }
 
     // TYPE_MESSAGE Any chain could be
     fun isSolMessage() = type == TYPE_RAW_TRANSACTION || type == TYPE_SIGN_IN

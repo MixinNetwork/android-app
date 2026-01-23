@@ -475,12 +475,6 @@ class Web3ViewModel @Inject constructor(
 
     suspend fun transaction(hash: String, chainId: String) = tokenRepository.transaction(hash, chainId)
 
-    suspend fun updateTransaction(hash: String, status: String, chainId: String) =
-        withContext(Dispatchers.IO) { tokenRepository.updateTransaction(hash, status, chainId) }
-
-    suspend fun insertRawTransaction(raw: Web3RawTransaction) =
-        withContext(Dispatchers.IO) { tokenRepository.insertWeb3RawTransaction(raw) }
-
     suspend fun insertRawTransactionAndUpdateTransactionStatus(
         raw: Web3RawTransaction,
         hash: String,

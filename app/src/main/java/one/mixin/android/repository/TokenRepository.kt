@@ -1085,16 +1085,16 @@ class TokenRepository
 
         suspend fun simulateWeb3Tx(parseTxRequest: Web3RawTransactionRequest): MixinResponse<ParsedTx> = routeService.simulateWeb3Tx(parseTxRequest)
 
-        suspend fun postRawTx(rawTxRequest: Web3RawTransactionRequest, assetId: String? = null, rate: String? = null): MixinResponse<Web3RawTransaction> {
+        suspend fun postRawTx(rawTxRequest: Web3RawTransactionRequest, assetId: String? = null, rate: BigDecimal? = null): MixinResponse<Web3RawTransaction> {
             val r = routeService.postWeb3Tx(rawTxRequest)
             if (r.isSuccess) {
                 val raw = r.data!!
-                if (rate.isNullOrBlank()) {
+                if (rate == null) {
                     web3RawTransactionDao.insertSuspend(raw)
                 } else {
                     web3RawTransactionDao.insertSuspend(
                         raw.copy(
-                            nonce = rate
+                            nonce = rate.toPlainString()
                         )
                     )
                 }
@@ -1479,10 +1479,6 @@ class TokenRepository
         walletId)
 
     suspend fun getPendingTransactions(walletId: String) = web3TransactionDao.getPendingTransactions(walletId)
-
-    fun updateTransaction(hash: String, status: String, chainId: String) = web3TransactionDao.updateTransaction(hash, status, chainId)
-
-    suspend fun insertWeb3RawTransaction(raw: Web3RawTransaction) = web3RawTransactionDao.insertSuspend(raw)
 
     suspend fun insertRawTransactionAndUpdateTransactionStatus(
         raw: Web3RawTransaction,

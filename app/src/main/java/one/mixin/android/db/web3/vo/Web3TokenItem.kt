@@ -353,7 +353,6 @@ suspend fun Web3TokenItem.buildTransaction(
                 type = JsSignMessage.TYPE_BTC_TRANSACTION,
                 data = built.rawHex,
                 fee = built.feeBtc,
-                rate = rate,
                 virtualSize = built.virtualSize,
             )
 

@@ -21,6 +21,7 @@ import one.mixin.android.repository.Web3Repository
 import one.mixin.android.tip.Tip
 import one.mixin.android.util.ErrorHandler
 import org.sol4k.exception.RpcException
+import java.math.BigDecimal
 import javax.inject.Inject
 
 @HiltViewModel
@@ -94,7 +95,7 @@ class BrowserWalletBottomSheetViewModel
             }
         }
 
-        suspend fun postRawTx(rawTx: String, web3ChainId: String, account: String, to: String?, assetId: String? = null, feeType: String? = null, rate: String? = null) = withContext(Dispatchers.IO) {
+        suspend fun postRawTx(rawTx: String, web3ChainId: String, account: String, to: String?, assetId: String? = null, feeType: String? = null, rate: BigDecimal? = null) = withContext(Dispatchers.IO) {
             val resp = assetRepo.postRawTx(Web3RawTransactionRequest(web3ChainId, rawTx, account, to, feeType), assetId, rate)
             if (!resp.isSuccess) {
                 val err = resp.error!!
