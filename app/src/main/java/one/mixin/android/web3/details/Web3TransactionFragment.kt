@@ -525,6 +525,8 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                     }
                 val currentRate: BigDecimal? = estimateFeeResponse.feeRate?.toBigDecimalOrNull()
                 val localRate: BigDecimal? = localRateString.toBigDecimalOrNull()
+                // Only allow speed-up when the recommended fee rate is strictly higher than the current tx fee rate.
+                // BigDecimal.compareTo returns 1 when currentRate > localRate.
                 if (currentRate != null && localRate != null && currentRate.compareTo(localRate) != 1) {
                     toast(getString(R.string.web3_btc_speed_up_not_needed))
                     return@launch
@@ -566,6 +568,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         lifecycleScope.launch {
             if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
                 val fromAddress: String = transaction.getFromAddress()
+                // Whether this BTC transaction can be cancelled via a replacement tx (RBF).
                 val canCancelBtcTransaction: Boolean = canCancelBtcTransaction(rawTransaction.raw, fromAddress)
                 if (!canCancelBtcTransaction) {
                     toast(R.string.web3_btc_cancel_not_possible)
