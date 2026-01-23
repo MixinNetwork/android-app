@@ -24,6 +24,7 @@ import one.mixin.android.db.web3.vo.Web3RawTransaction
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.db.web3.vo.virtualSize
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.forEachWithIndex
@@ -515,6 +516,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
     private fun handleSpeedUp(rawTransaction: Web3RawTransaction) {
         lifecycleScope.launch {
             if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                val fromAddress: String = transaction.getFromAddress()
                 val localRateString: String = rawTransaction.nonce
                 val estimateFeeResponse = web3ViewModel.estimateBtcFeeRate(rawTransaction.raw, localRateString)
                     ?: run {
@@ -523,12 +525,11 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                     }
                 val currentRate: BigDecimal? = estimateFeeResponse.feeRate?.toBigDecimalOrNull()
                 val localRate: BigDecimal? = localRateString.toBigDecimalOrNull()
-                if (currentRate != null && localRate != null && currentRate.compareTo(localRate) == 0) {
+                if (currentRate != null && localRate != null && currentRate.compareTo(localRate) != 1) {
                     toast(getString(R.string.web3_btc_speed_up_not_needed))
                     return@launch
                 }
                 val jsSignMessage = createBtcSpeedUpMessage(rawTransaction, currentRate)
-                val fromAddress: String = transaction.getFromAddress()
                 showBrowserBottomSheetDialogFragment(
                     requireActivity(),
                     jsSignMessage,
@@ -660,6 +661,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             )
         }
         val estimatedFeeBtc: BigDecimal = estimateBtcFeeFromUnsignedTransaction(unsignedReplacementHex, localUtxos)
+        val replacementVirtualSize: Int? = getBtcVirtualSizeFromUnsignedTransaction(unsignedReplacementHex)
         return JsSignMessage(
             callbackId = System.currentTimeMillis(),
             type = JsSignMessage.TYPE_BTC_TRANSACTION,
@@ -667,6 +669,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             solanaTxSource = SolanaTxSource.InnerTransfer,
             isSpeedUp = true,
             fee = estimatedFeeBtc,
+            virtualSize = replacementVirtualSize,
         )
     }
 
@@ -714,6 +717,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         )
         val cleanedUnsignedReplacementHex: String = unsignedReplacementHex.removePrefix("0x").trim()
         val replacementTx: BtcTransaction = BtcTransaction.read(ByteBuffer.wrap(cleanedUnsignedReplacementHex.hexStringToByteArray()))
+        val replacementVirtualSize: Int = replacementTx.virtualSize()
         val estimatedFeeSatoshis: Long = calculateBtcFeeSatoshis(replacementTx.inputs, replacementTx.outputs, localUtxos)
         val estimatedFeeBtc: BigDecimal = BigDecimal.valueOf(estimatedFeeSatoshis).divide(BTC_SATOSHIS_PER_BTC)
         Timber.e("apiRate:$apiRate localRate:$localRate selectedRate:$selectedRate currentFeeSatoshis:$currentFeeSatoshis estimatedFeeBtc:$estimatedFeeBtc")
@@ -724,7 +728,16 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             solanaTxSource = SolanaTxSource.InnerTransfer,
             isCancelTx = true,
             fee = estimatedFeeBtc,
+            virtualSize = replacementVirtualSize,
         )
+    }
+
+    private fun getBtcVirtualSizeFromUnsignedTransaction(unsignedTransactionHex: String): Int? {
+        val cleanedHex: String = unsignedTransactionHex.removePrefix("0x").trim()
+        return runCatching {
+            val tx: BtcTransaction = BtcTransaction.read(ByteBuffer.wrap(cleanedHex.hexStringToByteArray()))
+            tx.virtualSize()
+        }.getOrNull()
     }
 
     private fun buildBtcReplacementTransactionHex(
