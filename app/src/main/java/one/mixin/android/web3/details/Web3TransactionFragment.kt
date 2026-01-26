@@ -411,16 +411,28 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 val pendingRawTx = web3ViewModel.getRawTransactionByHashAndChain(wallet.id, transaction.transactionHash, transaction.chainId)
                 val shouldShowActions = pendingRawTx != null
 
-                if (shouldShowActions) {
-                    actions.isVisible = true
-
-                    actions.speedUp.setOnClickListener {
-                        handleSpeedUp(pendingRawTx)
+                if (!shouldShowActions) {
+                    actions.isVisible = false
+                    actions.speedUp.setOnClickListener(null)
+                    actions.cancelTx.setOnClickListener(null)
+                    return@apply
+                }
+                val notNullPendingRawTx: Web3RawTransaction = pendingRawTx
+                if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                    val hasSignedChange: Boolean = web3ViewModel.hasBitcoinSignedOutputsByTransactionHash(transaction.transactionHash)
+                    if (hasSignedChange) {
+                        actions.isVisible = false
+                        actions.speedUp.setOnClickListener(null)
+                        actions.cancelTx.setOnClickListener(null)
+                        return@apply
                     }
-
-                    actions.cancelTx.setOnClickListener {
-                        handleCancelTransaction(pendingRawTx)
-                    }
+                }
+                actions.isVisible = true
+                actions.speedUp.setOnClickListener {
+                    handleSpeedUp(notNullPendingRawTx)
+                }
+                actions.cancelTx.setOnClickListener {
+                    handleCancelTransaction(notNullPendingRawTx)
                 }
             }
         }

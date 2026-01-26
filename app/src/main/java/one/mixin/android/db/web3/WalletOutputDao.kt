@@ -34,6 +34,9 @@ interface WalletOutputDao: BaseDao<WalletOutput> {
     @Query("DELETE FROM outputs WHERE transaction_hash = :hash AND asset_id = :assetId AND (status IS NULL OR status != 'signed')")
     suspend fun deleteByTransactionHash(hash: String, assetId: String): Int
 
+    @Query("SELECT COUNT(1) FROM outputs WHERE transaction_hash = :hash AND asset_id = :assetId AND status = 'signed'")
+    suspend fun countSignedByTransactionHash(hash: String, assetId: String): Int
+
     @Query("DELETE FROM outputs WHERE address = :address AND asset_id = :assetId")
     suspend fun deleteByAddress(address: String, assetId: String)
 

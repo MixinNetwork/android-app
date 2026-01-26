@@ -277,6 +277,12 @@ class Web3ViewModel @Inject constructor(
         }
     }
 
+    suspend fun hasBitcoinSignedOutputsByTransactionHash(transactionHash: String): Boolean {
+        return withContext(Dispatchers.IO) {
+            web3Repository.hasBitcoinSignedOutputsByTransactionHash(transactionHash)
+        }
+    }
+
     suspend fun markOutputsToSigned(walletId: String, fromAddress: String, signedHex: String, outputIds: List<String>) {
         if (outputIds.isEmpty()) return
         withContext(Dispatchers.IO) {

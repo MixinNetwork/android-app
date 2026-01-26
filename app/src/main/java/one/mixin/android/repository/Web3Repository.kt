@@ -138,6 +138,11 @@ constructor(
         return deletedOutputsCount
     }
 
+    suspend fun hasBitcoinSignedOutputsByTransactionHash(transactionHash: String): Boolean {
+        val signedCount: Int = walletOutputDao.countSignedByTransactionHash(transactionHash, Constants.ChainId.BITCOIN_CHAIN_ID)
+        return signedCount > 0
+    }
+
     suspend fun web3TokenItemByAddress(address: String) = web3TokenDao.web3TokenItemByAddress(address)
 
     fun web3TokenItemById(walletId: String, assetId: String) = web3TokenDao.web3TokenItemById(walletId, assetId)

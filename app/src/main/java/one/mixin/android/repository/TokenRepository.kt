@@ -1179,6 +1179,9 @@ class TokenRepository
                     sendAssetId = Constants.ChainId.BITCOIN_CHAIN_ID
                     receiveAssetId = Constants.ChainId.BITCOIN_CHAIN_ID
                 }
+                if (raw.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                    Timber.e("bitcoin tx,hash=%s, rate=%s", raw.hash, rate ?: "null")
+                }
                 web3TransactionDao.insert(
                     Web3Transaction(
                         transactionHash = raw.hash,
