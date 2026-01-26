@@ -3,7 +3,6 @@ package one.mixin.android.ui.common
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.DialogInterface
-import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -59,7 +58,6 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
         style: Int,
     ) {
         super.setupDialog(dialog, style)
-        isCancelable = false
         Timber.e("LoginVerifyBottomSheetDialogFragment setupDialog")
         contentView = binding.root
         (dialog as BottomSheet).apply {
@@ -71,7 +69,6 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
             pin.isEnabled = false
             measureAllChildren = false
         }
-        binding.support.isVisible = false
         binding.debug.setOnLongClickListener{
             LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
             true
@@ -83,8 +80,6 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
             checkTipCounter(Session.getAccount()!!)
         }
     }
-
-    override fun onClickBiometricLayoutClose(): Boolean = true
 
     private suspend fun checkTipCounter(account: Account) {
         binding.biometricLayout.showPb()

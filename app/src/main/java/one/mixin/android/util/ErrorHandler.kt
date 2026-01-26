@@ -238,6 +238,7 @@ open class ErrorHandler {
         const val TOO_SMALL = 20120
         const val EXPIRED_AUTHORIZATION_CODE = 20121
         const val USED_PHONE = 20122
+        const val TRANSFER_TO_DELETED_ACCOUNT = 20160
         const val INSUFFICIENT_TRANSACTION_FEE = 20124
         const val TRANSFER_IS_ALREADY_PAID = 20125
         const val TOO_MANY_STICKERS = 20126
@@ -374,6 +375,9 @@ fun Context.getMixinErrorStringByCode(
         }
         ErrorHandler.USED_PHONE -> {
             getString(R.string.error_used_phone)
+        }
+        ErrorHandler.TRANSFER_TO_DELETED_ACCOUNT -> {
+            getString(R.string.error_transfer_to_deleted_account)
         }
         ErrorHandler.TRANSFER_IS_ALREADY_PAID -> {
             getString(R.string.error_transfer_is_already_paid)
