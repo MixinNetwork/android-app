@@ -1,12 +1,17 @@
 package one.mixin.android.ui.wallet.components
 
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyListItemInfo
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -25,55 +30,82 @@ fun WalletCategoryFilter(
     showSafeBadge: Boolean = false,
     onCategorySelected: (String?) -> Unit
 ) {
-    Row(
+    val tabs: MutableList<WalletCategoryTab> = mutableListOf()
+    if (hasAll) {
+        tabs.add(WalletCategoryTab(category = null, textResId = R.string.All, showBadge = false))
+    }
+    if (hasSafe) {
+        tabs.add(WalletCategoryTab(category = WalletCategory.MIXIN_SAFE.value, textResId = R.string.Wallet_Safe, showBadge = showSafeBadge))
+    }
+    if (hasCreated) {
+        tabs.add(WalletCategoryTab(category = WalletCategory.CLASSIC.value, textResId = R.string.Wallet_Created, showBadge = false))
+    }
+    if (hasImported) {
+        tabs.add(WalletCategoryTab(category = "import", textResId = R.string.Wallet_Imported, showBadge = false))
+    }
+    if (hasWatch) {
+        tabs.add(WalletCategoryTab(category = "watch", textResId = R.string.Wallet_Watching, showBadge = false))
+    }
+    val selectedIndex: Int = tabs.indexOfFirst { tab: WalletCategoryTab -> tab.category == selectedCategory }.let { index: Int ->
+        if (index >= 0) index else 0
+    }
+    WalletCategoryTabRow(
+        tabs = tabs,
+        selectedIndex = selectedIndex,
+        onTabSelected = { index: Int ->
+            val selectedTab: WalletCategoryTab = tabs[index]
+            onCategorySelected(selectedTab.category)
+        }
+    )
+}
+
+private data class WalletCategoryTab(
+    val category: String?,
+    val textResId: Int,
+    val showBadge: Boolean
+)
+
+@Composable
+private fun WalletCategoryTabRow(
+    tabs: List<WalletCategoryTab>,
+    selectedIndex: Int,
+    onTabSelected: (Int) -> Unit
+) {
+    val listState: LazyListState = rememberLazyListState()
+    LaunchedEffect(selectedIndex, tabs.size) {
+        if (tabs.isEmpty()) return@LaunchedEffect
+        listState.animateScrollToItem(index = selectedIndex)
+        val delta: Float? = withFrameNanos { _: Long ->
+            val itemInfo: LazyListItemInfo? = listState.layoutInfo.visibleItemsInfo
+                .firstOrNull { info: LazyListItemInfo -> info.index == selectedIndex }
+            if (itemInfo == null) return@withFrameNanos null
+            val viewportStartOffset: Int = listState.layoutInfo.viewportStartOffset
+            val viewportEndOffset: Int = listState.layoutInfo.viewportEndOffset
+            val viewportWidth: Int = viewportEndOffset - viewportStartOffset
+            val viewportCenter: Int = viewportStartOffset + (viewportWidth / 2)
+            val itemCenter: Int = itemInfo.offset + (itemInfo.size / 2)
+            (itemCenter - viewportCenter).toFloat()
+        }
+        if (delta != null && delta != 0f) {
+            listState.animateScrollBy(delta)
+        }
+    }
+    LazyRow(
+        state = listState,
         modifier = Modifier
-            .horizontalScroll(rememberScrollState())
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
-        ,
+            .padding(vertical = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // All
-        if (hasAll) {
+        itemsIndexed(
+            items = tabs,
+            key = { index: Int, tab: WalletCategoryTab -> "${tab.category ?: "all"}-$index" }
+        ) { index: Int, tab: WalletCategoryTab ->
             OutlinedTab(
-                text = stringResource(R.string.All),
-                selected = selectedCategory == null,
-                onClick = { onCategorySelected(null) },
-            )
-        }
-
-        if (hasSafe) {
-            OutlinedTab(
-                text = stringResource(R.string.Wallet_Safe),
-                selected = selectedCategory == WalletCategory.MIXIN_SAFE.value,
-                showBadge = showSafeBadge,
-                onClick = { onCategorySelected(WalletCategory.MIXIN_SAFE.value) },
-            )
-        }
-
-        if (hasCreated) {
-            OutlinedTab(
-                text = stringResource(R.string.Wallet_Created),
-                selected = selectedCategory == WalletCategory.CLASSIC.value,
-                onClick = { onCategorySelected(WalletCategory.CLASSIC.value) },
-            )
-        }
-
-        // Import
-        if (hasImported) {
-            OutlinedTab(
-                text = stringResource(R.string.Wallet_Imported),
-                selected = selectedCategory == "import",
-                onClick = { onCategorySelected("import") },
-            )
-        }
-
-        // Watching
-        if (hasWatch) {
-            OutlinedTab(
-                text = stringResource(R.string.Wallet_Watching),
-                selected = selectedCategory == "watch",
-                onClick = { onCategorySelected("watch") },
+                text = stringResource(tab.textResId),
+                selected = index == selectedIndex,
+                showBadge = tab.showBadge,
+                onClick = { onTabSelected(index) },
             )
         }
     }

@@ -804,6 +804,7 @@ fun WordCountButton(onClick: () -> Unit, border: BorderStroke, content: @Composa
 fun InputBar(string: String, callback: (String) -> Unit) {
     if (string.isBlank()) return
     val list = getMatchingWords(string.trim()) ?: return
+    if (list.isEmpty()) return
     LazyRow(
         modifier = Modifier
             .fillMaxWidth()

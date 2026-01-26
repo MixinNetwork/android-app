@@ -191,6 +191,19 @@ fun WalletCard(
                             tint = Color.Unspecified,
                             contentDescription = null,
                         )
+                    } else if (destination is WalletDestination.Classic) {
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = stringResource(R.string.Wallet_Created),
+                            color = MixinAppTheme.colors.textRemarks,
+                            fontSize = 12.sp,
+                            modifier = Modifier
+                                .background(
+                                    color = MixinAppTheme.colors.backgroundGrayLight,
+                                    shape = RoundedCornerShape(4.dp)
+                                )
+                                .padding(horizontal = 4.dp)
+                        )
                     } else if (destination is WalletDestination.Import) {
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
