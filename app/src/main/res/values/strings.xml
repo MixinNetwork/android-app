@@ -2045,7 +2045,7 @@
     <string name="All_Invoices">All Invoices</string>
     <string name="create_new_wallet">Create New Wallet</string>
     <string name="classic_wallet">Classic Wallet</string>
-    <string name="create_wallet_notice_1">This mnemonic is generated based on BIP32 and can be used in all wallets that support this standard.</string>
+    <string name="create_wallet_notice_1">This wallet is generated based on BIP32 and can be used in all wallets that support this standard.</string>
     <string name="create_wallet_notice_2">Supports multiple networks such as Ethereum, Base, Solana, etc.</string>
     <string name="create_wallet_notice_3">This wallet cannot be deleted and the private key cannot be viewed after creation.</string>
     <string name="add_new_multi_chain_wallet">Add a new multi-chain wallet.</string>

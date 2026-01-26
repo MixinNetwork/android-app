@@ -2044,7 +2044,7 @@
     <string name="Store_in_vault_or_safe_place">存放在保险箱或安全的地方。</string>
     <string name="Dont_share_it_with_a_network">不要通过网络分享它。</string>
     <string name="classic_wallet">经典钱包</string>
-    <string name="create_wallet_notice_1">该助记词基于 BIP32 生成，可用于所有支持该标准的钱包。</string>
+    <string name="create_wallet_notice_1">该钱包基于 BIP32 生成，可用于所有支持该标准的钱包。</string>
     <string name="create_wallet_notice_2">支持 Ethereum、Base、Solana 等多个网络。</string>
     <string name="create_wallet_notice_3">该钱包创建后无法删除且无法查看私钥。</string>
     <string name="create_new_wallet">创建新钱包</string>
