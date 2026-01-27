@@ -63,9 +63,9 @@ import one.mixin.android.ui.wallet.WalletSecurityActivity
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.encodeToBase58String
 import org.bitcoinj.base.AddressParser
+import org.bitcoinj.base.BitcoinNetwork
 import org.bitcoinj.crypto.DumpedPrivateKey
 import org.bitcoinj.crypto.ECKey
-import org.bitcoinj.params.MainNetParams
 import org.web3j.crypto.Keys
 import org.web3j.utils.Numeric
 import timber.log.Timber
@@ -512,7 +512,7 @@ private fun isBitcoinPrivateKeyValid(privateKey: String): Boolean {
 
 private fun isValidWIF(wif: String): Boolean {
     return try {
-        DumpedPrivateKey.fromBase58(MainNetParams.get(), wif)
+        DumpedPrivateKey.fromBase58(BitcoinNetwork.MAINNET, wif)
         true
     } catch (e: Exception) {
         false
@@ -522,14 +522,14 @@ private fun isValidWIF(wif: String): Boolean {
 private fun normalizeBitcoinPrivateKeyToWif(privateKey: String): String? {
     return try {
         if (privateKey.length in 51..52 && (privateKey.startsWith("5") || privateKey.startsWith("K") || privateKey.startsWith("L"))) {
-            DumpedPrivateKey.fromBase58(MainNetParams.get(), privateKey)
+            DumpedPrivateKey.fromBase58(BitcoinNetwork.MAINNET, privateKey)
             privateKey
         } else {
             if (!privateKey.matches(Regex("^[0-9a-fA-F]+$"))) return null
             val privateKeyBytes = Numeric.hexStringToByteArray(privateKey)
             if (privateKeyBytes.size != 32) return null
             val ecKey: ECKey = ECKey.fromPrivate(privateKeyBytes, true)
-            ecKey.getPrivateKeyAsWiF(MainNetParams.get())
+            ecKey.getPrivateKeyEncoded(BitcoinNetwork.MAINNET).toBase58()
         }
     } catch (e: Exception) {
         null

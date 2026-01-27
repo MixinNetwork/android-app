@@ -145,7 +145,7 @@ object CryptoWalletHelper {
 
             Constants.ChainId.BITCOIN_CHAIN_ID -> {
                 val ecKey: ECKey = if (isBitcoinWifPrivateKey(privateKey)) {
-                    DumpedPrivateKey.fromBase58(MainNetParams.get(), privateKey).key
+                    DumpedPrivateKey.fromBase58(BitcoinNetwork.MAINNET, privateKey).key
                 } else {
                     val privateKeyBytes: ByteArray = Numeric.hexStringToByteArray(privateKey)
                     ECKey.fromPrivate(BigInteger(1, privateKeyBytes), true)
@@ -246,7 +246,7 @@ object CryptoWalletHelper {
                 }
                 Constants.ChainId.BITCOIN_CHAIN_ID -> {
                     if (isBitcoinWifPrivateKey(privateKeyStr)) {
-                        DumpedPrivateKey.fromBase58(MainNetParams.get(), privateKeyStr).key.privKeyBytes
+                        DumpedPrivateKey.fromBase58(BitcoinNetwork.MAINNET, privateKeyStr).key.privKeyBytes
                     } else {
                         Numeric.hexStringToByteArray(privateKeyStr)
                     }

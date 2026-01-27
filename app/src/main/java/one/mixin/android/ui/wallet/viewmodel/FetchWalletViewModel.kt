@@ -37,6 +37,7 @@ import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.Web3Signer
+import org.bitcoinj.base.BitcoinNetwork
 import org.bitcoinj.base.ScriptType
 import org.bitcoinj.crypto.DumpedPrivateKey
 import org.bitcoinj.crypto.ECKey
@@ -88,6 +89,14 @@ class FetchWalletViewModel @Inject constructor(
 
     init {
         startFetching(0)
+    }
+
+    private fun getBitcoinPrivateKeyBytes(privateKey: String): ByteArray {
+        return if (privateKey.length in 51..52 && (privateKey.startsWith("5") || privateKey.startsWith("K") || privateKey.startsWith("L"))) {
+            DumpedPrivateKey.fromBase58(BitcoinNetwork.MAINNET, privateKey).key.privKeyBytes
+        } else {
+            Numeric.hexStringToByteArray(privateKey)
+        }
     }
 
     fun setMnemonic(mnemonic: String) {
@@ -346,7 +355,8 @@ class FetchWalletViewModel @Inject constructor(
                     kp.secret.encodeToBase58String()
                 }
                 Constants.ChainId.BITCOIN_CHAIN_ID -> {
-                    Numeric.toHexString(it)
+                    val ecKey: ECKey = ECKey.fromPrivate(it, true)
+                    ecKey.getPrivateKeyEncoded(BitcoinNetwork.MAINNET).toBase58()
                 }
                 in Constants.Web3EvmChainIds -> {
                     Numeric.toHexString(it)
@@ -407,6 +417,8 @@ class FetchWalletViewModel @Inject constructor(
                         if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
                             // Solana private keys are provided as Base58; EVM private keys are provided as hex.
                             Base58.decode(key)
+                        } else if (chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                            getBitcoinPrivateKeyBytes(key)
                         } else {
                             Numeric.hexStringToByteArray(key)
                         }
@@ -511,13 +523,13 @@ class FetchWalletViewModel @Inject constructor(
     private fun normalizeBitcoinPrivateKeyToWif(privateKey: String): String? {
         return try {
             if (privateKey.length in 51..52 && (privateKey.startsWith("5") || privateKey.startsWith("K") || privateKey.startsWith("L"))) {
-                DumpedPrivateKey.fromBase58(MainNetParams.get(), privateKey)
+                DumpedPrivateKey.fromBase58(BitcoinNetwork.MAINNET, privateKey)
                 privateKey
             } else {
                 val privateKeyBytes = Numeric.hexStringToByteArray(privateKey)
                 if (privateKeyBytes.size != 32) return null
                 val ecKey: ECKey = ECKey.fromPrivate(privateKeyBytes, true)
-                ecKey.getPrivateKeyAsWiF(MainNetParams.get())
+                ecKey.getPrivateKeyEncoded(BitcoinNetwork.MAINNET).toBase58()
             }
         } catch (e: Exception) {
             null
