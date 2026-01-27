@@ -2139,8 +2139,8 @@
     <string name="limit_price">价格</string>
     <string name="Order_Type">订单类型</string>
     <string name="Forever">永久</string>
-    <string name="Trade_Simple">简单兑换</string>
-    <string name="Trade_Advanced">专业模式</string>
+    <string name="Trade_Simple">闪兑</string>
+    <string name="Trade_Advanced">限价</string>
     <string name="order_state_created">已创建</string>
     <string name="order_state_pricing">定价中</string>
     <string name="order_state_quoting">报价中</string>
