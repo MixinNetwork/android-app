@@ -231,7 +231,7 @@ fun BrowserPage(
                                         WalletConnectBottomSheetDialogFragment.Step.Done -> R.string.web3_sending_success
                                         WalletConnectBottomSheetDialogFragment.Step.Error -> if (insufficientGas) R.string.insufficient_balance else if (tipGas == null) R.string.Data_error else R.string.web3_signing_failed
                                         WalletConnectBottomSheetDialogFragment.Step.Sending -> R.string.Sending
-                                        else -> R.string.web3_signing_confirmation
+                                        else -> if (isCancel) R.string.Cancel_Transaction else if (isSpeedUp) R.string.Speed_Up_Transaction else R.string.web3_signing_confirmation
                                     }
                                 },
                         ),
