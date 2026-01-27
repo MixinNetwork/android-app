@@ -1128,6 +1128,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
     }
 
     override fun onWalletMissingBtcAddressPinSuccess() {
+        Timber.e("onWalletMissingBtcAddressPinSuccess")
         supportFragmentManager.popBackStack(WalletMissingBtcAddressFragment.TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE)
         val fragment = supportFragmentManager.findFragmentByTag(WalletMissingBtcAddressFragment.TAG)
         if (fragment != null) {
