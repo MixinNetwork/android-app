@@ -2,6 +2,7 @@
 
 package one.mixin.android.ui.home.web3.trade
 
+import android.content.Context
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -79,6 +80,7 @@ import one.mixin.android.ui.home.web3.components.TradeLayout
 import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.getMixinErrorStringByCode
 import java.math.BigDecimal
 
 @Composable
@@ -93,6 +95,7 @@ fun SwapContent(
     onSelectToken: (Boolean, SelectTokenType) -> Unit,
     onReview: (QuoteResult, SwapToken, SwapToken, String) -> Unit,
     onDeposit: (SwapToken) -> Unit,
+    onSwitchToLimitOrder: (String, SwapToken, SwapToken) -> Unit,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -103,7 +106,7 @@ fun SwapContent(
     val focusManager = LocalFocusManager.current
 
     var quoteResult by remember { mutableStateOf<QuoteResult?>(null) }
-    var errorInfo by remember { mutableStateOf<String?>(null) }
+    var quoteError by remember { mutableStateOf<Throwable?>(null) }
     var quoteMin by remember { mutableStateOf<String?>(null) }
     var quoteMax by remember { mutableStateOf<String?>(null) }
 
@@ -138,7 +141,7 @@ fun SwapContent(
                     toToken?.let { to ->
                         if (text.isNotBlank() && runCatching { BigDecimal(text) }.getOrDefault(BigDecimal.ZERO) > BigDecimal.ZERO && !reviewing) {
                             isLoading = true
-                            errorInfo = null
+                            quoteError = null
                             quoteMin = null
                             quoteMax = null
                             val amount = if (source == "") from.toLongAmount(text).toString() else text
@@ -149,16 +152,17 @@ fun SwapContent(
                                 }
                                 .onFailure { exception ->
                                     if (exception is CancellationException) return@onFailure
-                                    if (exception is AmountException) {
-                                        quoteMin = exception.min
-                                        quoteMax = exception.max
+                                    val mixinError = exception as? TradeQuoteMixinErrorException
+                                    if (mixinError?.code == ErrorHandler.INVALID_QUOTE_AMOUNT) {
+                                        quoteMin = mixinError.min
+                                        quoteMax = mixinError.max
                                     }
-                                    errorInfo = ErrorHandler.getErrorMessage(exception)
+                                    quoteError = exception
                                     quoteResult = null
                                     isLoading = false
                                 }
                         } else {
-                            errorInfo = null
+                            quoteError = null
                             quoteResult = null
                             quoteMin = null
                             quoteMax = null
@@ -271,7 +275,7 @@ fun SwapContent(
                                 Spacer(modifier = Modifier.height(16.dp))
                                 QuoteInfoBox(
                                     availableHeight = availableHeight,
-                                    errorInfo = errorInfo,
+                                    quoteError = quoteError,
                                     quoteResult = quoteResult,
                                     fromToken = fromToken,
                                     toToken = toToken,
@@ -280,7 +284,8 @@ fun SwapContent(
                                     quoteMin = quoteMin,
                                     quoteMax = quoteMax,
                                     onInputTextChange = { inputText = it },
-                                    onInvalidFlagChange = { invalidFlag = !invalidFlag }
+                                    onInvalidFlagChange = { invalidFlag = !invalidFlag },
+                                    onSwitchToLimitOrder = onSwitchToLimitOrder,
                                 )
                             }
 
@@ -294,7 +299,7 @@ fun SwapContent(
                     fromBalance = fromBalance,
                     fromToken = fromToken!!,
                     quoteResult = quoteResult,
-                    errorInfo = errorInfo,
+                    quoteError = quoteError,
                     isLoading = isLoading,
                     isButtonEnabled = isButtonEnabled,
                     onButtonEnabledChange = { isButtonEnabled = it },
@@ -352,7 +357,7 @@ fun ReviewButton(
     fromBalance: String?,
     fromToken: SwapToken,
     quoteResult: QuoteResult?,
-    errorInfo: String?,
+    quoteError: Throwable?,
     isLoading: Boolean,
     isButtonEnabled: Boolean,
     onButtonEnabledChange: (Boolean) -> Unit,
@@ -363,6 +368,7 @@ fun ReviewButton(
 ) {
     val checkBalance = checkBalance(inputText, fromBalance)
     
+    val hasError = quoteError != null
     Button(
         modifier = Modifier
             .padding(horizontal = 20.dp)
@@ -380,9 +386,9 @@ fun ReviewButton(
                 }
             }
         },
-        enabled = quoteResult != null && errorInfo == null && !isLoading && checkBalance == true,
+        enabled = quoteResult != null && !hasError && !isLoading && checkBalance == true,
         colors = ButtonDefaults.outlinedButtonColors(
-            backgroundColor = if (quoteResult != null && errorInfo == null && checkBalance == true) {
+            backgroundColor = if (quoteResult != null && !hasError && checkBalance == true) {
                 MixinAppTheme.colors.accent
             } else {
                 MixinAppTheme.colors.backgroundGrayLight
@@ -399,7 +405,7 @@ fun ReviewButton(
         if (isLoading) {
             CircularProgressIndicator(
                 modifier = Modifier.size(18.dp),
-                color = if (quoteResult != null && errorInfo == null && checkBalance == true) {
+                color = if (quoteResult != null && !hasError && checkBalance == true) {
                     Color.White
                 } else {
                     MixinAppTheme.colors.textAssist
@@ -412,7 +418,7 @@ fun ReviewButton(
                 } else {
                     stringResource(R.string.Review_Order)
                 },
-                color = if (checkBalance != true || errorInfo != null) {
+                color = if (checkBalance != true || hasError) {
                     MixinAppTheme.colors.textAssist
                 } else {
                     Color.White
@@ -422,10 +428,18 @@ fun ReviewButton(
     }
 }
 
+private fun buildSwapDisplayedErrorInfo(context: Context, quoteError: Throwable?): String? {
+    if (quoteError == null) return null
+    return when (quoteError) {
+        is TradeQuoteMixinErrorException -> context.getMixinErrorStringByCode(quoteError.code, quoteError.description)
+        else -> ErrorHandler.getErrorMessage(quoteError)
+    }
+}
+
 @Composable
 fun QuoteInfoBox(
     availableHeight: Dp?,
-    errorInfo: String?,
+    quoteError: Throwable?,
     quoteResult: QuoteResult?,
     fromToken: SwapToken?,
     toToken: SwapToken?,
@@ -434,12 +448,17 @@ fun QuoteInfoBox(
     quoteMin: String?,
     quoteMax: String?,
     onInputTextChange: (String) -> Unit,
-    onInvalidFlagChange: () -> Unit
+    onInvalidFlagChange: () -> Unit,
+    onSwitchToLimitOrder: (String, SwapToken, SwapToken) -> Unit,
 ) {
+    val context = LocalContext.current
+    val displayedErrorInfo = remember(quoteError) {
+        buildSwapDisplayedErrorInfo(context, quoteError)
+    }
     Box(
-        modifier = if(availableHeight == null) Modifier.heightIn(48.dp) else Modifier
+        modifier = if (availableHeight == null) Modifier.heightIn(48.dp) else Modifier
     ) {
-        if (errorInfo.isNullOrBlank()) {
+        if (displayedErrorInfo.isNullOrBlank()) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -463,15 +482,15 @@ fun QuoteInfoBox(
                 }
             }
         } else {
-            Row(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight()
                     .padding(horizontal = 16.dp)
-                    .alpha(if (errorInfo.isBlank()) 0f else 1f)
+                    .alpha(if (displayedErrorInfo.isBlank()) 0f else 1f)
             ) {
                 Text(
-                    text = errorInfo,
+                    text = displayedErrorInfo,
                     modifier = Modifier.clickable {
                         if (quoteMax != null || quoteMin != null) {
                             if (quoteMax != null && runCatching { BigDecimal(inputText) }.getOrDefault(BigDecimal.ZERO) > runCatching { BigDecimal(quoteMax) }.getOrDefault(BigDecimal.ZERO)) {
@@ -486,7 +505,48 @@ fun QuoteInfoBox(
                         color = MixinAppTheme.colors.tipError,
                     ),
                 )
+                val mixinError: TradeQuoteMixinErrorException? = quoteError as? TradeQuoteMixinErrorException
+                val canSwitchToLimitOrder: Boolean = if (mixinError == null) {
+                    false
+                } else if (mixinError.code == ErrorHandler.INVALID_QUOTE_AMOUNT) {
+                    val inputAmount: BigDecimal? = inputText.toBigDecimalOrNull()
+                    val maxAmount: BigDecimal? = mixinError.max?.toBigDecimalOrNull()
+                    inputAmount != null && maxAmount != null && inputAmount > maxAmount
+                } else {
+                    mixinError.code in setOf(
+                        ErrorHandler.INVALID_SWAP,
+                        ErrorHandler.NO_AVAILABLE_QUOTE,
+                    )
+                }
+                if (canSwitchToLimitOrder) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = stringResource(R.string.trade_switch_to_limit_order),
+                            modifier = Modifier.clickable {
+                                val from: SwapToken = fromToken ?: return@clickable
+                                val to: SwapToken = toToken ?: return@clickable
+                                onSwitchToLimitOrder(inputText, from, to)
+                            },
+                            style = TextStyle(
+                                fontSize = 14.sp,
+                                color = MixinAppTheme.colors.accent,
+                            ),
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_blue_arrow),
+                            contentDescription = null,
+                            tint = MixinAppTheme.colors.accent,
+                        )
+                    }
+                }
             }
         }
     }
 }
+

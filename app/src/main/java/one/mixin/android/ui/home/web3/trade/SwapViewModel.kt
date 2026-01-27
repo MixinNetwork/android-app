@@ -32,6 +32,7 @@ import one.mixin.android.repository.Web3Repository
 import one.mixin.android.session.Session
 import one.mixin.android.ui.oldwallet.AssetRepository
 import one.mixin.android.util.ErrorHandler.Companion.INVALID_QUOTE_AMOUNT
+import one.mixin.android.util.ErrorHandler.Companion.INVALID_SWAP
 import one.mixin.android.util.ErrorHandler.Companion.NO_AVAILABLE_QUOTE
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeQuoteReason
@@ -42,6 +43,13 @@ import one.mixin.android.vo.route.Order
 import one.mixin.android.vo.safe.TokenItem
 import timber.log.Timber
 import javax.inject.Inject
+
+internal class TradeQuoteMixinErrorException(
+    val code: Int,
+    val description: String,
+    val min: String?,
+    val max: String?,
+) : Exception()
 
 @HiltViewModel
 class SwapViewModel
@@ -129,20 +137,16 @@ class SwapViewModel
                         TradeQuoteReason.INVALID_AMOUNT
                     )
                     val extra = response.error?.extra?.asJsonObject?.get("data")?.asJsonObject
-                    return when {
-                        extra != null -> {
-                            val min = extra.get("min")?.asString
-                            val max = extra.get("max")?.asString
-                            when {
-                                !min.isNullOrBlank() && !max.isNullOrBlank() -> Result.failure(AmountException(context.getString(R.string.single_transaction_should_be_between, min, symbol, max, symbol), max, min))
-                                !min.isNullOrBlank() -> Result.failure(AmountException(context.getString(R.string.single_transaction_should_be_greater_than, min, symbol), null, min))
-                                !max.isNullOrBlank() -> Result.failure(AmountException(context.getString(R.string.single_transaction_should_be_less_than, max, symbol), max, null))
-                                else -> Result.failure(Throwable(context.getMixinErrorStringByCode(response.errorCode, response.errorDescription)))
-                            }
-                        }
-
-                        else -> Result.failure(Throwable(context.getMixinErrorStringByCode(response.errorCode, response.errorDescription)))
-                    }
+                    val min: String? = extra?.get("min")?.asString
+                    val max: String? = extra?.get("max")?.asString
+                    return Result.failure(
+                        TradeQuoteMixinErrorException(
+                            code = response.errorCode,
+                            description = response.errorDescription,
+                            min = min,
+                            max = max,
+                        )
+                    )
                 } else {
                     val reason = if (response.errorCode == NO_AVAILABLE_QUOTE) {
                         TradeQuoteReason.NO_AVAILABLE_QUOTE
@@ -154,7 +158,18 @@ class SwapViewModel
                         type,
                         reason
                     )
-                    Result.failure(Throwable(context.getMixinErrorStringByCode(response.errorCode, response.errorDescription)))
+                    if (response.errorCode == NO_AVAILABLE_QUOTE || response.errorCode == INVALID_SWAP) {
+                        Result.failure(
+                            TradeQuoteMixinErrorException(
+                                code = response.errorCode,
+                                description = response.errorDescription,
+                                min = null,
+                                max = null,
+                            )
+                        )
+                    } else {
+                        Result.failure(Throwable(context.getMixinErrorStringByCode(response.errorCode, response.errorDescription)))
+                    }
                 }
             }
         } else {

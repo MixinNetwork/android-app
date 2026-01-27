@@ -475,9 +475,9 @@
     <string name="error_card_holder_name_not_same">ERROR 10608: Card anomaly, please try correct card later</string>
     <string name="error_expired_session">ERROR 10609: Session expired</string>
     <string name="error_inconsistent_country">ERROR 10610: Inconsistent country</string>
-    <string name="error_invalid_swap">ERROR 10611: Invalid swap</string>
-    <string name="error_invalid_quote_amount">ERROR 10614: Invalid quote amount</string>
-    <string name="error_no_available_quote">ERROR 10615: No available quote found</string>
+    <string name="error_invalid_swap">ERROR 10611: No quote available, please try again later. Try limit order? Not limited by amount and tokens.</string>
+    <string name="error_invalid_quote_amount">ERROR 10614: The input amount is too small or too large, please re-enter. Try limit order? Not limited by amount and tokens.</string>
+    <string name="error_no_available_quote">ERROR 10615: Not supported for this trading pair, please try switching tokens. Try limit order? Not limited by amount and tokens.</string>
     <string name="error_phone_verification_code_expired">ERROR 20114: Expired phone verification code</string>
     <string name="error_phone_verification_code_invalid">ERROR 20113: Invalid phone verification code</string>
     <string name="error_pin_check_too_many_request">You have tried more than 5 times, please wait at least 24 hours to try again.</string>
@@ -1375,6 +1375,7 @@
     <string name="Debit_Credit_Card">Debit / Credit Card</string>
     <string name="Add_debit_or_credit_card">Add credit or debit card</string>
     <string name="user_deleted_hint">The user has deleted the account.</string>
+    <string name="error_transfer_to_deleted_account">ERROR 20160: Unable to transfer to a deleted account.</string>
     <string name="Order_Preview">Order Preview</string>
     <string name="Total">Total</string>
     <string name="Pay_with">Pay with</string>
@@ -2055,7 +2056,7 @@
     <string name="All_Invoices">All Invoices</string>
     <string name="create_new_wallet">Create New Wallet</string>
     <string name="classic_wallet">Classic Wallet</string>
-    <string name="create_wallet_notice_1">This mnemonic is generated based on BIP32 and can be used in all wallets that support this standard.</string>
+    <string name="create_wallet_notice_1">This wallet is generated based on BIP32 and can be used in all wallets that support this standard.</string>
     <string name="create_wallet_notice_2">Supports multiple networks such as Ethereum, Base, Solana, etc.</string>
     <string name="create_wallet_notice_3">This wallet cannot be deleted and the private key cannot be viewed after creation.</string>
     <string name="add_new_multi_chain_wallet">Add a new multi-chain wallet.</string>
@@ -2207,6 +2208,7 @@
     <string name="forever">Forever</string>
     <string name="no_order">NO ORDERS</string>
     <string name="Filled">Filled</string>
+    <string name="expiry_1_year">1 year</string>
     <string name="expiry_never">Never</string>
     <string name="expiry_10_min">10 minutes</string>
     <string name="expiry_1_hour">1 hour</string>
@@ -2217,6 +2219,7 @@
     <string name="Orders">Orders</string>
     <string name="Expiration">Expiration</string>
     <string name="Wallets_Selected_Count">%1$d Wallets</string>
+    <string name="trade_switch_to_limit_order">Switch to limit order</string>
     <string name="Invitee_Commission">Invitee Commission</string>
     <string name="Inviter">Inviter</string>
     <string name="Wallet_Owner">Owner</string>

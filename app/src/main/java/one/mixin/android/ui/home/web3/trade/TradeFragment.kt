@@ -253,6 +253,11 @@ class TradeFragment : BaseFragment() {
                                     val preferenceKey = "$PREF_TRADE_SELECTED_TAB_PREFIX$currentWalletId"
                                     defaultSharedPreferences.putInt(preferenceKey, index)
                                 },
+                                onSwitchToLimitOrder = { inputText, from, to ->
+                                    initialAmount = inputText
+                                    limitFromToken = from
+                                    limitToToken = to
+                                },
                                 onReview = { quote, from, to, amount ->
                                     AnalyticsTracker.trackTradePreview()
                                     this@apply.hideKeyboard()
