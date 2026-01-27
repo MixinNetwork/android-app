@@ -1220,8 +1220,8 @@ class ConversationFragment() :
     private var lastReadMessage: String? = null
 
     override fun onPause() {
-        // don't stop audio player if triggered by screen off
-        if (powerManager.isInteractive) {
+        // don't stop audio player if triggered by screen off or app lock overlay
+        if (powerManager.isInteractive && !MixinApplication.get().isAppAuthShown()) {
             AudioPlayer.pause()
         }
         sensorManager.unregisterListener(this)
