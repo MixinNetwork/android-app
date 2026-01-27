@@ -86,7 +86,7 @@ fun ImportWalletDetailPage(
     val walletViewModel: Web3ViewModel = hiltViewModel()
 
     val networks = mapOf(
-        "BTC" to Constants.ChainId.BITCOIN_CHAIN_ID,
+        "Bitcoin" to Constants.ChainId.BITCOIN_CHAIN_ID,
         "Ethereum" to Constants.ChainId.ETHEREUM_CHAIN_ID,
         "Base" to Constants.ChainId.Base,
         "BSC" to Constants.ChainId.BinanceSmartChain,
@@ -111,7 +111,7 @@ fun ImportWalletDetailPage(
         "Ethereum", "Base", "BSC", "Polygon", "Arbitrum", "Optimism", "Avalanche" -> true
         else -> false
     }
-    val isBitcoin: Boolean = selectedNetworkName == "BTC"
+    val isBitcoin: Boolean = selectedNetworkName == "Bitcoin"
     val isSolana = selectedNetworkName == "Solana"
 
     val currentChainId = networks[selectedNetworkName] ?: ""

@@ -2076,9 +2076,9 @@
     <string name="Invalid_Private_Key">私钥无效</string>
     <string name="Invalid_Address">地址无效</string>
     <string name="Private_Key_Notice">您的私钥只会本地存储在您的设备上。</string>
-    <string name="Imported">Imported</string>
-    <string name="NoKey">NoKey</string>
-    <string name="Watching">Watching</string>
+    <string name="Imported">导入</string>
+    <string name="NoKey">缺少私钥</string>
+    <string name="Watching">观察</string>
     <string name="error_too_many_wallets">错误 10632：导入钱包已达上限。</string>
     <string name="Import_Private_Key_Desc">此钱包的加密私钥在此设备上缺失，请重新导入以继续。%1$s</string>
     <string name="Import_Mnemonic_Phrase_Desc">此钱包的加密助记词在此设备上缺失，请重新导入以继续。%1$s</string>
