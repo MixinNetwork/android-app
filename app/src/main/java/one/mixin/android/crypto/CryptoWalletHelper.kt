@@ -13,7 +13,6 @@ import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
 import one.mixin.android.tip.bip44.Bip44Path
-import one.mixin.android.tip.bip44.generateBip44Key
 import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.encodeToBase58String
@@ -21,14 +20,12 @@ import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.js.Web3Signer
 import org.bitcoinj.base.BitcoinNetwork
 import org.bitcoinj.base.ScriptType
-import org.bitcoinj.base.SegwitAddress
+import org.bitcoinj.crypto.DumpedPrivateKey
 import org.bitcoinj.crypto.ECKey
 import org.bitcoinj.crypto.MnemonicCode
-import org.bouncycastle.jce.ECNamedCurveTable
-import org.bouncycastle.math.ec.ECPoint
+import org.bitcoinj.params.MainNetParams
 import org.sol4k.Base58
 import org.sol4k.Keypair.Companion.fromSecretKey
-import org.web3j.crypto.Bip32ECKeyPair
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigInteger
@@ -147,8 +144,12 @@ object CryptoWalletHelper {
             }
 
             Constants.ChainId.BITCOIN_CHAIN_ID -> {
-                val privateKeyBytes: ByteArray = Numeric.hexStringToByteArray(privateKey)
-                val ecKey: ECKey = ECKey.fromPrivate(BigInteger(1, privateKeyBytes), true)
+                val ecKey: ECKey = if (isBitcoinWifPrivateKey(privateKey)) {
+                    DumpedPrivateKey.fromBase58(MainNetParams.get(), privateKey).key
+                } else {
+                    val privateKeyBytes: ByteArray = Numeric.hexStringToByteArray(privateKey)
+                    ECKey.fromPrivate(BigInteger(1, privateKeyBytes), true)
+                }
                 val address = ecKey.toAddress(ScriptType.P2WPKH, BitcoinNetwork.MAINNET)
                 address.toString()
             }
@@ -244,7 +245,11 @@ object CryptoWalletHelper {
                     privateKeyStr.decodeBase58()
                 }
                 Constants.ChainId.BITCOIN_CHAIN_ID -> {
-                    Numeric.hexStringToByteArray(privateKeyStr)
+                    if (isBitcoinWifPrivateKey(privateKeyStr)) {
+                        DumpedPrivateKey.fromBase58(MainNetParams.get(), privateKeyStr).key.privKeyBytes
+                    } else {
+                        Numeric.hexStringToByteArray(privateKeyStr)
+                    }
                 }
                 in Constants.Web3EvmChainIds -> {
                     Numeric.hexStringToByteArray(privateKeyStr)
@@ -257,6 +262,11 @@ object CryptoWalletHelper {
             Timber.e(e, "Failed to decrypt private key for walletId: $walletId")
             null
         }
+    }
+
+    private fun isBitcoinWifPrivateKey(privateKey: String): Boolean {
+        if (privateKey.length !in 51..52) return false
+        return privateKey.startsWith("5") || privateKey.startsWith("K") || privateKey.startsWith("L")
     }
 
     fun getWeb3PrivateKey(context: Context, spendKey: ByteArray, chainId: String): ByteArray? {

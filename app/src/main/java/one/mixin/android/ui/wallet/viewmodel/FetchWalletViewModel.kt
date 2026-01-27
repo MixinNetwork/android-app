@@ -38,7 +38,9 @@ import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.Web3Signer
 import org.bitcoinj.base.ScriptType
+import org.bitcoinj.crypto.DumpedPrivateKey
 import org.bitcoinj.crypto.ECKey
+import org.bitcoinj.params.MainNetParams
 import org.sol4k.Base58
 import org.sol4k.Keypair
 import org.web3j.utils.Numeric
@@ -486,13 +488,40 @@ class FetchWalletViewModel @Inject constructor(
         }
     }
 
-    fun savePrivateKey(walletId: String, privateKey: String) {
+    fun savePrivateKey(walletId: String, chainId: String, privateKey: String) {
         val currentSpendKey = spendKey
         if (currentSpendKey == null) {
             Timber.e("Spend key is null, cannot save wallets.")
             return
         }
-        saveWeb3ImportedPrivateKey(MixinApplication.appContext, currentSpendKey, walletId, privateKey)
+        val normalizedPrivateKey: String = normalizeImportedPrivateKey(chainId, privateKey) ?: run {
+            Timber.e("Invalid private key format for chainId: %s", chainId)
+            return
+        }
+        saveWeb3ImportedPrivateKey(MixinApplication.appContext, currentSpendKey, walletId, normalizedPrivateKey)
+    }
+
+    private fun normalizeImportedPrivateKey(chainId: String, privateKey: String): String? {
+        return when (chainId) {
+            Constants.ChainId.BITCOIN_CHAIN_ID -> normalizeBitcoinPrivateKeyToWif(privateKey)
+            else -> privateKey
+        }
+    }
+
+    private fun normalizeBitcoinPrivateKeyToWif(privateKey: String): String? {
+        return try {
+            if (privateKey.length in 51..52 && (privateKey.startsWith("5") || privateKey.startsWith("K") || privateKey.startsWith("L"))) {
+                DumpedPrivateKey.fromBase58(MainNetParams.get(), privateKey)
+                privateKey
+            } else {
+                val privateKeyBytes = Numeric.hexStringToByteArray(privateKey)
+                if (privateKeyBytes.size != 32) return null
+                val ecKey: ECKey = ECKey.fromPrivate(privateKeyBytes, true)
+                ecKey.getPrivateKeyAsWiF(MainNetParams.get())
+            }
+        } catch (e: Exception) {
+            null
+        }
     }
 
     fun createClassicWallet() {
