@@ -19,6 +19,7 @@ import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -82,6 +83,7 @@ import one.mixin.android.vo.safe.TokensExtra
 import one.mixin.android.vo.toUser
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.Web3Signer
+import one.mixin.android.web3.send.InsufficientBtcBalanceException
 import one.mixin.android.widget.Keyboard
 import org.sol4k.PublicKey
 import timber.log.Timber
@@ -891,6 +893,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     } else {
                         value
                     }
+                scheduleRefreshBtcFeeIfNeeded(v)
                 if (isReverse && (v == "0" || BigDecimal(v) == BigDecimal.ZERO)) {
                     insufficientBalance.isVisible = false
                     insufficientFeeBalance.isVisible = false
@@ -952,6 +955,93 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
         updatePrimarySize()
         applyFeeUi()
+    }
+
+    private fun scheduleRefreshBtcFeeIfNeeded(amount: String) {
+        val token: Web3TokenItem = web3Token ?: return
+        if (token.chainId != Constants.ChainId.BITCOIN_CHAIN_ID) return
+        if (amount.toBigDecimalOrNull() == null) return
+        if (amount.toBigDecimalOrNull() == BigDecimal.ZERO) return
+        if (isAdjustingBtcAmount) return
+        if (lastBtcFeeAmount == amount) return
+        lastBtcFeeAmount = amount
+        btcFeeRecalculateJob?.cancel()
+        btcFeeRecalculateJob = lifecycleScope.launch {
+            delay(300L)
+            val currentAmount: String = lastBtcFeeAmount ?: return@launch
+            refreshBtcFeeForAmount(currentAmount)
+        }
+    }
+
+    private suspend fun refreshBtcFeeForAmount(amountBtc: String) {
+        val token: Web3TokenItem = web3Token ?: return
+        val from: String = fromAddress ?: return
+        val to: String = toAddress ?: return
+        val localUtxos = web3ViewModel.outputsByAddress(from, token.assetId)
+        val currentRate: BigDecimal = rate ?: BigDecimal.ONE
+        val currentMiniFee: String? = miniFee
+        val tx = try {
+            token.buildTransaction(rpc, from, to, amountBtc, localUtxos, currentRate, currentMiniFee)
+        } catch (err: InsufficientBtcBalanceException) {
+            handleInsufficientBtcBalance(err, amountBtc)
+            return
+        } catch (err: EmptyUtxoException) {
+            return
+        } catch (err: Exception) {
+            Timber.w(err)
+            return
+        }
+        val newFee: BigDecimal = tx.fee ?: return
+        gas = newFee
+        binding.contentTextView.text = "${newFee.numberFormat8()} ${chainToken?.symbol ?: token.getChainSymbolFromName()}"
+        updateUI()
+    }
+
+    private fun handleInsufficientBtcBalance(error: InsufficientBtcBalanceException, amountBtc: String) {
+        val token: Web3TokenItem = web3Token ?: return
+        val feeBtc: BigDecimal = error.feeBtc
+        val utxoTotalBtc: BigDecimal = error.utxoTotalBtc
+        gas = feeBtc
+        binding.contentTextView.text = "${feeBtc.numberFormat8()} ${chainToken?.symbol ?: token.getChainSymbolFromName()}"
+        if (isReverse) {
+            updateUI()
+            return
+        }
+        val availableBalance: BigDecimal = token.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO
+        val desiredAmount: BigDecimal = amountBtc.toBigDecimalOrNull() ?: BigDecimal.ZERO
+        if (desiredAmount > availableBalance) {
+            updateUI()
+            return
+        }
+        val maxSendable: BigDecimal = utxoTotalBtc.subtract(feeBtc).max(BigDecimal.ZERO)
+        isAdjustingBtcAmount = true
+        v = maxSendable.setScale(8, RoundingMode.DOWN).toPlainString()
+        isAdjustingBtcAmount = false
+        updateUI()
+    }
+
+    private fun handleBtcBuildTransactionError(amountBtc: String) {
+        val token: Web3TokenItem = web3Token ?: return
+        val availableBalance: BigDecimal = token.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO
+        val reservedFee: BigDecimal = gas ?: miniFee?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+        val maxSendable: BigDecimal = availableBalance.subtract(reservedFee).max(BigDecimal.ZERO)
+        val desiredAmount: BigDecimal = amountBtc.toBigDecimalOrNull() ?: BigDecimal.ZERO
+        if (desiredAmount <= maxSendable) {
+            toast(R.string.insufficient_balance)
+            return
+        }
+        if (isReverse) {
+            toast(R.string.insufficient_balance)
+            return
+        }
+        if (maxSendable == BigDecimal.ZERO) {
+            toast(R.string.insufficient_balance)
+            return
+        }
+        isAdjustingBtcAmount = true
+        v = maxSendable.setScale(8, RoundingMode.DOWN).toPlainString()
+        isAdjustingBtcAmount = false
+        updateUI()
     }
 
     private fun updateAddText() {
@@ -1148,6 +1238,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     private var gas: BigDecimal? = null
     private var rate: BigDecimal? = null
     private var miniFee: String? = null
+
+    private var btcFeeRecalculateJob: Job? = null
+    private var lastBtcFeeAmount: String? = null
+    private var isAdjustingBtcAmount: Boolean = false
 
     private suspend fun refreshFee(t: TokenItem) {
         val toAddress = toAddress?: return

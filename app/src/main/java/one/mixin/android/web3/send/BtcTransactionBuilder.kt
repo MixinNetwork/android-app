@@ -137,7 +137,9 @@ object BtcTransactionBuilder {
         }
         val targetAmount: Coin = sendAmount.add(Coin.parseCoin(feeBtc.toPlainString()))
         if (selectedAmount.isLessThan(targetAmount)) {
-            throw IllegalArgumentException("insufficient balance")
+            val totalUtxoBtc: BigDecimal = BigDecimal.valueOf(selectedAmount.value)
+                .divide(satoshisPerBtc, 8, RoundingMode.HALF_UP)
+            throw InsufficientBtcBalanceException(feeBtc = feeBtc, utxoTotalBtc = totalUtxoBtc)
         }
         val tx = BtcTransaction()
         tx.addOutput(sendAmount, recipientAddress)
@@ -241,7 +243,7 @@ object BtcTransactionBuilder {
             }
             return replacementTx.serialize().toHex()
         }
-        throw IllegalArgumentException("insufficient balance")
+        throw InsufficientBtcBalanceException()
     }
 
     fun buildCancelReplacement(
@@ -284,14 +286,14 @@ object BtcTransactionBuilder {
                 if (extraCount < extraUtxos.size) {
                     continue
                 }
-                throw IllegalArgumentException("insufficient balance")
+                throw InsufficientBtcBalanceException()
             }
             val oneOutputTx = BtcTransaction()
             addInputs(oneOutputTx, originalInputs, usedExtraUtxos)
             oneOutputTx.addOutput(sendToSelf, selfScript)
             return oneOutputTx.serialize().toHex()
         }
-        throw IllegalArgumentException("insufficient balance")
+        throw InsufficientBtcBalanceException()
     }
 
     private fun addInputs(tx: BtcTransaction, inputs: List<TransactionInput>, extraUtxos: List<WalletOutput>) {
@@ -373,3 +375,8 @@ object BtcTransactionBuilder {
         return inputAmount.subtract(outputAmount).value
     }
 }
+
+class InsufficientBtcBalanceException(
+    val feeBtc: BigDecimal = BigDecimal.ZERO,
+    val utxoTotalBtc: BigDecimal = BigDecimal.ZERO,
+) : IllegalArgumentException("insufficient btc balance")
