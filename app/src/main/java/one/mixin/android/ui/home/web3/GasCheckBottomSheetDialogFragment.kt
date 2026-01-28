@@ -42,6 +42,7 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.Web3Signer
+import org.sol4kt.VersionedTransactionCompat
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import timber.log.Timber
@@ -92,6 +93,49 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     putParcelable(ARGS_TO, outAssetItem)
                 }
             }
+    }
+
+    private suspend fun checkSolanaBalanceOrShowError() {
+        if (!signMessage.isSolMessage()) {
+            showBrowserWalletBottomSheet()
+            return
+        }
+        if (signMessage.type != JsSignMessage.TYPE_RAW_TRANSACTION) {
+            showBrowserWalletBottomSheet()
+            return
+        }
+        val rawTx: String = signMessage.data ?: run {
+            showError(getString(R.string.Data_error))
+            return
+        }
+        val tx = runCatching { VersionedTransactionCompat.from(rawTx) }.getOrNull() ?: run {
+            showError(getString(R.string.Data_error))
+            return
+        }
+        val requiredFee: BigDecimal = tx.calcFee(Web3Signer.address)
+        val solAsset = viewModel.web3TokenItemById(Web3Signer.currentWalletId, Chain.Solana.assetId)
+        val solBalance: BigDecimal = solAsset?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+        if (solBalance >= requiredFee) {
+            showBrowserWalletBottomSheet()
+            return
+        }
+        val solTokenItem: Web3TokenItem? = chainToken ?: viewModel.web3TokenItemById(Web3Signer.currentWalletId, Chain.Solana.assetId)
+        if (solTokenItem == null) {
+            showError(getString(R.string.Data_error))
+            return
+        }
+        TransferWeb3BalanceErrorBottomSheetDialogFragment
+            .newInstance(
+                Web3TokenFeeItem(
+                    solTokenItem,
+                    BigDecimal.ZERO,
+                    requiredFee
+                )
+            ).showNow(
+                parentFragmentManager,
+                TransferWeb3BalanceErrorBottomSheetDialogFragment.TAG
+            )
+        dismiss()
     }
 
     private val binding by viewBinding(FragmentBottomSheetBinding::inflate)
@@ -239,7 +283,7 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
         chainToken: Web3TokenItem?,
     ) {
         if (chain == Chain.Solana) {
-            showBrowserWalletBottomSheet()
+            checkSolanaBalanceOrShowError()
             return
         }
         val chainId = chain.getWeb3ChainId()
