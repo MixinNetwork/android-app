@@ -40,6 +40,7 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.PendingTransactionRefreshHelper
+import one.mixin.android.ui.common.biometric.EmptyUtxoException
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.showGasCheckAndBrowserBottomSheetDialogFragment
@@ -51,6 +52,7 @@ import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.send.BtcTransactionBuilder
+import one.mixin.android.web3.send.InsufficientBtcBalanceException
 import one.mixin.android.widget.BottomSheet
 import org.bitcoinj.base.AddressParser
 import org.bitcoinj.base.Coin
@@ -543,7 +545,15 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                     toast(getString(R.string.web3_btc_speed_up_not_needed))
                     return@launch
                 }
-                val jsSignMessage = createBtcSpeedUpMessage(rawTransaction, currentRate)
+                val jsSignMessage = try {
+                    createBtcSpeedUpMessage(rawTransaction, currentRate)
+                } catch (e: InsufficientBtcBalanceException) {
+                    toast(R.string.insufficient_balance)
+                    return@launch
+                } catch (e: EmptyUtxoException) {
+                    toast(R.string.insufficient_balance)
+                    return@launch
+                }
                 showBrowserBottomSheetDialogFragment(
                     requireActivity(),
                     jsSignMessage,
