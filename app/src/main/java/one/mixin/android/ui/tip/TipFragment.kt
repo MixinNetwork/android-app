@@ -20,6 +20,7 @@ import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.Constants.INTERVAL_10_MINS
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RegisterRequest
@@ -41,6 +42,7 @@ import one.mixin.android.extension.hexString
 import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openUrl
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.toHex
 import one.mixin.android.extension.toast
@@ -706,6 +708,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                     val walletAddresses = wallet.addresses ?: emptyList()
                     if (walletAddresses.isNotEmpty()) {
                         web3Repository.insertAddressList(walletAddresses)
+                        MixinApplication.appContext.defaultSharedPreferences.putBoolean(Constants.Account.PREF_WEB3_ADDRESSES_SYNCED, true)
                     }
                 }
             },

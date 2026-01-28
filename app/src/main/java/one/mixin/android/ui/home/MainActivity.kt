@@ -1134,7 +1134,6 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         if (fragment != null) {
             supportFragmentManager
                 .beginTransaction()
-                .setReorderingAllowed(true)
                 .remove(fragment)
                 .commitAllowingStateLoss()
         }

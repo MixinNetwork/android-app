@@ -15,6 +15,7 @@ import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.Constants.ChainId.BITCOIN_CHAIN_ID
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
@@ -30,6 +31,7 @@ import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.request.web3.Web3AddressRequest
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.repository.Web3Repository
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
@@ -160,6 +162,7 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
             val btcAddress = bottomViewModel.getTipAddress(requireContext(), pin, BITCOIN_CHAIN_ID)
             PropertyHelper.updateKeyValue(BTC_ADDRESS, btcAddress)
             bottomViewModel.ensureClassicWallet(pin)
+            MixinApplication.appContext.defaultSharedPreferences.putBoolean(Constants.Account.PREF_WEB3_ADDRESSES_SYNCED, true)
             addBtcAddressIfNeeded(pin)
             AnalyticsTracker.trackLoginEnd()
         }
@@ -233,6 +236,10 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
             val updateResponse = web3Repository.updateWallet(walletItem.id, updateRequest)
             if (updateResponse.isSuccess.not()) {
                 return false
+            } else {
+                updateResponse.data?.addresses?.let { addresses ->
+                    web3Repository.insertAddressList(addresses)
+                }
             }
         }
         return true

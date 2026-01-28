@@ -55,6 +55,7 @@ import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.escapeSql
@@ -1873,7 +1874,7 @@ class BottomSheetViewModel
                 successBlock = { response ->
                     response.data?.let { wallet ->
                         web3Repository.insertWallet(
-                            one.mixin.android.db.web3.vo.Web3Wallet(
+                            Web3Wallet(
                                 id = wallet.id,
                                 name = wallet.name,
                                 category = wallet.category,
@@ -1884,6 +1885,7 @@ class BottomSheetViewModel
                         val walletAddresses = wallet.addresses ?: emptyList()
                         if (walletAddresses.isNotEmpty()) {
                             web3Repository.insertAddressList(walletAddresses)
+                            MixinApplication.appContext.defaultSharedPreferences.putBoolean(Constants.Account.PREF_WEB3_ADDRESSES_SYNCED, true)
                         }
                     }
                 },
