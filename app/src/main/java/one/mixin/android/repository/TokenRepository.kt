@@ -41,6 +41,7 @@ import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.api.response.TransactionResponse
 import one.mixin.android.api.response.WithdrawalResponse
 import one.mixin.android.api.response.web3.ParsedTx
+import one.mixin.android.api.response.web3.WalletOutput
 import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService
 import one.mixin.android.api.service.RouteService
@@ -1501,6 +1502,33 @@ class TokenRepository
             }.getOrNull() ?: return@withTransaction
             val txHash: String = tx.txId.toString()
             walletOutputDao.deleteByTransactionHash(txHash, Constants.ChainId.BITCOIN_CHAIN_ID)
+
+            val pendingOutpoints: Set<String> = web3RawTransactionDao.getPendingRawTransactionsByAccount(raw.account)
+                .asSequence()
+                .mapNotNull { pendingRaw: Web3RawTransaction ->
+                    val pendingHex: String = pendingRaw.raw.removePrefix("0x").trim()
+                    if (pendingHex.isBlank()) return@mapNotNull null
+                    runCatching {
+                        Transaction.read(ByteBuffer.wrap(pendingHex.hexStringToByteArray()))
+                    }.getOrNull()
+                }
+                .flatMap { pendingTx: Transaction ->
+                    pendingTx.inputs.asSequence().map { input -> "${input.outpoint.hash()}:${input.outpoint.index}" }
+                }
+                .toSet()
+
+            for (input in tx.inputs) {
+                val prevHash: String = input.outpoint.hash().toString()
+                val prevIndex: Long = input.outpoint.index
+                val outpointKey = "${input.outpoint.hash()}:${input.outpoint.index}"
+                if (pendingOutpoints.contains(outpointKey)) {
+                    continue
+                }
+                val localOutput: WalletOutput? = walletOutputDao.outputByOutpoint(prevHash, prevIndex, Constants.ChainId.BITCOIN_CHAIN_ID)
+                if (localOutput != null) {
+                    walletOutputDao.deleteSignedByOutpoint(prevHash, prevIndex, localOutput.address, Constants.ChainId.BITCOIN_CHAIN_ID)
+                }
+            }
         }
     }
 
