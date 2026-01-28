@@ -545,6 +545,11 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                     toast(getString(R.string.web3_btc_speed_up_not_needed))
                     return@launch
                 }
+                val t = web3ViewModel.web3TokenItemById(Web3Signer.currentWalletId, token.assetId) ?:return@launch
+                if ((t.balance.toBigDecimalOrNull()?: BigDecimal.ZERO)<= BigDecimal.ZERO) {
+                    toast(R.string.insufficient_balance)
+                    return@launch
+                }
                 val jsSignMessage = try {
                     createBtcSpeedUpMessage(rawTransaction, currentRate)
                 } catch (e: InsufficientBtcBalanceException) {

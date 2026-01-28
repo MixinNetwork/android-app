@@ -388,6 +388,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             if (Session.hasSafe()) {
                 jobManager.addJobInBackground(RefreshAccountJob(checkTip = true))
                 val isLoginVerified: Boolean = defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false)
+                Timber.e("isLoginVerified: $isLoginVerified")
                 if (isLoginVerified) {
                     AnalyticsTracker.trackLoginPinVerify("pin_verify")
                     LoginVerifyBottomSheetDialogFragment.newInstance().apply {
@@ -533,8 +534,9 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             jobManager.addJobInBackground(RefreshSafeAccountsJob())
 
             val isLoginVerified: Boolean = defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false)
-            val hasClassicWallet: Boolean = web3Repository.getClassicWalletId()?.let { true } ?: false
+            val hasClassicWallet: Boolean = web3Repository.hasClassicWallet()
             // Only show login verify when it has not been verified and there is no classic wallet.
+            Timber.e("isLoginVerified: $isLoginVerified, hasClassicWallet: $hasClassicWallet")
             if (!isLoginVerified && !hasClassicWallet) {
                 lifecycleScope.launch {
                     withContext(Dispatchers.Main) {

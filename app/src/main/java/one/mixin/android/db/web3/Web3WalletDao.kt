@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Transaction
+import com.reown.android.internal.common.modal.data.model.Wallet
 import kotlinx.coroutines.flow.Flow
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.db.BaseDao
@@ -43,6 +44,9 @@ interface Web3WalletDao : BaseDao<Web3Wallet> {
 
     @Query("SELECT wallet_id FROM wallets WHERE category = 'classic' ORDER BY created_at ASC LIMIT 1 ")
     suspend fun getClassicWalletId(): String?
+
+    @Query("SELECT * FROM wallets WHERE category = 'classic' LIMIT 1 ")
+    suspend fun anyClassicWallet(): Web3Wallet?
 
     @Query("SELECT * FROM ($WALLET_ITEM_QUERY) WHERE id = :walletId")
     suspend fun getWalletById(walletId: String): WalletItem?

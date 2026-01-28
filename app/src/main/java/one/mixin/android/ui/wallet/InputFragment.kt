@@ -994,6 +994,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         val newFee: BigDecimal = tx.fee ?: return
         gas = newFee
         binding.contentTextView.text = "${newFee.numberFormat8()} ${chainToken?.symbol ?: token.getChainSymbolFromName()}"
+        updateAvailableBalanceForBtcFee()
         updateUI()
     }
 
@@ -1003,6 +1004,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         val utxoTotalBtc: BigDecimal = error.utxoTotalBtc
         gas = feeBtc
         binding.contentTextView.text = "${feeBtc.numberFormat8()} ${chainToken?.symbol ?: token.getChainSymbolFromName()}"
+        updateAvailableBalanceForBtcFee()
         if (isReverse) {
             updateUI()
             return
@@ -1018,6 +1020,15 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         v = maxSendable.setScale(8, RoundingMode.DOWN).toPlainString()
         isAdjustingBtcAmount = false
         updateUI()
+    }
+
+    private fun updateAvailableBalanceForBtcFee() {
+        val token: Web3TokenItem = web3Token ?: return
+        if (token.chainId != Constants.ChainId.BITCOIN_CHAIN_ID) return
+        val reservedFee: BigDecimal = gas ?: return
+        val availableBalance: BigDecimal = tokenBalance.toBigDecimalOrNull() ?: return
+        val availableAfterFee: BigDecimal = availableBalance.subtract(reservedFee).max(BigDecimal.ZERO)
+        binding.balanceTv.text = getString(R.string.available_balance, "${availableAfterFee.numberFormat8()} $tokenSymbol")
     }
 
     private fun handleBtcBuildTransactionError(amountBtc: String) {

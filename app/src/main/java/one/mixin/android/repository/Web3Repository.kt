@@ -222,6 +222,7 @@ constructor(
     }
 
     suspend fun getClassicWalletId(): String? = web3WalletDao.getClassicWalletId()
+    suspend fun hasClassicWallet() = web3WalletDao.anyClassicWallet() != null
 
     suspend fun searchAssetsByAddresses(addresses: List<String>) = routeService.searchAssetsByAddresses(
         AddressSearchRequest(addresses)
