@@ -204,9 +204,10 @@ fun ParsedTxPreview(
         if (parsedTx == null) {
             BalanceChangeHead()
             CircularProgressIndicator(
-                modifier = Modifier.size(32.dp),
+                modifier = Modifier.size(48.dp),
                 color = MixinAppTheme.colors.accent,
             )
+            Box(modifier = Modifier.height(14.dp))
         } else if (parsedTx.instructions?.isEmpty() == true) {
             BalanceChangeHead()
             Row(
@@ -521,6 +522,13 @@ private fun SingleBalanceChangeItem(
             maxLines = 1,
             fontSize = 12.sp,
         )
+    } else {
+        Text(
+            text = " ", //holder
+            color = MixinAppTheme.colors.textAssist,
+            maxLines = 1,
+            fontSize = 12.sp,
+        )
     }
 }
 
@@ -554,6 +562,13 @@ private fun BalanceChangeItem(
         if (fiatPrice != null) {
             Text(
                 text = fiatPrice,
+                color = MixinAppTheme.colors.textAssist,
+                maxLines = 1,
+                fontSize = 12.sp,
+            )
+        } else {
+            Text(
+                text = " ", //holder
                 color = MixinAppTheme.colors.textAssist,
                 maxLines = 1,
                 fontSize = 12.sp,
