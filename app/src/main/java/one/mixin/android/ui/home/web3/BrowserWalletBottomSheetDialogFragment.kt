@@ -158,6 +158,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     var step by mutableStateOf(Step.Input)
         private set
     private var amount: String? by mutableStateOf(null)
+    private var address: String by mutableStateOf(Web3Signer.address)
     private var token: Web3TokenItem? by mutableStateOf(null)
     private var errorInfo: String? by mutableStateOf(null)
     private var tipGas: TipGas? by mutableStateOf(null)
@@ -174,6 +175,11 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         super.onViewCreated(view, savedInstanceState)
         token = requireArguments().getParcelableCompat(ARGS_TOKEN, Web3TokenItem::class.java)
         amount = requireArguments().getString(ARGS_AMOUNT)
+        if (address.isBlank()) {
+            lifecycleScope.launch {
+                address = viewModel.findFirstAddressByWalletId(Web3Signer.currentWalletId)?.destination?:""
+            }
+        }
         refreshEstimatedGasAndAsset(currentChain)
     }
 
@@ -187,7 +193,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             dismiss()
         } else {
             BrowserPage(
-                Web3Signer.address,
+                address,
                 currentChain,
                 amount,
                 token,

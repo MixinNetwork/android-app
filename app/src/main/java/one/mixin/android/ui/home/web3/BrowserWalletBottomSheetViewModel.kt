@@ -15,6 +15,7 @@ import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.WalletOutput
 import one.mixin.android.crypto.CryptoWalletHelper
+import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
@@ -125,5 +126,9 @@ class BrowserWalletBottomSheetViewModel
 
         suspend fun web3TokenItemById(walletId: String, assetId: String) = withContext(Dispatchers.IO) {
             web3Repository.web3TokenItemById(walletId, assetId)
+        }
+
+        suspend fun findFirstAddressByWalletId(walletId: String): Web3Address? = withContext(Dispatchers.IO) {
+            web3Repository.getAddresses(walletId).firstOrNull()
         }
     }
