@@ -66,7 +66,7 @@ import one.mixin.android.extension.pxToDp
 import one.mixin.android.extension.tickVibrate
 
 @Composable
-fun SetupPinPage(pop: () -> Unit, next: () -> Unit) {
+fun SetupPinPage(pop: () -> Unit, next: (String) -> Unit) {
     val context = LocalContext.current
     var size by remember { mutableStateOf(IntSize.Zero) }
     var pinCode by remember { mutableStateOf("") }
@@ -199,7 +199,7 @@ fun SetupPinPage(pop: () -> Unit, next: () -> Unit) {
                     .fillMaxWidth()
                     .height(48.dp),
                 onClick = {
-                    next()
+                    next(firstPinCode)
                 },
                 colors = ButtonDefaults.outlinedButtonColors(
                     backgroundColor = if (pinCodeAttempts == 2 && pinCode == firstPinCode) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGray
