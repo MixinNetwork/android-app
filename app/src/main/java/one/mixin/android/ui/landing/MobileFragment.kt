@@ -11,6 +11,8 @@ import android.view.View.AUTOFILL_HINT_PHONE
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.WindowManager
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -45,6 +47,7 @@ import one.mixin.android.ui.logs.LogViewerBottomSheet
 import one.mixin.android.ui.web.WebFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
+import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.isAnonymousNumber
 import one.mixin.android.util.isValidNumber
@@ -116,6 +119,9 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        if (activity is LandingActivity) {
+            applySafeTopPadding(view)
+        }
         Timber.e("MobileFragment onViewCreated")
         binding.apply {
             pin = requireArguments().getString(ARGS_PIN)
@@ -195,6 +201,16 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             }
         }
         setupFocusListeners()
+    }
+
+    private fun applySafeTopPadding(rootView: View) {
+        val originalPaddingTop: Int = rootView.paddingTop
+        ViewCompat.setOnApplyWindowInsetsListener(rootView) { v: View, insets: WindowInsetsCompat ->
+            val topInset: Int = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
+            v.setPadding(v.paddingLeft, originalPaddingTop + topInset, v.paddingRight, v.paddingBottom)
+            insets
+        }
+        ViewCompat.requestApplyInsets(rootView)
     }
 
     override fun onBackPressed(): Boolean {

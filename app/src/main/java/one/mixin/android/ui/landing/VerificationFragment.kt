@@ -10,6 +10,8 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -56,6 +58,7 @@ import one.mixin.android.ui.setting.VerificationEmergencyIdFragment
 import one.mixin.android.ui.setting.delete.DeleteAccountPinBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
+import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
@@ -120,6 +123,9 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        if (activity is LandingActivity) {
+            applySafeTopPadding(view)
+        }
         Timber.e("VerificationFragment onViewCreated")
         hasEmergencyContact = requireArguments().getBoolean(ARGS_HAS_EMERGENCY_CONTACT)
         binding.pinVerificationTitleTv.text = getString(R.string.landing_validation_title, phoneNum)
@@ -137,6 +143,16 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
         }
 
         startCountDown()
+    }
+
+    private fun applySafeTopPadding(rootView: View) {
+        val originalPaddingTop: Int = rootView.paddingTop
+        ViewCompat.setOnApplyWindowInsetsListener(rootView) { v: View, insets: WindowInsetsCompat ->
+            val topInset: Int = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
+            v.setPadding(v.paddingLeft, originalPaddingTop + topInset, v.paddingRight, v.paddingBottom)
+            insets
+        }
+        ViewCompat.requestApplyInsets(rootView)
     }
 
     override fun onDestroyView() {

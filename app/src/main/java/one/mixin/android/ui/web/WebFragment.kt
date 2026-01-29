@@ -53,11 +53,13 @@ import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.app.ShareCompat
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.toColorInt
+import androidx.core.view.ViewCompat
 import androidx.core.view.drawToBitmap
 import androidx.core.view.get
 import androidx.core.view.isGone
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -141,6 +143,7 @@ import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment.Companion.PERMISSION_AUDIO
 import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment.Companion.PERMISSION_VIDEO
 import one.mixin.android.ui.forward.ForwardActivity
+import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.home.web3.showGasCheckAndBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.player.MusicActivity
 import one.mixin.android.ui.player.MusicService
@@ -381,6 +384,9 @@ class WebFragment : BaseFragment() {
         view: View,
         savedInstanceState: Bundle?,
     ) {
+        if (activity is LandingActivity) {
+            applySafeTopPadding(view)
+        }
         contentView = binding.containerView
         webView =
             if (index >= 0 && index < clips.size) {
@@ -432,6 +438,16 @@ class WebFragment : BaseFragment() {
         } else {
             loadWebView()
         }
+    }
+
+    private fun applySafeTopPadding(rootView: View) {
+        val originalPaddingTop: Int = rootView.paddingTop
+        ViewCompat.setOnApplyWindowInsetsListener(rootView) { v: View, insets: WindowInsetsCompat ->
+            val topInset: Int = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
+            v.setPadding(v.paddingLeft, originalPaddingTop + topInset, v.paddingRight, v.paddingBottom)
+            insets
+        }
+        ViewCompat.requestApplyInsets(rootView)
     }
 
     private fun checkAppCard(appCard: AppCardData) =

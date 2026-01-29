@@ -32,7 +32,17 @@ class LandingFeatureAdapter(
         private val binding: ItemLandingFeatureBinding,
     ) : RecyclerView.ViewHolder(binding.root) {
 
+        private var hasSetFeatureHeight: Boolean = false
+
         fun bindItem(item: LandingFeatureItem, isFirstPage: Boolean) {
+            if (!hasSetFeatureHeight) {
+                val screenHeightPx: Int = binding.root.resources.displayMetrics.heightPixels
+                val expectedHeightPx: Int = (screenHeightPx * 0.38f).toInt()
+                val layoutParams: ViewGroup.LayoutParams = binding.featureFl.layoutParams
+                layoutParams.height = expectedHeightPx
+                binding.featureFl.layoutParams = layoutParams
+                hasSetFeatureHeight = true
+            }
             binding.featureImage.setImageResource(item.imageResId)
             val layoutParams: FrameLayout.LayoutParams = binding.featureImage.layoutParams as FrameLayout.LayoutParams
             layoutParams.gravity = if (isFirstPage) {

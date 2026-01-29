@@ -34,7 +34,7 @@ class LandingFragment : Fragment(R.layout.fragment_landing) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        SystemUIManager.setSafePadding(requireActivity().window, requireContext().colorFromAttribute(R.attr.bg_white), onlyNav = true)
+        SystemUIManager.setSafePadding(requireActivity().window, requireContext().colorFromAttribute(R.attr.bg_white), onlyNav = true, imePadding = false)
         Timber.e("\n-----------------------------------")
         Timber.e("MobileFragment onViewCreated")
         val features: List<LandingFeatureItem> = listOf(
@@ -71,7 +71,7 @@ class LandingFragment : Fragment(R.layout.fragment_landing) {
         )
         binding.featurePager.adapter = LandingFeatureAdapter(features)
         binding.featurePager.offscreenPageLimit = features.size
-        val mediator: TabLayoutMediator = TabLayoutMediator(binding.featureIndicator, binding.featurePager) { tab, _ ->
+        val mediator = TabLayoutMediator(binding.featureIndicator, binding.featurePager) { tab, _ ->
             val dotView: View = View(requireContext()).apply {
                 layoutParams = LinearLayout.LayoutParams(
                     resources.getDimensionPixelSize(R.dimen.landing_indicator_dot_size),

@@ -2,6 +2,8 @@ package one.mixin.android.ui.landing
 
 import android.os.Bundle
 import android.view.View
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -38,7 +40,9 @@ class LandingMnemonicPhraseFragment : BaseFragment(R.layout.fragment_landing_mne
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        SystemUIManager.setSafePadding(requireActivity().window, color = requireActivity().colorFromAttribute(R.attr.bg_white), imePadding = false)
+        if (activity is LandingActivity) {
+            applySafeTopPadding(view)
+        }
         Timber.e("LandingMnemonicPhraseFragment onViewCreated")
         binding.titleView.leftIb.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
@@ -69,5 +73,15 @@ class LandingMnemonicPhraseFragment : BaseFragment(R.layout.fragment_landing_mne
             }
             )
         }
+    }
+
+    private fun applySafeTopPadding(rootView: View) {
+        val originalPaddingTop: Int = rootView.paddingTop
+        ViewCompat.setOnApplyWindowInsetsListener(rootView) { v: View, insets: WindowInsetsCompat ->
+            val topInset: Int = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
+            v.setPadding(v.paddingLeft, originalPaddingTop + topInset, v.paddingRight, v.paddingBottom)
+            insets
+        }
+        ViewCompat.requestApplyInsets(rootView)
     }
 }

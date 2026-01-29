@@ -481,7 +481,7 @@
     <string name="Join_group">加入群組</string>
     <string name="Joined_in">%1$s 加入</string>
     <string name="Label">標題</string>
-    <string name="landing_delete_content">您的賬戶將於 %1$s 被刪除，如果您繼續登入，刪除您賬戶的請求將被取消。</string>
+    <string name="landing_delete_content">您在 %1$s 申請了刪除帳號，帳號將於 %2$s 被刪除，如果您繼續登入，刪除您帳戶的請求將被取消。</string>
     <string name="landing_enter_mobile_tip">我們不會公開你的手機號碼</string>
     <string name="landing_introduction">繼續使用即表示你同意 %1$s 和 %2$s。</string>
     <string name="landing_desc">帶有端對端加密訊息功能的開源加密錢包。</string>
