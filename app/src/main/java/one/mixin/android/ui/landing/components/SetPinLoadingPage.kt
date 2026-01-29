@@ -16,6 +16,7 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -33,15 +34,20 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.openUrl
-import one.mixin.android.ui.landing.MobileViewModel
+import one.mixin.android.ui.landing.SetupPinViewModel
 import one.mixin.android.ui.landing.vo.SetupState
 
 @Composable
-fun SetPinLoadingPage(next: () -> Unit) {
-    val viewModel = hiltViewModel<MobileViewModel>()
+fun SetPinLoadingPage(pin: String, next: () -> Unit) {
+    val viewModel = hiltViewModel<SetupPinViewModel>()
     val coroutineScope = rememberCoroutineScope()
     val setupState by viewModel.setupState.observeAsState(SetupState.Loading)
     val context = LocalContext.current
+    LaunchedEffect(pin) {
+        if (pin.isNotBlank()) {
+            viewModel.executeCreatePin(context, pin)
+        }
+    }
     PageScaffold(
         title = "",
         verticalScrollable = false,
@@ -88,6 +94,10 @@ fun SetPinLoadingPage(next: () -> Unit) {
                     color = MixinAppTheme.colors.textAssist
                 )
                 Spacer(modifier = Modifier.height(8.dp))
+            } else if (setupState == SetupState.Success) {
+                LaunchedEffect(Unit) {
+                    next()
+                }
             } else if (setupState == SetupState.Failure) {
                 Button(
                     modifier = Modifier
@@ -95,8 +105,7 @@ fun SetPinLoadingPage(next: () -> Unit) {
                         .height(48.dp),
                     onClick = {
                         coroutineScope.launch {
-                            viewModel.setState(SetupState.Success)
-                            next()
+                            viewModel.executeCreatePin(context, pin)
                         }
                     },
                     colors =

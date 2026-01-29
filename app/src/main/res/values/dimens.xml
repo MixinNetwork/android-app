@@ -46,4 +46,7 @@
     <dimen name="fab_translation_z_pressed">6dp</dimen>
     <dimen name="futuresimple_fab_shadow_offset">3dp</dimen>
 
+    <dimen name="landing_indicator_dot_size">8dp</dimen>
+    <dimen name="landing_indicator_dot_spacing">4dp</dimen>
+
 </resources>
