@@ -428,10 +428,27 @@ fun ReviewButton(
     }
 }
 
-private fun buildSwapDisplayedErrorInfo(context: Context, quoteError: Throwable?): String? {
+private fun buildSwapDisplayedErrorInfo(context: Context, quoteError: Throwable?, quoteMax: String?): String? {
     if (quoteError == null) return null
     return when (quoteError) {
-        is TradeQuoteMixinErrorException -> context.getMixinErrorStringByCode(quoteError.code, quoteError.description)
+        is TradeQuoteMixinErrorException -> {
+            when (quoteError.code) {
+                ErrorHandler.INVALID_QUOTE_AMOUNT -> {
+                    if (quoteMax != null) {
+                        context.getString(R.string.error_invalid_quote_amount_detailed, quoteMax)
+                    } else {
+                        context.getString(R.string.error_invalid_quote_amount)
+                    }
+                }
+                ErrorHandler.NO_AVAILABLE_QUOTE -> {
+                    context.getString(R.string.error_no_quote_detailed)
+                }
+                ErrorHandler.INVALID_SWAP -> {
+                    context.getString(R.string.error_trading_pair_not_supported_detailed)
+                }
+                else -> context.getMixinErrorStringByCode(quoteError.code, quoteError.description)
+            }
+        }
         else -> ErrorHandler.getErrorMessage(quoteError)
     }
 }
@@ -452,8 +469,8 @@ fun QuoteInfoBox(
     onSwitchToLimitOrder: (String, SwapToken, SwapToken) -> Unit,
 ) {
     val context = LocalContext.current
-    val displayedErrorInfo = remember(quoteError) {
-        buildSwapDisplayedErrorInfo(context, quoteError)
+    val displayedErrorInfo = remember(quoteError, quoteMax) {
+        buildSwapDisplayedErrorInfo(context, quoteError, quoteMax)
     }
     Box(
         modifier = if (availableHeight == null) Modifier.heightIn(48.dp) else Modifier
