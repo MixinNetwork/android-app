@@ -106,7 +106,7 @@ fun AssetDashboardScreen(
 
         val disposable = RxBus.listen(WalletRefreshedEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { event ->
+            .subscribe { _ ->
                 refreshTrigger++
             }
 
@@ -170,14 +170,13 @@ fun AssetDashboardScreen(
             }
             val hasImported = wallets.any { it.isImported() }
             val hasWatch = wallets.any { it.isWatch() }
-            val hasSafe = wallets.any { it.category == WalletCategory.MIXIN_SAFE.value }
 
             WalletCategoryFilter(
                 selectedCategory = selectedCategory,
                 hasImported = hasImported,
                 hasWatch = hasWatch,
-                hasSafe = hasSafe,
-                showSafeBadge = hasSafe && !hasSeenSafeCategoryBadge.value,
+                hasSafe = true,
+                showSafeBadge = !hasSeenSafeCategoryBadge.value,
                 onCategorySelected = {
                     isWalletInfoCardVisible = false
                     if (it == WalletCategory.MIXIN_SAFE.value) {

@@ -99,7 +99,6 @@ import one.mixin.android.ui.oldwallet.biometric.Multi2MultiBiometricItem
 import one.mixin.android.ui.oldwallet.biometric.NftBiometricItem
 import one.mixin.android.ui.oldwallet.biometric.One2MultiBiometricItem
 import one.mixin.android.ui.oldwallet.biometric.TransferBiometricItem
-import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.WalletActivity.Destination
@@ -427,7 +426,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                     } else if (e is ParserError && e.symbol != null) {
                         showError("${e.symbol} ${getString(R.string.insufficient_balance)}")
                     } else if (e is ParserError && e.message != null) {
-                        showError(e.message!!)
+                        showError(e.message)
                     } else {
                         showError(getString(R.string.Invalid_payment_link))
                     }
@@ -456,7 +455,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                         } else if (e is ParserError && e.symbol != null) {
                             showError("${e.symbol} ${getString(R.string.insufficient_balance)}")
                         } else if (e is ParserError && e.message != null) {
-                            showError(e.message!!)
+                            showError(e.message)
                         } else {
                             showError(getString(R.string.Invalid_payment_link))
                         }
@@ -1037,9 +1036,6 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
             }
         Web3Signer.useSolana()
         if (Web3Signer.address.isBlank()) {
-            WalletUnlockBottomSheetDialogFragment.getInstance(Web3Signer.JsSignerNetwork.Solana.name)
-                .setOnDismiss { dismiss() }
-                .showIfNotShowing(childFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
             return true
         }
         val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = data, solanaTxSource = SolanaTxSource.Link)

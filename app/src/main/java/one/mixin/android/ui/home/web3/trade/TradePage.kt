@@ -82,6 +82,7 @@ fun TradePage(
     onOrderList: (String, Boolean) -> Unit,
     onDismissLimitOrderTabBadge: () -> Unit,
     onTabChanged: (Int) -> Unit,
+    onSwitchToLimitOrder: (String, SwapToken, SwapToken) -> Unit,
     pop: () -> Unit,
     onLimitOrderClick: (String) -> Unit,
 ) {
@@ -111,6 +112,14 @@ fun TradePage(
         }
     }
 
+    val coroutineScope = rememberCoroutineScope()
+
+    val tabCount = 2
+    val pagerState = rememberPagerState(
+        initialPage = initialTabIndex.coerceIn(0, tabCount - 1),
+        pageCount = { tabCount },
+    )
+
     val tabs = listOf(
         TabItem(stringResource(id = R.string.Trade_Simple)) {
             SwapContent(
@@ -124,28 +133,31 @@ fun TradePage(
                 onSelectToken = { isReverse, type -> onSelectToken(isReverse, type, false) },
                 onReview = onReview,
                 onDeposit = onDeposit,
+                onSwitchToLimitOrder = { inputText, fromToken, toToken ->
+                    onSwitchToLimitOrder(inputText, fromToken, toToken)
+                    coroutineScope.launch {
+                        pagerState.animateScrollToPage(1)
+                    }
+                    onDismissLimitOrderTabBadge()
+                    onTabChanged(1)
+                },
             )
         },
         TabItem(stringResource(id = R.string.Trade_Advanced)) {
             LimitOrderContent(
-                from = limitFrom,
-                to = limitTo,
-                inMixin = inMixin,
-                initialAmount = initialAmount,
-                lastOrderTime = lastOrderTime,
-                onSelectToken = { isReverse, type -> onSelectToken(isReverse, type, true) },
-                onLimitReview = onLimitReview,
-                onDeposit = onDeposit,
-                onLimitOrderClick = onLimitOrderClick,
-                onOrderList = onOrderList,
+                limitFrom,
+                limitTo,
+                inMixin,
+                initialAmount,
+                lastOrderTime,
+                { isReverse, type -> onSelectToken(isReverse, type, true) },
+                onLimitReview,
+                onDeposit,
+                onLimitOrderClick,
+                onOrderList,
             )
         }
     )
-    val pagerState = rememberPagerState(
-        initialPage = initialTabIndex.coerceIn(0, tabs.size - 1),
-        pageCount = { tabs.size },
-    )
-    val coroutineScope = rememberCoroutineScope()
 
     PageScaffold(
         title = stringResource(id = R.string.Trade),

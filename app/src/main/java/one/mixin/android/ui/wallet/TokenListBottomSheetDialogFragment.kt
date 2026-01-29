@@ -38,6 +38,7 @@ import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.scrollToCenterCheckedRadio
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.adapter.SearchAdapter
@@ -101,6 +102,7 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         binding.apply {
             radio.isVisible = true
             radioAll.isChecked = true
+            radio.scrollToCenterCheckedRadio(radioGroup)
             radioAll.isVisible = true
             radioEth.isVisible = true
             radioTron.isVisible = true
@@ -153,6 +155,7 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         null
                     }
                 }
+                radio.scrollToCenterCheckedRadio(radioGroup)
                 loadData()
             }
         }

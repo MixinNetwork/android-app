@@ -1,10 +1,16 @@
 package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
+import android.content.ClipboardManager
+import android.content.Context
 import android.graphics.Paint
 import android.os.Bundle
 import android.util.TypedValue
+import android.view.ActionMode
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
+import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
@@ -217,6 +223,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 initTitle()
                 keyboard.tipTitleEnabled = false
                 keyboard.disableNestedScrolling()
+                setupPrimaryPasteOnly()
                 keyboard.setOnClickKeyboardListener(
                     object : Keyboard.OnClickKeyboardListener {
                         override fun onKeyClick(
@@ -697,6 +704,66 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 else -> {}
             }
         }
+    }
+
+    private fun setupPrimaryPasteOnly() {
+        val primaryTextView: TextView = binding.primaryTv
+        primaryTextView.setTextIsSelectable(false)
+        primaryTextView.setOnLongClickListener {
+            showPrimaryPasteActionMode(primaryTextView)
+            true
+        }
+    }
+
+    private fun showPrimaryPasteActionMode(anchorView: View) {
+        if (getPrimaryClipboardText().isNullOrBlank()) return
+        anchorView.startActionMode(primaryPasteActionModeCallback, ActionMode.TYPE_FLOATING)
+    }
+
+    private fun getPrimaryClipboardText(): String? {
+        val clipboardManager: ClipboardManager =
+            requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        return clipboardManager.primaryClip?.getItemAt(0)?.coerceToText(requireContext())?.toString()
+    }
+
+    private val primaryPasteActionModeCallback: ActionMode.Callback =
+        object : ActionMode.Callback {
+            override fun onCreateActionMode(
+                mode: ActionMode,
+                menu: Menu,
+            ): Boolean {
+                val pasteTitle: String = getString(android.R.string.paste)
+                menu.add(Menu.NONE, android.R.id.paste, Menu.NONE, pasteTitle).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
+                return true
+            }
+
+            override fun onPrepareActionMode(
+                mode: ActionMode,
+                menu: Menu,
+            ): Boolean = false
+
+            override fun onActionItemClicked(
+                mode: ActionMode,
+                item: MenuItem,
+            ): Boolean {
+                if (item.itemId == android.R.id.paste) {
+                    val pasteText: String = getPrimaryClipboardText() ?: return false
+                    applyPrimaryPastedValue(pasteText)
+                    mode.finish()
+                    return true
+                }
+                return false
+            }
+
+            override fun onDestroyActionMode(mode: ActionMode) {}
+        }
+
+    private fun applyPrimaryPastedValue(rawText: String) {
+        val normalizedText: String = rawText.trim().replace(",", "")
+        val pastedValue: String = normalizedText.filter { it.isDigit() || it == '.' }
+        if (pastedValue.isBlank()) return
+        v = pastedValue
+        updateUI()
     }
 
     private var isFeeWaived = false
