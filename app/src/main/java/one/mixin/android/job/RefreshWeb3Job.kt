@@ -9,6 +9,7 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.response.web3.WalletOutput
+import one.mixin.android.db.property.Web3PropertyHelper
 import one.mixin.android.db.web3.vo.Web3Chain
 import one.mixin.android.db.web3.vo.Web3TokensExtra
 import one.mixin.android.db.web3.vo.Web3Wallet
@@ -18,6 +19,7 @@ import one.mixin.android.event.WalletOperationType
 import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
+import one.mixin.android.session.Session
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.vo.WalletCategory
 import timber.log.Timber
@@ -31,6 +33,7 @@ class RefreshWeb3Job : BaseJob(
     }
 
     override fun onRun(): Unit = runBlocking {
+        Web3PropertyHelper.updateKeyValue("account", Session.getAccount()?.identityNumber ?: "")
         fetchWallets()
         val wallets = web3WalletDao.getAllClassicWallets()
         if (wallets.isNotEmpty()) {

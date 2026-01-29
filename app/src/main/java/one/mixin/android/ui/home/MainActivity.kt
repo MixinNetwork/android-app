@@ -74,6 +74,7 @@ import one.mixin.android.databinding.ActivityMainBinding
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.UserDao
+import one.mixin.android.db.WalletDatabase
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.event.BadgeEvent
 import one.mixin.android.event.TipEvent
@@ -309,6 +310,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             return
         }
 
+        WalletDatabase.moveTempDatabaseFileIfNeeded(this, Session.getAccount()?.identityNumber)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
