@@ -229,7 +229,6 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                                     address?.let {
                                         putString(TransferDestinationInputFragment.ARGS_ADDRESS, it)
                                     }
-                                    putParcelable(TransferDestinationInputFragment.ARGS_WALLET, wallet)
                                     putParcelable(TransferDestinationInputFragment.ARGS_WALLET, wallet?.toWeb3Wallet())
                                     putParcelable(TransferDestinationInputFragment.ARGS_WEB3_TOKEN, token)
                                     putParcelable(TransferDestinationInputFragment.ARGS_CHAIN_TOKEN, chain)
@@ -434,6 +433,15 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
             avatar.setOnClickListener(
                 object : DebugClickListener() {
                     override fun onDebugClick() {
+                        if (token.chainId != Constants.ChainId.BITCOIN_CHAIN_ID) return
+                        val fromAddress: String = address ?: return
+                        requireView().navigate(
+                            R.id.action_web3_transactions_to_web3_btc_outputs,
+                            Bundle().apply {
+                                putString(Web3BtcOutputsFragment.ARGS_WALLET_ID, token.walletId)
+                                putString(Web3BtcOutputsFragment.ARGS_ADDRESS, fromAddress)
+                            },
+                        )
                     }
 
                     override fun onSingleClick() {

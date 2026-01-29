@@ -7,6 +7,7 @@ import com.reown.walletkit.client.Wallet
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.db.web3.vo.isOwner
 import one.mixin.android.db.web3.vo.isTransferFeeFree
 import one.mixin.android.extension.hexStringToByteArray
@@ -108,6 +109,11 @@ class SessionRequestViewModel
         suspend fun web3TokenItemById(walletId: String, assetId: String) = withContext(Dispatchers.IO) {
             web3Repository.web3TokenItemById(walletId, assetId)
         }
+
+        suspend fun findFirstAddressByWalletId(walletId: String): Web3Address? = withContext(Dispatchers.IO) {
+            web3Repository.getAddresses(walletId).firstOrNull()
+        }
+
 
         // index 0 is address, index 1 is privacy wallet, 2 is safe wallet, 3 is common wallet, 4 is fee free wallet
         suspend fun checkAddressAndGetDisplayName(destination: String, chainId: String?): Triple<String?, Int, Boolean?>? {

@@ -56,6 +56,11 @@ data class Web3Wallet(
     @IgnoredOnParcel
     var hasLocalPrivateKey: Boolean = false
 
+    @Ignore
+    @IgnoredOnParcel
+    @SerializedName("addresses")
+    var addresses: List<Web3Address>? = null
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Web3Wallet) return false

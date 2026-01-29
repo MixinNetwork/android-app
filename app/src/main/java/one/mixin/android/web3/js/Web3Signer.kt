@@ -25,6 +25,14 @@ import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.encodeToBase58String
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.Web3Exception
+import org.bitcoinj.base.Coin
+import org.bitcoinj.core.Transaction
+import org.bitcoinj.core.TransactionInput
+import org.bitcoinj.core.TransactionWitness
+import org.bitcoinj.crypto.ECKey
+import org.bitcoinj.crypto.TransactionSignature
+import org.bitcoinj.script.Script
+import org.bitcoinj.script.ScriptBuilder
 import org.sol4k.Keypair
 import org.sol4kt.SignInAccount
 import org.sol4kt.SignInInput
@@ -41,6 +49,7 @@ import org.web3j.protocol.core.Response
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigInteger
+import java.nio.ByteBuffer
 import org.sol4k.Constants as ConstantsSolana
 
 object Web3Signer {
@@ -367,6 +376,37 @@ object Web3Signer {
         System.arraycopy(signature.s, 0, b, 32, 32)
         System.arraycopy(signature.v, 0, b, 64, 1)
         return Numeric.toHexString(b)
+    }
+
+    fun signBTCTransaction(priv: ByteArray, rawHex: String, amountSats: Long): String {
+        val key: ECKey = ECKey.fromPrivate(priv, true)
+        val rawTxBytes: ByteArray = rawHex.hexStringToByteArray()
+        val transaction: Transaction = Transaction.read(ByteBuffer.wrap(rawTxBytes))
+        if (transaction.inputs.isEmpty()) {
+            throw IllegalArgumentException("Empty transaction inputs")
+        }
+        transaction.inputs.forEachIndexed { inputIndex: Int, input: TransactionInput ->
+            val value: Coin = Coin.valueOf(amountSats)
+            if (value.isZero) {
+                throw IllegalArgumentException("Invalid utxo amount on input $inputIndex")
+            }
+            val scriptCode: Script = ScriptBuilder.createP2PKHOutputScript(key)
+            val signature: TransactionSignature = transaction.calculateWitnessSignature(
+                inputIndex,
+                key,
+                scriptCode,
+                value,
+                Transaction.SigHash.ALL,
+                false,
+            )
+            val witness = TransactionWitness.of(
+                signature.encodeToBitcoin(),
+                key.pubKey,
+            )
+            val newInput = input.withScriptBytes(byteArrayOf()).withWitness(witness)
+            transaction.inputs[inputIndex] = newInput
+        }
+        return transaction.serialize().toHex()
     }
 
     fun signSolanaMessage(
