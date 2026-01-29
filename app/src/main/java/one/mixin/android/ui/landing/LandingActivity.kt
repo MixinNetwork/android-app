@@ -3,7 +3,6 @@ package one.mixin.android.ui.landing
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -55,16 +54,6 @@ class LandingActivity : BaseActivity() {
 
     private val binding by viewBinding(ActivityLandingBinding::inflate)
 
-    interface SafePaddingConfigProvider {
-        fun provideSafePaddingConfig(activity: LandingActivity): SafePaddingConfig
-    }
-
-    data class SafePaddingConfig(
-        val color: Int,
-        val imePadding: Boolean,
-        val onlyNav: Boolean,
-    )
-
     override fun onCreate(savedInstanceState: Bundle?) {
         skipSystemUi = true
         super.onCreate(savedInstanceState)
@@ -82,21 +71,6 @@ class LandingActivity : BaseActivity() {
                 LandingFragment.newInstance()
             }
         replaceFragment(fragment, R.id.container)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        applySafePadding()
-    }
-
-    private fun applySafePadding() {
-        val fragment: Fragment? = supportFragmentManager.findFragmentById(R.id.container)
-        val config: SafePaddingConfig = if (fragment is SafePaddingConfigProvider) {
-            fragment.provideSafePaddingConfig(this)
-        } else {
-            SafePaddingConfig(color = colorFromAttribute(R.attr.bg_white), imePadding = true, onlyNav = false)
-        }
-        SystemUIManager.setSafePadding(window, color = config.color, imePadding = config.imePadding, onlyNav = config.onlyNav)
     }
 
     private fun checkVersion(){

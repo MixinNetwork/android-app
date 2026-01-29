@@ -10,6 +10,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentLandingBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.navTo
 import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_LANDING
 import one.mixin.android.ui.setting.diagnosis.DiagnosisFragment
@@ -76,8 +77,8 @@ class LandingFragment : Fragment(R.layout.fragment_landing) {
                     resources.getDimensionPixelSize(R.dimen.landing_indicator_dot_size),
                     resources.getDimensionPixelSize(R.dimen.landing_indicator_dot_size),
                 ).apply {
-                    marginStart = resources.getDimensionPixelSize(R.dimen.landing_indicator_dot_spacing)
                     marginEnd = resources.getDimensionPixelSize(R.dimen.landing_indicator_dot_spacing)
+                    marginStart = resources.getDimensionPixelSize(R.dimen.landing_indicator_dot_spacing)
                 }
                 setBackgroundResource(R.drawable.bg_landing_indicator_dot)
                 isSelected = false
