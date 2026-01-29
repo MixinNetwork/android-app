@@ -1500,6 +1500,9 @@
     <string name="multisig_unlocked_description">您的签名已撤销</string>
     <string name="address_adding_description">正在添加地址，请稍候。</string>
     <string name="address_deleting_description">正在删除地址，请稍候。</string>
+    <string name="Verify_Mobile_Number">验证手机号</string>
+    <string name="Verify_Mobile_Number_Desc">出于合规与安全原因，我们需要验证你的手机号。\n定期进行短信验证有助于提升账号安全，如果当前手机号已失效请尽快更换手机号。</string>
+    <string name="Verify_Now">立即验证</string>
     <string name="send_by_pin">通过 PIN 发送</string>
     <string name="address_will_receive">指定地址将收到</string>
     <string name="receiver_will_receive">对方将收到</string>

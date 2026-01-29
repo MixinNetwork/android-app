@@ -1480,6 +1480,9 @@
     <string name="Transfer_confirmation_desc">Please check the payee, network and amount carefully. If you make a mistake, the asset will not be recovered!</string>
     <string name="Withdrawal_confirmation_desc">Please check the collection address, network and amount carefully. If you make a mistake, the asset will not be recovered!</string>
     <string name="Not_Now">Not Now</string>
+    <string name="Verify_Mobile_Number">Verify Mobile Number</string>
+    <string name="Verify_Mobile_Number_Desc">For compliance and security reasons, we need to verify your mobile number.\nRegular SMS verification helps improve account security. If your current mobile number is no longer active, please update it as soon as possible.</string>
+    <string name="Verify_Now">Verify Now</string>
     <string name="Enable">Enable</string>
     <string name="enable_biometric_description">What about biometric? Once enabled, you can expedite authentication with biometric.</string>
     <string name="return_to_merchant_description">Merchant payment is complete. You can opt to return to the merchant or stay in Mixin.</string>
