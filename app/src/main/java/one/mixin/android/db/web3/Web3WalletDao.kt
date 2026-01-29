@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Transaction
-import com.reown.android.internal.common.modal.data.model.Wallet
 import kotlinx.coroutines.flow.Flow
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.db.BaseDao

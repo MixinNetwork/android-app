@@ -7,6 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import one.mixin.android.Constants
 import one.mixin.android.api.response.web3.WalletOutput
 import one.mixin.android.db.converter.AssetChangeListConverter
@@ -30,6 +31,7 @@ import one.mixin.android.db.web3.vo.Web3Transaction
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.util.SINGLE_DB_EXECUTOR
 import one.mixin.android.util.database.dbDir
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.Property
 import one.mixin.android.vo.route.Order
 import java.io.File
@@ -121,6 +123,18 @@ abstract class WalletDatabase : RoomDatabase() {
                             context,
                             WalletDatabase::class.java,
                             File(dir, Constants.DataBase.WEB3_DB_NAME).absolutePath,
+                        ).openHelperFactory(
+                            MixinOpenHelperFactory(
+                                FrameworkSQLiteOpenHelperFactory(),
+                                listOf(
+                                    object : MixinCorruptionCallback {
+                                        override fun onCorruption(database: SupportSQLiteDatabase) {
+                                            val e = IllegalStateException("Wallet database is corrupted, current DB version: 7")
+                                            reportException(e)
+                                        }
+                                    },
+                                ),
+                            ),
                         ).addCallback(
                             object : Callback() {
                                 override fun onOpen(db: SupportSQLiteDatabase) {

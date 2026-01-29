@@ -11,9 +11,9 @@ import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Swappable
 import one.mixin.android.api.response.web3.WalletOutput
 import one.mixin.android.extension.base64Encode
-import one.mixin.android.extension.toHex
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
+import one.mixin.android.ui.common.biometric.EmptyUtxoException
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.Rpc
@@ -21,15 +21,7 @@ import one.mixin.android.web3.Web3Exception
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.js.Web3Signer
-import one.mixin.android.ui.common.biometric.EmptyUtxoException
 import one.mixin.android.web3.send.BtcTransactionBuilder
-import org.bitcoinj.base.AddressParser
-import org.bitcoinj.base.Coin
-import org.bitcoinj.base.LegacyAddress
-import org.bitcoinj.base.Sha256Hash
-import org.bitcoinj.core.TransactionInput
-import org.bitcoinj.core.TransactionOutPoint
-import org.bitcoinj.core.Transaction as BtcTransaction
 import org.sol4k.Constants.TOKEN_2022_PROGRAM_ID
 import org.sol4k.Constants.TOKEN_PROGRAM_ID
 import org.sol4k.Convert.solToLamport
@@ -49,6 +41,7 @@ import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
+import org.bitcoinj.core.Transaction as BtcTransaction
 
 @Parcelize
 data class Web3TokenItem(
