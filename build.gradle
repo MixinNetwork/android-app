@@ -129,7 +129,7 @@ buildscript {
         ext.activityComposeVersion = '1.12.3'
         ext.web3jCoreVersion = '4.11.0'
         ext.web3jCryptoVersion = '4.11.0'
-        ext.reownBomVersion = '1.6.2'
+        ext.reownBomVersion = '1.6.0'
         ext.kotsonVersion = '2.5.0'
         ext.playServicesMapsVersion = '20.0.0'
         ext.playServicesLocationVersion = '21.3.0'
