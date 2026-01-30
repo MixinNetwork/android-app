@@ -42,7 +42,6 @@ import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
-import one.mixin.android.vo.route.OrderState
 import one.mixin.android.vo.route.isCancelling
 import one.mixin.android.vo.route.isPending
 import one.mixin.android.vo.safe.TokenItem
