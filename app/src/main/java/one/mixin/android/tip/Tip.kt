@@ -177,7 +177,7 @@ class Tip
                     throw TipNullException("Salt not matched")
                 }
             } else {
-                var local = getMnemonicFromEncryptedPreferences(context)
+                val local = getMnemonicFromEncryptedPreferences(context)
                 if (local != null && !salt.contentEquals(local)) {
                     // Clear local mnemonic if salt not matched
                     removeValueFromEncryptedPreferences(context, Constants.Tip.MNEMONIC)
