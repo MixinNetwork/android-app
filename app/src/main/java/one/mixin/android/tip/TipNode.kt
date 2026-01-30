@@ -30,7 +30,6 @@ import one.mixin.android.tip.exception.TipNodeException
 import one.mixin.android.util.SINGLE_SIGN_EXECUTOR
 import retrofit2.HttpException
 import timber.log.Timber
-import tip.Scalar
 import tip.Tip
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicInteger
@@ -66,7 +65,7 @@ class TipNode
             if (assigneePriv != null) {
                 assigneeSk = Tip.newPrivateKeyFromBytes(assigneePriv)
                 val assigneePub = Tip.publicKeyFromBytes(assigneeSk)
-                val assigneeSig = Tip.signFromBytes(assigneeSk,assigneePub)
+                val assigneeSig = Tip.signFromBytes(assigneeSk, assigneePub)
                 assignee = assigneePub + assigneeSig
             }
 
