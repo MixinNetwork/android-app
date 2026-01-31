@@ -101,13 +101,14 @@ class AttachmentDownloadJob(
                         shareable = this.shareable
                     }.attachmentId
                 } catch (e: Exception) {
-                    message.content!!
+                    requireNotNull(message.content)
                 },
             )
         val body = attachmentCall!!.execute().body()
-        if (body != null && (body.isSuccess || !isCancelled) && body.data != null) {
-            val attachmentResponse = body.data!!
-            attachmentResponse.view_url?.let {
+        if (body != null && body.isSuccess && !isCancelled && body.data != null) {
+            val attachmentResponse = requireNotNull(body.data)
+            val viewUrl: String? = attachmentResponse.view_url
+            viewUrl?.let {
                 val result = decryptAttachment(it)
                 if (result) {
                     val attachmentExtra = GsonHelper.customGson.toJson(AttachmentExtra(attachmentResponse.attachment_id, message.messageId, attachmentResponse.created_at, shareable))
@@ -193,7 +194,7 @@ class AttachmentDownloadJob(
             return true
         } else if (response.isSuccessful && !isCancelled && response.body != null) {
             val sink = destination.sink().buffer()
-            sink.writeAll(response.body!!.source())
+            sink.writeAll(requireNotNull(response.body).source())
             sink.close()
             if (message.category.endsWith("_IMAGE")) {
                 val attachmentCipherInputStream =
