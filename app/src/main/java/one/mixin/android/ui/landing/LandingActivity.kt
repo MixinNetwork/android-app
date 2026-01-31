@@ -18,6 +18,7 @@ import one.mixin.android.extension.replaceFragment
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_CHANGE_PHONE_ACCOUNT
+import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_VERIFY_MOBILE_REMINDER
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.viewBinding
 import timber.log.Timber
@@ -27,6 +28,7 @@ import javax.inject.Inject
 class LandingActivity : BaseActivity() {
     companion object {
         const val ARGS_PIN = "args_pin"
+        const val ARGS_FROM = "args_from"
 
         fun show(context: Context) {
             val intent =
@@ -47,6 +49,22 @@ class LandingActivity : BaseActivity() {
                 }
             context.startActivity(intent)
         }
+
+        fun showChangePhone(context: Context) {
+            val intent =
+                Intent(context, LandingActivity::class.java).apply {
+                    putExtra(ARGS_FROM, FROM_CHANGE_PHONE_ACCOUNT)
+                }
+            context.startActivity(intent)
+        }
+
+        fun showVerifyMobile(context: Context) {
+            val intent =
+                Intent(context, LandingActivity::class.java).apply {
+                    putExtra(ARGS_FROM, FROM_VERIFY_MOBILE_REMINDER)
+                }
+            context.startActivity(intent)
+        }
     }
 
     @Inject
@@ -61,9 +79,14 @@ class LandingActivity : BaseActivity() {
         checkVersion()
         setContentView(binding.root)
         val pin = intent.getStringExtra(ARGS_PIN)
+        val from = intent.getIntExtra(ARGS_FROM, -1)
         val fragment =
             if (pin != null) {
                 MobileFragment.newInstance(pin, FROM_CHANGE_PHONE_ACCOUNT)
+            } else if (from == FROM_CHANGE_PHONE_ACCOUNT) {
+                MobileFragment.newInstance(from = FROM_CHANGE_PHONE_ACCOUNT)
+            } else if (from == FROM_VERIFY_MOBILE_REMINDER) {
+                MobileFragment.newInstance(from = FROM_VERIFY_MOBILE_REMINDER)
             } else {
                 lifecycleScope.launch(Dispatchers.IO) {
                     jobManager.clear()

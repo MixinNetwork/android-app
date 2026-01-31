@@ -67,6 +67,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
         const val FROM_LANDING_CREATE = 1
         const val FROM_CHANGE_PHONE_ACCOUNT = 2
         const val FROM_DELETE_ACCOUNT = 3
+        const val FROM_VERIFY_MOBILE_REMINDER = 4
 
         fun newInstance(
             pin: String? = null,
@@ -254,6 +255,10 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
 
                     FROM_CHANGE_PHONE_ACCOUNT -> {
                         VerificationPurpose.PHONE.name
+                    }
+
+                    FROM_VERIFY_MOBILE_REMINDER -> {
+                        VerificationPurpose.NONE.name
                     }
 
                     else -> {

@@ -50,6 +50,7 @@ import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_CHANGE_PHONE_A
 import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_DELETE_ACCOUNT
 import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_LANDING
 import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_LANDING_CREATE
+import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_VERIFY_MOBILE_REMINDER
 import one.mixin.android.ui.logs.LogViewerBottomSheet
 import one.mixin.android.ui.setting.VerificationEmergencyIdFragment
 import one.mixin.android.ui.setting.delete.DeleteAccountPinBottomSheetDialogFragment
@@ -158,6 +159,9 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
             }
             FROM_DELETE_ACCOUNT -> {
                 handleDeleteAccount()
+            }
+            FROM_VERIFY_MOBILE_REMINDER -> {
+                handleVerifyMobileReminder()
             }
             else -> {
                 handleLogin()
@@ -299,6 +303,33 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
             )
         }
 
+    private fun handleVerifyMobileReminder() =
+        lifecycleScope.launch {
+            showLoading()
+            val accountRequest =
+                AccountRequest(
+                    binding.pinVerificationView.code(),
+                    purpose = VerificationPurpose.NONE.name,
+                )
+            handleMixinResponse(
+                invokeNetwork = { viewModel.create(requireArguments().getString(ARGS_ID)!!, accountRequest) },
+                successBlock = { response ->
+                    val account = response.data ?: return@handleMixinResponse
+                    withContext(Dispatchers.IO) {
+                        Session.storeAccount(account)
+                    }
+                    activity?.finish()
+                },
+                doAfterNetworkSuccess = { hideLoading() },
+                defaultErrorHandle = {
+                    handleFailure(it)
+                },
+                defaultExceptionHandle = {
+                    handleError(it)
+                },
+            )
+        }
+
     override fun hideLoading() {
         super.hideLoading()
         captchaView?.webView?.visibility = GONE
@@ -312,6 +343,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                 when {
                     from == FROM_DELETE_ACCOUNT -> VerificationPurpose.DEACTIVATED.name
                     isPhoneModification() -> VerificationPurpose.PHONE.name
+                    from == FROM_VERIFY_MOBILE_REMINDER -> VerificationPurpose.NONE.name
                     else -> VerificationPurpose.SESSION.name
                 },
             )
