@@ -178,7 +178,7 @@ class MultiSelectWeb3TokenListBottomSheetDialogFragment : MixinBottomSheetDialog
                             binding.rvVa.displayedChild = POS_EMPTY
                         }
                     }
-            }else{
+            } else {
                 // order assets
                 bottomViewModel.web3TokenItemsFromOrdersByWalletIds(walletIds ?: emptyList())
                     .observe(this) { tokens ->
@@ -204,7 +204,7 @@ class MultiSelectWeb3TokenListBottomSheetDialogFragment : MixinBottomSheetDialog
                             binding.rvVa.displayedChild = POS_EMPTY
                         }
                     }
-            }else{
+            } else {
                 // all assets
                 bottomViewModel.web3TokenItemsAll()
                     .observe(this) { tokens ->

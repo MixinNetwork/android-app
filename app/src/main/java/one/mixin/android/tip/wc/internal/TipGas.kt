@@ -35,23 +35,21 @@ data class TipGas(
 fun buildTipGas(assetId: String, response: EstimateFeeResponse): TipGas {
     return TipGas(assetId, response.gasLimit!!.toBigInteger(), response.maxFeePerGas!!.toBigInteger(), response.maxPriorityFeePerGas!!.toBigInteger())
 }
-
-private fun convertToGasLimit(
-    estimate: EthEstimateGas,
-    defaultLimit: BigInteger?,
-): BigInteger? {
-    return if (estimate.hasError()) {
-        // out of gas
-        if (estimate.error.code == -32000) {
-            defaultLimit
-        } else {
-            BigInteger.ZERO
-        }
-    } else if (estimate.amountUsed > BigInteger.ZERO) {
-        estimate.amountUsed
-    } else if (defaultLimit == null || defaultLimit == BigInteger.ZERO) {
-        BigInteger(DEFAULT_GAS_LIMIT_FOR_NONFUNGIBLE_TOKENS)
-    } else {
-        defaultLimit
+private fun estimateFeeInSatoshi(feeRate: String, transactionSize: Int): BigDecimal {
+    return try {
+        val price = BigDecimal(feeRate)
+        val limit = BigDecimal(transactionSize)
+        price.multiply(limit)
+    } catch (e: Exception) {
+        BigDecimal.ZERO
     }
+}
+
+private fun satoshiToBtc(satoshis: BigDecimal, scale: Int = 8): BigDecimal {
+    return satoshis.divide(BigDecimal("100000000"), scale, RoundingMode.HALF_UP)
+}
+
+fun estimateFeeInBtc(feeRate: String, transactionSize: Int, scale: Int = 8): BigDecimal {
+    val sats = estimateFeeInSatoshi(feeRate, transactionSize)
+    return satoshiToBtc(sats, scale)
 }

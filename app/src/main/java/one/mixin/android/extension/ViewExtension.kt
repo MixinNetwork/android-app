@@ -533,8 +533,7 @@ fun View.expandTouchArea(horizontal: Int = 8.dp, vertical: Int = 8.dp) {
 
 fun HorizontalScrollView.scrollToCenter(targetView: View) {
     post {
-        val containerView: View? = getChildAt(0)
-        if (containerView == null) return@post
+        val containerView: View = getChildAt(0) ?: return@post
         val targetCenterX: Int = targetView.left + (targetView.width / 2)
         val scrollToX: Int = targetCenterX - (width / 2)
         val maxScrollX: Int = max(0, containerView.width - width)
@@ -545,7 +544,6 @@ fun HorizontalScrollView.scrollToCenter(targetView: View) {
 fun HorizontalScrollView.scrollToCenterCheckedRadio(radioGroup: RadioGroup) {
     val checkedId: Int = radioGroup.checkedRadioButtonId
     if (checkedId == View.NO_ID) return
-    val checkedView: View? = radioGroup.findViewById(checkedId)
-    if (checkedView == null) return
+    val checkedView: View = radioGroup.findViewById(checkedId) ?: return
     scrollToCenter(checkedView)
 }

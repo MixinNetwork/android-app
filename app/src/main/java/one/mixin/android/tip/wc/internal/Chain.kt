@@ -2,6 +2,7 @@ package one.mixin.android.tip.wc.internal
 
 import com.reown.walletkit.client.Wallet
 import one.mixin.android.Constants
+import one.mixin.android.Constants.ChainId.BITCOIN_CHAIN_ID
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.MixinApplication
@@ -34,6 +35,8 @@ sealed class Chain(
     object Avalanche : Chain(Constants.ChainId.Avalanche, "eip155", "43114", "0xa86a", "Avalanche C-Chain", "AVAX", listOf("https://api.avax.network/ext/bc/C/rpc"))
 
     object Solana : Chain(SOLANA_CHAIN_ID, "solana", "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ", "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ", "Solana", "SOL", listOf("https://api.mainnet-beta.solana.com"))
+
+    object Bitcoin : Chain(BITCOIN_CHAIN_ID, "BTC", "", "", "Bitcoin", "BTC", listOf(""))
 
     val chainId: String
         get() {
@@ -72,38 +75,6 @@ internal fun String.getChain(): Chain? {
         Chain.BinanceSmartChain.chainReference -> Chain.BinanceSmartChain
         Chain.Polygon.chainReference -> Chain.Polygon
         Chain.Solana.chainId -> Chain.Solana
-        else -> null
-    }
-}
-
-internal fun String?.getChainName(): String? {
-    if (this == null) return null
-
-    return when (this) {
-        Chain.Ethereum.chainId -> Chain.Ethereum.name
-        Chain.Base.chainId -> Chain.Base.name
-        Chain.Arbitrum.chainId -> Chain.Arbitrum.name
-        Chain.Optimism.chainId -> Chain.Optimism.name
-        Chain.Avalanche.chainId -> Chain.Avalanche.name
-        Chain.BinanceSmartChain.chainId -> Chain.BinanceSmartChain.name
-        Chain.Polygon.chainId -> Chain.Polygon.name
-        Chain.Solana.chainId -> Chain.Solana.name
-        else -> null
-    }
-}
-
-internal fun String?.getChainSymbol(): String? {
-    if (this == null) return null
-
-    return when (this) {
-        Chain.Ethereum.chainId -> Chain.Ethereum.symbol
-        Chain.Base.chainId -> Chain.Base.symbol
-        Chain.Arbitrum.chainId -> Chain.Arbitrum.symbol
-        Chain.Optimism.chainId -> Chain.Optimism.symbol
-        Chain.Avalanche.chainId -> Chain.Avalanche.symbol
-        Chain.BinanceSmartChain.chainId -> Chain.BinanceSmartChain.symbol
-        Chain.Polygon.chainId -> Chain.Polygon.symbol
-        Chain.Solana.chainId -> Chain.Solana.symbol
         else -> null
     }
 }
