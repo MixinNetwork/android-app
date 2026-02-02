@@ -504,7 +504,7 @@
     <string name="error_unknown_with_code">ERROR %1$d</string>
     <string name="error_unknown_with_message">ERROR: %1$s</string>
     <string name="error_used_phone">ERROR 20122: This phone number is already associated with another account.</string>
-    <string name="error_watch_address_not_supported">ERROR 10633: Contract or exchange addresses is not supported for watching.</string>
+    <string name="error_watch_address_not_supported">ERROR 10633: Invalid Address</string>
     <string name="error_invalid_referral_code">ERROR 10730: Invalid Referral Code</string>
     <string name="error_already_bonded_referral_code">ERROR 10731: This account has already applied a referral code</string>
     <string name="error_cannot_apply_your_own_referral_code">ERROR 10732: Cannot apply your own referral code</string>
