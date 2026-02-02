@@ -4,14 +4,15 @@ import android.os.Bundle
 import android.view.View
 import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
+import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import one.mixin.android.BuildConfig
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentLandingBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.colorFromAttribute
-import one.mixin.android.extension.dp
 import one.mixin.android.extension.navTo
+import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_LANDING
 import one.mixin.android.ui.setting.diagnosis.DiagnosisFragment
 import one.mixin.android.util.SystemUIManager
@@ -88,7 +89,7 @@ class LandingFragment : Fragment(R.layout.fragment_landing) {
         mediator.attach()
         binding.featureIndicator.getTabAt(binding.featurePager.currentItem)?.customView?.isSelected = true
         binding.featureIndicator.addOnTabSelectedListener(
-            object : com.google.android.material.tabs.TabLayout.OnTabSelectedListener {
+            object : TabLayout.OnTabSelectedListener {
                 override fun onTabSelected(tab: com.google.android.material.tabs.TabLayout.Tab) {
                     tab.customView?.isSelected = true
                 }
@@ -115,11 +116,21 @@ class LandingFragment : Fragment(R.layout.fragment_landing) {
 
         binding.version.text = getString(R.string.current_version, BuildConfig.VERSION_NAME)
         binding.createTv.setOnClickListener {
-            activity?.addFragment(
-                this@LandingFragment,
-                CreateAccountFragment.newInstance(),
-                CreateAccountFragment.TAG,
-            )
+            CreateAccountConfirmBottomSheetDialogFragment.newInstance()
+                .setOnCreateAccount {
+                    activity?.addFragment(
+                        this@LandingFragment,
+                        MnemonicPhraseFragment.newInstance(),
+                        MnemonicPhraseFragment.TAG,
+                    )
+                }
+                .setOnPrivacyPolicy {
+                    activity?.openUrl(getString(R.string.landing_privacy_policy_url))
+                }
+                .setOnTermsOfService {
+                    activity?.openUrl(getString(R.string.landing_terms_url))
+                }
+                .showNow(parentFragmentManager, CreateAccountConfirmBottomSheetDialogFragment.TAG)
         }
         binding.continueTv.setOnClickListener {
             AnalyticsTracker.trackLoginStart()

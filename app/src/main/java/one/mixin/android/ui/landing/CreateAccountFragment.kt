@@ -2,9 +2,9 @@ package one.mixin.android.ui.landing
 
 import android.os.Bundle
 import android.view.View
-import androidx.fragment.app.Fragment
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.fragment.app.Fragment
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentComposeBinding
@@ -15,7 +15,6 @@ import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_LANDING
 import one.mixin.android.ui.landing.components.CreateAccountPage
 import one.mixin.android.ui.web.WebFragment
 import one.mixin.android.util.analytics.AnalyticsTracker
-import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.viewBinding
 import timber.log.Timber
 

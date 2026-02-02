@@ -58,7 +58,6 @@ import one.mixin.android.ui.setting.VerificationEmergencyIdFragment
 import one.mixin.android.ui.setting.delete.DeleteAccountPinBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
-import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User

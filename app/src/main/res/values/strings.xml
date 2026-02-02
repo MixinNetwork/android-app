@@ -619,6 +619,14 @@
     <string name="landing_delete_content">You requested to delete your account on %1$s. The account will be deleted on %2$s. If you continue to login, your account deletion will be cancelled.</string>
     <string name="landing_enter_mobile_tip">We will never display your mobile number publicly.</string>
     <string name="landing_introduction">By proceeding, you agree to the %1$s and %2$s.</string>
+    <string name="create_account_confirm_title">Create your account</string>
+    <string name="create_account_confirm_feature_1_title">Truly decentralized</string>
+    <string name="create_account_confirm_feature_1_desc">Your keys, your crypto. Open-source and audited.</string>
+    <string name="create_account_confirm_feature_2_title">Privacy by default</string>
+    <string name="create_account_confirm_feature_2_desc">Chats, calls, transfers, and assets are protected.</string>
+    <string name="create_account_confirm_feature_3_title">All-in-one</string>
+    <string name="create_account_confirm_feature_3_desc">Trade, swap, and manage thousands of native tokens.</string>
+    <string name="create_account_confirm_action_create">Create an account</string>
     <string name="landing_desc">An open source crypto wallet with Signal messaging.</string>
     <string name="landing_carousel_mixin_title">Mixin</string>
     <string name="landing_carousel_mixin_desc">An open source crypto wallet with Signal messaging.</string>

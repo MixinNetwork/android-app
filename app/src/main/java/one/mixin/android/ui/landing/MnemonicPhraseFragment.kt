@@ -57,7 +57,6 @@ import one.mixin.android.ui.landing.components.MnemonicPhrasePage
 import one.mixin.android.ui.landing.vo.MnemonicPhraseState
 import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.database.clearDatabase
 import one.mixin.android.util.database.clearJobsAndRawTransaction
@@ -115,9 +114,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 anonymousRequest(words)
             }
         }
-        if (!words.isNullOrEmpty()) {
-            anonymousRequest(words)
-        }
+        anonymousRequest(words)
     }
 
     private fun applySafeTopPadding(rootView: View) {

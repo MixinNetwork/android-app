@@ -20,7 +20,6 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.components.QuizPage
 import one.mixin.android.ui.landing.components.SetPinLoadingPage
-import one.mixin.android.ui.landing.components.SetPinPage
 import one.mixin.android.ui.landing.components.SetupPinPage
 import one.mixin.android.util.viewBinding
 

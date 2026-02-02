@@ -52,7 +52,6 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight.Companion.SemiBold
 import androidx.compose.ui.text.font.FontWeight.Companion.W500
 import androidx.compose.ui.text.input.ImeAction
@@ -76,7 +75,6 @@ import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.home.web3.trade.KeyboardAwareBox
-import one.mixin.android.ui.home.web3.trade.verticalScrollbar
 import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.getMixinErrorStringByCode
 import org.bitcoinj.crypto.MnemonicCode

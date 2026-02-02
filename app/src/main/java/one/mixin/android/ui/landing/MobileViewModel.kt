@@ -90,7 +90,7 @@ internal constructor(
         phone: String,
     ) = userRepository.updatePhone(id, phone)
 
-    private val _mnemonicPhraseState = MutableLiveData<MnemonicPhraseState>(MnemonicPhraseState.Initial)
+    private val _mnemonicPhraseState = MutableLiveData<MnemonicPhraseState>(MnemonicPhraseState.Creating)
     val mnemonicPhraseState: LiveData<MnemonicPhraseState> get() = _mnemonicPhraseState
 
     fun updateMnemonicPhraseState(state: MnemonicPhraseState){
