@@ -72,6 +72,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
         fun newInstance(
             pin: String? = null,
             from: Int = FROM_LANDING,
+            phoneNumber: String? = null,
         ): MobileFragment =
             MobileFragment().apply {
                 val b =
@@ -80,6 +81,9 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                             putString(ARGS_PIN, pin)
                         }
                         putInt(ARGS_FROM, from)
+                        if (!phoneNumber.isNullOrBlank()) {
+                            putString(ARGS_PHONE_NUM, phoneNumber)
+                        }
                     }
                 arguments = b
             }
@@ -97,6 +101,10 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
     private var pin: String? = null
     private val from: Int by lazy {
         requireArguments().getInt(ARGS_FROM, FROM_LANDING)
+    }
+
+    private val presetPhoneNumber: String? by lazy {
+        requireArguments().getString(ARGS_PHONE_NUM)
     }
 
     private var captchaView: CaptchaView? = null
@@ -175,6 +183,12 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             }
             getUserCountryInfo()
 
+            if (from == FROM_VERIFY_MOBILE_REMINDER) {
+                presetPhoneNumber?.let { phoneNumber ->
+                    presetVerifyMobilePhoneNumber(phoneNumber)
+                }
+            }
+
             keyboard.tipTitleEnabled = false
             keyboard.initPinKeys()
             keyboard.setOnClickKeyboardListener(mKeyboardListener)
@@ -195,6 +209,37 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             }
         }
         setupFocusListeners()
+    }
+
+    private fun presetVerifyMobilePhoneNumber(phoneNumber: String) {
+        if (viewDestroyed()) return
+
+        val parsedPhoneNumber: Phonenumber.PhoneNumber? = runCatching {
+            phoneUtil.parse(phoneNumber, null)
+        }.getOrNull()
+
+        if (parsedPhoneNumber == null) {
+            return
+        }
+
+        val dialCode: String = "+${parsedPhoneNumber.countryCode}"
+        val country: Country? =
+            if (dialCode == xinDialCode) {
+                mixinCountry
+            } else {
+                countryPicker.getCountryByDialCode(dialCode)
+            }
+        if (country != null) {
+            mCountry = country
+            binding.countryIconIv.setImageResource(country.flag)
+            binding.countryCodeEt.setText(country.dialCode)
+        }
+        binding.mobileEt.setText(parsedPhoneNumber.nationalNumber.toString())
+        binding.countryIconIv.isEnabled = false
+        binding.countryCodeEt.isEnabled = false
+        binding.mobileEt.isEnabled = false
+        binding.mobileCover.isClickable = false
+        handleEditView()
     }
 
     override fun onBackPressed(): Boolean {

@@ -29,6 +29,15 @@ class VerifyMobileReminderBottomSheetDialogFragment : MixinComposeBottomSheetDia
     companion object {
         const val TAG: String = "VerifyMobileReminderBottomSheetDialogFragment"
         private const val PREF_VERIFY_MOBILE_REMINDER_SNOOZE: String = "pref_verify_mobile_reminder_snooze"
+        private const val ARGS_SUBTITLE_RES_ID: String = "args_subtitle_res_id"
+
+        fun newInstance(subtitleResId: Int = R.string.Verify_Mobile_Number_Desc): VerifyMobileReminderBottomSheetDialogFragment {
+            return VerifyMobileReminderBottomSheetDialogFragment().apply {
+                arguments = android.os.Bundle().apply {
+                    putInt(ARGS_SUBTITLE_RES_ID, subtitleResId)
+                }
+            }
+        }
 
         fun shouldShow(context: Context): Boolean {
             if (!Session.hasPhone()) return false
@@ -74,15 +83,21 @@ class VerifyMobileReminderBottomSheetDialogFragment : MixinComposeBottomSheetDia
 
     @Composable
     override fun ComposeContent() {
+        val subtitleResId: Int = requireArguments().getInt(ARGS_SUBTITLE_RES_ID, R.string.Verify_Mobile_Number_Desc)
+        val phoneNumber: String? = Session.getAccount()?.phone
         MixinAppTheme {
             ReminderPage(
                 R.drawable.bg_reminder_verify_mobile,
                 R.string.Verify_Mobile_Number,
-                R.string.Verify_Mobile_Number_Desc,
+                subtitleResId,
                 R.string.Verify_Now,
                 action = {
                     dismissAllowingStateLoss()
-                    LandingActivity.showVerifyMobile(requireContext())
+                    if (phoneNumber.isNullOrBlank()) {
+                        LandingActivity.showVerifyMobile(requireContext())
+                    } else {
+                        LandingActivity.showVerifyMobile(requireContext(), phoneNumber)
+                    }
                 },
                 dismiss = {
                     requireContext().defaultSharedPreferences.putLong(
