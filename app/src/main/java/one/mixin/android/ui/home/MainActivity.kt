@@ -798,7 +798,11 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
     private var alertDialog: Dialog? = null
 
     private fun handlerCode(intent: Intent) {
-        if (intent.hasExtra(SCAN)) {
+        if (intent.hasExtra(EXTRA_NAV_ITEM_ID)) {
+            val selectedItemId: Int = intent.getIntExtra(EXTRA_NAV_ITEM_ID, R.id.nav_chat)
+            binding.bottomNav.selectedItemId = selectedItemId
+            clearCodeAfterConsume(intent, EXTRA_NAV_ITEM_ID)
+        } else if (intent.hasExtra(SCAN)) {
             val scan = intent.getStringExtra(SCAN)!!
             bottomSheet?.dismiss()
             showScanBottom(scan)
@@ -1273,6 +1277,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         const val TRANSFER = "transfer"
         private const val WALLET = "wallet"
         const val WALLET_CONNECT = "wallet_connect"
+        const val EXTRA_NAV_ITEM_ID: String = "NAV_ITEM_ID"
 
         fun showWallet(
             context: Context,

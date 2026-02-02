@@ -485,6 +485,71 @@
             </intent-filter>
         </receiver>
 
+        <receiver
+            android:name=".ui.home.web3.widget.MarketWatchlistAppWidgetProvider"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/market_watchlist_appwidget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".ui.home.web3.widget.MarketWatchlistCompactAppWidgetProvider"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/market_watchlist_compact_appwidget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".ui.home.web3.widget.MarketSinglePriceBtcAppWidgetProvider"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/market_single_price_btc_appwidget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".ui.home.web3.widget.MarketSinglePriceEthAppWidgetProvider"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/market_single_price_eth_appwidget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".ui.home.web3.widget.MarketSinglePriceSolAppWidgetProvider"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/market_single_price_sol_appwidget_info" />
+        </receiver>
+
+        <service
+            android:name=".ui.home.web3.widget.MarketWatchlistRemoteViewsService"
+            android:exported="false"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
+
         <provider
             android:name="androidx.startup.InitializationProvider"
             android:authorities="${applicationId}.androidx-startup"

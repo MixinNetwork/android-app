@@ -70,6 +70,28 @@ interface MarketDao : BaseDao<Market> {
     )
     fun getFavoredWeb3Markets(sortValue: Int): PagingSource<Int, MarketItem>
 
+    @Query(
+        """
+         SELECT * FROM (
+            SELECT m.*, mf.is_favored 
+            FROM markets m 
+            LEFT JOIN market_favored mf ON mf.coin_id = m.coin_id 
+            WHERE mf.is_favored = 1 
+            LIMIT :limit
+        ) AS limitedFavoredMarkets
+        ORDER BY 
+            CASE WHEN :sortValue = 0 THEN CAST(limitedFavoredMarkets.market_cap_rank AS INTEGER) END ASC,
+            CASE WHEN :sortValue = 1 THEN CAST(limitedFavoredMarkets.market_cap_rank AS INTEGER) END DESC,
+            CASE WHEN :sortValue = 2 THEN CAST(limitedFavoredMarkets.current_price AS DECIMAL) END ASC,
+            CASE WHEN :sortValue = 3 THEN CAST(limitedFavoredMarkets.current_price AS DECIMAL) END DESC,
+            CASE WHEN :sortValue = 4 THEN CAST(limitedFavoredMarkets.price_change_percentage_7d AS DECIMAL) END DESC,
+            CASE WHEN :sortValue = 5 THEN CAST(limitedFavoredMarkets.price_change_percentage_7d AS DECIMAL) END ASC,
+            CASE WHEN :sortValue = 6 THEN CAST(limitedFavoredMarkets.price_change_percentage_24h AS DECIMAL) END DESC,
+            CASE WHEN :sortValue = 7 THEN CAST(limitedFavoredMarkets.price_change_percentage_24h AS DECIMAL) END ASC
+        """
+    )
+    suspend fun getFavoredWeb3MarketsList(limit: Int, sortValue: Int): List<MarketItem>
+
     @Query("SELECT * FROM markets WHERE coin_id = :coinId")
     fun findMarketById(coinId: String): Market?
 

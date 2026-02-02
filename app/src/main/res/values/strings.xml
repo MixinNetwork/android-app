@@ -1534,6 +1534,7 @@
     <string name="edit_by_pin">Edit by PIN</string>
     <string name="Sender">Sender</string>
     <string name="continue_with_pin">Continue with PIN</string>
+    <string name="Bitcoin">Bitcoin</string>
     <string name="Ethereum">Ethereum</string>
     <string name="Polygon">Polygon</string>
     <string name="BSC">BSC</string>

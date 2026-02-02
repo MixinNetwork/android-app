@@ -1271,6 +1271,8 @@ class TokenRepository
 
     fun getFavoredWeb3Markets(sort: MarketSort): PagingSource<Int, MarketItem> = marketDao.getFavoredWeb3Markets(sort.value)
 
+    suspend fun getFavoredWeb3MarketsList(limit: Int, sort: MarketSort): List<MarketItem> = marketDao.getFavoredWeb3MarketsList(limit, sort.value)
+
     suspend fun findTokensByCoinId(coinId: String) = marketCoinDao.findTokensByCoinId(coinId)
 
     suspend fun findTokenIdsByCoinId(coinId: String) = marketCoinDao.findTokenIdsByCoinId(coinId)
