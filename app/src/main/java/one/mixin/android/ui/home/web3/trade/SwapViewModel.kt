@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
-import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.LimitOrderRequest
 import one.mixin.android.api.request.RelationshipAction
