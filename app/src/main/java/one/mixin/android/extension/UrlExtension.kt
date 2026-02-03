@@ -303,6 +303,8 @@ fun String.isValidStartParam(): Boolean {
 
 fun String.isExternalTransferUrl() = externalTransferAssetIdMap.keys.any { startsWith("$it:", ignoreCase = true) }
 
+fun String.isEthereumOrSolURLString() = startsWith("ethereum:", true) || startsWith("solana:", true)
+
 fun String.isLightningUrl() = startsWith("lnbc", true)  || startsWith("lnurl", true) || startsWith("lightning:", true)
 
 private fun String.isUserScheme() =
