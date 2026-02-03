@@ -2,16 +2,22 @@ package one.mixin.android.ui.landing
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.ClipData
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
@@ -19,6 +25,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -29,9 +36,12 @@ import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.booleanFromAttribute
+import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getSafeAreaInsetsTop
+import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.screenHeight
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 import one.mixin.android.util.SystemUIManager
@@ -63,16 +73,32 @@ class CreateAccountConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDia
         return this
     }
 
+    override fun getTheme() = R.style.AppTheme_Dialog
+
     @Composable
     override fun ComposeContent() {
         MixinAppTheme {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .clip(RoundedCornerShape(topEnd = 8.dp, topStart = 8.dp))
                     .background(MixinAppTheme.colors.background)
                     .padding(horizontal = 20.dp)
             ) {
-                Spacer(modifier = Modifier.height(20.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 32.dp)) {
+                    Spacer(modifier = Modifier.weight(1f))
+                    Icon(
+                        modifier = Modifier.clickable {
+                            dismiss()
+                        },
+                        painter = painterResource(id = R.drawable.ic_circle_close),
+                        tint = Color.Unspecified,
+                        contentDescription = stringResource(id = R.string.close)
+                    )
+                }
+                Spacer(modifier = Modifier.height(22.dp))
                 Icon(
                     modifier = Modifier
                         .size(64.dp)
@@ -81,7 +107,7 @@ class CreateAccountConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDia
                     contentDescription = null,
                     tint = Color.Unspecified
                 )
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(24.dp))
                 Text(
                     text = stringResource(R.string.create_account_confirm_title),
                     modifier = Modifier.align(Alignment.CenterHorizontally),
@@ -89,61 +115,35 @@ class CreateAccountConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDia
                     fontWeight = FontWeight.W600,
                     color = MixinAppTheme.colors.textPrimary
                 )
-                Spacer(modifier = Modifier.height(20.dp))
-                Text(
-                    text = stringResource(R.string.create_account_confirm_feature_1_title),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.W600,
-                    color = MixinAppTheme.colors.textPrimary
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = stringResource(R.string.create_account_confirm_feature_1_desc),
-                    fontSize = 14.sp,
-                    color = MixinAppTheme.colors.textMinor
+                Spacer(modifier = Modifier.height(48.dp))
+                FeatureRow(
+                    iconResId = R.drawable.ic_account_truly,
+                    titleResId = R.string.create_account_confirm_feature_1_title,
+                    descriptionResId = R.string.create_account_confirm_feature_1_desc,
                 )
                 Spacer(modifier = Modifier.height(14.dp))
-                Text(
-                    text = stringResource(R.string.create_account_confirm_feature_2_title),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.W600,
-                    color = MixinAppTheme.colors.textPrimary
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = stringResource(R.string.create_account_confirm_feature_2_desc),
-                    fontSize = 14.sp,
-                    color = MixinAppTheme.colors.textMinor
+                FeatureRow(
+                    iconResId = R.drawable.ic_account_privacy,
+                    titleResId = R.string.create_account_confirm_feature_2_title,
+                    descriptionResId = R.string.create_account_confirm_feature_2_desc,
                 )
                 Spacer(modifier = Modifier.height(14.dp))
-                Text(
-                    text = stringResource(R.string.create_account_confirm_feature_3_title),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.W600,
-                    color = MixinAppTheme.colors.textPrimary
+                FeatureRow(
+                    iconResId = R.drawable.ic_account_all_in_one,
+                    titleResId = R.string.create_account_confirm_feature_3_title,
+                    descriptionResId = R.string.create_account_confirm_feature_3_desc,
                 )
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = stringResource(R.string.create_account_confirm_feature_3_desc),
-                    fontSize = 14.sp,
-                    color = MixinAppTheme.colors.textMinor
-                )
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.weight(1f))
                 Button(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp),
+                        .fillMaxWidth(),
                     onClick = {
                         onCreateAccount?.invoke()
                         dismiss()
                     },
                     colors = ButtonDefaults.outlinedButtonColors(backgroundColor = MixinAppTheme.colors.accent),
-                    elevation = ButtonDefaults.elevation(
-                        pressedElevation = 0.dp,
-                        defaultElevation = 0.dp,
-                        hoveredElevation = 0.dp,
-                        focusedElevation = 0.dp,
-                    )
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 36.dp, vertical = 11.dp),
                 ) {
                     Text(text = stringResource(R.string.create_account_confirm_action_create), color = Color.White)
                 }
@@ -165,6 +165,37 @@ class CreateAccountConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDia
                     }
                 }
                 Spacer(modifier = Modifier.height(30.dp))
+            }
+        }
+    }
+
+    @Composable
+    private fun FeatureRow(
+        iconResId: Int,
+        titleResId: Int,
+        descriptionResId: Int,
+    ) {
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Icon(
+                modifier = Modifier.size(48.dp),
+                painter = painterResource(iconResId),
+                contentDescription = null,
+                tint = Color.Unspecified
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(titleResId),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.W600,
+                    color = MixinAppTheme.colors.textPrimary
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = stringResource(descriptionResId),
+                    fontSize = 14.sp,
+                    color = MixinAppTheme.colors.textAssist
+                )
             }
         }
     }

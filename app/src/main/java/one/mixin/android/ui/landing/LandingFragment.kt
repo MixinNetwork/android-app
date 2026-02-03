@@ -4,8 +4,13 @@ import android.os.Bundle
 import android.view.View
 import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentLandingBinding
@@ -29,6 +34,8 @@ class LandingFragment : Fragment(R.layout.fragment_landing) {
     }
 
     private val binding by viewBinding(FragmentLandingBinding::bind)
+
+    private var featureCount: Int = 0
 
     override fun onViewCreated(
         view: View,
@@ -70,8 +77,21 @@ class LandingFragment : Fragment(R.layout.fragment_landing) {
                 description = getString(R.string.landing_carousel_rewards_desc),
             ),
         )
+        featureCount = features.size
         binding.featurePager.adapter = LandingFeatureAdapter(features)
         binding.featurePager.offscreenPageLimit = features.size
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                while (true) {
+                    delay(3000L)
+                    if (featureCount <= 1) {
+                        continue
+                    }
+                    val nextItem = (binding.featurePager.currentItem + 1) % featureCount
+                    binding.featurePager.setCurrentItem(nextItem, true)
+                }
+            }
+        }
         val mediator = TabLayoutMediator(binding.featureIndicator, binding.featurePager) { tab, _ ->
             val dotView: View = View(requireContext()).apply {
                 layoutParams = LinearLayout.LayoutParams(

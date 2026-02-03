@@ -76,7 +76,7 @@ class LandingMnemonicPhraseFragment : BaseFragment(R.layout.fragment_landing_mne
     private fun applySafeTopPadding(rootView: View) {
         val originalPaddingTop: Int = rootView.paddingTop
         ViewCompat.setOnApplyWindowInsetsListener(rootView) { v: View, insets: WindowInsetsCompat ->
-            val topInset: Int = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
+            val topInset: Int = insets.getInsets(WindowInsetsCompat.Type.displayCutout()).top
             v.setPadding(v.paddingLeft, originalPaddingTop + topInset, v.paddingRight, v.paddingBottom)
             insets
         }
