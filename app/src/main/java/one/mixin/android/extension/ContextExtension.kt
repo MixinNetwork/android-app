@@ -232,8 +232,8 @@ fun View.getSafeAreaInsetsBottom(): Int {
     val insets = ViewCompat.getRootWindowInsets(this) ?: return 0
 
     val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-    val displayCutout = insets.getInsets(WindowInsetsCompat.Type.displayCutout())
-    return maxOf(systemBars.bottom, displayCutout.bottom)
+    val navigationBarsInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
+    return maxOf(systemBars.bottom, navigationBarsInsets.bottom)
 }
 
 fun Context.statusBarHeight(): Int = getSystemBarHeight("status_bar_height")
