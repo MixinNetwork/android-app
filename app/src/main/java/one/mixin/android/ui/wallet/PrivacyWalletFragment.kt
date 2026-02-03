@@ -135,12 +135,6 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     sendReceiveView.enableBuy()
                     sendReceiveView.buy.setOnClickListener {
                         lifecycleScope.launch {
-                            if (VerifyMobileReminderBottomSheetDialogFragment.shouldShowForBuy(requireContext())) {
-                                VerifyMobileReminderBottomSheetDialogFragment
-                                    .newInstance(R.string.Verify_Mobile_Number_Security_Desc, false)
-                                    .showNow(parentFragmentManager, VerifyMobileReminderBottomSheetDialogFragment.TAG)
-                                return@launch
-                            }
                             WalletActivity.showBuy(requireActivity(), false, null, null)
                             defaultSharedPreferences.putBoolean(PREF_HAS_USED_BUY, false)
                             RxBus.publish(BadgeEvent(PREF_HAS_USED_BUY))

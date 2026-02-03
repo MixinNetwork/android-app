@@ -35,7 +35,12 @@ class VerifyMobileReminderBottomSheetDialogFragment : MixinComposeBottomSheetDia
         private const val ARGS_SUBTITLE_RES_ID: String = "args_subtitle_res_id"
         private const val ARGS_ENABLE_SNOOZE: String = "args_enable_snooze"
 
-        fun newInstance(subtitleResId: Int = R.string.Verify_Mobile_Number_Desc): VerifyMobileReminderBottomSheetDialogFragment {
+        @Volatile
+        private var isShowing = false
+
+        fun newInstance(subtitleResId: Int = R.string.Verify_Mobile_Number_Desc): VerifyMobileReminderBottomSheetDialogFragment? {
+            if (isShowing) return null
+            
             return VerifyMobileReminderBottomSheetDialogFragment().apply {
                 arguments = android.os.Bundle().apply {
                     putInt(ARGS_SUBTITLE_RES_ID, subtitleResId)
@@ -47,12 +52,37 @@ class VerifyMobileReminderBottomSheetDialogFragment : MixinComposeBottomSheetDia
         fun newInstance(
             subtitleResId: Int = R.string.Verify_Mobile_Number_Desc,
             enableSnooze: Boolean,
-        ): VerifyMobileReminderBottomSheetDialogFragment {
+        ): VerifyMobileReminderBottomSheetDialogFragment? {
+            if (isShowing) return null
+            
             return VerifyMobileReminderBottomSheetDialogFragment().apply {
                 arguments = android.os.Bundle().apply {
                     putInt(ARGS_SUBTITLE_RES_ID, subtitleResId)
                     putBoolean(ARGS_ENABLE_SNOOZE, enableSnooze)
                 }
+            }
+        }
+
+        fun showSafely(
+            fragmentManager: androidx.fragment.app.FragmentManager,
+            subtitleResId: Int = R.string.Verify_Mobile_Number_Desc,
+            enableSnooze: Boolean = true
+        ): Boolean {
+            if (isShowing) return false
+            
+            val fragment = VerifyMobileReminderBottomSheetDialogFragment().apply {
+                arguments = android.os.Bundle().apply {
+                    putInt(ARGS_SUBTITLE_RES_ID, subtitleResId)
+                    putBoolean(ARGS_ENABLE_SNOOZE, enableSnooze)
+                }
+            }
+            
+            try {
+                fragment.showNow(fragmentManager, TAG)
+                return true
+            } catch (e: Exception) {
+                isShowing = false
+                return false
             }
         }
 
@@ -100,12 +130,28 @@ class VerifyMobileReminderBottomSheetDialogFragment : MixinComposeBottomSheetDia
 
     override fun onStart() {
         super.onStart()
+        isShowing = true
         dialog?.window?.let { window ->
             SystemUIManager.lightUI(
                 window,
                 !requireContext().booleanFromAttribute(R.attr.flag_night),
             )
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        isShowing = false
+    }
+
+    override fun dismiss() {
+        isShowing = false
+        super.dismiss()
+    }
+
+    override fun dismissAllowingStateLoss() {
+        isShowing = false
+        super.dismissAllowingStateLoss()
     }
 
     @Composable

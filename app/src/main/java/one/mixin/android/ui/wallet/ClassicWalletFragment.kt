@@ -167,12 +167,6 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     sendReceiveView.enableBuy()
                     sendReceiveView.buy.setOnClickListener {
                         lifecycleScope.launch {
-                            if (VerifyMobileReminderBottomSheetDialogFragment.shouldShowForBuy(requireContext())) {
-                                VerifyMobileReminderBottomSheetDialogFragment
-                                    .newInstance(R.string.Verify_Mobile_Number_Security_Desc, false)
-                                    .showNow(parentFragmentManager, VerifyMobileReminderBottomSheetDialogFragment.TAG)
-                                return@launch
-                            }
                             val wallet = web3ViewModel.findWalletById(walletId)
                             val chainId = web3ViewModel.getAddresses(walletId).first().chainId
                             if (wallet?.isImported() == true && !wallet.hasLocalPrivateKey) {
