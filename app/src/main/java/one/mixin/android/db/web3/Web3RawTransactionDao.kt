@@ -14,8 +14,8 @@ interface Web3RawTransactionDao : BaseDao<Web3RawTransaction> {
     @Query("SELECT * FROM raw_transactions WHERE state = 'pending' AND chain_id = :chainId AND account IN (SELECT DISTINCT destination FROM addresses WHERE wallet_id = :walletId)")
     suspend fun getPendingRawTransactions(walletId:String, chainId: String): List<Web3RawTransaction>
 
-    @Query("SELECT * FROM raw_transactions WHERE state = 'pending' AND account = :account")
-    suspend fun getPendingRawTransactionsByAccount(account: String): List<Web3RawTransaction>
+    @Query("SELECT * FROM raw_transactions WHERE state = 'pending' AND account = :account AND chain_id = :chainId")
+    suspend fun getPendingRawTransactionsByAccount(account: String, chainId: String): List<Web3RawTransaction>
 
     @Query("SELECT * FROM raw_transactions WHERE hash = :hash AND chain_id = :chainId AND account IN (SELECT DISTINCT destination FROM addresses WHERE wallet_id = :walletId)")
     suspend fun getRawTransactionByHashAndChain(walletId:String, hash: String, chainId: String): Web3RawTransaction?

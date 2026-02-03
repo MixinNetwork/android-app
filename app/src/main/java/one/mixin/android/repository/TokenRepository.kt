@@ -1503,7 +1503,7 @@ class TokenRepository
             val txHash: String = tx.txId.toString()
             walletOutputDao.deleteByTransactionHash(txHash, Constants.ChainId.BITCOIN_CHAIN_ID)
 
-            val pendingOutpoints: Set<String> = web3RawTransactionDao.getPendingRawTransactionsByAccount(raw.account)
+            val pendingOutpoints: Set<String> = web3RawTransactionDao.getPendingRawTransactionsByAccount(raw.account, chainId)
                 .asSequence()
                 .mapNotNull { pendingRaw: Web3RawTransaction ->
                     val pendingHex: String = pendingRaw.raw.removePrefix("0x").trim()
