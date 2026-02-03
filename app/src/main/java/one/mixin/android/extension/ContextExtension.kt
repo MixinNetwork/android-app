@@ -232,7 +232,7 @@ fun View.getSafeAreaInsetsBottom(): Int {
     val insets = ViewCompat.getRootWindowInsets(this) ?: return 0
 
     val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-    val displayCutout = insets.getInsets(WindowInsetsCompat.Type.displayCutout())
+    val displayCutout = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
     return maxOf(systemBars.bottom, displayCutout.bottom)
 }
 
