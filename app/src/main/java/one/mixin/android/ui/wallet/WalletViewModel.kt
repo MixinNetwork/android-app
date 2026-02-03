@@ -54,6 +54,7 @@ import one.mixin.android.tip.TipBody
 import one.mixin.android.ui.home.web3.widget.MarketSort
 import one.mixin.android.ui.oldwallet.AssetRepository
 import one.mixin.android.util.SINGLE_DB_THREAD
+import one.mixin.android.vo.Chain
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UtxoItem
@@ -463,6 +464,8 @@ internal constructor(
     suspend fun getWalletsExcluding(excludeWalletId: String, chainId: String, query: String) = web3Repository.getWalletsExcluding(excludeWalletId, chainId, query)
 
     suspend fun getAddresses(walletId: String) = web3Repository.getAddresses(walletId)
+
+    suspend fun getAddressesByChainId(walletId: String, chain: String) = web3Repository.getAddressesByChainId(walletId, chain)
 
     suspend fun checkAddressAndGetDisplayName(destination: String, chainId: String?): Pair<String, Boolean>? {
         return withContext(Dispatchers.IO) {

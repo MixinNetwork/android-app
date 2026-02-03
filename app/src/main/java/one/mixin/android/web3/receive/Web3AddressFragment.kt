@@ -222,15 +222,13 @@ class Web3AddressFragment : BaseFragment() {
         updateChips()
     }
 
-    private fun selectToken(id:String) {
+    private fun selectToken(id: String) {
         lifecycleScope.launch {
             walletViewModel.getTokenByWalletAndAssetId(Web3Signer.currentWalletId,id)?.let {
                 web3Token = it
             }
-            if (web3Token.isSolanaChain()) {
-                address = Web3Signer.solanaAddress
-            } else {
-                address = Web3Signer.evmAddress
+            address = web3Token.chainId.let {
+                walletViewModel.getAddressesByChainId(Web3Signer.currentWalletId, it)?.destination
             }
             updateUI()
             updateChips()

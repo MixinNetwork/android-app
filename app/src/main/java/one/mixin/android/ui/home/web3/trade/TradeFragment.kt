@@ -361,8 +361,10 @@ class TradeFragment : BaseFragment() {
                                     Constants.ChainId.SOLANA_CHAIN_ID
                                 } else {
                                     Constants.ChainId.ETHEREUM_CHAIN_ID
-                                }) ?: return@launch
-                            val address = if (t.isSolanaChain()) { Web3Signer.solanaAddress } else { Web3Signer.evmAddress }
+                                }) ?: return@launch // Empty list; this should not happen.
+                            val address = t.let {
+                                swapViewModel.getAddressesByChainId(Web3Signer.currentWalletId, it.chainId)?.destination
+                            }
                             navTo(Web3AddressFragment.newInstance(t, address), Web3AddressFragment.TAG)
                             dismissNow()
                         }
