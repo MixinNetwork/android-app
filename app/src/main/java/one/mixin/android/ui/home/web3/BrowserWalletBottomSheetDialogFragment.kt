@@ -26,6 +26,7 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.response.web3.ParsedTx
+import one.mixin.android.api.response.web3.WalletOutput
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.getChainFromName
 import one.mixin.android.extension.base64Encode
@@ -33,9 +34,11 @@ import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getSafeAreaInsetsTop
+import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.screenHeight
+import one.mixin.android.extension.toHex
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.wc.internal.Chain
@@ -64,6 +67,15 @@ import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.js.throwIfAnyMaliciousInstruction
+import org.bitcoinj.base.BitcoinNetwork
+import org.bitcoinj.base.Coin
+import org.bitcoinj.base.ScriptType
+import org.bitcoinj.core.Transaction
+import org.bitcoinj.core.TransactionInput
+import org.bitcoinj.core.TransactionWitness
+import org.bitcoinj.crypto.ECKey
+import org.bitcoinj.script.Script
+import org.bitcoinj.script.ScriptBuilder
 import org.sol4k.Base58
 import org.sol4k.Constants.SIGNATURE_LENGTH
 import org.sol4k.exception.RpcException
@@ -74,6 +86,7 @@ import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigDecimal
+import java.nio.ByteBuffer
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 
@@ -145,6 +158,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     var step by mutableStateOf(Step.Input)
         private set
     private var amount: String? by mutableStateOf(null)
+    private var address: String by mutableStateOf(Web3Signer.address)
     private var token: Web3TokenItem? by mutableStateOf(null)
     private var errorInfo: String? by mutableStateOf(null)
     private var tipGas: TipGas? by mutableStateOf(null)
@@ -161,6 +175,11 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         super.onViewCreated(view, savedInstanceState)
         token = requireArguments().getParcelableCompat(ARGS_TOKEN, Web3TokenItem::class.java)
         amount = requireArguments().getString(ARGS_AMOUNT)
+        if (address.isBlank()) {
+            lifecycleScope.launch {
+                address = viewModel.findFirstAddressByWalletId(Web3Signer.currentWalletId)?.destination?:""
+            }
+        }
         refreshEstimatedGasAndAsset(currentChain)
     }
 
@@ -174,7 +193,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             dismiss()
         } else {
             BrowserPage(
-                Web3Signer.address,
+                address,
                 currentChain,
                 amount,
                 token,
@@ -186,6 +205,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                 signMessage.isSpeedUp,
                 tipGas,
                 solanaTx?.calcFee(Web3Signer.address),
+                signMessage.fee,
                 parsedTx,
                 signMessage.solanaTxSource,
                 asset,
@@ -349,7 +369,21 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             try {
                 step = Step.Loading
                 errorInfo = null
-                if (signMessage.type == JsSignMessage.TYPE_TRANSACTION) {
+                if (signMessage.type == JsSignMessage.TYPE_BTC_TRANSACTION) {
+                    val rawHex = signMessage.data ?: throw IllegalArgumentException("empty btc transaction hex")
+                    val priv = viewModel.getWeb3Priv(requireContext(), pin, Constants.ChainId.BITCOIN_CHAIN_ID)
+                    val key: ECKey = ECKey.fromPrivate(priv, true)
+                    val fromAddress: String = key.toAddress(ScriptType.P2WPKH, BitcoinNetwork.MAINNET).toString()
+                    val localUtxos: List<WalletOutput> = if (signMessage.isSpeedUp || signMessage.isCancelTx) {
+                        viewModel.outputsByAddressForSigning(fromAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
+                    } else {
+                        viewModel.outputsByAddress(fromAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
+                    }
+                    val signedResult: BtcSignedResult = signTransaction(rawHex, key, localUtxos)
+                    viewModel.postRawTx(signedResult.signedHex, Constants.ChainId.BITCOIN_CHAIN_ID, fromAddress, toAddress, token?.assetId, if (isFeeWaived) "free" else null, rate = signMessage.rate)
+                    viewModel.markOutputsToSigned(Web3Signer.currentWalletId, fromAddress, signedResult.signedHex, signedResult.consumedOutputIds)
+                    onDone?.invoke("window.${Web3Signer.currentNetwork}.sendResponse(${signMessage.callbackId}, \"\");")
+                } else if (signMessage.type == JsSignMessage.TYPE_TRANSACTION) {
                     val transaction = requireNotNull(signMessage.wcEthereumTransaction)
                     val priv = viewModel.getWeb3Priv(requireContext(), pin, Web3Signer.currentChain.assetId)
                     val pair = Web3Signer.ethSignTransaction(priv, transaction, tipGas!!, chain = token?.getChainFromName()) { address ->
@@ -396,6 +430,43 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                 handleException(e)
             }
         }
+
+    private data class BtcSignedResult(
+        val signedHex: String,
+        val consumedOutputIds: List<String>,
+    )
+
+    private fun signTransaction(unsignedRawHex: String, signingKey: ECKey, localUtxos: List<WalletOutput>): BtcSignedResult {
+        val rawTxBytes: ByteArray = unsignedRawHex.hexStringToByteArray()
+        val transaction: Transaction = Transaction.read(ByteBuffer.wrap(rawTxBytes))
+        val utxoMap: Map<String, WalletOutput> = localUtxos.associateBy { utxo -> "${utxo.transactionHash}:${utxo.outputIndex}" }
+        val scriptCode: Script = ScriptBuilder.createP2PKHOutputScript(signingKey)
+        val consumedOutputIds: MutableList<String> = mutableListOf()
+        val inputCount: Int = transaction.inputs.size
+        for (inputIndex: Int in 0 until inputCount) {
+            val input: TransactionInput = transaction.getInput(inputIndex.toLong())
+            val prevHash: String = input.outpoint.hash().toString()
+            val prevIndex: Long = input.outpoint.index()
+            val utxoKey = "$prevHash:$prevIndex"
+            val utxo: WalletOutput = utxoMap[utxoKey] ?: throw IllegalArgumentException("Missing utxo for input[$inputIndex] $utxoKey")
+            consumedOutputIds.add(utxo.outputId)
+            val utxoAmount: Coin = Coin.parseCoin(utxo.amount)
+            if (utxoAmount.isZero) throw IllegalArgumentException("Invalid utxo amount on input[$inputIndex]")
+            val signature = transaction.calculateWitnessSignature(
+                inputIndex,
+                signingKey,
+                scriptCode,
+                utxoAmount,
+                Transaction.SigHash.ALL,
+                false,
+            )
+            val witness: TransactionWitness = TransactionWitness.of(signature.encodeToBitcoin(), signingKey.pubKey)
+            val newInput: TransactionInput = input.withScriptBytes(byteArrayOf()).withWitness(witness)
+            transaction.replaceInput(inputIndex, newInput)
+        }
+        val signedHex: String = transaction.serialize().toHex()
+        return BtcSignedResult(signedHex = signedHex, consumedOutputIds = consumedOutputIds)
+    }
 
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
@@ -572,4 +643,3 @@ fun showBrowserBottomSheetDialogFragment(
         BrowserWalletBottomSheetDialogFragment.TAG,
     )
 }
-

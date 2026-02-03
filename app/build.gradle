@@ -211,15 +211,19 @@ android {
         resolutionStrategy {
             force "com.android.tools.build.jetifier:jetifier-core:1.0.0-beta10"
             force "com.github.mixinnetwork:tink-eddsa:0.0.13"
-
-            // keep version 1.69
-            // https://github.com/bcgit/bc-java/commit/9bf72343e1c515ac28fe6b32a5bfe27c6a96baf0
-            force "org.bouncycastle:bcprov-jdk15on:1.69"
-            force "org.bouncycastle:bcutil-jdk15on:1.69"
-            exclude group: 'org.bouncycastle', module: 'bcprov-jdk18on'
-            exclude group: 'org.bouncycastle', module: 'bcprov-jdk15to18'
-
             force "junit:junit:4.13.2"
+
+            def bcVersion = rootProject.ext.bcVersion
+            force "org.bouncycastle:bcprov-jdk15to18:${bcVersion}"
+            force "org.bouncycastle:bcutil-jdk15to18:${bcVersion}"
+            force "org.bouncycastle:bcpkix-jdk15to18:${bcVersion}"
+
+            dependencySubstitution {
+                substitute module('org.bouncycastle:bcprov-jdk15on') using module("org.bouncycastle:bcprov-jdk15to18:${bcVersion}")
+                substitute module('org.bouncycastle:bcutil-jdk15on') using module("org.bouncycastle:bcutil-jdk15to18:${bcVersion}")
+            }
+
+            exclude group: 'org.bouncycastle', module: 'bcprov-jdk18on'
         }
     }
 }
