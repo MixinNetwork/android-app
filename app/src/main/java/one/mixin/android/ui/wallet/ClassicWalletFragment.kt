@@ -40,7 +40,6 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
-import one.mixin.android.extension.navTo
 import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshSingleWalletJob
@@ -53,8 +52,6 @@ import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.home.reminder.VerifyMobileReminderBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.trade.SwapActivity
-import one.mixin.android.ui.landing.LandingActivity
-import one.mixin.android.ui.setting.AddPhoneBeforeFragment
 import one.mixin.android.ui.wallet.adapter.WalletWeb3TokenAdapter
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
@@ -170,23 +167,10 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     sendReceiveView.enableBuy()
                     sendReceiveView.buy.setOnClickListener {
                         lifecycleScope.launch {
-                            if (Session.isAnonymous() && !Session.hasPhone()) {
-                                navTo(AddPhoneBeforeFragment.newInstance(), AddPhoneBeforeFragment.TAG)
-                                return@launch
-                            }
-                            if (VerifyMobileReminderBottomSheetDialogFragment.shouldShow(requireContext())) {
+                            if (VerifyMobileReminderBottomSheetDialogFragment.shouldShowForBuy(requireContext())) {
                                 VerifyMobileReminderBottomSheetDialogFragment
-                                    .newInstance(R.string.Verify_Mobile_Number_Security_Desc)
+                                    .newInstance(R.string.Verify_Mobile_Number_Security_Desc, false)
                                     .showNow(parentFragmentManager, VerifyMobileReminderBottomSheetDialogFragment.TAG)
-                                return@launch
-                            }
-                            val phoneVerifiedAt: String? = Session.getAccount()?.phoneVerifiedAt
-                            val shouldVerifyMobile: Boolean = phoneVerifiedAt.isNullOrBlank() || runCatching {
-                                val verifiedAtMillis: Long = Instant.parse(phoneVerifiedAt).toEpochMilli()
-                                System.currentTimeMillis() - verifiedAtMillis > Constants.INTERVAL_60_DAYS
-                            }.getOrDefault(true)
-                            if (shouldVerifyMobile) {
-                                LandingActivity.showVerifyMobile(requireContext())
                                 return@launch
                             }
                             val wallet = web3ViewModel.findWalletById(walletId)

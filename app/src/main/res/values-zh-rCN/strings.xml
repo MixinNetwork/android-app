@@ -405,6 +405,7 @@
     <string name="Web_debug">Web 调试</string>
     <string name="Encrypted">端到端加密</string>
     <string name="End_to_End_Encryption">端到端加密</string>
+    <string name="Confirm_your_mobile_number">确认你的手机号码</string>
     <string name="Enter_your_phone_number">输入你的手机号码</string>
     <string name="Enter_your_anonymous_number">输入你的匿名号码</string>
     <string name="Enter_new_phone_number">输入你的新手机号码</string>

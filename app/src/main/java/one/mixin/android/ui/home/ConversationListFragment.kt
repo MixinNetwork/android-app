@@ -756,7 +756,7 @@ class ConversationListFragment : LinkFragment() {
                 if (parentFragmentManager.findFragmentByTag(VerifyMobileReminderBottomSheetDialogFragment.TAG) != null) return@launch
                 if (VerifyMobileReminderBottomSheetDialogFragment.shouldShow(requireContext())) {
                     try {
-                        VerifyMobileReminderBottomSheetDialogFragment().show(
+                        VerifyMobileReminderBottomSheetDialogFragment.newInstance().show(
                             parentFragmentManager,
                             VerifyMobileReminderBottomSheetDialogFragment.TAG,
                         )

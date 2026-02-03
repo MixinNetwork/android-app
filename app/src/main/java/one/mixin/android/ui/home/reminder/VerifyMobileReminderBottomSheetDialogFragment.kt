@@ -15,12 +15,15 @@ import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
-import one.mixin.android.ui.landing.LandingActivity
+import one.mixin.android.ui.common.VerifyFragment
+import one.mixin.android.ui.setting.AddPhoneBeforeFragment
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.vo.Account
 import java.time.Instant
 
 @AndroidEntryPoint
@@ -30,20 +33,44 @@ class VerifyMobileReminderBottomSheetDialogFragment : MixinComposeBottomSheetDia
         const val TAG: String = "VerifyMobileReminderBottomSheetDialogFragment"
         private const val PREF_VERIFY_MOBILE_REMINDER_SNOOZE: String = "pref_verify_mobile_reminder_snooze"
         private const val ARGS_SUBTITLE_RES_ID: String = "args_subtitle_res_id"
+        private const val ARGS_ENABLE_SNOOZE: String = "args_enable_snooze"
 
         fun newInstance(subtitleResId: Int = R.string.Verify_Mobile_Number_Desc): VerifyMobileReminderBottomSheetDialogFragment {
             return VerifyMobileReminderBottomSheetDialogFragment().apply {
                 arguments = android.os.Bundle().apply {
                     putInt(ARGS_SUBTITLE_RES_ID, subtitleResId)
+                    putBoolean(ARGS_ENABLE_SNOOZE, true)
+                }
+            }
+        }
+
+        fun newInstance(
+            subtitleResId: Int = R.string.Verify_Mobile_Number_Desc,
+            enableSnooze: Boolean,
+        ): VerifyMobileReminderBottomSheetDialogFragment {
+            return VerifyMobileReminderBottomSheetDialogFragment().apply {
+                arguments = android.os.Bundle().apply {
+                    putInt(ARGS_SUBTITLE_RES_ID, subtitleResId)
+                    putBoolean(ARGS_ENABLE_SNOOZE, enableSnooze)
                 }
             }
         }
 
         fun shouldShow(context: Context): Boolean {
-            if (!Session.hasPhone()) return false
             val account = Session.getAccount() ?: return false
             val lastSnoozeTimeMillis: Long = context.defaultSharedPreferences.getLong(PREF_VERIFY_MOBILE_REMINDER_SNOOZE, 0)
             if (System.currentTimeMillis() - lastSnoozeTimeMillis < Constants.INTERVAL_7_DAYS) return false
+            return shouldShowWithoutSnooze(account)
+        }
+
+        fun shouldShowForBuy(context: Context): Boolean {
+            val account = Session.getAccount() ?: return false
+            if (account.phone.isBlank()) return true
+            return shouldShowWithoutSnooze(account)
+        }
+
+        private fun shouldShowWithoutSnooze(account: Account): Boolean {
+            if (account.phone.isBlank()) return true
             val phoneVerifiedAt: String? = account.phoneVerifiedAt
             if (phoneVerifiedAt.isNullOrBlank()) return true
             val verifiedAtMillis: Long = runCatching {
@@ -83,8 +110,10 @@ class VerifyMobileReminderBottomSheetDialogFragment : MixinComposeBottomSheetDia
 
     @Composable
     override fun ComposeContent() {
-        val subtitleResId: Int = requireArguments().getInt(ARGS_SUBTITLE_RES_ID, R.string.Verify_Mobile_Number_Desc)
-        val phoneNumber: String? = Session.getAccount()?.phone
+        val subtitleResId: Int = arguments?.getInt(ARGS_SUBTITLE_RES_ID, R.string.Verify_Mobile_Number_Desc)
+            ?: R.string.Verify_Mobile_Number_Desc
+        val enableSnooze: Boolean = arguments?.getBoolean(ARGS_ENABLE_SNOOZE, true) ?: true
+        val phoneNumber: String? = if (Session.hasPhone()) Session.getAccount()?.phone else null
         MixinAppTheme {
             ReminderPage(
                 R.drawable.bg_reminder_verify_mobile,
@@ -94,16 +123,18 @@ class VerifyMobileReminderBottomSheetDialogFragment : MixinComposeBottomSheetDia
                 action = {
                     dismissAllowingStateLoss()
                     if (phoneNumber.isNullOrBlank()) {
-                        LandingActivity.showVerifyMobile(requireContext())
+                        navTo(AddPhoneBeforeFragment.newInstance(), AddPhoneBeforeFragment.TAG)
                     } else {
-                        LandingActivity.showVerifyMobile(requireContext(), phoneNumber)
+                        navTo(VerifyFragment.newInstance(VerifyFragment.FROM_PHONE, phoneNumber), VerifyFragment.TAG)
                     }
                 },
                 dismiss = {
-                    requireContext().defaultSharedPreferences.putLong(
-                        PREF_VERIFY_MOBILE_REMINDER_SNOOZE,
-                        System.currentTimeMillis(),
-                    )
+                    if (enableSnooze) {
+                        requireContext().defaultSharedPreferences.putLong(
+                            PREF_VERIFY_MOBILE_REMINDER_SNOOZE,
+                            System.currentTimeMillis(),
+                        )
+                    }
                     dismissAllowingStateLoss()
                 },
             )

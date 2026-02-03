@@ -421,6 +421,7 @@
     <string name="Enter_new_phone_number">Enter your new phone number</string>
     <string name="Enter_new_anonymous_number">Enter your new anonymous number</string>
     <string name="Enter_PIN_to_delete_account">Enter your PIN to delete your account</string>
+    <string name="Confirm_your_mobile_number">Confirm your mobile number</string>
     <string name="Enter_your_phone_number">Enter your phone number</string>
     <string name="Enter_your_anonymous_number">Enter your anonymous number</string>
     <string name="Enter_your_emergency_contact_Mixin_ID">Enter your recovery contact Mixin ID</string>

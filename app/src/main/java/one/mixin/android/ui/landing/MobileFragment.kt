@@ -234,6 +234,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             binding.countryIconIv.setImageResource(country.flag)
             binding.countryCodeEt.setText(country.dialCode)
         }
+        binding.mobileTv.setText(getString(R.string.Confirm_your_mobile_number))
         binding.mobileEt.setText(parsedPhoneNumber.nationalNumber.toString())
         binding.countryIconIv.isEnabled = false
         binding.countryCodeEt.isEnabled = false

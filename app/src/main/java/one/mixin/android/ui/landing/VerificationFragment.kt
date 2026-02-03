@@ -43,6 +43,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.ui.common.PinCodeFragment
+import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
 import one.mixin.android.ui.landing.MobileFragment.Companion.ARGS_FROM
 import one.mixin.android.ui.landing.MobileFragment.Companion.ARGS_PHONE_NUM
@@ -250,7 +251,12 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                     alert(getString(R.string.Changed))
                         .setPositiveButton(android.R.string.ok) { dialog, _ ->
                             dialog.dismiss()
-                            activity?.finish()
+                            if (activity !is MainActivity) {
+                                activity?.finish()
+                            } else {
+                                activity?.finish()
+                                MainActivity.show(requireActivity())
+                            }
                         }
                         .show()
                 },
@@ -313,12 +319,9 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                 )
             handleMixinResponse(
                 invokeNetwork = { viewModel.create(requireArguments().getString(ARGS_ID)!!, accountRequest) },
-                successBlock = { response ->
-                    val account = response.data ?: return@handleMixinResponse
-                    withContext(Dispatchers.IO) {
-                        Session.storeAccount(account)
-                    }
+                successBlock = { _ ->
                     activity?.finish()
+                    MainActivity.show(requireActivity())
                 },
                 doAfterNetworkSuccess = { hideLoading() },
                 defaultErrorHandle = {
