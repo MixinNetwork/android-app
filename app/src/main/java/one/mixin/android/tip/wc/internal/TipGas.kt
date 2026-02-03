@@ -2,6 +2,7 @@ package one.mixin.android.tip.wc.internal
 
 import one.mixin.android.Constants.DEFAULT_GAS_LIMIT_FOR_NONFUNGIBLE_TOKENS
 import one.mixin.android.api.request.web3.EstimateFeeResponse
+import org.bitcoinj.base.Coin
 import org.web3j.protocol.core.methods.response.EthEstimateGas
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
@@ -35,23 +36,17 @@ data class TipGas(
 fun buildTipGas(assetId: String, response: EstimateFeeResponse): TipGas {
     return TipGas(assetId, response.gasLimit!!.toBigInteger(), response.maxFeePerGas!!.toBigInteger(), response.maxPriorityFeePerGas!!.toBigInteger())
 }
-
-private fun convertToGasLimit(
-    estimate: EthEstimateGas,
-    defaultLimit: BigInteger?,
-): BigInteger? {
-    return if (estimate.hasError()) {
-        // out of gas
-        if (estimate.error.code == -32000) {
-            defaultLimit
-        } else {
-            BigInteger.ZERO
-        }
-    } else if (estimate.amountUsed > BigInteger.ZERO) {
-        estimate.amountUsed
-    } else if (defaultLimit == null || defaultLimit == BigInteger.ZERO) {
-        BigInteger(DEFAULT_GAS_LIMIT_FOR_NONFUNGIBLE_TOKENS)
-    } else {
-        defaultLimit
+private fun estimateFeeInSatoshi(feeRate: String, transactionSize: Int): BigDecimal {
+    return try {
+        val price = BigDecimal(feeRate)
+        val limit = BigDecimal(transactionSize)
+        price.multiply(limit)
+    } catch (e: Exception) {
+        BigDecimal.ZERO
     }
+}
+
+fun estimateFeeInBtc(feeRate: String, transactionSize: Int): BigDecimal {
+    val sats = estimateFeeInSatoshi(feeRate, transactionSize)
+    return Coin.satoshiToBtc(sats.toLong())
 }

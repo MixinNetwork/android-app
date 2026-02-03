@@ -74,7 +74,7 @@ class ReImportPrivateKeyFragment : BaseFragment(R.layout.fragment_compose) {
                     },
                     contentText = scannedText,
                     onConfirmClick = { _, text ->
-                        viewModel.savePrivateKey(requireNotNull(walletId), text)
+                        viewModel.savePrivateKey(requireNotNull(walletId), requireNotNull(chainId), text)
                         RxBus.publish(WalletRefreshedEvent(requireNotNull(walletId), WalletOperationType.CREATE))
                         toast(R.string.Success)
                         activity?.finish()

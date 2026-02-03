@@ -203,6 +203,8 @@ private fun AddressItem(
         }
         val chains = if (address.chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
             listOf(R.drawable.ic_chain_sol)
+        } else if (address.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+            listOf(R.drawable.ic_chain_btc)
         } else {
             listOf(
                 R.drawable.ic_chain_eth,

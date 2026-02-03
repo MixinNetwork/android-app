@@ -15,6 +15,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
+import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
+import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.Constants.MIXIN_FREE_FEE
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.MixinApplication
@@ -53,9 +55,13 @@ import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.extension.decodeBase64
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.hexString
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.toHex
 import one.mixin.android.job.CheckBalanceJob
@@ -138,11 +144,14 @@ import one.mixin.android.vo.utxo.consolidationOutput
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.Web3Signer
+import org.bitcoinj.base.ScriptType
+import org.bitcoinj.crypto.ECKey
 import org.sol4k.exception.RpcException
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.io.File
 import java.math.BigDecimal
+import java.math.BigInteger
 import java.time.Instant
 import java.util.UUID
 import javax.inject.Inject
@@ -1778,10 +1787,35 @@ class BottomSheetViewModel
             context: Context,
             pin: String,
             chainId: String,
+            index: Int = 0
         ): String {
             val result = tip.getOrRecoverTipPriv(context, pin)
             val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getMnemonicFromEncryptedPreferences(context), tip.getEncryptedSalt(context), pin, result.getOrThrow())
-            return privateKeyToAddress(spendKey, chainId)
+            return privateKeyToAddress(spendKey, chainId, index)
+        }
+
+        suspend fun getTipPrivateKey(
+            context: Context,
+            pin: String,
+            chainId: String,
+            index: Int = 0,
+        ): ByteArray {
+            val result = tip.getOrRecoverTipPriv(context, pin)
+            val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getMnemonicFromEncryptedPreferences(context), tip.getEncryptedSalt(context), pin, result.getOrThrow())
+            return tipPrivToPrivateKey(spendKey, chainId, index)
+        }
+
+        suspend fun getSpendKey(
+            context: Context,
+            pin: String,
+        ): ByteArray {
+            val result = tip.getOrRecoverTipPriv(context, pin)
+            return tip.getSpendPrivFromEncryptedSalt(
+                tip.getMnemonicFromEncryptedPreferences(context),
+                tip.getEncryptedSalt(context),
+                pin,
+                result.getOrThrow(),
+            )
         }
 
         suspend fun ensureClassicWallet(pin: String) {
@@ -1804,6 +1838,7 @@ class BottomSheetViewModel
             )
             val walletName: String = context.getString(R.string.Common_Wallet)
             val classicIndex = 0
+            val btcAddress: String = privateKeyToAddress(spendKey, Constants.ChainId.BITCOIN_CHAIN_ID, classicIndex)
             val evmAddress: String = privateKeyToAddress(spendKey, Constants.ChainId.ETHEREUM_CHAIN_ID, classicIndex)
             val solAddress: String = privateKeyToAddress(spendKey, Constants.ChainId.SOLANA_CHAIN_ID, classicIndex)
             val addresses: List<Web3AddressRequest> = listOf(
@@ -1820,7 +1855,14 @@ class BottomSheetViewModel
                     path = Bip44Path.solanaPathString(classicIndex),
                     privateKey = tipPrivToPrivateKey(spendKey, Constants.ChainId.SOLANA_CHAIN_ID, classicIndex),
                     category = WalletCategory.CLASSIC.value
-                )
+                ),
+                createSignedWeb3AddressRequest(
+                    destination = btcAddress,
+                    chainId = Constants.ChainId.BITCOIN_CHAIN_ID,
+                    path = Bip44Path.bitcoinSegwitPathString(classicIndex),
+                    privateKey = tipPrivToPrivateKey(spendKey, Constants.ChainId.BITCOIN_CHAIN_ID, classicIndex),
+                    category = WalletCategory.CLASSIC.value
+                ),
             )
             val walletRequest = WalletRequest(
                 name = walletName,
@@ -1832,7 +1874,7 @@ class BottomSheetViewModel
                 successBlock = { response ->
                     response.data?.let { wallet ->
                         web3Repository.insertWallet(
-                            one.mixin.android.db.web3.vo.Web3Wallet(
+                            Web3Wallet(
                                 id = wallet.id,
                                 name = wallet.name,
                                 category = wallet.category,
@@ -1843,6 +1885,7 @@ class BottomSheetViewModel
                         val walletAddresses = wallet.addresses ?: emptyList()
                         if (walletAddresses.isNotEmpty()) {
                             web3Repository.insertAddressList(walletAddresses)
+                            MixinApplication.appContext.defaultSharedPreferences.putBoolean(Constants.Account.PREF_WEB3_ADDRESSES_SYNCED, true)
                         }
                     }
                 },
@@ -1875,6 +1918,7 @@ class BottomSheetViewModel
                             }
                         )
                     }
+                    MixinApplication.appContext.defaultSharedPreferences.putBoolean(Constants.Account.PREF_WEB3_ADDRESSES_SYNCED, true)
                 },
                 requestSession = { ids ->
                     userRepository.fetchSessionsSuspend(ids)
@@ -1904,6 +1948,9 @@ class BottomSheetViewModel
                     Numeric.prependHexPrefix(Web3Signer.signSolanaMessage(privateKey, message.toByteArray()))
                 } else if (chainId in Constants.Web3EvmChainIds) {
                     Web3Signer.signEthMessage(privateKey, message.toByteArray().toHexString(), JsSignMessage.TYPE_PERSONAL_MESSAGE)
+                } else if (chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                    val ecKey: ECKey = ECKey.fromPrivate(BigInteger(1, privateKey), true)
+                    Numeric.toHexString(ecKey.signMessage(message, ScriptType.P2WPKH).decodeBase64())
                 } else {
                     null
                 }
@@ -1945,8 +1992,8 @@ class BottomSheetViewModel
             return requireNotNull(CryptoWalletHelper.getWeb3PrivateKey(context, spendKey, chainId))
         }
 
-        suspend fun postRawTx(rawTx: String, web3ChainId: String, account: String, to: String, assetId: String? = null) {
-            val resp = tokenRepository.postRawTx(Web3RawTransactionRequest(web3ChainId, rawTx, account, to), assetId)
+        suspend fun postRawTx(rawTx: String, web3ChainId: String, account: String, to: String, assetId: String? = null, rate: BigDecimal? = null) {
+            val resp = tokenRepository.postRawTx(Web3RawTransactionRequest(web3ChainId, rawTx, account, to), assetId, rate)
             if (!resp.isSuccess) {
                 val err = resp.error!!
                 // simulate RpcException
