@@ -1,7 +1,6 @@
 package one.mixin.android.web3.send
 
 import one.mixin.android.api.response.web3.WalletOutput
-import one.mixin.android.db.web3.vo.virtualSize
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.toHex
 import org.bitcoinj.base.AddressParser
@@ -108,7 +107,7 @@ object BtcTransactionBuilder {
                 val input = TransactionInput(candidateTx, byteArrayOf(), outPoint)
                 candidateTx.addInput(input)
             }
-            virtualSize = candidateTx.virtualSize()
+            virtualSize = candidateTx.vsize
             val feeSatoshis: BigDecimal = feeRate.multiply(BigDecimal(virtualSize)).setScale(0, RoundingMode.UP)
             feeBtc = feeSatoshis.divide(satoshisPerBtc, 8, RoundingMode.HALF_UP)
             val targetAmount: Coin = sendAmount.add(Coin.parseCoin(feeBtc.toPlainString()))
@@ -118,7 +117,7 @@ object BtcTransactionBuilder {
             }
             if (changeAmount.isGreaterThan(minimumChangeAmount) || changeAmount == minimumChangeAmount) {
                 candidateTx.addOutput(changeAmount, changeAddress)
-                virtualSize = candidateTx.virtualSize()
+                virtualSize = candidateTx.vsize
                 val feeSatoshisWithChange: BigDecimal = feeRate.multiply(BigDecimal(virtualSize)).setScale(0, RoundingMode.UP)
                 feeBtc = feeSatoshisWithChange.divide(satoshisPerBtc, 8, RoundingMode.HALF_UP)
                 val targetAmountWithChange: Coin = sendAmount.add(Coin.parseCoin(feeBtc.toPlainString()))
@@ -152,7 +151,7 @@ object BtcTransactionBuilder {
             val input = TransactionInput(tx, byteArrayOf(), outPoint)
             tx.addInput(input)
         }
-        virtualSize = tx.virtualSize()
+        virtualSize = tx.vsize
         val feeSatoshi: BigDecimal = BigDecimal.valueOf(calculateFeeSatoshi(tx, localUtxos))
         val finalFeeBtc: BigDecimal = feeSatoshi.divide(satoshisPerBtc)
         return BuiltBtcTransaction(rawHex = tx.serialize().toHex(), feeBtc = finalFeeBtc, virtualSize = virtualSize, changeAmount = changeAmount)
@@ -188,7 +187,7 @@ object BtcTransactionBuilder {
             for (output: TransactionOutput in originalOutputs) {
                 candidateTx.addOutput(output.value, Script.parse(output.scriptBytes))
             }
-            val virtualSize: Int = candidateTx.virtualSize()
+            val virtualSize: Int = candidateTx.vsize
             val desiredTotalFeeSatoshis: Long = calculateRbfRequiredTotalFeeSatoshis(
                 oldTotalFeeSatoshis = oldTotalFeeSatoshis,
                 replacementVirtualSize = virtualSize,
@@ -275,7 +274,7 @@ object BtcTransactionBuilder {
             val sizeTx = BtcTransaction()
             addInputs(sizeTx, originalInputs, usedExtraUtxos)
             sizeTx.addOutput(minimumChangeAmount, selfScript)
-            val replacementVSize: Int = sizeTx.virtualSize()
+            val replacementVSize: Int = sizeTx.vsize
             val desiredTotalFeeSatoshis: Long = calculateRbfRequiredTotalFeeSatoshis(
                 oldTotalFeeSatoshis = oldTotalFeeSatoshis,
                 replacementVirtualSize = replacementVSize,

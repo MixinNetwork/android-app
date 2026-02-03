@@ -265,8 +265,12 @@ object CryptoWalletHelper {
     }
 
     private fun isBitcoinWifPrivateKey(privateKey: String): Boolean {
-        if (privateKey.length !in 51..52) return false
-        return privateKey.startsWith("5") || privateKey.startsWith("K") || privateKey.startsWith("L")
+        return try {
+            DumpedPrivateKey.fromBase58(BitcoinNetwork.MAINNET, privateKey)
+            true
+        } catch (e: Exception) {
+            false
+        }
     }
 
     fun getWeb3PrivateKey(context: Context, spendKey: ByteArray, chainId: String): ByteArray? {

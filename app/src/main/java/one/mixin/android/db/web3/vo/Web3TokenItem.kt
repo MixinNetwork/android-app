@@ -356,6 +356,3 @@ suspend fun Web3TokenItem.buildTransaction(
     }
 }
 
-fun BtcTransaction.virtualSize(): Int {
-    return (weight + 3) / 4
-}

@@ -24,7 +24,6 @@ import one.mixin.android.db.web3.vo.Web3RawTransaction
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.Web3Wallet
-import one.mixin.android.db.web3.vo.virtualSize
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.forEachWithIndex
@@ -747,7 +746,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         )
         val cleanedUnsignedReplacementHex: String = unsignedReplacementHex.removePrefix("0x").trim()
         val replacementTx: BtcTransaction = BtcTransaction.read(ByteBuffer.wrap(cleanedUnsignedReplacementHex.hexStringToByteArray()))
-        val replacementVirtualSize: Int = replacementTx.virtualSize()
+        val replacementVirtualSize: Int = replacementTx.vsize
         val estimatedFeeSatoshis: Long = calculateBtcFeeSatoshis(replacementTx.inputs, replacementTx.outputs, localUtxos)
         val estimatedFeeBtc: BigDecimal = BigDecimal.valueOf(estimatedFeeSatoshis).divide(BTC_SATOSHIS_PER_BTC)
         Timber.e("apiRate:$apiRate localRate:$localRate selectedRate:$selectedRate currentFeeSatoshis:$currentFeeSatoshis estimatedFeeBtc:$estimatedFeeBtc")
@@ -766,7 +765,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         val cleanedHex: String = unsignedTransactionHex.removePrefix("0x").trim()
         return runCatching {
             val tx: BtcTransaction = BtcTransaction.read(ByteBuffer.wrap(cleanedHex.hexStringToByteArray()))
-            tx.virtualSize()
+            tx.vsize
         }.getOrNull()
     }
 
