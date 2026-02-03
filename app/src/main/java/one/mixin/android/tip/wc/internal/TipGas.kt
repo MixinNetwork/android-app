@@ -1,5 +1,7 @@
 package one.mixin.android.tip.wc.internal
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import one.mixin.android.Constants.DEFAULT_GAS_LIMIT_FOR_NONFUNGIBLE_TOKENS
 import one.mixin.android.api.request.web3.EstimateFeeResponse
 import org.web3j.protocol.core.methods.response.EthEstimateGas
@@ -9,12 +11,13 @@ import java.math.BigDecimal
 import java.math.BigInteger
 import java.math.RoundingMode
 
+@Parcelize
 data class TipGas(
     val assetId: String,
     val gasLimit: BigInteger,
     val maxFeePerGas: BigInteger,
     val maxPriorityFeePerGas: BigInteger,
-) {
+) : Parcelable {
     fun selectMaxFeePerGas(maxFeePerGas: BigInteger): BigInteger {
         return this.maxFeePerGas.max(maxFeePerGas)
     }

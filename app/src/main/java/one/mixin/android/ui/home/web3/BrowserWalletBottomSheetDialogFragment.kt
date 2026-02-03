@@ -91,6 +91,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         const val ARGS_TO_ADDRESS = "args_to_address"
         const val ARGS_TO_USER = "args_to_user"
         const val ARGS_IS_FEE_FREE = "args_is_fee_free"
+        const val ARGS_TIP_GAS = "args_tip_gas"
 
         fun newInstance(
             jsSignMessage: JsSignMessage,
@@ -102,6 +103,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             toAddress: String? = null,
             toUser: User? = null,
             isFeeWaived: Boolean = false,
+            tipGas: TipGas? = null,
         ) = BrowserWalletBottomSheetDialogFragment().withArgs {
             putParcelable(ARGS_MESSAGE, jsSignMessage)
             putString(
@@ -117,6 +119,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             toAddress?.let { putString(ARGS_TO_ADDRESS, it) }
             toUser?.let { putParcelable(ARGS_TO_USER, it) }
             putBoolean(ARGS_IS_FEE_FREE, isFeeWaived)
+            tipGas?.let { putParcelable(ARGS_TIP_GAS, it) }
         }
     }
 
@@ -161,6 +164,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         super.onViewCreated(view, savedInstanceState)
         token = requireArguments().getParcelableCompat(ARGS_TOKEN, Web3TokenItem::class.java)
         amount = requireArguments().getString(ARGS_AMOUNT)
+        tipGas = requireArguments().getParcelableCompat(ARGS_TIP_GAS, TipGas::class.java)
         refreshEstimatedGasAndAsset(currentChain)
     }
 
@@ -273,7 +277,8 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             .onEach {
                 asset = viewModel.refreshAsset(assetId)
                 try {
-                    tipGas = withContext(Dispatchers.IO) {
+                    if (tipGas == null) {
+                        tipGas = withContext(Dispatchers.IO) {
                         val r = runCatching {
                             viewModel.estimateFee(
                                 EstimateFeeRequest(
@@ -291,8 +296,9 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                             ErrorHandler.handleMixinError(r?.errorCode ?: 0, r?.errorDescription ?: "")
                             return@withContext null
                         }
-                        buildTipGas(chain.chainId, r.data!!)
-                    } ?: return@onEach
+                            buildTipGas(chain.chainId, r.data!!)
+                        } ?: return@onEach
+                    }
                     insufficientGas = checkGas(token, chainToken, tipGas, transaction.value, transaction.maxFeePerGas)
                     if (insufficientGas) {
                         handleException(IllegalArgumentException(requireContext().getString(R.string.insufficient_gas, chainToken?.symbol ?: currentChain.symbol)))
@@ -553,8 +559,9 @@ fun showBrowserBottomSheetDialogFragment(
     onTxhash: ((String, String) -> Unit)? = null,
     toUser: User? = null,
     isFeeWaived: Boolean = false,
+    tipGas: TipGas? = null,
 ) {
-    val wcBottomSheet = BrowserWalletBottomSheetDialogFragment.newInstance(signMessage, currentUrl, currentTitle, amount, token, chainToken, toAddress, toUser, isFeeWaived)
+    val wcBottomSheet = BrowserWalletBottomSheetDialogFragment.newInstance(signMessage, currentUrl, currentTitle, amount, token, chainToken, toAddress, toUser, isFeeWaived, tipGas)
     onDismiss?.let {
         wcBottomSheet.setOnDismiss(onDismiss)
     }

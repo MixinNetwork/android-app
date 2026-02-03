@@ -326,16 +326,17 @@ fun BrowserPage(
                     Box(modifier = Modifier.height(10.dp))
                 }
                 val fee = tipGas?.displayValue(transaction?.maxFeePerGas) ?: solanaFee?.stripTrailingZeros() ?: BigDecimal.ZERO
+                val feeSymbol = asset?.symbol ?: chain.symbol
                 if (fee == BigDecimal.ZERO) {
                     FeeInfo(
-                        amount = "$fee",
+                        amount = "$fee $feeSymbol",
                         fee = fee.multiply(asset.priceUSD()),
                         isFree = isFeeWaived,
                         onFreeClick = onFreeClick,
                     )
                 } else {
                     FeeInfo(
-                        amount = "$fee ${asset?.symbol ?: ""}",
+                        amount = "$fee $feeSymbol",
                         fee = fee.multiply(asset.priceUSD()),
                         gasPrice = tipGas?.displayGas(transaction?.maxFeePerGas)?.toPlainString(),
                         isFree = isFeeWaived,
