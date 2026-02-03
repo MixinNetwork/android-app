@@ -2,6 +2,7 @@ package one.mixin.android.tip.wc.internal
 
 import one.mixin.android.Constants.DEFAULT_GAS_LIMIT_FOR_NONFUNGIBLE_TOKENS
 import one.mixin.android.api.request.web3.EstimateFeeResponse
+import org.bitcoinj.base.Coin
 import org.web3j.protocol.core.methods.response.EthEstimateGas
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
@@ -45,11 +46,7 @@ private fun estimateFeeInSatoshi(feeRate: String, transactionSize: Int): BigDeci
     }
 }
 
-private fun satoshiToBtc(satoshis: BigDecimal, scale: Int = 8): BigDecimal {
-    return satoshis.divide(BigDecimal("100000000"), scale, RoundingMode.HALF_UP)
-}
-
-fun estimateFeeInBtc(feeRate: String, transactionSize: Int, scale: Int = 8): BigDecimal {
+fun estimateFeeInBtc(feeRate: String, transactionSize: Int): BigDecimal {
     val sats = estimateFeeInSatoshi(feeRate, transactionSize)
-    return satoshiToBtc(sats, scale)
+    return Coin.satoshiToBtc(sats.toLong())
 }

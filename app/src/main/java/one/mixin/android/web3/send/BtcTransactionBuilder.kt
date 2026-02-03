@@ -21,7 +21,8 @@ object BtcTransactionBuilder {
     private const val BTC_RBF_SEQUENCE: Long = 0xfffffffdL
     private const val INCREMENTAL_RELAY_FEE_SAT_PER_VB: Long = 1L
     private const val RBF_SAFETY_EXTRA_SATOSHIS: Long = 300L
-    private val satoshisPerBtc: BigDecimal = BigDecimal("100000000")
+
+    private val satoshisPerBtc: BigDecimal = BigDecimal.valueOf(Coin.COIN.value)
 
     private fun calculateRbfRequiredTotalFeeSatoshis(
         oldTotalFeeSatoshis: Long,
