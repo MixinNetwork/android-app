@@ -1844,7 +1844,12 @@
     <string name="Set_up_Pin_question">如果我丢失了 PIN 会发生什么？</string>
     <string name="Set_up_Pin_answer_1">我可以稍后恢复我的帐户。</string>
     <string name="Set_up_Pin_answer_2">我将无法访问我的帐户和资金。</string>
+    <string name="Set_up_pin_error_message">PIN 设置失败。请检查网络连接后重试。</string>
+    <string name="Check_answer">检查答案</string>
     <string name="What_is_Pin">什么是 PIN ?</string>
+    <string name="Quiz_correct">正确！</string>
+    <string name="Quiz_wrong_answer">哎呀，答错了</string>
+    <string name="Quiz_pin_explanation">PIN 是您钱包的密钥，丢失后无法恢复。</string>
     <string name="Recovery_Kit">账号恢复</string>
     <string name="Recovery_Kit_instruction">Mixin Messenger 的 MPC 钱包基于去中心化密钥协议 TIP 构建，您可以通过手机号、助记词或可信联系人登录恢复你的账号，钱包完整的密钥只存在当前设备的 TEE 安全环境中，阅读文档以了解%1$s。</string>
     <string name="Recovery_Kit_Attention">注意：账号恢复无法帮助您恢复 PIN</string>

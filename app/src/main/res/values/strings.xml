@@ -1880,7 +1880,12 @@
     <string name="Set_up_Pin_question">What happens if I lose the PIN?</string>
     <string name="Set_up_Pin_answer_1">I can recover my account later.</string>
     <string name="Set_up_Pin_answer_2">I will lose access to my account and funds.</string>
+    <string name="Set_up_pin_error_message">Failed to set up PIN. Please check your network connection and try again.</string>
+    <string name="Check_answer">Check answer</string>
     <string name="What_is_Pin">What is PIN?</string>
+    <string name="Quiz_correct">Correct!</string>
+    <string name="Quiz_wrong_answer">Oops, wrong answer</string>
+    <string name="Quiz_pin_explanation">The PIN is the key to your wallet, and it\'s unrecoverable if lost.</string>
     <string name="Recovery_Kit">Recovery Kit</string>
     <string name="Recovery_Kit_instruction">The MPC wallet in Mixin Messenger is built on the decentralized key protocol TIP. You can recover your account through your phone number, mnemonic phrase, or a trusted contact. The complete wallet key exists only in the TEE security environment on the current device. Read the documentation to learn %1$s.</string>
     <string name="Recovery_Kit_Attention">Attention: The Recovery Kit cannot help you recover your PIN</string>

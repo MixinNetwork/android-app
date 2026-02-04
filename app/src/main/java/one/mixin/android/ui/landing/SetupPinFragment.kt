@@ -55,6 +55,7 @@ class SetupPinFragment : BaseFragment(R.layout.fragment_compose) {
             ) {
                 val navController = rememberNavController()
                 var pin: String by remember { mutableStateOf("") }
+                var errorMessage: String by remember { mutableStateOf("") }
                 NavHost(
                     navController = navController,
                     startDestination = SetupPinDestination.Setup.name,
@@ -84,21 +85,37 @@ class SetupPinFragment : BaseFragment(R.layout.fragment_compose) {
                     },
                 ) {
                     composable(SetupPinDestination.Setup.name) {
-                        SetupPinPage({
-                        }, {
-                            pin = it
-                            navController.navigate(SetupPinDestination.Loading.name)
-                        })
-                    }
-                    composable(SetupPinDestination.Loading.name) {
-                        SetPinLoadingPage(pin) {
-                            requireActivity().finish()
-                        }
+                        SetupPinPage(
+                            pop = {
+                                requireActivity().onBackPressedDispatcher.onBackPressed()
+                            },
+                            next = { pinValue ->
+                                pin = pinValue
+                                navController.navigate(SetupPinDestination.Quiz.name)
+                            },
+                            errorMessage = errorMessage,
+                            onRetry = {
+                                errorMessage = ""
+                            }
+                        )
                     }
                     composable(SetupPinDestination.Quiz.name) {
-                        QuizPage {
-                            // Todo
-                        }
+                        QuizPage(
+                            next = {
+                                navController.navigate(SetupPinDestination.Loading.name)
+                            },
+                            pop = {
+                                navController.popBackStack()
+                            }
+                        )
+                    }
+                    composable(SetupPinDestination.Loading.name) {
+                        SetPinLoadingPage(
+                            pin = pin,
+                            next = {
+                                requireActivity().finish()
+                            }
+                        )
                     }
                 }
             }

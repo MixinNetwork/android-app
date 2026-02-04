@@ -19,6 +19,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.Constants
@@ -28,7 +29,11 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.openUrl
 
 @Composable
-fun SetPinPage(next: () -> Unit) {
+fun SetPinPage(
+    next: () -> Unit,
+    errorMessage: String = "",
+    onRetry: (() -> Unit)? = null
+) {
     val context = LocalContext.current
     MixinAppTheme {
         Column {
@@ -86,11 +91,25 @@ fun SetPinPage(next: () -> Unit) {
                 )
 
                 Spacer(modifier = Modifier.weight(1f))
+                
+                if (errorMessage.isNotEmpty()) {
+                    Text(
+                        text = errorMessage,
+                        color = MixinAppTheme.colors.red,
+                        fontSize = 14.sp,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+                
                 Button(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp),
-                    onClick = next,
+                    onClick = if (errorMessage.isNotEmpty() && onRetry != null) onRetry else next,
                     colors =
                     ButtonDefaults.outlinedButtonColors(
                         backgroundColor = MixinAppTheme.colors.accent
@@ -105,7 +124,7 @@ fun SetPinPage(next: () -> Unit) {
                     ),
                 ) {
                     Text(
-                        text = stringResource(R.string.Start),
+                        text = stringResource(if (errorMessage.isNotEmpty()) R.string.Retry else R.string.Start),
                         color = Color.White
                     )
                 }

@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.ui.landing.vo.SetupState
 import one.mixin.android.ui.tip.TipBundle
@@ -21,7 +22,7 @@ class SetupPinViewModel @Inject internal constructor(
 ) : ViewModel() {
     private val _setupState: MutableLiveData<SetupState> = MutableLiveData<SetupState>(SetupState.Loading)
     val setupState: LiveData<SetupState> get() = _setupState
-    private val _errorMessage: MutableLiveData<String> = MutableLiveData<String>("")
+    private val _errorMessage: MutableLiveData<String> = MutableLiveData("")
     val errorMessage: LiveData<String> get() = _errorMessage
 
     fun executeCreatePin(context: Context, pin: String) {
@@ -29,7 +30,7 @@ class SetupPinViewModel @Inject internal constructor(
         _errorMessage.value = ""
         viewModelScope.launch {
             val deviceId: String = requireNotNull(
-                context.defaultSharedPreferences.getString(one.mixin.android.Constants.DEVICE_ID, null),
+                context.defaultSharedPreferences.getString(Constants.DEVICE_ID, null),
             ) { "required deviceId can not be null" }
             val tipBundle = TipBundle(
                 tipType = TipType.Create,
