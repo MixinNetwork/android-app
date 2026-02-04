@@ -846,6 +846,7 @@
     <string name="pin_confirm_hint">Please confirm the 6 digit PIN and remember it</string>
     <string name="pin_creation">PIN creation</string>
     <string name="PIN_incorrect">PIN incorrect</string>
+    <string name="PIN_does_not_match">PIN does not match</string>
     <string name="pin_lost_hint">If lost, there is no way to recover your wallet.</string>
     <string name="PIN_not_same_as_last_time">PIN does not match what was set when it was last terminated unexpectedly</string>
     <string name="pin_title">Pin</string>

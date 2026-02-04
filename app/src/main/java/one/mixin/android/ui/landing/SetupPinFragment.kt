@@ -86,9 +86,6 @@ class SetupPinFragment : BaseFragment(R.layout.fragment_compose) {
                 ) {
                     composable(SetupPinDestination.Setup.name) {
                         SetupPinPage(
-                            pop = {
-                                requireActivity().onBackPressedDispatcher.onBackPressed()
-                            },
                             next = { pinValue ->
                                 pin = pinValue
                                 navController.navigate(SetupPinDestination.Quiz.name)

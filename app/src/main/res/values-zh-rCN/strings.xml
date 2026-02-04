@@ -818,6 +818,7 @@
     <string name="pin_confirm_hint">确认 6 位数字 PIN 并牢记它</string>
     <string name="pin_creation">创建 PIN</string>
     <string name="PIN_incorrect">PIN 错误</string>
+    <string name="PIN_does_not_match">PIN 不匹配</string>
     <string name="pin_lost_hint">如果忘记，你的钱包将无法找回。</string>
     <string name="PIN_not_same_as_last_time">PIN 跟上次意外退出时设置的不一致</string>
     <string name="pin_title">置顶</string>

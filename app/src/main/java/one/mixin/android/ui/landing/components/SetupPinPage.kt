@@ -67,7 +67,6 @@ import one.mixin.android.extension.tickVibrate
 
 @Composable
 fun SetupPinPage(
-    pop: () -> Unit, 
     next: (String) -> Unit,
     errorMessage: String = "",
     onRetry: (() -> Unit)? = null
@@ -305,6 +304,9 @@ fun SetupPinPage(
                                                         firstPinCode = pinCode
                                                     } else if (pinCode != firstPinCode) {
                                                         pinCodeAttempts = 0
+                                                    }
+                                                    if (pinCodeAttempts == 2) {
+                                                        next(pinCode)
                                                     }
                                                     coroutineScope.launch {
                                                         delay(100)
