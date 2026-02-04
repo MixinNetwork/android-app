@@ -54,24 +54,16 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            app:boxBackgroundMode="outline"
-            app:boxCornerRadiusBottomEnd="12dp"
-            app:boxCornerRadiusBottomStart="12dp"
-            app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusTopStart="12dp"
-            app:boxStrokeColor="?attr/colorAccent"
-            app:boxStrokeWidth="2dp"
+            app:boxBackgroundMode="none"
             app:hintEnabled="false">
 
             <EditText
                 android:id="@+id/name_et"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
-                android:background="@android:color/transparent"
+                android:background="@drawable/bg_input_field"
                 android:hint="@string/Name"
                 android:lines="1"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
                 android:textColor="?attr/text_primary"
                 android:textColorHint="?attr/text_assist"
                 android:textSize="16sp"
@@ -95,7 +87,7 @@
     </LinearLayout>
 
     <Button
-        style="@style/AppTheme.MaterialWindowButton"
+        style="@style/AppTheme.MaterialButton"
         android:id="@+id/continue_btn"
         android:layout_width="match_parent"
         android:layout_height="48dp"

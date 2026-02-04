@@ -37,7 +37,7 @@ class LandingFeatureAdapter(
         fun bindItem(item: LandingFeatureItem, isFirstPage: Boolean) {
             if (!hasSetFeatureHeight) {
                 val screenHeightPx: Int = binding.root.resources.displayMetrics.heightPixels
-                val expectedHeightPx: Int = (screenHeightPx * 0.38f).toInt()
+                val expectedHeightPx: Int = (screenHeightPx * 0.42f).toInt()
                 val layoutParams: ViewGroup.LayoutParams = binding.featureFl.layoutParams
                 layoutParams.height = expectedHeightPx
                 binding.featureFl.layoutParams = layoutParams

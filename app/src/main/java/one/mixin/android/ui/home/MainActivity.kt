@@ -263,7 +263,11 @@ class MainActivity : BlazeBaseActivity() {
                 return
             }
         }
-
+        if (Session.getAccount()?.hasPin == false) {
+            InitializeActivity.showSetupPin(this)
+            finish()
+            return
+        }
         if (Session.getAccount()?.fullName.isNullOrBlank()) {
             InitializeActivity.showSetupName(this)
             finish()
