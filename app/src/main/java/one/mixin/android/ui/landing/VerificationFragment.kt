@@ -319,7 +319,12 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                 )
             handleMixinResponse(
                 invokeNetwork = { viewModel.create(requireArguments().getString(ARGS_ID)!!, accountRequest) },
-                successBlock = { _ ->
+                successBlock = { r ->
+                    withContext(Dispatchers.IO) {
+                        r.data?.let { data ->
+                            Session.storeAccount(data)
+                        }
+                    }
                     activity?.finish()
                     MainActivity.show(requireActivity())
                 },

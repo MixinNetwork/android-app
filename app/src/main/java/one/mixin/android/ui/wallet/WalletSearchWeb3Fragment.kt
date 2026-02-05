@@ -219,7 +219,7 @@ class WalletSearchWeb3Fragment : BaseFragment() {
 
             if (remoteTokens.isNotEmpty() && isSearchingRemote) {
                 val filteredTokens = remoteTokens.filter {
-                    it.chainId in Constants.Web3EvmChainIds || it.chainId == Constants.ChainId.SOLANA_CHAIN_ID
+                    it.chainId in Constants.Web3EvmChainIds || it.chainId == Constants.ChainId.SOLANA_CHAIN_ID || it.chainId == Constants.ChainId.BITCOIN_CHAIN_ID
                 }
                 val remoteWeb3Tokens = filteredTokens.map { tokenItem ->
                     val t = viewModel.web3TokenItemById(walletId!!, tokenItem.assetId)
@@ -273,16 +273,14 @@ class WalletSearchWeb3Fragment : BaseFragment() {
             override fun onTokenClick(token: Web3TokenItem) {
                 binding.searchEt.hideKeyboard()
                 lifecycleScope.launch {
-                    val address = if (token.isSolanaChain()) {
-                        Web3Signer.solanaAddress
-                    } else {
-                        Web3Signer.evmAddress
-                    }
+                    val address = walletId?.let {
+                        viewModel.getAddressesByChainId(it, token.chainId)
+                    } ?: return@launch
                     view?.navigate(
                         R.id.action_wallet_search_web3_to_web3_transactions,
                         Bundle().apply {
                             putParcelable("args_token", token)
-                            putString("args_address", address)
+                            putString("args_address", address.destination)
                         }
                     )
                 }

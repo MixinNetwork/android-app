@@ -5,8 +5,11 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.db.web3.vo.TransactionStatus
+import one.mixin.android.db.web3.vo.isTerminalTransactionStatus
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshWeb3BitCoinJob
 import one.mixin.android.job.RefreshWeb3TransactionsJob
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.web3.js.Web3Signer
@@ -49,18 +52,33 @@ object PendingTransactionRefreshHelper {
                 if (pendingRawTransaction.isEmpty().not()) {
                     pendingRawTransaction.forEach { transition ->
                         val r = web3ViewModel.transaction(transition.hash, transition.chainId)
-                        if (r.isSuccess && (r.data?.state == TransactionStatus.SUCCESS.value || 
-                                           r.data?.state == TransactionStatus.FAILED.value || 
-                                           r.isSuccess && r.data?.state == TransactionStatus.NOT_FOUND.value)) {
-                            web3ViewModel.insertRawTransaction(r.data!!)
-                            if (r.data?.state == TransactionStatus.FAILED.value || 
-                               r.isSuccess && r.data?.state == TransactionStatus.NOT_FOUND.value || 
-                               r.data?.state == TransactionStatus.SUCCESS.value) {
+                        if (r.isSuccess && r.data?.state.isTerminalTransactionStatus()) {
+                            val rawTransaction = r.data ?: return@forEach
+                            val rawToInsert =
+                                if (rawTransaction.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                                    rawTransaction.copy(nonce = transition.nonce)
+                                } else {
+                                    rawTransaction
+                                }
+                            val btcRawTransactionHexToDeleteOutputs: String? =
+                                if (transition.chainId == Constants.ChainId.BITCOIN_CHAIN_ID && rawTransaction.state == TransactionStatus.NOT_FOUND.value) {
+                                    transition.raw
+                                } else {
+                                    null
+                                }
+                            web3ViewModel.insertRawTransactionAndUpdateTransactionStatus(
+                                raw = rawToInsert,
+                                hash = transition.hash,
+                                chainId = transition.chainId,
+                                status = rawTransaction.state,
+                                btcRawTransactionHexToDeleteOutputs = btcRawTransactionHexToDeleteOutputs,
+                            )
+                            if (r.data?.state.isTerminalTransactionStatus()) {
                                 if (r.data?.state == TransactionStatus.SUCCESS.value) {
                                     jobManager.addJobInBackground(RefreshWeb3TransactionsJob(walletId))
                                 }
-                                if (r.data?.state != TransactionStatus.SUCCESS.value) {
-                                    web3ViewModel.updateTransaction(transition.hash, r.data?.state!!, transition.chainId)
+                                if (transition.chainId == Constants.ChainId.BITCOIN_CHAIN_ID && r.data?.state == TransactionStatus.NOT_FOUND.value) {
+                                    jobManager.addJobInBackground(RefreshWeb3BitCoinJob(walletId))
                                 }
                                 onTransactionStatusUpdated?.invoke(transition.hash, r.data?.state!!)
                             }

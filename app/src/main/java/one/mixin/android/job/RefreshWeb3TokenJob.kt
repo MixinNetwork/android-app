@@ -6,6 +6,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.db.web3.vo.Web3Chain
 import one.mixin.android.db.web3.vo.Web3TokensExtra
+import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import timber.log.Timber
 
@@ -39,7 +40,7 @@ class RefreshWeb3TokenJob(
             },
             successBlock = { response ->
                 val assets = response.data
-                if (assets != null && assets.isNotEmpty()) {
+                if (!assets.isNullOrEmpty()) {
                     Timber.d("Fetched ${assets.size} assets for wallet $walletId")
                     val assetIds = assets.map { it.assetId }
                     web3TokenDao.updateBalanceToZeroForMissingAssets(walletId, assetIds)
@@ -60,7 +61,11 @@ class RefreshWeb3TokenJob(
                     if (extrasToInsert.isNotEmpty()) {
                         web3TokensExtraDao.insertList(extrasToInsert)
                     }
-                    web3TokenDao.insertList(assets)
+                    if (assets.any { it.assetId == Constants.ChainId.BITCOIN_CHAIN_ID }) {
+                        jobManager.addJobInBackground(RefreshWeb3BitCoinJob(walletId))
+                    }
+                    val tokensToInsert = applyBitcoinTokenBalanceBeforeInsert(walletId, assets)
+                    web3TokenDao.insertList(tokensToInsert)
                     fetchChain(assets.map { it.chainId }.distinct())
                     Timber.d("Inserted ${assets.size} tokens into database")
                 } else {
@@ -81,6 +86,13 @@ class RefreshWeb3TokenJob(
     }
 
     private suspend fun fetchAsset(assetId: String, address: String) {
+        if (assetId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+            val wallet = web3AddressDao.getWalletByDestination(address)
+            val isWatchWallet: Boolean = wallet?.isWatch() == true
+            if (!isWatchWallet) {
+                return
+            }
+        }
         requestRouteAPI(
             invokeNetwork = {
                 routeService.getAssetByAddress(assetId, address)
@@ -89,7 +101,8 @@ class RefreshWeb3TokenJob(
                 val asset = response.data
                 if (asset != null) {
                     Timber.d("Fetched ${asset.symbol} assets for address ${address}")
-                    web3TokenDao.insert(asset)
+                    val tokenToInsert = applyBitcoinTokenBalanceBeforeInsertByDestination(address, asset)
+                    web3TokenDao.insert(tokenToInsert)
                     fetchChain(listOf(asset.chainId))
                     Timber.d("Inserted ${asset.symbol} into database")
                 } else {

@@ -10,6 +10,7 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.WalletDatabase
 import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.db.pending.PendingDatabaseImp
+import one.mixin.android.db.web3.Web3RawTransactionDao
 import one.mixin.android.fts.FtsDatabase
 import javax.inject.Singleton
 
@@ -272,4 +273,8 @@ internal object BaseDbModule {
     @Singleton
     @Provides
     fun provideSafeWalletsDao(db: WalletDatabase) = db.safeWalletsDao()
+
+    @Singleton
+    @Provides
+    fun provideWalletOutputDao(db: WalletDatabase) = db.walletOutputDao()
 }
