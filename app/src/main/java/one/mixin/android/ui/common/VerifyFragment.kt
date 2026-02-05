@@ -23,6 +23,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.session.Session
 import one.mixin.android.tip.exception.TipNetworkException
+import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.landing.MobileFragment
 import one.mixin.android.ui.setting.FriendsNoBotFragment
 import one.mixin.android.util.ErrorHandler
@@ -132,7 +133,7 @@ class VerifyFragment : BaseFragment(R.layout.fragment_verify_pin), PinView.OnPin
                     }
                     when (from) {
                         FROM_PHONE -> {
-                            val fragment = MobileFragment.newInstance(from = if (Session.hasPhone()) MobileFragment.FROM_VERIFY_MOBILE_REMINDER else MobileFragment.FROM_CHANGE_PHONE_ACCOUNT, phoneNumber = phoneNumber)
+                            val fragment = MobileFragment.newInstance(pin = pinCode, from = if (Session.hasPhone()) MobileFragment.FROM_VERIFY_MOBILE_REMINDER else MobileFragment.FROM_CHANGE_PHONE_ACCOUNT, phoneNumber = phoneNumber)
                             activity?.addFragment(this@VerifyFragment, fragment, MobileFragment.TAG)
                         }
                         FROM_EMERGENCY -> {
