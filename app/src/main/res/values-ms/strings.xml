@@ -218,7 +218,7 @@
     <string name="deposit_tip_common">Alamat ini hanya menyokong %1$s.</string>
     <string name="deposit_tip_trx">Alamat ini menyokong semua token TRC-10 dan TRC-20, seperti TRX, BTT, USDT-TRON, dll.</string>
     <string name="desktop">desktop</string>
-    <string name="desktop_upgrade">Sila tingkatkan Mixin Messenger Desktop kepada versi terkini.</string>
+    <string name="desktop_upgrade">Sila tingkatkan Mixin Desktop kepada versi terkini.</string>
     <string name="detect_qr_tip">Mengesan kod QR Mixin, ketuk untuk mengenali</string>
     <string name="Developer">Pemaju</string>
     <string name="Device_unsupported">Peranti tidak disokong</string>

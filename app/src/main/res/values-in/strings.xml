@@ -205,7 +205,7 @@
     <string name="deposit_tip_common">Alamat ini hanya mendukung %1$s.</string>
     <string name="deposit_tip_trx">Alamat ini mendukung semua token TRC-10 dan TRC-20, seperti TRX, BTT, USDT-TRON, dll.</string>
     <string name="desktop">desktop</string>
-    <string name="desktop_upgrade">Harap tingkatkan Mixin Messenger Desktop ke versi terbaru.</string>
+    <string name="desktop_upgrade">Harap tingkatkan Mixin Desktop ke versi terbaru.</string>
     <string name="detect_qr_tip">Mendeteksi kode QR Mixin, ketuk untuk mengenali</string>
     <string name="Developer">Pengembang</string>
     <string name="DISCARD">BUANG</string>
@@ -384,7 +384,7 @@
     </plurals>
     <string name="Mixin">Mixin</string>
     <string name="Mixin_ID">Mixin ID</string>
-    <string name="Mixin_Messenger_Desktop">Mixin Messenger Desktop</string>
+    <string name="Mixin_Messenger_Desktop">Mixin Desktop</string>
     <string name="Monday">Senin</string>
     <string name="More">Lebih banyak</string>
     <string name="Multisig_by_PIN">Multisig dengan PIN</string>
@@ -564,7 +564,7 @@
     <string name="setting_data_mobile">Saat menggunakan data seluler</string>
     <string name="setting_data_title">Download otomatis media</string>
     <string name="setting_data_wifi">Saat tersambung melalui Wi-Fi</string>
-    <string name="setting_desktop_confirm">Konfirmasikan masuk ke Mixin Messenger Desktop</string>
+    <string name="setting_desktop_confirm">Konfirmasikan masuk ke Mixin Desktop</string>
     <string name="setting_desktop_logout_failed">Gagal keluar dari desktop.</string>
     <string name="setting_emergency_change_mobile">Ingin mengubah nomor ponsel Anda sekarang?</string>
     <string name="setting_emergency_create_success">Berhasil membuat kontak darurat</string>
