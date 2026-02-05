@@ -4,6 +4,7 @@ package one.mixin.android.crypto
 
 import android.content.Context
 import android.os.Build
+import androidx.core.content.edit
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.lambdapioneer.argon2kt.Argon2Kt
@@ -14,7 +15,13 @@ import okhttp3.tls.HeldCertificate
 import okio.ByteString.Companion.toByteString
 import one.mixin.android.Constants.Tip.ENCRYPTED_MNEMONIC
 import one.mixin.android.extension.base64Encode
+import one.mixin.android.extension.base64RawURLDecode
+import one.mixin.android.extension.base64RawURLEncode
+import one.mixin.android.extension.currentTimeSeconds
 import one.mixin.android.extension.hexStringToByteArray
+import one.mixin.android.extension.hmacSha256
+import one.mixin.android.extension.isValidBase58
+import one.mixin.android.extension.isValidHex
 import one.mixin.android.extension.toHex
 import one.mixin.android.session.Session
 import one.mixin.android.util.InvalidEd25519Exception
@@ -23,6 +30,9 @@ import one.mixin.eddsa.Ed25519Verify
 import one.mixin.eddsa.Field25519
 import org.komputing.khash.keccak.KeccakParameter
 import org.komputing.khash.keccak.extensions.digestKeccak
+import org.sol4k.Base58
+import org.web3j.crypto.WalletUtils
+import org.web3j.utils.Numeric
 import org.whispersystems.curve25519.Curve25519
 import org.whispersystems.curve25519.Curve25519.BEST
 import java.security.KeyFactory
@@ -41,17 +51,6 @@ import javax.crypto.spec.PSource
 import javax.crypto.spec.SecretKeySpec
 import kotlin.experimental.and
 import kotlin.experimental.or
-import androidx.core.content.edit
-import one.mixin.android.extension.base64RawURLDecode
-import one.mixin.android.extension.base64RawURLEncode
-import one.mixin.android.extension.currentTimeSeconds
-import one.mixin.android.extension.hmacSha256
-import one.mixin.android.extension.isValidBase58
-import one.mixin.android.extension.isValidHex
-import org.sol4k.Base58
-import org.web3j.crypto.WalletUtils
-import org.web3j.utils.Numeric
-import kotlin.text.toByteArray
 
 val secureRandom: SecureRandom = SecureRandom()
 private const val GCM_IV_LENGTH = 12

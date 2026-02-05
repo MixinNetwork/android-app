@@ -10,6 +10,7 @@ import kotlinx.coroutines.coroutineScope
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
+import one.mixin.android.Constants.Account.ChainAddress.BTC_ADDRESS
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.Constants.INTERVAL_10_MINS
@@ -29,6 +30,7 @@ import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.crypto.removeValueFromEncryptedPreferences
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.hexString
 import one.mixin.android.extension.putLong
@@ -53,8 +55,11 @@ import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.Web3Signer
+import org.bitcoinj.base.ScriptType
+import org.bitcoinj.crypto.ECKey
 import org.web3j.utils.Numeric
 import retrofit2.HttpException
+import java.math.BigInteger
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
@@ -320,9 +325,11 @@ class TipFlowInteractor @Inject internal constructor(
         val classicIndex = 0
         val evmAddress: String = privateKeyToAddress(spendKey, ETHEREUM_CHAIN_ID, classicIndex)
         val solAddress: String = privateKeyToAddress(spendKey, SOLANA_CHAIN_ID, classicIndex)
+        val btcAddress: String = privateKeyToAddress(spendKey, Constants.ChainId.BITCOIN_CHAIN_ID, classicIndex)
         val addresses: List<Web3AddressRequest> = listOf(
             createSignedWeb3AddressRequest(destination = evmAddress, chainId = ETHEREUM_CHAIN_ID, path = Bip44Path.ethereumPathString(classicIndex), privateKey = tipPrivToPrivateKey(spendKey, ETHEREUM_CHAIN_ID, classicIndex), category = WalletCategory.CLASSIC.value),
             createSignedWeb3AddressRequest(destination = solAddress, chainId = SOLANA_CHAIN_ID, path = Bip44Path.solanaPathString(classicIndex), privateKey = tipPrivToPrivateKey(spendKey, SOLANA_CHAIN_ID, classicIndex), category = WalletCategory.CLASSIC.value),
+            createSignedWeb3AddressRequest(destination = btcAddress, chainId = Constants.ChainId.BITCOIN_CHAIN_ID, path = Bip44Path.bitcoinSegwitPathString(classicIndex), privateKey = tipPrivToPrivateKey(spendKey, Constants.ChainId.BITCOIN_CHAIN_ID, classicIndex), category = WalletCategory.CLASSIC.value),
         )
         val walletRequest = WalletRequest(name = walletName, category = WalletCategory.CLASSIC.value, addresses = addresses)
         requestRouteAPI(
@@ -359,6 +366,9 @@ class TipFlowInteractor @Inject internal constructor(
             Numeric.prependHexPrefix(Web3Signer.signSolanaMessage(privateKey, message.toByteArray()))
         } else if (chainId in Constants.Web3EvmChainIds) {
             Web3Signer.signEthMessage(privateKey, message.toByteArray().toHexString(), JsSignMessage.TYPE_PERSONAL_MESSAGE)
+        } else if (chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+            val ecKey: ECKey = ECKey.fromPrivate(BigInteger(1, privateKey), true)
+            Numeric.toHexString(ecKey.signMessage(message, ScriptType.P2WPKH).decodeBase64())
         } else {
             null
         }

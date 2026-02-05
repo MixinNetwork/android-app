@@ -6,6 +6,7 @@ import dagger.hilt.android.scopes.ActivityRetainedScoped
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
+import one.mixin.android.Constants.Account.ChainAddress.BTC_ADDRESS
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.Constants.INTERVAL_10_MINS
@@ -170,6 +171,8 @@ class TipCreateInteractor @Inject internal constructor(
             PropertyHelper.updateKeyValue(SOLANA_ADDRESS, solAddress)
             val evmAddress: String = getTipAddress(context, pin, ETHEREUM_CHAIN_ID)
             PropertyHelper.updateKeyValue(EVM_ADDRESS, evmAddress)
+            val btcAddress: String = getTipAddress(context, pin, Constants.ChainId.BITCOIN_CHAIN_ID)
+            PropertyHelper.updateKeyValue(BTC_ADDRESS, btcAddress)
             Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Solana.name, solAddress)
             Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Ethereum.name, evmAddress)
             Session.storeAccount(requireNotNull(registerResp.data) { "required account can not be null" })
@@ -219,9 +222,11 @@ class TipCreateInteractor @Inject internal constructor(
         val classicIndex = 0
         val evmAddress: String = privateKeyToAddress(spendKey, ETHEREUM_CHAIN_ID, classicIndex)
         val solAddress: String = privateKeyToAddress(spendKey, SOLANA_CHAIN_ID, classicIndex)
+        val btcAddress: String = privateKeyToAddress(spendKey, Constants.ChainId.BITCOIN_CHAIN_ID, classicIndex)
         val addresses: List<Web3AddressRequest> = listOf(
             createSignedWeb3AddressRequest(destination = evmAddress, chainId = ETHEREUM_CHAIN_ID, path = Bip44Path.ethereumPathString(classicIndex), privateKey = tipPrivToPrivateKey(spendKey, ETHEREUM_CHAIN_ID, classicIndex), category = WalletCategory.CLASSIC.value),
             createSignedWeb3AddressRequest(destination = solAddress, chainId = SOLANA_CHAIN_ID, path = Bip44Path.solanaPathString(classicIndex), privateKey = tipPrivToPrivateKey(spendKey, SOLANA_CHAIN_ID, classicIndex), category = WalletCategory.CLASSIC.value),
+            createSignedWeb3AddressRequest(destination = btcAddress, chainId = Constants.ChainId.BITCOIN_CHAIN_ID, path = Bip44Path.bitcoinSegwitPathString(classicIndex), privateKey = tipPrivToPrivateKey(spendKey, Constants.ChainId.BITCOIN_CHAIN_ID, classicIndex), category = WalletCategory.CLASSIC.value),
         )
         val walletRequest = WalletRequest(name = walletName, category = WalletCategory.CLASSIC.value, addresses = addresses)
         requestRouteAPI(

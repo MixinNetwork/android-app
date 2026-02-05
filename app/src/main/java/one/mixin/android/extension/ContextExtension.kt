@@ -232,8 +232,8 @@ fun View.getSafeAreaInsetsBottom(): Int {
     val insets = ViewCompat.getRootWindowInsets(this) ?: return 0
 
     val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-    val displayCutout = insets.getInsets(WindowInsetsCompat.Type.displayCutout())
-    return maxOf(systemBars.bottom, displayCutout.bottom)
+    val navigationBarsInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
+    return maxOf(systemBars.bottom, navigationBarsInsets.bottom)
 }
 
 fun Context.statusBarHeight(): Int = getSystemBarHeight("status_bar_height")
@@ -1096,6 +1096,7 @@ fun Fragment.getTipsByAsset(asset: TokenItem) =
 
 fun Fragment.getTipsByAsset(asset: Web3TokenItem, chain: Web3Chain?) =
     when (asset.assetId) {
+        Constants.ChainId.BITCOIN_CHAIN_ID -> getString(R.string.deposit_tip_btc)
         Constants.ChainId.ETHEREUM_CHAIN_ID -> getString(R.string.deposit_tip_eth)
         else -> getString(R.string.deposit_tip_chain, asset.symbol, chain?.name ?: getChainName(asset.chainId, asset.chainName, asset.assetKey))
     }
