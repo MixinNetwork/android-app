@@ -4,6 +4,7 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.databinding.ItemLandingFeatureBinding
 
@@ -37,10 +38,9 @@ class LandingFeatureAdapter(
         fun bindItem(item: LandingFeatureItem, isFirstPage: Boolean) {
             if (!hasSetFeatureHeight) {
                 val screenHeightPx: Int = binding.root.resources.displayMetrics.heightPixels
-                val expectedHeightPx: Int = (screenHeightPx * 0.28f).toInt()
-                val layoutParams: ViewGroup.LayoutParams = binding.featureFl.layoutParams
-                layoutParams.height = expectedHeightPx
-                binding.featureFl.layoutParams = layoutParams
+                binding.featureFl.updateLayoutParams {
+                    height = (screenHeightPx * 0.38f).toInt()
+                }
                 hasSetFeatureHeight = true
             }
             binding.featureImage.setImageResource(item.imageResId)

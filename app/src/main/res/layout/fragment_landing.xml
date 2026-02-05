@@ -9,10 +9,10 @@
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/feature_pager"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:clipToPadding="false"
-        android:paddingBottom="32dp"
         android:layout_marginBottom="8dp"
+        app:layout_constraintHeight_percent="0.55"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
