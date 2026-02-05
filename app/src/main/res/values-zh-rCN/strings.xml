@@ -2094,6 +2094,17 @@
     <string name="delete_common_wallet_description">在移除钱包之前，请确保您已写下助记词或私钥。否则，您将无法恢复钱包。</string>
     <string name="delete_watch_wallet_description">这是一个观察钱包，删除此钱包不会影响你的资产。</string>
     <string name="words">%1$d个单词</string>
+    <string name="other_words">12 或 24 单词</string>
+    <string name="mnemonic_12_24_instruction_title">如需使用 12 或 24 位助记词钱包，请按以下步骤操作：</string>
+    <string name="mnemonic_12_24_step_1">注册一个 Mixin 账号。</string>
+    <string name="mnemonic_12_24_step_2">前往钱包列表 → 添加钱包 → 选择导入助记词。</string>
+    <string name="mnemonic_12_24_step_3">输入您的 12 或 24 位助记词或私钥完成导入。</string>
+    <string name="mnemonic_12_24_step_4">开始使用。</string>
+    <string name="mnemonic_12_24_privacy_info">创建 Mixin 账号后，将默认生成一个隐私钱包，您的余额、转账、交易等功能都会默认受到隐私保护，</string>
+    <string name="mnemonic_12_24_privacy_info_with_link">创建 Mixin 账号后，将默认生成一个隐私钱包，您的余额、转账、交易等功能都会默认受到隐私保护，%1$s。</string>
+    <string name="mnemonic_12_24_learn_more">查看文档了解更多</string>
+    <string name="create_mixin_account">创建 Mixin 账号</string>
+    <string name="register_in_15_seconds">15 秒完成注册</string>
     <string name="import_private_key">导入私钥</string>
     <string name="add_watch_address">添加观察地址</string>
     <string name="private_key_hint">输入你的私钥</string>
