@@ -37,6 +37,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.home.reminder.VerifyMobileReminderBottomSheetDialogFragment
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.setting.getCurrencyData
 import one.mixin.android.ui.wallet.AssetListFixedBottomSheetDialogFragment
@@ -349,58 +350,70 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     white = true,
                 )
                 continueVa.setOnClickListener {
-                    val value =
-                        if (v.endsWith(".")) {
-                            v.substring(0, v.length)
-                        } else {
-                            v
+                    lifecycleScope.launch {
+                        if (VerifyMobileReminderBottomSheetDialogFragment.shouldShowForBuy(requireContext()) && isFragmentVisible()) {
+                            VerifyMobileReminderBottomSheetDialogFragment.showSafely(
+                                parentFragmentManager,
+                                R.string.Verify_Mobile_Number_Security_Desc,
+                                false
+                            )
+                            setLoading(false)
+                            return@launch
                         }
-                    val feePercent = fiatMoneyViewModel.calculateState?.feePercent ?: 0f
-                    val assetPrice = fiatMoneyViewModel.calculateState?.assetPrice ?: 1f
-                    val amount =
-                        if (fiatMoneyViewModel.isReverse) {
-                            getPayAmount(value.toFloat(), assetPrice, feePercent)
+
+                        val value =
+                            if (v.endsWith(".")) {
+                                v.substring(0, v.length)
+                            } else {
+                                v
+                            }
+                        val feePercent = fiatMoneyViewModel.calculateState?.feePercent ?: 0f
+                        val assetPrice = fiatMoneyViewModel.calculateState?.assetPrice ?: 1f
+                        val amount =
+                            if (fiatMoneyViewModel.isReverse) {
+                                getPayAmount(value.toFloat(), assetPrice, feePercent)
+                            } else {
+                                value
+                            }
+                        if (amount == null) {
+                            toast("number error")
                         } else {
-                            value
-                        }
-                    if (amount == null) {
-                        toast("number error")
-                    } else {
-                        lifecycleScope.launch inner@{
-                            if (viewDestroyed()) throw IllegalStateException("View has been destroyed")
-                            try {
-                                val asset = fiatMoneyViewModel.asset ?: throw IllegalStateException("Asset is null")
-                                val destination = if (isWeb3) {
-                                    val walletId = walletIdForCalculate ?: throw IllegalStateException("Wallet ID for calculate is null")
-                                    val address = web3ViewModel.getAddressesByChainId(walletId, asset.chainId)?.destination
-                                    if (address.isNullOrEmpty()) {
-                                        toast(R.string.Alert_Not_Support)
-                                        return@inner
+                            lifecycleScope.launch inner@{
+                                if (viewDestroyed()) throw IllegalStateException("View has been destroyed")
+                                try {
+                                    val asset = fiatMoneyViewModel.asset ?: throw IllegalStateException("Asset is null")
+                                    val destination = if (isWeb3) {
+                                        val walletId = walletIdForCalculate ?: throw IllegalStateException("Wallet ID for calculate is null")
+                                        val address = web3ViewModel.getAddressesByChainId(walletId, asset.chainId)?.destination
+                                        if (address.isNullOrEmpty()) {
+                                            toast(R.string.Alert_Not_Support)
+                                            return@inner
+                                        }
+                                        address
+                                    } else {
+                                        fiatMoneyViewModel.findAndSyncDepositEntry(asset.chainId, asset.assetId)?.destination ?: throw IllegalStateException("Destination address is null")
                                     }
-                                    address
-                                } else {
-                                    fiatMoneyViewModel.findAndSyncDepositEntry(asset.chainId, asset.assetId)?.destination ?: throw IllegalStateException("Destination address is null")
-                                }
-                                binding.continueVa.displayedChild = 1
-                                val response = fiatMoneyViewModel.rampWebUrl(
-                                    amount,
-                                    asset.assetId,
-                                    fiatMoneyViewModel.currency?.name ?: throw IllegalStateException("Currency name is null"),
-                                    destination
-                                )
-                                if (response.isSuccess) {
-                                    WebActivity.show(
-                                        requireActivity(),
-                                        response.data?.url ?: "",
-                                        null
+                                    binding.continueVa.displayedChild = 1
+                                    val response = fiatMoneyViewModel.rampWebUrl(
+                                        amount,
+                                        asset.assetId,
+                                        fiatMoneyViewModel.currency?.name ?: throw IllegalStateException("Currency name is null"),
+                                        destination
                                     )
-                                } else {
-                                    ErrorHandler.handleMixinError(response.errorCode, response.errorDescription)
+                                    if (response.isSuccess) {
+                                        WebActivity.show(
+                                            requireActivity(),
+                                            response.data?.url ?: "",
+                                            null
+                                        )
+                                    } else {
+                                        ErrorHandler.handleMixinError(response.errorCode, response.errorDescription)
+                                    }
+                                    binding.continueVa.displayedChild = 0
+                                } catch (e: Exception) {
+                                    binding.continueVa.displayedChild = 0
+                                    ErrorHandler.handleError(e)
                                 }
-                                binding.continueVa.displayedChild = 0
-                            } catch (e: Exception) {
-                                binding.continueVa.displayedChild = 0
-                                ErrorHandler.handleError(e)
                             }
                         }
                     }
@@ -547,6 +560,23 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         val payingAmount =
             roundedFee.plus(BigDecimal(merchant.toDouble())).setScale(2, RoundingMode.UP)
         return payingAmount.toPlainString()
+    }
+
+    private fun isFragmentVisible(): Boolean {
+        if (!isVisible || isHidden || view == null || view?.visibility != View.VISIBLE) {
+            return false
+        }
+        
+        if (!isAdded || isDetached || isRemoving) {
+            return false
+        }
+        
+        val fragments = parentFragmentManager.fragments
+        val visibleFragments = fragments.filter { 
+            it.isVisible && !it.isHidden && it.view?.visibility == View.VISIBLE 
+        }
+        
+        return visibleFragments.lastOrNull() == this
     }
 
     private fun checkData() {

@@ -75,6 +75,7 @@ import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapter
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment
+import one.mixin.android.ui.home.reminder.VerifyMobileReminderBottomSheetDialogFragment
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
 import one.mixin.android.util.GsonHelper
@@ -751,7 +752,18 @@ class ConversationListFragment : LinkFragment() {
         }
         lifecycleScope.launch {
             val totalUsd = conversationListViewModel.findTotalUSDBalance()
-            if (isAdded && !parentFragmentManager.isStateSaved) {
+            if (isAdded && !parentFragmentManager.isStateSaved && isFragmentVisible()) {
+                if (parentFragmentManager.findFragmentByTag(VerifyMobileReminderBottomSheetDialogFragment.TAG) != null) return@launch
+                if (VerifyMobileReminderBottomSheetDialogFragment.shouldShow(requireContext())) {
+                    try {
+                        VerifyMobileReminderBottomSheetDialogFragment.showSafely(
+                            parentFragmentManager
+                        )
+                    } catch (e: IllegalStateException) {
+                        // Fragment state already saved, skip showing dialog
+                    }
+                    return@launch
+                }
                 ReminderBottomSheetDialogFragment.getType(requireContext(), totalUsd)
                     .let { type ->
                         val existingDialog = parentFragmentManager.findFragmentByTag(ReminderBottomSheetDialogFragment.TAG) as? ReminderBottomSheetDialogFragment
@@ -771,18 +783,21 @@ class ConversationListFragment : LinkFragment() {
         }
     }
 
-
-    private fun openCamera(scan: Boolean) {
-        RxPermissions(requireActivity())
-            .request(Manifest.permission.CAMERA)
-            .autoDispose(stopScope)
-            .subscribe { granted ->
-                if (granted) {
-                    (requireActivity() as? MainActivity)?.showCapture(scan)
-                } else {
-                    context?.openPermissionSetting()
-                }
-            }
+    private fun isFragmentVisible(): Boolean {
+        if (!isVisible || isHidden || view == null || view?.visibility != VISIBLE) {
+            return false
+        }
+        
+        if (!isAdded || isDetached || isRemoving) {
+            return false
+        }
+        
+        val fragments = parentFragmentManager.fragments
+        val visibleFragments = fragments.filter { 
+            it.isVisible && !it.isHidden && it.view?.visibility == VISIBLE 
+        }
+        
+        return visibleFragments.lastOrNull() == this
     }
 
     class MessageAdapter : PagedHeaderAdapter<ConversationItem>(ConversationItem.DIFF_CALLBACK) {

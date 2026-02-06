@@ -43,6 +43,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.ui.common.PinCodeFragment
+import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
 import one.mixin.android.ui.landing.MobileFragment.Companion.ARGS_FROM
 import one.mixin.android.ui.landing.MobileFragment.Companion.ARGS_PHONE_NUM
@@ -50,6 +51,7 @@ import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_CHANGE_PHONE_A
 import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_DELETE_ACCOUNT
 import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_LANDING
 import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_LANDING_CREATE
+import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_VERIFY_MOBILE_REMINDER
 import one.mixin.android.ui.logs.LogViewerBottomSheet
 import one.mixin.android.ui.setting.VerificationEmergencyIdFragment
 import one.mixin.android.ui.setting.delete.DeleteAccountPinBottomSheetDialogFragment
@@ -159,6 +161,9 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
             FROM_DELETE_ACCOUNT -> {
                 handleDeleteAccount()
             }
+            FROM_VERIFY_MOBILE_REMINDER -> {
+                handleVerifyMobileReminder()
+            }
             else -> {
                 handleLogin()
             }
@@ -246,7 +251,12 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                     alert(getString(R.string.Changed))
                         .setPositiveButton(android.R.string.ok) { dialog, _ ->
                             dialog.dismiss()
-                            activity?.finish()
+                            if (activity !is MainActivity) {
+                                activity?.finish()
+                            } else {
+                                activity?.finish()
+                                MainActivity.show(requireActivity())
+                            }
                         }
                         .show()
                 },
@@ -299,6 +309,35 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
             )
         }
 
+    private fun handleVerifyMobileReminder() =
+        lifecycleScope.launch {
+            showLoading()
+            val accountRequest =
+                AccountRequest(
+                    binding.pinVerificationView.code(),
+                    purpose = VerificationPurpose.NONE.name,
+                )
+            handleMixinResponse(
+                invokeNetwork = { viewModel.create(requireArguments().getString(ARGS_ID)!!, accountRequest) },
+                successBlock = { r ->
+                    withContext(Dispatchers.IO) {
+                        r.data?.let { data ->
+                            Session.storeAccount(data)
+                        }
+                    }
+                    activity?.finish()
+                    MainActivity.show(requireActivity())
+                },
+                doAfterNetworkSuccess = { hideLoading() },
+                defaultErrorHandle = {
+                    handleFailure(it)
+                },
+                defaultExceptionHandle = {
+                    handleError(it)
+                },
+            )
+        }
+
     override fun hideLoading() {
         super.hideLoading()
         captchaView?.webView?.visibility = GONE
@@ -312,6 +351,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                 when {
                     from == FROM_DELETE_ACCOUNT -> VerificationPurpose.DEACTIVATED.name
                     isPhoneModification() -> VerificationPurpose.PHONE.name
+                    from == FROM_VERIFY_MOBILE_REMINDER -> VerificationPurpose.NONE.name
                     else -> VerificationPurpose.SESSION.name
                 },
             )

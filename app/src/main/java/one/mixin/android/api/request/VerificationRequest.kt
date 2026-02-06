@@ -33,5 +33,6 @@ enum class VerificationPurpose {
     SESSION,
     PHONE,
     DEACTIVATED,
-    ANONYMOUS_SESSION
+    ANONYMOUS_SESSION,
+    NONE
 }
