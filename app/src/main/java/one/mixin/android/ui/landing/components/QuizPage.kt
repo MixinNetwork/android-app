@@ -64,6 +64,8 @@ fun QuizPage(next: () -> Unit, pop: (() -> Unit)? = null) {
     ModalBottomSheetLayout(
         sheetState = bottomSheetState,
         scrimColor = Color.Black.copy(alpha = 0.6f),
+        sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+        sheetBackgroundColor = MixinAppTheme.colors.background,
         sheetContent = {
             QuizResultBottomSheetContent(
                 isCorrect = isCorrectAnswer,
@@ -185,14 +187,14 @@ fun QuizResultBottomSheetContent(
 ) {
     Column(
         modifier = Modifier
-            .fillMaxWidth()
+            .background(MixinAppTheme.colors.background)
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(65.dp))
         
         Box(
-            modifier = Modifier.size(64.dp),
+            modifier = Modifier.size(70.dp),
             contentAlignment = Alignment.Center
         ) {
             Icon(
@@ -201,11 +203,11 @@ fun QuizResultBottomSheetContent(
                 ),
                 contentDescription = null,
                 tint = Color.Unspecified,
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier.size(70.dp)
             )
         }
         
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
         
         Text(
             text = stringResource(if (isCorrect) R.string.Quiz_correct else R.string.Quiz_wrong_answer),
@@ -224,7 +226,7 @@ fun QuizResultBottomSheetContent(
             lineHeight = 20.sp
         )
         
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(75.dp))
         
         Button(
             modifier = Modifier
