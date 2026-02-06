@@ -464,10 +464,10 @@
     <string name="error_inconsistent_country">错误 10610: 国家不一致</string>
     <string name="error_invalid_swap">错误 10611: 暂无报价，请稍后重试。</string>
     <string name="error_trading_pair_not_supported">错误 10615: 暂不支持该交易对，请尝试切换币种。</string>
-    <string name="error_trading_pair_not_supported_detailed">错误 10615: 暂不支持该交易对，请尝试切换币种。试试挂单？不受金额和币种限制。</string>
-    <string name="error_no_quote_detailed">错误 10611: 暂无报价，请稍后重试。试试挂单？不受金额和币种限制。</string>
+    <string name="error_trading_pair_not_supported_detailed">错误 10615: 暂不支持该交易对，请尝试切换币种。试试限价？不受金额和币种限制。</string>
+    <string name="error_no_quote_detailed">错误 10611: 暂无报价，请稍后重试。试试限价？不受金额和币种限制。</string>
     <string name="error_invalid_quote_amount">错误 10614: 输入金额太小或太大，请重新输入。</string>
-    <string name="error_invalid_quote_amount_detailed">错误 10614: 金额超出最大下单金额 %1$s，请重新输入。试试挂单？不受金额和币种限制。</string>
+    <string name="error_invalid_quote_amount_detailed">错误 10614: 金额超出最大下单金额 %1$s，请重新输入。试试限价？不受金额和币种限制。</string>
     <string name="error_no_available_quote">错误 10615: 暂不支持该交易对，请尝试切换币种。</string>
     <string name="error_phone_verification_code_expired">错误 20114：验证码已过期</string>
     <string name="error_phone_verification_code_invalid">错误 20113：验证码错误</string>
@@ -2167,7 +2167,7 @@
     <string name="Orders">订单</string>
     <string name="Expiration">到期</string>
     <string name="Wallets_Selected_Count">%1$d 钱包</string>
-    <string name="trade_switch_to_limit_order">切换到挂单</string>
+    <string name="trade_switch_to_limit_order">切换到限价</string>
     <string name="Invitee_Commission">被邀请人返现</string>
     <string name="Inviter">邀请人</string>
     <string name="Wallet_Owner">所有者</string>
