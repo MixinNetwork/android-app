@@ -4,8 +4,11 @@ import android.os.Bundle
 import android.view.View
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.core.view.isVisible
-import androidx.fragment.app.viewModels
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -17,7 +20,6 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.components.QuizPage
 import one.mixin.android.ui.landing.components.SetPinLoadingPage
-import one.mixin.android.ui.landing.components.SetPinPage
 import one.mixin.android.ui.landing.components.SetupPinPage
 import one.mixin.android.util.viewBinding
 
@@ -32,12 +34,10 @@ class SetupPinFragment : BaseFragment(R.layout.fragment_compose) {
 
             }
     }
-
-    private val mobileViewModel by viewModels<MobileViewModel>()
     private val binding by viewBinding(FragmentComposeBinding::bind)
 
     enum class SetupPinDestination {
-        Initial, Setup, Loading, Quiz
+        Setup, Loading, Quiz
     }
 
     override fun onViewCreated(
@@ -54,9 +54,11 @@ class SetupPinFragment : BaseFragment(R.layout.fragment_compose) {
                 darkTheme = requireContext().isNightMode(),
             ) {
                 val navController = rememberNavController()
+                var pin: String by remember { mutableStateOf("") }
+                var errorMessage: String by remember { mutableStateOf("") }
                 NavHost(
                     navController = navController,
-                    startDestination = SetupPinDestination.Initial.name,
+                    startDestination = SetupPinDestination.Setup.name,
                     enterTransition = {
                         slideIntoContainer(
                             AnimatedContentTransitionScope.SlideDirection.Left,
@@ -82,28 +84,35 @@ class SetupPinFragment : BaseFragment(R.layout.fragment_compose) {
                         )
                     },
                 ) {
-                    composable(SetupPinDestination.Initial.name) {
-                        SetPinPage {
-                            navController.navigate(SetupPinDestination.Setup.name)
-                        }
-                    }
                     composable(SetupPinDestination.Setup.name) {
-                        SetupPinPage({
-                            navController.navigate(SetupPinDestination.Initial.name)
-                        }, {
-                            navController.navigate(SetupPinDestination.Loading.name)
-                        })
-                    }
-                    composable(SetupPinDestination.Loading.name) {
-                        SetPinLoadingPage {
-                            navController.navigate(SetupPinDestination.Quiz.name)
-                        }
+                        SetupPinPage(
+                            next = { pinValue ->
+                                pin = pinValue
+                                navController.navigate(SetupPinDestination.Quiz.name)
+                            },
+                            errorMessage = errorMessage,
+                            onRetry = {
+                                errorMessage = ""
+                            }
+                        )
                     }
                     composable(SetupPinDestination.Quiz.name) {
-                        QuizPage {
-                            // Todo
-                            navController.navigate(SetupPinDestination.Initial.name)
-                        }
+                        QuizPage(
+                            next = {
+                                navController.navigate(SetupPinDestination.Loading.name)
+                            },
+                            pop = {
+                                navController.popBackStack()
+                            }
+                        )
+                    }
+                    composable(SetupPinDestination.Loading.name) {
+                        SetPinLoadingPage(
+                            pin = pin,
+                            next = {
+                                requireActivity().finish()
+                            }
+                        )
                     }
                 }
             }

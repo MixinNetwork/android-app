@@ -10,6 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants.Account.PREF_LOGIN_OR_SIGN_UP
 import one.mixin.android.Constants.Account.PREF_LOGIN_VERIFY
 import one.mixin.android.Constants.Account.PREF_TRIED_UPDATE_KEY
 import one.mixin.android.Constants.DEVICE_ID
@@ -102,6 +103,7 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
             }
             if (Session.hasSafe()) {
                 defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, true)
+                defaultSharedPreferences.putBoolean(PREF_LOGIN_OR_SIGN_UP, true)
                 MainActivity.show(requireContext())
             } else {
                 var deviceId = defaultSharedPreferences.getString(DEVICE_ID, null)
@@ -109,7 +111,11 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
                     deviceId = requireActivity().getStringDeviceId()
                 }
                 val tipType = if (Session.getAccount()?.hasPin == true) TipType.Upgrade else TipType.Create
-                TipActivity.show(requireActivity(), tipType, shouldWatch = true)
+                if (TipType.Create == tipType) {
+                    InitializeActivity.showSetupPin(requireActivity())
+                } else {
+                    TipActivity.show(requireActivity(), tipType, shouldWatch = true)
+                }
             }
             jobManager.addJobInBackground(InitializeJob(TEAM_MIXIN_USER_ID, TEAM_MIXIN_USER_NAME))
             activity?.finish()

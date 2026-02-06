@@ -66,7 +66,11 @@ import one.mixin.android.extension.pxToDp
 import one.mixin.android.extension.tickVibrate
 
 @Composable
-fun SetupPinPage(pop: () -> Unit, next: () -> Unit) {
+fun SetupPinPage(
+    next: (String) -> Unit,
+    errorMessage: String = "",
+    onRetry: (() -> Unit)? = null
+) {
     val context = LocalContext.current
     var size by remember { mutableStateOf(IntSize.Zero) }
     var pinCode by remember { mutableStateOf("") }
@@ -102,7 +106,11 @@ fun SetupPinPage(pop: () -> Unit, next: () -> Unit) {
                 )
             }
         },
-        pop = pop,
+        pop = if (pinCodeAttempts == 0) null else {
+            {
+                if (pinCodeAttempts>0) pinCodeAttempts--
+            }
+        },
     ) {
         Spacer(modifier = Modifier.height(70.dp))
 
@@ -160,7 +168,9 @@ fun SetupPinPage(pop: () -> Unit, next: () -> Unit) {
         }
         Spacer(modifier = Modifier.height(40.dp))
         AnimatedContent(
-            modifier = Modifier.align(Alignment.CenterHorizontally),
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(horizontal = 36.dp),
             targetState = pinCodeAttempts,
             transitionSpec = {
                 if (targetState > initialState) {
@@ -199,10 +209,20 @@ fun SetupPinPage(pop: () -> Unit, next: () -> Unit) {
                     .fillMaxWidth()
                     .height(48.dp),
                 onClick = {
-                    next()
+                    if (errorMessage.isNotEmpty() && onRetry != null) {
+                        onRetry()
+                    } else {
+                        next(firstPinCode)
+                    }
                 },
                 colors = ButtonDefaults.outlinedButtonColors(
-                    backgroundColor = if (pinCodeAttempts == 2 && pinCode == firstPinCode) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGray
+                    backgroundColor = if (errorMessage.isNotEmpty()) {
+                        MixinAppTheme.colors.accent
+                    } else if (pinCodeAttempts == 2 && pinCode == firstPinCode) {
+                        MixinAppTheme.colors.accent
+                    } else {
+                        MixinAppTheme.colors.backgroundGray
+                    }
                 ),
                 shape = RoundedCornerShape(32.dp),
                 elevation = ButtonDefaults.elevation(
@@ -211,10 +231,12 @@ fun SetupPinPage(pop: () -> Unit, next: () -> Unit) {
                     hoveredElevation = 0.dp,
                     focusedElevation = 0.dp,
                 ),
-                enabled = pinCodeAttempts == 2 && pinCode == firstPinCode
+                enabled = errorMessage.isNotEmpty() || (pinCodeAttempts == 2 && pinCode == firstPinCode)
             ) {
                 Text(
-                    text = stringResource(R.string.Next),
+                    text = stringResource(
+                        if (errorMessage.isNotEmpty()) R.string.Retry else R.string.Next
+                    ),
                     color = Color.White
                 )
             }
@@ -282,6 +304,9 @@ fun SetupPinPage(pop: () -> Unit, next: () -> Unit) {
                                                         firstPinCode = pinCode
                                                     } else if (pinCode != firstPinCode) {
                                                         pinCodeAttempts = 0
+                                                    }
+                                                    if (pinCodeAttempts == 2) {
+                                                        next(pinCode)
                                                     }
                                                     coroutineScope.launch {
                                                         delay(100)
