@@ -459,6 +459,7 @@ open class MixinApplication :
         val appAuth = defaultSharedPreferences.getInt(Constants.Account.PREF_APP_AUTH, -1)
         if (appAuth != -1) {
             if (appAuth == 0) {
+                appAuthShown = true
                 AppAuthActivity.show(activity)
                 return true
             } else {
@@ -472,6 +473,7 @@ open class MixinApplication :
                         Constants.INTERVAL_30_MINS
                     }
                 if (now - enterBackground > offset) {
+                    appAuthShown = true
                     AppAuthActivity.show(activity)
                     return true
                 }
