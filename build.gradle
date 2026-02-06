@@ -104,7 +104,7 @@ buildscript {
         ext.balloonVersion = '1.7.0'
         ext.markdownVersion = '0.7.3'
 
-        ext.bcVersion = '1.70'
+        ext.bcVersion = '1.83'
         ext.jsonVersion = '20251224'
         ext.composeVersion = '1.10.2'
         ext.accompanistVersion = '0.36.0'
