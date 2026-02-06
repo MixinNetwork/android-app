@@ -321,7 +321,7 @@
     <string name="desktop">escritorio</string>
     <string name="desktop_login_no_pin">Para la seguridad de tu cuenta, configura el PIN antes de iniciar sesión en la aplicación de escritorio.</string>
     <string name="desktop_on_hint">Tienes tu escritorio conectado</string>
-    <string name="desktop_upgrade">Actualiza Mixin Messenger Desktop a la última versión.</string>
+    <string name="desktop_upgrade">Actualiza Mixin Desktop a la última versión.</string>
     <string name="detect_qr_tip">Se ha detectado un código QR de Mixin, toca para reconocer</string>
     <string name="Developer">Desarrollador</string>
     <string name="Device_unsupported">Dispositivo no compatible</string>
@@ -855,7 +855,7 @@
     <string name="setting_delete_account_pin_content">Si continúas, tu perfil y los detalles de tu cuenta se eliminarán el %1$s. le nuestro documento para **aprender más**.</string>
     <string name="setting_delete_account_send">Enviaremos un código de 4 dígitos a %1$s</string>
     <string name="setting_delete_account_tip">Tu cartera Mixin todavía tiene algunos activos que se pueden retirar a otras carteras o intercambios. Una vez que se cancele la cuenta, estos activos serán abandonados junto con la cartera y no podrán recuperarse.</string>
-    <string name="setting_desktop_confirm">Confirmar inicio de sesión en Mixin Messenger Desktop</string>
+    <string name="setting_desktop_confirm">Confirmar inicio de sesión en Mixin Desktop</string>
     <string name="setting_desktop_logout_failed">El cierre de sesión del escritorio ha fallado.</string>
     <string name="setting_duplicate_transfer_desc">Muestra un cuadro de diálogo de confirmación cuando transfieres la misma cantidad a la misma persona dentro de las 6 horas.</string>
     <string name="setting_emergency_change_mobile">¿Quieres cambiar tu número de móvil ahora?</string>

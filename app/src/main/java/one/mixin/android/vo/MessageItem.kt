@@ -129,7 +129,9 @@ data class MessageItem(
     @IgnoredOnParcel
     val appCardData: AppCardData? by lazy {
         content?.let {
-            GsonHelper.customGson.fromJson(it, AppCardData::class.java)
+            runCatching {
+                GsonHelper.customGson.fromJson(it, AppCardData::class.java)
+            }.getOrNull()
         }
     }
 
