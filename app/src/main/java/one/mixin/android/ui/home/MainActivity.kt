@@ -54,6 +54,7 @@ import one.mixin.android.Constants.Account.PREF_BACKUP
 import one.mixin.android.Constants.Account.PREF_BATTERY_OPTIMIZE
 import one.mixin.android.Constants.Account.PREF_CHECK_STORAGE
 import one.mixin.android.Constants.Account.PREF_DEVICE_SDK
+import one.mixin.android.Constants.Account.PREF_LOGIN_OR_SIGN_UP
 import one.mixin.android.Constants.Account.PREF_LOGIN_VERIFY
 import one.mixin.android.Constants.Account.PREF_SYNC_CIRCLE
 import one.mixin.android.Constants.DEVICE_ID
@@ -396,7 +397,15 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             if (Session.hasSafe()) {
                 jobManager.addJobInBackground(RefreshAccountJob(checkTip = true))
                 val isLoginVerified: Boolean = defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false)
-                Timber.e("isLoginVerified: $isLoginVerified")
+                val shouldGoWallet: Boolean = defaultSharedPreferences.getBoolean(PREF_LOGIN_OR_SIGN_UP, false)
+
+                Timber.e("isLoginVerified: $isLoginVerified, shouldGoWallet: $shouldGoWallet")
+                if (shouldGoWallet) {
+                    defaultSharedPreferences.putBoolean(PREF_LOGIN_OR_SIGN_UP, false)
+                    binding.bottomNav.selectedItemId = R.id.nav_wallet
+                    switchToDestination(NavigationController.Wallet)
+                    lastBottomNavItemId = R.id.nav_wallet
+                }
                 if (isLoginVerified) {
                     AnalyticsTracker.trackLoginPinVerify("pin_verify")
                     LoginVerifyBottomSheetDialogFragment.newInstance().apply {

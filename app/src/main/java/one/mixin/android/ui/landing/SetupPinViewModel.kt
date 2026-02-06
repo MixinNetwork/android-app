@@ -8,7 +8,9 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Account.PREF_LOGIN_OR_SIGN_UP
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.ui.landing.vo.SetupState
 import one.mixin.android.ui.tip.TipBundle
 import one.mixin.android.ui.tip.TipFlowInteractor
@@ -27,6 +29,7 @@ class SetupPinViewModel @Inject internal constructor(
 
     fun executeCreatePin(context: Context, pin: String) {
         _setupState.value = SetupState.Loading
+        context.defaultSharedPreferences.putBoolean(PREF_LOGIN_OR_SIGN_UP, true)
         _errorMessage.value = ""
         viewModelScope.launch {
             val deviceId: String = requireNotNull(
