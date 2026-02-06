@@ -593,7 +593,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
 
     private fun dismiss() {
         binding.viewPager.visibility = View.INVISIBLE
-        overridePendingTransition(0, 0)
+        setExitTransition(enterAnim = 0, exitAnim = 0)
         super.finish()
     }
 
@@ -750,7 +750,19 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
 
     override fun finish() {
         super.finish()
-        overridePendingTransition(0, R.anim.scale_out)
+        setExitTransition(enterAnim = 0, exitAnim = R.anim.scale_out)
+    }
+
+    private fun setExitTransition(
+        enterAnim: Int,
+        exitAnim: Int,
+    ) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            overrideActivityTransition(Activity.OVERRIDE_TRANSITION_CLOSE, enterAnim, exitAnim)
+            return
+        }
+        @Suppress("DEPRECATION")
+        overridePendingTransition(enterAnim, exitAnim)
     }
 
     private val mediaPagerAdapterListener =

@@ -1,6 +1,15 @@
+@file:Suppress(
+    "unused",
+    "FunctionName",
+    "FoldableIfThen",
+    "IfThenToElvis",
+    "UNUSED_PARAMETER",
+)
+
 package one.mixin.android.extension
 
 import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.app.Activity
@@ -35,9 +44,11 @@ import androidx.appcompat.widget.PopupMenu
 import androidx.core.animation.doOnEnd
 import androidx.core.animation.doOnStart
 import androidx.core.graphics.ColorUtils
-import androidx.core.view.ViewCompat
-import androidx.core.view.ViewPropertyAnimatorListener
 import androidx.core.view.drawToBitmap
+import androidx.core.view.forEach
+import androidx.core.view.forEachIndexed
+import androidx.core.view.isVisible
+import androidx.core.view.marginBottom
 import androidx.core.view.updateLayoutParams
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
@@ -57,13 +68,15 @@ const val ANIMATION_DURATION_SHORT = 260L
 const val ANIMATION_DURATION_SHORTEST = 120L
 
 fun View.hideKeyboard() {
-    val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+    val inputMethodManager: InputMethodManager =
+        context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
     inputMethodManager.hideSoftInputFromWindow(windowToken, 0)
 }
 
 fun View.showKeyboard() {
     if (requestFocus()) {
-        val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        val inputMethodManager: InputMethodManager =
+            context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         inputMethodManager.showSoftInput(this, SHOW_IMPLICIT)
     }
 }
@@ -78,17 +91,7 @@ fun View.fadeIn(
 ) {
     this.visibility = VISIBLE
     this.alpha = 0f
-    ViewCompat.animate(this).alpha(maxAlpha).setDuration(duration).setListener(
-        object : ViewPropertyAnimatorListener {
-            override fun onAnimationStart(view: View) {
-            }
-
-            override fun onAnimationEnd(view: View) {
-            }
-
-            override fun onAnimationCancel(view: View) {}
-        },
-    ).start()
+    animate().alpha(maxAlpha).setDuration(duration).start()
 }
 
 fun View.fadeOut(isGone: Boolean = false) {
@@ -101,21 +104,15 @@ fun View.fadeOut(
     isGone: Boolean = false,
 ) {
     this.alpha = 1f
-    ViewCompat.animate(this).alpha(0f).setStartDelay(delay).setDuration(duration).setListener(
-        object : ViewPropertyAnimatorListener {
-            override fun onAnimationStart(view: View) {
-                view.isDrawingCacheEnabled = true
-            }
-
-            override fun onAnimationEnd(view: View) {
-                view.visibility = if (isGone) GONE else INVISIBLE
-                view.alpha = 0f
-                view.isDrawingCacheEnabled = false
-            }
-
-            override fun onAnimationCancel(view: View) {}
-        },
-    )
+    animate().alpha(0f).setStartDelay(delay).setDuration(duration)
+        .setListener(
+            object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    visibility = if (isGone) GONE else INVISIBLE
+                    alpha = 0f
+                }
+            },
+        )
 }
 
 fun View.translationX(value: Float) {
@@ -126,7 +123,7 @@ fun View.translationX(
     value: Float,
     duration: Long,
 ) {
-    ViewCompat.animate(this).setDuration(duration).translationX(value).start()
+    animate().setDuration(duration).translationX(value).start()
 }
 
 fun View.translationY(
@@ -141,18 +138,15 @@ fun View.translationY(
     duration: Long,
     endAction: (() -> Unit)? = null,
 ) {
-    ViewCompat.animate(this).setDuration(duration).translationY(value)
+    animate().setDuration(duration).translationY(value)
         .setListener(
-            object : ViewPropertyAnimatorListener {
-                override fun onAnimationEnd(view: View) {
-                    endAction?.let { it() }
+            object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    endAction?.invoke()
                 }
-
-                override fun onAnimationCancel(view: View) {
-                    endAction?.let { it() }
+                override fun onAnimationCancel(animation: Animator) {
+                    endAction?.invoke()
                 }
-
-                override fun onAnimationStart(view: View) {}
             },
         )
         .start()
@@ -318,27 +312,32 @@ fun View.circularReveal() {
     circularReveal.start()
 }
 
+@Suppress("unused")
 fun EditText.showCursor() {
     this.requestFocus()
     this.isCursorVisible = true
 }
 
+@Suppress("unused")
 fun EditText.hideCursor() {
     this.clearFocus()
     this.isCursorVisible = false
 }
 
+@Suppress("unused")
 fun ViewGroup.inflate(
     @LayoutRes layoutRes: Int,
     attachToRoot: Boolean = false,
-) = LayoutInflater.from(context).inflate(layoutRes, this, attachToRoot)!!
+): View {
+    return LayoutInflater.from(context).inflate(layoutRes, this, attachToRoot)
+}
 
 fun View.navigateUp() {
     try {
         findNavController().navigateUp()
-    } catch (e: IllegalArgumentException) {
+    } catch (_: IllegalArgumentException) {
         // Workaround with https://issuetracker.google.com/issues/128881182
-    } catch (e: IllegalStateException) {
+    } catch (_: IllegalStateException) {
         Timber.w("View $this does not have a NavController set")
     }
 }
@@ -346,10 +345,10 @@ fun View.navigateUp() {
 fun NavController.safeNavigateUp(): Boolean {
     return try {
         navigateUp()
-    } catch (e: IllegalArgumentException) {
+    } catch (_: IllegalArgumentException) {
         // Workaround with https://issuetracker.google.com/issues/128881182
         false
-    } catch (e: IllegalStateException) {
+    } catch (_: IllegalStateException) {
         false
     }
 }
@@ -361,9 +360,9 @@ fun View.navigate(
 ) {
     try {
         findNavController().navigate(resId, bundle, navOptions)
-    } catch (e: IllegalArgumentException) {
+    } catch (_: IllegalArgumentException) {
         // Workaround with https://issuetracker.google.com/issues/128881182
-    } catch (e: IllegalStateException) {
+    } catch (_: IllegalStateException) {
         Timber.w("View $this does not have a NavController set")
     }
 }
@@ -400,7 +399,18 @@ fun View.bounce() {
     spring.endValue = 1.0
 }
 
+@Suppress("UnusedReceiverParameter", "FunctionName", "unused")
+@Deprecated("Use intProperty", ReplaceWith("intProperty(name, getAction, setAction)"))
 fun View.IntProperty(
+    name: String,
+    getAction: (View) -> Int,
+    setAction: (View, Int) -> Unit,
+): Property<View, Int> {
+    return intProperty(name = name, getAction = getAction, setAction = setAction)
+}
+
+@Suppress("UnusedReceiverParameter", "unused")
+fun View.intProperty(
     name: String,
     getAction: (View) -> Int,
     setAction: (View, Int) -> Unit,
@@ -441,16 +451,17 @@ fun Int.withAlpha(alpha: Float): Int {
 }
 
 fun PopupMenu.showIcon() {
-    val menuHelper: Any
-    val argTypes: Array<Class<*>?>
+    val menuHelper: Any?
     try {
         val fMenuHelper: Field = PopupMenu::class.java.getDeclaredField("mPopup")
         fMenuHelper.isAccessible = true
         menuHelper = fMenuHelper.get(this)
-        argTypes = arrayOf(Boolean::class.javaPrimitiveType)
-        menuHelper.javaClass.getDeclaredMethod("setForceShowIcon", *argTypes)
-            .invoke(menuHelper, true)
-    } catch (e: Exception) {
+        val argTypes: Array<Class<*>?> = arrayOf(Boolean::class.javaPrimitiveType)
+        if (menuHelper != null) {
+            menuHelper.javaClass.getDeclaredMethod("setForceShowIcon", *argTypes)
+                .invoke(menuHelper, true)
+        }
+    } catch (_: Exception) {
     }
 }
 
@@ -501,7 +512,9 @@ var View.backgroundColor: Int
 
 var View.backgroundDrawable: Drawable?
     inline get() = background
-    set(value) = setBackgroundDrawable(value)
+    set(value) {
+        background = value
+    }
 
 var View.backgroundResource: Int
     @Deprecated("Property does not have a getter")

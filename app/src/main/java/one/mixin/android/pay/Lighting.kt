@@ -17,8 +17,9 @@ internal suspend fun parseLightning(
     parseLighting: suspend (String) -> PaymentResponse?
 ): ExternalTransfer? {
     val r = parseLighting(url) ?: return null
-    val assetId = r.asset?.assetId ?:return null
-    val chainId = r.asset?.chainId ?:return null
+    val asset = r.asset ?: return null
+    val assetId = asset.assetId ?: return null
+    val chainId = asset.chainId ?: return null
     val destination = r.destination ?: return null
     val addressResponse = validateAddress(assetId, chainId, destination) ?: return null
     

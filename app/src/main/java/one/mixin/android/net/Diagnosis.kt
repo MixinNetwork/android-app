@@ -133,13 +133,16 @@ private fun getExportIp(
     val client = OkHttpClient()
     var ipRequest = Request.Builder().url(EXPORT_IP_PRIMARY).build()
     try {
-        var data =
-            client.newCall(ipRequest).execute().body?.string()
-                ?: throw IOException("EXPORT_IP_PRIMARY no data")
+        var data: String = client.newCall(ipRequest).execute().body.string()
+        if (data.isBlank()) {
+            throw IOException("EXPORT_IP_PRIMARY no data")
+        }
         val url = data.substringIgnoreError(data.indexOf("src=") + 4, data.lastIndexOf("frameborder")).replace("'".toRegex(), "").replace(" ".toRegex(), "")
         ipRequest = Request.Builder().url(url).build()
-        data = client.newCall(ipRequest).execute().body?.string()
-            ?: throw IOException("EXPORT_IP_PRIMARY no data")
+        data = client.newCall(ipRequest).execute().body.string()
+        if (data.isBlank()) {
+            throw IOException("EXPORT_IP_PRIMARY no data")
+        }
         val dataIp = data.substringIgnoreError(data.indexOf("您的IP地址信息") + 10)
         val dataAddress = dataIp.substringIgnoreError(0, dataIp.indexOf("<br>"))
         val ips = dataAddress.split(" ").toTypedArray()
@@ -149,7 +152,7 @@ private fun getExportIp(
         Timber.i("Get export ip from $EXPORT_IP_PRIMARY meet ${e.localizedMessage}")
         try {
             ipRequest = Request.Builder().url(EXPORT_IP_SECONDARY).build()
-            val exportIp = client.newCall(ipRequest).execute().body?.string()
+            val exportIp: String = client.newCall(ipRequest).execute().body.string()
             result.append("${context.getString(R.string.export_ip)}: $exportIp")
         } catch (e: Exception) {
             Timber.i("Get export ip from $EXPORT_IP_SECONDARY meet ${e.localizedMessage}")

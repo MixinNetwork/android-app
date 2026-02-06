@@ -271,11 +271,12 @@ open class SendMessageJob(
             } else {
                 message.content!!.toByteArray()
             }
+        val participantPublicKey: String = participantSessionKey.publicKey ?: return
         val encryptContent =
             encryptedProtocol.encryptMessage(
                 keyPair,
                 plaintext,
-                participantSessionKey.publicKey!!.base64RawURLDecode(),
+                participantPublicKey.base64RawURLDecode(),
                 participantSessionKey.sessionId,
                 extensionSessionKey?.publicKey?.base64RawURLDecode(),
                 extensionSessionKey?.sessionId,
