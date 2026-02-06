@@ -98,6 +98,9 @@ class Web3ViewModel @Inject constructor(
         web3Repository.web3TokenItemById(walletId, assetId)
     }
 
+    fun observeWeb3Token(walletId: String, assetId: String): Flow<Web3TokenItem?> =
+        web3Repository.observeWeb3TokenItemById(walletId, assetId)
+
     fun getTokenPriceUsdFlow(assetId: String): Flow<String?> = flow {
         val item = tokenRepository.findAssetItemById(assetId)?.priceUsd
         emit(item)
