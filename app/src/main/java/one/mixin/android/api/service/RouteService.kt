@@ -57,6 +57,14 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 import one.mixin.android.api.request.LimitOrderRequest
 import one.mixin.android.api.response.CreateLimitOrderResponse
+import one.mixin.android.api.request.perps.OpenOrderRequest
+import one.mixin.android.api.request.perps.OpenOrderResponse
+import one.mixin.android.api.request.perps.CloseOrderRequest
+import one.mixin.android.api.request.perps.CloseOrderResponse
+import one.mixin.android.api.response.perps.MarketView
+import one.mixin.android.api.response.perps.CandleView
+import one.mixin.android.api.response.perps.PositionView
+import one.mixin.android.api.response.perps.PositionHistoryView
 
 import retrofit2.http.Query
 
@@ -344,4 +352,44 @@ interface RouteService {
         @Path("user_id") userId: String,
         @Query("chain_id") chainId: String
     ): MixinResponse<UserAddressView>
+
+    // Perps API
+    @GET("perps/markets")
+    suspend fun getPerpsMarkets(
+        @Query("offset") offset: Int = 0,
+        @Query("limit") limit: Int = 20
+    ): MixinResponse<List<MarketView>>
+
+    @GET("perps/market")
+    suspend fun getPerpsMarket(
+        @Query("market_id") marketId: String
+    ): MixinResponse<MarketView>
+
+    @GET("perps/markets/candles")
+    suspend fun getPerpsCandles(
+        @Query("product") product: String,
+        @Query("time_frame") timeFrame: String
+    ): MixinResponse<CandleView>
+
+    @POST("perps/orders/open")
+    suspend fun openPerpsOrder(
+        @Body request: OpenOrderRequest
+    ): MixinResponse<OpenOrderResponse>
+
+    @POST("perps/orders/close")
+    suspend fun closePerpsOrder(
+        @Body request: CloseOrderRequest
+    ): MixinResponse<CloseOrderResponse>
+
+    @GET("perps/positions")
+    suspend fun getPerpsPositions(
+        @Query("wallet_id") walletId: String
+    ): MixinResponse<List<PositionView>>
+
+    @GET("perps/positions/history")
+    suspend fun getPerpsPositionHistory(
+        @Query("offset") offset: String? = null,
+        @Query("limit") limit: Int = 100,
+        @Query("wallet_id") walletId: String
+    ): MixinResponse<List<PositionHistoryView>>
 }

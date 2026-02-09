@@ -22,7 +22,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Text
+import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -85,12 +88,19 @@ fun TradePage(
     onSwitchToLimitOrder: (String, SwapToken, SwapToken) -> Unit,
     pop: () -> Unit,
     onLimitOrderClick: (String) -> Unit,
+    onShowTradingGuide: () -> Unit,
 ) {
     val context = LocalContext.current
 
     val viewModel = hiltViewModel<SwapViewModel>()
     var walletDisplayName by remember { mutableStateOf<String?>(null) }
     var pendingOrderCount by remember { mutableIntStateOf(0) }
+    
+    val bottomSheetState = rememberModalBottomSheetState(
+        initialValue = ModalBottomSheetValue.Hidden,
+        skipHalfExpanded = true
+    )
+    val coroutineScope = rememberCoroutineScope()
 
     val currentWalletId = walletId ?: Session.getAccountId() ?: ""
     val pendingCount by viewModel.getPendingOrderCountByWallet(currentWalletId).collectAsStateWithLifecycle(initialValue = 0)
@@ -112,9 +122,7 @@ fun TradePage(
         }
     }
 
-    val coroutineScope = rememberCoroutineScope()
-
-    val tabCount = 2
+    val tabCount = 3
     val pagerState = rememberPagerState(
         initialPage = initialTabIndex.coerceIn(0, tabCount - 1),
         pageCount = { tabCount },
@@ -156,9 +164,47 @@ fun TradePage(
                 onLimitOrderClick,
                 onOrderList,
             )
+        },
+        TabItem(title = stringResource(R.string.Perpetual)) {
+            PerpetualContent(
+                onLongClick = { market ->
+                    // TODO: Handle long position
+                },
+                onShortClick = { market ->
+                    // TODO: Handle short position
+                },
+                onShowTradingGuide = onShowTradingGuide
+            )
         }
     )
 
+    ModalBottomSheetLayout(
+        sheetState = bottomSheetState,
+        scrimColor = Color.Black.copy(alpha = 0.6f),
+        sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+        sheetBackgroundColor = MixinAppTheme.colors.background,
+        sheetContent = {
+            HelpBottomSheetContent(
+                onContactSupport = {
+                    coroutineScope.launch {
+                        bottomSheetState.hide()
+                        context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                    }
+                },
+                onTradingGuide = {
+                    coroutineScope.launch {
+                        bottomSheetState.hide()
+                        onShowTradingGuide()
+                    }
+                },
+                onDismiss = {
+                    coroutineScope.launch {
+                        bottomSheetState.hide()
+                    }
+                }
+            )
+        }
+    ) {
     PageScaffold(
         title = stringResource(id = R.string.Trade),
         subtitle = {
@@ -230,7 +276,9 @@ fun TradePage(
                 }
             }
             IconButton(onClick = {
-                context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                coroutineScope.launch {
+                    bottomSheetState.show()
+                }
             }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_support),
@@ -278,6 +326,7 @@ fun TradePage(
             tabs[page].screen()
         }
     }
+}
 }
 
 /**
