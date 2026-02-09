@@ -158,7 +158,15 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             countryIconIv.setOnClickListener { showCountry() }
             countryCodeEt.addTextChangedListener(countryCodeWatcher)
             countryCodeEt.showSoftInputOnFocus = false
-            continueBn.setOnClickListener { showDialog() }
+            continueBn.setOnClickListener {
+                if (from == FROM_VERIFY_MOBILE_REMINDER
+                    && presetPhoneNumber != null
+                ) {
+                    requestSend()
+                } else {
+                    showDialog()
+                }
+            }
             mobileEt.showSoftInputOnFocus = false
             mobileEt.addTextChangedListener(mWatcher)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -490,7 +498,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             } else {
                 mobileEt.hint = getString(R.string.Phone_Number)
                 if (titleSwitcher.displayedChild != 0) {
-                    if (pin != null) {
+                    if (pin != null && presetPhoneNumber == null) {
                         titleSwitcher.setText(getString(R.string.Enter_new_phone_number))
                     } else {
                         titleSwitcher.setText(getString(R.string.Enter_your_phone_number))

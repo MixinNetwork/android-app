@@ -236,6 +236,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                     }
                 },
                 successBlock = {
+                    val hasPhone = Session.hasPhone()
                     withContext(Dispatchers.IO) {
                         val a = Session.getAccount()
                         a?.let {
@@ -248,7 +249,12 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                             Session.storeAccount(a)
                         }
                     }
-                    alert(getString(R.string.Changed))
+                    alert(
+                        getString(
+                            if (hasPhone) R.string.Changed
+                            else R.string.Added
+                        )
+                    )
                         .setPositiveButton(android.R.string.ok) { dialog, _ ->
                             dialog.dismiss()
                             if (activity !is MainActivity) {
@@ -325,8 +331,14 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                             Session.storeAccount(data)
                         }
                     }
-                    activity?.finish()
-                    MainActivity.show(requireActivity())
+                    alert(
+                        getString(R.string.verification_successful))
+                        .setPositiveButton(android.R.string.ok) { dialog, _ ->
+                            dialog.dismiss()
+                            activity?.finish()
+                            MainActivity.show(requireActivity())
+                        }
+                        .show()
                 },
                 doAfterNetworkSuccess = { hideLoading() },
                 defaultErrorHandle = {

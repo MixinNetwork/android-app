@@ -1262,6 +1262,7 @@
     <string name="Transfer_error">传输错误</string>
     <string name="not_yours">聊天记录不能在不同账户之间同步</string>
     <string name="Version_not_supported">版本不兼容，请升级新版本</string>
+    <string name="verification_successful">验证成功</string>
     <string name="restore_local_exists">已经有 %1$s 条本地聊天记录，最后一条消息的时间是 %2$s，确定用备份的聊天数据覆盖本地数据吗？</string>
     <string name="Transfer_timeout">长时间未收到数据是否退出？</string>
     <string name="LogAndDebug">日志与调试</string>
