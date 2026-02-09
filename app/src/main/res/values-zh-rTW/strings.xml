@@ -183,7 +183,7 @@
     <string name="chat_on_mixin_content">快來 Mixin 與我聊天！簡單、安全好用還支援比特幣、以太坊等加密貨幣，下載 https://mixin.one/messenger 後搜尋 @%1$s 加我好友。</string>
     <string name="chat_pin_message">%1$s置頂了%2$s</string>
     <string name="Chat_pinned">會話已置頂</string>
-    <string name="chat_recall_delete_alert">所有使用最新版本 Mixin Messenger 的裝置都將刪除被選中的訊息</string>
+    <string name="chat_recall_delete_alert">所有使用最新版本 Mixin 的裝置都將刪除被選中的訊息</string>
     <string name="Chat_unpinned">置頂會話已取消</string>
     <string name="chat_waiting">等待%1$s上線後建立加密會話。%2$s。</string>
     <string name="CHATS">會話</string>
@@ -283,7 +283,7 @@
     <string name="Delete_Synced_Contact">刪除已同步的通訊錄</string>
     <string name="Delete_withdraw_Address">刪除 %1$s 地址</string>
     <string name="Deposit">充值</string>
-    <string name="deposit_account_attention">注意：首次充值建議小額嘗試！地址和 Memo（備註）同時使用才能充值 %1$s 到 Mixin Messenger。</string>
+    <string name="deposit_account_attention">注意：首次充值建議小額嘗試！地址和 Memo（備註）同時使用才能充值 %1$s 到 Mixin。</string>
     <string name="deposit_attention">首次充值建議小額嘗試！</string>
     <plurals name="deposit_confirmation" tools:ignore="UnusedQuantity">
         <item quantity="one">充值到賬需要 %1$d 個區塊確認。</item>
@@ -297,7 +297,7 @@
     <string name="desktop">桌面端</string>
     <string name="desktop_login_no_pin">為了您的安全，登入桌面前請先設定 PIN 碼！</string>
     <string name="desktop_on_hint">桌面版已登入。</string>
-    <string name="desktop_upgrade">請升級 Mixin Messenger 桌面端至最新版！</string>
+    <string name="desktop_upgrade">請升級 Mixin 桌面端至最新版！</string>
     <string name="detect_qr_tip">檢測到一個 Mixin 二維碼，點選識別</string>
     <string name="Developer">開發者</string>
     <string name="Device_unsupported">當前裝置不支援</string>
@@ -543,7 +543,7 @@
     </plurals>
     <string name="Mixin">Mixin</string>
     <string name="Mixin_Locked">Mixin 已鎖定</string>
-    <string name="Mixin_Messenger_Desktop">Mixin Messenger 桌面</string>
+    <string name="Mixin_Messenger_Desktop">Mixin 桌面</string>
     <string name="Model">手機型號</string>
     <string name="Monday">星期一</string>
     <string name="More">更多</string>
@@ -609,7 +609,7 @@
     <string name="Not_support">不支援備份</string>
     <string name="Notice">注意</string>
     <string name="Notification_and_Confirmation">通知和確認</string>
-    <string name="notification_channel_description">顯示 Mixin Messenger 中正在播放的音樂</string>
+    <string name="notification_channel_description">顯示 Mixin 中正在播放的音樂</string>
     <string name="notification_content">不再遺漏好友的訊息。</string>
     <string name="Notifications">通知</string>
     <string name="Now_Playing">正在播放</string>
@@ -794,7 +794,7 @@
     <string name="setting_delete_account_pin_content">如果您繼續，您的個人資料和賬戶資訊將在%1$s被刪除。閱讀我們的檔案以**瞭解更多**。</string>
     <string name="setting_delete_account_send">我們將傳送 4 位驗證碼到手機 %1$s</string>
     <string name="setting_delete_account_tip">你的 Mixin 錢包還有一些資產，可以提現至其他錢包或交易所，賬戶一旦登出，這些資產將和錢包一起被棄用無法找回。</string>
-    <string name="setting_desktop_confirm">確認登入 Mixin Messenger 桌面端</string>
+    <string name="setting_desktop_confirm">確認登入 Mixin 桌面端</string>
     <string name="setting_desktop_logout_failed">退出桌面端失敗</string>
     <string name="setting_duplicate_transfer_desc">當你在 6 個小時內給相同的人轉相同的金額時顯示確認彈窗。</string>
     <string name="setting_emergency_change_mobile">立即修改手機號？</string>
@@ -1029,16 +1029,16 @@
     <string name="Restore_from_Another_Phone_tip">從您的舊設備傳輸聊天記錄。</string>
     <string name="Restore_from_Local">本地恢復</string>
     <string name="Restore_from_Local_tip">從設備備份中恢復您的聊天記錄。</string>
-    <string name="transfer_pc_desc">同步你的聊天記錄到 Mixin Messenger 桌面端，請確保兩台設備接入同一個 Wi-Fi 或熱點。</string>
+    <string name="transfer_pc_desc">同步你的聊天記錄到 Mixin 桌面端，請確保兩台設備接入同一個 Wi-Fi 或熱點。</string>
     <string name="transfer_phone_desc">同步你的聊天記錄到新的設備，請確保兩台設備接入同一個 Wi-Fi 或熱點。</string>
-    <string name="restore_desc">從 Mixin Messenger 桌面端同步你的聊天記錄，同步不會覆蓋本地記錄只會增量同步，請確保兩台設備接入同一個 Wi-Fi 或熱點。</string>
+    <string name="restore_desc">從 Mixin 桌面端同步你的聊天記錄，同步不會覆蓋本地記錄只會增量同步，請確保兩台設備接入同一個 Wi-Fi 或熱點。</string>
     <string name="Restore_from_PC">從桌面恢復</string>
     <string name="transfer_tips1">在新設備上登錄當前帳戶並選擇從其他手機恢復</string>
     <string name="transfer_tips2">新設備掃上面的二維碼建立連接</string>
     <string name="transfer_tips3">不要關閉屏幕並保持 Mixin 在前台運行</string>
     <string name="Transfer_completed">同步完成</string>
     <string name="transfer_waiting_desc">同步時請不要關閉屏幕並保持 Mixin 在前台運行。</string>
-    <string name="transfer_waiting_tips">請打開您的 MiXin Messenger 桌面以確認操作。</string>
+    <string name="transfer_waiting_tips">請打開您的 Mixin 桌面以確認操作。</string>
     <string name="transfer_now">開始傳輸</string>
     <string name="transfer_sub_title">將您的聊天記錄轉移到另一台設備</string>
     <string name="restore_sub_title">從桌面端恢復你的聊天記錄</string>

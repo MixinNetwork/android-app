@@ -129,7 +129,7 @@
     <string name="chat_group_remove">%1$s mengalih keluar %2$s</string>
     <string name="chat_list_empty_info">Anda boleh bersembang dengan kenalan yang memasang Mixin di telefon mereka</string>
     <string name="chat_not_support">Mesej jenis ini tidak disokong, sila tingkatkan Mixin ke versi terkini. %1$s.</string>
-    <string name="chat_on_mixin_content">Mari sembang di Mixin Messenger! Ringkas, selamat, dan senang digunakan. Ia juga menyokong Bitcoin, Ethereum, dan cryptocurrency lain, muat turun https://mixin.one/messenger dan cari @%1$s untuk menambahkan saya sebagai rakan.</string>
+    <string name="chat_on_mixin_content">Mari sembang di Mixin! Ringkas, selamat, dan senang digunakan. Ia juga menyokong Bitcoin, Ethereum, dan cryptocurrency lain, muat turun https://mixin.one/messenger dan cari @%1$s untuk menambahkan saya sebagai rakan.</string>
     <string name="chat_recall_delete_alert">Mesej yang anda pilih akan dihapus untuk semua orang pada versi terbaharu Mixin dalam sembang ini.</string>
     <string name="chat_waiting">Menunggu %1$s untuk berada dalam talian dan tubuhkan sesi yang disulitkan. %2$s.</string>
     <string name="CHATS">SEMBANG</string>
@@ -161,7 +161,7 @@
     </plurals>
     <string name="Contact_Developer">Hubungi Pembangun</string>
     <string name="contact_empty_tip">Mixin perlu mengakses kenalan anda untuk membantu anda berhubung dengan orang lain di Mixin.</string>
-    <string name="contact_invite_content">Hei, saya menggunakan Mixin Messenger untuk sembang. Muat turun di sini: https://mixin.one/messenger .</string>
+    <string name="contact_invite_content">Hei, saya menggunakan Mixin untuk sembang. Muat turun di sini: https://mixin.one/messenger .</string>
     <string name="contact_mixin_id">Mixin ID: %1$s</string>
     <string name="contact_mobile">Mudah alih: %1$s</string>
     <string name="contact_mute_title">Senyapkan pemberitahuan untuk…</string>
@@ -209,7 +209,7 @@
     <string name="Delete_Synced_Contact">Padam Kenalan yang selaraskan</string>
     <string name="Delete_withdraw_Address">Padamkan Alamat %1$s</string>
     <string name="Deposit">Deposit</string>
-    <string name="deposit_account_attention">Perhatian: Cuba sebilangan kecil untuk deposit pertama. Kedua-dua Memo dan Alamat diperlukan untuk memasukkan deposit anda dengan jayanya %1$s ke Mixin Messenger.</string>
+    <string name="deposit_account_attention">Perhatian: Cuba sebilangan kecil untuk deposit pertama. Kedua-dua Memo dan Alamat diperlukan untuk memasukkan deposit anda dengan jayanya %1$s ke Mixin.</string>
     <string name="deposit_attention">Cuba sedikit untuk deposit pertama.</string>
     <plurals name="deposit_confirmation" tools:ignore="UnusedQuantity">
         <item quantity="other">Deposit akan tiba setelah sekurang-kurangnya %1$d pengesahan sekatan</item>
@@ -409,7 +409,7 @@
     </plurals>
     <string name="Mixin">Mixin</string>
     <string name="Mixin_ID">Mixin ID</string>
-    <string name="Mixin_Messenger_Desktop">Desktop Mixin Messenger</string>
+    <string name="Mixin_Messenger_Desktop">Desktop Mixin</string>
     <string name="Monday">Isnin</string>
     <string name="More">Lebih banyak lagi</string>
     <string name="Multisig_by_PIN">Multisig dengan PIN</string>
@@ -463,7 +463,7 @@
     <string name="Not_logged_in">Tidak log masuk</string>
     <string name="Not_support">Tidak sokong</string>
     <string name="Notification_and_Confirmation">Pemberitahuan dan Pengesahan</string>
-    <string name="notification_channel_description">Tunjukkan muzik apa yang sedang dimainkan di Mixin Messenger</string>
+    <string name="notification_channel_description">Tunjukkan muzik apa yang sedang dimainkan di Mixin</string>
     <string name="notification_content">Jangan terlepas mesej daripada rakan anda.</string>
     <string name="Notifications">Pemberitahuan</string>
     <string name="Now_Playing">Main sekarang</string>
@@ -609,7 +609,7 @@
     <string name="setting_data_mobile">Semasa menggunakan data mudah alih</string>
     <string name="setting_data_title">Muat turun automatik media</string>
     <string name="setting_data_wifi">Semasa disambungkan di Wi-Fi</string>
-    <string name="setting_desktop_confirm"> Sahkan log masuk ke Desktop Mixin Messenger</string>
+    <string name="setting_desktop_confirm"> Sahkan log masuk ke Desktop Mixin</string>
     <string name="setting_desktop_logout_failed">Log keluar desktop gagal.</string>
     <string name="setting_duplicate_transfer_desc">Paparkan dialog pengesahan apabila anda memindahkan jumlah yang sama kepada orang yang sama dalam masa 6 jam</string>
     <string name="setting_emergency_change_mobile">Adakah anda mahu menukar nombor telefon bimbit anda sekarang?</string>
