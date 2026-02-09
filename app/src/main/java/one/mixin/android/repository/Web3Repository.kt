@@ -146,6 +146,8 @@ constructor(
     suspend fun web3TokenItemByAddress(address: String) = web3TokenDao.web3TokenItemByAddress(address)
 
     fun web3TokenItemById(walletId: String, assetId: String) = web3TokenDao.web3TokenItemById(walletId, assetId)
+
+    fun observeWeb3TokenItemById(walletId: String, assetId: String) = web3TokenDao.observeWeb3TokenItemById(walletId, assetId)
     
     fun web3TokensExcludeHidden(walletId: String) = web3TokenDao.web3TokenItemsExcludeHidden(walletId)
 

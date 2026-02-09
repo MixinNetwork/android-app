@@ -78,6 +78,9 @@ interface Web3TokenDao : BaseDao<Web3Token> {
     @Query("SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id WHERE t.wallet_id = :walletId AND t.asset_id = :assetId")
     fun web3TokenItemById(walletId: String, assetId: String): Web3TokenItem?
 
+    @Query("SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id WHERE t.wallet_id = :walletId AND t.asset_id = :assetId")
+    fun observeWeb3TokenItemById(walletId: String, assetId: String): Flow<Web3TokenItem?>
+
     @Query("SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id WHERE t.asset_key = :address")
     suspend fun web3TokenItemByAddress(address: String): Web3TokenItem?
 

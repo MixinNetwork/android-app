@@ -373,7 +373,7 @@
     <string name="more_information">more information</string>
     <string name="url_cross_wallet_transaction_free">https://support.mixin.one/en/article/cross-wallet-transaction-fee-event-1k9b47q</string>
     <string name="desktop_on_hint">You have your desktop logged in</string>
-    <string name="desktop_upgrade">Please upgrade Mixin Messenger Desktop to the latest version.</string>
+    <string name="desktop_upgrade">Please upgrade Mixin Desktop to the latest version.</string>
     <string name="detect_qr_tip">Detected a Mixin QR code, tap to recognize</string>
     <string name="Developer">Developer</string>
     <string name="Device_unsupported">Device unsupported</string>
@@ -693,7 +693,7 @@
     <string name="Mixin">Mixin</string>
     <string name="Mixin_ID">Mixin ID</string>
     <string name="Mixin_Locked">Mixin Locked</string>
-    <string name="Mixin_Messenger_Desktop">Mixin Messenger Desktop</string>
+    <string name="Mixin_Messenger_Desktop">Mixin Desktop</string>
     <string name="Model">Model</string>
     <string name="Monday">Monday</string>
     <string name="More">More</string>
@@ -999,7 +999,7 @@
     <string name="setting_delete_account_send">We will send a 4-digit code to %1$s</string>
     <string name="setting_delete_account_tip">Your Mixin wallet still has some assets that can be withdrawn to other wallets or exchanges. Once the account is cancelled, these assets will be abandoned along with the wallet and cannot be recovered.</string>
     <string name="setting_delete_account_url">https://support.mixin.one/en/article/how-to-delete-my-account-19fkagl</string>
-    <string name="setting_desktop_confirm">Confirm login to Mixin Messenger Desktop</string>
+    <string name="setting_desktop_confirm">Confirm login to Mixin Desktop</string>
     <string name="setting_desktop_logout_failed">Logout of desktop failed.</string>
     <string name="setting_duplicate_transfer_desc">Display confirmation dialog when you transfer the same amount to the same person within 6 hours.</string>
     <string name="setting_emergency_change_mobile">Do you want to change your mobile number now?</string>
@@ -1467,7 +1467,7 @@
     <string name="link_desktop">Link Desktop</string>
     <string name="buy_crypto_with_cash">Purchase crypto with cash</string>
     <string name="trade_native_tokens">Trade thousands of native tokens</string>
-    <string name="link_desktop_description">Link Mixin Messenger Desktop by QR code</string>
+    <string name="link_desktop_description">Link Mixin Desktop by QR code</string>
     <string name="Logined">Logged in</string>
     <string name="Transfer_confirmation">Transfer confirmation</string>
     <string name="Withdrawal_confirmation">Withdrawal confirmation</string>
