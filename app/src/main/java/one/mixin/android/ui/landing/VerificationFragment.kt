@@ -185,7 +185,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
         builder.setCustomView(view)
         val bottomSheet = builder.create()
         viewBinding.cantTv.setOnClickListener {
-            requireContext().openUrl(getString(R.string.landing_verification_tip_url))
+            requireContext().openUrl(getString(R.string.landing_verification_url))
             bottomSheet.dismiss()
         }
         viewBinding.lostTv.setOnClickListener {

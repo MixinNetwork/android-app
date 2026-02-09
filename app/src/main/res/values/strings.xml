@@ -626,6 +626,7 @@
     <string name="landing_privacy_policy_url">https://mixin.one/pages/privacy</string>
     <string name="landing_terms_url">https://mixin.one/pages/terms</string>
     <string name="landing_validation_title">Enter the 4-digit code sent to you at %1$s</string>
+    <string name="landing_verification_url">https://support.mixin.one/en/article/what-to-do-if-you-dont-receive-a-sms-code-for-logging-1ym9me1</string>
     <string name="landing_verification_tip_url">https://support.mixin.one/en/article/how-to-set-up-an-emergency-contact-1kvd6g8</string>
     <string name="Language">Language</string>
     <string name="Large_Amount_Confirmation">Large Amount Confirmation</string>
