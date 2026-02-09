@@ -88,6 +88,7 @@ class VerifyMobileReminderBottomSheetDialogFragment : MixinComposeBottomSheetDia
 
         fun shouldShow(context: Context): Boolean {
             val account = Session.getAccount() ?: return false
+            if (Session.hasPhone().not()) return false
             val lastSnoozeTimeMillis: Long = context.defaultSharedPreferences.getLong(PREF_VERIFY_MOBILE_REMINDER_SNOOZE, 0)
             if (System.currentTimeMillis() - lastSnoozeTimeMillis < Constants.INTERVAL_7_DAYS) return false
             return shouldShowWithoutSnooze(account)
