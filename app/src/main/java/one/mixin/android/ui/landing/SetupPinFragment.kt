@@ -21,6 +21,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.components.QuizPage
 import one.mixin.android.ui.landing.components.SetPinLoadingPage
 import one.mixin.android.ui.landing.components.SetupPinPage
+import one.mixin.android.ui.logs.LogViewerBottomSheet
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 import timber.log.Timber
@@ -51,6 +52,10 @@ class SetupPinFragment : BaseFragment(R.layout.fragment_compose) {
         AnalyticsTracker.trackSignUpPinSet()
         binding.titleView.leftIb.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
+        }
+        binding.titleView.setOnLongClickListener {
+            LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
+            true
         }
         binding.titleView.isVisible = false
         binding.compose.setContent {

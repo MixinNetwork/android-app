@@ -151,7 +151,7 @@
         <item quantity="other">%1$d kontak</item>
     </plurals>
     <string name="contact_empty_tip">Mixin perlu mengakses kontak Anda untuk membantu Anda terhubung dengan orang lain di Mixin.</string>
-    <string name="contact_invite_content">Hai, saya menggunakan Mixin Messenger untuk mengobrol. Unduh di sini: https://mixin.one/messenger .</string>
+    <string name="contact_invite_content">Hai, saya menggunakan Mixin untuk mengobrol. Unduh di sini: https://mixin.one/messenger .</string>
     <string name="contact_mixin_id">Mixin ID: %1$s</string>
     <string name="contact_mobile">Seluler: %1$s</string>
     <string name="contact_mute_title">Matikan notifikasi selama…</string>
@@ -196,7 +196,7 @@
     <string name="Delete_Synced_Contact">Hapus Kontak yang Disinkronkan</string>
     <string name="Delete_withdraw_Address">Hapus Alamat %1$s</string>
     <string name="Deposit">Deposit</string>
-    <string name="deposit_account_attention">Perhatian: Harap coba jumlah kecil untuk deposit pertama. Memo dan Alamat diperlukan agar deposit %1$s Anda ke Mixin Messenger dapat dilakukan dengan sukses.</string>
+    <string name="deposit_account_attention">Perhatian: Harap coba jumlah kecil untuk deposit pertama. Memo dan Alamat diperlukan agar deposit %1$s Anda ke Mixin dapat dilakukan dengan sukses.</string>
     <string name="deposit_attention">Harap coba jumlah kecil untuk deposit pertama.</string>
     <plurals name="deposit_confirmation" tools:ignore="UnusedQuantity">
         <item quantity="other">Deposit akan tiba setelah setidaknya %1$d konfirmasi block</item>

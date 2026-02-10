@@ -102,6 +102,7 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
                 }
             }
             if (Session.hasSafe()) {
+                defaultSharedPreferences.putBoolean(PREF_LOGIN_OR_SIGN_UP, true)
                 defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, true)
                 defaultSharedPreferences.putBoolean(PREF_LOGIN_OR_SIGN_UP, true)
                 MainActivity.show(requireContext())

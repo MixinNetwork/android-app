@@ -48,7 +48,7 @@ class LandingFragment : Fragment(R.layout.fragment_landing) {
         val features: List<LandingFeatureItem> = listOf(
             LandingFeatureItem(
                 imageResId = R.drawable.ic_landing_carousel_mixin,
-                title = getString(R.string.landing_carousel_mixin_title),
+                title = getString(R.string.Mixin),
                 description = getString(R.string.onboarding_mixin_description),
             ),
             LandingFeatureItem(

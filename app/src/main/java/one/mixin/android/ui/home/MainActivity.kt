@@ -398,7 +398,6 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                 jobManager.addJobInBackground(RefreshAccountJob(checkTip = true))
                 val isLoginVerified: Boolean = defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false)
                 val shouldGoWallet: Boolean = defaultSharedPreferences.getBoolean(PREF_LOGIN_OR_SIGN_UP, false)
-
                 Timber.e("isLoginVerified: $isLoginVerified, shouldGoWallet: $shouldGoWallet")
                 if (shouldGoWallet) {
                     defaultSharedPreferences.putBoolean(PREF_LOGIN_OR_SIGN_UP, false)
