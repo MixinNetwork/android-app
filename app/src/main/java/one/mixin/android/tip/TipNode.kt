@@ -277,7 +277,7 @@ class TipNode
                 }
                 val msg = gson.toJson(tipSignResponse.data).toByteArray()
                 try {
-                    Tip.pointVerify(tipSigner.identity,msg, tipSignResponse.signature.hexStringToByteArray())
+                    Tip.pointVerify(tipSigner.identity, msg, tipSignResponse.signature.hexStringToByteArray())
                 } catch (e: Exception) {
                     Timber.e("verify node response meet ${e.getStackTraceString()}")
                     return Pair(null, null)
