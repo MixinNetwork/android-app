@@ -21,7 +21,9 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.components.QuizPage
 import one.mixin.android.ui.landing.components.SetPinLoadingPage
 import one.mixin.android.ui.landing.components.SetupPinPage
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
+import timber.log.Timber
 
 @AndroidEntryPoint
 class SetupPinFragment : BaseFragment(R.layout.fragment_compose) {
@@ -45,6 +47,8 @@ class SetupPinFragment : BaseFragment(R.layout.fragment_compose) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        Timber.e("$TAG onViewCreated")
+        AnalyticsTracker.trackSignUpPinSet()
         binding.titleView.leftIb.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
@@ -87,11 +91,13 @@ class SetupPinFragment : BaseFragment(R.layout.fragment_compose) {
                     composable(SetupPinDestination.Setup.name) {
                         SetupPinPage(
                             next = { pinValue ->
+                                Timber.e("$TAG Setup PIN completed")
                                 pin = pinValue
                                 navController.navigate(SetupPinDestination.Quiz.name)
                             },
                             errorMessage = errorMessage,
                             onRetry = {
+                                Timber.e("$TAG Retry setup PIN")
                                 errorMessage = ""
                             }
                         )
@@ -99,9 +105,11 @@ class SetupPinFragment : BaseFragment(R.layout.fragment_compose) {
                     composable(SetupPinDestination.Quiz.name) {
                         QuizPage(
                             next = {
+                                Timber.e("$TAG Quiz completed")
                                 navController.navigate(SetupPinDestination.Loading.name)
                             },
                             pop = {
+                                Timber.e("$TAG Quiz back pressed")
                                 navController.popBackStack()
                             }
                         )
@@ -110,6 +118,8 @@ class SetupPinFragment : BaseFragment(R.layout.fragment_compose) {
                         SetPinLoadingPage(
                             pin = pin,
                             next = {
+                                Timber.e("$TAG PIN set successfully")
+                                AnalyticsTracker.trackSignUpEnd()
                                 requireActivity().finish()
                             }
                         )
