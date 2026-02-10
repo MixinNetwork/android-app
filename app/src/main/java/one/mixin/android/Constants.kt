@@ -91,6 +91,7 @@ object Constants {
         const val PREF_CLEANUP_QUOTE_CONTENT = "pref_cleanup_quote_content"
         const val PREF_TRANSFER_SCENE = "pref_transfer_scene"
         const val PREF_LOGIN_VERIFY = "pref_login_verify"
+        const val PREF_LOGIN_OR_SIGN_UP = "pref_login_or_sign_up"
         const val PREF_NOTIFY_ENABLE_BIOMETRIC = "pref_notify_enable_biometric"
         const val PREF_SNAPSHOT_OFFSET = "pref_snapshot_offset"
         const val PREF_EXPLORE_SELECT = "pref_explore_select"
