@@ -183,7 +183,7 @@
     <string name="chat_import_fail_content">Не удалось импортировать сообщение! Вы хотите отправить его в виде файла?</string>
     <string name="chat_list_empty_info">Вы можете общаться с контактами, на телефоне которых установлен Mixin.</string>
     <string name="chat_not_support">Этот тип сообщений не поддерживается, пожалуйста, обновите Mixin до последней версии. %1$s.</string>
-    <string name="chat_on_mixin_content">Давайте общаться в Mixin Messenger! Простой, безопасный и простой в использовании. Он также поддерживает биткойн, эфириум и другие криптовалюты. Загрузите https://mixin.one/messenger и выполните поиск \@%1$s, чтобы добавить меня в друзья.</string>
+    <string name="chat_on_mixin_content">Давайте общаться в Mixin! Простой, безопасный и простой в использовании. Он также поддерживает биткойн, эфириум и другие криптовалюты. Загрузите https://mixin.one/messenger и выполните поиск \@%1$s, чтобы добавить меня в друзья.</string>
     <string name="chat_pin_message">%1$s закрепил %2$s</string>
     <string name="Chat_pinned">Чат закреплен</string>
     <string name="chat_recall_delete_alert">Выбранные вами сообщения будут удалены для всех в последней версии Mixin в этом чате.</string>
@@ -228,7 +228,7 @@
     </plurals>
     <string name="Contact_Developer">Связаться с разработчиком</string>
     <string name="contact_empty_tip">Mixin требуется доступ к вашим контактам, чтобы помочь вам общаться с другими людьми на Mixin.</string>
-    <string name="contact_invite_content">Привет, я использую Mixin Messenger для общения. Загрузите его здесь: https://mixin.one/messenger</string>
+    <string name="contact_invite_content">Привет, я использую Mixin для общения. Загрузите его здесь: https://mixin.one/messenger</string>
     <string name="contact_mixin_id">Идентификатор Mixin: %1$s</string>
     <string name="contact_mobile">Мобильный: %1$s</string>
     <string name="contact_mute_title">Отключить уведомления для…</string>
@@ -291,7 +291,7 @@
     <string name="Delete_Synced_Contact">Удалить синхронизированные контакты</string>
     <string name="Delete_withdraw_Address">Удалить адрес %1$s</string>
     <string name="Deposit">Депозит</string>
-    <string name="deposit_account_attention">Внимание: Пожалуйста, попробуйте небольшую сумму для первого депозита. Для успешного внесения %1$s в Mixin Messenger необходимы как памятка, так и адрес.</string>
+    <string name="deposit_account_attention">Внимание: Пожалуйста, попробуйте небольшую сумму для первого депозита. Для успешного внесения %1$s в Mixin необходимы как памятка, так и адрес.</string>
     <string name="deposit_attention">Пожалуйста, попробуйте небольшую сумму для первого депозита.</string>
     <plurals name="deposit_confirmation" tools:ignore="UnusedQuantity">
         <item quantity="one">Депозит придет %1$d подтверждение блокировки</item>
@@ -567,7 +567,7 @@
     <string name="Mixin">Mixin</string>
     <string name="Mixin_ID">Mixin ID</string>
     <string name="Mixin_Locked">Миксин заблокирован</string>
-    <string name="Mixin_Messenger_Desktop">Рабочий стол Mixin Messenger</string>
+    <string name="Mixin_Messenger_Desktop">Рабочий стол Mixin</string>
     <string name="Model">Модель</string>
     <string name="Monday">Понедельник</string>
     <string name="More">Больше</string>
@@ -632,7 +632,7 @@
     <string name="Not_support">Не поддерживается</string>
     <string name="Notice">Уведомление</string>
     <string name="Notification_and_Confirmation">Уведомление и подтверждение</string>
-    <string name="notification_channel_description">Показывает, какая музыка сейчас играет в мессенджере Mixin Messenger</string>
+    <string name="notification_channel_description">Показывает, какая музыка сейчас играет в мессенджере Mixin</string>
     <string name="notification_content">Не пропустите сообщения от друзей.</string>
     <string name="Notifications">Уведомления</string>
     <string name="Now_Playing">Сейчас играет</string>
