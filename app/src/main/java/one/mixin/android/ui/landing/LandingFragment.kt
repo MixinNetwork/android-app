@@ -49,32 +49,32 @@ class LandingFragment : Fragment(R.layout.fragment_landing) {
             LandingFeatureItem(
                 imageResId = R.drawable.ic_landing_carousel_mixin,
                 title = getString(R.string.landing_carousel_mixin_title),
-                description = getString(R.string.landing_carousel_mixin_desc),
+                description = getString(R.string.onboarding_mixin_description),
             ),
             LandingFeatureItem(
                 imageResId = R.drawable.ic_landing_carousel_non_custodial,
-                title = getString(R.string.landing_carousel_keys_title),
-                description = getString(R.string.landing_carousel_keys_desc),
+                title = getString(R.string.onboarding_decentralized_title),
+                description = getString(R.string.onboarding_decentralized_description),
             ),
             LandingFeatureItem(
                 imageResId = R.drawable.ic_landing_carousel_trade,
-                title = getString(R.string.landing_carousel_trade_title),
-                description = getString(R.string.landing_carousel_trade_desc),
+                title = getString(R.string.onboarding_trade_title),
+                description = getString(R.string.onboarding_trade_description),
             ),
             LandingFeatureItem(
                 imageResId = R.drawable.ic_landing_carousel_private_chat,
-                title = getString(R.string.landing_carousel_chat_title),
-                description = getString(R.string.landing_carousel_chat_desc),
+                title = getString(R.string.onboarding_privacy_title),
+                description = getString(R.string.onboarding_privacy_description),
             ),
             LandingFeatureItem(
                 imageResId = R.drawable.ic_landing_carousel_recovery,
-                title = getString(R.string.landing_carousel_recover_title),
-                description = getString(R.string.landing_carousel_recover_desc),
+                title = getString(R.string.onboarding_recover_title),
+                description = getString(R.string.onboarding_recover_description),
             ),
             LandingFeatureItem(
                 imageResId = R.drawable.ic_landing_carousel_rewards,
-                title = getString(R.string.landing_carousel_rewards_title),
-                description = getString(R.string.landing_carousel_rewards_desc),
+                title = getString(R.string.onboarding_reward_title),
+                description = getString(R.string.onboarding_reward_description),
             ),
         )
         featureCount = features.size

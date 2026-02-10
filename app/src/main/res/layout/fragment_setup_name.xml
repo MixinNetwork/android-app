@@ -28,8 +28,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
         android:orientation="vertical"
         android:layout_below="@id/debug"
         android:layout_above="@id/continue_btn"
@@ -43,10 +43,12 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="48dp"
             android:gravity="center"
-            android:text="@string/Whats_your_name"
+            android:text="@string/what_should_friends_call_you"
             android:textColor="?attr/text_primary"
             android:textSize="24sp"
             android:textStyle="bold"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
             android:lineSpacingExtra="4dp" />
 
         <com.google.android.material.textfield.TextInputLayout
@@ -60,16 +62,16 @@
             <EditText
                 android:id="@+id/name_et"
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
+                android:layout_height="54dp"
                 android:background="@drawable/bg_input_field"
-                android:hint="@string/Name"
+                android:hint="@string/username_placeholder"
+                android:imeOptions="actionDone"
+                android:inputType="text"
                 android:lines="1"
+                android:maxLength="48"
                 android:textColor="?attr/text_primary"
                 android:textColorHint="?attr/text_assist"
                 android:textSize="16sp"
-                android:inputType="text"
-                android:maxLength="48"
-                android:imeOptions="actionDone"
                 tools:ignore="Autofill,TextFields" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -79,9 +81,11 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="48dp"
             android:gravity="center"
-            android:text="This is the name your friends will see when you\nchat or send them tokens."
-            android:textColor="?attr/text_minor"
+            android:text="@string/username_description"
+            android:textColor="?attr/text_assist"
             android:textSize="14sp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
             android:lineSpacingExtra="2dp" />
 
     </LinearLayout>
