@@ -96,7 +96,7 @@ fun PerpetualContent(
                 onMarketClick = { market ->
                     coroutineScope.launch {
                         bottomSheetState.hide()
-                        MarketDetailActivity.show(context, market.marketId, market.symbol)
+                        PerpsActivity.showDetail(context, market.marketId, market.symbol)
                     }
                 }
             )
@@ -259,7 +259,7 @@ fun PerpetualContent(
                     MarketItem(
                         market = market,
                         onClick = {
-                            MarketDetailActivity.show(context, market.marketId, market.symbol)
+                            PerpsActivity.showDetail(context, market.marketId, market.symbol)
                         }
                     )
                     Spacer(modifier = Modifier.height(12.dp))

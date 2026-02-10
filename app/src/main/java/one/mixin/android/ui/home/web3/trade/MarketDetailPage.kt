@@ -20,6 +20,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -57,6 +59,7 @@ fun MarketDetailPage(
     marketSymbol: String,
     onBack: () -> Unit,
 ) {
+    val context = LocalContext.current
     val viewModel = hiltViewModel<PerpetualViewModel>()
     var market by remember { mutableStateOf<MarketView?>(null) }
     var isLoading by remember { mutableStateOf(true) }
@@ -130,6 +133,77 @@ fun MarketDetailPage(
                     market = market!!,
                     onLearnClick = { /* TODO: Navigate to guide */ }
                 )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            if (market != null) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Button(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(48.dp),
+                        onClick = {
+                            PerpsActivity.showOpenPosition(
+                                context = context,
+                                marketId = marketId,
+                                marketSymbol = marketSymbol,
+                                isLong = true
+                            )
+                        },
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            backgroundColor = MixinAppTheme.colors.walletGreen
+                        ),
+                        shape = RoundedCornerShape(32.dp),
+                        elevation = ButtonDefaults.elevation(
+                            pressedElevation = 0.dp,
+                            defaultElevation = 0.dp,
+                            hoveredElevation = 0.dp,
+                            focusedElevation = 0.dp
+                        )
+                    ) {
+                        Text(
+                            text = "Long",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+
+                    Button(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(48.dp),
+                        onClick = {
+                            PerpsActivity.showOpenPosition(
+                                context = context,
+                                marketId = marketId,
+                                marketSymbol = marketSymbol,
+                                isLong = false
+                            )
+                        },
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            backgroundColor = MixinAppTheme.colors.walletRed
+                        ),
+                        shape = RoundedCornerShape(32.dp),
+                        elevation = ButtonDefaults.elevation(
+                            pressedElevation = 0.dp,
+                            defaultElevation = 0.dp,
+                            hoveredElevation = 0.dp,
+                            focusedElevation = 0.dp
+                        )
+                    ) {
+                        Text(
+                            text = "Short",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -266,15 +340,15 @@ private fun MarketDetailCard(
     val isPositive = change >= BigDecimal.ZERO
     val changeColor = if (isPositive) {
         if (quoteColorPref) {
-            MixinAppTheme.colors.marketRed
+            MixinAppTheme.colors.walletRed
         } else {
-            MixinAppTheme.colors.marketGreen
+            MixinAppTheme.colors.walletGreen
         }
     } else {
         if (quoteColorPref) {
-            MixinAppTheme.colors.marketGreen
+            MixinAppTheme.colors.walletGreen
         } else {
-            MixinAppTheme.colors.marketRed
+            MixinAppTheme.colors.walletRed
         }
     }
     val changeText = "${if (isPositive) "+" else ""}${market.change}%"

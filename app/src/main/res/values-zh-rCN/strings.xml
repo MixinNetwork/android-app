@@ -2223,4 +2223,13 @@
     <string name="Perpetual_Position_Usage_Desc">支撑当前仓位，抵扣浮动亏损。</string>
     <string name="Perpetual_Position_Risk">当投入资金不足以支撑当前仓位时，仓位将被系统强制平仓。价格剧烈波动可能会快速消耗投入资金。</string>
     <string name="Perpetual">永续合约</string>
+    <string name="Open_Position">开仓</string>
+    <string name="Leverage">杠杆</string>
+    <string name="Select_Token">选择代币</string>
+    <string name="Select_Leverage">选择杠杆</string>
+    <string name="Order_Value">订单价值</string>
+    <string name="Liquidation_Price">强平价格</string>
+    <string name="Price_Change_Profit">价格%1$s %2$s%% → 盈利 %3$s%4$s%% (%5$s%6$s)</string>
+    <string name="Long">做多</string>
+    <string name="Short">做空</string>
 </resources>

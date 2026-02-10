@@ -2279,4 +2279,13 @@
     <string name="Perpetual_Position_Usage_Desc">Support current position and offset floating losses.</string>
     <string name="Perpetual_Position_Risk">When investment is insufficient to support current position, the position will be forcibly liquidated by the system. Severe price volatility may rapidly consume investment.</string>
     <string name="Perpetual">Perpetual</string>
+    <string name="Open_Position">Open Position</string>
+    <string name="Leverage">Leverage</string>
+    <string name="Select_Token">Select Token</string>
+    <string name="Select_Leverage">Select Leverage</string>
+    <string name="Order_Value">Order Value</string>
+    <string name="Liquidation_Price">Liquidation Price</string>
+    <string name="Price_Change_Profit">Price %1$s %2$s%% → Profit %3$s%4$s%% (%5$s%6$s)</string>
+    <string name="Long">Long</string>
+    <string name="Short">Short</string>
 </resources>

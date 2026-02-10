@@ -122,61 +122,79 @@ fun TradePage(
         }
     }
 
-    val tabCount = 3
-    val pagerState = rememberPagerState(
-        initialPage = initialTabIndex.coerceIn(0, tabCount - 1),
-        pageCount = { tabCount },
-    )
+    // Build tabs dynamically: Perpetual tab should only exist when walletId == null
+    val switchToLimitRequested = remember { mutableStateOf(false) }
 
-    val tabs = listOf(
-        TabItem(stringResource(id = R.string.Trade_Simple)) {
-            SwapContent(
-                from = swapFrom,
-                to = swapTo,
-                inMixin = inMixin,
-                initialAmount = initialAmount,
-                lastOrderTime = lastOrderTime,
-                reviewing = reviewing,
-                source = source,
-                onSelectToken = { isReverse, type -> onSelectToken(isReverse, type, false) },
-                onReview = onReview,
-                onDeposit = onDeposit,
-                onSwitchToLimitOrder = { inputText, fromToken, toToken ->
-                    onSwitchToLimitOrder(inputText, fromToken, toToken)
-                    coroutineScope.launch {
-                        pagerState.animateScrollToPage(1)
-                    }
-                    onDismissLimitOrderTabBadge()
-                    onTabChanged(1)
-                },
-            )
-        },
-        TabItem(stringResource(id = R.string.Trade_Advanced)) {
-            LimitOrderContent(
-                limitFrom,
-                limitTo,
-                inMixin,
-                initialAmount,
-                lastOrderTime,
-                { isReverse, type -> onSelectToken(isReverse, type, true) },
-                onLimitReview,
-                onDeposit,
-                onLimitOrderClick,
-                onOrderList,
-            )
-        },
-        TabItem(title = stringResource(R.string.Perpetual)) {
+    val tabs = mutableListOf<TabItem>()
+
+    tabs += TabItem(stringResource(id = R.string.Trade_Simple)) {
+        SwapContent(
+            from = swapFrom,
+            to = swapTo,
+            inMixin = inMixin,
+            initialAmount = initialAmount,
+            lastOrderTime = lastOrderTime,
+            reviewing = reviewing,
+            source = source,
+            onSelectToken = { isReverse, type -> onSelectToken(isReverse, type, false) },
+            onReview = onReview,
+            onDeposit = onDeposit,
+            onSwitchToLimitOrder = { inputText, fromToken, toToken ->
+                // Notify parent and request navigation to Limit tab locally
+                onSwitchToLimitOrder(inputText, fromToken, toToken)
+                switchToLimitRequested.value = true
+                onDismissLimitOrderTabBadge()
+                onTabChanged(1)
+            },
+        )
+    }
+
+    tabs += TabItem(stringResource(id = R.string.Trade_Advanced)) {
+        LimitOrderContent(
+            limitFrom,
+            limitTo,
+            inMixin,
+            initialAmount,
+            lastOrderTime,
+            { isReverse, type -> onSelectToken(isReverse, type, true) },
+            onLimitReview,
+            onDeposit,
+            onLimitOrderClick,
+            onOrderList,
+        )
+    }
+
+    if (walletId == null) {
+        tabs += TabItem(title = stringResource(R.string.Perpetual)) {
             PerpetualContent(
-                onLongClick = { market ->
+                onLongClick = { _ ->
                     // TODO: Handle long position
                 },
-                onShortClick = { market ->
+                onShortClick = { _ ->
                     // TODO: Handle short position
                 },
                 onShowTradingGuide = onShowTradingGuide
             )
         }
+    }
+
+    val tabCount = tabs.size
+
+    val pagerState = rememberPagerState(
+        initialPage = initialTabIndex.coerceIn(0, (tabCount - 1).coerceAtLeast(0)),
+        pageCount = { tabCount },
     )
+
+    // When SwapContent requests switching to Limit tab, animate to it
+    LaunchedEffect(switchToLimitRequested.value) {
+        if (switchToLimitRequested.value) {
+            coroutineScope.launch {
+                val target = (1).coerceAtMost((tabCount - 1).coerceAtLeast(0))
+                pagerState.animateScrollToPage(target)
+            }
+            switchToLimitRequested.value = false
+        }
+    }
 
     ModalBottomSheetLayout(
         sheetState = bottomSheetState,

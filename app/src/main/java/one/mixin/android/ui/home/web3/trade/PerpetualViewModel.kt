@@ -9,12 +9,14 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.api.response.perps.CandleView
 import one.mixin.android.api.response.perps.MarketView
 import one.mixin.android.api.service.RouteService
+import one.mixin.android.vo.safe.TokenItem
 import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class PerpetualViewModel @Inject constructor(
-    private val routeService: RouteService
+    private val routeService: RouteService,
+    private val tokenDao: one.mixin.android.db.TokenDao
 ) : ViewModel() {
 
     fun loadMarkets(
@@ -97,6 +99,24 @@ class PerpetualViewModel @Inject constructor(
                 val error = "Error loading candles: ${e.message}"
                 Timber.e(e, error)
                 onError(error)
+            }
+        }
+    }
+
+    fun loadUsdTokens(onSuccess: (List<TokenItem>) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val usdTokens = withContext(Dispatchers.IO) {
+                    val usdIds = one.mixin.android.Constants.usdIds
+                    tokenDao.findTokenItems(usdIds)
+                        .sortedByDescending { 
+                            it.balance.toBigDecimalOrNull() ?: java.math.BigDecimal.ZERO 
+                        }
+                }
+                onSuccess(usdTokens)
+            } catch (e: Exception) {
+                Timber.e(e, "Error loading USD tokens")
+                onSuccess(emptyList())
             }
         }
     }
