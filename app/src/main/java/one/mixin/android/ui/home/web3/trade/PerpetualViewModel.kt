@@ -73,7 +73,7 @@ class PerpetualViewModel @Inject constructor(
     }
 
     fun loadCandles(
-        marketId: String,
+        symbol: String,
         timeFrame: String,
         onSuccess: (List<CandleView>) -> Unit,
         onError: (String) -> Unit
@@ -81,7 +81,7 @@ class PerpetualViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val response = withContext(Dispatchers.IO) {
-                    routeService.getPerpsCandles(marketId, timeFrame)
+                    routeService.getPerpsCandles(symbol, timeFrame)
                 }
                 
                 val data = response.data

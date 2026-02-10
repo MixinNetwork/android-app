@@ -1,6 +1,11 @@
 package one.mixin.android.ui.home.web3.trade
 
 import PageScaffold
+import android.graphics.drawable.Icon
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,10 +14,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -26,14 +34,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
+import one.mixin.android.R
 import one.mixin.android.api.response.perps.MarketView
+import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.ui.home.web3.components.OutlinedTab
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import java.math.BigDecimal
 
@@ -41,7 +55,7 @@ import java.math.BigDecimal
 fun MarketDetailPage(
     marketId: String,
     marketSymbol: String,
-    onBack: () -> Unit
+    onBack: () -> Unit,
 ) {
     val viewModel = hiltViewModel<PerpetualViewModel>()
     var market by remember { mutableStateOf<MarketView?>(null) }
@@ -77,65 +91,45 @@ fun MarketDetailPage(
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 价格信息卡片
-            if (market != null) {
-                PriceInfoCard(market = market!!)
-            } else if (isLoading) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(100.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Loading...",
-                        fontSize = 14.sp,
-                        color = MixinAppTheme.colors.textAssist
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(modifier = Modifier.fillMaxWidth()) {
-                timeFrames.forEachIndexed { index, timeFrame ->
-                    OutlinedTab(
-                        text = timeFrame,
-                        selected = selectedTimeFrame == index,
-                        showBadge = false,
-                        onClick = { coroutineScope.launch { selectedTimeFrame = index } }
-                    )
-                    if (index < timeFrames.size - 1) Spacer(modifier = Modifier.width(8.dp))
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(300.dp)
                     .clip(RoundedCornerShape(8.dp))
                     .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
                     .padding(16.dp)
             ) {
                 if (market != null) {
-                    CandleChart(
-                        marketId = marketId,
-                        timeFrame = timeFrames[selectedTimeFrame]
+                    MarketDetailCard(
+                        market = market!!,
+                        marketSymbol = marketSymbol,
+                        selectedTimeFrame = selectedTimeFrame,
+                        timeFrames = timeFrames,
+                        onTimeFrameChange = { index ->
+                            coroutineScope.launch { selectedTimeFrame = index }
+                        }
                     )
-                } else {
+                } else if (isLoading) {
                     Box(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(400.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = "Loading chart...",
-                            fontSize = 14.sp,
-                            color = MixinAppTheme.colors.textAssist
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(40.dp),
+                            color = MixinAppTheme.colors.accent
                         )
                     }
                 }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            if (market != null) {
+                MarketInfoCard(
+                    market = market!!,
+                    onLearnClick = { /* TODO: Navigate to guide */ }
+                )
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -144,7 +138,125 @@ fun MarketDetailPage(
 }
 
 @Composable
-private fun PriceInfoCard(market: MarketView) {
+private fun MarketInfoCard(
+    market: MarketView,
+    onLearnClick: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
+            .padding(16.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onLearnClick() },
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Image(painter = painterResource(id = R.drawable.ic_perps_help), contentDescription = null)
+            Spacer(modifier = Modifier.width(8.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "How perps works?",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MixinAppTheme.colors.textPrimary
+                )
+                Text(
+                    text = "Learn how to trade perps",
+                    fontSize = 12.sp,
+                    color = MixinAppTheme.colors.textAssist
+                )
+            }
+        }
+    }
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
+            .padding(16.dp)
+    ) {
+        Text(
+            text = "24H VOLUME",
+            fontSize = 12.sp,
+            color = MixinAppTheme.colors.textAssist
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = "$${formatVolume(market.volume)}",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium,
+            color = MixinAppTheme.colors.textPrimary
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+
+        Column {
+            Text(
+                text = "Open Interest",
+                fontSize = 12.sp,
+                color = MixinAppTheme.colors.textAssist
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "-",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = MixinAppTheme.colors.textPrimary
+            )
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+        Column {
+            Text(
+                text = "Funding Rate",
+                fontSize = 12.sp,
+                color = MixinAppTheme.colors.textAssist
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "${market.fundingRate}%",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = MixinAppTheme.colors.textPrimary
+            )
+        }
+    }
+}
+
+private fun formatVolume(volume: String): String {
+    return try {
+        val vol = BigDecimal(volume)
+        when {
+            vol >= BigDecimal("1000000000") -> String.format("%.2fB", vol.divide(BigDecimal("1000000000")))
+            vol >= BigDecimal("1000000") -> String.format("%.2fM", vol.divide(BigDecimal("1000000")))
+            vol >= BigDecimal("1000") -> String.format("%.2fK", vol.divide(BigDecimal("1000")))
+            else -> String.format("%.2f", vol)
+        }
+    } catch (e: Exception) {
+        volume
+    }
+}
+
+@Composable
+private fun MarketDetailCard(
+    market: MarketView,
+    marketSymbol: String,
+    selectedTimeFrame: Int,
+    timeFrames: List<String>,
+    onTimeFrameChange: (Int) -> Unit,
+) {
+    val context = LocalContext.current
+    val quoteColorPref = context.defaultSharedPreferences
+        .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
+
     val change = try {
         BigDecimal(market.change)
     } catch (e: Exception) {
@@ -152,7 +264,19 @@ private fun PriceInfoCard(market: MarketView) {
     }
 
     val isPositive = change >= BigDecimal.ZERO
-    val changeColor = if (isPositive) Color(0xFF4CAF50) else Color(0xFFF44336)
+    val changeColor = if (isPositive) {
+        if (quoteColorPref) {
+            MixinAppTheme.colors.marketRed
+        } else {
+            MixinAppTheme.colors.marketGreen
+        }
+    } else {
+        if (quoteColorPref) {
+            MixinAppTheme.colors.marketGreen
+        } else {
+            MixinAppTheme.colors.marketRed
+        }
+    }
     val changeText = "${if (isPositive) "+" else ""}${market.change}%"
 
     val formattedPrice = try {
@@ -168,36 +292,90 @@ private fun PriceInfoCard(market: MarketView) {
         market.markPrice
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
-            .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
-            .padding(16.dp)
-    ) {
-        Text(
-            text = "Mark Price",
-            fontSize = 14.sp,
-            color = MixinAppTheme.colors.textAssist
-        )
-        Spacer(modifier = Modifier.height(8.dp))
+    Column(modifier = Modifier.fillMaxWidth()) {
         Row(
-            verticalAlignment = Alignment.Bottom
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "$$formattedPrice",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                color = MixinAppTheme.colors.textPrimary
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = marketSymbol,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MixinAppTheme.colors.textPrimary
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "$$formattedPrice",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MixinAppTheme.colors.textPrimary
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = changeText,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = changeColor
+                )
+            }
+
+            CoilImage(
+                model = market.iconUrl,
+                placeholder = R.drawable.ic_avatar_place_holder,
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = changeText,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium,
-                color = changeColor,
-                modifier = Modifier.padding(start = 8.dp, bottom = 4.dp)
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)) {
+            CandleChart(
+                symbol = marketSymbol,
+                timeFrame = timeFrames[selectedTimeFrame]
             )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            timeFrames.forEachIndexed { index, timeFrame ->
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(36.dp)
+                        .clip(RoundedCornerShape(18.dp))
+                        .then(
+                            if (selectedTimeFrame == index) {
+                                Modifier.background(MixinAppTheme.colors.backgroundWindow)
+                            } else {
+                                Modifier
+                            }
+                        )
+                        .clickable { onTimeFrameChange(index) },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = timeFrame,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = if (selectedTimeFrame == index) {
+                            MixinAppTheme.colors.textPrimary
+                        } else {
+                            MixinAppTheme.colors.textAssist
+                        }
+                    )
+                }
+            }
         }
     }
 }
