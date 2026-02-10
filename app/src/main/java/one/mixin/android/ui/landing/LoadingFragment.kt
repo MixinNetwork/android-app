@@ -10,6 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants.Account.PREF_LOGIN_OR_SIGN_UP
 import one.mixin.android.Constants.Account.PREF_LOGIN_VERIFY
 import one.mixin.android.Constants.Account.PREF_TRIED_UPDATE_KEY
 import one.mixin.android.Constants.DEVICE_ID
@@ -101,6 +102,7 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
                 }
             }
             if (Session.hasSafe()) {
+                defaultSharedPreferences.putBoolean(PREF_LOGIN_OR_SIGN_UP, true)
                 defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, true)
                 MainActivity.show(requireContext())
             } else {
