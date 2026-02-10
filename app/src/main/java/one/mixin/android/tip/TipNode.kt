@@ -275,12 +275,9 @@ class TipNode
                 if (resError != null) {
                     return Pair(null, resError.code.toTipNodeError(tipSigner.index, requestId, resError.description))
                 }
-                val signerPk = withContext(SINGLE_SIGN_EXECUTOR.asCoroutineDispatcher()) {
-                    Tip.pubKeyFromBase58(tipSigner.identity)
-                }
                 val msg = gson.toJson(tipSignResponse.data).toByteArray()
                 try {
-                    signerPk.verify(msg, tipSignResponse.signature.hexStringToByteArray())
+                    Tip.pointVerify(tipSigner.identity,msg, tipSignResponse.signature.hexStringToByteArray())
                 } catch (e: Exception) {
                     Timber.e("verify node response meet ${e.getStackTraceString()}")
                     return Pair(null, null)
