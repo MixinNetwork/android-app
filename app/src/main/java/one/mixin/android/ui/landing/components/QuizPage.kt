@@ -34,18 +34,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontWeight.Companion.W600
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.openUrl
 
 @Composable
 fun QuizPage(next: () -> Unit, pop: (() -> Unit)? = null) {
+    val context = LocalContext.current
     var selectedOption by remember { mutableStateOf(-1) }
     var showDialog by remember { mutableStateOf(false) }
     var isCorrectAnswer by remember { mutableStateOf(false) }
@@ -90,7 +95,9 @@ fun QuizPage(next: () -> Unit, pop: (() -> Unit)? = null) {
             title = "",
             verticalScrollable = false,
             actions = {
-                IconButton(onClick = {}) {
+                IconButton(onClick = {
+                    context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                }) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_support),
                         contentDescription = null,
@@ -144,7 +151,12 @@ fun QuizPage(next: () -> Unit, pop: (() -> Unit)? = null) {
                     Spacer(modifier = Modifier.height(26.dp))
                     Text(
                         text = stringResource(R.string.What_is_Pin),
-                        color = MixinAppTheme.colors.textBlue
+                        fontSize = 16.sp,
+                        fontWeight = W600,
+                        color = MixinAppTheme.colors.textBlue,
+                        modifier = Modifier.clickable {
+                            context.openUrl(context.getString(R.string.What_is_Pin_url))
+                        }
                     )
                     Spacer(modifier = Modifier.height(20.dp))
                 }

@@ -1849,6 +1849,7 @@
     <string name="Set_up_pin_error_message">PIN 设置失败。请检查网络连接后重试。</string>
     <string name="Check_answer">检查答案</string>
     <string name="What_is_Pin">什么是 PIN ?</string>
+    <string name="What_is_Pin_url">https://support.mixin.one/zh/article/pin-yhpicw</string>
     <string name="Quiz_correct">正确！</string>
     <string name="Quiz_wrong_answer">哎呀，答错了</string>
     <string name="Quiz_pin_explanation">PIN 是您钱包的密钥，丢失后无法恢复。</string>

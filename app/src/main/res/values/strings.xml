@@ -1883,6 +1883,7 @@
     <string name="Set_up_pin_error_message">Failed to set up PIN. Please check your network connection and try again.</string>
     <string name="Check_answer">Check answer</string>
     <string name="What_is_Pin">What is PIN?</string>
+    <string name="What_is_Pin_url">https://support.mixin.one/en/article/what-is-pin-1pjyhow</string>
     <string name="Quiz_correct">Correct!</string>
     <string name="Quiz_wrong_answer">Oops, wrong answer</string>
     <string name="Quiz_pin_explanation">The PIN is the key to your wallet, and it\'s unrecoverable if lost.</string>

@@ -28,11 +28,13 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -76,6 +78,7 @@ fun SetupPinPage(
     var pinCode by remember { mutableStateOf("") }
     var pinCodeAttempts by remember { mutableIntStateOf(0) }
     var firstPinCode by remember { mutableStateOf("") }
+    var showMismatchDialog by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     val list = listOf(
         "1",
@@ -97,7 +100,7 @@ fun SetupPinPage(
         verticalScrollable = false,
         actions = {
             IconButton(onClick = {
-                context.openUrl(Constants.HelpLink.TIP)
+                context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
             }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_support),
@@ -112,6 +115,32 @@ fun SetupPinPage(
             }
         },
     ) {
+        if (showMismatchDialog) {
+            AlertDialog(
+                onDismissRequest = { },
+                text = {
+                    Text(text = stringResource(R.string.PIN_does_not_match))
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            showMismatchDialog = false
+                            pinCodeAttempts = 0
+                            pinCode = ""
+                            firstPinCode = ""
+                        }
+                    ) {
+                        Text(
+                            text = stringResource(R.string.OK),
+                            color = MixinAppTheme.colors.accent
+                        )
+                    }
+                },
+                backgroundColor = MixinAppTheme.colors.background,
+                contentColor = MixinAppTheme.colors.textPrimary
+            )
+        }
+        
         Spacer(modifier = Modifier.height(70.dp))
 
         AnimatedContent(
@@ -131,10 +160,9 @@ fun SetupPinPage(
         ) { count ->
             Text(
                 stringResource(
-                    if (count <= 0) {
-                        R.string.Set_up_pin_desc_1
-                    } else {
-                        R.string.Set_up_pin_desc_2
+                    when (count) {
+                        0 -> R.string.Set_up_pin_desc_1
+                        else -> R.string.Set_up_pin_desc_2
                     }
                 ),
                 color = MixinAppTheme.colors.textPrimary,
@@ -188,6 +216,7 @@ fun SetupPinPage(
                 when (count) {
                     0 -> ""
                     1 -> stringResource(R.string.Set_up_pin_tip_1)
+                    2 -> stringResource(R.string.Set_up_pin_tip_2)
                     else -> stringResource(R.string.Set_up_pin_tip_2)
                 },
                 color = MixinAppTheme.colors.red,
@@ -218,7 +247,7 @@ fun SetupPinPage(
                 colors = ButtonDefaults.outlinedButtonColors(
                     backgroundColor = if (errorMessage.isNotEmpty()) {
                         MixinAppTheme.colors.accent
-                    } else if (pinCodeAttempts == 2 && pinCode == firstPinCode) {
+                    } else if (pinCodeAttempts == 3 && pinCode == firstPinCode) {
                         MixinAppTheme.colors.accent
                     } else {
                         MixinAppTheme.colors.backgroundGray
@@ -231,7 +260,7 @@ fun SetupPinPage(
                     hoveredElevation = 0.dp,
                     focusedElevation = 0.dp,
                 ),
-                enabled = errorMessage.isNotEmpty() || (pinCodeAttempts == 2 && pinCode == firstPinCode)
+                enabled = errorMessage.isNotEmpty() || (pinCodeAttempts == 3 && pinCode == firstPinCode)
             ) {
                 Text(
                     text = stringResource(
@@ -298,26 +327,25 @@ fun SetupPinPage(
                                         } else if (pinCode.length < 6) {
                                             pinCode += list[index]
                                             if (pinCode.length == 6) {
-                                                if (pinCodeAttempts < 2) {
-                                                    pinCodeAttempts++
-                                                    if (pinCodeAttempts == 1) {
+                                                if (pinCodeAttempts < 3) {
+                                                    if (pinCodeAttempts == 0) {
                                                         firstPinCode = pinCode
-                                                    } else if (pinCode != firstPinCode) {
-                                                        pinCodeAttempts = 0
-                                                    }
-                                                    if (pinCodeAttempts == 2) {
-                                                        next(pinCode)
-                                                    }
-                                                    coroutineScope.launch {
-                                                        delay(100)
-                                                        pinCode = ""
-                                                    }
-                                                } else {
-                                                    if (pinCode != firstPinCode) {
-                                                        pinCodeAttempts = 0
+                                                        pinCodeAttempts++
                                                         coroutineScope.launch {
                                                             delay(100)
                                                             pinCode = ""
+                                                        }
+                                                    } else if (pinCode != firstPinCode) {
+                                                        showMismatchDialog = true
+                                                    } else {
+                                                        pinCodeAttempts++
+                                                        if (pinCodeAttempts == 3) {
+                                                            next(pinCode)
+                                                        } else {
+                                                            coroutineScope.launch {
+                                                                delay(100)
+                                                                pinCode = ""
+                                                            }
                                                         }
                                                     }
                                                 }
