@@ -2102,7 +2102,7 @@
     <string name="words">%1$d个单词</string>
     <string name="other_words">12 或 24 单词</string>
     <string name="mnemonic_12_24_instruction_title">如需使用 12 或 24 位助记词钱包，请按以下步骤操作：</string>
-    <string name="mnemonic_12_24_step_1">注册一个 Mixin 账号。</string>
+    <string name="mnemonic_12_24_step_1">创建一个 Mixin 账号。</string>
     <string name="mnemonic_12_24_step_2">前往钱包列表 → 添加钱包 → 选择导入助记词。</string>
     <string name="mnemonic_12_24_step_3">输入您的 12 或 24 位助记词或私钥完成导入。</string>
     <string name="mnemonic_12_24_step_4">开始使用。</string>

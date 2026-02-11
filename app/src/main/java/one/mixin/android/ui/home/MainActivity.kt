@@ -394,30 +394,33 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         } else if (Session.getTipPub().isNullOrBlank()) {
             TipActivity.show(this, TipType.Upgrade, shouldWatch = true)
         } else {
-            if (Session.hasSafe()) {
-                jobManager.addJobInBackground(RefreshAccountJob(checkTip = true))
-                val isLoginVerified: Boolean = defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false)
-                val shouldGoWallet: Boolean = defaultSharedPreferences.getBoolean(PREF_LOGIN_OR_SIGN_UP, false)
-                Timber.e("isLoginVerified: $isLoginVerified, shouldGoWallet: $shouldGoWallet")
-                if (shouldGoWallet) {
-                    defaultSharedPreferences.putBoolean(PREF_LOGIN_OR_SIGN_UP, false)
-                    binding.bottomNav.selectedItemId = R.id.nav_wallet
-                    switchToDestination(NavigationController.Wallet)
-                    lastBottomNavItemId = R.id.nav_wallet
-                }
-                if (isLoginVerified) {
-                    AnalyticsTracker.trackLoginPinVerify("pin_verify")
-                    LoginVerifyBottomSheetDialogFragment.newInstance().apply {
-                        onDismissCallback = { success ->
-                            if (success) {
-                                defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, false)
+            lifecycleScope.launch {
+                if (Session.hasSafe()) {
+                    jobManager.addJobInBackground(RefreshAccountJob(checkTip = true))
+                    val isLoginVerified: Boolean = defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false)
+                    val shouldGoWallet: Boolean = defaultSharedPreferences.getBoolean(PREF_LOGIN_OR_SIGN_UP, false)
+                    val shouldBlockNavigation: Boolean = shouldShowWalletMissingBtcAddress()
+                    Timber.e("isLoginVerified: $isLoginVerified, shouldGoWallet: $shouldGoWallet, shouldBlockNavigation: $shouldBlockNavigation")
+                    if (shouldGoWallet && !shouldBlockNavigation) {
+                        defaultSharedPreferences.putBoolean(PREF_LOGIN_OR_SIGN_UP, false)
+                        binding.bottomNav.selectedItemId = R.id.nav_wallet
+                        switchToDestination(NavigationController.Wallet)
+                        lastBottomNavItemId = R.id.nav_wallet
+                    }
+                    if (isLoginVerified) {
+                        AnalyticsTracker.trackLoginPinVerify("pin_verify")
+                        LoginVerifyBottomSheetDialogFragment.newInstance().apply {
+                            onDismissCallback = { success ->
+                                if (success) {
+                                    defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, false)
+                                }
                             }
-                        }
-                    }.showNow(supportFragmentManager, LoginVerifyBottomSheetDialogFragment.TAG)
+                        }.showNow(supportFragmentManager, LoginVerifyBottomSheetDialogFragment.TAG)
+                    }
+                } else {
+                    CheckRegisterBottomSheetDialogFragment.newInstance()
+                        .showNow(supportFragmentManager, CheckRegisterBottomSheetDialogFragment.TAG)
                 }
-            } else {
-                CheckRegisterBottomSheetDialogFragment.newInstance()
-                    .showNow(supportFragmentManager, CheckRegisterBottomSheetDialogFragment.TAG)
             }
         }
 
