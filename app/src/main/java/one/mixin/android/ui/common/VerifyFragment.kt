@@ -21,6 +21,7 @@ import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.repository.AccountRepository
+import one.mixin.android.session.Session
 import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.landing.MobileFragment
@@ -41,14 +42,25 @@ class VerifyFragment : BaseFragment(R.layout.fragment_verify_pin), PinView.OnPin
         const val FROM_DELETE_ACCOUNT = 2
 
         const val ARGS_FROM = "args_from"
+        private const val ARGS_PHONE_NUMBER = "args_phone_number"
 
-        fun newInstance(from: Int) =
+        fun newInstance(
+            from: Int,
+            phoneNumber: String? = null,
+        ) =
             VerifyFragment().withArgs {
                 putInt(ARGS_FROM, from)
+                if (!phoneNumber.isNullOrBlank()) {
+                    putString(ARGS_PHONE_NUMBER, phoneNumber)
+                }
             }
     }
 
     private val from by lazy { requireArguments().getInt(ARGS_FROM) }
+
+    private val phoneNumber: String? by lazy {
+        requireArguments().getString(ARGS_PHONE_NUMBER)
+    }
 
     @Inject
     lateinit var accountRepository: AccountRepository
@@ -121,7 +133,8 @@ class VerifyFragment : BaseFragment(R.layout.fragment_verify_pin), PinView.OnPin
                     }
                     when (from) {
                         FROM_PHONE -> {
-                            LandingActivity.show(requireContext(), pinCode)
+                            val fragment = MobileFragment.newInstance(pin = pinCode, from = if (Session.hasPhone()) MobileFragment.FROM_VERIFY_MOBILE_REMINDER else MobileFragment.FROM_CHANGE_PHONE_ACCOUNT, phoneNumber = phoneNumber)
+                            activity?.addFragment(this@VerifyFragment, fragment, MobileFragment.TAG)
                         }
                         FROM_EMERGENCY -> {
                             val f = FriendsNoBotFragment.newInstance(pinCode)

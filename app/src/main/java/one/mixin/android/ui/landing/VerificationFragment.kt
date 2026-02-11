@@ -45,6 +45,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.ui.common.PinCodeFragment
+import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
 import one.mixin.android.ui.landing.MobileFragment.Companion.ARGS_FROM
 import one.mixin.android.ui.landing.MobileFragment.Companion.ARGS_PHONE_NUM
@@ -199,7 +200,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
         builder.setCustomView(view)
         val bottomSheet = builder.create()
         viewBinding.cantTv.setOnClickListener {
-            requireContext().openUrl(getString(R.string.landing_verification_tip_url))
+            requireContext().openUrl(getString(R.string.landing_verification_url))
             bottomSheet.dismiss()
         }
         viewBinding.lostTv.setOnClickListener {
@@ -250,6 +251,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                     }
                 },
                 successBlock = {
+                    val hasPhone = Session.hasPhone()
                     withContext(Dispatchers.IO) {
                         val a = Session.getAccount()
                         a?.let {
@@ -262,10 +264,20 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                             Session.storeAccount(a)
                         }
                     }
-                    alert(getString(R.string.Changed))
+                    alert(
+                        getString(
+                            if (hasPhone) R.string.Changed
+                            else R.string.Added
+                        )
+                    )
                         .setPositiveButton(android.R.string.ok) { dialog, _ ->
                             dialog.dismiss()
-                            activity?.finish()
+                            if (activity !is MainActivity) {
+                                activity?.finish()
+                            } else {
+                                activity?.finish()
+                                MainActivity.show(requireActivity())
+                            }
                         }
                         .show()
                 },
@@ -328,12 +340,20 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                 )
             handleMixinResponse(
                 invokeNetwork = { viewModel.create(requireArguments().getString(ARGS_ID)!!, accountRequest) },
-                successBlock = { response ->
-                    val account = response.data ?: return@handleMixinResponse
+                successBlock = { r ->
                     withContext(Dispatchers.IO) {
-                        Session.storeAccount(account)
+                        r.data?.let { data ->
+                            Session.storeAccount(data)
+                        }
                     }
-                    activity?.finish()
+                    alert(
+                        getString(R.string.verification_successful))
+                        .setPositiveButton(android.R.string.ok) { dialog, _ ->
+                            dialog.dismiss()
+                            activity?.finish()
+                            MainActivity.show(requireActivity())
+                        }
+                        .show()
                 },
                 doAfterNetworkSuccess = { hideLoading() },
                 defaultErrorHandle = {
