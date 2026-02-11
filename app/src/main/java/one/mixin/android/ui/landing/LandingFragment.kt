@@ -3,10 +3,12 @@ package one.mixin.android.ui.landing
 import android.os.Bundle
 import android.view.View
 import android.widget.LinearLayout
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import kotlinx.coroutines.delay
@@ -36,6 +38,7 @@ class LandingFragment : Fragment(R.layout.fragment_landing) {
     private val binding by viewBinding(FragmentLandingBinding::bind)
 
     private var featureCount: Int = 0
+    private var lastUserInteractionTime: Long = 0L
 
     override fun onViewCreated(
         view: View,
@@ -80,9 +83,38 @@ class LandingFragment : Fragment(R.layout.fragment_landing) {
         featureCount = features.size
         binding.featurePager.adapter = LandingFeatureAdapter(features)
         binding.featurePager.offscreenPageLimit = features.size
+        
+        val screenHeightPx = binding.root.resources.displayMetrics.heightPixels
+        val targetHeightDp = 132f
+        val targetHeightPx = targetHeightDp * resources.displayMetrics.density
+        val calculatedPercent = targetHeightPx / screenHeightPx
+        val finalPercent = 0.38f + calculatedPercent
+        
+        (binding.featurePager.layoutParams as ConstraintLayout.LayoutParams).apply {
+            matchConstraintPercentHeight = finalPercent
+            height = 0
+        }
+        binding.featurePager.requestLayout()
+        
+        binding.featurePager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageScrollStateChanged(state: Int) {
+                if (state == ViewPager2.SCROLL_STATE_DRAGGING) {
+                    lastUserInteractionTime = System.currentTimeMillis()
+                }
+            }
+        })
+        
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 while (true) {
+                    val currentTime = System.currentTimeMillis()
+                    val timeSinceLastInteraction = currentTime - lastUserInteractionTime
+                    
+                    if (timeSinceLastInteraction < 3000L) {
+                        delay(3000L - timeSinceLastInteraction)
+                        continue
+                    }
+                    
                     delay(3000L)
                     if (featureCount <= 1) {
                         continue

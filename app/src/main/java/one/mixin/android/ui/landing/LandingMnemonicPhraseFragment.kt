@@ -9,7 +9,9 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.crypto.mnemonicChecksum
 import one.mixin.android.databinding.FragmentComposeBinding
+import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.navTo
+import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.components.MnemonicPhraseInput
@@ -68,6 +70,22 @@ class LandingMnemonicPhraseFragment : BaseFragment(R.layout.fragment_landing_mne
                 } else {
                     toast(R.string.invalid_mnemonic_phrase)
                 }
+            }, onCreate = {
+                CreateAccountConfirmBottomSheetDialogFragment.newInstance()
+                    .setOnCreateAccount {
+                        activity?.addFragment(
+                            this@LandingMnemonicPhraseFragment,
+                            MnemonicPhraseFragment.newInstance(),
+                            MnemonicPhraseFragment.TAG,
+                        )
+                    }
+                    .setOnPrivacyPolicy {
+                        activity?.openUrl(getString(R.string.landing_privacy_policy_url))
+                    }
+                    .setOnTermsOfService {
+                        activity?.openUrl(getString(R.string.landing_terms_url))
+                    }
+                    .showNow(parentFragmentManager, CreateAccountConfirmBottomSheetDialogFragment.TAG)
             }
             )
         }

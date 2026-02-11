@@ -102,6 +102,7 @@ fun MnemonicPhraseInput(
     title: @Composable (() -> Unit)? = null,
     onScan: (() -> Unit)? = null,
     validate: ((List<String>) -> String?)? = null,
+    onCreate: (() -> Unit)? = null,
 ) {
     var legacy by remember { mutableStateOf(mnemonicList.size > 13) }
     var other by remember { mutableStateOf(false) }
@@ -276,14 +277,14 @@ fun MnemonicPhraseInput(
                                     HighlightedTextWithClick(
                                         stringResource(
                                             R.string.mnemonic_12_24_privacy_info_with_link,
-                                            stringResource(R.string.mnemonic_12_24_learn_more)
+                                            stringResource(R.string.Learn_More)
                                         ),
                                         modifier = Modifier,
-                                        stringResource(R.string.mnemonic_12_24_learn_more),
+                                        stringResource(R.string.Learn_More),
                                         textAlign = TextAlign.Start,
                                         color = MixinAppTheme.colors.textPrimary
                                     ) {
-                                        context.openUrl(context.getString(R.string.import_mnemonic_phrase_url))
+                                        context.openUrl(context.getString(R.string.url_privacy_wallet))
                                     }
                                 }
                             }
@@ -293,9 +294,7 @@ fun MnemonicPhraseInput(
                                     .fillMaxWidth()
                                     .height(48.dp),
                                 onClick = {
-                                    legacy = false
-                                    other = false
-                                    inputs = List(if (state == MnemonicState.Input) 13 else 12) { "" }
+                                    onCreate?.invoke()
                                 },
                                 colors =
                                     ButtonDefaults.outlinedButtonColors(MixinAppTheme.colors.accent),

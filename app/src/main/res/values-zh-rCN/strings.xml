@@ -615,7 +615,7 @@
     <string name="onboarding_recover_title">账号永不丢失</string>
     <string name="onboarding_recover_description">使用助记词、恢复联系人或手机号码恢复去中心化钱包</string>
     <string name="onboarding_reward_title">邀请返佣</string>
-    <string name="onboarding_reward_description">邀请好友可获得高达 60%% 的交易返利和会员佣金</string>
+    <string name="onboarding_reward_description">邀请好友可获得高达 60% 的交易返利和会员佣金</string>
     <string name="username_placeholder">输入昵称</string>
     <string name="username_description">好友在与你聊天或转账时会看到此昵称</string>
     <string name="what_should_friends_call_you">你的朋友该如何称呼你？</string>
@@ -2101,7 +2101,7 @@
     <string name="delete_common_wallet_description">在移除钱包之前，请确保您已写下助记词或私钥。否则，您将无法恢复钱包。</string>
     <string name="delete_watch_wallet_description">这是一个观察钱包，删除此钱包不会影响你的资产。</string>
     <string name="words">%1$d个单词</string>
-    <string name="other_words">12 或 24 单词</string>
+    <string name="other_words">12 或 24 个单词</string>
     <string name="mnemonic_12_24_instruction_title">如需使用 12 或 24 位助记词钱包，请按以下步骤操作：</string>
     <string name="mnemonic_12_24_step_1">创建一个 Mixin 账号。</string>
     <string name="mnemonic_12_24_step_2">前往钱包列表 → 添加钱包 → 选择导入助记词。</string>
@@ -2109,7 +2109,6 @@
     <string name="mnemonic_12_24_step_4">开始使用。</string>
     <string name="mnemonic_12_24_privacy_info">创建 Mixin 账号后，将默认生成一个隐私钱包，您的余额、转账、交易等功能都会默认受到隐私保护，</string>
     <string name="mnemonic_12_24_privacy_info_with_link">创建 Mixin 账号后，将默认生成一个隐私钱包，您的余额、转账、交易等功能都会默认受到隐私保护，%1$s。</string>
-    <string name="mnemonic_12_24_learn_more">查看文档了解更多</string>
     <string name="create_mixin_account">创建 Mixin 账号</string>
     <string name="register_in_15_seconds">15 秒完成注册</string>
     <string name="import_private_key">导入私钥</string>

@@ -36,12 +36,12 @@
         android:id="@+id/feature_description"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
         android:layout_marginStart="36dp"
+        android:layout_marginTop="16dp"
         android:layout_marginEnd="36dp"
         android:gravity="center"
         android:textColor="?attr/text_minor"
         android:textSize="16sp"
-        tools:text="End-to-end encrypted chats, group calls, contact transfers."/>
+        tools:text="End-to-end encrypted chats, group calls, contact transfers." />
 
 </LinearLayout>
