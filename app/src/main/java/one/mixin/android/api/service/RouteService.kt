@@ -61,9 +61,9 @@ import one.mixin.android.api.request.perps.OpenOrderRequest
 import one.mixin.android.api.request.perps.OpenOrderResponse
 import one.mixin.android.api.request.perps.CloseOrderRequest
 import one.mixin.android.api.request.perps.CloseOrderResponse
-import one.mixin.android.api.response.perps.MarketView
+import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.api.response.perps.CandleView
-import one.mixin.android.api.response.perps.PositionView
+import one.mixin.android.api.response.perps.PerpsPosition
 import one.mixin.android.api.response.perps.PositionHistoryView
 
 import retrofit2.http.Query
@@ -358,12 +358,12 @@ interface RouteService {
     suspend fun getPerpsMarkets(
         @Query("offset") offset: Int = 0,
         @Query("limit") limit: Int = 20
-    ): MixinResponse<List<MarketView>>
+    ): MixinResponse<List<PerpsMarket>>
 
     @GET("perps/market")
     suspend fun getPerpsMarket(
         @Query("market_id") marketId: String
-    ): MixinResponse<MarketView>
+    ): MixinResponse<PerpsMarket>
 
     @GET("perps/markets/candles")
     suspend fun getPerpsCandles(
@@ -384,7 +384,7 @@ interface RouteService {
     @GET("perps/positions")
     suspend fun getPerpsPositions(
         @Query("wallet_id") walletId: String
-    ): MixinResponse<List<PositionView>>
+    ): MixinResponse<List<PerpsPosition>>
 
     @GET("perps/positions/history")
     suspend fun getPerpsPositionHistory(

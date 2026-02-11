@@ -46,7 +46,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.api.response.perps.MarketView
+import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
@@ -61,7 +61,7 @@ fun MarketDetailPage(
 ) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<PerpetualViewModel>()
-    var market by remember { mutableStateOf<MarketView?>(null) }
+    var market by remember { mutableStateOf<PerpsMarket?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     var selectedTimeFrame by remember { mutableIntStateOf(0) }
     val coroutineScope = rememberCoroutineScope()
@@ -213,7 +213,7 @@ fun MarketDetailPage(
 
 @Composable
 private fun MarketInfoCard(
-    market: MarketView,
+    market: PerpsMarket,
     onLearnClick: () -> Unit,
 ) {
     Column(
@@ -321,7 +321,7 @@ private fun formatVolume(volume: String): String {
 
 @Composable
 private fun MarketDetailCard(
-    market: MarketView,
+    market: PerpsMarket,
     marketSymbol: String,
     selectedTimeFrame: Int,
     timeFrames: List<String>,

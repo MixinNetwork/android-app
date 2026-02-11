@@ -19,6 +19,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.ModalBottomSheetLayout
@@ -26,6 +28,8 @@ import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Slider
 import androidx.compose.material.SliderDefaults
 import androidx.compose.material.Text
+import androidx.compose.material.TextField
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -48,11 +52,12 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import one.mixin.android.R
-import one.mixin.android.api.response.perps.MarketView
+import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.web3.js.Web3Signer
 import java.math.BigDecimal
 import kotlin.math.abs
 
@@ -70,7 +75,7 @@ fun OpenPositionPage(
     val bottomSheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val tokenBottomSheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
 
-    var market by remember { mutableStateOf<MarketView?>(null) }
+    var market by remember { mutableStateOf<PerpsMarket?>(null) }
     var selectedToken by remember { mutableStateOf<TokenItem?>(null) }
     var availableTokens by remember { mutableStateOf<List<TokenItem>>(emptyList()) }
     var usdtAmount by remember { mutableStateOf("") }
@@ -188,12 +193,12 @@ fun OpenPositionPage(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        androidx.compose.material.TextField(
+                        TextField(
                             value = usdtAmount,
                             onValueChange = { usdtAmount = it },
                             modifier = Modifier.weight(1f),
                             placeholder = { Text("0.00") },
-                            colors = androidx.compose.material.TextFieldDefaults.textFieldColors(
+                            colors = TextFieldDefaults.textFieldColors(
                                 backgroundColor = Color.Transparent,
                                 focusedIndicatorColor = Color.Transparent,
                                 unfocusedIndicatorColor = Color.Transparent
@@ -376,16 +381,44 @@ fun OpenPositionPage(
                 Spacer(modifier = Modifier.weight(1f))
                 Spacer(modifier = Modifier.height(16.dp))
 
-                androidx.compose.material.Button(
+                Button(
                     modifier = Modifier
                         .padding(horizontal = 20.dp)
                         .fillMaxWidth()
                         .height(48.dp),
                     onClick = {
-                        // TODO: Open position
+                        val token = selectedToken ?: return@Button
+                        val amount = usdtAmount.toBigDecimalOrNull() ?: return@Button
+                        
+                        if (amount <= BigDecimal.ZERO) return@Button
+                        
+                        val m = market ?: return@Button
+                        val walletId = Web3Signer.currentWalletId
+                        if (walletId.isEmpty()) return@Button
+                        
+                        val activity = context as? androidx.fragment.app.FragmentActivity ?: return@Button
+                        
+                        val wallet = Web3Signer.currentWalletId
+                        val walletName = "Privacy Wallet"
+                        
+                        PerpsConfirmBottomSheetDialogFragment.newInstance(
+                            marketId = marketId,
+                            marketSymbol = marketSymbol,
+                            isLong = isLong,
+                            amount = amount.toPlainString(),
+                            leverage = leverage.toInt(),
+                            entryPrice = m.markPrice,
+                            liquidationPrice = calculateLiquidationPrice(m.markPrice, leverage, isLong),
+                            tokenSymbol = token.symbol,
+                            tokenIcon = token.iconUrl ?: "",
+                            tokenAssetId = token.assetId,
+                            walletName = walletName
+                        ).setOnDone {
+                            onBack()
+                        }.show(activity.supportFragmentManager, PerpsConfirmBottomSheetDialogFragment.TAG)
                     },
                     enabled = usdtAmount.isNotBlank() && (usdtAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO) > BigDecimal.ZERO,
-                    colors = androidx.compose.material.ButtonDefaults.outlinedButtonColors(
+                    colors = ButtonDefaults.outlinedButtonColors(
                         backgroundColor = if (usdtAmount.isNotBlank() && (usdtAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO) > BigDecimal.ZERO) {
                             if (isLong) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
                         } else {
@@ -393,7 +426,7 @@ fun OpenPositionPage(
                         }
                     ),
                     shape = RoundedCornerShape(32.dp),
-                    elevation = androidx.compose.material.ButtonDefaults.elevation(
+                    elevation = ButtonDefaults.elevation(
                         pressedElevation = 0.dp,
                         defaultElevation = 0.dp,
                         hoveredElevation = 0.dp,

@@ -25,7 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
-import one.mixin.android.api.response.perps.MarketView
+import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.numberFormatCompact
@@ -33,8 +33,8 @@ import java.math.BigDecimal
 
 @Composable
 fun MarketListBottomSheetContent(
-    markets: List<MarketView>,
-    onMarketClick: (MarketView) -> Unit
+    markets: List<PerpsMarket>,
+    onMarketClick: (PerpsMarket) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -66,7 +66,7 @@ fun MarketListBottomSheetContent(
 
 @Composable
 private fun MarketListItem(
-    market: MarketView,
+    market: PerpsMarket,
     onClick: () -> Unit
 ) {
     val change = try {

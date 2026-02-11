@@ -7,8 +7,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.api.response.perps.CandleView
-import one.mixin.android.api.response.perps.MarketView
+import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.api.service.RouteService
+import one.mixin.android.api.request.perps.OpenOrderRequest
+import one.mixin.android.api.request.perps.OpenOrderResponse
+import one.mixin.android.api.response.perps.PerpsPosition
+import one.mixin.android.db.perps.PerpsPositionDao
+import one.mixin.android.db.perps.PerpsMarketDao
 import one.mixin.android.vo.safe.TokenItem
 import timber.log.Timber
 import javax.inject.Inject
@@ -16,15 +21,25 @@ import javax.inject.Inject
 @HiltViewModel
 class PerpetualViewModel @Inject constructor(
     private val routeService: RouteService,
-    private val tokenDao: one.mixin.android.db.TokenDao
+    private val tokenDao: one.mixin.android.db.TokenDao,
+    private val perpsPositionDao: PerpsPositionDao,
+    private val perpsMarketDao: PerpsMarketDao
 ) : ViewModel() {
 
     fun loadMarkets(
-        onSuccess: (List<MarketView>) -> Unit,
+        onSuccess: (List<PerpsMarket>) -> Unit,
         onError: (String) -> Unit
     ) {
         viewModelScope.launch {
             try {
+                val cachedMarkets = withContext(Dispatchers.IO) {
+                    perpsMarketDao.getAllMarkets()
+                }
+                
+                if (cachedMarkets.isNotEmpty()) {
+                    onSuccess(cachedMarkets)
+                }
+                
                 val response = withContext(Dispatchers.IO) {
                     routeService.getPerpsMarkets(offset = 0, limit = 100)
                 }
@@ -32,23 +47,36 @@ class PerpetualViewModel @Inject constructor(
                 val data = response.data
                 if (response.isSuccess && data != null) {
                     Timber.d("Perps markets loaded: ${data.size} markets")
+                    
+                    withContext(Dispatchers.IO) {
+                        perpsMarketDao.insertAll(data)
+                    }
+                    
                     onSuccess(data)
                 } else {
                     val error = "Failed to load markets: ${response.errorDescription}"
                     Timber.e(error)
-                    onError(error)
+                    if (cachedMarkets.isEmpty()) {
+                        onError(error)
+                    }
                 }
             } catch (e: Exception) {
                 val error = "Error loading markets: ${e.message}"
                 Timber.e(e, error)
-                onError(error)
+                
+                val cachedMarkets = withContext(Dispatchers.IO) {
+                    perpsMarketDao.getAllMarkets()
+                }
+                if (cachedMarkets.isEmpty()) {
+                    onError(error)
+                }
             }
         }
     }
 
     fun loadMarketDetail(
         marketId: String,
-        onSuccess: (MarketView) -> Unit,
+        onSuccess: (PerpsMarket) -> Unit,
         onError: (String) -> Unit
     ) {
         viewModelScope.launch {
@@ -117,6 +145,105 @@ class PerpetualViewModel @Inject constructor(
             } catch (e: Exception) {
                 Timber.e(e, "Error loading USD tokens")
                 onSuccess(emptyList())
+            }
+        }
+    }
+
+    fun openPerpsOrder(
+        assetId: String,
+        productId: String,
+        side: String,
+        amount: String,
+        leverage: Int,
+        walletId: String,
+        destination: String? = null,
+        marketSymbol: String,
+        entryPrice: String,
+        liquidationPrice: String,
+        onSuccess: (OpenOrderResponse) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                val request = OpenOrderRequest(
+                    assetId = assetId,
+                    productId = productId,
+                    side = side,
+                    amount = amount,
+                    leverage = leverage,
+                    walletId = walletId,
+                    destination = destination
+                )
+                
+                val response = withContext(Dispatchers.IO) {
+                    routeService.openPerpsOrder(request)
+                }
+                
+                val data = response.data
+                if (response.isSuccess && data != null) {
+                    Timber.d("Perps order opened: ${data.orderId}")
+                    
+                    val position = PerpsPosition(
+                        positionId = data.orderId,
+                        walletId = walletId,
+                        marketId = productId,
+                        marketSymbol = marketSymbol,
+                        side = side,
+                        quantity = amount,
+                        entryPrice = entryPrice,
+                        margin = amount,
+                        leverage = leverage,
+                        state = "open",
+                        markPrice = entryPrice,
+                        unrealizedPnl = "0",
+                        roe = "0",
+                        liquidationPrice = liquidationPrice,
+                        createdAt = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", java.util.Locale.US).format(java.util.Date()),
+                        updatedAt = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", java.util.Locale.US).format(java.util.Date())
+                    )
+                    
+                    withContext(Dispatchers.IO) {
+                        perpsPositionDao.insert(position)
+                    }
+                    
+                    onSuccess(data)
+                } else {
+                    val error = "Failed to open perps order: ${response.errorDescription}"
+                    Timber.e(error)
+                    onError(error)
+                }
+            } catch (e: Exception) {
+                val error = "Error opening perps order: ${e.message}"
+                Timber.e(e, error)
+                onError(error)
+            }
+        }
+    }
+
+    fun getOpenPositions(walletId: String, onSuccess: (List<PerpsPosition>) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val positions = withContext(Dispatchers.IO) {
+                    perpsPositionDao.getOpenPositions(walletId)
+                }
+                onSuccess(positions)
+            } catch (e: Exception) {
+                Timber.e(e, "Error loading open positions")
+                onSuccess(emptyList())
+            }
+        }
+    }
+
+    fun getTotalUnrealizedPnl(walletId: String, onSuccess: (Double) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val pnl = withContext(Dispatchers.IO) {
+                    perpsPositionDao.getTotalUnrealizedPnl(walletId) ?: 0.0
+                }
+                onSuccess(pnl)
+            } catch (e: Exception) {
+                Timber.e(e, "Error loading total PnL")
+                onSuccess(0.0)
             }
         }
     }

@@ -2288,4 +2288,13 @@
     <string name="Price_Change_Profit">Price %1$s %2$s%% → Profit %3$s%4$s%% (%5$s%6$s)</string>
     <string name="Long">Long</string>
     <string name="Short">Short</string>
+    <string name="Entry_Price">Entry Price</string>
+    <string name="Isolated">Isolated</string>
+    <string name="Mixin_Futures">Mixin Futures</string>
+    <string name="Wallet_Not_Found">Wallet not found</string>
+    <string name="How_Perps_Works">How perps works?</string>
+    <string name="Learn_How_To_Trade_Perps">Learn how to trade perps</string>
+    <string name="Volume_24H">24H VOLUME</string>
+    <string name="Open_Interest">Open Interest</string>
+    <string name="Funding_Rate">Funding Rate</string>
 </resources>

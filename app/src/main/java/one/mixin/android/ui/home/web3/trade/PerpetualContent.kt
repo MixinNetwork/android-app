@@ -48,7 +48,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.api.response.perps.MarketView
+import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.openUrl
@@ -58,17 +58,19 @@ import java.math.BigDecimal
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun PerpetualContent(
-    onLongClick: (MarketView) -> Unit,
-    onShortClick: (MarketView) -> Unit,
+    onLongClick: (PerpsMarket) -> Unit,
+    onShortClick: (PerpsMarket) -> Unit,
     onShowTradingGuide: () -> Unit
 ) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<PerpetualViewModel>()
     val coroutineScope = rememberCoroutineScope()
 
-    var markets by remember { mutableStateOf<List<MarketView>>(emptyList()) }
+    var markets by remember { mutableStateOf<List<PerpsMarket>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var openPositionsCount by remember { mutableStateOf(0) }
+    var totalPnl by remember { mutableStateOf(0.0) }
     
     val bottomSheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     var isLongMode by remember { mutableStateOf(true) }
@@ -84,6 +86,17 @@ fun PerpetualContent(
                 isLoading = false
             }
         )
+        
+        val walletId = one.mixin.android.web3.js.Web3Signer.currentWalletId
+        if (walletId.isNotEmpty()) {
+            viewModel.getOpenPositions(walletId) { positions ->
+                openPositionsCount = positions.size
+            }
+            
+            viewModel.getTotalUnrealizedPnl(walletId) { pnl ->
+                totalPnl = pnl
+            }
+        }
     }
 
     ModalBottomSheetLayout(
@@ -127,7 +140,7 @@ fun PerpetualContent(
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "$0.00",
+                text = "$${String.format("%.2f", totalPnl)}",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.W600,
                 color = MixinAppTheme.colors.textPrimary,
@@ -135,15 +148,15 @@ fun PerpetualContent(
             Spacer(modifier = Modifier.height(4.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = "$0.00",
+                    text = "$${String.format("%.2f", totalPnl)}",
                     fontSize = 14.sp,
-                    color = MixinAppTheme.colors.textAssist,
+                    color = if (totalPnl >= 0) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed,
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "(0.0%)",
+                    text = "(${if (totalPnl >= 0) "+" else ""}${String.format("%.1f", totalPnl)}%)",
                     fontSize = 14.sp,
-                    color = MixinAppTheme.colors.textAssist,
+                    color = if (totalPnl >= 0) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed,
                 )
             }
         }
@@ -164,7 +177,7 @@ fun PerpetualContent(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Open Positions(0)",
+                    text = "Open Positions($openPositionsCount)",
                     fontSize = 14.sp,
                     color = MixinAppTheme.colors.textPrimary,
                 )
@@ -328,7 +341,7 @@ fun PerpetualContent(
 }
 
 @Composable
-fun MarketItem(market: MarketView, onClick: () -> Unit = {}) {
+fun MarketItem(market: PerpsMarket, onClick: () -> Unit = {}) {
     val change = try {
         BigDecimal(market.change)
     } catch (e: Exception) {
