@@ -24,6 +24,7 @@ import one.mixin.android.Constants.Account.PREF_HAS_USED_SWAP
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.MixinResponse
 import one.mixin.android.databinding.FragmentPrivacyWalletBinding
 import one.mixin.android.databinding.ViewWalletFragmentHeaderBinding
 import one.mixin.android.event.BadgeEvent
@@ -31,7 +32,9 @@ import one.mixin.android.event.QuoteColorEvent
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.mainThread
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.putBoolean
@@ -42,7 +45,9 @@ import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
+import one.mixin.android.ui.home.reminder.VerifyMobileReminderBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.trade.SwapActivity
+import one.mixin.android.ui.setting.AddPhoneBeforeFragment
 import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
 import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_SEND
 import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
@@ -59,6 +64,7 @@ import one.mixin.android.widget.calcPercent
 import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.time.Instant
 import javax.inject.Inject
 import kotlin.math.abs
 import kotlin.time.measureTime
@@ -128,10 +134,12 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     sendReceiveView.isVisible = true
                     sendReceiveView.enableBuy()
                     sendReceiveView.buy.setOnClickListener {
-                        WalletActivity.showBuy(requireActivity(), false, null, null)
-                        defaultSharedPreferences.putBoolean(PREF_HAS_USED_BUY, false)
-                        RxBus.publish(BadgeEvent(PREF_HAS_USED_BUY))
-                        sendReceiveView.buyBadge.isVisible = false
+                        lifecycleScope.launch {
+                            WalletActivity.showBuy(requireActivity(), false, null, null)
+                            defaultSharedPreferences.putBoolean(PREF_HAS_USED_BUY, false)
+                            RxBus.publish(BadgeEvent(PREF_HAS_USED_BUY))
+                            sendReceiveView.buyBadge.isVisible = false
+                        }
                     }
                     sendReceiveView.send.setOnClickListener {
                         TokenListBottomSheetDialogFragment.newInstance(TYPE_FROM_SEND)
