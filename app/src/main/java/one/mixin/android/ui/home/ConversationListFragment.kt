@@ -69,13 +69,19 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.EditDialog
 import one.mixin.android.ui.common.LinkFragment
 import one.mixin.android.ui.common.NavigationController
+import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapter
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment
+import one.mixin.android.ui.home.reminder.VerifyMobileReminderBottomSheetDialogFragment
+import one.mixin.android.ui.landing.MobileFragment
+import one.mixin.android.ui.landing.VerificationFragment
 import one.mixin.android.ui.search.SearchFragment
+import one.mixin.android.ui.setting.AddPhoneBeforeFragment
+import one.mixin.android.ui.setting.AddPhoneFragment
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.analytics.AnalyticsTracker
@@ -751,7 +757,20 @@ class ConversationListFragment : LinkFragment() {
         }
         lifecycleScope.launch {
             val totalUsd = conversationListViewModel.findTotalUSDBalance()
-            if (isAdded && !parentFragmentManager.isStateSaved) {
+            if (isAdded && parentFragmentManager.fragments.any {
+                    it.tag in listOf(AddPhoneBeforeFragment.TAG, VerifyFragment.TAG, VerificationFragment.TAG, MobileFragment.TAG)
+                }.not()) {
+                if (parentFragmentManager.findFragmentByTag(VerifyMobileReminderBottomSheetDialogFragment.TAG) != null) return@launch
+                if (VerifyMobileReminderBottomSheetDialogFragment.shouldShow(requireContext())) {
+                    try {
+                        VerifyMobileReminderBottomSheetDialogFragment.showSafely(
+                            parentFragmentManager
+                        )
+                    } catch (e: IllegalStateException) {
+                        // Fragment state already saved, skip showing dialog
+                    }
+                    return@launch
+                }
                 ReminderBottomSheetDialogFragment.getType(requireContext(), totalUsd)
                     .let { type ->
                         val existingDialog = parentFragmentManager.findFragmentByTag(ReminderBottomSheetDialogFragment.TAG) as? ReminderBottomSheetDialogFragment
@@ -769,20 +788,6 @@ class ConversationListFragment : LinkFragment() {
                     }
             }
         }
-    }
-
-
-    private fun openCamera(scan: Boolean) {
-        RxPermissions(requireActivity())
-            .request(Manifest.permission.CAMERA)
-            .autoDispose(stopScope)
-            .subscribe { granted ->
-                if (granted) {
-                    (requireActivity() as? MainActivity)?.showCapture(scan)
-                } else {
-                    context?.openPermissionSetting()
-                }
-            }
     }
 
     class MessageAdapter : PagedHeaderAdapter<ConversationItem>(ConversationItem.DIFF_CALLBACK) {

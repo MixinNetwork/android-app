@@ -405,6 +405,7 @@
     <string name="Web_debug">Web 调试</string>
     <string name="Encrypted">端到端加密</string>
     <string name="End_to_End_Encryption">端到端加密</string>
+    <string name="Confirm_your_mobile_number">确认你的手机号码</string>
     <string name="Enter_your_phone_number">输入你的手机号码</string>
     <string name="Enter_your_anonymous_number">输入你的匿名号码</string>
     <string name="Enter_new_phone_number">输入你的新手机号码</string>
@@ -1261,6 +1262,7 @@
     <string name="Transfer_error">传输错误</string>
     <string name="not_yours">聊天记录不能在不同账户之间同步</string>
     <string name="Version_not_supported">版本不兼容，请升级新版本</string>
+    <string name="verification_successful">验证成功</string>
     <string name="restore_local_exists">已经有 %1$s 条本地聊天记录，最后一条消息的时间是 %2$s，确定用备份的聊天数据覆盖本地数据吗？</string>
     <string name="Transfer_timeout">长时间未收到数据是否退出？</string>
     <string name="LogAndDebug">日志与调试</string>
@@ -1493,6 +1495,10 @@
     <string name="multisig_unlocked_description">您的签名已撤销</string>
     <string name="address_adding_description">正在添加地址，请稍候。</string>
     <string name="address_deleting_description">正在删除地址，请稍候。</string>
+    <string name="Verify_Mobile_Number">验证手机号</string>
+    <string name="Verify_Mobile_Number_Security_Desc">出于合规与安全原因，我们需要验证你的手机号。</string>
+    <string name="Verify_Mobile_Number_Desc">定期进行短信验证有助于提升账号安全，如果当前手机号已失效请尽快更换手机号。</string>
+    <string name="Verify_Now">立即验证</string>
     <string name="send_by_pin">通过 PIN 发送</string>
     <string name="address_will_receive">指定地址将收到</string>
     <string name="receiver_will_receive">对方将收到</string>

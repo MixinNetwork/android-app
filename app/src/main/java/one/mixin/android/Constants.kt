@@ -413,6 +413,7 @@ object Constants {
     const val INTERVAL_30_MINS: Long = (1000 * 60 * 30).toLong()
     const val INTERVAL_1_MIN: Long = (1000 * 60).toLong()
     const val INTERVAL_7_DAYS: Long = INTERVAL_24_HOURS * 7
+    const val INTERVAL_60_DAYS: Long = INTERVAL_24_HOURS * 60
     const val DELAY_SECOND = 60
     const val ALLOW_INTERVAL: Long = (5 * 60 * 1000).toLong()
 
