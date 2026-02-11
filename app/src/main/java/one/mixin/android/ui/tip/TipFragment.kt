@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
+import one.mixin.android.Constants.Account.PREF_LOGIN_OR_SIGN_UP
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.Constants.INTERVAL_10_MINS
@@ -549,6 +550,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         }
 
         val cur = System.currentTimeMillis()
+        defaultSharedPreferences.putBoolean(PREF_LOGIN_OR_SIGN_UP, true)
         defaultSharedPreferences.putLong(Constants.Account.PREF_PIN_CHECK, cur)
         putPrefPinInterval(requireContext(), INTERVAL_10_MINS)
 

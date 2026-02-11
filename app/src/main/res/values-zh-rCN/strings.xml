@@ -209,7 +209,7 @@
     <string name="chat_on_mixin_content">快来 Mixin 与我聊天！简单、安全好用还支持比特币、以太坊等加密货币，下载 https://mixin.one/messenger 后搜索 @%1$s 加我好友。</string>
     <string name="chat_pin_message">%1$s置顶了%2$s</string>
     <string name="Chat_pinned">会话已置顶</string>
-    <string name="chat_recall_delete_alert">所有使用最新版本 Mixin Messenger 的设备都将删除被选中的消息</string>
+    <string name="chat_recall_delete_alert">所有使用最新版本 Mixin 的设备都将删除被选中的消息</string>
     <string name="Chat_unpinned">置顶会话已取消</string>
     <string name="chat_waiting">等待%1$s上线后建立加密会话。%2$s。</string>
     <string name="CHATS">会话</string>
@@ -332,7 +332,7 @@
     <string name="Deposit">充值</string>
     <string name="Deposit_Token">充值 %1$s</string>
     <string name="Pending">确认中</string>
-    <string name="deposit_account_attention">注意：首次充值建议小额尝试！地址和 Memo（备注）同时使用才能充值 %1$s 到 Mixin Messenger。</string>
+    <string name="deposit_account_attention">注意：首次充值建议小额尝试！地址和 Memo（备注）同时使用才能充值 %1$s 到 Mixin。</string>
     <string name="deposit_attention">首次充值建议小额尝试！</string>
     <plurals name="deposit_confirmation" tools:ignore="UnusedQuantity">
         <item quantity="one">充值到账需要 %1$d 个区块确认。</item>
@@ -360,7 +360,7 @@
     <string name="more_information">了解更多</string>
     <string name="url_cross_wallet_transaction_free">https://support.mixin.one/zh/article/cross-wallet-transaction-fee-event-1k9b47q</string>
     <string name="desktop_on_hint">桌面版已登入。</string>
-    <string name="desktop_upgrade">请升级 Mixin Messenger 桌面端至最新版！</string>
+    <string name="desktop_upgrade">请升级 Mixin 桌面端至最新版！</string>
     <string name="detect_qr_tip">检测到一个 Mixin 二维码，点击识别</string>
     <string name="Developer">开发者</string>
     <string name="Device_unsupported">当前设备不支持</string>
@@ -674,7 +674,7 @@
     </plurals>
     <string name="Mixin">Mixin</string>
     <string name="Mixin_Locked">Mixin 已锁定</string>
-    <string name="Mixin_Messenger_Desktop">Mixin Messenger 桌面</string>
+    <string name="Mixin_Messenger_Desktop">Mixin 桌面</string>
     <string name="mixin_one">Mixin 大会员</string>
     <string name="Model">手机型号</string>
     <string name="Monday">星期一</string>
@@ -748,7 +748,7 @@
     <string name="suspended_deposit">%1$s 充值已暂停，可能的原因包括：\n · 节点故障\n · 网络硬分叉\n · 网络拥堵\n · 使用率较低\n注意已转入的 %2$s 资产可以继续转账。</string>
     <string name="Notice">注意</string>
     <string name="Notification_and_Confirmation">通知和确认</string>
-    <string name="notification_channel_description">显示 Mixin Messenger 中正在播放的音乐</string>
+    <string name="notification_channel_description">显示 Mixin 中正在播放的音乐</string>
     <string name="notification_content">启用推送通知以实时更新价格警报和消息。</string>
     <string name="Notifications">通知</string>
     <string name="Enable_Notifications">启用通知</string>
@@ -978,7 +978,7 @@
     <string name="setting_delete_account_send">我们将发送 4 位验证码到手机 %1$s</string>
     <string name="setting_delete_account_tip">你的 Mixin 钱包还有一些资产，可以提现至其他钱包或交易所，账户一旦注销，这些资产将和钱包一起被弃用无法找回。</string>
     <string name="setting_delete_account_url">https://support.mixin.one/zh/article/5aac5l2v5yig6zmk6lsm5y377yf-1uteq30</string>
-    <string name="setting_desktop_confirm">确认登录 Mixin Messenger 桌面端</string>
+    <string name="setting_desktop_confirm">确认登录 Mixin 桌面端</string>
     <string name="setting_desktop_logout_failed">退出桌面端失败</string>
     <string name="setting_duplicate_transfer_desc">当你在 6 个小时内给相同的人转相同的金额时显示确认弹窗。</string>
     <string name="setting_emergency_change_mobile">立即修改手机号？</string>
@@ -1242,16 +1242,16 @@
     <string name="Restore_from_Another_Phone_tip">从您的旧设备传输聊天记录。</string>
     <string name="Restore_from_Local">本地恢复</string>
     <string name="Restore_from_Local_tip">从设备备份中恢复您的聊天记录。</string>
-    <string name="transfer_pc_desc">同步你的聊天记录到 Mixin Messenger 桌面端，请确保两台设备接入同一个 Wi-Fi 或热点。</string>
+    <string name="transfer_pc_desc">同步你的聊天记录到 Mixin 桌面端，请确保两台设备接入同一个 Wi-Fi 或热点。</string>
     <string name="transfer_phone_desc">同步你的聊天记录到新的设备，请确保两台设备接入同一个 Wi-Fi 或热点。</string>
-    <string name="restore_desc">从 Mixin Messenger 桌面端同步你的聊天记录，同步不会覆盖本地记录只会增量同步，请确保两台设备接入同一个 Wi-Fi 或热点。</string>
+    <string name="restore_desc">从 Mixin 桌面端同步你的聊天记录，同步不会覆盖本地记录只会增量同步，请确保两台设备接入同一个 Wi-Fi 或热点。</string>
     <string name="Restore_from_PC">从桌面恢复</string>
     <string name="transfer_tips1">在新设备上登录当前账户并选择从其他手机恢复</string>
     <string name="transfer_tips2">新设备扫上面的二维码建立连接</string>
     <string name="transfer_tips3">不要关闭屏幕并保持 Mixin 在前台运行</string>
     <string name="Transfer_completed">传输已完成</string>
     <string name="transfer_waiting_desc">同步时请不要关闭屏幕并保持 Mixin 在前台运行。</string>
-    <string name="transfer_waiting_tips">请打开您的MiXin Messenger桌面以确认操作。</string>
+    <string name="transfer_waiting_tips">请打开您的Mixin桌面以确认操作。</string>
     <string name="transfer_now">开始传输</string>
     <string name="transfer_sub_title">将您的聊天记录转移到另一台设备</string>
     <string name="restore_sub_title">从桌面端恢复你的聊天记录</string>
@@ -1348,7 +1348,7 @@
     <string name="identity_info">继续操作即表示您同意隐私政策和服务条款。</string>
     <string name="Start_Verification">开始验证</string>
     <string name="Identity_Verifying">身份验证中</string>
-    <string name="identity_verifying_description">正在验证您的身份。一旦您的验证完成，我们将通过 Mixin Messenger 向您发送消息。</string>
+    <string name="identity_verifying_description">正在验证您的身份。一旦您的验证完成，我们将通过 Mixin 向您发送消息。</string>
     <string name="verification_failed">验证失败</string>
     <string name="verification_failed_description">您的验证失败，可能是因为未提交所有必需的身份证明文件或某些文件存在问题。</string>
     <string name="verification_blocked_description">你的验证失败了，可能是因为提交的文件有问题，请点击下面按钮联系客服。</string>
@@ -1515,7 +1515,7 @@
     <string name="access_dapps_defi_projects">访问 apps 或 DeFi 项目</string>
     <string name="unlock_web3_account">解锁 %1$s 账户</string>
     <string name="Unlock">解锁</string>
-    <string name="unlock_web3_account_description">您的 %1$s 账户基于 Mixin Messenger 的 MPC 钱包并根据 BIP44 协议派生而来。</string>
+    <string name="unlock_web3_account_description">您的 %1$s 账户基于 Mixin 的 MPC 钱包并根据 BIP44 协议派生而来。</string>
     <string name="unlock_web3_account_agreement">建议与去中心化应用程序交互完后尽快将资产转回更安全的 Mixin 钱包。</string>
     <string name="unlock_web3_account_agreement_1">%1$s 账户与 Mixin 钱包资产隔离但使用同一个 PIN 进行资产管理。</string>
     <string name="unlock_web3_account_agreement_2">在 %1$s 账户与 Mixin 钱包之间划转资产需要支付网络矿工费。</string>
@@ -1661,7 +1661,7 @@
     <string name="Users">用户</string>
     <string name="swap_confirmation">确认交易</string>
     <string name="swap_failed">交易失败</string>
-    <string name="swap_inner_desc">该签名请求来自 Mixin Messenger。</string>
+    <string name="swap_inner_desc">该签名请求来自 Mixin。</string>
     <string name="swap_message_success">您的交易已发送至网络，将很快被处理。</string>
     <string name="swap_not_supported">不支持 %1$s 交易</string>
     <string name="web3_btc_speed_up_not_needed">当前费率相同，无需加速</string>
@@ -1801,7 +1801,7 @@
     <string name="Creating_your_account">正在创建账户…</string>
     <string name="Signing_in_to_your_account">正在登录账户…</string>
     <string name="Set_up_Pin">设置 PIN</string>
-    <string name="Set_up_Pin_desc">Mixin Messenger 的 MPC 钱包基于去中心化密钥协议 TIP 构建，PIN 是密钥分片之一。钱包完整的密钥只存在当前设备的 TEE 安全环境中。阅读文档以了解%1$s。</string>
+    <string name="Set_up_Pin_desc">Mixin 的 MPC 钱包基于去中心化密钥协议 TIP 构建，PIN 是密钥分片之一。钱包完整的密钥只存在当前设备的 TEE 安全环境中。阅读文档以了解%1$s。</string>
     <string name="More_Information">更多信息</string>
     <string name="set_up_pin_instruction_1">请在稳定的网络环境下完成操作。</string>
     <string name="set_up_pin_instruction_2">请保持应用在前台运行，设置过程中请勿强制退出。</string>
@@ -1825,7 +1825,7 @@
     <string name="Set_up_Pin_answer_2">我将无法访问我的帐户和资金。</string>
     <string name="What_is_Pin">什么是 PIN ?</string>
     <string name="Recovery_Kit">账号恢复</string>
-    <string name="Recovery_Kit_instruction">Mixin Messenger 的 MPC 钱包基于去中心化密钥协议 TIP 构建，您可以通过手机号、助记词或可信联系人登录恢复你的账号，钱包完整的密钥只存在当前设备的 TEE 安全环境中，阅读文档以了解%1$s。</string>
+    <string name="Recovery_Kit_instruction">Mixin 的 MPC 钱包基于去中心化密钥协议 TIP 构建，您可以通过手机号、助记词或可信联系人登录恢复你的账号，钱包完整的密钥只存在当前设备的 TEE 安全环境中，阅读文档以了解%1$s。</string>
     <string name="Recovery_Kit_Attention">注意：账号恢复无法帮助您恢复 PIN</string>
     <string name="Mobile_Number">手机号码</string>
     <string name="Recovery_Contact">恢复联系人</string>
@@ -1850,7 +1850,7 @@
     <string name="Add_Mobile_Number">添加手机号码</string>
     <string name="add_phone_instruction_1">手机号和助记词将链接到同一个密钥分片。</string>
     <string name="add_phone_instruction_2">手机号和助记词登录的是同一个账号。</string>
-    <string name="add_phone_instruction_3">无法添加一个已注册为 Mixin Messenger 账号的手机号。</string>
+    <string name="add_phone_instruction_3">无法添加一个已注册为 Mixin 账号的手机号。</string>
     <string name="add_phone_instruction_4">手机号绑定后无法删除。</string>
     <string name="Change_Mobile_Number">更改手机号码</string>
     <string name="Add_Recovery_Contact_desc">恢复联系人旨在帮助您在丢失手机号码或助记词时登录您的帐户。</string>
@@ -1859,8 +1859,8 @@
     <string name="add_recovery_contact_instruction_3">恢复联系人无法转移您 Mixin 钱包里的资产，但可以协助您重新访问账号。</string>
     <string name="add_recovery_contact_instruction_4">恢复联系人无法恢复您的 PIN 。</string>
     <string name="Im_Ready">准备好了</string>
-    <string name="add_recovery_contact_before_instruction_1">要添加的恢复联系人已下载并登录了 Mixin Messenger。</string>
-    <string name="add_recovery_contact_before_instruction_2">要添加的恢复联系人保持 Mixin Messenger 在线或者正在与您面对面。</string>
+    <string name="add_recovery_contact_before_instruction_1">要添加的恢复联系人已下载并登录了 Mixin。</string>
+    <string name="add_recovery_contact_before_instruction_2">要添加的恢复联系人保持 Mixin 在线或者正在与您面对面。</string>
     <string name="Check_Backup">检查备份</string>
     <string name="Send_Collectible">发送藏品</string>
     <string name="ssl_cert_invalid">无效的 SSL 证书，此站点可能不安全。</string>
@@ -1874,11 +1874,11 @@
     <string name="emergency_url">https://support.mixin.one/zh/article/5aac5l2v6k6572u57sn5ocl6igu57o75lq6-d2nssy</string>
     <string name="Deposit_Pending_Confirmation">%1$s 充值确认中</string>
     <string name="Deposits_Pending_Confirmation">有 %1$d 笔充值确认中</string>
-    <string name="open_source">版权所有 Mixin Messenger\n根据 GPL-3.0 授权许可</string>
+    <string name="open_source">版权所有 Mixin\n根据 GPL-3.0 授权许可</string>
     <string name="asset_changes">资产变动</string>
     <string name="asset_changes_estimate">资产变动（预估）</string>
     <string name="Confirm_Transfer_in_Batches">批量转账确认</string>
-    <string name="Partial_Photo_Access_Permission">您向 Mixin Messenger 授予了仅访问部分照片的权限。管理</string>
+    <string name="Partial_Photo_Access_Permission">您向 Mixin 授予了仅访问部分照片的权限。管理</string>
     <string name="Manage">管理</string>
     <string name="Select_More_Photos">选择更多照片</string>
     <string name="Change_Permissions">更改权限</string>
@@ -2056,7 +2056,7 @@
     <string name="wallet_security_title">操作前请注意</string>
     <string name="wallet_security_subtitle">请阅读以下内容，并妥善保存%1$s。</string>
     <string name="export_mnemonics_warning_1">拥有此%1$s的人可以转移此钱包内的所有资金。</string>
-    <string name="export_mnemonics_warning_2">Mixin Messenger 服务器不会存储您的%1$s。</string>
+    <string name="export_mnemonics_warning_2">Mixin 服务器不会存储您的%1$s。</string>
     <string name="export_mnemonics_warning_3">不要将您的%1$s泄露给任何第三方、个人、网站或应用程序。</string>
     <string name="export_mnemonics_warning_4">请确保没有他人或摄像头正在窥视您的屏幕！</string>
     <string name="wallet_security_proceed_button">显示%1$s</string>

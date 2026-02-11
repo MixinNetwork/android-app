@@ -194,7 +194,7 @@
     <string name="chat_import_fail_content">¡Error en la importación de mensajes! ¿Quieres enviarlo como un archivo?</string>
     <string name="chat_list_empty_info">Puedes chatear con contactos que tengan Mixin instalado en tu teléfono.</string>
     <string name="chat_not_support">Este tipo de mensaje no es compatible, actualiza Mixin a la última versión. %1$s.</string>
-    <string name="chat_on_mixin_content">¡Chateemos en Mixin Messenger! Sencillo, seguro y fácil de usar. También es compatible con Bitcoin, Ethereum y otras criptomonedas. Descarga https://mixin.one/messenger y busca \@%1$s para añadirme como amigo.</string>
+    <string name="chat_on_mixin_content">¡Chateemos en Mixin! Sencillo, seguro y fácil de usar. También es compatible con Bitcoin, Ethereum y otras criptomonedas. Descarga https://mixin.one/messenger y busca \@%1$s para añadirme como amigo.</string>
     <string name="chat_pin_message">%1$s ha fijado %2$s</string>
     <string name="Chat_pinned">Chat fijado</string>
     <string name="chat_recall_delete_alert">Los mensajes que has seleccionado se eliminarán para todos en la última versión de Mixin en este chat.</string>
@@ -239,7 +239,7 @@
     </plurals>
     <string name="Contact_Developer">Contactar al desarrollador</string>
     <string name="contact_empty_tip">Mixin necesita acceder a tus contactos para ayudarte a conectarse con otras personas en Mixin.</string>
-    <string name="contact_invite_content">Oye, estoy usando Mixin Messenger para chatear. Descárgalo aquí: https://mixin.one/messenger</string>
+    <string name="contact_invite_content">Oye, estoy usando Mixin para chatear. Descárgalo aquí: https://mixin.one/messenger</string>
     <string name="contact_mixin_id">ID de Mixin: %1$s</string>
     <string name="contact_mobile">Móvil: %1$s</string>
     <string name="contact_mute_title">Silenciar notificaciones para…</string>
@@ -307,7 +307,7 @@
     <string name="Delete_Synced_Contact">Eliminar contactos sincronizados</string>
     <string name="Delete_withdraw_Address">Eliminar dirección de %1$s</string>
     <string name="Deposit">Depósito</string>
-    <string name="deposit_account_attention">Atención: prueba con una pequeña cantidad para el primer depósito. Se requiere una nota y una dirección para depositar correctamente tu %1$s en Mixin Messenger.</string>
+    <string name="deposit_account_attention">Atención: prueba con una pequeña cantidad para el primer depósito. Se requiere una nota y una dirección para depositar correctamente tu %1$s en Mixin.</string>
     <string name="deposit_attention">Prueba con una pequeña cantidad para el primer depósito.</string>
     <plurals name="deposit_confirmation" tools:ignore="UnusedQuantity">
         <item quantity="one">El depósito llegará %1$d confirmación de bloqueo</item>
@@ -581,7 +581,7 @@
     <string name="Mixin">Mixin</string>
     <string name="Mixin_ID">ID de Mixin</string>
     <string name="Mixin_Locked">Mixin bloqueado</string>
-    <string name="Mixin_Messenger_Desktop">Mixin Messenger de Escritorio</string>
+    <string name="Mixin_Messenger_Desktop">Mixin de Escritorio</string>
     <string name="Model">Modelo</string>
     <string name="Monday">Lunes</string>
     <string name="More">Más</string>
@@ -649,7 +649,7 @@
     <string name="not_supported_deposit">Mixin Wallet no admite el depósito de %1$s. Ten en cuenta que puedes seguir transfiriendo o retirando los %2$s depositados. Lee el documento para **obtener más información**.</string>
     <string name="Notice">Aviso</string>
     <string name="Notification_and_Confirmation">Notificación y Confirmación</string>
-    <string name="notification_channel_description">Muestra qué música se está reproduciendo actualmente en Mixin Messenger</string>
+    <string name="notification_channel_description">Muestra qué música se está reproduciendo actualmente en Mixin</string>
     <string name="notification_content">No te pierdas los mensajes de tus amigos.</string>
     <string name="Notifications">Notificaciones</string>
     <string name="Now_Playing">Reproduciendo ahora</string>
