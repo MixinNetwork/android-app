@@ -140,7 +140,7 @@ buildscript {
         ext.tweetnaclVersion = '0.1.6'
         ext.sol4kUtilitiesVersion = '0.1.0'
         ext.desugarJdkLibsVersion = '2.1.5'
-        ext.bugsnagVersion = '6.23.0'
+        ext.bugsnagVersion = '6.24.0'
     }
 
     repositories {
