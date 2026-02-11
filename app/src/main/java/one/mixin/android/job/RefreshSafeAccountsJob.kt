@@ -107,6 +107,8 @@ class RefreshSafeAccountsJob : BaseJob(
         return local?.copy(
             walletId = walletId,
             balance = asset.balance,
+            priceUsd = asset.priceUsd,
+            precision = asset.decimal
         ) ?: assetService.getAssetByIdSuspend(asset.mixinAssetId).data?.let {
             Web3Token(
                 walletId = walletId,
@@ -118,7 +120,7 @@ class RefreshSafeAccountsJob : BaseJob(
                 iconUrl = it.iconUrl,
                 precision = asset.decimal,
                 balance = asset.balance,
-                priceUsd = it.priceUsd,
+                priceUsd = asset.priceUsd,
                 changeUsd = it.changeUsd,
             )
         }
