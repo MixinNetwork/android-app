@@ -78,7 +78,7 @@ class VerifyMobileReminderBottomSheetDialogFragment : MixinComposeBottomSheetDia
             ReminderPage(
                 R.drawable.bg_reminder_verify_mobile,
                 R.string.Verify_Mobile_Number,
-                R.string.Verify_Mobile_Number_Desc,
+                if(Session.hasPhone()) R.string.Verify_Mobile_Number_Desc else R.string.Verify_Mobile_Number_Security_Desc,
                 R.string.Verify_Now,
                 action = {
                     dismissAllowingStateLoss()
