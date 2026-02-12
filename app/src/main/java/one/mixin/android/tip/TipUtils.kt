@@ -75,7 +75,7 @@ fun Throwable.getTipExceptionMsg(
     } else {
         ""
     } + msg
-    val e = TipException(reportMsg, this.cause)
+    val e = TipException(reportMsg, this)
     reportException(e)
     Bugsnag.notify(e)
 
