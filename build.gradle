@@ -3,10 +3,10 @@ buildscript {
     ext {
         ext.bitcoinVersion ='0.17'
         ext.fragmentVersion = '1.8.9'
-        ext.activity_version = '1.12.3'
+        ext.activity_version = '1.12.4'
         ext.lifecycleVersion = '2.10.0'
         ext.appcompatVersion = '1.7.1'
-        ext.pagingVersion = '3.4.0'
+        ext.pagingVersion = '3.4.1'
         ext.coilVersion = '3.3.0'
         ext.collectionx = '1.5.0'
         ext.roomVersion = '2.8.4'
@@ -106,7 +106,7 @@ buildscript {
 
         ext.bcVersion = '1.70'
         ext.jsonVersion = '20251224'
-        ext.composeVersion = '1.10.2'
+        ext.composeVersion = '1.10.3'
         ext.accompanistVersion = '0.36.0'
         ext.web3jVersion = '4.8.7-android'
         ext.sol4kVersion = '0.7.0'
@@ -125,7 +125,7 @@ buildscript {
         ext.billingVersion ='8.3.0'
 
         ext.lottieComposeVersion = '6.7.1'
-        ext.composeBomVersion = '2026.01.01'
+        ext.composeBomVersion = '2026.02.00'
         ext.activityComposeVersion = '1.12.3'
         ext.web3jCoreVersion = '4.11.0'
         ext.web3jCryptoVersion = '4.11.0'
@@ -140,7 +140,7 @@ buildscript {
         ext.tweetnaclVersion = '0.1.6'
         ext.sol4kUtilitiesVersion = '0.1.0'
         ext.desugarJdkLibsVersion = '2.1.5'
-        ext.bugsnagVersion = '6.23.0'
+        ext.bugsnagVersion = '6.24.0'
     }
 
     repositories {
