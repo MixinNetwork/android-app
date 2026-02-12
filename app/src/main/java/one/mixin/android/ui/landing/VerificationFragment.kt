@@ -13,6 +13,7 @@ import androidx.core.os.bundleOf
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
+import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
@@ -199,11 +200,19 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
         viewBinding.lostTv.isVisible = hasEmergencyContact && !isPhoneModification()
         builder.setCustomView(view)
         val bottomSheet = builder.create()
+        var handled = false
+        bottomSheet.setOnDismissListener {
+            if (!handled && activity is LandingActivity && Session.getAccount() == null) {
+                activity?.supportFragmentManager?.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+            }
+        }
         viewBinding.cantTv.setOnClickListener {
+            handled = true
             requireContext().openUrl(getString(R.string.landing_verification_url))
             bottomSheet.dismiss()
         }
         viewBinding.lostTv.setOnClickListener {
+            handled = true
             navTo(VerificationEmergencyIdFragment.newInstance(phoneNum), VerificationEmergencyIdFragment.TAG)
             bottomSheet.dismiss()
         }
