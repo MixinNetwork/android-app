@@ -308,7 +308,7 @@ class TradeFragment : BaseFragment() {
                                                 toast(R.string.Alert_Not_Support)
                                                 return@launch
                                             }
-                                            navTo(Web3AddressFragment.newInstance(t, address?.destination, true), Web3AddressFragment.TAG)
+                                            navTo(Web3AddressFragment.newInstance(t, address.destination, true), Web3AddressFragment.TAG)
                                         }
                                     }
                                 },

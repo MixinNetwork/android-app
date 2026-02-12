@@ -2,11 +2,9 @@ package one.mixin.android.tip
 
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.withContext
 import okio.Buffer
 import one.mixin.android.api.request.TipSignData
 import one.mixin.android.api.request.TipSignRequest
@@ -27,7 +25,6 @@ import one.mixin.android.tip.exception.DifferentIdentityException
 import one.mixin.android.tip.exception.NotAllSignerSuccessException
 import one.mixin.android.tip.exception.NotEnoughPartialsException
 import one.mixin.android.tip.exception.TipNodeException
-import one.mixin.android.util.SINGLE_SIGN_EXECUTOR
 import retrofit2.HttpException
 import timber.log.Timber
 import tip.Tip
