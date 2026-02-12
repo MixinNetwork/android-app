@@ -1,6 +1,7 @@
 package one.mixin.android.tip
 
 import android.content.Context
+import com.bugsnag.android.Bugsnag
 import com.lambdapioneer.argon2kt.Argon2Kt
 import ed25519.Ed25519
 import one.mixin.android.Constants
@@ -587,6 +588,7 @@ class Tip
             if (e != null) {
                 if (e is TipNetworkException && e.error.code == ErrorHandler.BAD_DATA) {
                     reportException("Tip tip-secret meet bad data", e)
+                    Bugsnag.notify(e)
 
                     val msg = TipBody.forVerify(timestamp)
                     val goSigBase64 = Ed25519.sign(msg, stSeed).base64RawURLEncode()
@@ -603,6 +605,7 @@ class Tip
                     Timber.e("use go-ed25519 before updateTipSecret")
                     tipNetworkNullable { tipService.updateTipSecret(request) }.getOrThrow()
                     reportException("Tip tip-secret go update success after bad data", e)
+                    Bugsnag.notify(e)
                 } else {
                     throw e
                 }

@@ -1,6 +1,7 @@
 package one.mixin.android.tip
 
 import android.content.Context
+import com.bugsnag.android.Bugsnag
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
@@ -47,6 +48,7 @@ fun Throwable.isTipNodeException() = this is NotEnoughPartialsException || this 
 fun Throwable.getTipExceptionMsg(
     context: Context,
     nodeFailedInfo: String? = null,
+    extraInfo: String? = null,
 ): String {
     var msg =
         when (this) {
@@ -68,7 +70,14 @@ fun Throwable.getTipExceptionMsg(
         ""
     } + msg
 
-    reportException(TipException(msg))
+    val reportMsg = if (!extraInfo.isNullOrBlank()) {
+        extraInfo + "\n"
+    } else {
+        ""
+    } + msg
+    val e = TipException(reportMsg, this.cause)
+    reportException(e)
+    Bugsnag.notify(e)
 
     return msg
 }
