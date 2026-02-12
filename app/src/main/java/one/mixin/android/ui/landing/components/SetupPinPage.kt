@@ -79,6 +79,7 @@ fun SetupPinPage(
     var pinCodeAttempts by remember { mutableIntStateOf(0) }
     var firstPinCode by remember { mutableStateOf("") }
     var showMismatchDialog by remember { mutableStateOf(false) }
+    var showUnsafeDialog by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     val list = listOf(
         "1",
@@ -94,6 +95,26 @@ fun SetupPinPage(
         "0",
         "<<",
     )
+
+    fun validatePin(pin: String): Boolean {
+        if (pin == "123456") {
+            showUnsafeDialog = true
+            return false
+        }
+
+        val numKind = arrayListOf<Char>()
+        pin.forEach {
+            if (!numKind.contains(it)) {
+                numKind.add(it)
+            }
+        }
+        if (numKind.size <= 2) {
+            showUnsafeDialog = true
+            return false
+        }
+
+        return true
+    }
 
     PageScaffold(
         title = "",
@@ -115,11 +136,35 @@ fun SetupPinPage(
             }
         },
     ) {
+        if (showUnsafeDialog) {
+            AlertDialog(
+                onDismissRequest = { },
+                text = {
+                    Text(text = stringResource(R.string.wallet_password_unsafe))
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            showUnsafeDialog = false
+                            pinCode = ""
+                        }
+                    ) {
+                        Text(
+                            text = stringResource(R.string.OK),
+                            color = MixinAppTheme.colors.accent
+                        )
+                    }
+                },
+                backgroundColor = MixinAppTheme.colors.background,
+                contentColor = MixinAppTheme.colors.textPrimary
+            )
+        }
+        
         if (showMismatchDialog) {
             AlertDialog(
                 onDismissRequest = { },
                 text = {
-                    Text(text = stringResource(R.string.PIN_does_not_match))
+                    Text(text = stringResource(R.string.wallet_password_not_equal))
                 },
                 confirmButton = {
                     TextButton(
@@ -329,6 +374,9 @@ fun SetupPinPage(
                                             if (pinCode.length == 6) {
                                                 if (pinCodeAttempts < 3) {
                                                     if (pinCodeAttempts == 0) {
+                                                        if (!validatePin(pinCode)) {
+                                                            return@clickable
+                                                        }
                                                         firstPinCode = pinCode
                                                         pinCodeAttempts++
                                                         coroutineScope.launch {
