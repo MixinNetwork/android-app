@@ -38,7 +38,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.font.FontWeight.Companion.W600
+import androidx.compose.ui.text.font.FontWeight.Companion.W500
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -145,14 +145,14 @@ fun QuizPage(next: () -> Unit, pop: (() -> Unit)? = null) {
                         ),
                     ) {
                         Text(
-                            text = stringResource(R.string.Check_answer), color = Color.White
+                            text = stringResource(R.string.Check_answer), color = Color.White, fontSize = 14.sp, fontWeight = W500,
                         )
                     }
-                    Spacer(modifier = Modifier.height(26.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
                     Text(
                         text = stringResource(R.string.What_is_Pin),
-                        fontSize = 16.sp,
-                        fontWeight = W600,
+                        fontSize = 14.sp,
+                        fontWeight = W500,
                         color = MixinAppTheme.colors.textBlue,
                         modifier = Modifier.clickable {
                             context.openUrl(context.getString(R.string.What_is_Pin_url))
@@ -186,7 +186,7 @@ fun Answer(str: String, option: Int, selectedOption: Int, onOptionSelected: (Int
             selected = (option == selectedOption), onClick = null, modifier = Modifier.size(16.dp)
         )
         Text(
-            text = str, modifier = Modifier.padding(start = 10.dp), color = MixinAppTheme.colors.textPrimary, fontSize = 12.sp
+            text = str, modifier = Modifier.padding(start = 10.dp), color = MixinAppTheme.colors.textPrimary, fontSize = 14.sp
         )
     }
 }

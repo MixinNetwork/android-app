@@ -39,7 +39,7 @@ fun AddPhoneBeforePage(hasPhone: Boolean, pop: () -> Unit, next: () -> Unit) {
                 },
                 actions = {
                     IconButton(onClick = {
-                        context.openUrl(Constants.HelpLink.TIP)
+                        context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
                     }) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_support),
