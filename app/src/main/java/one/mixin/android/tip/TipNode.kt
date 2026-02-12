@@ -259,9 +259,7 @@ class TipNode
             assignee: ByteArray?,
         ): Pair<TipSignRespData?, TipNodeError?> {
             return try {
-                val tipSignRequest = withContext(SINGLE_SIGN_EXECUTOR.asCoroutineDispatcher()) {
-                    genTipSignRequest(userSk, tipSigner, ephemeral, watcher, nonce, grace, assignee)
-                }
+                val tipSignRequest = genTipSignRequest(userSk, tipSigner, ephemeral, watcher, nonce, grace, assignee)
                 val response = tipNodeService.sign(tipSignRequest, tipNodeApi2Path(tipSigner.api))
                 val requestId = response.headers()["x-request-id"] ?: ""
                 if (response.isSuccessful.not()) {
@@ -283,9 +281,7 @@ class TipNode
                     return Pair(null, null)
                 }
 
-                val data = withContext(SINGLE_SIGN_EXECUTOR.asCoroutineDispatcher()) {
-                    parseNodeSigResp(userSk, tipSigner, tipSignResponse)
-                }
+                val data = parseNodeSigResp(userSk, tipSigner, tipSignResponse)
                 Pair(data, null)
             } catch (e: Exception) {
                 Timber.d(e)
