@@ -96,8 +96,8 @@ class Tip
                 val ephemeralSeed = ephemeral.getEphemeralSeed(context, deviceId)
                 Timber.e("updateTipPriv after getEphemeralSeed")
 
-                if (!counterEqual) { // node success
-                    Timber.e("updateTipPriv oldPin isNullOrBlank")
+                if (!counterEqual && failedSigners.isNullOrEmpty()) { // node success but subsequent steps failed
+                    Timber.e("updateTipPriv counter NOT equal and NO failed signers")
                     val (priKey, watcher) = identity.getIdentityPrivAndWatcher(newPin)
                     Timber.e("updateTipPriv after getIdentityPrivAndWatcher")
                     updatePriv(context, priKey, ephemeralSeed, watcher, newPin, oldPin, null)
