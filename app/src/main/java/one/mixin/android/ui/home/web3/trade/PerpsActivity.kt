@@ -6,10 +6,18 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshPerpsPositionsJob
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.web3.js.Web3Signer
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class PerpsActivity : BaseActivity() {
+
+    @Inject
+    lateinit var jobManager: MixinJobManager
 
     companion object {
         private const val EXTRA_MARKET_ID = "extra_market_id"
@@ -48,6 +56,8 @@ class PerpsActivity : BaseActivity() {
         val mode = intent.getStringExtra(EXTRA_MODE) ?: MODE_DETAIL
         val isLong = intent.getBooleanExtra(EXTRA_IS_LONG, true)
 
+        refreshPositions()
+
         setContent {
             MixinAppTheme {
                 when (mode) {
@@ -69,6 +79,13 @@ class PerpsActivity : BaseActivity() {
                     }
                 }
             }
+        }
+    }
+
+    private fun refreshPositions() {
+        val walletId = Session.getAccountId()
+        walletId?.let {
+            jobManager.addJobInBackground(RefreshPerpsPositionsJob(it))
         }
     }
 }

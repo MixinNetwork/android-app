@@ -55,6 +55,7 @@ import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.session.Session
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.js.Web3Signer
@@ -393,29 +394,45 @@ fun OpenPositionPage(
                         if (amount <= BigDecimal.ZERO) return@Button
                         
                         val m = market ?: return@Button
-                        val walletId = Web3Signer.currentWalletId
+                        val walletId = Session.getAccountId() ?: "" // Privacy Wallet
                         if (walletId.isEmpty()) return@Button
                         
                         val activity = context as? androidx.fragment.app.FragmentActivity ?: return@Button
                         
-                        val wallet = Web3Signer.currentWalletId
                         val walletName = "Privacy Wallet"
                         
-                        PerpsConfirmBottomSheetDialogFragment.newInstance(
-                            marketId = marketId,
-                            marketSymbol = marketSymbol,
-                            isLong = isLong,
+                        viewModel.openPerpsOrder(
+                            assetId = token.assetId,
+                            productId = marketId,
+                            side = if (isLong) "long" else "short",
                             amount = amount.toPlainString(),
                             leverage = leverage.toInt(),
+                            walletId = walletId,
+                            marketSymbol = marketSymbol,
                             entryPrice = m.markPrice,
                             liquidationPrice = calculateLiquidationPrice(m.markPrice, leverage, isLong),
-                            tokenSymbol = token.symbol,
-                            tokenIcon = token.iconUrl ?: "",
-                            tokenAssetId = token.assetId,
-                            walletName = walletName
-                        ).setOnDone {
-                            onBack()
-                        }.show(activity.supportFragmentManager, PerpsConfirmBottomSheetDialogFragment.TAG)
+                            onSuccess = { response ->
+                                PerpsConfirmBottomSheetDialogFragment.newInstance(
+                                    marketId = marketId,
+                                    marketSymbol = marketSymbol,
+                                    isLong = isLong,
+                                    amount = amount.toPlainString(),
+                                    leverage = leverage.toInt(),
+                                    entryPrice = m.markPrice,
+                                    liquidationPrice = calculateLiquidationPrice(m.markPrice, leverage, isLong),
+                                    tokenSymbol = token.symbol,
+                                    tokenIcon = token.iconUrl ?: "",
+                                    tokenAssetId = token.assetId,
+                                    walletName = walletName,
+                                    payUrl = response.payUrl
+                                ).setOnDone {
+                                    onBack()
+                                }.show(activity.supportFragmentManager, PerpsConfirmBottomSheetDialogFragment.TAG)
+                            },
+                            onError = { error ->
+                                // TODO: Show error toast or dialog
+                            }
+                        )
                     },
                     enabled = usdtAmount.isNotBlank() && (usdtAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO) > BigDecimal.ZERO,
                     colors = ButtonDefaults.outlinedButtonColors(

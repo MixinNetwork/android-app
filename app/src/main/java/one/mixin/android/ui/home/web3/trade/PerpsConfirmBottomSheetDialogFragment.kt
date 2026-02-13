@@ -3,6 +3,7 @@ package one.mixin.android.ui.home.web3.trade
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.DialogInterface
+import android.net.Uri
 import android.os.Bundle
 import android.view.Gravity
 import android.view.View
@@ -65,14 +66,18 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
+import one.mixin.android.ui.common.UtxoConsolidationBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
+import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
 import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.wallet.components.WalletLabel
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.toUser
 import one.mixin.android.web3.js.Web3Signer
 import timber.log.Timber
 import java.math.BigDecimal
+import java.util.UUID
 import kotlin.math.abs
 
 @AndroidEntryPoint
@@ -91,6 +96,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         private const val ARGS_TOKEN_ICON = "args_token_icon"
         private const val ARGS_TOKEN_ASSET_ID = "args_token_asset_id"
         private const val ARGS_WALLET_NAME = "args_wallet_name"
+        private const val ARGS_PAY_URL = "args_pay_url"
 
         fun newInstance(
             marketId: String,
@@ -103,7 +109,8 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
             tokenSymbol: String,
             tokenIcon: String,
             tokenAssetId: String,
-            walletName: String
+            walletName: String,
+            payUrl: String?
         ): PerpsConfirmBottomSheetDialogFragment {
             return PerpsConfirmBottomSheetDialogFragment().withArgs {
                 putString(ARGS_MARKET_ID, marketId)
@@ -117,6 +124,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                 putString(ARGS_TOKEN_ICON, tokenIcon)
                 putString(ARGS_TOKEN_ASSET_ID, tokenAssetId)
                 putString(ARGS_WALLET_NAME, walletName)
+                putString(ARGS_PAY_URL, payUrl)
             }
         }
     }
@@ -147,6 +155,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     }
 
     private val viewModel by viewModels<PerpetualViewModel>()
+    private val bottomViewModel by viewModels<one.mixin.android.ui.common.BottomSheetViewModel>()
 
     enum class Step {
         Pending,
@@ -166,6 +175,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     private val tokenIcon by lazy { requireNotNull(requireArguments().getString(ARGS_TOKEN_ICON)) }
     private val tokenAssetId by lazy { requireNotNull(requireArguments().getString(ARGS_TOKEN_ASSET_ID)) }
     private val walletName by lazy { requireNotNull(requireArguments().getString(ARGS_WALLET_NAME)) }
+    private val payUrl by lazy { requireArguments().getString(ARGS_PAY_URL) }
 
     private var step by mutableStateOf(Step.Pending)
     private var errorInfo: String? by mutableStateOf(null)
@@ -475,36 +485,17 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     private fun doAfterPinComplete(pin: String) = lifecycleScope.launch(Dispatchers.IO) {
         try {
             step = Step.Sending
-            val walletId = Web3Signer.currentWalletId
-            if (walletId.isEmpty()) {
-                errorInfo = "Wallet not found"
-                step = Step.Error
-                return@launch
+            
+            if (payUrl != null) {
+                handlePayment(payUrl!!, pin)
+            } else {
+                defaultSharedPreferences.putLong(
+                    Constants.BIOMETRIC_PIN_CHECK,
+                    System.currentTimeMillis(),
+                )
+                context?.updatePinCheck()
+                step = Step.Done
             }
-
-            viewModel.openPerpsOrder(
-                assetId = tokenAssetId,
-                productId = marketId,
-                side = if (isLong) "long" else "short",
-                amount = amount,
-                leverage = leverage,
-                walletId = walletId,
-                marketSymbol = marketSymbol,
-                entryPrice = entryPrice,
-                liquidationPrice = liquidationPrice,
-                onSuccess = { response ->
-                    defaultSharedPreferences.putLong(
-                        Constants.BIOMETRIC_PIN_CHECK,
-                        System.currentTimeMillis(),
-                    )
-                    context?.updatePinCheck()
-                    step = Step.Done
-                },
-                onError = { error ->
-                    errorInfo = error
-                    step = Step.Error
-                }
-            )
         } catch (e: Exception) {
             handleException(e)
         }
@@ -521,6 +512,64 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         "",
         "",
     )
+
+    private suspend fun handlePayment(payUrl: String, pin: String) {
+        try {
+            val uri = Uri.parse(payUrl)
+            
+            val assetId = requireNotNull(uri.getQueryParameter("asset"))
+            val payAmount = requireNotNull(uri.getQueryParameter("amount"))
+            val receiverId = requireNotNull(uri.lastPathSegment)
+            val memo = uri.getQueryParameter("memo")
+            val traceId = uri.getQueryParameter("trace") ?: UUID.randomUUID().toString()
+            
+            val consolidationAmount = bottomViewModel.checkUtxoSufficiency(assetId, payAmount)
+            val token = bottomViewModel.findAssetItemById(assetId)
+            
+            if (consolidationAmount != null && token != null) {
+                UtxoConsolidationBottomSheetDialogFragment.newInstance(
+                    buildTransferBiometricItem(
+                        Session.getAccount()!!.toUser(),
+                        token,
+                        consolidationAmount,
+                        UUID.randomUUID().toString(),
+                        null,
+                        null
+                    )
+                ).show(parentFragmentManager, UtxoConsolidationBottomSheetDialogFragment.TAG)
+                step = Step.Pending
+                return
+            } else if (token == null) {
+                errorInfo = getString(R.string.Data_error)
+                step = Step.Error
+                return
+            }
+            
+            val paymentResponse = bottomViewModel.kernelTransaction(
+                assetId,
+                listOf(receiverId),
+                1.toByte(),
+                payAmount,
+                pin,
+                traceId,
+                memo
+            )
+            
+            if (paymentResponse.isSuccess) {
+                defaultSharedPreferences.putLong(
+                    Constants.BIOMETRIC_PIN_CHECK,
+                    System.currentTimeMillis(),
+                )
+                context?.updatePinCheck()
+                step = Step.Done
+            } else {
+                errorInfo = paymentResponse.errorDescription
+                step = Step.Error
+            }
+        } catch (e: Exception) {
+            handleException(e)
+        }
+    }
 
     override fun dismiss() {
         dismissAllowingStateLoss()

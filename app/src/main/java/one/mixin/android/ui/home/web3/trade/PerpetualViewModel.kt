@@ -181,7 +181,7 @@ class PerpetualViewModel @Inject constructor(
                 
                 val data = response.data
                 if (response.isSuccess && data != null) {
-                    Timber.d("Perps order opened: ${data.orderId}")
+                    Timber.d("Perps order opened: ${data.orderId}, payUrl: ${data.payUrl}")
                     
                     val position = PerpsPosition(
                         positionId = data.orderId,
@@ -193,7 +193,7 @@ class PerpetualViewModel @Inject constructor(
                         entryPrice = entryPrice,
                         margin = amount,
                         leverage = leverage,
-                        state = "open",
+                        state = "pending",
                         markPrice = entryPrice,
                         unrealizedPnl = "0",
                         roe = "0",
@@ -244,6 +244,20 @@ class PerpetualViewModel @Inject constructor(
             } catch (e: Exception) {
                 Timber.e(e, "Error loading total PnL")
                 onSuccess(0.0)
+            }
+        }
+    }
+
+    fun loadOpenPositions(walletId: String, onSuccess: (List<PerpsPosition>) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val positions = withContext(Dispatchers.IO) {
+                    perpsPositionDao.getOpenPositions(walletId)
+                }
+                onSuccess(positions)
+            } catch (e: Exception) {
+                Timber.e(e, "Error loading open positions")
+                onSuccess(emptyList())
             }
         }
     }
