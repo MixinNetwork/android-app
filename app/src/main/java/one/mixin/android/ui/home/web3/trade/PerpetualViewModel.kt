@@ -186,7 +186,7 @@ class PerpetualViewModel @Inject constructor(
                     val position = PerpsPosition(
                         positionId = data.orderId,
                         walletId = walletId,
-                        marketId = productId,
+                        productId = productId,
                         marketSymbol = marketSymbol,
                         side = side,
                         quantity = amount,
@@ -268,7 +268,7 @@ class PerpetualViewModel @Inject constructor(
                 val positions = withContext(Dispatchers.IO) {
                     perpsPositionDao.getOpenPositions(walletId)
                 }
-                val position = positions.firstOrNull { it.marketId == marketId }
+                val position = positions.firstOrNull { it.productId == marketId }
                 onSuccess(position)
             } catch (e: Exception) {
                 Timber.e(e, "Error loading position by market")

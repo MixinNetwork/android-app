@@ -6,14 +6,17 @@ import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 
 @Entity(tableName = "perps_positions")
-data class PerpsPosition(
+data class  PerpsPosition(
     @PrimaryKey
     @SerializedName("position_id")
     @ColumnInfo(name = "position_id")
     val positionId: String,
+    @SerializedName("product_id")
+    @ColumnInfo(name = "product_id")
+    val productId: String,
     @SerializedName("market_symbol")
     @ColumnInfo(name = "market_symbol")
-    val marketSymbol: String,
+    val marketSymbol: String? = null,
     @SerializedName("side")
     @ColumnInfo(name = "side")
     val side: String,
@@ -43,8 +46,6 @@ data class PerpsPosition(
     val roe: String,
     @ColumnInfo(name = "wallet_id")
     val walletId: String = "",
-    @ColumnInfo(name = "market_id")
-    val marketId: String = "",
     @ColumnInfo(name = "liquidation_price")
     val liquidationPrice: String = "",
     @ColumnInfo(name = "created_at")

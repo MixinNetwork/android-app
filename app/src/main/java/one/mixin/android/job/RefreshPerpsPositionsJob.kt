@@ -48,38 +48,12 @@ class RefreshPerpsPositionsJob(
                 
                 if (positions.isNotEmpty()) {
                     positionDao.insertAll(positions)
-                    
-                    val marketIds = positions.map { it.marketId }.distinct()
-                    if (marketIds.isNotEmpty()) {
-                        refreshMarkets(marketIds, marketDao)
-                    }
                 }
             } else {
                 Timber.e("RefreshPerpsPositionsJob: Failed to fetch positions for wallet $walletId: ${response.errorDescription}")
             }
         } catch (e: Exception) {
             Timber.e(e, "RefreshPerpsPositionsJob: Exception occurred while fetching positions for wallet $walletId")
-        }
-    }
-
-    private suspend fun refreshMarkets(
-        marketIds: List<String>,
-        marketDao: PerpsMarketDao
-    ) {
-        marketIds.forEach { marketId ->
-            try {
-                if (marketDao.getMarket(marketId) == null) {
-                    val response = routeService.getPerpsMarket(marketId)
-                    if (response.isSuccess && response.data != null) {
-                        marketDao.insert(response.data!!)
-                        Timber.d("RefreshPerpsPositionsJob: Successfully inserted market $marketId")
-                    } else {
-                        Timber.e("RefreshPerpsPositionsJob: Failed to fetch market $marketId: ${response.errorDescription}")
-                    }
-                }
-            } catch (e: Exception) {
-                Timber.e(e, "RefreshPerpsPositionsJob: Exception occurred while fetching market $marketId")
-            }
         }
     }
 }
