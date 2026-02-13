@@ -170,7 +170,8 @@ class TipFlowInteractor @Inject internal constructor(
         onStepChanged: (TipStep) -> Unit,
         onShowMessage: (String) -> Unit,
     ): Boolean {
-        val errMsg = e.getTipExceptionMsg(context, nodeFailedInfo)
+        val extraInfo = "account counter: $tipCounter, nodeCounterBeforeRequest: $nodeCounterBeforeRequest, type: ${tipBundle.tipType}, step: ${tipBundle.tipStep}, event: ${tipBundle.tipEvent}"
+        val errMsg = e.getTipExceptionMsg(context, nodeFailedInfo, extraInfo)
         onShowMessage(errMsg)
         if (e is DifferentIdentityException) {
             tipBundle.oldPin = null
@@ -230,6 +231,7 @@ class TipFlowInteractor @Inject internal constructor(
             }
         }
         val cur = System.currentTimeMillis()
+        context.defaultSharedPreferences.putBoolean(PREF_LOGIN_OR_SIGN_UP, true)
         context.defaultSharedPreferences.putLong(Constants.Account.PREF_PIN_CHECK, cur)
         putPrefPinInterval(context, INTERVAL_10_MINS)
         val openBiometrics = context.defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)

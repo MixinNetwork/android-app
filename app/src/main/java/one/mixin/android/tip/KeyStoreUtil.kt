@@ -5,6 +5,7 @@ import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.security.keystore.KeyProperties.AUTH_BIOMETRIC_STRONG
 import android.security.keystore.KeyProperties.AUTH_DEVICE_CREDENTIAL
+import com.bugsnag.android.Bugsnag
 import one.mixin.android.util.reportException
 import java.security.KeyStore
 import javax.crypto.Cipher
@@ -37,6 +38,7 @@ fun deleteKeyByAlias(alias: String): Boolean {
         return true
     } catch (e: Exception) {
         reportException("deleteKeyByAlias", e)
+        Bugsnag.notify(e)
     }
     return false
 }
@@ -57,6 +59,7 @@ private fun getKeyByAlias(
         }
     } catch (e: Exception) {
         reportException("getKeyByAlias", e)
+        Bugsnag.notify(e)
     }
     try {
         val keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore")
@@ -85,6 +88,7 @@ private fun getKeyByAlias(
         key = keyGenerator.generateKey()
     } catch (e: Exception) {
         reportException("getKeyByAlias", e)
+        Bugsnag.notify(e)
     }
     return key
 }

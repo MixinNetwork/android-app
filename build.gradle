@@ -111,7 +111,7 @@ buildscript {
         ext.web3jVersion = '4.8.7-android'
         ext.sol4kVersion = '0.7.0'
 
-        ext.sumsubVersion = '1.39.1'
+        ext.sumsubVersion = '1.41.0'
         ext.checkoutFramesVersion = '4.2.3'
         ext.checkoutSecureVersion = '3.2.6'
         ext.checkoutRiskVersion = '1.0.6'
@@ -126,14 +126,14 @@ buildscript {
 
         ext.lottieComposeVersion = '6.7.1'
         ext.composeBomVersion = '2026.02.00'
-        ext.activityComposeVersion = '1.12.3'
+        ext.activityComposeVersion = '1.12.4'
         ext.web3jCoreVersion = '4.11.0'
         ext.web3jCryptoVersion = '4.11.0'
         ext.reownBomVersion = '1.5.2'
         ext.kotsonVersion = '2.5.0'
         ext.playServicesMapsVersion = '20.0.0'
         ext.playServicesLocationVersion = '21.3.0'
-        firebaseBomVersion = "34.8.0"
+        firebaseBomVersion = "34.9.0"
         billingKtxVersion = "8.3.0"
         webpdecoderVersion = "2.7.4.16.0"
 
