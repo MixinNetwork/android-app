@@ -386,6 +386,11 @@ interface RouteService {
         @Query("wallet_id") walletId: String
     ): MixinResponse<List<PerpsPosition>>
 
+    @GET("perps/positions/{id}")
+    suspend fun getPerpsPosition(
+        @Path("id") positionId: String
+    ): MixinResponse<PerpsPosition>
+
     @GET("perps/positions/history")
     suspend fun getPerpsPositionHistory(
         @Query("offset") offset: String? = null,

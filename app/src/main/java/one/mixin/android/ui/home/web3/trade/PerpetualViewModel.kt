@@ -261,4 +261,92 @@ class PerpetualViewModel @Inject constructor(
             }
         }
     }
+
+    fun getPositionByMarket(walletId: String, marketId: String, onSuccess: (PerpsPosition?) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val positions = withContext(Dispatchers.IO) {
+                    perpsPositionDao.getOpenPositions(walletId)
+                }
+                val position = positions.firstOrNull { it.marketId == marketId }
+                onSuccess(position)
+            } catch (e: Exception) {
+                Timber.e(e, "Error loading position by market")
+                onSuccess(null)
+            }
+        }
+    }
+
+    fun closePerpsOrder(
+        positionId: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                val request = one.mixin.android.api.request.perps.CloseOrderRequest(
+                    positionId = positionId
+                )
+                
+                val response = withContext(Dispatchers.IO) {
+                    routeService.closePerpsOrder(request)
+                }
+                
+                if (response.isSuccess) {
+                    Timber.d("Perps order closed: $positionId")
+                    
+                    withContext(Dispatchers.IO) {
+                        perpsPositionDao.updateStatus(
+                            positionId = positionId,
+                            status = "closed",
+                            updatedAt = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", java.util.Locale.US).format(java.util.Date())
+                        )
+                    }
+                    
+                    onSuccess()
+                } else {
+                    val error = "Failed to close perps order: ${response.errorDescription}"
+                    Timber.e(error)
+                    onError(error)
+                }
+            } catch (e: Exception) {
+                val error = "Error closing perps order: ${e.message}"
+                Timber.e(e, error)
+                onError(error)
+            }
+        }
+    }
+
+    fun loadPositionDetail(
+        positionId: String,
+        onSuccess: (PerpsPosition) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                val response = withContext(Dispatchers.IO) {
+                    routeService.getPerpsPosition(positionId)
+                }
+                
+                val data = response.data
+                if (response.isSuccess && data != null) {
+                    Timber.d("Position detail loaded: ${data.positionId}")
+                    
+                    withContext(Dispatchers.IO) {
+                        perpsPositionDao.insert(data)
+                    }
+                    
+                    onSuccess(data)
+                } else {
+                    val error = "Failed to load position detail: ${response.errorDescription}"
+                    Timber.e(error)
+                    onError(error)
+                }
+            } catch (e: Exception) {
+                val error = "Error loading position detail: ${e.message}"
+                Timber.e(e, error)
+                onError(error)
+            }
+        }
+    }
 }

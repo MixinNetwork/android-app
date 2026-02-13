@@ -47,9 +47,11 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
+import one.mixin.android.api.response.perps.PerpsPosition
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.session.Session
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import java.math.BigDecimal
 
@@ -64,9 +66,12 @@ fun MarketDetailPage(
     var market by remember { mutableStateOf<PerpsMarket?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     var selectedTimeFrame by remember { mutableIntStateOf(0) }
+    var currentPosition by remember { mutableStateOf<PerpsPosition?>(null) }
     val coroutineScope = rememberCoroutineScope()
 
     val timeFrames = listOf("1h", "1d", "1w", "1M")
+    
+    val walletId = Session.getAccountId() ?: ""
 
     LaunchedEffect(marketId) {
         viewModel.loadMarketDetail(
@@ -79,6 +84,12 @@ fun MarketDetailPage(
                 isLoading = false
             }
         )
+        
+        if (walletId.isNotEmpty()) {
+            viewModel.getPositionByMarket(walletId, marketId) { position ->
+                currentPosition = position
+            }
+        }
     }
 
     PageScaffold(
@@ -138,24 +149,24 @@ fun MarketDetailPage(
             Spacer(modifier = Modifier.height(16.dp))
 
             if (market != null) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
+                if (currentPosition != null) {
                     Button(
                         modifier = Modifier
-                            .weight(1f)
+                            .fillMaxWidth()
                             .height(48.dp),
                         onClick = {
-                            PerpsActivity.showOpenPosition(
-                                context = context,
-                                marketId = marketId,
-                                marketSymbol = marketSymbol,
-                                isLong = true
-                            )
+                            val activity = context as? androidx.fragment.app.FragmentActivity ?: return@Button
+                            val position = currentPosition ?: return@Button
+                            
+                            PerpsCloseBottomSheetDialogFragment.newInstance(
+                                position = position,
+                                walletName = "Privacy Wallet"
+                            ).setOnDone {
+                                currentPosition = null
+                            }.show(activity.supportFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)
                         },
                         colors = ButtonDefaults.outlinedButtonColors(
-                            backgroundColor = MixinAppTheme.colors.walletGreen
+                            backgroundColor = MixinAppTheme.colors.accent
                         ),
                         shape = RoundedCornerShape(32.dp),
                         elevation = ButtonDefaults.elevation(
@@ -166,42 +177,78 @@ fun MarketDetailPage(
                         )
                     ) {
                         Text(
-                            text = "Long",
+                            text = "Close Position",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
                         )
                     }
-
-                    Button(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(48.dp),
-                        onClick = {
-                            PerpsActivity.showOpenPosition(
-                                context = context,
-                                marketId = marketId,
-                                marketSymbol = marketSymbol,
-                                isLong = false
-                            )
-                        },
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            backgroundColor = MixinAppTheme.colors.walletRed
-                        ),
-                        shape = RoundedCornerShape(32.dp),
-                        elevation = ButtonDefaults.elevation(
-                            pressedElevation = 0.dp,
-                            defaultElevation = 0.dp,
-                            hoveredElevation = 0.dp,
-                            focusedElevation = 0.dp
-                        )
+                } else {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Text(
-                            text = "Short",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
+                        Button(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(48.dp),
+                            onClick = {
+                                PerpsActivity.showOpenPosition(
+                                    context = context,
+                                    marketId = marketId,
+                                    marketSymbol = marketSymbol,
+                                    isLong = true
+                                )
+                            },
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                backgroundColor = MixinAppTheme.colors.walletGreen
+                            ),
+                            shape = RoundedCornerShape(32.dp),
+                            elevation = ButtonDefaults.elevation(
+                                pressedElevation = 0.dp,
+                                defaultElevation = 0.dp,
+                                hoveredElevation = 0.dp,
+                                focusedElevation = 0.dp
+                            )
+                        ) {
+                            Text(
+                                text = "Long",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
+
+                        Button(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(48.dp),
+                            onClick = {
+                                PerpsActivity.showOpenPosition(
+                                    context = context,
+                                    marketId = marketId,
+                                    marketSymbol = marketSymbol,
+                                    isLong = false
+                                )
+                            },
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                backgroundColor = MixinAppTheme.colors.walletRed
+                            ),
+                            shape = RoundedCornerShape(32.dp),
+                            elevation = ButtonDefaults.elevation(
+                                pressedElevation = 0.dp,
+                                defaultElevation = 0.dp,
+                                hoveredElevation = 0.dp,
+                                focusedElevation = 0.dp
+                            )
+                        ) {
+                            Text(
+                                text = "Short",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
                     }
                 }
             }
