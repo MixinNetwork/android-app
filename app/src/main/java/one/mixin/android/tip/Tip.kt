@@ -1,6 +1,7 @@
 package one.mixin.android.tip
 
 import android.content.Context
+import com.bugsnag.android.Bugsnag
 import com.lambdapioneer.argon2kt.Argon2Kt
 import ed25519.Ed25519
 import one.mixin.android.Constants
@@ -95,8 +96,8 @@ class Tip
                 val ephemeralSeed = ephemeral.getEphemeralSeed(context, deviceId)
                 Timber.e("updateTipPriv after getEphemeralSeed")
 
-                if (!counterEqual) { // node success
-                    Timber.e("updateTipPriv oldPin isNullOrBlank")
+                if (!counterEqual && failedSigners.isNullOrEmpty()) { // node success but subsequent steps failed
+                    Timber.e("updateTipPriv counter NOT equal and NO failed signers")
                     val (priKey, watcher) = identity.getIdentityPrivAndWatcher(newPin)
                     Timber.e("updateTipPriv after getIdentityPrivAndWatcher")
                     updatePriv(context, priKey, ephemeralSeed, watcher, newPin, oldPin, null)
@@ -587,6 +588,7 @@ class Tip
             if (e != null) {
                 if (e is TipNetworkException && e.error.code == ErrorHandler.BAD_DATA) {
                     reportException("Tip tip-secret meet bad data", e)
+                    Bugsnag.notify(e)
 
                     val msg = TipBody.forVerify(timestamp)
                     val goSigBase64 = Ed25519.sign(msg, stSeed).base64RawURLEncode()

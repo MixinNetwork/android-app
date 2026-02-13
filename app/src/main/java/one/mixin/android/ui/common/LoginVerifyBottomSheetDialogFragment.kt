@@ -210,8 +210,8 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
                 )
                 Pair(btcAddress, btcPrivateKey)
             } else {
-                val mnemonic: String = CryptoWalletHelper.getWeb3Mnemonic(requireContext(), spendKey, walletItem.id)
-                    ?: throw IllegalArgumentException("Missing mnemonic")
+                // Skip if no key
+                val mnemonic: String = CryptoWalletHelper.getWeb3Mnemonic(requireContext(), spendKey, walletItem.id) ?: continue
                 val derivedWallet = CryptoWalletHelper.mnemonicToBitcoinSegwitWallet(mnemonic, index = derivationIndex)
                 Pair(derivedWallet.address, Numeric.hexStringToByteArray(derivedWallet.privateKey))
             }

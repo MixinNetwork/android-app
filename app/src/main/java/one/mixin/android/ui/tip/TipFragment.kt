@@ -479,7 +479,8 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         tipCounter: Int,
         nodeCounterBeforeRequest: Int,
     ) {
-        val errMsg = e.getTipExceptionMsg(requireContext(), nodeFailedInfo)
+        val extraInfo = "account counter: $tipCounter, nodeCounterBeforeRequest: $nodeCounterBeforeRequest, type: ${tipBundle.tipType}, step: ${tipBundle.tipStep}, event: ${tipBundle.tipEvent}"
+        val errMsg = e.getTipExceptionMsg(requireContext(), nodeFailedInfo, extraInfo)
         toast(errMsg)
 
         if (e is DifferentIdentityException) {
