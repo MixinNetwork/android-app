@@ -2,6 +2,8 @@ package one.mixin.android.ui.landing
 
 import android.os.Bundle
 import android.view.View
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -30,6 +32,9 @@ class CreateAccountFragment : Fragment(R.layout.fragment_compose) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        if (activity is LandingActivity) {
+            applySafeTopPadding(view)
+        }
         Timber.e("CreateAccountFragment onViewCreated")
         binding.titleView.setSubTitle(requireContext().getString(R.string.Create_Account), "")
         binding.titleView.leftIb.setOnClickListener {
@@ -72,5 +77,15 @@ class CreateAccountFragment : Fragment(R.layout.fragment_compose) {
                 activity?.openUrl(getString(R.string.landing_privacy_policy_url))
             })
         }
+    }
+
+    private fun applySafeTopPadding(rootView: View) {
+        val originalPaddingTop: Int = rootView.paddingTop
+        ViewCompat.setOnApplyWindowInsetsListener(rootView) { v: View, insets: WindowInsetsCompat ->
+            val topInset: Int = insets.getInsets(WindowInsetsCompat.Type.displayCutout()).top
+            v.setPadding(v.paddingLeft, originalPaddingTop + topInset, v.paddingRight, v.paddingBottom)
+            insets
+        }
+        ViewCompat.requestApplyInsets(rootView)
     }
 }

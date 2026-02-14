@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
-import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.widget.RelativeLayout
@@ -56,53 +55,24 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
         AnalyticsTracker.trackSignUpFullName()
         MixinApplication.get().isOnline.set(true)
         binding.apply {
-            nameFab.visibility = GONE
+            continueBtn.isEnabled = false
+            continueBtn.alpha = 0.5f
+            
             debug.setOnLongClickListener {
                 LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
                 true
             }
-            nameFab.setOnClickListener {
-                nameFab.show()
-                nameCover.visibility = VISIBLE
-                val accountUpdateRequest = AccountUpdateRequest(nameEt.text.toString())
-                mobileViewModel.update(accountUpdateRequest)
-                    .autoDispose(stopScope).subscribe(
-                        { r: MixinResponse<Account> ->
-                            nameFab.hide()
-                            nameCover.visibility = INVISIBLE
-                            if (!r.isSuccess) {
-                                ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
-                                return@subscribe
-                            }
-                            r.data?.let { data ->
-                                Session.storeAccount(data)
-                                mobileViewModel.insertUser(data.toUser())
-                            }
-
-                            nameEt.hideKeyboard()
-                            initializeBots()
-                            val context = requireContext()
-                            if (!PrivacyPreference.getIsLoaded(requireContext(), false) ||
-                                !PrivacyPreference.getIsSyncSession(context, false)
-                            ) {
-                                InitializeActivity.showLoading(context, false)
-                            } else {
-                                startActivity(Intent(context, MainActivity::class.java))
-                            }
-                            activity?.finish()
-                        },
-                        { t: Throwable ->
-                            nameFab.hide()
-                            nameCover.visibility = INVISIBLE
-                            ErrorHandler.handleError(t)
-                            reportException("SetupNameFragment update", t)
-                        },
-                    )
+            
+            continueBtn.setOnClickListener {
+                if (!nameEt.text.isNullOrBlank()) {
+                    performNameUpdate()
+                }
             }
+            
             nameEt.addTextChangedListener(mWatcher)
             nameEt.setOnEditorActionListener {  _, _, _ ->
                 if (nameEt.text.isNotBlank()) {
-                    nameFab.performClick()
+                    continueBtn.performClick()
                 }
                 true
             }
@@ -116,23 +86,65 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
         setupSimpleKeyboardListener()
     }
 
+    private fun performNameUpdate() {
+        binding.apply {
+            continueBtn.isEnabled = false
+            nameCover.visibility = VISIBLE
+            
+            val accountUpdateRequest = AccountUpdateRequest(nameEt.text.toString())
+            mobileViewModel.update(accountUpdateRequest)
+                .autoDispose(stopScope).subscribe(
+                    { r: MixinResponse<Account> ->
+                        continueBtn.isEnabled = true
+                        nameCover.visibility = INVISIBLE
+                        if (!r.isSuccess) {
+                            ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
+                            return@subscribe
+                        }
+                        r.data?.let { data ->
+                            Session.storeAccount(data)
+                            mobileViewModel.insertUser(data.toUser())
+                        }
+
+                        nameEt.hideKeyboard()
+                        initializeBots()
+                        val context = requireContext()
+                        if (!PrivacyPreference.getIsLoaded(requireContext(), false) ||
+                            !PrivacyPreference.getIsSyncSession(context, false)
+                        ) {
+                            InitializeActivity.showLoading(context, false)
+                        } else {
+                            startActivity(Intent(context, MainActivity::class.java))
+                        }
+                        activity?.finish()
+                    },
+                    { t: Throwable ->
+                        continueBtn.isEnabled = true
+                        nameCover.visibility = INVISIBLE
+                        ErrorHandler.handleError(t)
+                        reportException("SetupNameFragment update", t)
+                    },
+                )
+        }
+    }
+
     private fun setupSimpleKeyboardListener() {
         val rootView = binding.root
-        val nameFab = binding.nameFab
-        val originalMargin = (nameFab.layoutParams as RelativeLayout.LayoutParams).bottomMargin
+        val continueBtn = binding.continueBtn
+        val originalMargin = (continueBtn.layoutParams as RelativeLayout.LayoutParams).bottomMargin
 
         rootView.viewTreeObserver.addOnGlobalLayoutListener {
             val rect = Rect()
             rootView.getWindowVisibleDisplayFrame(rect)
             val keypadHeight = rootView.height - rect.bottom
 
-            val layoutParams = nameFab.layoutParams as RelativeLayout.LayoutParams
+            val layoutParams = continueBtn.layoutParams as RelativeLayout.LayoutParams
             layoutParams.bottomMargin = if (keypadHeight > 200) {
                 originalMargin + keypadHeight + 16.dpToPx()
             } else {
                 originalMargin
             }
-            nameFab.layoutParams = layoutParams
+            continueBtn.layoutParams = layoutParams
         }
     }
 
@@ -145,9 +157,11 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
         binding.apply {
             nameEt.setSelection(nameEt.text.toString().length)
             if (str.isNotBlank()) {
-                nameFab.visibility = VISIBLE
+                continueBtn.isEnabled = true
+                continueBtn.alpha = 1.0f
             } else {
-                nameFab.visibility = INVISIBLE
+                continueBtn.isEnabled = false
+                continueBtn.alpha = 0.5f
             }
         }
     }
