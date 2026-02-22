@@ -762,13 +762,10 @@ class ConversationListFragment : LinkFragment() {
                 }.not()) {
                 if (parentFragmentManager.findFragmentByTag(VerifyMobileReminderBottomSheetDialogFragment.TAG) != null) return@launch
                 if (VerifyMobileReminderBottomSheetDialogFragment.shouldShow(requireContext())) {
-                    try {
-                        VerifyMobileReminderBottomSheetDialogFragment.showSafely(
-                            parentFragmentManager
-                        )
-                    } catch (e: IllegalStateException) {
-                        // Fragment state already saved, skip showing dialog
-                    }
+                    VerifyMobileReminderBottomSheetDialogFragment.showSafely(
+                        parentFragmentManager,
+                        R.string.Verify_Mobile_Number_Desc
+                    )
                     return@launch
                 }
                 ReminderBottomSheetDialogFragment.getType(requireContext(), totalUsd)

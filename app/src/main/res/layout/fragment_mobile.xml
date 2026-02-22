@@ -158,7 +158,7 @@
 
             <View
                 android:layout_weight="1"
-                android:background="?attr/text_remarks"
+                android:background="@color/border_primary"
                 android:layout_width="0dp"
                 android:layout_height="1dp" />
 
@@ -172,7 +172,7 @@
 
             <View
                 android:layout_weight="1"
-                android:background="?attr/text_remarks"
+                android:background="@color/border_primary"
                 android:layout_width="0dp"
                 android:layout_height="1dp" />
 

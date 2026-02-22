@@ -53,7 +53,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/classic_wallet_btc_feature_decentralized_title"
+                        android:text="@string/feature_decentralized"
                         android:textColor="?attr/text_primary"
                         android:textFontWeight="500"
                         android:textSize="16sp" />
@@ -62,7 +62,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="@string/classic_wallet_btc_feature_decentralized_desc"
+                        android:text="@string/feature_decentralized_description"
                         android:textColor="?attr/text_minor"
                         android:textSize="14sp" />
                 </LinearLayout>

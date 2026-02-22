@@ -11,6 +11,8 @@ import android.view.View.AUTOFILL_HINT_PHONE
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.WindowManager
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -37,6 +39,7 @@ import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.navTo
+import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
@@ -124,6 +127,9 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        if (activity is LandingActivity) {
+            applySafeTopPadding(view)
+        }
         Timber.e("MobileFragment onViewCreated")
         binding.apply {
             pin = requireArguments().getString(ARGS_PIN)
@@ -209,14 +215,34 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                 )
             }
             noAccount.setOnClickListener {
-                activity?.addFragment(
-                    this@MobileFragment,
-                    CreateAccountFragment.newInstance(),
-                    CreateAccountFragment.TAG
-                )
+                CreateAccountConfirmBottomSheetDialogFragment.newInstance()
+                    .setOnCreateAccount {
+                        activity?.addFragment(
+                            this@MobileFragment,
+                            MnemonicPhraseFragment.newInstance(),
+                            MnemonicPhraseFragment.TAG,
+                        )
+                    }
+                    .setOnPrivacyPolicy {
+                        activity?.openUrl(getString(R.string.landing_privacy_policy_url))
+                    }
+                    .setOnTermsOfService {
+                        activity?.openUrl(getString(R.string.landing_terms_url))
+                    }
+                    .showNow(parentFragmentManager, CreateAccountConfirmBottomSheetDialogFragment.TAG)
             }
         }
         setupFocusListeners()
+    }
+
+    private fun applySafeTopPadding(rootView: View) {
+        val originalPaddingTop: Int = rootView.paddingTop
+        ViewCompat.setOnApplyWindowInsetsListener(rootView) { v: View, insets: WindowInsetsCompat ->
+            val topInset: Int = insets.getInsets(WindowInsetsCompat.Type.displayCutout()).top
+            v.setPadding(v.paddingLeft, originalPaddingTop + topInset, v.paddingRight, v.paddingBottom)
+            insets
+        }
+        ViewCompat.requestApplyInsets(rootView)
     }
 
     private fun presetVerifyMobilePhoneNumber(phoneNumber: String) {
