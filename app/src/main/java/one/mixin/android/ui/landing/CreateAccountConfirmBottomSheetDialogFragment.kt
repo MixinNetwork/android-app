@@ -118,20 +118,20 @@ class CreateAccountConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDia
                 Spacer(modifier = Modifier.height(48.dp))
                 FeatureRow(
                     iconResId = R.drawable.ic_account_truly,
-                    titleResId = R.string.create_account_confirm_feature_1_title,
-                    descriptionResId = R.string.create_account_confirm_feature_1_desc,
+                    titleResId = R.string.feature_truly_decentralized,
+                    descriptionResId = R.string.feature_truly_decentralized_description,
                 )
                 Spacer(modifier = Modifier.height(14.dp))
                 FeatureRow(
                     iconResId = R.drawable.ic_account_privacy,
-                    titleResId = R.string.create_account_confirm_feature_2_title,
-                    descriptionResId = R.string.create_account_confirm_feature_2_desc,
+                    titleResId = R.string.feature_privacy_by_default,
+                    descriptionResId = R.string.feature_privacy_by_default_description,
                 )
                 Spacer(modifier = Modifier.height(14.dp))
                 FeatureRow(
                     iconResId = R.drawable.ic_account_all_in_one,
-                    titleResId = R.string.create_account_confirm_feature_3_title,
-                    descriptionResId = R.string.create_account_confirm_feature_3_desc,
+                    titleResId = R.string.feature_all_in_one,
+                    descriptionResId = R.string.feature_all_in_one_description,
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Button(

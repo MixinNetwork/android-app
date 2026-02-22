@@ -1069,12 +1069,20 @@
     <string name="Transfer_timeout">長時間未收到數據是否退出？</string>
     <string name="Receivers">交易接收人</string>
     <string name="classic_wallet_btc_intro_title">普通錢包現已支援比特幣</string>
-    <string name="classic_wallet_btc_feature_decentralized_title">去中心化</string>
-    <string name="classic_wallet_btc_feature_decentralized_desc">完全去中心化的錢包，你掌控私鑰。</string>
+    <string name="feature_decentralized">去中心化</string>
+    <string name="feature_decentralized_description">完全去中心化的錢包，你掌控私鑰。</string>
+    <string name="feature_privacy_by_default">默認隱私保護</string>
+    <string name="feature_privacy_by_default_description">聊天、通話、轉賬、資產，全程加密守護。</string>
+    <string name="feature_truly_decentralized">真正的去中心化</string>
+    <string name="feature_truly_decentralized_description">你的私鑰，你的資產。經審計驗證的開源架構。</string>
+    <string name="feature_all_in_one">一站式加密資產管理</string>
+    <string name="feature_all_in_one_description">交易、兌換、管理數千種原生代幣</string>
     <string name="classic_wallet_btc_feature_seamless_title">無縫體驗</string>
     <string name="classic_wallet_btc_feature_seamless_desc">閃電般的互動體驗，頁面載入與回應更迅速。</string>
     <string name="classic_wallet_btc_feature_compatibility_title">相容性</string>
     <string name="classic_wallet_btc_feature_compatibility_desc">支援從其他錢包匯入私鑰與觀察地址。</string>
     <string name="classic_wallet_btc_unlock_by_pin">使用 PIN 解鎖</string>
     <string name="no_available_utxo">沒有可用 UTXO</string>
+    <string name="create_account_confirm_title">創建你的賬戶</string>
+    <string name="create_account_confirm_action_create">創建賬戶</string>
 </resources>
