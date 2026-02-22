@@ -168,6 +168,7 @@ Google Available: ${context.isGooglePlayServicesAvailable()}
 User-agent: ${WebView(context).settings.userAgentString}
 Solana Address: ${Web3Signer.solanaAddress}
 EVM Address: ${Web3Signer.address}
+BTC Address: ${Web3Signer.btcAddress}
 """
         context.alert(content).setPositiveButton(android.R.string.copy) { dialog, _ ->
             context.getClipboardManager().setPrimaryClip(

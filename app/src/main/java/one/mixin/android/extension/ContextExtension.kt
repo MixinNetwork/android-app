@@ -84,6 +84,7 @@ import one.mixin.android.receiver.ShareBroadcastReceiver
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.RomUtil
+import one.mixin.android.util.RomPermissionUtil
 import one.mixin.android.util.XiaomiUtilities
 import one.mixin.android.util.blurhash.BlurHashEncoder
 import one.mixin.android.util.getChainName
@@ -1178,7 +1179,7 @@ val defaultThemeId =
     }
 
 fun Context.checkInlinePermissions(): Boolean {
-    if (RomUtil.isMiui && !XiaomiUtilities.isCustomPermissionGranted(XiaomiUtilities.OP_BACKGROUND_START_ACTIVITY)) {
+    if (!RomPermissionUtil.checkBackgroundStartPermission(this)) {
         return false
     }
     if (Settings.canDrawOverlays(this)) {
@@ -1188,23 +1189,12 @@ fun Context.checkInlinePermissions(): Boolean {
 }
 
 fun Context.checkInlinePermissions(showAlert: () -> Unit): Boolean {
-    if (RomUtil.isMiui && !XiaomiUtilities.isCustomPermissionGranted(XiaomiUtilities.OP_BACKGROUND_START_ACTIVITY)) {
-        var intent = XiaomiUtilities.getPermissionManagerIntent()
-        if (intent != null) {
-            try {
-                startActivity(intent)
-            } catch (x: Exception) {
-                try {
-                    intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                    intent.data =
-                        Uri.parse("package:" + MixinApplication.appContext.packageName)
-                    startActivity(intent)
-                } catch (xx: Exception) {
-                    Timber.e(xx)
-                }
-            }
+    if (!RomPermissionUtil.checkBackgroundStartPermission(this)) {
+        if (RomPermissionUtil.openBackgroundPermissionSetting(this)) {
+            toast(R.string.need_background_permission)
+        } else {
+            toast(R.string.need_background_permission)
         }
-        toast(R.string.need_background_permission)
         return false
     }
     if (Settings.canDrawOverlays(this)) {
