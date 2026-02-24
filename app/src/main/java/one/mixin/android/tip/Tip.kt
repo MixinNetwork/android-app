@@ -589,8 +589,8 @@ class Tip
                 if (e is TipNetworkException && e.error.code == ErrorHandler.BAD_DATA) {
                     reportException("Tip tip-secret meet bad data", e)
                     Bugsnag.notify(e)
-
-                    val msg = TipBody.forVerify(timestamp)
+                    val ts = Ed25519.getTimestamp()
+                    val msg = TipBody.forVerify(ts)
                     val goSigBase64 = Ed25519.sign(msg, stSeed).base64RawURLEncode()
                     Timber.e("signature go-ed25519 $goSigBase64")
 
@@ -600,12 +600,16 @@ class Tip
                             seedBase64 = seedBase64,
                             secretBase64 = secretBase64,
                             signatureBase64 = goSigBase64,
-                            timestamp = timestamp,
+                            timestamp = ts,
                         )
                     Timber.e("use go-ed25519 before updateTipSecret")
                     tipNetworkNullable { tipService.updateTipSecret(request) }.getOrThrow()
                     reportException("Tip tip-secret go update success after bad data", e)
                 } else {
+                    Bugsnag.notify(e) { report ->
+                        report.addError("", "Tip secret update failed")
+                        true
+                    }
                     throw e
                 }
             }
