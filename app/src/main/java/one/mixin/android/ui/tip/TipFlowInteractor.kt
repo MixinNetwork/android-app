@@ -188,19 +188,29 @@ class TipFlowInteractor @Inject internal constructor(
                 tipBundle.updateTipEvent(nodeFailedSigners, nodeMaxCounter)
             },
         ).onFailure {
+            // Generally, check-counter should NOT meet exceptions, if this happens,
+            // we should go to the RetryConnect step to check network and other steps.
             tipBundle.pin = null
             tipBundle.oldPin = null
             val errorInfo = if (it is TipNotAllWatcherSuccessException) it.info else ""
             onStepChanged(RetryConnect(true, errorInfo))
             return false
         }
+
+        // all signer failed perhaps means PIN incorrect, clear PIN and let user re-input.
         if (e is NotAllSignerSuccessException && e.allFailure()) {
             tipBundle.pin = null
         }
+
         val newNodeCounter = tipBundle.tipEvent?.nodeCounter ?: nodeCounterBeforeRequest
         if (newNodeCounter > nodeCounterBeforeRequest && newNodeCounter > tipCounter) {
+            // If new node counter greater than session counter and old node counter,
+            // we should refresh session counter to prevent failure in cases where
+            // pin/update completes but local session account update fails.
             refreshAccount(context)
             val newSessionCounter = Session.getTipCounter()
+            // If new session counter equals new node counter,
+            // we consider this case as PIN update success.
             if (newNodeCounter == newSessionCounter) {
                 return handleProcessSuccess(context, tipBundle, pin, null, true, onStepChanged, onShowMessage)
             }
@@ -227,6 +237,7 @@ class TipFlowInteractor @Inject internal constructor(
                 false
             }
             if (!registerResult) {
+                // register public key failed, already go to RetryRegister
                 return false
             }
         }
