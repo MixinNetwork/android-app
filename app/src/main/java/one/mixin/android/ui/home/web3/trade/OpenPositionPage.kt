@@ -410,7 +410,6 @@ fun OpenPositionPage(
                             walletId = walletId,
                             marketSymbol = marketSymbol,
                             entryPrice = m.markPrice,
-                            liquidationPrice = calculateLiquidationPrice(m.markPrice, leverage, isLong),
                             onSuccess = { response ->
                                 PerpsConfirmBottomSheetDialogFragment.newInstance(
                                     marketId = marketId,

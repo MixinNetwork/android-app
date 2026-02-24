@@ -90,7 +90,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
         ): PerpsCloseBottomSheetDialogFragment {
             return PerpsCloseBottomSheetDialogFragment().withArgs {
                 putString(ARGS_POSITION_ID, position.positionId)
-                putString(ARGS_MARKET_SYMBOL, position.marketSymbol)
+                putString(ARGS_MARKET_SYMBOL, position.marketSymbol ?: "")
                 putString(ARGS_SIDE, position.side)
                 putString(ARGS_QUANTITY, position.quantity)
                 putInt(ARGS_LEVERAGE, position.leverage)
@@ -137,27 +137,53 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
         Error,
     }
 
-    private val positionId by lazy { requireNotNull(requireArguments().getString(ARGS_POSITION_ID)) }
-    private val marketSymbol by lazy { requireNotNull(requireArguments().getString(ARGS_MARKET_SYMBOL)) }
-    private val side by lazy { requireNotNull(requireArguments().getString(ARGS_SIDE)) }
-    private val quantity by lazy { requireNotNull(requireArguments().getString(ARGS_QUANTITY)) }
-    private val leverage by lazy { requireArguments().getInt(ARGS_LEVERAGE) }
-    private val entryPrice by lazy { requireNotNull(requireArguments().getString(ARGS_ENTRY_PRICE)) }
-    private val markPrice by lazy { requireNotNull(requireArguments().getString(ARGS_MARK_PRICE)) }
-    private val unrealizedPnl by lazy { requireNotNull(requireArguments().getString(ARGS_UNREALIZED_PNL)) }
-    private val roe by lazy { requireNotNull(requireArguments().getString(ARGS_ROE)) }
-    private val walletName by lazy { requireNotNull(requireArguments().getString(ARGS_WALLET_NAME)) }
+    private val positionId by lazy { 
+        requireNotNull(requireArguments().getString(ARGS_POSITION_ID)) { "positionId is null" }
+    }
+    private val marketSymbol by lazy { 
+        requireArguments().getString(ARGS_MARKET_SYMBOL) ?: "Unknown" 
+    }
+    private val side by lazy { 
+        requireNotNull(requireArguments().getString(ARGS_SIDE)) { "side is null" }
+    }
+    private val quantity by lazy { 
+        requireNotNull(requireArguments().getString(ARGS_QUANTITY)) { "quantity is null" }
+    }
+    private val leverage by lazy { 
+        requireArguments().getInt(ARGS_LEVERAGE) 
+    }
+    private val entryPrice by lazy { 
+        requireNotNull(requireArguments().getString(ARGS_ENTRY_PRICE)) { "entryPrice is null" }
+    }
+    private val markPrice by lazy { 
+        requireNotNull(requireArguments().getString(ARGS_MARK_PRICE)) { "markPrice is null" }
+    }
+    private val unrealizedPnl by lazy { 
+        requireNotNull(requireArguments().getString(ARGS_UNREALIZED_PNL)) { "unrealizedPnl is null" }
+    }
+    private val roe by lazy { 
+        requireNotNull(requireArguments().getString(ARGS_ROE)) { "roe is null" }
+    }
+    private val walletName by lazy { 
+        requireNotNull(requireArguments().getString(ARGS_WALLET_NAME)) { "walletName is null" }
+    }
 
     private var step by mutableStateOf(Step.Pending)
     private var errorInfo: String? by mutableStateOf(null)
     private var isLoading by mutableStateOf(true)
     
-    private var latestMarkPrice by mutableStateOf(markPrice)
-    private var latestUnrealizedPnl by mutableStateOf(unrealizedPnl)
-    private var latestRoe by mutableStateOf(roe)
+    private var latestMarkPrice by mutableStateOf("")
+    private var latestUnrealizedPnl by mutableStateOf("")
+    private var latestRoe by mutableStateOf("")
 
     @Composable
     override fun ComposeContent() {
+        androidx.compose.runtime.LaunchedEffect(Unit) {
+            latestMarkPrice = markPrice
+            latestUnrealizedPnl = unrealizedPnl
+            latestRoe = roe
+        }
+        
         androidx.compose.runtime.LaunchedEffect(positionId) {
             viewModel.loadPositionDetail(
                 positionId = positionId,
@@ -182,7 +208,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                     .fillMaxHeight()
                     .background(MixinAppTheme.colors.background),
             ) {
-                WalletLabel(walletName = walletName, isWeb3 = true)
+                WalletLabel(walletName = walletName, isWeb3 = false)
                 Column(
                     modifier = Modifier
                         .verticalScroll(rememberScrollState())

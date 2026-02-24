@@ -2,6 +2,7 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
+import one.mixin.android.api.response.perps.PerpsPosition
 import one.mixin.android.db.PerpsDatabase
 import one.mixin.android.db.perps.PerpsMarketDao
 import one.mixin.android.db.perps.PerpsPositionDao
@@ -43,7 +44,7 @@ class RefreshPerpsPositionsJob(
             val response = routeService.getPerpsPositions(walletId = walletId)
 
             if (response.isSuccess && response.data != null) {
-                val positions = response.data!!
+                val positions = response.data!!.map { it.copy(walletId = walletId) }
                 Timber.d("RefreshPerpsPositionsJob: Fetched ${positions.size} positions for wallet $walletId")
                 
                 if (positions.isNotEmpty()) {

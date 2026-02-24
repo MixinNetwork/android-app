@@ -159,7 +159,6 @@ class PerpetualViewModel @Inject constructor(
         destination: String? = null,
         marketSymbol: String,
         entryPrice: String,
-        liquidationPrice: String,
         onSuccess: (OpenOrderResponse) -> Unit,
         onError: (String) -> Unit
     ) {
@@ -197,7 +196,6 @@ class PerpetualViewModel @Inject constructor(
                         markPrice = entryPrice,
                         unrealizedPnl = "0",
                         roe = "0",
-                        liquidationPrice = liquidationPrice,
                         createdAt = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", java.util.Locale.US).format(java.util.Date()),
                         updatedAt = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", java.util.Locale.US).format(java.util.Date())
                     )

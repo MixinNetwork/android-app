@@ -51,7 +51,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.api.request.perps.OpenOrderResponse
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.booleanFromAttribute
@@ -64,6 +63,7 @@ import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
+import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.UtxoConsolidationBottomSheetDialogFragment
@@ -72,13 +72,10 @@ import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
 import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.wallet.components.WalletLabel
 import one.mixin.android.util.SystemUIManager
-import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toUser
-import one.mixin.android.web3.js.Web3Signer
 import timber.log.Timber
 import java.math.BigDecimal
 import java.util.UUID
-import kotlin.math.abs
 
 @AndroidEntryPoint
 class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
@@ -154,8 +151,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         }
     }
 
-    private val viewModel by viewModels<PerpetualViewModel>()
-    private val bottomViewModel by viewModels<one.mixin.android.ui.common.BottomSheetViewModel>()
+    private val bottomViewModel by viewModels<BottomSheetViewModel>()
 
     enum class Step {
         Pending,
@@ -190,7 +186,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                     .fillMaxHeight()
                     .background(MixinAppTheme.colors.background),
             ) {
-                WalletLabel(walletName = walletName, isWeb3 = true)
+                WalletLabel(walletName = walletName, isWeb3 = false)
                 Column(
                     modifier = Modifier
                         .verticalScroll(rememberScrollState())

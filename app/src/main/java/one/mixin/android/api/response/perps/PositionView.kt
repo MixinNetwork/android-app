@@ -45,13 +45,13 @@ data class  PerpsPosition(
     @ColumnInfo(name = "roe")
     val roe: String,
     @ColumnInfo(name = "wallet_id")
-    val walletId: String = "",
-    @ColumnInfo(name = "liquidation_price")
-    val liquidationPrice: String = "",
+    val walletId: String? = null,
+    @SerializedName("created_at")
     @ColumnInfo(name = "created_at")
-    val createdAt: String = "",
+    val createdAt: String? = null,
+    @SerializedName("updated_at")
     @ColumnInfo(name = "updated_at")
-    val updatedAt: String = ""
+    val updatedAt: String? = null
 )
 
 data class PositionHistoryView(
