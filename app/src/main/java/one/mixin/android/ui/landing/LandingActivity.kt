@@ -50,34 +50,6 @@ class LandingActivity : BaseActivity() {
                 }
             context.startActivity(intent)
         }
-
-        fun showChangePhone(context: Context) {
-            val intent =
-                Intent(context, LandingActivity::class.java).apply {
-                    putExtra(ARGS_FROM, FROM_CHANGE_PHONE_ACCOUNT)
-                }
-            context.startActivity(intent)
-        }
-
-        fun showVerifyMobile(context: Context) {
-            val intent =
-                Intent(context, LandingActivity::class.java).apply {
-                    putExtra(ARGS_FROM, FROM_VERIFY_MOBILE_REMINDER)
-                }
-            context.startActivity(intent)
-        }
-
-        fun showVerifyMobile(
-            context: Context,
-            phoneNumber: String,
-        ) {
-            val intent =
-                Intent(context, LandingActivity::class.java).apply {
-                    putExtra(ARGS_FROM, FROM_VERIFY_MOBILE_REMINDER)
-                    putExtra(ARGS_PHONE_NUM, phoneNumber)
-                }
-            context.startActivity(intent)
-        }
     }
 
     @Inject

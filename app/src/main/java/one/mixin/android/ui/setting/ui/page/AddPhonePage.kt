@@ -62,7 +62,7 @@ fun AddPhonePage(hasPhone: Boolean, pop: () -> Unit, next: () -> Unit) {
                         fontSize = 14.sp,
                         lineHeight = 21.sp
                     ) {
-                        context.openUrl(Constants.HelpLink.TIP)
+                        context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
                     }
                 } else {
                     HighlightedTextWithClick(

@@ -164,6 +164,11 @@ SDK: ${Build.VERSION.SDK_INT}
 Incremental: ${Build.VERSION.INCREMENTAL} 
 Version Code: ${Build.VERSION.RELEASE}
 User ID: ${Session.getAccountId()}
+Is Anonymous: ${Session.isAnonymous()}
+Has Phone: ${Session.hasPhone()}
+Phone Verified At: ${Session.getAccount()?.phoneVerifiedAt}
+Salt Exported: ${Session.saltExported()}
+Has Safe: ${Session.hasSafe()}
 Google Available: ${context.isGooglePlayServicesAvailable()}
 User-agent: ${WebView(context).settings.userAgentString}
 Solana Address: ${Web3Signer.solanaAddress}

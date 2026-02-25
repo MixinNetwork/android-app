@@ -2,6 +2,7 @@ package one.mixin.android.tip
 
 import one.mixin.android.extension.sha256
 import one.mixin.android.extension.stripAmountZero
+import java.util.Locale
 
 object TipBody {
     private const val TIPVerify = "TIP:VERIFY:"
@@ -26,8 +27,9 @@ object TipBody {
     private const val TIPBodyForDeactivate = "TIP:USER:DEACTIVATE:"
     private const val TIPSessionLogout = "TIP:SESSION:LOGOUT:"
 
-    fun forVerify(timestamp: Long): ByteArray =
-        String.format("%s%032d", TIPVerify, timestamp).toByteArray()
+    fun forVerify(timestamp: Long): ByteArray {
+        return "%s%032d".format(Locale.ENGLISH, TIPVerify, timestamp).toByteArray()
+    }
 
     fun forRawTransactionCreate(
         assetId: String,

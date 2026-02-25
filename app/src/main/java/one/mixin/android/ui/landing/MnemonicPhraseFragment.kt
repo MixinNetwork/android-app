@@ -7,6 +7,8 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -100,6 +102,9 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        if (activity is LandingActivity) {
+            applySafeTopPadding(view)
+        }
         Timber.e("MnemonicPhraseFragment onViewCreated")
         binding.titleView.leftIb.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
@@ -109,9 +114,17 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 anonymousRequest(words)
             }
         }
-        if (!words.isNullOrEmpty()) {
-            anonymousRequest(words)
+        anonymousRequest(words)
+    }
+
+    private fun applySafeTopPadding(rootView: View) {
+        val originalPaddingTop: Int = rootView.paddingTop
+        ViewCompat.setOnApplyWindowInsetsListener(rootView) { v: View, insets: WindowInsetsCompat ->
+            val topInset: Int = insets.getInsets(WindowInsetsCompat.Type.displayCutout()).top
+            v.setPadding(v.paddingLeft, originalPaddingTop + topInset, v.paddingRight, v.paddingBottom)
+            insets
         }
+        ViewCompat.requestApplyInsets(rootView)
     }
 
     private fun anonymousRequest(words: List<String>? = null) {
