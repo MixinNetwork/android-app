@@ -170,19 +170,6 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     sendReceiveView.enableBuy()
                     sendReceiveView.buy.setOnClickListener {
                         lifecycleScope.launch {
-                            if (Session.isAnonymous() && !Session.hasPhone()) {
-                                navTo(AddPhoneBeforeFragment.newInstance(), AddPhoneBeforeFragment.TAG)
-                                return@launch
-                            }
-                            val phoneVerifiedAt: String? = Session.getAccount()?.phoneVerifiedAt
-                            val shouldVerifyMobile: Boolean = phoneVerifiedAt.isNullOrBlank() || runCatching {
-                                val verifiedAtMillis: Long = Instant.parse(phoneVerifiedAt).toEpochMilli()
-                                System.currentTimeMillis() - verifiedAtMillis > Constants.INTERVAL_60_DAYS
-                            }.getOrDefault(true)
-                            if (shouldVerifyMobile) {
-                                LandingActivity.showVerifyMobile(requireContext())
-                                return@launch
-                            }
                             val wallet = web3ViewModel.findWalletById(walletId)
                             val chainId = web3ViewModel.getAddresses(walletId).first().chainId
                             if (wallet?.isImported() == true && !wallet.hasLocalPrivateKey) {
