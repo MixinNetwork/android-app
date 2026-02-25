@@ -5,6 +5,7 @@ import android.content.Context
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -15,6 +16,9 @@ import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.getSafeAreaInsetsBottom
+import one.mixin.android.extension.hasNavigationBar
+import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.extension.textColor
 import one.mixin.android.session.Session
@@ -22,6 +26,7 @@ import one.mixin.android.vo.App
 import one.mixin.android.vo.membershipIcon
 import one.mixin.android.widget.FlowLayout
 import one.mixin.android.widget.lottie.RLottieDrawable
+import timber.log.Timber
 
 @DslMarker
 annotation class MenuDsl
@@ -110,7 +115,8 @@ fun MenuList.createMenuLayout(
     val dp13 = context.dpToPx(13f)
     val dp16 = context.dpToPx(16f)
     val dp56 = context.dpToPx(56f)
-    groups.forEach { group ->
+
+    groups.forEachIndexed { groupIndex, group ->
         val groupLayout =
             LinearLayout(context).apply {
                 orientation = LinearLayout.VERTICAL
@@ -224,6 +230,7 @@ fun MenuList.createMenuLayout(
             },
         )
     }
+    
     return listLayout
 }
 
