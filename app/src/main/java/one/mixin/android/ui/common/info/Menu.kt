@@ -176,6 +176,7 @@ fun MenuList.createMenuLayout(
                         menuBinding.mixinMemberPlanIv.setImageResource(icon)
                     }
                 } else {
+                    menuBinding.mixinMemberPlanTv.setTextColor(context.colorFromAttribute(R.attr.text_primary))
                     menuBinding.mixinMemberPlanIv.isVisible = false
                     menuBinding.mixinMemberPlanTv.isVisible = true
                     menuBinding.mixinMemberPlanIv.clearAnimation()

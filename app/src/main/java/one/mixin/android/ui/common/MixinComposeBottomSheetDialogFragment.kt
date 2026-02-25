@@ -90,6 +90,17 @@ abstract class MixinComposeBottomSheetDialogFragment : SchemeBottomSheet() {
         return composeView
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        view.doOnPreDraw {
+            val params = (view.parent as? View)?.layoutParams as? CoordinatorLayout.LayoutParams
+            behavior = params?.behavior as? BottomSheetBehavior<*>
+            behavior?.peekHeight = getBottomSheetHeight(view)
+            behavior?.isDraggable = false
+            behavior?.addBottomSheetCallback(internalBottomSheetBehaviorCallback)
+        }
+    }
+
     override fun onStart() {
         super.onStart()
         dialog?.window?.let { window ->
