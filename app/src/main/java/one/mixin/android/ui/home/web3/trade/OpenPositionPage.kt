@@ -59,6 +59,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.js.Web3Signer
+import timber.log.Timber
 import java.math.BigDecimal
 import kotlin.math.abs
 
@@ -398,31 +399,30 @@ fun OpenPositionPage(
                         if (walletId.isEmpty()) return@Button
                         
                         val activity = context as? androidx.fragment.app.FragmentActivity ?: return@Button
+
+                        val price = m.markPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                        if (price == BigDecimal.ZERO) return@Button
                         
-                        val walletName = "Privacy Wallet"
-                        
+                        val orderValue = amount * BigDecimal(leverage.toDouble())
+
                         viewModel.openPerpsOrder(
                             assetId = token.assetId,
                             productId = marketId,
                             side = if (isLong) "long" else "short",
-                            amount = amount.toPlainString(),
+                            amount = orderValue.stripTrailingZeros().toPlainString(),
                             leverage = leverage.toInt(),
                             walletId = walletId,
                             marketSymbol = marketSymbol,
                             entryPrice = m.markPrice,
                             onSuccess = { response ->
                                 PerpsConfirmBottomSheetDialogFragment.newInstance(
-                                    marketId = marketId,
-                                    marketSymbol = marketSymbol,
+                                    marketSymbol = m.displaySymbol,
+                                    marketIcon = m.iconUrl,
                                     isLong = isLong,
-                                    amount = amount.toPlainString(),
+                                    amount = response.payAmount ?: "",
                                     leverage = leverage.toInt(),
                                     entryPrice = m.markPrice,
-                                    liquidationPrice = calculateLiquidationPrice(m.markPrice, leverage, isLong),
                                     tokenSymbol = token.symbol,
-                                    tokenIcon = token.iconUrl ?: "",
-                                    tokenAssetId = token.assetId,
-                                    walletName = walletName,
                                     payUrl = response.payUrl
                                 ).setOnDone {
                                     onBack()
@@ -672,7 +672,7 @@ private fun calculateLiquidationPrice(
     isLong: Boolean,
 ): String {
     val price = currentPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    if (price == BigDecimal.ZERO) return "$0"
+    if (price == BigDecimal.ZERO) return "0"
 
     val liquidationPercent = BigDecimal(100.0 / leverage)
     val liquidationPrice = if (isLong) {
@@ -681,5 +681,5 @@ private fun calculateLiquidationPrice(
         price * (BigDecimal.ONE + liquidationPercent / BigDecimal(100))
     }
 
-    return "$${String.format("%.2f", liquidationPrice)}"
+    return String.format("%.2f", liquidationPrice)
 }

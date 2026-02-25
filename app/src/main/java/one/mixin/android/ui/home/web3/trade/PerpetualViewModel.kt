@@ -87,7 +87,7 @@ class PerpetualViewModel @Inject constructor(
                 
                 val data = response.data
                 if (response.isSuccess && data != null) {
-                    Timber.d("Market detail loaded: ${data.symbol}")
+                    Timber.d("Market detail loaded: ${data.displaySymbol}")
                     onSuccess(data)
                 } else {
                     val error = "Failed to load market detail: ${response.errorDescription}"

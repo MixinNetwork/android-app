@@ -30,8 +30,10 @@ import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -70,8 +72,12 @@ import one.mixin.android.ui.common.UtxoConsolidationBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
 import one.mixin.android.ui.home.web3.components.ActionBottom
+import one.mixin.android.ui.tip.wc.compose.ItemWalletContent
+import one.mixin.android.ui.wallet.ItemUserContent
+import one.mixin.android.ui.wallet.SwapTransferBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.components.WalletLabel
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
 import timber.log.Timber
 import java.math.BigDecimal
@@ -84,43 +90,32 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         const val TAG = "PerpsConfirmBottomSheetDialogFragment"
         private const val ARGS_MARKET_ID = "args_market_id"
         private const val ARGS_MARKET_SYMBOL = "args_market_symbol"
+        private const val ARGS_MARKET_ICON = "args_market_icon"
         private const val ARGS_IS_LONG = "args_is_long"
         private const val ARGS_AMOUNT = "args_amount"
         private const val ARGS_LEVERAGE = "args_leverage"
         private const val ARGS_ENTRY_PRICE = "args_entry_price"
-        private const val ARGS_LIQUIDATION_PRICE = "args_liquidation_price"
         private const val ARGS_TOKEN_SYMBOL = "args_token_symbol"
-        private const val ARGS_TOKEN_ICON = "args_token_icon"
-        private const val ARGS_TOKEN_ASSET_ID = "args_token_asset_id"
-        private const val ARGS_WALLET_NAME = "args_wallet_name"
         private const val ARGS_PAY_URL = "args_pay_url"
 
         fun newInstance(
-            marketId: String,
             marketSymbol: String,
+            marketIcon: String,
             isLong: Boolean,
             amount: String,
             leverage: Int,
             entryPrice: String,
-            liquidationPrice: String,
             tokenSymbol: String,
-            tokenIcon: String,
-            tokenAssetId: String,
-            walletName: String,
-            payUrl: String?
+            payUrl: String?,
         ): PerpsConfirmBottomSheetDialogFragment {
             return PerpsConfirmBottomSheetDialogFragment().withArgs {
-                putString(ARGS_MARKET_ID, marketId)
                 putString(ARGS_MARKET_SYMBOL, marketSymbol)
+                putString(ARGS_MARKET_ICON, marketIcon)
                 putBoolean(ARGS_IS_LONG, isLong)
                 putString(ARGS_AMOUNT, amount)
                 putInt(ARGS_LEVERAGE, leverage)
                 putString(ARGS_ENTRY_PRICE, entryPrice)
-                putString(ARGS_LIQUIDATION_PRICE, liquidationPrice)
                 putString(ARGS_TOKEN_SYMBOL, tokenSymbol)
-                putString(ARGS_TOKEN_ICON, tokenIcon)
-                putString(ARGS_TOKEN_ASSET_ID, tokenAssetId)
-                putString(ARGS_WALLET_NAME, walletName)
                 putString(ARGS_PAY_URL, payUrl)
             }
         }
@@ -160,24 +155,60 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         Error,
     }
 
-    private val marketId by lazy { requireNotNull(requireArguments().getString(ARGS_MARKET_ID)) }
     private val marketSymbol by lazy { requireNotNull(requireArguments().getString(ARGS_MARKET_SYMBOL)) }
+    private val marketIcon by lazy { requireNotNull(requireArguments().getString(ARGS_MARKET_ICON)) }
     private val isLong by lazy { requireArguments().getBoolean(ARGS_IS_LONG) }
     private val amount by lazy { requireNotNull(requireArguments().getString(ARGS_AMOUNT)) }
     private val leverage by lazy { requireArguments().getInt(ARGS_LEVERAGE) }
     private val entryPrice by lazy { requireNotNull(requireArguments().getString(ARGS_ENTRY_PRICE)) }
-    private val liquidationPrice by lazy { requireNotNull(requireArguments().getString(ARGS_LIQUIDATION_PRICE)) }
     private val tokenSymbol by lazy { requireNotNull(requireArguments().getString(ARGS_TOKEN_SYMBOL)) }
-    private val tokenIcon by lazy { requireNotNull(requireArguments().getString(ARGS_TOKEN_ICON)) }
-    private val tokenAssetId by lazy { requireNotNull(requireArguments().getString(ARGS_TOKEN_ASSET_ID)) }
-    private val walletName by lazy { requireNotNull(requireArguments().getString(ARGS_WALLET_NAME)) }
+
     private val payUrl by lazy { requireArguments().getString(ARGS_PAY_URL) }
+
+    private val liquidationPrice by lazy {
+        try {
+            val price = entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
+            Timber.d("LiquidationPrice - entryPrice: $entryPrice, leverage: $leverage, isLong: $isLong, price: $price")
+            
+            if (price == BigDecimal.ZERO) {
+                "0"
+            } else {
+                val liquidationPercent = BigDecimal(100.0 / leverage)
+                val liquidation = if (isLong) {
+                    price * (BigDecimal.ONE - liquidationPercent / BigDecimal(100))
+                } else {
+                    price * (BigDecimal.ONE + liquidationPercent / BigDecimal(100))
+                }
+                val result = String.format("%.2f", liquidation)
+                Timber.d("LiquidationPrice - liquidationPercent: $liquidationPercent, liquidation: $liquidation, result: $result")
+                result
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to calculate liquidation price")
+            "0"
+        }
+    }
 
     private var step by mutableStateOf(Step.Pending)
     private var errorInfo: String? by mutableStateOf(null)
+    private var receiver: User? by mutableStateOf(null)
 
     @Composable
     override fun ComposeContent() {
+        LaunchedEffect(payUrl) {
+            payUrl?.let { url ->
+                try {
+                    val uri = Uri.parse(url)
+                    val receiverId = uri.lastPathSegment
+                    receiverId?.let { userId ->
+                        receiver = bottomViewModel.refreshUser(userId)
+                    }
+                } catch (e: Exception) {
+                    Timber.e(e, "Failed to parse receiver from payUrl")
+                }
+            }
+        }
+
         MixinAppTheme {
             Column(
                 modifier = Modifier
@@ -186,7 +217,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                     .fillMaxHeight()
                     .background(MixinAppTheme.colors.background),
             ) {
-                WalletLabel(walletName = walletName, isWeb3 = false)
+                WalletLabel(walletName = getString(R.string.Privacy_Wallet), isWeb3 = false)
                 Column(
                     modifier = Modifier
                         .verticalScroll(rememberScrollState())
@@ -201,6 +232,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                 color = MixinAppTheme.colors.accent,
                             )
                         }
+
                         Step.Error -> {
                             androidx.compose.material.Icon(
                                 modifier = Modifier.size(70.dp),
@@ -209,6 +241,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                 tint = Color.Unspecified,
                             )
                         }
+
                         Step.Done -> {
                             androidx.compose.material.Icon(
                                 modifier = Modifier.size(70.dp),
@@ -217,9 +250,10 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                 tint = Color.Unspecified,
                             )
                         }
+
                         else -> {
                             CoilImage(
-                                model = tokenIcon,
+                                model = marketIcon,
                                 placeholder = R.drawable.ic_avatar_place_holder,
                                 modifier = Modifier
                                     .size(70.dp)
@@ -231,8 +265,8 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                     Text(
                         text = stringResource(
                             id = when (step) {
-                                Step.Pending -> R.string.Perpetual
-                                Step.Done -> R.string.web3_sending_success
+                                Step.Pending -> R.string.Confirm_Open_Position
+                                Step.Done -> R.string.Open_Position_Success
                                 Step.Error -> R.string.swap_failed
                                 Step.Sending -> R.string.Sending
                             }
@@ -246,7 +280,14 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                     Box(modifier = Modifier.height(8.dp))
                     Text(
                         modifier = Modifier.padding(horizontal = 24.dp),
-                        text = errorInfo ?: "$marketSymbol - USD",
+                        text = errorInfo ?: stringResource(
+                            id =
+                                when (step) {
+                                    Step.Done -> R.string.swap_message_success
+                                    Step.Error -> R.string.Data_error
+                                    else -> R.string.swap_inner_desc
+                                },
+                        ),
                         textAlign = TextAlign.Center,
                         style = TextStyle(
                             color = if (errorInfo != null) MixinAppTheme.colors.tipError else MixinAppTheme.colors.textMinor,
@@ -266,12 +307,41 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                     )
                     Box(modifier = Modifier.height(20.dp))
 
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp),
+                    ) {
+                        Text(
+                            text = stringResource(R.string.Perpetual),
+                            color = MixinAppTheme.colors.textRemarks,
+                            fontSize = 14.sp,
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Row {
+                            CoilImage(
+                                model = marketIcon,
+                                placeholder = R.drawable.ic_avatar_place_holder,
+                                modifier = Modifier
+                                    .size(20.dp)
+                                    .clip(CircleShape)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = marketSymbol,
+                                color = MixinAppTheme.colors.textPrimary,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.W400
+                            )
+                        }
+                    }
+                    Box(modifier = Modifier.height(20.dp))
+
                     PerpsInfoItem(
                         title = stringResource(R.string.Perpetual_Direction).uppercase(),
                         value = "${if (isLong) stringResource(R.string.Long) else stringResource(R.string.Short)} ${leverage}x"
                     )
-                    Box(modifier = Modifier.height(20.dp))
-
+                    Box(modifier = Modifier.height(6.dp))
                     ProfitLossInfo(
                         amount = amount,
                         leverage = leverage,
@@ -280,34 +350,55 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                     Box(modifier = Modifier.height(20.dp))
 
                     PerpsInfoItem(
-                        title = stringResource(R.string.Amount).uppercase() + " (Isolated)",
+                        title = stringResource(R.string.Amount).uppercase() + " (${stringResource(R.string.Isolated)})",
                         value = "$amount $tokenSymbol"
                     )
                     Box(modifier = Modifier.height(20.dp))
 
                     PerpsInfoItem(
-                        title = "Entry Price".uppercase(),
+                        title = stringResource(R.string.Entry_Price).uppercase(),
                         value = "$$entryPrice"
                     )
                     Box(modifier = Modifier.height(20.dp))
 
-                    PerpsInfoItem(
-                        title = stringResource(R.string.Liquidation_Price).uppercase(),
-                        value = "$$liquidationPrice",
-                        subValue = calculateLiquidationPercentage(entryPrice, liquidationPrice, isLong)
-                    )
-                    Box(modifier = Modifier.height(20.dp))
+                    val lossPercent = remember(leverage) {
+                        val percent = String.format("%.2f", 100.0 / leverage)
+                        Timber.d("LossPercent - leverage: $leverage, lossPercent: $percent")
+                        percent
+                    }
+
+                    val lossSubValue = if (isLong) {
+                        val text = stringResource(
+                            R.string.Price_Down_Loss,
+                            lossPercent,
+                            amount,
+                            tokenSymbol
+                        )
+                        Timber.d("LossSubValue (Long) - lossPercent: $lossPercent, amount: $amount, tokenSymbol: $tokenSymbol, text: $text")
+                        text
+                    } else {
+                        val text = stringResource(
+                            R.string.Price_Up_Loss,
+                            lossPercent,
+                            amount,
+                            tokenSymbol
+                        )
+                        Timber.d("LossSubValue (Short) - lossPercent: $lossPercent, amount: $amount, tokenSymbol: $tokenSymbol, text: $text")
+                        text
+                    }
 
                     PerpsInfoItem(
-                        title = stringResource(R.string.Receiver).uppercase(),
-                        value = "Mixin Futures (7000105155)"
+                        title = stringResource(R.string.Estimated_Liquidation_Price).uppercase(),
+                        value = liquidationPrice,
+                        subValue = lossSubValue
                     )
+
                     Box(modifier = Modifier.height(20.dp))
 
-                    PerpsInfoItem(
-                        title = stringResource(R.string.Sender).uppercase(),
-                        value = walletName
-                    )
+                    ItemUserContent(title = stringResource(id = R.string.Receiver).uppercase(), receiver, null)
+                    Box(modifier = Modifier.height(20.dp))
+
+                    ItemWalletContent(title = stringResource(id = R.string.Sender).uppercase(), fontSize = 16.sp)
                     Box(modifier = Modifier.height(16.dp))
                 }
 
@@ -337,6 +428,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                 }
                             }
                         }
+
                         Step.Error -> {
                             ActionBottom(
                                 modifier = Modifier.align(Alignment.BottomCenter),
@@ -346,6 +438,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                 confirmAction = { showPin() },
                             )
                         }
+
                         Step.Pending -> {
                             ActionBottom(
                                 modifier = Modifier.align(Alignment.BottomCenter),
@@ -355,6 +448,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                 confirmAction = { showPin() },
                             )
                         }
+
                         Step.Sending -> {}
                     }
                 }
@@ -367,7 +461,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     private fun PerpsInfoItem(
         title: String,
         value: String,
-        subValue: String? = null
+        subValue: String? = null,
     ) {
         Column(
             modifier = Modifier
@@ -402,46 +496,38 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     private fun ProfitLossInfo(
         amount: String,
         leverage: Int,
-        isLong: Boolean
+        isLong: Boolean,
     ) {
         val amountValue = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
         val profitPercent = 1.0 * leverage
         val profitAmount = amountValue * BigDecimal(profitPercent / 100)
-        val lossPercent = 100.0 / leverage
 
-        Column(
+        Timber.d("ProfitLossInfo - amount: $amount, amountValue: $amountValue, leverage: $leverage, isLong: $isLong, profitPercent: $profitPercent, profitAmount: $profitAmount")
+
+        Text(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp),
-        ) {
-            Text(
-                text = "价格${if (isLong) "上涨" else "下跌"} 1% → 盈利 ${String.format("%.1f", profitPercent)}% (+$${String.format("%.2f", profitAmount)})",
-                color = MixinAppTheme.colors.walletGreen,
-                fontSize = 14.sp,
-            )
-            Box(modifier = Modifier.height(4.dp))
-            Text(
-                text = "价格${if (isLong) "下跌" else "上涨"} ${String.format("%.2f", lossPercent)}% → 亏损 -$${amount}",
-                color = MixinAppTheme.colors.walletRed,
-                fontSize = 14.sp,
-            )
-        }
+            text = if (isLong) {
+                stringResource(
+                    R.string.Price_Up_Profit,
+                    "1",
+                    String.format("%.1f", profitPercent),
+                    String.format("%.2f", profitAmount)
+                )
+            } else {
+                stringResource(
+                    R.string.Price_Down_Profit,
+                    "1",
+                    String.format("%.1f", profitPercent),
+                    String.format("%.2f", profitAmount)
+                )
+            },
+            color = MixinAppTheme.colors.textAssist,
+            fontSize = 14.sp,
+        )
     }
 
-    private fun calculateLiquidationPercentage(entryPrice: String, liquidationPrice: String, isLong: Boolean): String {
-        return try {
-            val entry = BigDecimal(entryPrice)
-            val liquidation = BigDecimal(liquidationPrice)
-            val diff = if (isLong) {
-                (entry - liquidation).divide(entry, 4, java.math.RoundingMode.HALF_UP) * BigDecimal(100)
-            } else {
-                (liquidation - entry).divide(entry, 4, java.math.RoundingMode.HALF_UP) * BigDecimal(100)
-            }
-            "价格${if (isLong) "下跌" else "上涨"} ${String.format("%.2f", diff)}% → 亏损 -$${amount}"
-        } catch (e: Exception) {
-            ""
-        }
-    }
 
     override fun getBottomSheetHeight(view: View): Int {
         return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
@@ -481,7 +567,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     private fun doAfterPinComplete(pin: String) = lifecycleScope.launch(Dispatchers.IO) {
         try {
             step = Step.Sending
-            
+
             if (payUrl != null) {
                 handlePayment(payUrl!!, pin)
             } else {
@@ -512,16 +598,16 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     private suspend fun handlePayment(payUrl: String, pin: String) {
         try {
             val uri = Uri.parse(payUrl)
-            
+
             val assetId = requireNotNull(uri.getQueryParameter("asset"))
             val payAmount = requireNotNull(uri.getQueryParameter("amount"))
             val receiverId = requireNotNull(uri.lastPathSegment)
             val memo = uri.getQueryParameter("memo")
             val traceId = uri.getQueryParameter("trace") ?: UUID.randomUUID().toString()
-            
+
             val consolidationAmount = bottomViewModel.checkUtxoSufficiency(assetId, payAmount)
             val token = bottomViewModel.findAssetItemById(assetId)
-            
+
             if (consolidationAmount != null && token != null) {
                 UtxoConsolidationBottomSheetDialogFragment.newInstance(
                     buildTransferBiometricItem(
@@ -540,7 +626,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                 step = Step.Error
                 return
             }
-            
+
             val paymentResponse = bottomViewModel.kernelTransaction(
                 assetId,
                 listOf(receiverId),
@@ -550,7 +636,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                 traceId,
                 memo
             )
-            
+
             if (paymentResponse.isSuccess) {
                 defaultSharedPreferences.putLong(
                     Constants.BIOMETRIC_PIN_CHECK,

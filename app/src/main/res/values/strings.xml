@@ -2303,6 +2303,10 @@
     <string name="Perpetual_Example">Example</string>
     <string name="Perpetual_Trading_Pair">Trading Pair</string>
     <string name="Perpetual_Direction">Direction</string>
+    <string name="Price_Up_Profit">Price up %1$s%% → Profit %2$s%% (+%3$s)</string>
+    <string name="Price_Down_Profit">Price down %1$s%% → Profit %2$s%% (+%3$s)</string>
+    <string name="Price_Down_Loss">Price down %1$s%% → Loss -%2$s %3$s</string>
+    <string name="Price_Up_Loss">Price up %1$s%% → Loss -%2$s %3$s</string>
     <string name="Perpetual_Leverage_Times">Leverage</string>
     <string name="Perpetual_Investment">Investment</string>
     <string name="Perpetual_Position_Value">Position Value</string>
@@ -2344,4 +2348,7 @@
     <string name="Volume_24H">24H VOLUME</string>
     <string name="Open_Interest">Open Interest</string>
     <string name="Funding_Rate">Funding Rate</string>
+    <string name="Confirm_Open_Position">Confirm Open Position</string>
+    <string name="Open_Position_Success">Open Position Success</string>
+    <string name="Estimated_Liquidation_Price">Estimated Liquidation Price</string>
 </resources>

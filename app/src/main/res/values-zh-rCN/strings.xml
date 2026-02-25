@@ -2245,6 +2245,10 @@
     <string name="Perpetual_Example">举例说明</string>
     <string name="Perpetual_Trading_Pair">交易对</string>
     <string name="Perpetual_Direction">开仓方向</string>
+    <string name="Price_Up_Profit">价格上涨 %1$s%% → 盈利 %2$s%% (+%3$s)</string>
+    <string name="Price_Down_Profit">价格下跌 %1$s%% → 盈利 %2$s%% (+%3$s)</string>
+    <string name="Price_Down_Loss">价格下跌 %1$s%% → 亏损 -%2$s %3$s</string>
+    <string name="Price_Up_Loss">价格上涨 %1$s%% → 亏损 -%2$s %3$s</string>
     <string name="Perpetual_Leverage_Times">杠杆倍数</string>
     <string name="Perpetual_Investment">投入资金</string>
     <string name="Perpetual_Position_Value">仓位价值</string>
@@ -2277,4 +2281,10 @@
     <string name="Price_Change_Profit">价格%1$s %2$s%% → 盈利 %3$s%4$s%% (%5$s%6$s)</string>
     <string name="Long">做多</string>
     <string name="Short">做空</string>
+    <string name="Entry_Price">开仓价格</string>
+    <string name="Isolated">逐仓</string>
+    <string name="Mixin_Futures">Mixin Futures</string>
+    <string name="Confirm_Open_Position">确认开仓</string>
+    <string name="Open_Position_Success">开仓成功</string>
+    <string name="Estimated_Liquidation_Price">预估强平价格</string>
 </resources>

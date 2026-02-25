@@ -124,7 +124,7 @@ private fun MarketListItem(
 
             Column {
                 Text(
-                    text = market.symbol,
+                    text = market.displaySymbol,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = MixinAppTheme.colors.textPrimary,

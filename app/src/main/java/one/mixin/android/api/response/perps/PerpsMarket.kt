@@ -17,6 +17,9 @@ data class PerpsMarket(
     @SerializedName("symbol")
     @ColumnInfo(name = "symbol")
     val symbol: String,
+    @SerializedName("display_symbol")
+    @ColumnInfo(name = "display_symbol")
+    val displaySymbol: String,
     @SerializedName("mark_price")
     @ColumnInfo(name = "mark_price")
     val markPrice: String,
