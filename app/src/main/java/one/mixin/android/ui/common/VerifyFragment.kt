@@ -133,7 +133,7 @@ class VerifyFragment : BaseFragment(R.layout.fragment_verify_pin), PinView.OnPin
                     }
                     when (from) {
                         FROM_PHONE -> {
-                            val fragment = MobileFragment.newInstance(pin = pinCode, from = if (Session.hasPhone()) MobileFragment.FROM_VERIFY_MOBILE_REMINDER else MobileFragment.FROM_CHANGE_PHONE_ACCOUNT, phoneNumber = phoneNumber)
+                            val fragment = MobileFragment.newInstance(pin = pinCode, from = if (phoneNumber.isNullOrBlank().not()) MobileFragment.FROM_VERIFY_MOBILE_REMINDER else MobileFragment.FROM_CHANGE_PHONE_ACCOUNT, phoneNumber = phoneNumber)
                             activity?.addFragment(this@VerifyFragment, fragment, MobileFragment.TAG)
                         }
                         FROM_EMERGENCY -> {
