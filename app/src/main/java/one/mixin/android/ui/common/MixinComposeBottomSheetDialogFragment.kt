@@ -10,13 +10,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsCompat.Type.systemBars
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updateMargins
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.android.material.internal.ViewUtils.doOnApplyWindowInsets
 import one.mixin.android.R
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.getSafeAreaInsetsBottom
@@ -61,9 +62,10 @@ abstract class MixinComposeBottomSheetDialogFragment : SchemeBottomSheet() {
 
                 findViewById<View>(com.google.android.material.R.id.container)?.apply {
                     fitsSystemWindows = false
-                    doOnApplyWindowInsets(this) { insetView, windowInsets, initialMargins ->
-                        insetView.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                            updateMargins(top = initialMargins.top + windowInsets.getInsets(systemBars()).top)
+                    ViewCompat.setOnApplyWindowInsetsListener(this) { view, windowInsets ->
+                        val insets = windowInsets.getInsets(systemBars())
+                        view.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                            updateMargins(top = topMargin + insets.top)
                         }
                         windowInsets
                     }
@@ -86,18 +88,6 @@ abstract class MixinComposeBottomSheetDialogFragment : SchemeBottomSheet() {
             }
         }
         return composeView
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        view.doOnPreDraw {
-            val params = (view.parent as? View)?.layoutParams as? CoordinatorLayout.LayoutParams
-            behavior = params?.behavior as? BottomSheetBehavior<*>
-            behavior?.peekHeight = getBottomSheetHeight(view)
-            behavior?.isDraggable = false
-            behavior?.addBottomSheetCallback(internalBottomSheetBehaviorCallback)
-            view.setPadding(0, 0, 0, view.getSafeAreaInsetsBottom())
-        }
     }
 
     override fun onStart() {
