@@ -28,8 +28,6 @@ import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Slider
 import androidx.compose.material.SliderDefaults
 import androidx.compose.material.Text
-import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -46,20 +44,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.fragment.app.FragmentActivity
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.numberFormat8
 import one.mixin.android.session.Session
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.safe.TokenItem
-import one.mixin.android.web3.js.Web3Signer
-import timber.log.Timber
 import java.math.BigDecimal
 import kotlin.math.abs
 
@@ -130,156 +131,119 @@ fun OpenPositionPage(
             }
         }
     ) {
-        PageScaffold(
-            title = "Open Position",
-            verticalScrollable = false,
-            pop = onBack
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp)
+        MixinAppTheme {
+            PageScaffold(
+                title = stringResource(R.string.Open_Position),
+                verticalScrollable = false,
+                pop = onBack
             ) {
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    market?.let { m ->
-                        CoilImage(
-                            model = m.iconUrl,
-                            placeholder = R.drawable.ic_avatar_place_holder,
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape),
-                            contentScale = ContentScale.Crop
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                            Text(
-                                text = "${if (isLong) "Long" else "Short"} $marketSymbol",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MixinAppTheme.colors.textPrimary
-                            )
-                            Text(
-                                text = "$${m.markPrice}",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = MixinAppTheme.colors.textAssist
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
                 Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp))
-                        .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
-                        .padding(16.dp)
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(horizontal = 16.dp)
                 ) {
-                    Text(
-                        text = "Amount",
-                        fontSize = 14.sp,
-                        color = MixinAppTheme.colors.textPrimary
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        TextField(
-                            value = usdtAmount,
-                            onValueChange = { usdtAmount = it },
-                            modifier = Modifier.weight(1f),
-                            placeholder = { Text("0.00") },
-                            colors = TextFieldDefaults.textFieldColors(
-                                backgroundColor = Color.Transparent,
-                                focusedIndicatorColor = Color.Transparent,
-                                unfocusedIndicatorColor = Color.Transparent
-                            ),
-                            textStyle = androidx.compose.ui.text.TextStyle(
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MixinAppTheme.colors.textPrimary
+                        market?.let { m ->
+                            CoilImage(
+                                model = m.iconUrl,
+                                placeholder = R.drawable.ic_avatar_place_holder,
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape),
+                                contentScale = ContentScale.Crop
                             )
-                        )
-
-                        Row(
-                            modifier = Modifier.clickable {
-                                coroutineScope.launch { tokenBottomSheetState.show() }
-                            },
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            selectedToken?.let { token ->
-                                CoilImage(
-                                    model = token.iconUrl,
-                                    placeholder = R.drawable.ic_avatar_place_holder,
-                                    modifier = Modifier
-                                        .size(24.dp)
-                                        .clip(CircleShape),
-                                    contentScale = ContentScale.Crop
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column {
+                                Text(
+                                    text = "${if (isLong) stringResource(R.string.Long) else stringResource(R.string.Short)} ${m.tokenSymbol}",
+                                    fontSize = 16.sp,
+                                    color = MixinAppTheme.colors.textPrimary
                                 )
-                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "${stringResource(R.string.Current_price, "${m.markPrice} USD")} ",
+                                    fontSize = 13.sp,
+                                    color = MixinAppTheme.colors.textAssist
+                                )
                             }
-                            Text(
-                                text = selectedToken?.symbol ?: "USDT",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = MixinAppTheme.colors.textPrimary
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Icon(
-                                painter = painterResource(R.drawable.ic_arrow_down_info),
-                                contentDescription = null,
-                                tint = MixinAppTheme.colors.textAssist,
-                                modifier = Modifier.size(16.dp)
-                            )
                         }
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Balance: ${selectedToken?.balance ?: "0"} ${selectedToken?.symbol ?: ""}",
-                            fontSize = 12.sp,
-                            color = MixinAppTheme.colors.textAssist
-                        )
-
-                        Text(
-                            text = "MAX",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = MixinAppTheme.colors.accent,
-                            modifier = Modifier.clickable {
-                                usdtAmount = selectedToken?.balance ?: "0"
-                            }
-                        )
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
+                            .padding(16.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.Amount),
+                            fontSize = 14.sp,
+                            color = MixinAppTheme.colors.textPrimary
+                        )
 
-                    Text(
-                        text = "Leverage",
-                        fontSize = 14.sp,
-                        color = MixinAppTheme.colors.textPrimary
-                    )
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        InputContent(
+                            token = selectedToken?.toSwapToken(),
+                            text = usdtAmount,
+                            selectClick = {
+                                coroutineScope.launch { tokenBottomSheetState.show() }
+                            },
+                            onInputChanged = { usdtAmount = it }
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_web3_wallet),
+                                contentDescription = null,
+                                tint = MixinAppTheme.colors.textAssist,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = selectedToken?.balance?.numberFormat8() ?: "0",
+                                style = TextStyle(
+                                    fontSize = 12.sp,
+                                    color = MixinAppTheme.colors.textAssist,
+                                    textAlign = TextAlign.Start,
+                                ),
+                                modifier = Modifier.clickable {
+                                    usdtAmount = selectedToken?.balance ?: "0"
+                                }
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
+                            .padding(16.dp)
+                    ) {
 
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = stringResource(R.string.Leverage),
+                            fontSize = 14.sp,
+                            color = MixinAppTheme.colors.textPrimary
+                        )
+
+
+                        Spacer(modifier = Modifier.height(12.dp))
 
                         Text(
                             modifier = Modifier.clickable {
@@ -293,175 +257,176 @@ fun OpenPositionPage(
 
                         Spacer(modifier = Modifier.height(12.dp))
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        leverageOptions.forEach { lev ->
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .height(32.dp)
-                                    .clip(RoundedCornerShape(4.dp))
-                                    .border(
-                                        width = 1.dp,
-                                        color = MixinAppTheme.colors.textAssist,
-                                        shape = RoundedCornerShape(4.dp)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            leverageOptions.forEach { lev ->
+                                val isSelected = leverage.toInt() == lev
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(32.dp)
+                                        .clip(RoundedCornerShape(16.dp))
+                                        .background(Color.Transparent)
+                                        .border(
+                                            width = 1.dp,
+                                            color = if (isSelected) MixinAppTheme.colors.accent else MixinAppTheme.colors.textAssist,
+                                            shape = RoundedCornerShape(16.dp)
+                                        )
+                                        .clickable { leverage = lev.toFloat() },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "${lev}x",
+                                        fontSize = 12.sp,
+                                        color = if (isSelected) MixinAppTheme.colors.accent else MixinAppTheme.colors.textPrimary
                                     )
-                                    .clickable { leverage = lev.toFloat() },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "${lev}x",
-                                    fontSize = 12.sp,
-                                    color = MixinAppTheme.colors.textPrimary
-                                )
+                                }
                             }
                         }
-                    }
-                }
+                        Spacer(modifier = Modifier.height(12.dp))
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                val profitInfo = calculateProfitInfo(
-                    amount = usdtAmount,
-                    leverage = leverage,
-                    isLong = isLong,
-                    priceChangePercent = 1.0
-                )
-
-                Text(
-                    text = profitInfo,
-                    fontSize = 13.sp,
-                    color = MixinAppTheme.colors.textAssist,
-                    modifier = Modifier.padding(horizontal = 4.dp)
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 4.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Column {
-                        Text(
-                            text = "Order Value",
-                            fontSize = 12.sp,
-                            color = MixinAppTheme.colors.textAssist
+                        val profitInfo = calculateProfitInfo(
+                            amount = usdtAmount,
+                            leverage = leverage,
+                            isLong = isLong,
+                            priceChangePercent = 1.0
                         )
-                        Spacer(modifier = Modifier.height(4.dp))
+
                         Text(
-                            text = calculateOrderValue(usdtAmount, leverage),
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = MixinAppTheme.colors.textPrimary
+                            text = profitInfo,
+                            fontSize = 13.sp,
+                            color = MixinAppTheme.colors.textAssist,
+                            modifier = Modifier.padding(horizontal = 4.dp)
                         )
+
                     }
 
-                    Column(horizontalAlignment = Alignment.End) {
-                        Text(
-                            text = "Liquidation Price",
-                            fontSize = 12.sp,
-                            color = MixinAppTheme.colors.textAssist
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = calculateLiquidationPrice(
-                                market?.markPrice ?: "0",
-                                leverage,
-                                isLong
-                            ),
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = MixinAppTheme.colors.textPrimary
-                        )
+                    Spacer(modifier = Modifier.height(16.dp))
+
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 4.dp),
+                    ) {
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text(
+                                text = stringResource(R.string.Order_Value),
+                                fontSize = 14.sp,
+                                color = MixinAppTheme.colors.textAssist
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "${calculateOrderValue(usdtAmount, leverage, market?.markPrice ?: "0")} ${market?.tokenSymbol}",
+                                fontSize = 14.sp,
+                                color = MixinAppTheme.colors.textAssist
+                            )
+                        }
+
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text(
+                                text = stringResource(R.string.Liquidation_Price),
+                                fontSize = 14.sp,
+                                color = MixinAppTheme.colors.textAssist
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = calculateLiquidationPrice(
+                                    market?.markPrice ?: "0",
+                                    leverage,
+                                    isLong
+                                ),
+                                fontSize = 14.sp,
+                                color = MixinAppTheme.colors.textAssist
+                            )
+                        }
                     }
-                }
 
-                Spacer(modifier = Modifier.weight(1f))
-                Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.weight(1f))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                Button(
-                    modifier = Modifier
-                        .padding(horizontal = 20.dp)
-                        .fillMaxWidth()
-                        .height(48.dp),
-                    onClick = {
-                        val token = selectedToken ?: return@Button
-                        val amount = usdtAmount.toBigDecimalOrNull() ?: return@Button
-                        
-                        if (amount <= BigDecimal.ZERO) return@Button
-                        
-                        val m = market ?: return@Button
-                        val walletId = Session.getAccountId() ?: "" // Privacy Wallet
-                        if (walletId.isEmpty()) return@Button
-                        
-                        val activity = context as? androidx.fragment.app.FragmentActivity ?: return@Button
+                    Button(
+                        modifier = Modifier
+                            .padding(horizontal = 20.dp)
+                            .fillMaxWidth()
+                            .height(48.dp),
+                        onClick = {
+                            val token = selectedToken ?: return@Button
+                            val amount = usdtAmount.toBigDecimalOrNull() ?: return@Button
 
-                        val price = m.markPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
-                        if (price == BigDecimal.ZERO) return@Button
-                        
-                        val orderValue = amount * BigDecimal(leverage.toDouble())
+                            if (amount <= BigDecimal.ZERO) return@Button
 
-                        viewModel.openPerpsOrder(
-                            assetId = token.assetId,
-                            productId = marketId,
-                            side = if (isLong) "long" else "short",
-                            amount = orderValue.stripTrailingZeros().toPlainString(),
-                            leverage = leverage.toInt(),
-                            walletId = walletId,
-                            marketSymbol = marketSymbol,
-                            entryPrice = m.markPrice,
-                            onSuccess = { response ->
-                                PerpsConfirmBottomSheetDialogFragment.newInstance(
-                                    marketSymbol = m.displaySymbol,
-                                    marketIcon = m.iconUrl,
-                                    isLong = isLong,
-                                    amount = response.payAmount ?: "",
-                                    leverage = leverage.toInt(),
-                                    entryPrice = m.markPrice,
-                                    tokenSymbol = token.symbol,
-                                    payUrl = response.payUrl
-                                ).setOnDone {
-                                    onBack()
-                                }.show(activity.supportFragmentManager, PerpsConfirmBottomSheetDialogFragment.TAG)
-                            },
-                            onError = { error ->
-                                // TODO: Show error toast or dialog
+                            val m = market ?: return@Button
+                            val walletId = Session.getAccountId() ?: "" // Privacy Wallet
+                            if (walletId.isEmpty()) return@Button
+
+                            val activity = context as? FragmentActivity ?: return@Button
+
+                            val price = m.markPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                            if (price == BigDecimal.ZERO) return@Button
+
+                            val orderValue = amount * BigDecimal(leverage.toDouble())
+
+                            viewModel.openPerpsOrder(
+                                assetId = token.assetId,
+                                productId = marketId,
+                                side = if (isLong) "long" else "short",
+                                amount = orderValue.stripTrailingZeros().toPlainString(),
+                                leverage = leverage.toInt(),
+                                walletId = walletId,
+                                marketSymbol = marketSymbol,
+                                entryPrice = m.markPrice,
+                                onSuccess = { response ->
+                                    PerpsConfirmBottomSheetDialogFragment.newInstance(
+                                        marketSymbol = m.displaySymbol,
+                                        marketIcon = m.iconUrl,
+                                        isLong = isLong,
+                                        amount = response.payAmount ?: "",
+                                        leverage = leverage.toInt(),
+                                        entryPrice = m.markPrice,
+                                        tokenSymbol = token.symbol,
+                                        payUrl = response.payUrl
+                                    ).setOnDone {
+                                        onBack()
+                                    }.show(activity.supportFragmentManager, PerpsConfirmBottomSheetDialogFragment.TAG)
+                                },
+                                onError = { error ->
+                                    // TODO: Show error toast or dialog
+                                }
+                            )
+                        },
+                        enabled = usdtAmount.isNotBlank() && (usdtAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO) > BigDecimal.ZERO,
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            backgroundColor = if (usdtAmount.isNotBlank() && (usdtAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO) > BigDecimal.ZERO) {
+                                MixinAppTheme.colors.accent
+                            } else {
+                                MixinAppTheme.colors.backgroundGrayLight
+                            }
+                        ),
+                        shape = RoundedCornerShape(32.dp),
+                        elevation = ButtonDefaults.elevation(
+                            pressedElevation = 0.dp,
+                            defaultElevation = 0.dp,
+                            hoveredElevation = 0.dp,
+                            focusedElevation = 0.dp
+                        )
+                    ) {
+                        Text(
+                            text = stringResource(R.string.Review),
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (usdtAmount.isNotBlank() && (usdtAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO) > BigDecimal.ZERO) {
+                                Color.White
+                            } else {
+                                MixinAppTheme.colors.textAssist
                             }
                         )
-                    },
-                    enabled = usdtAmount.isNotBlank() && (usdtAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO) > BigDecimal.ZERO,
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        backgroundColor = if (usdtAmount.isNotBlank() && (usdtAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO) > BigDecimal.ZERO) {
-                            if (isLong) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
-                        } else {
-                            MixinAppTheme.colors.backgroundGrayLight
-                        }
-                    ),
-                    shape = RoundedCornerShape(32.dp),
-                    elevation = ButtonDefaults.elevation(
-                        pressedElevation = 0.dp,
-                        defaultElevation = 0.dp,
-                        hoveredElevation = 0.dp,
-                        focusedElevation = 0.dp
-                    )
-                ) {
-                    Text(
-                        text = "Review",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = if (usdtAmount.isNotBlank() && (usdtAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO) > BigDecimal.ZERO) {
-                            Color.White
-                        } else {
-                            MixinAppTheme.colors.textAssist
-                        }
-                    )
-                }
+                    }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
             }
         }
     }
@@ -479,7 +444,7 @@ private fun TokenSelectionBottomSheet(
             .padding(16.dp)
     ) {
         Text(
-            text = "Select Token",
+            text = stringResource(R.string.Select_Token),
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             color = MixinAppTheme.colors.textPrimary
@@ -557,7 +522,7 @@ private fun LeverageBottomSheet(
             .padding(16.dp)
     ) {
         Text(
-            text = "Select Leverage",
+            text = stringResource(R.string.Select_Leverage),
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             color = MixinAppTheme.colors.textPrimary
@@ -618,7 +583,7 @@ private fun LeverageBottomSheet(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "Confirm",
+                text = stringResource(R.string.Confirm),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
@@ -631,7 +596,7 @@ private fun LeverageBottomSheet(
 
 private fun generateLeverageOptions(maxLeverage: Int): List<Int> {
     val options = mutableListOf<Int>()
-    val baseOptions = listOf(1, 2, 5, 10, 25, 50, 100)
+    val baseOptions = listOf(1, 2, 5, 10, 20, 100)
 
     baseOptions.forEach { option ->
         if (option <= maxLeverage) {
@@ -642,6 +607,7 @@ private fun generateLeverageOptions(maxLeverage: Int): List<Int> {
     return options.take(7)
 }
 
+@Composable
 private fun calculateProfitInfo(
     amount: String,
     leverage: Float,
@@ -649,37 +615,68 @@ private fun calculateProfitInfo(
     priceChangePercent: Double,
 ): String {
     val amountValue = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    if (amountValue == BigDecimal.ZERO) return "Price up 1% → Profit 0% (+$0.00)"
+    if (amountValue == BigDecimal.ZERO) {
+        return if (isLong) {
+            stringResource(R.string.Price_Up_Profit, "1", "0.0", "0.00")
+        } else {
+            stringResource(R.string.Price_Down_Profit, "1", "0.0", "0.00")
+        }
+    }
 
     val profitPercent = priceChangePercent * leverage
     val profitAmount = amountValue * BigDecimal(profitPercent / 100)
 
-    val direction = if (isLong) "up" else "down"
-    val sign = if (profitAmount >= BigDecimal.ZERO) "+" else ""
-
-    return "Price $direction ${String.format("%.0f", abs(priceChangePercent))}% → Profit ${sign}${String.format("%.1f", profitPercent)}% (${sign}$${String.format("%.2f", profitAmount)})"
+    return if (isLong) {
+        stringResource(
+            R.string.Price_Up_Profit,
+            String.format("%.0f", abs(priceChangePercent)),
+            String.format("%.1f", profitPercent),
+            String.format("%.2f", profitAmount)
+        )
+    } else {
+        stringResource(
+            R.string.Price_Down_Profit,
+            String.format("%.0f", abs(priceChangePercent)),
+            String.format("%.1f", profitPercent),
+            String.format("%.2f", profitAmount)
+        )
+    }
 }
 
-private fun calculateOrderValue(amount: String, leverage: Float): String {
+private fun calculateOrderValue(amount: String, leverage: Float, price: String): String {
     val amountValue = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    val orderValue = amountValue * BigDecimal(leverage.toDouble())
-    return "$${String.format("%.2f", orderValue)}"
-}
+    val priceValue = price.toBigDecimalOrNull() ?: BigDecimal.ZERO
 
+
+    if (priceValue == BigDecimal.ZERO) {
+        return "0"
+    }
+
+    val orderValue = (amountValue * BigDecimal(leverage.toDouble())).divide(priceValue, 8, java.math.RoundingMode.HALF_UP)
+    val result = orderValue.stripTrailingZeros().toPlainString()
+
+    return result
+}
 private fun calculateLiquidationPrice(
     currentPrice: String,
     leverage: Float,
     isLong: Boolean,
 ): String {
     val price = currentPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    if (price == BigDecimal.ZERO) return "0"
+    
 
-    val liquidationPercent = BigDecimal(100.0 / leverage)
-    val liquidationPrice = if (isLong) {
-        price * (BigDecimal.ONE - liquidationPercent / BigDecimal(100))
-    } else {
-        price * (BigDecimal.ONE + liquidationPercent / BigDecimal(100))
+    if (price == BigDecimal.ZERO) {
+        return "$0"
     }
 
-    return String.format("%.2f", liquidationPrice)
+    val liquidationPercent = BigDecimal(100.0 / leverage)
+    val liquidationRatio = liquidationPercent.divide(BigDecimal(100), 8, java.math.RoundingMode.HALF_UP)
+    val liquidationPrice = if (isLong) {
+        price * (BigDecimal.ONE - liquidationRatio)
+    } else {
+        price * (BigDecimal.ONE + liquidationRatio)
+    }
+
+    val result = "$${String.format("%.2f", liquidationPrice)}"
+    return result
 }

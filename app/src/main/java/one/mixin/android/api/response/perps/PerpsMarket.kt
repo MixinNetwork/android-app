@@ -20,6 +20,9 @@ data class PerpsMarket(
     @SerializedName("display_symbol")
     @ColumnInfo(name = "display_symbol")
     val displaySymbol: String,
+    @SerializedName("token_symbol")
+    @ColumnInfo(name = "token_symbol")
+    val tokenSymbol: String,
     @SerializedName("mark_price")
     @ColumnInfo(name = "mark_price")
     val markPrice: String,
@@ -64,5 +67,5 @@ data class PerpsMarket(
     val change: String,
     @SerializedName("updated_at")
     @ColumnInfo(name = "updated_at")
-    val updatedAt: String
+    val updatedAt: String,
 )

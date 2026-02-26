@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "b2bbd68ad83ee60a89e9d19ac23423e3",
+    "identityHash": "8e87c397605ae667230ba0aa93d2d3bd",
     "entities": [
       {
         "tableName": "perps_positions",
@@ -104,7 +104,7 @@
       },
       {
         "tableName": "perps_markets",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`market_id` TEXT NOT NULL, `market` TEXT NOT NULL, `symbol` TEXT NOT NULL, `display_symbol` TEXT NOT NULL, `mark_price` TEXT NOT NULL, `funding_rate` TEXT NOT NULL, `maker_fee` TEXT NOT NULL, `taker_fee` TEXT NOT NULL, `min_order_size` TEXT NOT NULL, `max_order_size` TEXT NOT NULL, `min_order_value` TEXT NOT NULL, `quantity_increment` TEXT NOT NULL, `price_increment` TEXT NOT NULL, `last` TEXT NOT NULL, `volume` TEXT NOT NULL, `leverage` INTEGER NOT NULL, `icon_url` TEXT NOT NULL, `change` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`market_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`market_id` TEXT NOT NULL, `market` TEXT NOT NULL, `symbol` TEXT NOT NULL, `display_symbol` TEXT NOT NULL, `token_symbol` TEXT NOT NULL, `mark_price` TEXT NOT NULL, `funding_rate` TEXT NOT NULL, `maker_fee` TEXT NOT NULL, `taker_fee` TEXT NOT NULL, `min_order_size` TEXT NOT NULL, `max_order_size` TEXT NOT NULL, `min_order_value` TEXT NOT NULL, `quantity_increment` TEXT NOT NULL, `price_increment` TEXT NOT NULL, `last` TEXT NOT NULL, `volume` TEXT NOT NULL, `leverage` INTEGER NOT NULL, `icon_url` TEXT NOT NULL, `change` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`market_id`))",
         "fields": [
           {
             "fieldPath": "marketId",
@@ -127,6 +127,12 @@
           {
             "fieldPath": "displaySymbol",
             "columnName": "display_symbol",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tokenSymbol",
+            "columnName": "token_symbol",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -231,7 +237,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b2bbd68ad83ee60a89e9d19ac23423e3')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '8e87c397605ae667230ba0aa93d2d3bd')"
     ]
   }
 }
