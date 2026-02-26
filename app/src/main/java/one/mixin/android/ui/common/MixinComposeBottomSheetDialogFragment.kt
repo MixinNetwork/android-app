@@ -19,7 +19,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.internal.ViewUtils.doOnApplyWindowInsets
 import one.mixin.android.R
 import one.mixin.android.extension.booleanFromAttribute
-import one.mixin.android.extension.getSafeAreaInsetsBottom
 import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncOutputJob
@@ -96,7 +95,6 @@ abstract class MixinComposeBottomSheetDialogFragment : SchemeBottomSheet() {
             behavior?.peekHeight = getBottomSheetHeight(view)
             behavior?.isDraggable = false
             behavior?.addBottomSheetCallback(internalBottomSheetBehaviorCallback)
-            view.setPadding(0, 0, 0, view.getSafeAreaInsetsBottom())
         }
     }
 
