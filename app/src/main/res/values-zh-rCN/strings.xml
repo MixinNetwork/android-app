@@ -2286,5 +2286,8 @@
     <string name="Mixin_Futures">Mixin Futures</string>
     <string name="Confirm_Open_Position">确认开仓</string>
     <string name="Open_Position_Success">开仓成功</string>
+    <string name="Confirm_Close_Position">确认平仓</string>
+    <string name="Close_Position_Success">平仓成功</string>
+    <string name="Close_Position">平仓</string>
     <string name="Estimated_Liquidation_Price">预估强平价格</string>
 </resources>

@@ -14,15 +14,18 @@ data class  PerpsPosition(
     @SerializedName("product_id")
     @ColumnInfo(name = "product_id")
     val productId: String,
-    @SerializedName("market_symbol")
-    @ColumnInfo(name = "market_symbol")
-    val marketSymbol: String? = null,
     @SerializedName("side")
     @ColumnInfo(name = "side")
     val side: String,
     @SerializedName("quantity")
     @ColumnInfo(name = "quantity")
     val quantity: String,
+    @SerializedName("settle_asset_id")
+    @ColumnInfo(name = "settle_asset_id")
+    val settleAssetId: String,
+    @SerializedName("bot_id")
+    @ColumnInfo(name = "bot_id")
+    val botId: String,
     @SerializedName("entry_price")
     @ColumnInfo(name = "entry_price")
     val entryPrice: String,

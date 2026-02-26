@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "8e87c397605ae667230ba0aa93d2d3bd",
+    "identityHash": "1ca362aa376fdb9dc505bf1d49fae4b9",
     "entities": [
       {
         "tableName": "perps_positions",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`position_id` TEXT NOT NULL, `product_id` TEXT NOT NULL, `market_symbol` TEXT, `side` TEXT NOT NULL, `quantity` TEXT NOT NULL, `entry_price` TEXT NOT NULL, `margin` TEXT NOT NULL, `leverage` INTEGER NOT NULL, `state` TEXT NOT NULL, `mark_price` TEXT NOT NULL, `unrealized_pnl` TEXT NOT NULL, `roe` TEXT NOT NULL, `wallet_id` TEXT, `created_at` TEXT, `updated_at` TEXT, PRIMARY KEY(`position_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`position_id` TEXT NOT NULL, `product_id` TEXT NOT NULL, `side` TEXT NOT NULL, `quantity` TEXT NOT NULL, `settle_asset_id` TEXT NOT NULL, `bot_id` TEXT NOT NULL, `entry_price` TEXT NOT NULL, `margin` TEXT NOT NULL, `leverage` INTEGER NOT NULL, `state` TEXT NOT NULL, `mark_price` TEXT NOT NULL, `unrealized_pnl` TEXT NOT NULL, `roe` TEXT NOT NULL, `wallet_id` TEXT, `created_at` TEXT, `updated_at` TEXT, PRIMARY KEY(`position_id`))",
         "fields": [
           {
             "fieldPath": "positionId",
@@ -21,11 +21,6 @@
             "notNull": true
           },
           {
-            "fieldPath": "marketSymbol",
-            "columnName": "market_symbol",
-            "affinity": "TEXT"
-          },
-          {
             "fieldPath": "side",
             "columnName": "side",
             "affinity": "TEXT",
@@ -34,6 +29,18 @@
           {
             "fieldPath": "quantity",
             "columnName": "quantity",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "settleAssetId",
+            "columnName": "settle_asset_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "botId",
+            "columnName": "bot_id",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -237,7 +244,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '8e87c397605ae667230ba0aa93d2d3bd')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1ca362aa376fdb9dc505bf1d49fae4b9')"
     ]
   }
 }

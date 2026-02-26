@@ -1,7 +1,6 @@
 package one.mixin.android.ui.home.web3.trade
 
 import PageScaffold
-import android.graphics.drawable.Icon
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -39,6 +38,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -160,7 +160,6 @@ fun MarketDetailPage(
                             
                             PerpsCloseBottomSheetDialogFragment.newInstance(
                                 position = position,
-                                walletName = "Privacy Wallet"
                             ).setOnDone {
                                 currentPosition = null
                             }.show(activity.supportFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)
@@ -177,7 +176,7 @@ fun MarketDetailPage(
                         )
                     ) {
                         Text(
-                            text = "Close Position",
+                            text = stringResource(R.string.Close_Position),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
@@ -212,7 +211,7 @@ fun MarketDetailPage(
                             )
                         ) {
                             Text(
-                                text = "Long",
+                                text = stringResource(R.string.Long),
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
@@ -243,7 +242,7 @@ fun MarketDetailPage(
                             )
                         ) {
                             Text(
-                                text = "Short",
+                                text = stringResource(R.string.Short),
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
@@ -280,13 +279,13 @@ private fun MarketInfoCard(
             Spacer(modifier = Modifier.width(8.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "How perps works?",
+                    text = stringResource(R.string.How_Perps_Works),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
                     color = MixinAppTheme.colors.textPrimary
                 )
                 Text(
-                    text = "Learn how to trade perps",
+                    text = stringResource(R.string.Learn_How_To_Trade_Perps),
                     fontSize = 12.sp,
                     color = MixinAppTheme.colors.textAssist
                 )
@@ -304,7 +303,7 @@ private fun MarketInfoCard(
             .padding(16.dp)
     ) {
         Text(
-            text = "24H VOLUME",
+            text = stringResource(R.string.Volume_24H),
             fontSize = 12.sp,
             color = MixinAppTheme.colors.textAssist
         )
@@ -321,7 +320,7 @@ private fun MarketInfoCard(
 
         Column {
             Text(
-                text = "Open Interest",
+                text = stringResource(R.string.Open_Interest),
                 fontSize = 12.sp,
                 color = MixinAppTheme.colors.textAssist
             )
@@ -337,7 +336,7 @@ private fun MarketInfoCard(
         Spacer(modifier = Modifier.height(12.dp))
         Column {
             Text(
-                text = "Funding Rate",
+                text = stringResource(R.string.Funding_Rate),
                 fontSize = 12.sp,
                 color = MixinAppTheme.colors.textAssist
             )

@@ -3,7 +3,6 @@ package one.mixin.android.ui.home.web3.trade
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.DialogInterface
-import android.os.Bundle
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -19,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -28,6 +28,7 @@ import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -35,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -48,23 +50,23 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsPosition
+import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.composeDp
-import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
-import one.mixin.android.extension.putLong
 import one.mixin.android.extension.screenHeight
-import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.withArgs
+import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
-import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
-import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.home.web3.components.ActionBottom
+import one.mixin.android.ui.tip.wc.compose.ItemWalletContent
+import one.mixin.android.ui.wallet.ItemUserContent
 import one.mixin.android.ui.wallet.components.WalletLabel
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.vo.User
+import one.mixin.android.vo.safe.TokenItem
 import timber.log.Timber
 import java.math.BigDecimal
 
@@ -74,9 +76,8 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
     companion object {
         const val TAG = "PerpsCloseBottomSheetDialogFragment"
         private const val ARGS_POSITION_ID = "args_position_id"
-        private const val ARGS_MARKET_SYMBOL = "args_market_symbol"
         private const val ARGS_SIDE = "args_side"
-        private const val ARGS_QUANTITY = "args_quantity"
+        private const val ARGS_MARGIN = "args_margin"
         private const val ARGS_LEVERAGE = "args_leverage"
         private const val ARGS_ENTRY_PRICE = "args_entry_price"
         private const val ARGS_MARK_PRICE = "args_mark_price"
@@ -86,19 +87,16 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
 
         fun newInstance(
             position: PerpsPosition,
-            walletName: String
         ): PerpsCloseBottomSheetDialogFragment {
             return PerpsCloseBottomSheetDialogFragment().withArgs {
                 putString(ARGS_POSITION_ID, position.positionId)
-                putString(ARGS_MARKET_SYMBOL, position.marketSymbol ?: "")
                 putString(ARGS_SIDE, position.side)
-                putString(ARGS_QUANTITY, position.quantity)
+                putString(ARGS_MARGIN, position.margin)
                 putInt(ARGS_LEVERAGE, position.leverage)
                 putString(ARGS_ENTRY_PRICE, position.entryPrice)
                 putString(ARGS_MARK_PRICE, position.markPrice)
                 putString(ARGS_UNREALIZED_PNL, position.unrealizedPnl)
                 putString(ARGS_ROE, position.roe)
-                putString(ARGS_WALLET_NAME, walletName)
             }
         }
     }
@@ -129,6 +127,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
     }
 
     private val viewModel by viewModels<PerpetualViewModel>()
+    private val bottomViewModel by viewModels<BottomSheetViewModel>()
 
     enum class Step {
         Pending,
@@ -137,61 +136,71 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
         Error,
     }
 
-    private val positionId by lazy { 
+    private val positionId by lazy {
         requireNotNull(requireArguments().getString(ARGS_POSITION_ID)) { "positionId is null" }
     }
-    private val marketSymbol by lazy { 
-        requireArguments().getString(ARGS_MARKET_SYMBOL) ?: "Unknown" 
+
+    private val margin by lazy {
+        requireNotNull(requireArguments().getString(ARGS_MARGIN)) { "margin is null" }
     }
-    private val side by lazy { 
-        requireNotNull(requireArguments().getString(ARGS_SIDE)) { "side is null" }
-    }
-    private val quantity by lazy { 
-        requireNotNull(requireArguments().getString(ARGS_QUANTITY)) { "quantity is null" }
-    }
-    private val leverage by lazy { 
-        requireArguments().getInt(ARGS_LEVERAGE) 
-    }
-    private val entryPrice by lazy { 
-        requireNotNull(requireArguments().getString(ARGS_ENTRY_PRICE)) { "entryPrice is null" }
-    }
-    private val markPrice by lazy { 
+    private val markPrice by lazy {
         requireNotNull(requireArguments().getString(ARGS_MARK_PRICE)) { "markPrice is null" }
     }
-    private val unrealizedPnl by lazy { 
+    private val unrealizedPnl by lazy {
         requireNotNull(requireArguments().getString(ARGS_UNREALIZED_PNL)) { "unrealizedPnl is null" }
     }
-    private val roe by lazy { 
+    private val roe by lazy {
         requireNotNull(requireArguments().getString(ARGS_ROE)) { "roe is null" }
     }
-    private val walletName by lazy { 
-        requireNotNull(requireArguments().getString(ARGS_WALLET_NAME)) { "walletName is null" }
-    }
-
     private var step by mutableStateOf(Step.Pending)
     private var errorInfo: String? by mutableStateOf(null)
     private var isLoading by mutableStateOf(true)
-    
+
     private var latestMarkPrice by mutableStateOf("")
     private var latestUnrealizedPnl by mutableStateOf("")
     private var latestRoe by mutableStateOf("")
+    private var marketIconUrl by mutableStateOf("")
+    private var marketSymbol by mutableStateOf("")
+    private var settleAssetSymbol by mutableStateOf("USDT")
+    private var settleAssetItem by mutableStateOf<TokenItem?>(null)
+    private var sender by mutableStateOf<User?>(null)
 
     @Composable
     override fun ComposeContent() {
-        androidx.compose.runtime.LaunchedEffect(Unit) {
+        LaunchedEffect(Unit) {
             latestMarkPrice = markPrice
             latestUnrealizedPnl = unrealizedPnl
             latestRoe = roe
         }
-        
-        androidx.compose.runtime.LaunchedEffect(positionId) {
+
+        LaunchedEffect(positionId) {
             viewModel.loadPositionDetail(
                 positionId = positionId,
                 onSuccess = { position ->
                     latestMarkPrice = position.markPrice
                     latestUnrealizedPnl = position.unrealizedPnl
                     latestRoe = position.roe
-                    isLoading = false
+
+                    viewModel.loadMarketDetail(
+                        marketId = position.productId,
+                        onSuccess = { market ->
+                            marketIconUrl = market.iconUrl
+                            marketSymbol = market.displaySymbol
+                        },
+                        onError = {}
+                    )
+
+                    lifecycleScope.launch {
+                        val asset = bottomViewModel.findAssetItemById(position.settleAssetId)
+                        asset?.let {
+                            settleAssetSymbol = it.symbol
+                            settleAssetItem = it
+                        }
+                        
+                        sender = bottomViewModel.refreshUser(position.botId)
+                        
+                        isLoading = false
+                    }
                 },
                 onError = { error ->
                     Timber.e("Failed to load position detail: $error")
@@ -208,7 +217,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                     .fillMaxHeight()
                     .background(MixinAppTheme.colors.background),
             ) {
-                WalletLabel(walletName = walletName, isWeb3 = false)
+                WalletLabel(walletName = getString(R.string.Privacy_Wallet), isWeb3 = false)
                 Column(
                     modifier = Modifier
                         .verticalScroll(rememberScrollState())
@@ -223,6 +232,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                                 color = MixinAppTheme.colors.accent,
                             )
                         }
+
                         Step.Error -> {
                             androidx.compose.material.Icon(
                                 modifier = Modifier.size(70.dp),
@@ -231,6 +241,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                                 tint = Color.Unspecified,
                             )
                         }
+
                         Step.Done -> {
                             androidx.compose.material.Icon(
                                 modifier = Modifier.size(70.dp),
@@ -239,20 +250,32 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                                 tint = Color.Unspecified,
                             )
                         }
+
                         else -> {
-                            Box(
-                                modifier = Modifier
-                                    .size(70.dp)
-                                    .clip(CircleShape)
-                                    .background(MixinAppTheme.colors.backgroundWindow),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = marketSymbol.take(3),
-                                    fontSize = 24.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MixinAppTheme.colors.accent
+                            if (marketIconUrl.isNotEmpty()) {
+                                CoilImage(
+                                    model = marketIconUrl,
+                                    placeholder = R.drawable.ic_avatar_place_holder,
+                                    modifier = Modifier
+                                        .size(70.dp)
+                                        .clip(CircleShape),
+                                    contentScale = ContentScale.Crop
                                 )
+                            } else {
+                                Box(
+                                    modifier = Modifier
+                                        .size(70.dp)
+                                        .clip(CircleShape)
+                                        .background(MixinAppTheme.colors.backgroundWindow),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = marketSymbol.take(3),
+                                        fontSize = 24.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MixinAppTheme.colors.accent
+                                    )
+                                }
                             }
                         }
                     }
@@ -260,8 +283,8 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                     Text(
                         text = stringResource(
                             id = when (step) {
-                                Step.Pending -> R.string.Perpetual
-                                Step.Done -> R.string.web3_sending_success
+                                Step.Pending -> R.string.Confirm_Close_Position
+                                Step.Done -> R.string.Close_Position_Success
                                 Step.Error -> R.string.swap_failed
                                 Step.Sending -> R.string.Sending
                             }
@@ -275,7 +298,13 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                     Box(modifier = Modifier.height(8.dp))
                     Text(
                         modifier = Modifier.padding(horizontal = 24.dp),
-                        text = errorInfo ?: "$marketSymbol - USD",
+                        text = errorInfo ?: stringResource(
+                            id = when (step) {
+                                Step.Done -> R.string.swap_message_success
+                                Step.Error -> R.string.Data_error
+                                else -> R.string.swap_inner_desc
+                            }
+                        ),
                         textAlign = TextAlign.Center,
                         style = TextStyle(
                             color = if (errorInfo != null) MixinAppTheme.colors.tipError else MixinAppTheme.colors.textMinor,
@@ -305,12 +334,19 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                     } else {
                         MixinAppTheme.colors.walletRed
                     }
-                    
+
                     val estimatedReceive = try {
-                        val margin = BigDecimal(quantity)
-                        margin + pnl
+                        val margin = BigDecimal(margin)
+                        val unrealizedPnl = BigDecimal(latestUnrealizedPnl)
+                        margin + unrealizedPnl
                     } catch (e: Exception) {
                         BigDecimal.ZERO
+                    }
+
+                    val formattedRoe = try {
+                        String.format("%.2f", latestRoe.toDouble())
+                    } catch (e: Exception) {
+                        latestRoe
                     }
 
                     if (isLoading) {
@@ -326,37 +362,78 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                             )
                         }
                     } else {
-                        CloseInfoItem(
-                            title = "Estimate Receive".uppercase(),
-                            value = "${if (estimatedReceive >= BigDecimal.ZERO) "+" else ""}${String.format("%.2f", estimatedReceive)} USDT",
-                            valueColor = if (estimatedReceive >= BigDecimal.ZERO) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed,
-                            subValue = "Ethereum"
-                        )
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp),
+                        ) {
+                            Text(
+                                text = stringResource(R.string.Perpetual),
+                                color = MixinAppTheme.colors.textRemarks,
+                                fontSize = 14.sp,
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                CoilImage(
+                                    model = marketIconUrl,
+                                    placeholder = R.drawable.ic_avatar_place_holder,
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                        .clip(CircleShape),
+                                    contentScale = ContentScale.Crop
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = marketSymbol,
+                                    color = MixinAppTheme.colors.textPrimary,
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            Box(modifier = Modifier.height(20.dp))
+                            settleAssetItem?.let { asset ->
+                                Text(
+                                    text = stringResource(R.string.Estimated_Receive),
+                                    color = MixinAppTheme.colors.textRemarks,
+                                    fontSize = 14.sp,
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = "${String.format("%.8f", estimatedReceive)} ${asset.symbol}",
+                                        color = MixinAppTheme.colors.textPrimary,
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.W400
+                                    )
+                                    Spacer(modifier = Modifier.weight(1f))
+                                    Text(
+                                        text = asset.chainName ?: "",
+                                        color = MixinAppTheme.colors.textAssist,
+                                        fontSize = 14.sp
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Row {
+                                Text(
+                                    text = "${stringResource(R.string.Perpetual_PnL)}: ",
+                                    color = MixinAppTheme.colors.textAssist,
+                                    fontSize = 14.sp
+                                )
+                                Text(
+                                    text = "${if (pnl >= BigDecimal.ZERO) "+" else ""}${latestUnrealizedPnl} $settleAssetSymbol ($formattedRoe%)",
+                                    color = pnlColor,
+                                    fontSize = 14.sp
+                                )
+                            }
+                        }
                         Box(modifier = Modifier.height(20.dp))
 
-                        CloseInfoItem(
-                            title = "PnL".uppercase(),
-                            value = "${if (pnl >= BigDecimal.ZERO) "+" else ""}${latestUnrealizedPnl} USDT (${latestRoe}%)",
-                            valueColor = pnlColor
-                        )
+                        ItemWalletContent(title = stringResource(id = R.string.Receiver).uppercase(), fontSize = 16.sp)
                         Box(modifier = Modifier.height(20.dp))
 
-                        CloseInfoItem(
-                            title = stringResource(R.string.Receiver).uppercase(),
-                            value = walletName
-                        )
-                        Box(modifier = Modifier.height(20.dp))
-
-                        CloseInfoItem(
-                            title = stringResource(R.string.Sender).uppercase(),
-                            value = "Mixin Futures (7000105155)"
-                        )
-                        Box(modifier = Modifier.height(20.dp))
-
-                        CloseInfoItem(
-                            title = "Memo".uppercase(),
-                            value = positionId
-                        )
+                        ItemUserContent(title = stringResource(id = R.string.Sender).uppercase(), sender, null)
                     }
                     Box(modifier = Modifier.height(16.dp))
                 }
@@ -387,6 +464,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                                 }
                             }
                         }
+
                         Step.Error -> {
                             ActionBottom(
                                 modifier = Modifier.align(Alignment.BottomCenter),
@@ -396,6 +474,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                                 confirmAction = { closePosition() },
                             )
                         }
+
                         Step.Pending -> {
                             ActionBottom(
                                 modifier = Modifier.align(Alignment.BottomCenter),
@@ -405,6 +484,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                                 confirmAction = { closePosition() },
                             )
                         }
+
                         Step.Sending -> {}
                     }
                 }
@@ -418,7 +498,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
         title: String,
         value: String,
         valueColor: Color = MixinAppTheme.colors.textPrimary,
-        subValue: String? = null
+        subValue: String? = null,
     ) {
         Column(
             modifier = Modifier
@@ -467,7 +547,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
     private fun closePosition() = lifecycleScope.launch(Dispatchers.IO) {
         try {
             step = Step.Sending
-            
+
             viewModel.closePerpsOrder(
                 positionId = positionId,
                 onSuccess = {

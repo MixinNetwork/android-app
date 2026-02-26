@@ -184,11 +184,11 @@ class PerpetualViewModel @Inject constructor(
                     
                     val position = PerpsPosition(
                         positionId = data.orderId,
-                        walletId = walletId,
                         productId = productId,
-                        marketSymbol = marketSymbol,
                         side = side,
                         quantity = amount,
+                        settleAssetId = assetId,
+                        botId = "",
                         entryPrice = entryPrice,
                         margin = amount,
                         leverage = leverage,
@@ -196,6 +196,7 @@ class PerpetualViewModel @Inject constructor(
                         markPrice = entryPrice,
                         unrealizedPnl = "0",
                         roe = "0",
+                        walletId = walletId,
                         createdAt = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", java.util.Locale.US).format(java.util.Date()),
                         updatedAt = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", java.util.Locale.US).format(java.util.Date())
                     )
