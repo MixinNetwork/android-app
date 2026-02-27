@@ -48,6 +48,7 @@ public class CountryPicker extends Fragment implements View.OnClickListener {
   private Country mLocationCountry;
   private Context context;
   private EditText mSearchEditText;
+  private View header;
 
   private ArrayMap<String, Country> defaultCountryMap;
 
@@ -98,7 +99,7 @@ public class CountryPicker extends Fragment implements View.OnClickListener {
     countryRv.setLayoutManager(new LinearLayoutManager(requireContext()));
     countryRv.addItemDecoration(new StickyRecyclerHeadersDecoration(adapter));
     countryRv.setAdapter(adapter);
-    View header = inflater.inflate(R.layout.header, container, false);
+    header = inflater.inflate(R.layout.header, container, false);
     adapter.setHeaderView(header);
     View mixinView = header.findViewById(R.id.mixin_rl);
     mixinView.setOnClickListener(v -> {
@@ -153,13 +154,18 @@ public class CountryPicker extends Fragment implements View.OnClickListener {
 
   @SuppressLint({"DefaultLocale", "NotifyDataSetChanged"})
   private void search(String text) {
-    selectedCountriesList.clear();
-    for (Country country : countriesList) {
-      if (country.getName().toLowerCase(Locale.ENGLISH).contains(text.toLowerCase()) || country.getName().equals(text) || country.getDialCode().contains(text)) {
-        selectedCountriesList.add(country);
+      selectedCountriesList.clear();
+      if (text.isBlank()) {
+          adapter.setHeaderView(header);
+      } else {
+          adapter.setHeaderView(null);
       }
-    }
-    adapter.notifyDataSetChanged();
+      for (Country country : countriesList) {
+          if (country.getName().toLowerCase(Locale.ENGLISH).contains(text.toLowerCase()) || country.getDialCode().contains(text)) {
+              selectedCountriesList.add(country);
+          }
+      }
+      adapter.notifyDataSetChanged();
   }
 
   public void getAllCountries() {
