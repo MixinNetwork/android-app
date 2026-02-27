@@ -50,7 +50,6 @@ buildscript {
         ext.zxingVersion = '3.5.4'
         ext.rxpermissionsVersion = '0.10.3'
         ext.ucropVersion = '2.2.11'
-        ext.countryPickerVersion = '1.3.1'
         ext.glideTransformationsVersion = '4.3.0'
         ext.jobqueueVersion = '3.1.0'
         ext.stickyheadersrecyclerviewVersion = '0.7'

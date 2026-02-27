@@ -18,8 +18,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.google.i18n.phonenumbers.Phonenumber
-import com.mukesh.countrypicker.Country
-import com.mukesh.countrypicker.CountryPicker
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -58,6 +56,8 @@ import one.mixin.android.widget.CaptchaView
 import one.mixin.android.widget.CaptchaView.Companion.gtCAPTCHA
 import one.mixin.android.widget.CaptchaView.Companion.hCAPTCHA
 import one.mixin.android.widget.Keyboard
+import one.mixin.android.widget.countrypicker.Country
+import one.mixin.android.widget.countrypicker.CountryPicker
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -116,7 +116,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
         Country().apply {
             name = getString(R.string.Mixin)
             code = getString(R.string.Mixin)
-            flag = com.mukesh.countrypicker.R.drawable.flag_mixin
+            flag = R.drawable.flag_mixin
             dialCode = xinDialCode
         }
     }

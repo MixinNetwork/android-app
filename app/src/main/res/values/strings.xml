@@ -1932,6 +1932,7 @@
     <string name="Export">Export</string>
     <string name="Upgrade_safe">Upgrade safe</string>
     <string name="mixin_support">Mixin Support</string>
+    <string name="mixin_dial_code" translatable="false">+XIN</string>
     <string name="ask_me_anything">Ask me anything</string>
     <string name="help_link">https://support.mixin.one/en/category/mixin-messenger-epr6vk</string>
     <string name="deposit_url">https://support.mixin.one/en/article/how-to-deposit-assets-to-mixin-messenger-1usvjod</string>
@@ -2278,4 +2279,8 @@
     <string name="no_available_quotes_found">No available quotes found. Please try a different token or amount.</string>
     <string name="wallet_summary_tip_all">Safes, watch wallets, and hidden assets are excluded from the total</string>
     <string name="wallet_summary_tip_safe">Co-managed safes are excluded from the total</string>
+    <string name="search">Search&#8230;</string>
+    <string name="no_sim_detected">No sim card detected.</string>
+    <string name="title">Choose a Country or Region</string>
+    <string name="anonymous_number">Anonymous Number</string>
 </resources>

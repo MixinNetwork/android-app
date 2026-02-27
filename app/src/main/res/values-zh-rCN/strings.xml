@@ -2220,4 +2220,8 @@
     <string name="no_available_quotes_found">未找到可用报价。请尝试其他代币或金额。</string>
     <string name="wallet_summary_tip_all">Safe 金库、观察钱包和隐藏的资产不计入统计</string>
     <string name="wallet_summary_tip_safe">共管的 Safe 金库不计入统计</string>
+    <string name="search">搜索&#8230;</string>
+    <string name="no_sim_detected">未检测到sim卡。</string>
+    <string name="title">选择一个国家或地区</string>
+    <string name="anonymous_number">匿名号码</string>
 </resources>
