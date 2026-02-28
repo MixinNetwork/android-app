@@ -49,4 +49,9 @@
     <dimen name="landing_indicator_dot_size">8dp</dimen>
     <dimen name="landing_indicator_dot_spacing">4dp</dimen>
 
+    <dimen name="cp_dialog_width">200dp</dimen>
+    <dimen name="cp_dialog_height">300dp</dimen>
+    <dimen name="list_header_height">30dp</dimen>
+    <dimen name="list_normal_height">60dp</dimen>
+    <dimen name="margin_start">16dp</dimen>
 </resources>

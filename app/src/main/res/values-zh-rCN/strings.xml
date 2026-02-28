@@ -2290,4 +2290,8 @@
     <string name="Close_Position_Success">平仓成功</string>
     <string name="Close_Position">平仓</string>
     <string name="Estimated_Liquidation_Price">预估强平价格</string>
+    <string name="search">搜索&#8230;</string>
+    <string name="no_sim_detected">未检测到sim卡。</string>
+    <string name="title">选择一个国家或地区</string>
+    <string name="anonymous_number">匿名号码</string>
 </resources>

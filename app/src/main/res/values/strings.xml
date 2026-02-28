@@ -1932,6 +1932,7 @@
     <string name="Export">Export</string>
     <string name="Upgrade_safe">Upgrade safe</string>
     <string name="mixin_support">Mixin Support</string>
+    <string name="mixin_dial_code" translatable="false">+XIN</string>
     <string name="ask_me_anything">Ask me anything</string>
     <string name="help_link">https://support.mixin.one/en/category/mixin-messenger-epr6vk</string>
     <string name="deposit_url">https://support.mixin.one/en/article/how-to-deposit-assets-to-mixin-messenger-1usvjod</string>
@@ -2354,4 +2355,8 @@
     <string name="Close_Position_Success">Close Position Success</string>
     <string name="Close_Position">Close Position</string>
     <string name="Estimated_Liquidation_Price">Estimated Liquidation Price</string>
+    <string name="search">Search&#8230;</string>
+    <string name="no_sim_detected">No sim card detected.</string>
+    <string name="title">Choose a Country or Region</string>
+    <string name="anonymous_number">Anonymous Number</string>
 </resources>
