@@ -216,6 +216,8 @@ class BottomSheetViewModel
 
         fun assetItemsWithBalance(): LiveData<List<TokenItem>> = tokenRepository.assetItemsWithBalance()
 
+        fun usdAssetItemsWithBalance(): LiveData<List<TokenItem>> = tokenRepository.usdAssetItemsWithBalance()
+
         fun assetItemsNotHidden(): LiveData<List<TokenItem>> = tokenRepository.assetItemsNotHidden()
 
         suspend fun kernelWithdrawalTransaction(

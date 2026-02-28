@@ -69,14 +69,15 @@ import kotlin.math.abs
 fun OpenPositionPage(
     marketId: String,
     marketSymbol: String,
+    displaySymbol: String,
     isLong: Boolean,
     onBack: () -> Unit,
+    onTokenSelect: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<PerpetualViewModel>()
     val coroutineScope = rememberCoroutineScope()
     val bottomSheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
-    val tokenBottomSheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
 
     var market by remember { mutableStateOf<PerpsMarket?>(null) }
     var selectedToken by remember { mutableStateOf<TokenItem?>(null) }
@@ -106,29 +107,18 @@ fun OpenPositionPage(
     val leverageOptions = generateLeverageOptions(maxLeverage)
 
     ModalBottomSheetLayout(
-        sheetState = if (tokenBottomSheetState.isVisible) tokenBottomSheetState else bottomSheetState,
+        sheetState = bottomSheetState,
         sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
         sheetBackgroundColor = MixinAppTheme.colors.background,
         sheetContent = {
-            if (tokenBottomSheetState.isVisible) {
-                TokenSelectionBottomSheet(
-                    tokens = availableTokens,
-                    selectedToken = selectedToken,
-                    onTokenSelect = { token ->
-                        selectedToken = token
-                        coroutineScope.launch { tokenBottomSheetState.hide() }
-                    }
-                )
-            } else {
-                LeverageBottomSheet(
-                    currentLeverage = leverage,
-                    maxLeverage = maxLeverage,
-                    onLeverageChange = {
-                        leverage = it
-                        coroutineScope.launch { bottomSheetState.hide() }
-                    }
-                )
-            }
+            LeverageBottomSheet(
+                currentLeverage = leverage,
+                maxLeverage = maxLeverage,
+                onLeverageChange = {
+                    leverage = it
+                    coroutineScope.launch { bottomSheetState.hide() }
+                }
+            )
         }
     ) {
         MixinAppTheme {
@@ -195,7 +185,7 @@ fun OpenPositionPage(
                             token = selectedToken?.toSwapToken(),
                             text = usdtAmount,
                             selectClick = {
-                                coroutineScope.launch { tokenBottomSheetState.show() }
+                                onTokenSelect()
                             },
                             onInputChanged = { usdtAmount = it }
                         )
@@ -429,82 +419,6 @@ fun OpenPositionPage(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun TokenSelectionBottomSheet(
-    tokens: List<TokenItem>,
-    selectedToken: TokenItem?,
-    onTokenSelect: (TokenItem) -> Unit,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-    ) {
-        Text(
-            text = stringResource(R.string.Select_Token),
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            color = MixinAppTheme.colors.textPrimary
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        tokens.forEach { token ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
-                    .clickable { onTokenSelect(token) }
-                    .padding(vertical = 12.dp, horizontal = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                CoilImage(
-                    model = token.iconUrl,
-                    placeholder = R.drawable.ic_avatar_place_holder,
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clip(CircleShape),
-                    contentScale = ContentScale.Crop
-                )
-
-                Spacer(modifier = Modifier.width(12.dp))
-
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = token.symbol,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = MixinAppTheme.colors.textPrimary
-                    )
-                    Text(
-                        text = token.chainName ?: "",
-                        fontSize = 12.sp,
-                        color = MixinAppTheme.colors.textAssist
-                    )
-                }
-
-                Text(
-                    text = token.balance,
-                    fontSize = 14.sp,
-                    color = MixinAppTheme.colors.textPrimary
-                )
-
-                if (selectedToken?.assetId == token.assetId) {
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Icon(
-                        painter = painterResource(R.drawable.ic_check),
-                        contentDescription = null,
-                        tint = MixinAppTheme.colors.accent,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
     }
 }
 

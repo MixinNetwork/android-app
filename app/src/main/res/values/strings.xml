@@ -2355,6 +2355,14 @@
     <string name="Close_Position_Success">Close Position Success</string>
     <string name="Close_Position">Close Position</string>
     <string name="Estimated_Liquidation_Price">Estimated Liquidation Price</string>
+    <string name="Total_Position_Value">Total Position Value</string>
+    <string name="Open_Positions">Open Positions(%1$d)</string>
+    <string name="Closed_Positions">Closed Positions</string>
+    <string name="No_Positions">No Positions</string>
+    <string name="No_Closed_Positions">No Closed Positions</string>
+    <string name="Loading">Loading...</string>
+    <string name="Vol">Vol %1$s</string>
+    <string name="Entry_Close_Price">Entry: $%1$s → Close: $%2$s</string>
     <string name="search">Search&#8230;</string>
     <string name="no_sim_detected">No sim card detected.</string>
     <string name="title">Choose a Country or Region</string>

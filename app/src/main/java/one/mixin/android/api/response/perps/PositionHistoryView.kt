@@ -7,8 +7,10 @@ data class PositionHistoryView(
     val historyId: String,
     @SerializedName("position_id")
     val positionId: String,
+    @SerializedName("product_id")
+    val productId: String,
     @SerializedName("market_symbol")
-    val marketSymbol: String,
+    val marketSymbol: String? = null,
     @SerializedName("side")
     val side: String,
     @SerializedName("quantity")
@@ -21,6 +23,8 @@ data class PositionHistoryView(
     val realizedPnl: String,
     @SerializedName("leverage")
     val leverage: Int,
+    @SerializedName("margin_method")
+    val marginMethod: String? = null,
     @SerializedName("open_at")
     val openAt: String,
     @SerializedName("closed_at")

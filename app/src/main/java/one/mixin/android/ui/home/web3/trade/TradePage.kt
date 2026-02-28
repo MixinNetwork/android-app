@@ -167,12 +167,6 @@ fun TradePage(
     if (walletId == null) {
         tabs += TabItem(title = stringResource(R.string.Perpetual)) {
             PerpetualContent(
-                onLongClick = { _ ->
-                    // TODO: Handle long position
-                },
-                onShortClick = { _ ->
-                    // TODO: Handle short position
-                },
                 onShowTradingGuide = onShowTradingGuide
             )
         }

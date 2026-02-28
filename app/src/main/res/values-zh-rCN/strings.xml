@@ -2290,6 +2290,15 @@
     <string name="Close_Position_Success">平仓成功</string>
     <string name="Close_Position">平仓</string>
     <string name="Estimated_Liquidation_Price">预估强平价格</string>
+    <string name="Total_Position_Value">持仓总价值</string>
+    <string name="Open_Positions">持仓中(%1$d)</string>
+    <string name="Closed_Positions">已平仓</string>
+    <string name="No_Positions">暂无持仓</string>
+    <string name="No_Closed_Positions">暂无已平仓记录</string>
+    <string name="Loading">加载中...</string>
+    <string name="Vol">成交量 %1$s</string>
+    <string name="Entry_Close_Price">开仓: $%1$s → 平仓: $%2$s</string>
+    <string name="How_Perps_Works">永续合约如何运作？</string>
     <string name="search">搜索&#8230;</string>
     <string name="no_sim_detected">未检测到sim卡。</string>
     <string name="title">选择一个国家或地区</string>

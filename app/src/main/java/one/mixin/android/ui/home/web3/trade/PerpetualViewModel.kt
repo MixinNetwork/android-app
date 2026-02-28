@@ -348,4 +348,49 @@ class PerpetualViewModel @Inject constructor(
             }
         }
     }
+
+    fun loadPositionHistory(
+        walletId: String,
+        limit: Int = 10,
+        offset: String? = null,
+        onSuccess: (List<one.mixin.android.api.response.perps.PositionHistoryView>) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                val response = withContext(Dispatchers.IO) {
+                    routeService.getPerpsPositionHistory(
+                        walletId = walletId,
+                        limit = limit,
+                        offset = offset
+                    )
+                }
+                
+                val data = response.data
+                if (response.isSuccess && data != null) {
+                    Timber.d("Position history loaded: ${data.size} items")
+                    
+                    val markets = withContext(Dispatchers.IO) {
+                        perpsMarketDao.getAllMarkets()
+                    }
+                    val marketMap = markets.associateBy { it.marketId }
+                    
+                    val enrichedData = data.map { history ->
+                        val market = marketMap[history.productId]
+                        history.copy(marketSymbol = market?.displaySymbol ?: history.productId)
+                    }
+                    
+                    onSuccess(enrichedData)
+                } else {
+                    val error = "Failed to load position history: ${response.errorDescription}"
+                    Timber.e(error)
+                    onError(error)
+                }
+            } catch (e: Exception) {
+                val error = "Error loading position history: ${e.message}"
+                Timber.e(e, error)
+                onError(error)
+            }
+        }
+    }
 }

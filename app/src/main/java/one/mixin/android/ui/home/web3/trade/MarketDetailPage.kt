@@ -196,6 +196,7 @@ fun MarketDetailPage(
                                     context = context,
                                     marketId = marketId,
                                     marketSymbol = marketSymbol,
+                                    marketDisplaySymbol = market?.displaySymbol ?: marketSymbol,
                                     isLong = true
                                 )
                             },
@@ -227,6 +228,7 @@ fun MarketDetailPage(
                                     context = context,
                                     marketId = marketId,
                                     marketSymbol = marketSymbol,
+                                    marketDisplaySymbol = market?.displaySymbol ?: marketSymbol,
                                     isLong = false
                                 )
                             },
