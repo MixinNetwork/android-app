@@ -936,6 +936,7 @@
     <string name="search_hint">搜索资产，联系人，消息</string>
     <string name="SEARCH_MESSAGES">搜索消息</string>
     <string name="search_placeholder_asset">搜索名称, 符号</string>
+    <string name="search_placeholder_market">搜索市场</string>
     <string name="search_placeholder_explore">名称, 符号, 链接</string>
     <string name="search_placeholder_collectible">名称</string>
     <string name="search_placeholder_number">搜索 Mixin ID 或手机号码：</string>
@@ -2299,6 +2300,7 @@
     <string name="Vol">成交量 %1$s</string>
     <string name="Entry_Close_Price">开仓: $%1$s → 平仓: $%2$s</string>
     <string name="How_Perps_Works">永续合约如何运作？</string>
+    <string name="Select_Market">选择市场</string>
     <string name="search">搜索&#8230;</string>
     <string name="no_sim_detected">未检测到sim卡。</string>
     <string name="title">选择一个国家或地区</string>

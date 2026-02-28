@@ -960,6 +960,7 @@
     <string name="search_hint">assets, contacts and messages</string>
     <string name="SEARCH_MESSAGES">SEARCH MESSAGES</string>
     <string name="search_placeholder_asset">Search Name, Symbol</string>
+    <string name="search_placeholder_market">Search Market</string>
     <string name="search_placeholder_explore">Name, Symbol, URL</string>
     <string name="search_placeholder_collectible">Name</string>
     <string name="search_placeholder_number">Search Mixin ID or phone number: </string>
@@ -2363,6 +2364,7 @@
     <string name="Loading">Loading...</string>
     <string name="Vol">Vol %1$s</string>
     <string name="Entry_Close_Price">Entry: $%1$s → Close: $%2$s</string>
+    <string name="Select_Market">Select Market</string>
     <string name="search">Search&#8230;</string>
     <string name="no_sim_detected">No sim card detected.</string>
     <string name="title">Choose a Country or Region</string>

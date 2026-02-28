@@ -89,6 +89,7 @@ fun TradePage(
     pop: () -> Unit,
     onLimitOrderClick: (String) -> Unit,
     onShowTradingGuide: () -> Unit,
+    onShowMarketList: (Boolean) -> Unit,
 ) {
     val context = LocalContext.current
 
@@ -167,7 +168,8 @@ fun TradePage(
     if (walletId == null) {
         tabs += TabItem(title = stringResource(R.string.Perpetual)) {
             PerpetualContent(
-                onShowTradingGuide = onShowTradingGuide
+                onShowTradingGuide = onShowTradingGuide,
+                onShowMarketList = onShowMarketList
             )
         }
     }

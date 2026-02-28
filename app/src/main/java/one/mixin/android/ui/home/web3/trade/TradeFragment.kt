@@ -332,6 +332,9 @@ class TradeFragment : BaseFragment() {
                                 },
                                 pop = {
                                     navigateUp(navController)
+                                },
+                                onShowMarketList = { isLong ->
+                                    MarketListBottomSheetDialogFragment.newInstance(isLong).show(parentFragmentManager, MarketListBottomSheetDialogFragment.TAG)
                                 }
                             )
                         }
