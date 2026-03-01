@@ -51,6 +51,7 @@ import one.mixin.android.ui.wallet.alert.components.cardBackground
 fun PerpetualContent(
     onShowTradingGuide: () -> Unit,
     onShowMarketList: (isLong: Boolean) -> Unit,
+    onShowAllClosedPositions: () -> Unit,
 ) {
     val walletId = Session.getAccountId()!!
     val context = LocalContext.current
@@ -283,6 +284,9 @@ fun PerpetualContent(
                 .wrapContentHeight()
                 .clip(RoundedCornerShape(8.dp))
                 .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
+                .clickable {
+                    onShowAllClosedPositions()
+                }
                 .padding(16.dp)
         ) {
             Row(

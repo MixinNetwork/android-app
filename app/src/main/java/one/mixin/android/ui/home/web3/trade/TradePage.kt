@@ -90,6 +90,7 @@ fun TradePage(
     onLimitOrderClick: (String) -> Unit,
     onShowTradingGuide: () -> Unit,
     onShowMarketList: (Boolean) -> Unit,
+    onShowAllClosedPositions: () -> Unit,
 ) {
     val context = LocalContext.current
 
@@ -169,7 +170,8 @@ fun TradePage(
         tabs += TabItem(title = stringResource(R.string.Perpetual)) {
             PerpetualContent(
                 onShowTradingGuide = onShowTradingGuide,
-                onShowMarketList = onShowMarketList
+                onShowMarketList = onShowMarketList,
+                onShowAllClosedPositions = onShowAllClosedPositions
             )
         }
     }

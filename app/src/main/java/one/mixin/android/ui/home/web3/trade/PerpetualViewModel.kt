@@ -377,7 +377,11 @@ class PerpetualViewModel @Inject constructor(
                     
                     val enrichedData = data.map { history ->
                         val market = marketMap[history.productId]
-                        history.copy(marketSymbol = market?.displaySymbol ?: history.productId)
+                        history.apply {
+                            displaySymbol = market?.displaySymbol
+                            iconUrl = market?.iconUrl
+                            tokenSymbol = market?.tokenSymbol
+                        }
                     }
                     
                     onSuccess(enrichedData)

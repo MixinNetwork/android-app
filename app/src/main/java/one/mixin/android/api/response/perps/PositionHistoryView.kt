@@ -1,7 +1,10 @@
 package one.mixin.android.api.response.perps
 
+import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
+import kotlinx.parcelize.Parcelize
 
+@Parcelize
 data class PositionHistoryView(
     @SerializedName("history_id")
     val historyId: String,
@@ -28,5 +31,8 @@ data class PositionHistoryView(
     @SerializedName("open_at")
     val openAt: String,
     @SerializedName("closed_at")
-    val closedAt: String
-)
+    val closedAt: String,
+    var displaySymbol: String? = null,
+    var iconUrl: String? = null,
+    var tokenSymbol: String? = null
+) : Parcelable

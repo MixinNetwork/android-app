@@ -335,6 +335,9 @@ class TradeFragment : BaseFragment() {
                                 },
                                 onShowMarketList = { isLong ->
                                     MarketListBottomSheetDialogFragment.newInstance(isLong).show(parentFragmentManager, MarketListBottomSheetDialogFragment.TAG)
+                                },
+                                onShowAllClosedPositions = {
+                                    navTo(AllClosedPositionsFragment.newInstance(), AllClosedPositionsFragment.TAG)
                                 }
                             )
                         }

@@ -7,7 +7,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -21,11 +23,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PositionHistoryView
+import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import java.math.BigDecimal
-import java.text.SimpleDateFormat
-import java.util.Locale
 
 @Composable
 fun ClosedPositionItem(position: PositionHistoryView) {
@@ -37,102 +38,110 @@ fun ClosedPositionItem(position: PositionHistoryView) {
 
     val isProfit = pnl >= BigDecimal.ZERO
     val pnlColor = if (isProfit) Color(0xFF4CAF50) else Color(0xFFF44336)
-    val pnlText = "${if (isProfit) "+" else ""}$${String.format("%.2f", pnl)}"
-
-    val entryPrice = try {
-        val price = BigDecimal(position.entryPrice)
-        String.format("%.4f", price)
-    } catch (e: Exception) {
-        position.entryPrice
-    }
-
-    val closePrice = try {
-        val price = BigDecimal(position.closePrice)
-        String.format("%.4f", price)
-    } catch (e: Exception) {
-        position.closePrice
-    }
-
-    val closedDate = try {
-        val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)
-        val outputFormat = SimpleDateFormat("MMM dd, HH:mm", Locale.US)
-        val date = inputFormat.parse(position.closedAt)
-        date?.let { outputFormat.format(it) } ?: position.closedAt
-    } catch (e: Exception) {
-        position.closedAt
-    }
     
-    val displaySymbol = position.marketSymbol ?: "Unknown"
+    val displaySymbol = position.displaySymbol ?: position.tokenSymbol ?: "Unknown"
+    val quantity = try {
+        val qty = BigDecimal(position.quantity)
+        String.format("%.4f", qty)
+    } catch (e: Exception) {
+        position.quantity
+    }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
-            .padding(12.dp),
+            .padding(vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column(
-            modifier = Modifier.weight(1f)
+        Row(
+            modifier = Modifier.weight(1f),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            CoilImage(
+                model = position.iconUrl,
+                placeholder = R.drawable.ic_avatar_place_holder,
+                modifier = Modifier
+                    .size(42.dp)
+                    .clip(CircleShape)
+            )
+            
+            Spacer(modifier = Modifier.width(12.dp))
+            
+            Column {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    val sideText = if (position.side.lowercase() == "long") {
+                        stringResource(R.string.Long)
+                    } else {
+                        stringResource(R.string.Short)
+                    }
+                    Text(
+                        text = sideText,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = if (position.side.lowercase() == "long") Color(0xFF4CAF50) else Color(0xFFF44336)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = displaySymbol,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MixinAppTheme.colors.textPrimary
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "${position.leverage}x",
+                        fontSize = 12.sp,
+                        color = MixinAppTheme.colors.textAssist,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .cardBackground(
+                                MixinAppTheme.colors.backgroundWindow,
+                                Color.Transparent
+                            )
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = displaySymbol,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MixinAppTheme.colors.textPrimary,
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = position.side.uppercase(),
+                    text = "$quantity ${position.tokenSymbol ?: ""}",
                     fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = if (position.side.lowercase() == "long") Color(0xFF4CAF50) else Color(0xFFF44336),
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(4.dp))
-                        .cardBackground(
-                            if (position.side.lowercase() == "long") Color(0xFF4CAF50).copy(alpha = 0.1f) else Color(0xFFF44336).copy(alpha = 0.1f),
-                            Color.Transparent
-                        )
-                        .padding(horizontal = 6.dp, vertical = 2.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = "${position.leverage}x",
-                    fontSize = 12.sp,
-                    color = MixinAppTheme.colors.textAssist,
+                    color = MixinAppTheme.colors.textAssist
                 )
             }
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = stringResource(R.string.Entry_Close_Price, entryPrice, closePrice),
-                fontSize = 12.sp,
-                color = MixinAppTheme.colors.textAssist,
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = closedDate,
-                fontSize = 11.sp,
-                color = MixinAppTheme.colors.textAssist,
-            )
         }
 
         Column(
             horizontalAlignment = Alignment.End
         ) {
             Text(
-                text = pnlText,
-                fontSize = 16.sp,
+                text = String.format("$%.2f", pnl.abs()),
+                fontSize = 14.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = pnlColor,
+                color = pnlColor
             )
             Spacer(modifier = Modifier.height(2.dp))
+            val entryPrice = try {
+                BigDecimal(position.entryPrice)
+            } catch (e: Exception) {
+                BigDecimal.ZERO
+            }
+            val closePrice = try {
+                BigDecimal(position.closePrice)
+            } catch (e: Exception) {
+                BigDecimal.ZERO
+            }
+            val priceChange = if (entryPrice > BigDecimal.ZERO) {
+                ((closePrice - entryPrice) / entryPrice * BigDecimal(100))
+            } else {
+                BigDecimal.ZERO
+            }
             Text(
-                text = "${position.quantity} ${displaySymbol}",
+                text = String.format("%s%.1f%%", if (priceChange >= BigDecimal.ZERO) "+" else "", priceChange),
                 fontSize = 12.sp,
-                color = MixinAppTheme.colors.textAssist,
+                color = if (priceChange >= BigDecimal.ZERO) Color(0xFF4CAF50) else Color(0xFFF44336)
             )
         }
     }
