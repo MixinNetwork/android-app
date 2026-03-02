@@ -222,6 +222,7 @@ fun PerpetualContent(
 
             // Markets Section
             Row(
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -230,7 +231,6 @@ fun PerpetualContent(
                     fontSize = 16.sp,
                     color = MixinAppTheme.colors.textPrimary,
                 )
-                Spacer(modifier = Modifier.width(4.dp))
                 Icon(
                     painter = painterResource(R.drawable.ic_arrow_right),
                     contentDescription = null,
@@ -293,6 +293,7 @@ fun PerpetualContent(
                 .padding(16.dp)
         ) {
             Row(
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -301,7 +302,6 @@ fun PerpetualContent(
                     fontSize = 16.sp,
                     color = MixinAppTheme.colors.textPrimary,
                 )
-                Spacer(modifier = Modifier.width(4.dp))
                 Icon(
                     painter = painterResource(R.drawable.ic_arrow_right),
                     contentDescription = null,

@@ -27,7 +27,11 @@ class ClosedPositionAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(getItem(position))
+        holder.bind(
+            position = getItem(position),
+            positionInList = position,
+            listSize = itemCount
+        )
     }
 
     class ViewHolder(
@@ -35,19 +39,28 @@ class ClosedPositionAdapter(
         private val onItemClick: ((PerpsPositionHistoryItem) -> Unit)?
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(position: PerpsPositionHistoryItem) {
+        fun bind(position: PerpsPositionHistoryItem, positionInList: Int, listSize: Int) {
             binding.apply {
                 val context = binding.root.context
-                
+
+                root.setBackgroundResource(
+                    when {
+                        listSize <= 1 -> R.drawable.bg_card
+                        positionInList == 0 -> R.drawable.bg_card_top
+                        positionInList == listSize - 1 -> R.drawable.bg_card_bottom
+                        else -> R.drawable.bg_card_middle
+                    }
+                )
+
                 root.setOnClickListener {
                     onItemClick?.invoke(position)
                 }
-                
+
                 iconIv.loadImage(position.iconUrl, R.drawable.ic_avatar_place_holder)
-                
+
                 val displaySymbol = position.displaySymbol ?: position.tokenSymbol ?: "Unknown"
                 symbolTv.text = displaySymbol
-                
+
                 sideTv.text = if (position.side.lowercase() == "long") {
                     context.getString(R.string.Long)
                 } else {
@@ -88,7 +101,7 @@ class ClosedPositionAdapter(
                 } else {
                     BigDecimal.ZERO
                 }
-                
+
                 priceChangeTv.text = String.format("%s%.1f%%", if (priceChange >= BigDecimal.ZERO) "+" else "", priceChange)
                 priceChangeTv.setTextColor(
                     if (priceChange >= BigDecimal.ZERO) {
