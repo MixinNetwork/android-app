@@ -2284,6 +2284,7 @@
     <string name="Short">做空</string>
     <string name="Side">方向</string>
     <string name="Entry_Price">开仓价格</string>
+    <string name="Mark_Price">价格</string>
     <string name="Close_Price">平仓价格</string>
     <string name="Quantity">数量</string>
     <string name="Position_Details">持仓详情</string>

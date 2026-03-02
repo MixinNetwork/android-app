@@ -22,14 +22,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
-import one.mixin.android.api.response.perps.PositionHistoryView
+import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import java.math.BigDecimal
 
 @Composable
-fun ClosedPositionItem(position: PositionHistoryView) {
+fun ClosedPositionItem(position: PerpsPositionHistoryItem) {
     val pnl = try {
         BigDecimal(position.realizedPnl)
     } catch (e: Exception) {

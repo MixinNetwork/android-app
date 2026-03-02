@@ -9,8 +9,10 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import one.mixin.android.Constants
 import one.mixin.android.api.response.perps.PerpsPosition
+import one.mixin.android.api.response.perps.PerpsPositionHistory
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.db.perps.PerpsPositionDao
+import one.mixin.android.db.perps.PerpsPositionHistoryDao
 import one.mixin.android.db.perps.PerpsMarketDao
 import one.mixin.android.util.SINGLE_DB_EXECUTOR
 import one.mixin.android.util.database.dbDir
@@ -22,6 +24,7 @@ import kotlin.math.min
 @Database(
     entities = [
         PerpsPosition::class,
+        PerpsPositionHistory::class,
         PerpsMarket::class,
     ],
     version = 1,
@@ -58,7 +61,8 @@ abstract class PerpsDatabase : RoomDatabase() {
                                 db.execSQL("PRAGMA synchronous = NORMAL")
                             }
                         },
-                    ).enableMultiInstanceInvalidation()
+                    ).fallbackToDestructiveMigration()
+                        .enableMultiInstanceInvalidation()
                         .setQueryExecutor(
                             Executors.newFixedThreadPool(
                                 max(2, min(Runtime.getRuntime().availableProcessors() - 1, 4)),
@@ -73,6 +77,7 @@ abstract class PerpsDatabase : RoomDatabase() {
     }
 
     abstract fun perpsPositionDao(): PerpsPositionDao
+    abstract fun perpsPositionHistoryDao(): PerpsPositionHistoryDao
     abstract fun perpsMarketDao(): PerpsMarketDao
 
     override fun close() {

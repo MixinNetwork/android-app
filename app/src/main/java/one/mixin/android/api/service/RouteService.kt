@@ -64,7 +64,7 @@ import one.mixin.android.api.request.perps.CloseOrderResponse
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.api.response.perps.CandleView
 import one.mixin.android.api.response.perps.PerpsPosition
-import one.mixin.android.api.response.perps.PositionHistoryView
+import one.mixin.android.api.response.perps.PerpsPositionHistory
 
 import retrofit2.http.Query
 
@@ -396,5 +396,5 @@ interface RouteService {
         @Query("offset") offset: String? = null,
         @Query("limit") limit: Int = 100,
         @Query("wallet_id") walletId: String
-    ): MixinResponse<List<PositionHistoryView>>
+    ): MixinResponse<List<PerpsPositionHistory>>
 }

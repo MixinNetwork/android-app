@@ -28,7 +28,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
-import one.mixin.android.api.response.perps.PositionHistoryView
+import one.mixin.android.api.response.perps.PerpsPositionItem
+import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.wallet.alert.components.cardBackground
@@ -38,12 +39,13 @@ import java.util.Locale
 
 @Composable
 fun PositionDetailPage(
-    position: PositionHistoryView,
+    position: PerpsPositionItem,
     pop: () -> Unit,
 ) {
     val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
     
-    fun formatDate(dateStr: String): String {
+    fun formatDate(dateStr: String?): String {
+        if (dateStr == null) return ""
         return try {
             val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)
             val date = inputFormat.parse(dateStr)
@@ -54,7 +56,7 @@ fun PositionDetailPage(
     }
 
     val pnl = try {
-        BigDecimal(position.realizedPnl)
+        BigDecimal(position.unrealizedPnl ?: "0")
     } catch (e: Exception) {
         BigDecimal.ZERO
     }
@@ -198,13 +200,6 @@ fun PositionDetailPage(
                 
                 Spacer(modifier = Modifier.height(20.dp))
                 
-                PositionDetailItem(
-                    label = stringResource(R.string.Close_Price).uppercase(),
-                    value = String.format("$%.2f", position.closePrice.toBigDecimalOrNull() ?: BigDecimal.ZERO)
-                )
-                
-                Spacer(modifier = Modifier.height(20.dp))
-                
                 one.mixin.android.ui.tip.wc.compose.ItemWalletContent(
                     title = stringResource(R.string.Wallet).uppercase(),
                     fontSize = 16.sp,
@@ -214,8 +209,8 @@ fun PositionDetailPage(
                 Spacer(modifier = Modifier.height(20.dp))
                 
                 PositionDetailItem(
-                    label = stringResource(R.string.Close_Time).uppercase(),
-                    value = formatDate(position.closedAt)
+                    label = stringResource(R.string.Open_Time).uppercase(),
+                    value = formatDate(position.createdAt)
                 )
             }
             
@@ -264,6 +259,196 @@ private fun PositionDetailItem(
                 fontWeight = FontWeight.Normal,
                 color = MixinAppTheme.colors.textPrimary
             )
+        }
+    }
+}
+
+
+@Composable
+fun PositionDetailPage(
+    positionHistory: PerpsPositionHistoryItem,
+    pop: () -> Unit,
+) {
+    val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+    
+    fun formatDate(dateStr: String?): String {
+        if (dateStr == null) return ""
+        return try {
+            val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)
+            val date = inputFormat.parse(dateStr)
+            date?.let { dateFormat.format(it) } ?: dateStr
+        } catch (e: Exception) {
+            dateStr
+        }
+    }
+
+    val pnl = try {
+        BigDecimal(positionHistory.realizedPnl)
+    } catch (e: Exception) {
+        BigDecimal.ZERO
+    }
+
+    val isProfit = pnl >= BigDecimal.ZERO
+    val pnlColor = if (isProfit) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+
+    PageScaffold(
+        title = stringResource(R.string.Position_Details),
+        verticalScrollable = false,
+        pop = pop
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .cardBackground(
+                        MixinAppTheme.colors.background,
+                        MixinAppTheme.colors.borderColor
+                    )
+            ) {
+                Spacer(modifier = Modifier.height(30.dp))
+                
+                CoilImage(
+                    model = positionHistory.iconUrl,
+                    placeholder = R.drawable.ic_avatar_place_holder,
+                    modifier = Modifier
+                        .size(70.dp)
+                        .clip(CircleShape)
+                        .align(Alignment.CenterHorizontally)
+                )
+                
+                Spacer(modifier = Modifier.height(20.dp))
+                
+                Text(
+                    text = String.format("$%.2f", pnl.abs()),
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.W500,
+                    color = pnlColor,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
+                
+                Spacer(modifier = Modifier.height(10.dp))
+                
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(pnlColor.copy(alpha = 0.2f))
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                        .align(Alignment.CenterHorizontally)
+                ) {
+                    val sideText = if (positionHistory.side.lowercase() == "long") {
+                        stringResource(R.string.Long)
+                    } else {
+                        stringResource(R.string.Short)
+                    }
+                    Text(
+                        text = "$sideText ${positionHistory.leverage}x",
+                        color = pnlColor,
+                        fontSize = 14.sp
+                    )
+                }
+                
+                Spacer(modifier = Modifier.height(20.dp))
+                
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .padding(horizontal = 20.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MixinAppTheme.colors.backgroundWindow),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(R.string.Trade_Again),
+                        color = MixinAppTheme.colors.textPrimary,
+                        fontWeight = FontWeight.W500,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(vertical = 10.dp),
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                    Box(
+                        modifier = Modifier
+                            .width(2.dp)
+                            .height(24.dp)
+                            .background(Color(0x0D000000))
+                    )
+                    Text(
+                        text = stringResource(R.string.Share),
+                        color = MixinAppTheme.colors.textPrimary,
+                        fontWeight = FontWeight.W500,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(vertical = 10.dp),
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                }
+                
+                Spacer(modifier = Modifier.height(30.dp))
+            }
+            
+            Spacer(modifier = Modifier.height(10.dp))
+            
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .wrapContentHeight()
+                    .cardBackground(
+                        MixinAppTheme.colors.background,
+                        MixinAppTheme.colors.borderColor
+                    )
+                    .padding(horizontal = 16.dp, vertical = 16.dp)
+            ) {
+                PositionDetailItem(
+                    label = stringResource(R.string.Perpetual).uppercase(),
+                    value = positionHistory.displaySymbol ?: positionHistory.tokenSymbol ?: "Unknown",
+                    icon = positionHistory.iconUrl
+                )
+                
+                Spacer(modifier = Modifier.height(20.dp))
+                
+                PositionDetailItem(
+                    label = stringResource(R.string.Order_Value).uppercase(),
+                    value = "${positionHistory.quantity.toBigDecimalOrNull()?.let { String.format("%.4f", it) } ?: positionHistory.quantity} ${positionHistory.tokenSymbol ?: ""}"
+                )
+                
+                Spacer(modifier = Modifier.height(20.dp))
+                
+                PositionDetailItem(
+                    label = stringResource(R.string.Entry_Price).uppercase(),
+                    value = String.format("$%.2f", positionHistory.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+                )
+                
+                Spacer(modifier = Modifier.height(20.dp))
+                
+                PositionDetailItem(
+                    label = stringResource(R.string.Close_Price).uppercase(),
+                    value = String.format("$%.2f", positionHistory.closePrice.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+                )
+                
+                Spacer(modifier = Modifier.height(20.dp))
+                
+                one.mixin.android.ui.tip.wc.compose.ItemWalletContent(
+                    title = stringResource(R.string.Wallet).uppercase(),
+                    fontSize = 16.sp,
+                    padding = 0.dp
+                )
+                
+                Spacer(modifier = Modifier.height(20.dp))
+                
+                PositionDetailItem(
+                    label = stringResource(R.string.Close_Time).uppercase(),
+                    value = formatDate(positionHistory.closedAt)
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(40.dp))
         }
     }
 }

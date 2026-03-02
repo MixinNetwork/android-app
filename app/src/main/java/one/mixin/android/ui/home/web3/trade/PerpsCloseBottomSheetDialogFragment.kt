@@ -177,9 +177,9 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
             viewModel.loadPositionDetail(
                 positionId = positionId,
                 onSuccess = { position ->
-                    latestMarkPrice = position.markPrice
-                    latestUnrealizedPnl = position.unrealizedPnl
-                    latestRoe = position.roe
+                    latestMarkPrice = position.markPrice ?: "0"
+                    latestUnrealizedPnl = position.unrealizedPnl ?: "0"
+                    latestRoe = position.roe ?: "0"
 
                     viewModel.loadMarketDetail(
                         marketId = position.productId,
@@ -191,13 +191,17 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                     )
 
                     lifecycleScope.launch {
-                        val asset = bottomViewModel.findAssetItemById(position.settleAssetId)
-                        asset?.let {
-                            settleAssetSymbol = it.symbol
-                            settleAssetItem = it
+                        position.settleAssetId?.let { assetId ->
+                            val asset = bottomViewModel.findAssetItemById(assetId)
+                            asset?.let {
+                                settleAssetSymbol = it.symbol
+                                settleAssetItem = it
+                            }
                         }
                         
-                        sender = bottomViewModel.refreshUser(position.botId)
+                        position.botId?.let { botId ->
+                            sender = bottomViewModel.refreshUser(botId)
+                        }
                         
                         isLoading = false
                     }

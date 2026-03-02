@@ -9,6 +9,7 @@ import dagger.hilt.components.SingletonComponent
 import one.mixin.android.db.PerpsDatabase
 import one.mixin.android.db.perps.PerpsMarketDao
 import one.mixin.android.db.perps.PerpsPositionDao
+import one.mixin.android.db.perps.PerpsPositionHistoryDao
 import javax.inject.Singleton
 
 @Module
@@ -25,6 +26,12 @@ object PerpsModule {
     @Singleton
     fun providePerpsPositionDao(database: PerpsDatabase): PerpsPositionDao {
         return database.perpsPositionDao()
+    }
+
+    @Provides
+    @Singleton
+    fun providePerpsPositionHistoryDao(database: PerpsDatabase): PerpsPositionHistoryDao {
+        return database.perpsPositionHistoryDao()
     }
 
     @Provides

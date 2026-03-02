@@ -6,14 +6,14 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
-import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
+import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.databinding.ItemClosedPositionListBinding
 import one.mixin.android.extension.loadImage
 import java.math.BigDecimal
 
-class ClosedPositionAdapter(
-    private val onItemClick: ((PerpsPositionHistoryItem) -> Unit)? = null
-) : ListAdapter<PerpsPositionHistoryItem, ClosedPositionAdapter.ViewHolder>(DiffCallback()) {
+class OpenPositionAdapter(
+    private val onItemClick: ((PerpsPositionItem) -> Unit)? = null
+) : ListAdapter<PerpsPositionItem, OpenPositionAdapter.ViewHolder>(DiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(
@@ -32,10 +32,10 @@ class ClosedPositionAdapter(
 
     class ViewHolder(
         private val binding: ItemClosedPositionListBinding,
-        private val onItemClick: ((PerpsPositionHistoryItem) -> Unit)?
+        private val onItemClick: ((PerpsPositionItem) -> Unit)?
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(position: PerpsPositionHistoryItem) {
+        fun bind(position: PerpsPositionItem) {
             binding.apply {
                 val context = binding.root.context
                 
@@ -71,7 +71,7 @@ class ClosedPositionAdapter(
                 }
                 quantityTv.text = "$quantityStr ${position.tokenSymbol ?: ""}"
 
-                val pnl = (position.realizedPnl).toBigDecimalOrNull() ?: BigDecimal.ZERO
+                val pnl = (position.unrealizedPnl ?: "0").toBigDecimalOrNull() ?: BigDecimal.ZERO
                 pnlTv.text = String.format("$%.2f", pnl.abs())
                 pnlTv.setTextColor(
                     if (pnl >= BigDecimal.ZERO) {
@@ -82,9 +82,9 @@ class ClosedPositionAdapter(
                 )
 
                 val entryPrice = position.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
-                val closePrice = position.closePrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                val markPrice = (position.markPrice ?: "0").toBigDecimalOrNull() ?: BigDecimal.ZERO
                 val priceChange = if (entryPrice > BigDecimal.ZERO) {
-                    ((closePrice - entryPrice) / entryPrice * BigDecimal(100))
+                    ((markPrice - entryPrice) / entryPrice * BigDecimal(100))
                 } else {
                     BigDecimal.ZERO
                 }
@@ -101,17 +101,17 @@ class ClosedPositionAdapter(
         }
     }
 
-    private class DiffCallback : DiffUtil.ItemCallback<PerpsPositionHistoryItem>() {
+    private class DiffCallback : DiffUtil.ItemCallback<PerpsPositionItem>() {
         override fun areItemsTheSame(
-            oldItem: PerpsPositionHistoryItem,
-            newItem: PerpsPositionHistoryItem
+            oldItem: PerpsPositionItem,
+            newItem: PerpsPositionItem
         ): Boolean {
-            return oldItem.historyId == newItem.historyId
+            return oldItem.positionId == newItem.positionId
         }
 
         override fun areContentsTheSame(
-            oldItem: PerpsPositionHistoryItem,
-            newItem: PerpsPositionHistoryItem
+            oldItem: PerpsPositionItem,
+            newItem: PerpsPositionItem
         ): Boolean {
             return oldItem == newItem
         }

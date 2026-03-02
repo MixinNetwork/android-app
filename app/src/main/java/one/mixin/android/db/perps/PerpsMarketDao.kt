@@ -15,18 +15,18 @@ interface PerpsMarketDao : BaseDao<PerpsMarket> {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(markets: List<PerpsMarket>)
 
-    @Query("SELECT * FROM perps_markets ORDER BY CAST(volume AS REAL) DESC")
+    @Query("SELECT * FROM markets ORDER BY CAST(volume AS REAL) DESC")
     suspend fun getAllMarkets(): List<PerpsMarket>
 
-    @Query("SELECT * FROM perps_markets WHERE market_id = :marketId")
+    @Query("SELECT * FROM markets WHERE market_id = :marketId")
     suspend fun getMarket(marketId: String): PerpsMarket?
 
-    @Query("SELECT * FROM perps_markets WHERE symbol LIKE '%' || :query || '%' ORDER BY CAST(volume AS REAL) DESC")
+    @Query("SELECT * FROM markets WHERE symbol LIKE '%' || :query || '%' ORDER BY CAST(volume AS REAL) DESC")
     suspend fun searchMarkets(query: String): List<PerpsMarket>
 
-    @Query("DELETE FROM perps_markets")
+    @Query("DELETE FROM markets")
     suspend fun deleteAll()
 
-    @Query("SELECT COUNT(*) FROM perps_markets")
+    @Query("SELECT COUNT(*) FROM markets")
     suspend fun getCount(): Int
 }

@@ -2343,6 +2343,7 @@
     <string name="Short">Short</string>
     <string name="Side">Side</string>
     <string name="Entry_Price">Entry Price</string>
+    <string name="Mark_Price">Mark Price</string>
     <string name="Close_Price">Close Price</string>
     <string name="Quantity">Quantity</string>
     <string name="Position_Details">Position Details</string>
@@ -2368,6 +2369,7 @@
     <string name="Close_Position">Close Position</string>
     <string name="Estimated_Liquidation_Price">Estimated Liquidation Price</string>
     <string name="Total_Position_Value">Total Position Value</string>
+    <string name="Open_Positions_Simple">Open Positions</string>
     <string name="Open_Positions">Open Positions(%1$d)</string>
     <string name="Closed_Positions">Closed Positions</string>
     <string name="No_Positions">No Positions</string>

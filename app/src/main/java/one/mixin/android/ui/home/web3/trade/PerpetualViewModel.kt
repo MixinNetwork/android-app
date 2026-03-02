@@ -12,8 +12,13 @@ import one.mixin.android.api.service.RouteService
 import one.mixin.android.api.request.perps.OpenOrderRequest
 import one.mixin.android.api.request.perps.OpenOrderResponse
 import one.mixin.android.api.response.perps.PerpsPosition
+import one.mixin.android.api.response.perps.PerpsPositionHistory
+import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
+import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.db.perps.PerpsPositionDao
 import one.mixin.android.db.perps.PerpsMarketDao
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshPerpsPositionsJob
 import one.mixin.android.vo.safe.TokenItem
 import timber.log.Timber
 import javax.inject.Inject
@@ -23,8 +28,14 @@ class PerpetualViewModel @Inject constructor(
     private val routeService: RouteService,
     private val tokenDao: one.mixin.android.db.TokenDao,
     private val perpsPositionDao: PerpsPositionDao,
-    private val perpsMarketDao: PerpsMarketDao
+    private val perpsPositionHistoryDao: one.mixin.android.db.perps.PerpsPositionHistoryDao,
+    private val perpsMarketDao: PerpsMarketDao,
+    private val jobManager: MixinJobManager
 ) : ViewModel() {
+
+    fun refreshPositions(walletId: String) {
+        jobManager.addJobInBackground(RefreshPerpsPositionsJob(walletId))
+    }
 
     fun loadMarkets(
         onSuccess: (List<PerpsMarket>) -> Unit,
@@ -219,7 +230,7 @@ class PerpetualViewModel @Inject constructor(
         }
     }
 
-    fun getOpenPositions(walletId: String, onSuccess: (List<PerpsPosition>) -> Unit) {
+    fun getOpenPositions(walletId: String, onSuccess: (List<PerpsPositionItem>) -> Unit) {
         viewModelScope.launch {
             try {
                 val positions = withContext(Dispatchers.IO) {
@@ -229,6 +240,28 @@ class PerpetualViewModel @Inject constructor(
             } catch (e: Exception) {
                 Timber.e(e, "Error loading open positions")
                 onSuccess(emptyList())
+            }
+        }
+    }
+
+    suspend fun getOpenPositionsFromDb(walletId: String): List<PerpsPositionItem> {
+        return withContext(Dispatchers.IO) {
+            try {
+                perpsPositionDao.getOpenPositions(walletId)
+            } catch (e: Exception) {
+                Timber.e(e, "Error loading open positions from db")
+                emptyList()
+            }
+        }
+    }
+
+    suspend fun getClosedPositionsFromDb(walletId: String, limit: Int): List<PerpsPositionHistoryItem> {
+        return withContext(Dispatchers.IO) {
+            try {
+                perpsPositionHistoryDao.getHistories(walletId, limit)
+            } catch (e: Exception) {
+                Timber.e(e, "Error loading closed positions from db")
+                emptyList()
             }
         }
     }
@@ -247,7 +280,7 @@ class PerpetualViewModel @Inject constructor(
         }
     }
 
-    fun loadOpenPositions(walletId: String, onSuccess: (List<PerpsPosition>) -> Unit) {
+    fun loadOpenPositions(walletId: String, onSuccess: (List<PerpsPositionItem>) -> Unit) {
         viewModelScope.launch {
             try {
                 val positions = withContext(Dispatchers.IO) {
@@ -261,7 +294,7 @@ class PerpetualViewModel @Inject constructor(
         }
     }
 
-    fun getPositionByMarket(walletId: String, marketId: String, onSuccess: (PerpsPosition?) -> Unit) {
+    fun getPositionByMarket(walletId: String, marketId: String, onSuccess: (PerpsPositionItem?) -> Unit) {
         viewModelScope.launch {
             try {
                 val positions = withContext(Dispatchers.IO) {
@@ -353,11 +386,19 @@ class PerpetualViewModel @Inject constructor(
         walletId: String,
         limit: Int = 10,
         offset: String? = null,
-        onSuccess: (List<one.mixin.android.api.response.perps.PositionHistoryView>) -> Unit,
+        onSuccess: (List<PerpsPositionHistoryItem>) -> Unit,
         onError: (String) -> Unit
     ) {
         viewModelScope.launch {
             try {
+                val cachedHistories = withContext(Dispatchers.IO) {
+                    perpsPositionHistoryDao.getHistories(walletId, limit)
+                }
+                
+                if (cachedHistories.isNotEmpty()) {
+                    onSuccess(cachedHistories)
+                }
+                
                 val response = withContext(Dispatchers.IO) {
                     routeService.getPerpsPositionHistory(
                         walletId = walletId,
@@ -370,30 +411,33 @@ class PerpetualViewModel @Inject constructor(
                 if (response.isSuccess && data != null) {
                     Timber.d("Position history loaded: ${data.size} items")
                     
-                    val markets = withContext(Dispatchers.IO) {
-                        perpsMarketDao.getAllMarkets()
-                    }
-                    val marketMap = markets.associateBy { it.marketId }
+                    val histories = data.map { it.copy(walletId = walletId) }
                     
-                    val enrichedData = data.map { history ->
-                        val market = marketMap[history.productId]
-                        history.apply {
-                            displaySymbol = market?.displaySymbol
-                            iconUrl = market?.iconUrl
-                            tokenSymbol = market?.tokenSymbol
-                        }
+                    withContext(Dispatchers.IO) {
+                        perpsPositionHistoryDao.insertAll(histories)
                     }
                     
-                    onSuccess(enrichedData)
+                    val updatedHistories = withContext(Dispatchers.IO) {
+                        perpsPositionHistoryDao.getHistories(walletId, limit)
+                    }
+                    onSuccess(updatedHistories)
                 } else {
                     val error = "Failed to load position history: ${response.errorDescription}"
                     Timber.e(error)
-                    onError(error)
+                    if (cachedHistories.isEmpty()) {
+                        onError(error)
+                    }
                 }
             } catch (e: Exception) {
                 val error = "Error loading position history: ${e.message}"
                 Timber.e(e, error)
-                onError(error)
+                
+                val cachedHistories = withContext(Dispatchers.IO) {
+                    perpsPositionHistoryDao.getHistories(walletId, limit)
+                }
+                if (cachedHistories.isEmpty()) {
+                    onError(error)
+                }
             }
         }
     }

@@ -42,7 +42,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
-import one.mixin.android.api.response.perps.PositionHistoryView
+import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.session.Session
 import one.mixin.android.ui.wallet.alert.components.cardBackground
@@ -62,10 +62,13 @@ fun PerpetualContent(
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var openPositionsCount by remember { mutableStateOf(0) }
     var totalPnl by remember { mutableStateOf(0.0) }
-    var closedPositions by remember { mutableStateOf<List<PositionHistoryView>>(emptyList()) }
+    var closedPositions by remember { mutableStateOf<List<PerpsPositionHistoryItem>>(emptyList()) }
     var isLoadingHistory by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
+        // Refresh positions from API
+        viewModel.refreshPositions(walletId)
+        
         viewModel.loadMarkets(
             onSuccess = { data ->
                 markets = data

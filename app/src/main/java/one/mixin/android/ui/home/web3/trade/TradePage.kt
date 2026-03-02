@@ -254,7 +254,12 @@ fun TradePage(
         actions = {
             Box {
                 IconButton(onClick = {
-                    onOrderList(currentWalletId, false)
+                    // If on Perpetual tab (page 2), show closed positions
+                    if (walletId == null && pagerState.currentPage == 2) {
+                        onShowAllClosedPositions()
+                    } else {
+                        onOrderList(currentWalletId, false)
+                    }
                 }) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_order),

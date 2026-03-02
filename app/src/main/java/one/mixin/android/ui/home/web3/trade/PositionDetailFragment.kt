@@ -10,7 +10,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.isNightMode
-import one.mixin.android.api.response.perps.PositionHistoryView
+import one.mixin.android.api.response.perps.PerpsPositionItem
+import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.ui.common.BaseFragment
 
 @AndroidEntryPoint
@@ -18,11 +19,20 @@ class PositionDetailFragment : BaseFragment() {
     companion object {
         const val TAG = "PositionDetailFragment"
         private const val ARGS_POSITION = "args_position"
+        private const val ARGS_POSITION_HISTORY = "args_position_history"
 
-        fun newInstance(position: PositionHistoryView): PositionDetailFragment {
+        fun newInstance(position: PerpsPositionItem): PositionDetailFragment {
             return PositionDetailFragment().apply {
                 arguments = Bundle().apply {
                     putParcelable(ARGS_POSITION, position)
+                }
+            }
+        }
+
+        fun newInstance(position: PerpsPositionHistoryItem): PositionDetailFragment {
+            return PositionDetailFragment().apply {
+                arguments = Bundle().apply {
+                    putParcelable(ARGS_POSITION_HISTORY, position)
                 }
             }
         }
@@ -35,20 +45,29 @@ class PositionDetailFragment : BaseFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-        val position = arguments?.getParcelableCompat(ARGS_POSITION, PositionHistoryView::class.java)
-            ?: throw IllegalArgumentException("Position is required")
+        val position = arguments?.getParcelableCompat(ARGS_POSITION, PerpsPositionItem::class.java)
+        val positionHistory = arguments?.getParcelableCompat(ARGS_POSITION_HISTORY, PerpsPositionHistoryItem::class.java)
 
         return ComposeView(inflater.context).apply {
             setContent {
                 MixinAppTheme(
                     darkTheme = context.isNightMode(),
                 ) {
-                    PositionDetailPage(
-                        position = position,
-                        pop = {
-                            activity?.onBackPressedDispatcher?.onBackPressed()
-                        }
-                    )
+                    if (position != null) {
+                        PositionDetailPage(
+                            position = position,
+                            pop = {
+                                activity?.onBackPressedDispatcher?.onBackPressed()
+                            }
+                        )
+                    } else if (positionHistory != null) {
+                        PositionDetailPage(
+                            positionHistory = positionHistory,
+                            pop = {
+                                activity?.onBackPressedDispatcher?.onBackPressed()
+                            }
+                        )
+                    }
                 }
             }
         }

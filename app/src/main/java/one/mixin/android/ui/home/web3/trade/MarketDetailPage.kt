@@ -48,6 +48,8 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.api.response.perps.PerpsPosition
+import one.mixin.android.api.response.perps.PerpsPositionItem
+import one.mixin.android.api.response.perps.toPosition
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
@@ -66,7 +68,7 @@ fun MarketDetailPage(
     var market by remember { mutableStateOf<PerpsMarket?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     var selectedTimeFrame by remember { mutableIntStateOf(0) }
-    var currentPosition by remember { mutableStateOf<PerpsPosition?>(null) }
+    var currentPosition by remember { mutableStateOf<PerpsPositionItem?>(null) }
     val coroutineScope = rememberCoroutineScope()
 
     val timeFrames = listOf("1h", "1d", "1w", "1M")
@@ -156,7 +158,7 @@ fun MarketDetailPage(
                             .height(48.dp),
                         onClick = {
                             val activity = context as? androidx.fragment.app.FragmentActivity ?: return@Button
-                            val position = currentPosition ?: return@Button
+                            val position = currentPosition?.toPosition() ?: return@Button
                             
                             PerpsCloseBottomSheetDialogFragment.newInstance(
                                 position = position,
