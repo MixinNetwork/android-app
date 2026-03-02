@@ -76,6 +76,6 @@ fun PerpsPositionItem.toPosotion(): PerpsPosition {
         state,
         markPrice,
         unrealizedPnl,
-        roe, walletId, createdAt, updatedAt, displaySymbol, iconUrl, tokenSymbol,
+        roe, walletId, createdAt, updatedAt
     )
 }

@@ -58,10 +58,4 @@ data class PerpsPosition(
     @SerializedName("updated_at")
     @ColumnInfo(name = "updated_at")
     val updatedAt: String? = null,
-    @ColumnInfo(name = "display_symbol")
-    var displaySymbol: String? = null,
-    @ColumnInfo(name = "icon_url")
-    var iconUrl: String? = null,
-    @ColumnInfo(name = "token_symbol")
-    var tokenSymbol: String? = null
 ) : Parcelable

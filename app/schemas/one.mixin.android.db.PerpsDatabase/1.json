@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "28441fcf48069a0899c98e75eaacf4c9",
+    "identityHash": "aa2a40bfcda9610faa30a7e0d18637fa",
     "entities": [
       {
         "tableName": "positions",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`position_id` TEXT NOT NULL, `product_id` TEXT NOT NULL, `side` TEXT NOT NULL, `quantity` TEXT NOT NULL, `entry_price` TEXT NOT NULL, `leverage` INTEGER NOT NULL, `settle_asset_id` TEXT, `bot_id` TEXT, `margin` TEXT, `state` TEXT, `mark_price` TEXT, `unrealized_pnl` TEXT, `roe` TEXT, `wallet_id` TEXT, `created_at` TEXT, `updated_at` TEXT, `display_symbol` TEXT, `icon_url` TEXT, `token_symbol` TEXT, PRIMARY KEY(`position_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`position_id` TEXT NOT NULL, `product_id` TEXT NOT NULL, `side` TEXT NOT NULL, `quantity` TEXT NOT NULL, `entry_price` TEXT NOT NULL, `leverage` INTEGER NOT NULL, `settle_asset_id` TEXT, `bot_id` TEXT, `margin` TEXT, `state` TEXT, `mark_price` TEXT, `unrealized_pnl` TEXT, `roe` TEXT, `wallet_id` TEXT, `created_at` TEXT, `updated_at` TEXT, PRIMARY KEY(`position_id`))",
         "fields": [
           {
             "fieldPath": "positionId",
@@ -92,21 +92,6 @@
           {
             "fieldPath": "updatedAt",
             "columnName": "updated_at",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "displaySymbol",
-            "columnName": "display_symbol",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "iconUrl",
-            "columnName": "icon_url",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "tokenSymbol",
-            "columnName": "token_symbol",
             "affinity": "TEXT"
           }
         ],
@@ -346,7 +331,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '28441fcf48069a0899c98e75eaacf4c9')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'aa2a40bfcda9610faa30a7e0d18637fa')"
     ]
   }
 }

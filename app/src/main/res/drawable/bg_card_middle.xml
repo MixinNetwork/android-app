@@ -14,7 +14,7 @@
         android:right="1dp">
         <shape>
             <size android:height="1dp" />
-            <solid android:color="?attr/bg_white" />
+            <solid android:color="#FFF" />
         </shape>
     </item>
 

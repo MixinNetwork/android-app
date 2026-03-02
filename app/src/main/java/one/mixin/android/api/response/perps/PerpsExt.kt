@@ -18,27 +18,6 @@ fun PerpsPositionItem.toPosition(): PerpsPosition {
         walletId = walletId,
         createdAt = createdAt,
         updatedAt = updatedAt,
-        displaySymbol = displaySymbol,
-        iconUrl = iconUrl,
-        tokenSymbol = tokenSymbol
     )
 }
 
-fun PerpsPositionHistoryItem.toPositionHistory(): PerpsPositionHistory {
-    return PerpsPositionHistory(
-        historyId = historyId,
-        positionId = positionId,
-        productId = productId,
-        marketSymbol = marketSymbol,
-        side = side,
-        quantity = quantity,
-        entryPrice = entryPrice,
-        closePrice = closePrice,
-        realizedPnl = realizedPnl,
-        leverage = leverage,
-        marginMethod = marginMethod,
-        openAt = openAt,
-        closedAt = closedAt,
-        walletId = walletId
-    )
-}
