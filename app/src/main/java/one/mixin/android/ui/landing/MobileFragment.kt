@@ -33,6 +33,7 @@ import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.inTransaction
@@ -501,6 +502,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                 setCustomAnimations(R.anim.slide_in_bottom, 0, 0, R.anim.slide_out_bottom)
                     .add(R.id.container, countryPicker).addToBackStack(null)
             }
+            if (activity is LandingActivity) countryPicker.setTopViewHeight(binding.root.getSafeAreaInsetsTop())
         } catch (e: Exception) {
             val msg = "open countryPicker ${e.stackTraceToString()}"
             Timber.e(msg)
