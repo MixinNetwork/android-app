@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.paging.DataSource
 import one.mixin.android.api.response.perps.PerpsPositionHistory
 import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.db.BaseDao
@@ -27,6 +28,15 @@ interface PerpsPositionHistoryDao : BaseDao<PerpsPositionHistory> {
     suspend fun getHistories(walletId: String, limit: Int): List<PerpsPositionHistoryItem>
 
     @Query("""
+        SELECT h.*, m.display_symbol, m.icon_url, m.token_symbol
+        FROM position_history h
+        LEFT JOIN markets m ON m.market_id = h.product_id
+        WHERE h.wallet_id = :walletId
+        ORDER BY h.closed_at DESC
+    """)
+    fun getHistoriesPaged(walletId: String): DataSource.Factory<Int, PerpsPositionHistoryItem>
+
+    @Query("""
         SELECT h.*, m.display_symbol, m.icon_url, m.token_symbol 
         FROM position_history h 
         LEFT JOIN markets m ON m.market_id = h.product_id 
@@ -36,4 +46,7 @@ interface PerpsPositionHistoryDao : BaseDao<PerpsPositionHistory> {
 
     @Query("DELETE FROM position_history WHERE wallet_id = :walletId")
     suspend fun deleteByWallet(walletId: String)
+
+    @Query("SELECT SUM(CAST(realized_pnl AS REAL)) FROM position_history WHERE wallet_id = :walletId")
+    suspend fun getTotalRealizedPnl(walletId: String): Double?
 }

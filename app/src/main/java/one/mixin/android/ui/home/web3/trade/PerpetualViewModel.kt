@@ -2,10 +2,14 @@ package one.mixin.android.ui.home.web3.trade
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.LiveData
+import androidx.paging.LivePagedListBuilder
+import androidx.paging.PagedList
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants
 import one.mixin.android.api.response.perps.CandleView
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.api.service.RouteService
@@ -278,6 +282,53 @@ class PerpetualViewModel @Inject constructor(
                 onSuccess(0.0)
             }
         }
+    }
+
+    suspend fun getTotalUnrealizedPnlFromDb(walletId: String): Double {
+        return withContext(Dispatchers.IO) {
+            try {
+                perpsPositionDao.getTotalUnrealizedPnl(walletId) ?: 0.0
+            } catch (e: Exception) {
+                Timber.e(e, "Error loading total unrealized PnL from db")
+                0.0
+            }
+        }
+    }
+
+    suspend fun getTotalRealizedPnlFromDb(walletId: String): Double {
+        return withContext(Dispatchers.IO) {
+            try {
+                perpsPositionHistoryDao.getTotalRealizedPnl(walletId) ?: 0.0
+            } catch (e: Exception) {
+                Timber.e(e, "Error loading total realized PnL from db")
+                0.0
+            }
+        }
+    }
+
+    fun getOpenPositionsPaged(walletId: String, initialLoadKey: Int? = 0): LiveData<PagedList<PerpsPositionItem>> {
+        val config = PagedList.Config.Builder()
+            .setPrefetchDistance(Constants.PAGE_SIZE * 2)
+            .setPageSize(Constants.PAGE_SIZE)
+            .setEnablePlaceholders(false)
+            .build()
+        return LivePagedListBuilder(perpsPositionDao.getOpenPositionsPaged(walletId), config)
+            .setInitialLoadKey(initialLoadKey)
+            .build()
+    }
+
+    fun getClosedPositionsPaged(
+        walletId: String,
+        initialLoadKey: Int? = 0
+    ): LiveData<PagedList<PerpsPositionHistoryItem>> {
+        val config = PagedList.Config.Builder()
+            .setPrefetchDistance(Constants.PAGE_SIZE * 2)
+            .setPageSize(Constants.PAGE_SIZE)
+            .setEnablePlaceholders(false)
+            .build()
+        return LivePagedListBuilder(perpsPositionHistoryDao.getHistoriesPaged(walletId), config)
+            .setInitialLoadKey(initialLoadKey)
+            .build()
     }
 
     fun loadOpenPositions(walletId: String, onSuccess: (List<PerpsPositionItem>) -> Unit) {

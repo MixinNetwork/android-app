@@ -4,7 +4,10 @@ import android.os.Bundle
 import android.view.View
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
+import androidx.paging.PagedList
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
@@ -59,6 +62,24 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
     }
 
     private var currentTab: PositionTab = PositionTab.CLOSED
+    private var openPositionsLiveData: LiveData<PagedList<PerpsPositionItem>>? = null
+    private var closedPositionsLiveData: LiveData<PagedList<PerpsPositionHistoryItem>>? = null
+
+    private val openPositionsObserver = Observer<PagedList<PerpsPositionItem>> { pagedList ->
+        binding.progressBar.isVisible = false
+        openPositionAdapter.submitList(pagedList)
+        val isEmpty = pagedList.isEmpty()
+        binding.emptyView.infoTv.text = getString(R.string.No_Positions)
+        binding.emptyView.root.isVisible = isEmpty
+    }
+
+    private val closedPositionsObserver = Observer<PagedList<PerpsPositionHistoryItem>> { pagedList ->
+        binding.progressBar.isVisible = false
+        closedPositionAdapter.submitList(pagedList)
+        val isEmpty = pagedList.isEmpty()
+        binding.emptyView.infoTv.text = getString(R.string.No_Closed_Positions)
+        binding.emptyView.root.isVisible = isEmpty
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -86,72 +107,55 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
     }
 
     private fun loadPositions() {
+        openPositionsLiveData?.removeObservers(viewLifecycleOwner)
+        closedPositionsLiveData?.removeObservers(viewLifecycleOwner)
+
         if (currentTab == PositionTab.OPEN) {
             binding.titleView.setSubTitle(getString(R.string.Open_Positions_Simple), "")
+            totalValueAdapter.submitTitle(R.string.Total_Position_Value)
             binding.positionsRv.adapter = ConcatAdapter(totalValueAdapter, openPositionAdapter)
             loadOpenPositions()
         } else {
             binding.titleView.setSubTitle(getString(R.string.Closed_Positions), "")
+            totalValueAdapter.submitTitle(R.string.Realized_PnL)
             binding.positionsRv.adapter = ConcatAdapter(totalValueAdapter, closedPositionAdapter)
             loadClosedPositions()
         }
     }
 
     private fun loadOpenPositions() {
-        val walletId = Session.getAccountId() ?: return
+        val walletId = Session.getAccountId() ?: run {
+            binding.progressBar.isVisible = false
+            return
+        }
 
         binding.progressBar.isVisible = true
         binding.emptyView.root.isVisible = false
 
+        openPositionsLiveData = viewModel.getOpenPositionsPaged(walletId)
+        openPositionsLiveData?.observe(viewLifecycleOwner, openPositionsObserver)
+
         lifecycleScope.launch {
-            val positions = viewModel.getOpenPositionsFromDb(walletId)
-            binding.progressBar.isVisible = false
-            if (positions.isEmpty()) {
-                openPositionAdapter.submitList(emptyList())
-                binding.emptyView.infoTv.text = getString(R.string.No_Positions)
-                binding.emptyView.root.isVisible = true
-                totalValueAdapter.submitTotal(BigDecimal.ZERO)
-            } else {
-                binding.emptyView.root.isVisible = false
-                openPositionAdapter.submitList(positions)
-                totalValueAdapter.submitTotal(sumOpenPnl(positions))
-            }
+            val totalPnl = viewModel.getTotalUnrealizedPnlFromDb(walletId)
+            totalValueAdapter.submitTotal(BigDecimal.valueOf(totalPnl))
         }
     }
 
     private fun loadClosedPositions() {
-        val walletId = Session.getAccountId() ?: return
+        val walletId = Session.getAccountId() ?: run {
+            binding.progressBar.isVisible = false
+            return
+        }
 
         binding.progressBar.isVisible = true
         binding.emptyView.root.isVisible = false
 
+        closedPositionsLiveData = viewModel.getClosedPositionsPaged(walletId)
+        closedPositionsLiveData?.observe(viewLifecycleOwner, closedPositionsObserver)
+
         lifecycleScope.launch {
-            val positions = viewModel.getClosedPositionsFromDb(walletId, 100)
-            binding.progressBar.isVisible = false
-            if (positions.isEmpty()) {
-                closedPositionAdapter.submitList(emptyList())
-                binding.emptyView.infoTv.text = getString(R.string.No_Closed_Positions)
-                binding.emptyView.root.isVisible = true
-                totalValueAdapter.submitTotal(BigDecimal.ZERO)
-            } else {
-                binding.emptyView.root.isVisible = false
-                closedPositionAdapter.submitList(positions)
-                totalValueAdapter.submitTotal(sumClosedPnl(positions))
-            }
-        }
-    }
-
-    private fun sumOpenPnl(positions: List<PerpsPositionItem>): BigDecimal {
-        return positions.fold(BigDecimal.ZERO) { total, position ->
-            val pnl = (position.unrealizedPnl ?: "0").toBigDecimalOrNull() ?: BigDecimal.ZERO
-            total + pnl
-        }
-    }
-
-    private fun sumClosedPnl(positions: List<PerpsPositionHistoryItem>): BigDecimal {
-        return positions.fold(BigDecimal.ZERO) { total, position ->
-            val pnl = position.realizedPnl.toBigDecimalOrNull() ?: BigDecimal.ZERO
-            total + pnl
+            val totalPnl = viewModel.getTotalRealizedPnlFromDb(walletId)
+            totalValueAdapter.submitTotal(BigDecimal.valueOf(totalPnl))
         }
     }
 }

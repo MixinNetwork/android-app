@@ -1,19 +1,26 @@
 package one.mixin.android.ui.home.web3.trade
 
+import android.content.Context
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.style.ForegroundColorSpan
+import android.view.View
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.annotation.AttrRes
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.databinding.ItemClosedPositionListBinding
 import one.mixin.android.extension.loadImage
+import one.mixin.android.ui.common.recyclerview.SafePagedListAdapter
 import java.math.BigDecimal
 
 class OpenPositionAdapter(
     private val onItemClick: ((PerpsPositionItem) -> Unit)? = null
-) : ListAdapter<PerpsPositionItem, OpenPositionAdapter.ViewHolder>(DiffCallback()) {
+) : SafePagedListAdapter<PerpsPositionItem, OpenPositionAdapter.ViewHolder>(DiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(
@@ -27,11 +34,8 @@ class OpenPositionAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(
-            position = getItem(position),
-            positionInList = position,
-            listSize = itemCount
-        )
+        val item = getItem(position) ?: return
+        holder.bind(position = item, positionInList = position, listSize = itemCount)
     }
 
     class ViewHolder(
@@ -58,58 +62,83 @@ class OpenPositionAdapter(
 
                 iconIv.loadImage(position.iconUrl, R.drawable.ic_avatar_place_holder)
 
-                val displaySymbol = position.displaySymbol ?: position.tokenSymbol ?: "Unknown"
-                symbolTv.text = displaySymbol
-
-                sideTv.text = if (position.side.lowercase() == "long") {
+                val isLong = position.side.equals("long", ignoreCase = true)
+                val sideText = if (isLong) {
                     context.getString(R.string.Long)
                 } else {
                     context.getString(R.string.Short)
                 }
-                sideTv.setTextColor(
-                    if (position.side.lowercase() == "long") {
-                        context.getColor(R.color.wallet_green)
-                    } else {
-                        context.getColor(R.color.wallet_red)
-                    }
+                val sideColor = if (isLong) {
+                    context.getColor(R.color.wallet_green)
+                } else {
+                    context.getColor(R.color.wallet_red)
+                }
+                val displaySymbol = position.tokenSymbol ?: context.getString(R.string.Unknown)
+                titleTv.text = context.getString(R.string.Perpetual_Side_Symbol_Title, sideText, displaySymbol)
+                leverageTv.isVisible = true
+                leverageTv.text = context.getString(R.string.Perpetual_Leverage_Format, position.leverage)
+                leverageTv.setTextColor(sideColor)
+                leverageTv.setBackgroundResource(
+                    if (isLong) R.drawable.bg_perps_leverage_long else R.drawable.bg_perps_leverage_short
                 )
-
-                leverageTv.text = "${position.leverage}x"
 
                 val quantity = position.quantity.toBigDecimalOrNull()
-                val quantityStr = if (quantity != null) {
-                    String.format("%.4f", quantity)
-                } else {
-                    position.quantity
-                }
+                val quantityStr = position.quantity
                 quantityTv.text = "$quantityStr ${position.tokenSymbol ?: ""}"
 
-                val pnl = (position.unrealizedPnl ?: "0").toBigDecimalOrNull() ?: BigDecimal.ZERO
-                pnlTv.text = String.format("$%.2f", pnl.abs())
-                pnlTv.setTextColor(
-                    if (pnl >= BigDecimal.ZERO) {
-                        context.getColor(R.color.wallet_green)
-                    } else {
-                        context.getColor(R.color.wallet_red)
-                    }
-                )
-
-                val entryPrice = position.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
                 val markPrice = (position.markPrice ?: "0").toBigDecimalOrNull() ?: BigDecimal.ZERO
-                val priceChange = if (entryPrice > BigDecimal.ZERO) {
-                    ((markPrice - entryPrice) / entryPrice * BigDecimal(100))
-                } else {
-                    BigDecimal.ZERO
-                }
+                val positionValue = (quantity ?: BigDecimal.ZERO).abs().multiply(markPrice)
+                rightTopValueTv.text = formatUsd(context, positionValue)
+                rightTopValueTv.setTextColor(resolveAttrColor(root, R.attr.text_primary))
 
-                priceChangeTv.text = String.format("%s%.1f%%", if (priceChange >= BigDecimal.ZERO) "+" else "", priceChange)
-                priceChangeTv.setTextColor(
-                    if (priceChange >= BigDecimal.ZERO) {
-                        context.getColor(R.color.wallet_green)
-                    } else {
-                        context.getColor(R.color.wallet_red)
+                rightBottomValueTv.isVisible = true
+                val pnl = (position.unrealizedPnl ?: "0").toBigDecimalOrNull() ?: BigDecimal.ZERO
+                rightBottomValueTv.text = formatSignedUsd(context, pnl)
+                rightBottomValueTv.setTextColor(
+                    when {
+                        pnl > BigDecimal.ZERO -> {
+                            context.getColor(R.color.wallet_green)
+                        }
+
+                        pnl < BigDecimal.ZERO -> {
+                            context.getColor(R.color.wallet_red)
+                        }
+
+                        else -> {
+                            resolveAttrColor(root, R.attr.text_primary)
+                        }
                     }
                 )
+            }
+        }
+
+        private fun formatUsd(context: Context, amount: BigDecimal): String {
+            return context.getString(R.string.Perpetual_Usd_Amount, amount.toDouble())
+        }
+
+        private fun formatSignedUsd(context: Context, amount: BigDecimal): String {
+            return when {
+                amount > BigDecimal.ZERO -> context.getString(
+                    R.string.Perpetual_Usd_Amount_Signed,
+                    "+",
+                    amount.abs().toDouble()
+                )
+                amount < BigDecimal.ZERO -> context.getString(
+                    R.string.Perpetual_Usd_Amount_Signed,
+                    "-",
+                    amount.abs().toDouble()
+                )
+                else -> context.getString(R.string.Perpetual_Usd_Amount, 0.0)
+            }
+        }
+
+        private fun resolveAttrColor(view: View, @AttrRes attr: Int): Int {
+            val typedValue = android.util.TypedValue()
+            view.context.theme.resolveAttribute(attr, typedValue, true)
+            return if (typedValue.resourceId != 0) {
+                view.context.getColor(typedValue.resourceId)
+            } else {
+                typedValue.data
             }
         }
     }

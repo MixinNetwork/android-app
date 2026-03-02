@@ -2304,6 +2304,11 @@
     <string name="Close_Position">平仓</string>
     <string name="Estimated_Liquidation_Price">预估强平价格</string>
     <string name="Total_Position_Value">持仓总价值</string>
+    <string name="Perpetual_Side_Symbol_Title">%1$s %2$s</string>
+    <string name="Perpetual_Leverage_Format">%1$d倍</string>
+    <string name="Perpetual_Usd_Amount">$%1$f</string>
+    <string name="Perpetual_Usd_Amount_Signed">%1$s$%2$f</string>
+    <string name="Open_Positions_Simple">持仓中</string>
     <string name="Open_Positions">持仓中(%1$d)</string>
     <string name="Closed_Positions">已平仓</string>
     <string name="No_Positions">暂无持仓</string>

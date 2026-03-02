@@ -19,79 +19,90 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:src="@tools:sample/avatars" />
 
-    <TextView
-        android:id="@+id/side_tv"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/left_container"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"
-        android:textSize="14sp"
-        android:textStyle="bold"
+        android:layout_marginEnd="12dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/right_container"
         app:layout_constraintStart_toEndOf="@id/icon_iv"
-        app:layout_constraintTop_toTopOf="@id/icon_iv"
-        tools:text="Long"
-        tools:textColor="@color/wallet_green" />
+        app:layout_constraintTop_toTopOf="parent">
 
-    <TextView
-        android:id="@+id/symbol_tv"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/title_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="?attr/text_primary"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                tools:text="Long BTC" />
+
+            <TextView
+                android:id="@+id/leverage_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:background="@drawable/bg_round_window_24dp"
+                android:paddingStart="6dp"
+                android:paddingTop="2dp"
+                android:paddingEnd="6dp"
+                android:paddingBottom="2dp"
+                android:textColor="?attr/text_assist"
+                android:textSize="12sp"
+                tools:text="100x" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/quantity_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="?attr/text_assist"
+            android:textSize="12sp"
+            tools:text="0.0028 BTC" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/right_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="6dp"
-        android:textColor="?attr/text_primary"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="@id/side_tv"
-        app:layout_constraintStart_toEndOf="@id/side_tv"
-        app:layout_constraintTop_toTopOf="@id/side_tv"
-        tools:text="BTC" />
-
-    <TextView
-        android:id="@+id/leverage_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="6dp"
-        android:background="@drawable/bg_round_window_24dp"
-        android:paddingStart="6dp"
-        android:paddingTop="2dp"
-        android:paddingEnd="6dp"
-        android:paddingBottom="2dp"
-        android:textColor="?attr/text_assist"
-        android:textSize="12sp"
-        app:layout_constraintBottom_toBottomOf="@id/symbol_tv"
-        app:layout_constraintStart_toEndOf="@id/symbol_tv"
-        app:layout_constraintTop_toTopOf="@id/symbol_tv"
-        tools:text="100x" />
-
-    <TextView
-        android:id="@+id/quantity_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:textColor="?attr/text_assist"
-        android:textSize="12sp"
-        app:layout_constraintStart_toStartOf="@id/side_tv"
-        app:layout_constraintTop_toBottomOf="@id/side_tv"
-        tools:text="0.0028 BTC" />
-
-    <TextView
-        android:id="@+id/pnl_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="14sp"
-        android:textStyle="bold"
+        android:gravity="end"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="$10.30"
-        tools:textColor="@color/wallet_green" />
+        app:layout_constraintTop_toTopOf="parent">
 
-    <TextView
-        android:id="@+id/price_change_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:textSize="12sp"
-        app:layout_constraintEnd_toEndOf="@id/pnl_tv"
-        app:layout_constraintTop_toBottomOf="@id/pnl_tv"
-        tools:text="-$1.00"
-        tools:textColor="@color/wallet_red" />
+
+        <TextView
+            android:id="@+id/right_top_value_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textColor="?attr/text_primary"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            tools:text="$100.00" />
+
+        <TextView
+            android:id="@+id/right_bottom_value_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            tools:text="+$10.30"
+            tools:textColor="@color/wallet_green" />
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

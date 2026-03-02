@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
+import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.session.Session
@@ -61,6 +62,7 @@ fun PerpetualContent(
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var openPositionsCount by remember { mutableStateOf(0) }
+    var openPositions by remember { mutableStateOf<List<PerpsPositionItem>>(emptyList()) }
     var totalPnl by remember { mutableStateOf(0.0) }
     var closedPositions by remember { mutableStateOf<List<PerpsPositionHistoryItem>>(emptyList()) }
     var isLoadingHistory by remember { mutableStateOf(false) }
@@ -82,6 +84,7 @@ fun PerpetualContent(
 
         if (walletId.isNotEmpty()) {
             viewModel.getOpenPositions(walletId) { positions ->
+                openPositions = positions
                 openPositionsCount = positions.size
             }
 
@@ -170,42 +173,48 @@ fun PerpetualContent(
                     color = MixinAppTheme.colors.textPrimary,
                 )
             }
-            Spacer(modifier = Modifier.height(16.dp))
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_empty_transaction),
-                    contentDescription = null,
-                    tint = MixinAppTheme.colors.textAssist,
-                    modifier = Modifier.size(78.dp)
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = stringResource(R.string.No_Positions),
-                    fontSize = 14.sp,
-                    color = MixinAppTheme.colors.textAssist,
-                )
-            }
+            if (openPositionsCount == 0) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_empty_transaction),
+                        contentDescription = null,
+                        tint = MixinAppTheme.colors.textAssist,
+                        modifier = Modifier.size(78.dp)
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = stringResource(R.string.No_Positions),
+                        fontSize = 14.sp,
+                        color = MixinAppTheme.colors.textAssist,
+                    )
+                }
+                Spacer(modifier = Modifier.height(10.dp))
 
-            Spacer(modifier = Modifier.height(10.dp))
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = {
-                        onShowTradingGuide()
-                    })
-                    .padding(vertical = 8.dp),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = stringResource(R.string.How_Perps_Works),
-                    fontSize = 14.sp,
-                    color = MixinAppTheme.colors.accent,
-                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = {
+                            onShowTradingGuide()
+                        })
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(R.string.How_Perps_Works),
+                        fontSize = 14.sp,
+                        color = MixinAppTheme.colors.accent,
+                    )
+                }
+            } else {
+                openPositions.forEach { position ->
+                    OpenPositionItem(position = position)
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
             }
         }
 
@@ -337,9 +346,8 @@ fun PerpetualContent(
                             painter = painterResource(id = R.drawable.ic_empty_transaction),
                             contentDescription = null,
                             tint = MixinAppTheme.colors.textAssist,
-                            modifier = Modifier.size(48.dp)
+                            modifier = Modifier.size(78.dp)
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = stringResource(R.string.No_Closed_Positions),
                             fontSize = 14.sp,

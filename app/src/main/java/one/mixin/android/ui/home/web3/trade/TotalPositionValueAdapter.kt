@@ -5,15 +5,23 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.annotation.AttrRes
+import androidx.annotation.StringRes
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import java.math.BigDecimal
 
 class TotalPositionValueAdapter : RecyclerView.Adapter<TotalPositionValueAdapter.ViewHolder>() {
     private var totalValue: BigDecimal = BigDecimal.ZERO
+    @StringRes
+    private var titleResId: Int = R.string.Total_Position_Value
 
     fun submitTotal(value: BigDecimal) {
         totalValue = value
+        notifyItemChanged(0)
+    }
+
+    fun submitTitle(@StringRes titleResId: Int) {
+        this.titleResId = titleResId
         notifyItemChanged(0)
     }
 
@@ -24,17 +32,19 @@ class TotalPositionValueAdapter : RecyclerView.Adapter<TotalPositionValueAdapter
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(totalValue)
+        holder.bind(totalValue, titleResId)
     }
 
     override fun getItemCount(): Int = 1
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val titleTv: TextView = itemView.findViewById(R.id.title_tv)
         private val valueTv: TextView = itemView.findViewById(R.id.value_tv)
 
-        fun bind(total: BigDecimal) {
+        fun bind(total: BigDecimal, @StringRes titleResId: Int) {
             val context = itemView.context
-            valueTv.text = String.format("$%.2f", total)
+            titleTv.text = context.getString(titleResId)
+            valueTv.text = context.getString(R.string.Perpetual_Usd_Amount, total.toDouble())
             valueTv.setTextColor(
                 when {
                     total > BigDecimal.ZERO -> context.getColor(R.color.wallet_green)
