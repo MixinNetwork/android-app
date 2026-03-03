@@ -51,6 +51,7 @@ import one.mixin.android.job.RefreshSingleWalletJob
 import one.mixin.android.job.RefreshSafeAccountsJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.LoginVerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.home.MainActivity
@@ -763,6 +764,9 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     }
 
     private fun checkPin() {
+        if (activity is MainActivity && parentFragmentManager.findFragmentByTag(LoginVerifyBottomSheetDialogFragment.TAG) != null) {
+            return
+        }
         val cur = System.currentTimeMillis()
         val last = defaultSharedPreferences.getLong(Constants.Account.PREF_PIN_CHECK, 0)
         var interval = getPrefPinInterval(requireContext(), 0)
