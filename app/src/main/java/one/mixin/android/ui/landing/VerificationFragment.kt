@@ -250,7 +250,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                         viewModel.changePhone(requireArguments().getString(ARGS_ID)!!, binding.pinVerificationView.code(), pin = pin!!)
                     }
                 },
-                successBlock = {
+                successBlock = { r ->
                     val hasPhone = Session.hasPhone()
                     withContext(Dispatchers.IO) {
                         val a = Session.getAccount()
@@ -261,9 +261,11 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                             viewModel.updatePhone(a.userId, phone)
                             removeValueFromEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC)
                             a.phone = phone
-                            Session.storeAccount(a)
+                            a.phoneVerifiedAt = r.data?.phoneVerifiedAt
+                            Session.storeAccount(r.data ?: a)
                         }
                     }
+
                     alert(
                         getString(
                             if (hasPhone) R.string.Changed
