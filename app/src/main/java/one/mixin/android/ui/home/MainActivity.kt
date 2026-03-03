@@ -401,12 +401,6 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                     val shouldGoWallet: Boolean = defaultSharedPreferences.getBoolean(PREF_LOGIN_OR_SIGN_UP, false)
                     val shouldBlockNavigation: Boolean = shouldShowWalletMissingBtcAddress()
                     Timber.e("isLoginVerified: $isLoginVerified, shouldGoWallet: $shouldGoWallet, shouldBlockNavigation: $shouldBlockNavigation")
-                    if (shouldGoWallet && !shouldBlockNavigation) {
-                        defaultSharedPreferences.putBoolean(PREF_LOGIN_OR_SIGN_UP, false)
-                        binding.bottomNav.selectedItemId = R.id.nav_wallet
-                        switchToDestination(NavigationController.Wallet)
-                        lastBottomNavItemId = R.id.nav_wallet
-                    }
                     if (isLoginVerified) {
                         AnalyticsTracker.trackLoginPinVerify("pin_verify")
                         LoginVerifyBottomSheetDialogFragment.newInstance().apply {
@@ -416,6 +410,12 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                                 }
                             }
                         }.showNow(supportFragmentManager, LoginVerifyBottomSheetDialogFragment.TAG)
+                    }
+                    if (shouldGoWallet && !shouldBlockNavigation) {
+                        binding.bottomNav.selectedItemId = R.id.nav_wallet
+                        switchToDestination(NavigationController.Wallet)
+                        lastBottomNavItemId = R.id.nav_wallet
+                        defaultSharedPreferences.putBoolean(PREF_LOGIN_OR_SIGN_UP, false)
                     }
                 } else {
                     CheckRegisterBottomSheetDialogFragment.newInstance()
