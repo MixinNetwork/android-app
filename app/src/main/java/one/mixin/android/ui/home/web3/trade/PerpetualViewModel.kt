@@ -295,12 +295,34 @@ class PerpetualViewModel @Inject constructor(
         }
     }
 
+    suspend fun getTotalOpenPositionValueFromDb(walletId: String): Double {
+        return withContext(Dispatchers.IO) {
+            try {
+                perpsPositionDao.getTotalOpenPositionValue(walletId) ?: 0.0
+            } catch (e: Exception) {
+                Timber.e(e, "Error loading total open position value from db")
+                0.0
+            }
+        }
+    }
+
     suspend fun getTotalRealizedPnlFromDb(walletId: String): Double {
         return withContext(Dispatchers.IO) {
             try {
                 perpsPositionHistoryDao.getTotalRealizedPnl(walletId) ?: 0.0
             } catch (e: Exception) {
                 Timber.e(e, "Error loading total realized PnL from db")
+                0.0
+            }
+        }
+    }
+
+    suspend fun getTotalClosedEntryValueFromDb(walletId: String): Double {
+        return withContext(Dispatchers.IO) {
+            try {
+                perpsPositionHistoryDao.getTotalClosedEntryValue(walletId) ?: 0.0
+            } catch (e: Exception) {
+                Timber.e(e, "Error loading total closed entry value from db")
                 0.0
             }
         }

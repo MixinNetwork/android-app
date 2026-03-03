@@ -49,4 +49,7 @@ interface PerpsPositionHistoryDao : BaseDao<PerpsPositionHistory> {
 
     @Query("SELECT SUM(CAST(realized_pnl AS REAL)) FROM position_history WHERE wallet_id = :walletId")
     suspend fun getTotalRealizedPnl(walletId: String): Double?
+
+    @Query("SELECT SUM(CAST(entry_price AS REAL) * ABS(CAST(quantity AS REAL))) FROM position_history WHERE wallet_id = :walletId")
+    suspend fun getTotalClosedEntryValue(walletId: String): Double?
 }

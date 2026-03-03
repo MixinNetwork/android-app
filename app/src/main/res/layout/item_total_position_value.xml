@@ -28,4 +28,13 @@
         android:textSize="22sp"
         android:textStyle="bold" />
 
+    <TextView
+        android:id="@+id/subtitle_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="$0.00(0.0%)"
+        android:textColor="?attr/text_assist"
+        android:textSize="14sp" />
+
 </LinearLayout>

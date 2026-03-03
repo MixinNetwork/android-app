@@ -131,13 +131,18 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
 
         binding.progressBar.isVisible = true
         binding.emptyView.root.isVisible = false
+        totalValueAdapter.submitTotal(BigDecimal.ZERO)
+        totalValueAdapter.submitSubtitle(BigDecimal.ZERO, BigDecimal.ZERO)
 
         openPositionsLiveData = viewModel.getOpenPositionsPaged(walletId)
         openPositionsLiveData?.observe(viewLifecycleOwner, openPositionsObserver)
 
         lifecycleScope.launch {
+            val totalPositionValue = viewModel.getTotalOpenPositionValueFromDb(walletId)
             val totalPnl = viewModel.getTotalUnrealizedPnlFromDb(walletId)
-            totalValueAdapter.submitTotal(BigDecimal.valueOf(totalPnl))
+            val percent = calculatePercent(totalPnl, totalPositionValue)
+            totalValueAdapter.submitTotal(BigDecimal.valueOf(totalPositionValue))
+            totalValueAdapter.submitSubtitle(BigDecimal.valueOf(totalPnl), BigDecimal.valueOf(percent))
         }
     }
 
@@ -149,13 +154,25 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
 
         binding.progressBar.isVisible = true
         binding.emptyView.root.isVisible = false
+        totalValueAdapter.submitTotal(BigDecimal.ZERO)
+        totalValueAdapter.submitSubtitle(BigDecimal.ZERO, BigDecimal.ZERO)
 
         closedPositionsLiveData = viewModel.getClosedPositionsPaged(walletId)
         closedPositionsLiveData?.observe(viewLifecycleOwner, closedPositionsObserver)
 
         lifecycleScope.launch {
             val totalPnl = viewModel.getTotalRealizedPnlFromDb(walletId)
+            val totalEntryValue = viewModel.getTotalClosedEntryValueFromDb(walletId)
+            val percent = calculatePercent(totalPnl, totalEntryValue)
             totalValueAdapter.submitTotal(BigDecimal.valueOf(totalPnl))
+            totalValueAdapter.submitSubtitle(BigDecimal.valueOf(totalPnl), BigDecimal.valueOf(percent))
         }
+    }
+
+    private fun calculatePercent(value: Double, base: Double): Double {
+        if (base == 0.0) {
+            return 0.0
+        }
+        return value / base * 100
     }
 }

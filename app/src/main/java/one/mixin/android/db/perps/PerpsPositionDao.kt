@@ -51,4 +51,7 @@ interface PerpsPositionDao : BaseDao<PerpsPosition> {
 
     @Query("SELECT SUM(CAST(unrealized_pnl AS REAL)) FROM positions WHERE wallet_id = :walletId AND state = 'open'")
     suspend fun getTotalUnrealizedPnl(walletId: String): Double?
+
+    @Query("SELECT SUM(CAST(entry_price AS REAL) * ABS(CAST(quantity AS REAL))) FROM positions WHERE wallet_id = :walletId AND state = 'open'")
+    suspend fun getTotalOpenPositionValue(walletId: String): Double?
 }

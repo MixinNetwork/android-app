@@ -12,11 +12,19 @@ import java.math.BigDecimal
 
 class TotalPositionValueAdapter : RecyclerView.Adapter<TotalPositionValueAdapter.ViewHolder>() {
     private var totalValue: BigDecimal = BigDecimal.ZERO
+    private var subValue: BigDecimal = BigDecimal.ZERO
+    private var subPercent: BigDecimal = BigDecimal.ZERO
     @StringRes
     private var titleResId: Int = R.string.Total_Position_Value
 
     fun submitTotal(value: BigDecimal) {
         totalValue = value
+        notifyItemChanged(0)
+    }
+
+    fun submitSubtitle(value: BigDecimal, percent: BigDecimal) {
+        subValue = value
+        subPercent = percent
         notifyItemChanged(0)
     }
 
@@ -32,7 +40,7 @@ class TotalPositionValueAdapter : RecyclerView.Adapter<TotalPositionValueAdapter
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(totalValue, titleResId)
+        holder.bind(totalValue, subValue, subPercent, titleResId)
     }
 
     override fun getItemCount(): Int = 1
@@ -40,18 +48,32 @@ class TotalPositionValueAdapter : RecyclerView.Adapter<TotalPositionValueAdapter
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val titleTv: TextView = itemView.findViewById(R.id.title_tv)
         private val valueTv: TextView = itemView.findViewById(R.id.value_tv)
+        private val subtitleTv: TextView = itemView.findViewById(R.id.subtitle_tv)
 
-        fun bind(total: BigDecimal, @StringRes titleResId: Int) {
+        fun bind(
+            total: BigDecimal,
+            subtitleValue: BigDecimal,
+            subtitlePercent: BigDecimal,
+            @StringRes titleResId: Int
+        ) {
             val context = itemView.context
             titleTv.text = context.getString(titleResId)
             valueTv.text = context.getString(R.string.Perpetual_Usd_Amount, total.toDouble())
-            valueTv.setTextColor(
-                when {
-                    total > BigDecimal.ZERO -> context.getColor(R.color.wallet_green)
-                    total < BigDecimal.ZERO -> context.getColor(R.color.wallet_red)
-                    else -> resolveAttrColor(itemView, R.attr.text_primary)
-                }
+            valueTv.setTextColor(resolveAttrColor(itemView, R.attr.text_primary))
+            subtitleTv.text = context.getString(
+                R.string.Perpetual_Amount_Percent_Format,
+                formatSignedUsd(context, subtitleValue),
+                subtitlePercent.toDouble()
             )
+            subtitleTv.setTextColor(resolveAttrColor(itemView, R.attr.text_assist))
+        }
+
+        private fun formatSignedUsd(context: android.content.Context, amount: BigDecimal): String {
+            val sign = when {
+                amount < BigDecimal.ZERO -> "-"
+                else -> ""
+            }
+            return context.getString(R.string.Perpetual_Usd_Amount_Signed, sign, amount.abs().toDouble())
         }
 
         private fun resolveAttrColor(view: View, @AttrRes attr: Int): Int {

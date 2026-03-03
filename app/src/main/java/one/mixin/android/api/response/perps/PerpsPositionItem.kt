@@ -61,21 +61,3 @@ data class PerpsPositionItem(
     @ColumnInfo(name = "token_symbol")
     val tokenSymbol: String? = null,
 ) : Parcelable
-
-fun PerpsPositionItem.toPosotion(): PerpsPosition {
-    return PerpsPosition(
-        positionId,
-        productId,
-        side,
-        quantity,
-        entryPrice,
-        leverage,
-        settleAssetId,
-        botId,
-        margin,
-        state,
-        markPrice,
-        unrealizedPnl,
-        roe, walletId, createdAt, updatedAt
-    )
-}

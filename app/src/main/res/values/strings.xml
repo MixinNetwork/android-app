@@ -2371,8 +2371,9 @@
     <string name="Total_Position_Value">Total Position Value</string>
     <string name="Perpetual_Side_Symbol_Title">%1$s %2$s</string>
     <string name="Perpetual_Leverage_Format">%1$dx</string>
-    <string name="Perpetual_Usd_Amount">$%1$f</string>
-    <string name="Perpetual_Usd_Amount_Signed">%1$s$%2$f</string>
+    <string name="Perpetual_Usd_Amount" translatable="false">$%1$f</string>
+    <string name="Perpetual_Usd_Amount_Signed" translatable="false">%1$s$%2$f</string>
+    <string name="Perpetual_Amount_Percent_Format" translatable="false">%1$s(%2$.2f%%)</string>
     <string name="Open_Positions_Simple">Open Positions</string>
     <string name="Open_Positions">Open Positions(%1$d)</string>
     <string name="Closed_Positions">Closed Positions</string>
