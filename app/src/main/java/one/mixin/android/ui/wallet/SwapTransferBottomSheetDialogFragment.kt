@@ -641,10 +641,6 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                     System.currentTimeMillis(),
                                 )
                                 context?.updatePinCheck()
-                                defaultSharedPreferences.putLong(
-                                    Constants.BIOMETRIC_PIN_CHECK,
-                                    System.currentTimeMillis(),
-                                )
                                 step = Step.Done
                                 val wallet = if (inAsset.isWeb3) AnalyticsTracker.TradeWallet.WEB3 else AnalyticsTracker.TradeWallet.MAIN
                                 AnalyticsTracker.trackTradeEnd(wallet, inAmount, inAsset.price)
@@ -663,10 +659,6 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                     System.currentTimeMillis(),
                                 )
                                 context?.updatePinCheck()
-                                defaultSharedPreferences.putLong(
-                                    Constants.BIOMETRIC_PIN_CHECK,
-                                       System.currentTimeMillis(),
-                                )
                                 step = Step.Done
                                 val wallet = if (inAsset.isWeb3) AnalyticsTracker.TradeWallet.WEB3 else AnalyticsTracker.TradeWallet.MAIN
                                 AnalyticsTracker.trackTradeEnd(wallet, inAmount, inAsset.price)
