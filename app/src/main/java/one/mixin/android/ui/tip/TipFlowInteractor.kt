@@ -3,14 +3,15 @@ package one.mixin.android.ui.tip
 import android.content.Context
 import android.security.keystore.UserNotAuthenticatedException
 import dagger.hilt.android.scopes.ActivityRetainedScoped
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
-import one.mixin.android.Constants.Account.ChainAddress.BTC_ADDRESS
 import one.mixin.android.Constants.Account.PREF_LOGIN_OR_SIGN_UP
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
@@ -116,6 +117,7 @@ class TipFlowInteractor @Inject internal constructor(
 
     suspend fun process(
         context: Context,
+        lifecycleScope: CoroutineScope,
         tipBundle: TipBundle,
         shouldOpenMainActivity: Boolean,
         onStepChanged: (TipStep) -> Unit,
@@ -130,10 +132,14 @@ class TipFlowInteractor @Inject internal constructor(
         var nodeFailedInfo = ""
         val observer: Tip.Observer = object : Tip.Observer {
             override fun onSyncing(step: Int, total: Int) {
-                onStepChanged(Processing.SyncingNode(step, total))
+                lifecycleScope.launch {
+                    onStepChanged(Processing.SyncingNode(step, total))
+                }
             }
             override fun onSyncingComplete() {
-                onStepChanged(Processing.Updating)
+                lifecycleScope.launch {
+                    onStepChanged(Processing.Updating)
+                }
             }
             override fun onNodeFailed(info: String) {
                 nodeFailedInfo = info
