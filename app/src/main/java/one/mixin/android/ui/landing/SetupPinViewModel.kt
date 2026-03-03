@@ -43,7 +43,7 @@ class SetupPinViewModel @Inject internal constructor(
             )
             val success: Boolean = tipFlowInteractor.process(
                 context = context,
-                viewModelScope,
+                lifecycleScope = viewModelScope,
                 tipBundle = tipBundle,
                 shouldOpenMainActivity = true,
                 onStepChanged = { _ -> },

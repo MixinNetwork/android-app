@@ -2,7 +2,6 @@ package one.mixin.android.ui.tip
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.security.keystore.UserNotAuthenticatedException
 import android.text.SpannableStringBuilder
 import android.text.method.ScrollingMovementMethod
 import android.view.View
@@ -63,8 +62,6 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
     lateinit var tipFlowInteractor: TipFlowInteractor
 
     private val tipBundle: TipBundle by lazy { requireArguments().getTipBundle() }
-
-    private var nodeFailedInfo = ""
 
     private var disallowClose = true
 
@@ -362,7 +359,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             }
             val success: Boolean = tipFlowInteractor.process(
                 context = requireContext(),
-                lifecycleScope,
+                lifecycleScope = lifecycleScope,
                 tipBundle = tipBundle,
                 shouldOpenMainActivity = activity?.isTaskRoot == true,
                 onStepChanged = { step ->
