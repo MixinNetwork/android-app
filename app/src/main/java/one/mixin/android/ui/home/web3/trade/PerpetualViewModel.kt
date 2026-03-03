@@ -399,15 +399,6 @@ class PerpetualViewModel @Inject constructor(
                 
                 if (response.isSuccess) {
                     Timber.d("Perps order closed: $positionId")
-                    
-                    withContext(Dispatchers.IO) {
-                        perpsPositionDao.updateStatus(
-                            positionId = positionId,
-                            status = "closed",
-                            updatedAt = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", java.util.Locale.US).format(java.util.Date())
-                        )
-                    }
-                    
                     onSuccess()
                 } else {
                     val error = "Failed to close perps order: ${response.errorDescription}"
@@ -418,6 +409,21 @@ class PerpetualViewModel @Inject constructor(
                 val error = "Error closing perps order: ${e.message}"
                 Timber.e(e, error)
                 onError(error)
+            }
+        }
+    }
+
+    fun deletePosition(positionId: String) {
+        viewModelScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    perpsPositionDao.deleteById(
+                        positionId
+                    )
+                }
+                Timber.d("Position deleted: $positionId")
+            } catch (e: Exception) {
+                Timber.e(e, "Error deleting position: ${e.message}")
             }
         }
     }

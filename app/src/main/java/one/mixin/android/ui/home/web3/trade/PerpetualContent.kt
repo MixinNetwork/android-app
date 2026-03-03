@@ -32,7 +32,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -52,10 +51,13 @@ import one.mixin.android.ui.wallet.alert.components.cardBackground
 fun PerpetualContent(
     onShowTradingGuide: () -> Unit,
     onShowMarketList: (isLong: Boolean) -> Unit,
+    onShowAllOpenPositions: () -> Unit,
     onShowAllClosedPositions: () -> Unit,
+    onOpenPositionClick: (PerpsPositionItem) -> Unit,
+    onMarketItemClick: (PerpsMarket) -> Unit,
+    onClosedPositionClick: (PerpsPositionHistoryItem) -> Unit,
 ) {
     val walletId = Session.getAccountId()!!
-    val context = LocalContext.current
     val viewModel = hiltViewModel<PerpetualViewModel>()
 
     var markets by remember { mutableStateOf<List<PerpsMarket>>(emptyList()) }
@@ -66,6 +68,9 @@ fun PerpetualContent(
     var totalPnl by remember { mutableStateOf(0.0) }
     var closedPositions by remember { mutableStateOf<List<PerpsPositionHistoryItem>>(emptyList()) }
     var isLoadingHistory by remember { mutableStateOf(false) }
+    val openPositionsPreview = openPositions.take(3)
+    val marketsPreview = markets.take(3)
+    val closedPositionsPreview = closedPositions.take(3)
 
     LaunchedEffect(Unit) {
         // Refresh positions from API
@@ -164,7 +169,9 @@ fun PerpetualContent(
                     .padding(16.dp),
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onShowAllOpenPositions),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -218,9 +225,13 @@ fun PerpetualContent(
                     )
                 }
             } else {
-                openPositions.forEach { position ->
-                    OpenPositionItem(position = position)
+                openPositionsPreview.forEach { position ->
+                    OpenPositionItem(position = position, onClick = { onOpenPositionClick(position) })
                     Spacer(modifier = Modifier.height(12.dp))
+                }
+
+                if (openPositionsCount > openPositionsPreview.size) {
+                    ViewAllAction(onClick = onShowAllOpenPositions)
                 }
             }
         }
@@ -238,7 +249,9 @@ fun PerpetualContent(
 
             // Markets Section
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onShowMarketList(true) },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -283,14 +296,20 @@ fun PerpetualContent(
                     )
                 }
             } else {
-                markets.take(2).forEach { market ->
+                marketsPreview.forEach { market ->
                     MarketItem(
                         market = market,
                         onClick = {
-                            PerpsActivity.showDetail(context, market.marketId, market.symbol, market.displaySymbol)
+                            onMarketItemClick(market)
                         }
                     )
                     Spacer(modifier = Modifier.height(12.dp))
+                }
+
+                if (markets.size > marketsPreview.size) {
+                    ViewAllAction(
+                        onClick = { onShowMarketList(true) }
+                    )
                 }
             }
         }
@@ -303,13 +322,12 @@ fun PerpetualContent(
                 .wrapContentHeight()
                 .clip(RoundedCornerShape(8.dp))
                 .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
-                .clickable {
-                    onShowAllClosedPositions()
-                }
                 .padding(16.dp)
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onShowAllClosedPositions),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -363,9 +381,13 @@ fun PerpetualContent(
                     }
                 }
             } else {
-                closedPositions.forEach { position ->
-                    ClosedPositionItem(position = position)
+                closedPositionsPreview.forEach { position ->
+                    ClosedPositionItem(position = position, onClick = { onClosedPositionClick(position) })
                     Spacer(modifier = Modifier.height(12.dp))
+                }
+
+                if (closedPositions.size > closedPositionsPreview.size) {
+                    ViewAllAction(onClick = onShowAllClosedPositions)
                 }
             }
         }
@@ -421,5 +443,30 @@ fun PerpetualContent(
         }
 
         Spacer(modifier = Modifier.height(24.dp))
+    }
+}
+
+@Composable
+private fun ViewAllAction(onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = stringResource(R.string.view_all),
+            fontSize = 13.sp,
+            color = MixinAppTheme.colors.accent,
+            fontWeight = FontWeight.Medium,
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        Icon(
+            painter = painterResource(R.drawable.ic_arrow_right),
+            contentDescription = null,
+            tint = MixinAppTheme.colors.accent,
+            modifier = Modifier.size(14.dp)
+        )
     }
 }

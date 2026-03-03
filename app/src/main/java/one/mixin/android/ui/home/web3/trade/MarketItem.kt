@@ -68,6 +68,7 @@ fun MarketItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable(onClick = onClick)
             .padding(vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
@@ -92,7 +93,7 @@ fun MarketItem(
                 ) {
                     Text(
                         text = market.displaySymbol,
-                        fontSize = 16.sp,
+                        fontSize = 14.sp,
                         color = MixinAppTheme.colors.textPrimary,
                     )
                     Spacer(modifier = Modifier.width(6.dp))

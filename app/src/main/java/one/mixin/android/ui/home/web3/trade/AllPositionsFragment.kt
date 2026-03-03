@@ -26,8 +26,19 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
 
     companion object {
         const val TAG = "AllPositionsFragment"
+        private const val ARGS_INITIAL_TAB = "args_initial_tab"
+        private const val TAB_OPEN = "tab_open"
+        private const val TAB_CLOSED = "tab_closed"
 
-        fun newInstance() = AllPositionsFragment()
+        fun newInstance(initialOpenTab: Boolean = false) = AllPositionsFragment().apply {
+            arguments = Bundle().apply {
+                putString(ARGS_INITIAL_TAB, if (initialOpenTab) TAB_OPEN else TAB_CLOSED)
+            }
+        }
+
+        fun newOpenInstance() = newInstance(initialOpenTab = true)
+
+        fun newClosedInstance() = newInstance(initialOpenTab = false)
     }
 
     private val binding by viewBinding(FragmentAllClosedPositionsBinding::bind)
@@ -101,8 +112,12 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
                 loadPositions()
             }
 
-            radioClosed.isChecked = true
-            loadPositions()
+            val initialTab = arguments?.getString(ARGS_INITIAL_TAB, TAB_CLOSED)
+            if (initialTab == TAB_OPEN) {
+                radioOpen.isChecked = true
+            } else {
+                radioClosed.isChecked = true
+            }
         }
     }
 

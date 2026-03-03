@@ -51,6 +51,9 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.CreateLimitOrderResponse
+import one.mixin.android.api.response.perps.PerpsMarket
+import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
+import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -90,7 +93,11 @@ fun TradePage(
     onLimitOrderClick: (String) -> Unit,
     onShowTradingGuide: () -> Unit,
     onShowMarketList: (Boolean) -> Unit,
+    onShowAllOpenPositions: () -> Unit,
     onShowAllClosedPositions: () -> Unit,
+    onOpenPositionClick: (PerpsPositionItem) -> Unit,
+    onMarketItemClick: (PerpsMarket) -> Unit,
+    onClosedPositionClick: (PerpsPositionHistoryItem) -> Unit,
 ) {
     val context = LocalContext.current
 
@@ -171,7 +178,11 @@ fun TradePage(
             PerpetualContent(
                 onShowTradingGuide = onShowTradingGuide,
                 onShowMarketList = onShowMarketList,
-                onShowAllClosedPositions = onShowAllClosedPositions
+                onShowAllOpenPositions = onShowAllOpenPositions,
+                onShowAllClosedPositions = onShowAllClosedPositions,
+                onOpenPositionClick = onOpenPositionClick,
+                onMarketItemClick = onMarketItemClick,
+                onClosedPositionClick = onClosedPositionClick,
             )
         }
     }

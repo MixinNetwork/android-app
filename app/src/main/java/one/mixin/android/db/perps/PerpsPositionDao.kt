@@ -54,4 +54,7 @@ interface PerpsPositionDao : BaseDao<PerpsPosition> {
 
     @Query("SELECT SUM(CAST(entry_price AS REAL) * ABS(CAST(quantity AS REAL))) FROM positions WHERE wallet_id = :walletId AND state = 'open'")
     suspend fun getTotalOpenPositionValue(walletId: String): Double?
+
+    @Query("DELETE FROM positions WHERE position_id = :positionId")
+    fun deleteById(positionId: String)
 }

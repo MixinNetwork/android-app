@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home.web3.trade
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,7 +30,10 @@ import one.mixin.android.ui.wallet.alert.components.cardBackground
 import java.math.BigDecimal
 
 @Composable
-fun ClosedPositionItem(position: PerpsPositionHistoryItem) {
+fun ClosedPositionItem(
+    position: PerpsPositionHistoryItem,
+    onClick: () -> Unit = {},
+) {
     val pnl = try {
         BigDecimal(position.realizedPnl)
     } catch (e: Exception) {
@@ -50,6 +54,7 @@ fun ClosedPositionItem(position: PerpsPositionHistoryItem) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable(onClick = onClick)
             .padding(vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
@@ -80,15 +85,13 @@ fun ClosedPositionItem(position: PerpsPositionHistoryItem) {
                     Text(
                         text = sideText,
                         fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = if (position.side.lowercase() == "long") Color(0xFF4CAF50) else Color(0xFFF44336)
+                        color = MixinAppTheme.colors.textPrimary,
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = displaySymbol,
                         fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MixinAppTheme.colors.textPrimary
+                        color = MixinAppTheme.colors.textPrimary,
                     )
                 }
                 Spacer(modifier = Modifier.height(4.dp))

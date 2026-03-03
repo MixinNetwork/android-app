@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home.web3.trade
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,7 +30,10 @@ import one.mixin.android.ui.wallet.alert.components.cardBackground
 import java.math.BigDecimal
 
 @Composable
-fun OpenPositionItem(position: PerpsPositionItem) {
+fun OpenPositionItem(
+    position: PerpsPositionItem,
+    onClick: () -> Unit = {},
+) {
     val pnl = position.unrealizedPnl?.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val isProfit = pnl >= BigDecimal.ZERO
     val pnlColor = if (isProfit) Color(0xFF4CAF50) else Color(0xFFF44336)
@@ -40,6 +44,7 @@ fun OpenPositionItem(position: PerpsPositionItem) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable(onClick = onClick)
             .padding(vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
@@ -65,18 +70,15 @@ fun OpenPositionItem(position: PerpsPositionItem) {
                     } else {
                         stringResource(R.string.Short)
                     }
-                    val sideColor = if (position.side.equals("long", true)) Color(0xFF4CAF50) else Color(0xFFF44336)
                     Text(
                         text = sideText,
                         fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = sideColor
+                        color = MixinAppTheme.colors.textPrimary,
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = displaySymbol,
                         fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold,
                         color = MixinAppTheme.colors.textPrimary
                     )
                     Spacer(modifier = Modifier.width(6.dp))
@@ -125,4 +127,3 @@ fun OpenPositionItem(position: PerpsPositionItem) {
         }
     }
 }
-

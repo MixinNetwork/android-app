@@ -555,6 +555,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
             viewModel.closePerpsOrder(
                 positionId = positionId,
                 onSuccess = {
+                    viewModel.deletePosition(positionId)
                     step = Step.Done
                 },
                 onError = { error ->
