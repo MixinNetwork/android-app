@@ -1,0 +1,279 @@
+package one.mixin.android.ui.home.web3.trade
+
+import android.annotation.SuppressLint
+import android.app.Dialog
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Slider
+import androidx.compose.material.SliderDefaults
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import one.mixin.android.R
+import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.putInt
+import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.widget.BottomSheet
+import java.math.BigDecimal
+import kotlin.math.abs
+
+class LeverageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+
+    companion object {
+        const val TAG = "LeverageBottomSheetDialogFragment"
+        private const val PREF_LEVERAGE = "pref_perps_leverage"
+
+        fun newInstance(
+            currentLeverage: Float,
+            maxLeverage: Int,
+            amount: String,
+            isLong: Boolean
+        ): LeverageBottomSheetDialogFragment {
+            return LeverageBottomSheetDialogFragment().apply {
+                this.currentLeverage = currentLeverage
+                this.maxLeverage = maxLeverage
+                this.amount = amount
+                this.isLong = isLong
+            }
+        }
+    }
+
+    private var currentLeverage: Float = 10f
+    private var maxLeverage: Int = 100
+    private var amount: String = ""
+    private var isLong: Boolean = true
+    private var onLeverageSelected: ((Float) -> Unit)? = null
+
+    fun setOnLeverageSelected(callback: (Float) -> Unit): LeverageBottomSheetDialogFragment {
+        onLeverageSelected = callback
+        return this
+    }
+
+    @SuppressLint("RestrictedApi")
+    override fun setupDialog(dialog: Dialog, style: Int) {
+        super.setupDialog(dialog, style)
+        contentView = ComposeView(requireContext()).apply {
+            setContent {
+                MixinAppTheme {
+                    LeverageContent(
+                        currentLeverage = currentLeverage,
+                        maxLeverage = maxLeverage,
+                        amount = amount,
+                        isLong = isLong,
+                        onCancel = { dismiss() },
+                        onApply = { leverage ->
+                            requireContext().defaultSharedPreferences.putInt(PREF_LEVERAGE, leverage.toInt())
+                            onLeverageSelected?.invoke(leverage)
+                            dismiss()
+                        }
+                    )
+                }
+            }
+        }
+        (dialog as BottomSheet).setCustomView(contentView)
+    }
+}
+
+@Composable
+private fun LeverageContent(
+    currentLeverage: Float,
+    maxLeverage: Int,
+    amount: String,
+    isLong: Boolean,
+    onCancel: () -> Unit,
+    onApply: (Float) -> Unit
+) {
+    var tempLeverage by remember { mutableFloatStateOf(currentLeverage) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(20.dp)
+    ) {
+        Text(
+            text = stringResource(R.string.Leverage),
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = MixinAppTheme.colors.textPrimary
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(8.dp))
+                .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
+                .padding(16.dp)
+        ) {
+            Text(
+                text = "${tempLeverage.toInt()}x",
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold,
+                color = MixinAppTheme.colors.textPrimary,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Slider(
+                value = tempLeverage,
+                onValueChange = { tempLeverage = it },
+                valueRange = 1f..maxLeverage.toFloat(),
+                steps = maxLeverage - 2,
+                colors = SliderDefaults.colors(
+                    thumbColor = MixinAppTheme.colors.accent,
+                    activeTrackColor = MixinAppTheme.colors.accent,
+                    inactiveTrackColor = MixinAppTheme.colors.backgroundWindow
+                ),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                val steps = 5
+                val stepValue = maxLeverage / (steps - 1)
+                for (i in 0 until steps) {
+                    val value = if (i == steps - 1) maxLeverage else (i * stepValue)
+                    Text(
+                        text = if (i == steps - 1) "Max" else "${value}x",
+                        fontSize = 12.sp,
+                        color = MixinAppTheme.colors.textAssist
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        val profitInfo = calculateProfitLossInfo(
+            amount = amount,
+            leverage = tempLeverage,
+            isLong = isLong
+        )
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp)
+        ) {
+            Text(
+                text = profitInfo.first,
+                fontSize = 13.sp,
+                color = MixinAppTheme.colors.walletGreen
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = profitInfo.second,
+                fontSize = 13.sp,
+                color = MixinAppTheme.colors.walletRed
+            )
+        }
+
+        Spacer(modifier = Modifier.height(28.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(48.dp)
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(MixinAppTheme.colors.backgroundWindow)
+                    .clickable { onCancel() },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = stringResource(R.string.Cancel),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MixinAppTheme.colors.textPrimary
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(48.dp)
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(MixinAppTheme.colors.accent)
+                    .clickable { onApply(tempLeverage) },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = stringResource(R.string.Apply),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+    }
+}
+
+private fun calculateProfitLossInfo(
+    amount: String,
+    leverage: Float,
+    isLong: Boolean
+): Pair<String, String> {
+    val amountValue = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    
+    if (amountValue == BigDecimal.ZERO) {
+        return Pair(
+            "价格上涨 1% → 盈利 0%（+$0）",
+            "价格下跌 ${String.format("%.2f", 100.0 / leverage)}% → 亏损 -$0"
+        )
+    }
+
+    val priceUpPercent = 1.0
+    val profitPercent = priceUpPercent * leverage
+    val profitAmount = amountValue * BigDecimal(profitPercent / 100)
+
+    val liquidationPercent = 100.0 / leverage
+    val lossAmount = amountValue
+
+    val profitText = if (isLong) {
+        "价格上涨 ${String.format("%.0f", abs(priceUpPercent))}% → 盈利 ${String.format("%.0f", profitPercent)}%（+$${String.format("%.2f", profitAmount)}）"
+    } else {
+        "价格下跌 ${String.format("%.0f", abs(priceUpPercent))}% → 盈利 ${String.format("%.0f", profitPercent)}%（+$${String.format("%.2f", profitAmount)}）"
+    }
+
+    val lossText = if (isLong) {
+        "价格下跌 ${String.format("%.2f", liquidationPercent)}% → 亏损 -$${String.format("%.2f", lossAmount)}"
+    } else {
+        "价格上涨 ${String.format("%.2f", liquidationPercent)}% → 亏损 -$${String.format("%.2f", lossAmount)}"
+    }
+
+    return Pair(profitText, lossText)
+}

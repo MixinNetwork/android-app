@@ -90,19 +90,6 @@ fun ClosedPositionItem(position: PerpsPositionHistoryItem) {
                         fontWeight = FontWeight.SemiBold,
                         color = MixinAppTheme.colors.textPrimary
                     )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = "${position.leverage}x",
-                        fontSize = 12.sp,
-                        color = MixinAppTheme.colors.textAssist,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(4.dp))
-                            .cardBackground(
-                                MixinAppTheme.colors.backgroundWindow,
-                                Color.Transparent
-                            )
-                            .padding(horizontal = 6.dp, vertical = 2.dp)
-                    )
                 }
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(

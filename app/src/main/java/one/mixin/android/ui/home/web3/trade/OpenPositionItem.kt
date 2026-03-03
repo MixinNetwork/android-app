@@ -86,8 +86,11 @@ fun OpenPositionItem(position: PerpsPositionItem) {
                         color = MixinAppTheme.colors.textAssist,
                         modifier = Modifier
                             .clip(RoundedCornerShape(4.dp))
-                            .cardBackground(MixinAppTheme.colors.backgroundWindow, Color.Transparent)
-                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                            .cardBackground(
+                                MixinAppTheme.colors.backgroundGrayLight,
+                                Color.Transparent
+                            )
+                            .padding(horizontal = 3.dp, vertical = 1.dp)
                     )
                 }
                 Spacer(modifier = Modifier.height(4.dp))

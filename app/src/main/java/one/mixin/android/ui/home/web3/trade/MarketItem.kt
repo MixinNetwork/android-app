@@ -68,9 +68,7 @@ fun MarketItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
-            .clickable(onClick = onClick)
-            .padding(12.dp),
+            .padding(vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -82,9 +80,8 @@ fun MarketItem(
                 model = market.iconUrl,
                 placeholder = R.drawable.ic_avatar_place_holder,
                 modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape),
-                contentScale = ContentScale.Crop
+                    .size(42.dp)
+                    .clip(CircleShape)
             )
 
             Spacer(modifier = Modifier.width(12.dp))

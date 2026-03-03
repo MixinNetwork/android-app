@@ -165,12 +165,19 @@ fun PerpetualContent(
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
                     text = stringResource(R.string.Open_Positions, openPositionsCount),
                     fontSize = 14.sp,
                     color = MixinAppTheme.colors.textPrimary,
+                )
+                Icon(
+                    painter = painterResource(R.drawable.ic_arrow_right),
+                    contentDescription = null,
+                    tint = MixinAppTheme.colors.textAssist,
+                    modifier = Modifier.size(16.dp)
                 )
             }
             if (openPositionsCount == 0) {
