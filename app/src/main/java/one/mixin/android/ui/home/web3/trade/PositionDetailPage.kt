@@ -69,8 +69,19 @@ fun PositionDetailPage(
     val isProfit = pnl >= BigDecimal.ZERO
     val pnlColor = if (isProfit) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
 
+    val sideText = if (position.side.lowercase() == "long") {
+        stringResource(R.string.Long)
+    } else {
+        stringResource(R.string.Short)
+    }
+    val title = "Opened $sideText"
+
+    val quantity = position.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val markPrice = position.markPrice?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val orderValue = quantity * markPrice
+
     PageScaffold(
-        title = stringResource(R.string.Position_Details),
+        title = title,
         verticalScrollable = false,
         pop = pop
     ) {
@@ -100,14 +111,26 @@ fun PositionDetailPage(
                 )
                 
                 Spacer(modifier = Modifier.height(20.dp))
-                
-                Text(
-                    text = String.format("$%.2f", pnl.abs()),
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.W500,
-                    color = pnlColor,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
+
+                Row(modifier = Modifier.align(Alignment.CenterHorizontally)) {
+                    val sideText = if (position.side.lowercase() == "long") {
+                        stringResource(R.string.Long)
+                    } else {
+                        stringResource(R.string.Short)
+                    }
+                    Text(
+                        text = "$sideText ",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.W500,
+                        color = MixinAppTheme.colors.textPrimary,
+                    )
+                    Text(
+                        text = position.tokenSymbol ?: "",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.W500,
+                        color = MixinAppTheme.colors.textPrimary,
+                    )
+                }
                 
                 Spacer(modifier = Modifier.height(10.dp))
                 
@@ -195,32 +218,33 @@ fun PositionDetailPage(
                 
                 PositionDetailItem(
                     label = stringResource(R.string.Order_Value).uppercase(),
-                    value = "${position.quantity.toBigDecimalOrNull()?.let { String.format("%.4f", it) } ?: position.quantity} ${position.tokenSymbol ?: ""}"
+                    value = "${String.format("%.4f", quantity)} ${position.tokenSymbol ?: ""}",
+                    subtitle = String.format("$%f", orderValue)
                 )
-                
+
                 Spacer(modifier = Modifier.height(20.dp))
-                
+
                 PositionDetailItem(
                     label = stringResource(R.string.Entry_Price).uppercase(),
-                    value = String.format("$%.2f", position.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+                    value = String.format("$%f", position.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO)
                 )
-                
+
                 Spacer(modifier = Modifier.height(20.dp))
-                
+
                 one.mixin.android.ui.tip.wc.compose.ItemWalletContent(
                     title = stringResource(R.string.Wallet).uppercase(),
                     fontSize = 16.sp,
                     padding = 0.dp
                 )
-                
+
                 Spacer(modifier = Modifier.height(20.dp))
-                
+
                 PositionDetailItem(
                     label = stringResource(R.string.Open_Time).uppercase(),
                     value = formatDate(position.createdAt)
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(40.dp))
         }
     }
@@ -230,7 +254,8 @@ fun PositionDetailPage(
 private fun PositionDetailItem(
     label: String,
     value: String,
-    icon: String? = null
+    icon: String? = null,
+    subtitle: String? = null
 ) {
     Column(
         modifier = Modifier.fillMaxWidth()
@@ -241,7 +266,7 @@ private fun PositionDetailItem(
             color = MixinAppTheme.colors.textAssist
         )
         Spacer(modifier = Modifier.height(4.dp))
-        
+
         if (icon != null) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 CoilImage(
@@ -267,6 +292,15 @@ private fun PositionDetailItem(
                 color = MixinAppTheme.colors.textPrimary
             )
         }
+
+        if (subtitle != null) {
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = subtitle,
+                fontSize = 14.sp,
+                color = MixinAppTheme.colors.textAssist
+            )
+        }
     }
 }
 
@@ -279,7 +313,7 @@ fun PositionDetailPage(
     onShare: (() -> Unit)? = null,
 ) {
     val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-    
+
     fun formatDate(dateStr: String?): String {
         if (dateStr == null) return ""
         return try {
@@ -300,8 +334,19 @@ fun PositionDetailPage(
     val isProfit = pnl >= BigDecimal.ZERO
     val pnlColor = if (isProfit) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
 
+    val sideText = if (positionHistory.side.lowercase() == "long") {
+        stringResource(R.string.Long)
+    } else {
+        stringResource(R.string.Short)
+    }
+    val title = "Closed $sideText"
+
+    val quantity = positionHistory.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val closePrice = positionHistory.closePrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val orderValue = quantity * closePrice
+
     PageScaffold(
-        title = stringResource(R.string.Position_Details),
+        title = title,
         verticalScrollable = false,
         pop = pop
     ) {
@@ -320,7 +365,7 @@ fun PositionDetailPage(
                     )
             ) {
                 Spacer(modifier = Modifier.height(30.dp))
-                
+
                 CoilImage(
                     model = positionHistory.iconUrl,
                     placeholder = R.drawable.ic_avatar_place_holder,
@@ -329,19 +374,19 @@ fun PositionDetailPage(
                         .clip(CircleShape)
                         .align(Alignment.CenterHorizontally)
                 )
-                
+
                 Spacer(modifier = Modifier.height(20.dp))
-                
+
                 Text(
-                    text = String.format("$%.2f", pnl.abs()),
+                    text = String.format("$%f", pnl.abs()),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.W500,
                     color = pnlColor,
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 )
-                
+
                 Spacer(modifier = Modifier.height(10.dp))
-                
+
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
@@ -360,9 +405,9 @@ fun PositionDetailPage(
                         fontSize = 14.sp
                     )
                 }
-                
+
                 Spacer(modifier = Modifier.height(20.dp))
-                
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -399,12 +444,12 @@ fun PositionDetailPage(
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
                 }
-                
+
                 Spacer(modifier = Modifier.height(30.dp))
             }
-            
+
             Spacer(modifier = Modifier.height(10.dp))
-            
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -421,26 +466,27 @@ fun PositionDetailPage(
                     value = positionHistory.displaySymbol ?: positionHistory.tokenSymbol ?: "Unknown",
                     icon = positionHistory.iconUrl
                 )
-                
+
                 Spacer(modifier = Modifier.height(20.dp))
-                
+
                 PositionDetailItem(
                     label = stringResource(R.string.Order_Value).uppercase(),
-                    value = "${positionHistory.quantity.toBigDecimalOrNull()?.let { String.format("%.4f", it) } ?: positionHistory.quantity} ${positionHistory.tokenSymbol ?: ""}"
+                    value = "${String.format("%.4f", quantity)} ${positionHistory.tokenSymbol ?: ""}",
+                    subtitle = String.format("$%f", orderValue)
                 )
-                
+
                 Spacer(modifier = Modifier.height(20.dp))
-                
+
                 PositionDetailItem(
                     label = stringResource(R.string.Entry_Price).uppercase(),
-                    value = String.format("$%.2f", positionHistory.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+                    value = String.format("$%f", positionHistory.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO)
                 )
-                
+
                 Spacer(modifier = Modifier.height(20.dp))
-                
+
                 PositionDetailItem(
                     label = stringResource(R.string.Close_Price).uppercase(),
-                    value = String.format("$%.2f", positionHistory.closePrice.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+                    value = String.format("$%f", positionHistory.closePrice.toBigDecimalOrNull() ?: BigDecimal.ZERO)
                 )
                 
                 Spacer(modifier = Modifier.height(20.dp))

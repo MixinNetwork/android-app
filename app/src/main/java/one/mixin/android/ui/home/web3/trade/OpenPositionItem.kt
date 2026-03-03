@@ -110,7 +110,7 @@ fun OpenPositionItem(
 
         Column(horizontalAlignment = Alignment.End) {
             Text(
-                text = String.format("$%.2f", pnl.abs()),
+                text = String.format("$%f", pnl.abs()),
                 fontSize = 14.sp,
                 color = MixinAppTheme.colors.textPrimary
             )
@@ -131,7 +131,7 @@ fun OpenPositionItem(
                 }
             }
             Text(
-                text = String.format("%s%.2f", if (unrealizedPnl >= BigDecimal.ZERO) "+" else "", unrealizedPnl),
+                text = String.format("%s%f", if (unrealizedPnl >= BigDecimal.ZERO) "+" else "", unrealizedPnl),
                 fontSize = 12.sp,
                 color = pnlColor
             )

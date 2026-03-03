@@ -126,7 +126,7 @@ fun ClosedPositionItem(
             horizontalAlignment = Alignment.End
         ) {
             Text(
-                text = String.format("$%.2f", pnl.abs()),
+                text = String.format("$%f", pnl.abs()),
                 fontSize = 14.sp,
                 color = pnlColor
             )

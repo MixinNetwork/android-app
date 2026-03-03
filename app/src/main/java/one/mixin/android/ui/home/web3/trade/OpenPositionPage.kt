@@ -233,6 +233,7 @@ fun OpenPositionPage(
                                 isLong = isLong
                             ).setOnLeverageSelected { newLeverage ->
                                 leverage = newLeverage
+                                context.defaultSharedPreferences.putInt(getLeveragePrefKey(marketId), newLeverage.toInt())
                             }.show(activity.supportFragmentManager, LeverageBottomSheetDialogFragment.TAG)
                         },
                         text = "${leverage.toInt()}x",

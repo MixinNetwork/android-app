@@ -282,7 +282,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/Share"
-                    android:textColor="@color/white"
+                    android:textColor="?attr/text_primary"
                     android:textSize="12sp" />
             </LinearLayout>
 
@@ -307,7 +307,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/Link"
-                    android:textColor="@color/white"
+                    android:textColor="?attr/text_primary"
                     android:textSize="12sp" />
             </LinearLayout>
 
@@ -332,7 +332,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/Save"
-                    android:textColor="@color/white"
+                    android:textColor="?attr/text_primary"
                     android:textSize="12sp" />
             </LinearLayout>
         </LinearLayout>
