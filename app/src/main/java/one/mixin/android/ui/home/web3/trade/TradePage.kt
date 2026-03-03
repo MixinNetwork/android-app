@@ -93,6 +93,7 @@ fun TradePage(
     onLimitOrderClick: (String) -> Unit,
     onShowTradingGuide: () -> Unit,
     onShowMarketList: (Boolean) -> Unit,
+    onShowAllMarkets: () -> Unit,
     onShowAllOpenPositions: () -> Unit,
     onShowAllClosedPositions: () -> Unit,
     onOpenPositionClick: (PerpsPositionItem) -> Unit,
@@ -178,6 +179,7 @@ fun TradePage(
             PerpetualContent(
                 onShowTradingGuide = onShowTradingGuide,
                 onShowMarketList = onShowMarketList,
+                onShowAllMarkets = onShowAllMarkets,
                 onShowAllOpenPositions = onShowAllOpenPositions,
                 onShowAllClosedPositions = onShowAllClosedPositions,
                 onOpenPositionClick = onOpenPositionClick,

@@ -2311,6 +2311,8 @@
     <string name="Closed_Positions">已平仓</string>
     <string name="No_Positions">暂无持仓</string>
     <string name="No_Closed_Positions">暂无已平仓记录</string>
+    <string name="No_Markets">暂无行情</string>
+    <string name="View_More">查看更多</string>
     <string name="Loading">加载中...</string>
     <string name="Vol">成交量 %1$s</string>
     <string name="Entry_Close_Price">开仓: $%1$s → 平仓: $%2$s</string>

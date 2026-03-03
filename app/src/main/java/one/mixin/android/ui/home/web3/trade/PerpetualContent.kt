@@ -51,6 +51,7 @@ import one.mixin.android.ui.wallet.alert.components.cardBackground
 fun PerpetualContent(
     onShowTradingGuide: () -> Unit,
     onShowMarketList: (isLong: Boolean) -> Unit,
+    onShowAllMarkets: () -> Unit,
     onShowAllOpenPositions: () -> Unit,
     onShowAllClosedPositions: () -> Unit,
     onOpenPositionClick: (PerpsPositionItem) -> Unit,
@@ -251,7 +252,7 @@ fun PerpetualContent(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { onShowMarketList(true) },
+                    .clickable { onShowAllMarkets() },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -308,7 +309,7 @@ fun PerpetualContent(
 
                 if (markets.size > marketsPreview.size) {
                     ViewAllAction(
-                        onClick = { onShowMarketList(true) }
+                        onClick = onShowAllMarkets
                     )
                 }
             }

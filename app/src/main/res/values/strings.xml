@@ -2379,6 +2379,8 @@
     <string name="Closed_Positions">Closed Positions</string>
     <string name="No_Positions">No Positions</string>
     <string name="No_Closed_Positions">No Closed Positions</string>
+    <string name="No_Markets">No Markets</string>
+    <string name="View_More">View More</string>
     <string name="Loading">Loading...</string>
     <string name="Vol">Vol %1$s</string>
     <string name="Entry_Close_Price">Entry: $%1$s → Close: $%2$s</string>
