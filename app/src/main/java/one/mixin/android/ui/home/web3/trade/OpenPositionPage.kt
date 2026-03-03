@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -290,7 +291,7 @@ fun OpenPositionPage(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    modifier = Modifier.padding(horizontal = 10.dp),
+                                    modifier = Modifier.padding(horizontal = 10.dp).widthIn(min = 16.dp),
                                     text = displayText,
                                     fontSize = 12.sp,
                                     color = if (isSelected) MixinAppTheme.colors.accent else MixinAppTheme.colors.textPrimary

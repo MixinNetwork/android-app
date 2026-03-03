@@ -2,6 +2,9 @@ package one.mixin.android.ui.home.web3.trade
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.view.Gravity
+import android.view.View
+import android.view.ViewGroup
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -25,22 +28,27 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.getSafeAreaInsetsTop
+import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.putInt
-import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
+import one.mixin.android.extension.screenHeight
+import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.alert.components.cardBackground
-import one.mixin.android.widget.BottomSheet
+import one.mixin.android.util.SystemUIManager
 import java.math.BigDecimal
 import kotlin.math.abs
 
-class LeverageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+@AndroidEntryPoint
+class LeverageBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
 
     companion object {
         const val TAG = "LeverageBottomSheetDialogFragment"
@@ -72,28 +80,58 @@ class LeverageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         return this
     }
 
+    override fun getTheme() = R.style.AppTheme_Dialog
+
+    @Composable
+    override fun ComposeContent() {
+        MixinAppTheme {
+            LeverageContent(
+                currentLeverage = currentLeverage,
+                maxLeverage = maxLeverage,
+                amount = amount,
+                isLong = isLong,
+                onCancel = { dismiss() },
+                onApply = { leverage ->
+                    requireContext().defaultSharedPreferences.putInt(PREF_LEVERAGE, leverage.toInt())
+                    onLeverageSelected?.invoke(leverage)
+                    dismiss()
+                }
+            )
+        }
+    }
+
+    override fun getBottomSheetHeight(view: View): Int {
+        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+    }
+
+    override fun showError(error: String) {
+    }
+
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
-        super.setupDialog(dialog, style)
-        contentView = ComposeView(requireContext()).apply {
-            setContent {
-                MixinAppTheme {
-                    LeverageContent(
-                        currentLeverage = currentLeverage,
-                        maxLeverage = maxLeverage,
-                        amount = amount,
-                        isLong = isLong,
-                        onCancel = { dismiss() },
-                        onApply = { leverage ->
-                            requireContext().defaultSharedPreferences.putInt(PREF_LEVERAGE, leverage.toInt())
-                            onLeverageSelected?.invoke(leverage)
-                            dismiss()
-                        }
-                    )
-                }
-            }
+        super.setupDialog(dialog, R.style.MixinBottomSheet)
+        dialog.window?.let { window ->
+            SystemUIManager.lightUI(window, requireContext().isNightMode())
         }
-        (dialog as BottomSheet).setCustomView(contentView)
+        dialog.window?.setGravity(Gravity.BOTTOM)
+        dialog.window?.setLayout(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT,
+        )
+    }
+
+    override fun onStart() {
+        super.onStart()
+        dialog?.window?.let { window ->
+            SystemUIManager.lightUI(
+                window,
+                !requireContext().booleanFromAttribute(R.attr.flag_night),
+            )
+        }
+    }
+
+    override fun dismiss() {
+        dismissAllowingStateLoss()
     }
 }
 
