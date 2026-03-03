@@ -18,14 +18,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import java.math.BigDecimal
 
@@ -34,9 +37,10 @@ fun OpenPositionItem(
     position: PerpsPositionItem,
     onClick: () -> Unit = {},
 ) {
+    val context = LocalContext.current
+    val quoteColorPref = context.defaultSharedPreferences
+        .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     val pnl = position.unrealizedPnl?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    val isProfit = pnl >= BigDecimal.ZERO
-    val pnlColor = if (isProfit) Color(0xFF4CAF50) else Color(0xFFF44336)
 
     val displaySymbol = position.displaySymbol ?: position.tokenSymbol ?: stringResource(R.string.Unknown)
     val quantity = position.quantity.toBigDecimalOrNull()?.let { String.format("%.4f", it) } ?: position.quantity
@@ -108,21 +112,28 @@ fun OpenPositionItem(
             Text(
                 text = String.format("$%.2f", pnl.abs()),
                 fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = pnlColor
+                color = MixinAppTheme.colors.textPrimary
             )
             Spacer(modifier = Modifier.height(2.dp))
-            val entryPrice = position.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
-            val markPrice = position.markPrice?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-            val priceChange = if (entryPrice > BigDecimal.ZERO) {
-                ((markPrice - entryPrice) / entryPrice * BigDecimal(100))
+            val unrealizedPnl = position.unrealizedPnl?.toBigDecimalOrNull()?: BigDecimal.ZERO
+            val isProfit = unrealizedPnl >= BigDecimal.ZERO
+            val pnlColor = if (isProfit) {
+                if (quoteColorPref) {
+                    MixinAppTheme.colors.walletRed
+                } else {
+                    MixinAppTheme.colors.walletGreen
+                }
             } else {
-                BigDecimal.ZERO
+                if (quoteColorPref) {
+                    MixinAppTheme.colors.walletGreen
+                } else {
+                    MixinAppTheme.colors.walletRed
+                }
             }
             Text(
-                text = String.format("%s%.1f%%", if (priceChange >= BigDecimal.ZERO) "+" else "", priceChange),
+                text = String.format("%s%.2f", if (unrealizedPnl >= BigDecimal.ZERO) "+" else "", unrealizedPnl),
                 fontSize = 12.sp,
-                color = if (priceChange >= BigDecimal.ZERO) Color(0xFF4CAF50) else Color(0xFFF44336)
+                color = pnlColor
             )
         }
     }

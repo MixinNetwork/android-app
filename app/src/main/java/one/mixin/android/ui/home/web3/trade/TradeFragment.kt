@@ -42,7 +42,6 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.response.CreateLimitOrderResponse
-import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
@@ -74,12 +73,10 @@ import one.mixin.android.ui.wallet.AllOrdersFragment
 import one.mixin.android.ui.wallet.DepositFragment
 import one.mixin.android.ui.wallet.LimitTransferBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.SwapTransferBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.analytics.AnalyticsTracker
-import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.Web3Signer
@@ -340,7 +337,7 @@ class TradeFragment : BaseFragment() {
                                     MarketListBottomSheetDialogFragment.newInstance(isLong).show(parentFragmentManager, MarketListBottomSheetDialogFragment.TAG)
                                 },
                                 onShowAllMarkets = {
-                                    navTo(AllMarketsFragment.newInstance(), AllMarketsFragment.TAG)
+                                    navTo(AllPerpsMarketsFragment.newInstance(), AllPerpsMarketsFragment.TAG)
                                 },
                                 onShowAllOpenPositions = {
                                     navTo(AllPositionsFragment.newOpenInstance(), AllPositionsFragment.TAG)

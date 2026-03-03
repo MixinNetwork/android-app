@@ -34,16 +34,15 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.vo.market.MarketItem
 
 @AndroidEntryPoint
-class AllMarketsFragment : BaseFragment() {
+class AllPerpsMarketsFragment : BaseFragment() {
 
     companion object {
-        const val TAG = "AllMarketsFragment"
+        const val TAG = "AllPerpsMarketsFragment"
 
-        fun newInstance() = AllMarketsFragment()
+        fun newInstance() = AllPerpsMarketsFragment()
     }
 
     private val swapViewModel by viewModels<SwapViewModel>()
@@ -72,7 +71,12 @@ class AllMarketsFragment : BaseFragment() {
     private suspend fun showMarketDetails(market: PerpsMarket) {
         val marketItem = findMarketItemByPerpsMarket(market)
         if (marketItem != null && activity != null) {
-            WalletActivity.showWithMarket(requireActivity(), marketItem, WalletActivity.Destination.Market)
+            PerpsActivity.showDetail(
+                requireContext(),
+                market.marketId,
+                market.symbol,
+                market.displaySymbol
+            )
         } else {
             toast(R.string.Alert_Not_Support)
         }

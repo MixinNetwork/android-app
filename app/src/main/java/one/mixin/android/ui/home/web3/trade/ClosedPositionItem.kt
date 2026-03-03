@@ -18,14 +18,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import java.math.BigDecimal
 
@@ -34,6 +37,10 @@ fun ClosedPositionItem(
     position: PerpsPositionHistoryItem,
     onClick: () -> Unit = {},
 ) {
+    val context = LocalContext.current
+    val quoteColorPref = context.defaultSharedPreferences
+        .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
+    
     val pnl = try {
         BigDecimal(position.realizedPnl)
     } catch (e: Exception) {
@@ -41,7 +48,19 @@ fun ClosedPositionItem(
     }
 
     val isProfit = pnl >= BigDecimal.ZERO
-    val pnlColor = if (isProfit) Color(0xFF4CAF50) else Color(0xFFF44336)
+    val pnlColor = if (isProfit) {
+        if (quoteColorPref) {
+            MixinAppTheme.colors.walletRed
+        } else {
+            MixinAppTheme.colors.walletGreen
+        }
+    } else {
+        if (quoteColorPref) {
+            MixinAppTheme.colors.walletGreen
+        } else {
+            MixinAppTheme.colors.walletRed
+        }
+    }
     
     val displaySymbol = position.displaySymbol ?: position.tokenSymbol ?: "Unknown"
     val quantity = try {
@@ -109,29 +128,7 @@ fun ClosedPositionItem(
             Text(
                 text = String.format("$%.2f", pnl.abs()),
                 fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold,
                 color = pnlColor
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            val entryPrice = try {
-                BigDecimal(position.entryPrice)
-            } catch (e: Exception) {
-                BigDecimal.ZERO
-            }
-            val closePrice = try {
-                BigDecimal(position.closePrice)
-            } catch (e: Exception) {
-                BigDecimal.ZERO
-            }
-            val priceChange = if (entryPrice > BigDecimal.ZERO) {
-                ((closePrice - entryPrice) / entryPrice * BigDecimal(100))
-            } else {
-                BigDecimal.ZERO
-            }
-            Text(
-                text = String.format("%s%.1f%%", if (priceChange >= BigDecimal.ZERO) "+" else "", priceChange),
-                fontSize = 12.sp,
-                color = if (priceChange >= BigDecimal.ZERO) Color(0xFF4CAF50) else Color(0xFFF44336)
             )
         }
     }
