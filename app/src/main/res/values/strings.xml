@@ -2344,6 +2344,7 @@
     <string name="Side">Side</string>
     <string name="Entry_Price">Entry Price</string>
     <string name="Mark_Price">Mark Price</string>
+    <string name="Latest_Price">Latest Price</string>
     <string name="Close_Price">Close Price</string>
     <string name="Quantity">Quantity</string>
     <string name="Position_Details">Position Details</string>

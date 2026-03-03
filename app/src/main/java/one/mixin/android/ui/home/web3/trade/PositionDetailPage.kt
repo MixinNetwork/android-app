@@ -26,16 +26,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.fragment.app.FragmentActivity
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
-import one.mixin.android.api.response.perps.toPosition
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.wallet.alert.components.cardBackground
@@ -47,8 +44,9 @@ import java.util.Locale
 fun PositionDetailPage(
     position: PerpsPositionItem,
     pop: () -> Unit,
+    onClose: (() -> Unit)? = null,
+    onShare: (() -> Unit)? = null,
 ) {
-    val context = LocalContext.current
     val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
     
     fun formatDate(dateStr: String?): String {
@@ -144,11 +142,12 @@ fun PositionDetailPage(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = stringResource(R.string.Trade_Again),
+                        text = stringResource(R.string.Close),
                         color = MixinAppTheme.colors.textPrimary,
                         fontWeight = FontWeight.W500,
                         modifier = Modifier
                             .weight(1f)
+                            .clickable { onClose?.invoke() }
                             .padding(vertical = 10.dp),
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
@@ -164,6 +163,7 @@ fun PositionDetailPage(
                         fontWeight = FontWeight.W500,
                         modifier = Modifier
                             .weight(1f)
+                            .clickable { onShare?.invoke() }
                             .padding(vertical = 10.dp),
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
@@ -275,6 +275,8 @@ private fun PositionDetailItem(
 fun PositionDetailPage(
     positionHistory: PerpsPositionHistoryItem,
     pop: () -> Unit,
+    onTradeAgain: (() -> Unit)? = null,
+    onShare: (() -> Unit)? = null,
 ) {
     val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
     
@@ -376,6 +378,7 @@ fun PositionDetailPage(
                         fontWeight = FontWeight.W500,
                         modifier = Modifier
                             .weight(1f)
+                            .clickable { onTradeAgain?.invoke() }
                             .padding(vertical = 10.dp),
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
@@ -391,6 +394,7 @@ fun PositionDetailPage(
                         fontWeight = FontWeight.W500,
                         modifier = Modifier
                             .weight(1f)
+                            .clickable { onShare?.invoke() }
                             .padding(vertical = 10.dp),
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )

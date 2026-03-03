@@ -12,6 +12,7 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
+import one.mixin.android.api.response.perps.toPosition
 import one.mixin.android.ui.common.BaseFragment
 
 @AndroidEntryPoint
@@ -58,6 +59,12 @@ class PositionDetailFragment : BaseFragment() {
                             position = position,
                             pop = {
                                 activity?.onBackPressedDispatcher?.onBackPressed()
+                            },
+                            onClose = {
+                                showCloseDialog(position)
+                            },
+                            onShare = {
+                                PerpsPositionShareActivity.show(requireContext(), position)
                             }
                         )
                     } else if (positionHistory != null) {
@@ -65,11 +72,37 @@ class PositionDetailFragment : BaseFragment() {
                             positionHistory = positionHistory,
                             pop = {
                                 activity?.onBackPressedDispatcher?.onBackPressed()
+                            },
+                            onTradeAgain = {
+                                openTradeAgain(positionHistory)
+                            },
+                            onShare = {
+                                PerpsPositionShareActivity.show(requireContext(), positionHistory)
                             }
                         )
                     }
                 }
             }
         }
+    }
+
+    private fun showCloseDialog(position: PerpsPositionItem) {
+        val perpsPosition = position.toPosition()
+        PerpsCloseBottomSheetDialogFragment.newInstance(perpsPosition)
+            .setOnDone {
+                activity?.onBackPressedDispatcher?.onBackPressed()
+            }
+            .showNow(parentFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)
+    }
+
+    private fun openTradeAgain(positionHistory: PerpsPositionHistoryItem) {
+        val isLong = positionHistory.side.equals("long", ignoreCase = true)
+        PerpsActivity.showOpenPosition(
+            context = requireContext(),
+            marketId = positionHistory.productId,
+            marketSymbol = positionHistory.marketSymbol ?: positionHistory.tokenSymbol ?: "",
+            marketDisplaySymbol = positionHistory.displaySymbol ?: positionHistory.tokenSymbol ?: "",
+            isLong = isLong
+        )
     }
 }

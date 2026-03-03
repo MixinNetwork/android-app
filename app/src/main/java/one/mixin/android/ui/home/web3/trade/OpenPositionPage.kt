@@ -68,7 +68,7 @@ import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
 import kotlin.math.abs
 
-private const val PREF_LEVERAGE = "pref_perps_leverage"
+private fun getLeveragePrefKey(marketId: String) = "pref_perps_leverage_$marketId"
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -88,7 +88,7 @@ fun OpenPositionPage(
     var availableTokens by remember { mutableStateOf<List<TokenItem>>(emptyList()) }
     var usdtAmount by remember { mutableStateOf("") }
 
-    val savedLeverage = context.defaultSharedPreferences.getInt(PREF_LEVERAGE, 10)
+    val savedLeverage = context.defaultSharedPreferences.getInt(getLeveragePrefKey(marketId), 10)
     var leverage by remember { mutableFloatStateOf(savedLeverage.toFloat()) }
 
     LaunchedEffect(marketId) {
@@ -282,10 +282,11 @@ fun OpenPositionPage(
                                                 isLong = isLong
                                             ).setOnLeverageSelected { newLeverage ->
                                                 leverage = newLeverage
+                                                context.defaultSharedPreferences.putInt(getLeveragePrefKey(marketId), newLeverage.toInt())
                                             }.show(activity.supportFragmentManager, LeverageBottomSheetDialogFragment.TAG)
                                         } else {
                                             leverage = lev.toFloat()
-                                            context.defaultSharedPreferences.putInt(PREF_LEVERAGE, lev)
+                                            context.defaultSharedPreferences.putInt(getLeveragePrefKey(marketId), lev)
                                         }
                                     },
                                 contentAlignment = Alignment.Center

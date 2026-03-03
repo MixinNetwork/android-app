@@ -113,12 +113,16 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
             }
 
             val initialTab = arguments?.getString(ARGS_INITIAL_TAB, TAB_CLOSED)
-            if (initialTab == TAB_OPEN) {
+            currentTab = if (initialTab == TAB_OPEN) {
                 radioOpen.isChecked = true
+                PositionTab.OPEN
             } else {
                 radioClosed.isChecked = true
+                PositionTab.CLOSED
             }
         }
+
+        loadPositions()
     }
 
     private fun loadPositions() {
