@@ -392,6 +392,21 @@ class PerpetualViewModel @Inject constructor(
         }
     }
 
+    fun getClosedPositionsByMarket(walletId: String, marketId: String, onSuccess: (List<PerpsPositionHistoryItem>) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val allHistories = withContext(Dispatchers.IO) {
+                    perpsPositionHistoryDao.getHistories(walletId, 100)
+                }
+                val filteredHistories = allHistories.filter { it.productId == marketId }
+                onSuccess(filteredHistories)
+            } catch (e: Exception) {
+                Timber.e(e, "Error loading closed positions by market")
+                onSuccess(emptyList())
+            }
+        }
+    }
+
     fun closePerpsOrder(
         positionId: String,
         onSuccess: () -> Unit,

@@ -2381,6 +2381,8 @@
     <string name="Closed_Positions">Closed Positions</string>
     <string name="No_Positions">No Positions</string>
     <string name="No_Closed_Positions">No Closed Positions</string>
+    <string name="PNL">PNL</string>
+    <string name="Direction">Direction</string>
     <string name="No_Markets">No Markets</string>
     <string name="View_More">View More</string>
     <string name="Loading">Loading...</string>

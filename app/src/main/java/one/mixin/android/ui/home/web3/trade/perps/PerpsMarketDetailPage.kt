@@ -49,6 +49,7 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.api.response.perps.PerpsPositionItem
+import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.api.response.perps.toPosition
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -57,6 +58,7 @@ import one.mixin.android.extension.marketPriceFormat
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.session.Session
 import one.mixin.android.ui.home.web3.trade.CandleChart
+import one.mixin.android.ui.home.web3.trade.ClosedPositionItem
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
@@ -74,6 +76,7 @@ fun PerpsMarketDetailPage(
     var isLoading by remember { mutableStateOf(true) }
     var selectedTimeFrame by remember { mutableIntStateOf(0) }
     var currentPosition by remember { mutableStateOf<PerpsPositionItem?>(null) }
+    var closedPositions by remember { mutableStateOf<List<PerpsPositionHistoryItem>>(emptyList()) }
     val coroutineScope = rememberCoroutineScope()
 
     val timeFrameValues = listOf("1h", "1d", "1w", "1M")
@@ -106,6 +109,10 @@ fun PerpsMarketDetailPage(
             viewModel.getPositionByMarket(walletId, marketId) { position ->
                 currentPosition = position
             }
+
+            viewModel.getClosedPositionsByMarket(walletId, marketId) { positions ->
+                closedPositions = positions
+            }
         }
     }
 
@@ -114,113 +121,152 @@ fun PerpsMarketDetailPage(
         verticalScrollable = false,
         pop = onBack
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp)
-        ) {
-            Spacer(modifier = Modifier.height(16.dp))
-
+        Box(modifier = Modifier.fillMaxSize()) {
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
-                    .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
-                    .padding(16.dp)
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp)
+                    .padding(bottom = 80.dp)
             ) {
-                if (market != null) {
-                    MarketDetailCard(
-                        market = market!!,
-                        marketSymbol = marketSymbol,
-                        displaySymbol = displaySymbol,
-                        selectedTimeFrame = selectedTimeFrame,
-                        timeFrameValues = timeFrameValues,
-                        timeFrameLabels = timeFrameLabels,
-                        onTimeFrameChange = { index ->
-                            coroutineScope.launch { selectedTimeFrame = index }
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
+                        .padding(16.dp)
+                ) {
+                    if (market != null) {
+                        MarketDetailCard(
+                            market = market!!,
+                            marketSymbol = marketSymbol,
+                            displaySymbol = displaySymbol,
+                            selectedTimeFrame = selectedTimeFrame,
+                            timeFrameValues = timeFrameValues,
+                            timeFrameLabels = timeFrameLabels,
+                            onTimeFrameChange = { index ->
+                                coroutineScope.launch { selectedTimeFrame = index }
+                            }
+                        )
+                    } else if (isLoading) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(400.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(40.dp),
+                                color = MixinAppTheme.colors.accent
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                if (currentPosition != null) {
+                    OpenPositionCard(
+                        position = currentPosition!!,
+                        onClick = {
+                            val activity = context as? FragmentActivity
+                            val position = currentPosition
+                            if (activity != null && position != null) {
+                                activity.supportFragmentManager
+                                    .beginTransaction()
+                                    .add(
+                                        android.R.id.content,
+                                        PositionDetailFragment.newInstance(position),
+                                        PositionDetailFragment.TAG
+                                    )
+                                    .addToBackStack(null)
+                                    .commit()
+                            }
                         }
                     )
-                } else if (isLoading) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(400.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(40.dp),
-                            color = MixinAppTheme.colors.accent
-                        )
-                    }
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
-            }
 
-            Spacer(modifier = Modifier.height(16.dp))
+                if (market != null) {
+                    MarketInfoCard(
+                        market = market!!,
+                        onLearnClick = {
+                            val activity = context as? FragmentActivity ?: return@MarketInfoCard
+                            activity.supportFragmentManager
+                                .beginTransaction()
+                                .add(
+                                    android.R.id.content,
+                                    PerpetualGuideFragment.newInstance(),
+                                    PerpetualGuideFragment.TAG
+                                )
+                                .addToBackStack(null)
+                                .commit()
+                        }
+                    )
+                }
 
-            if (market != null) {
-                MarketInfoCard(
-                    market = market!!,
-                    onLearnClick = { /* TODO: Navigate to guide */ }
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            if (market != null) {
-                if (currentPosition != null) {
-                    Button(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(48.dp),
-                        onClick = {
-                            val activity = context as? FragmentActivity ?: return@Button
-                            val position = currentPosition?.toPosition() ?: return@Button
-
-                            PerpsCloseBottomSheetDialogFragment.Companion.newInstance(
-                                position = position,
-                            ).setOnDone {
-                                currentPosition = null
-                            }.show(activity.supportFragmentManager, PerpsCloseBottomSheetDialogFragment.Companion.TAG)
+                if (closedPositions.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    ClosedPositionsSection(
+                        positions = closedPositions,
+                        onViewAll = {
+                            val activity = context as? FragmentActivity ?: return@ClosedPositionsSection
+                            activity.supportFragmentManager
+                                .beginTransaction()
+                                .add(
+                                    android.R.id.content,
+                                    AllPositionsFragment.newClosedInstance(),
+                                    AllPositionsFragment.TAG
+                                )
+                                .addToBackStack(null)
+                                .commit()
                         },
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            backgroundColor = MixinAppTheme.colors.accent
-                        ),
-                        shape = RoundedCornerShape(32.dp),
-                        elevation = ButtonDefaults.elevation(
-                            pressedElevation = 0.dp,
-                            defaultElevation = 0.dp,
-                            hoveredElevation = 0.dp,
-                            focusedElevation = 0.dp
-                        )
-                    ) {
-                        Text(
-                            text = stringResource(R.string.Close_Position),
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                    }
-                } else {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
+                        onPositionClick = { position ->
+                            val activity = context as? FragmentActivity ?: return@ClosedPositionsSection
+                            activity.supportFragmentManager
+                                .beginTransaction()
+                                .add(
+                                    android.R.id.content,
+                                    PositionDetailFragment.newInstance(position),
+                                    PositionDetailFragment.TAG
+                                )
+                                .addToBackStack(null)
+                                .commit()
+                        }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            if (market != null) {
+                Column(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                        .background(MixinAppTheme.colors.background)
+                        .padding(horizontal = 16.dp)
+                        .padding(bottom = 16.dp, top = 8.dp)
+                ) {
+                    if (currentPosition != null) {
                         Button(
                             modifier = Modifier
-                                .weight(1f)
+                                .fillMaxWidth()
                                 .height(48.dp),
                             onClick = {
-                                PerpsActivity.Companion.showOpenPosition(
-                                    context = context,
-                                    marketId = marketId,
-                                    marketSymbol = marketSymbol,
-                                    marketDisplaySymbol = market?.displaySymbol ?: marketSymbol,
-                                    isLong = true
-                                )
+                                val activity = context as? FragmentActivity ?: return@Button
+                                val position = currentPosition?.toPosition() ?: return@Button
+
+                                PerpsCloseBottomSheetDialogFragment.newInstance(
+                                    position = position,
+                                ).setOnDone {
+                                    currentPosition = null
+                                }.show(activity.supportFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)
                             },
                             colors = ButtonDefaults.outlinedButtonColors(
-                                backgroundColor = risingColor
+                                backgroundColor = MixinAppTheme.colors.accent
                             ),
                             shape = RoundedCornerShape(32.dp),
                             elevation = ButtonDefaults.elevation(
@@ -231,49 +277,84 @@ fun PerpsMarketDetailPage(
                             )
                         ) {
                             Text(
-                                text = stringResource(R.string.Long),
+                                text = stringResource(R.string.Close_Position),
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
                             )
                         }
-
-                        Button(
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(48.dp),
-                            onClick = {
-                                PerpsActivity.Companion.showOpenPosition(
-                                    context = context,
-                                    marketId = marketId,
-                                    marketSymbol = marketSymbol,
-                                    marketDisplaySymbol = market?.displaySymbol ?: marketSymbol,
-                                    isLong = false
-                                )
-                            },
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                backgroundColor = fallingColor
-                            ),
-                            shape = RoundedCornerShape(32.dp),
-                            elevation = ButtonDefaults.elevation(
-                                pressedElevation = 0.dp,
-                                defaultElevation = 0.dp,
-                                hoveredElevation = 0.dp,
-                                focusedElevation = 0.dp
-                            )
+                    } else {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            Text(
-                                text = stringResource(R.string.Short),
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
+                            Button(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(48.dp),
+                                onClick = {
+                                    PerpsActivity.showOpenPosition(
+                                        context = context,
+                                        marketId = marketId,
+                                        marketSymbol = marketSymbol,
+                                        marketDisplaySymbol = market?.displaySymbol ?: marketSymbol,
+                                        isLong = true
+                                    )
+                                },
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    backgroundColor = risingColor
+                                ),
+                                shape = RoundedCornerShape(32.dp),
+                                elevation = ButtonDefaults.elevation(
+                                    pressedElevation = 0.dp,
+                                    defaultElevation = 0.dp,
+                                    hoveredElevation = 0.dp,
+                                    focusedElevation = 0.dp
+                                )
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.Long),
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                            }
+
+                            Button(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(48.dp),
+                                onClick = {
+                                    PerpsActivity.showOpenPosition(
+                                        context = context,
+                                        marketId = marketId,
+                                        marketSymbol = marketSymbol,
+                                        marketDisplaySymbol = market?.displaySymbol ?: marketSymbol,
+                                        isLong = false
+                                    )
+                                },
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    backgroundColor = fallingColor
+                                ),
+                                shape = RoundedCornerShape(32.dp),
+                                elevation = ButtonDefaults.elevation(
+                                    pressedElevation = 0.dp,
+                                    defaultElevation = 0.dp,
+                                    hoveredElevation = 0.dp,
+                                    focusedElevation = 0.dp
+                                )
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.Short),
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                            }
                         }
                     }
                 }
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
@@ -521,5 +602,236 @@ private fun MarketDetailCard(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun OpenPositionCard(
+    position: PerpsPositionItem,
+    onClick: () -> Unit,
+) {
+    val context = LocalContext.current
+    val quoteColorReversed = context.defaultSharedPreferences
+        .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
+    val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+    val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+    val fiatRate = BigDecimal(Fiats.getRate())
+    val fiatSymbol = Fiats.getSymbol()
+
+    val pnl = position.unrealizedPnl?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val isProfit = pnl >= BigDecimal.ZERO
+    val pnlColor = if (isProfit) risingColor else fallingColor
+
+    val isLong = position.side.equals("long", ignoreCase = true)
+    val directionColor = if (isLong) risingColor else fallingColor
+
+    val quantity = position.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val markPrice = position.markPrice?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val orderValue = quantity.multiply(markPrice).multiply(fiatRate)
+
+    val entryPrice = position.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val liquidationPrice = calculateLiquidationPriceValue(entryPrice, position.leverage, isLong)
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
+            .clickable { onClick() }
+            .padding(16.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column {
+                Text(
+                    text = stringResource(R.string.PNL),
+                    fontSize = 12.sp,
+                    color = MixinAppTheme.colors.textAssist
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = "${
+                        if (isProfit) {
+                            "+"
+                        } else {
+                            "-"
+                        }
+                    }${fiatSymbol}${pnl.abs().multiply(fiatRate).priceFormat()}",
+                    fontSize = 14.sp,
+                    color = pnlColor
+                )
+            }
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    text = stringResource(R.string.Direction),
+                    fontSize = 12.sp,
+                    color = MixinAppTheme.colors.textAssist
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Row {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(directionColor)
+                            .padding(horizontal = 8.dp, vertical = 0.5.dp)
+                    ) {
+                        Text(
+                            text = if (isLong) stringResource(R.string.Long) else stringResource(R.string.Short),
+                            fontSize = 10.sp,
+                            color = Color.White
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "${position.leverage}x",
+                        fontSize = 14.sp,
+                        color = MixinAppTheme.colors.textPrimary
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column {
+                Text(
+                    text = stringResource(R.string.Order_Value),
+                    fontSize = 12.sp,
+                    color = MixinAppTheme.colors.textAssist
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "${quantity.stripTrailingZeros().toPlainString()} ${position.tokenSymbol}",
+                    fontSize = 14.sp,
+                    color = MixinAppTheme.colors.textPrimary
+                )
+            }
+
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    text = stringResource(R.string.Amount),
+                    fontSize = 12.sp,
+                    color = MixinAppTheme.colors.textAssist
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "${fiatSymbol}${orderValue.priceFormat()}",
+                    fontSize = 14.sp,
+                    color = MixinAppTheme.colors.textPrimary
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column {
+                Text(
+                    text = stringResource(R.string.Entry_Price),
+                    fontSize = 12.sp,
+                    color = MixinAppTheme.colors.textAssist
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "${fiatSymbol}${entryPrice.multiply(fiatRate).priceFormat()}",
+                    fontSize = 14.sp,
+                    color = MixinAppTheme.colors.textPrimary
+                )
+            }
+
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    text = stringResource(R.string.Liquidation_Price),
+                    fontSize = 12.sp,
+                    color = MixinAppTheme.colors.textAssist
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "${fiatSymbol}${liquidationPrice.multiply(fiatRate).priceFormat()}",
+                    fontSize = 14.sp,
+                    color = MixinAppTheme.colors.textPrimary
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ClosedPositionsSection(
+    positions: List<PerpsPositionHistoryItem>,
+    onViewAll: () -> Unit,
+    onPositionClick: (PerpsPositionHistoryItem) -> Unit,
+) {
+    val displayPositions = positions.take(3)
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
+            .padding(16.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = stringResource(R.string.Closed_Positions),
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium,
+                color = MixinAppTheme.colors.textPrimary
+            )
+
+            if (positions.size > 3) {
+                Text(
+                    text = stringResource(R.string.view_all),
+                    fontSize = 14.sp,
+                    color = MixinAppTheme.colors.accent,
+                    modifier = Modifier.clickable { onViewAll() }
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        displayPositions.forEach { position ->
+            ClosedPositionItem(
+                position = position,
+                onClick = { onPositionClick(position) }
+            )
+            if (position != displayPositions.last()) {
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+        }
+    }
+}
+
+private fun calculateLiquidationPriceValue(
+    entryPrice: BigDecimal,
+    leverage: Int,
+    isLong: Boolean,
+): BigDecimal {
+    if (entryPrice == BigDecimal.ZERO || leverage == 0) {
+        return BigDecimal.ZERO
+    }
+
+    val liquidationPercent = BigDecimal(100.0 / leverage)
+    val liquidationRatio = liquidationPercent.divide(BigDecimal(100), 8, java.math.RoundingMode.HALF_UP)
+
+    return if (isLong) {
+        entryPrice.multiply(BigDecimal.ONE.subtract(liquidationRatio))
+    } else {
+        entryPrice.multiply(BigDecimal.ONE.add(liquidationRatio))
     }
 }

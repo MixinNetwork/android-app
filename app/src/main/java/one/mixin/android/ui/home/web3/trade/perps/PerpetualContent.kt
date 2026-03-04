@@ -212,7 +212,7 @@ fun PerpetualContent(
                     Icon(
                         painter = painterResource(id = R.drawable.ic_empty_transaction),
                         contentDescription = null,
-                        tint = MixinAppTheme.colors.textAssist,
+                        tint = MixinAppTheme.colors.backgroundGrayLight,
                         modifier = Modifier.size(78.dp)
                     )
                     Spacer(modifier = Modifier.height(12.dp))
@@ -386,17 +386,20 @@ fun PerpetualContent(
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+                        Spacer(modifier = Modifier.height(16.dp))
                         Icon(
                             painter = painterResource(id = R.drawable.ic_empty_transaction),
                             contentDescription = null,
-                            tint = MixinAppTheme.colors.textAssist,
+                            tint = MixinAppTheme.colors.backgroundGrayLight,
                             modifier = Modifier.size(78.dp)
                         )
+                        Spacer(modifier = Modifier.height(12.dp))
                         Text(
                             text = stringResource(R.string.No_Closed_Positions),
                             fontSize = 14.sp,
                             color = MixinAppTheme.colors.textAssist,
                         )
+                        Spacer(modifier = Modifier.height(16.dp))
                     }
                 }
             } else {
