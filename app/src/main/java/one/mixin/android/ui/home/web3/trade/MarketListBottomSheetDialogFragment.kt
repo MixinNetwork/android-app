@@ -12,10 +12,12 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.databinding.FragmentMarketListBottomSheetBinding
 import one.mixin.android.db.perps.PerpsMarketDao
 import one.mixin.android.extension.appCompatActionBarHeight
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
@@ -36,7 +38,12 @@ class MarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private val binding by viewBinding(FragmentMarketListBottomSheetBinding::inflate)
-    private val adapter by lazy { MarketListAdapter { market -> onMarketClick(market) } }
+    private val isQuoteColorReversed by lazy {
+        requireContext().defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
+    }
+    private val adapter by lazy {
+        MarketListAdapter(isQuoteColorReversed) { market -> onMarketClick(market) }
+    }
 
     @Inject
     lateinit var perpsMarketDao: PerpsMarketDao

@@ -32,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -40,10 +41,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import one.mixin.android.R
+import one.mixin.android.Constants
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.session.Session
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 
@@ -58,7 +61,12 @@ fun PerpetualContent(
     onMarketItemClick: (PerpsMarket) -> Unit,
     onClosedPositionClick: (PerpsPositionHistoryItem) -> Unit,
 ) {
+    val context = LocalContext.current
     val walletId = Session.getAccountId()!!
+    val quoteColorReversed = context.defaultSharedPreferences
+        .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
+    val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+    val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
     val viewModel = hiltViewModel<PerpetualViewModel>()
 
     var markets by remember { mutableStateOf<List<PerpsMarket>>(emptyList()) }
@@ -147,13 +155,13 @@ fun PerpetualContent(
                 Text(
                     text = String.format("$%.2f", totalPnl),
                     fontSize = 14.sp,
-                    color = if (totalPnl >= 0) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed,
+                    color = if (totalPnl >= 0) risingColor else fallingColor,
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = String.format("(%s%.1f%%)", if (totalPnl >= 0) "+" else "", totalPnl),
                     fontSize = 14.sp,
-                    color = if (totalPnl >= 0) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed,
+                    color = if (totalPnl >= 0) risingColor else fallingColor,
                 )
             }
         }
@@ -300,6 +308,7 @@ fun PerpetualContent(
                 marketsPreview.forEach { market ->
                     MarketItem(
                         market = market,
+                        quoteColorReversed = quoteColorReversed,
                         onClick = {
                             onMarketItemClick(market)
                         }

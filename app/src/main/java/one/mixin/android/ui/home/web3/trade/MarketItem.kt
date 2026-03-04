@@ -34,6 +34,7 @@ import java.math.BigDecimal
 @Composable
 fun MarketItem(
     market: PerpsMarket,
+    quoteColorReversed: Boolean = false,
     onClick: () -> Unit = {}
 ) {
     val change = try {
@@ -43,7 +44,19 @@ fun MarketItem(
     }
 
     val isPositive = change >= BigDecimal.ZERO
-    val changeColor = if (isPositive) Color(0xFF4CAF50) else Color(0xFFF44336)
+    val changeColor = if (isPositive) {
+        if (quoteColorReversed) {
+            MixinAppTheme.colors.walletRed
+        } else {
+            MixinAppTheme.colors.walletGreen
+        }
+    } else {
+        if (quoteColorReversed) {
+            MixinAppTheme.colors.walletGreen
+        } else {
+            MixinAppTheme.colors.walletRed
+        }
+    }
     val changeText = "${if (isPositive) "+" else ""}${market.change}%"
 
     val formattedPrice = try {

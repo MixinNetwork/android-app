@@ -12,10 +12,12 @@ import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.databinding.FragmentAllClosedPositionsBinding
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.viewBinding
@@ -44,9 +46,12 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
     private val binding by viewBinding(FragmentAllClosedPositionsBinding::bind)
     private val viewModel by viewModels<PerpetualViewModel>()
     private val totalValueAdapter by lazy { TotalPositionValueAdapter() }
+    private val isQuoteColorReversed by lazy {
+        requireContext().defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
+    }
 
     private val openPositionAdapter by lazy {
-        OpenPositionAdapter { position ->
+        OpenPositionAdapter(isQuoteColorReversed) { position ->
             activity?.supportFragmentManager?.let { fm ->
                 fm.beginTransaction()
                     .add(android.R.id.content, PositionDetailFragment.newInstance(position), PositionDetailFragment.TAG)
@@ -57,7 +62,7 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
     }
 
     private val closedPositionAdapter by lazy {
-        ClosedPositionAdapter { position ->
+        ClosedPositionAdapter(isQuoteColorReversed) { position ->
             activity?.supportFragmentManager?.let { fm ->
                 fm.beginTransaction()
                     .add(android.R.id.content, PositionDetailFragment.newInstance(position), PositionDetailFragment.TAG)

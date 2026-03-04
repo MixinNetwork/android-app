@@ -19,6 +19,7 @@ import one.mixin.android.ui.common.recyclerview.SafePagedListAdapter
 import java.math.BigDecimal
 
 class OpenPositionAdapter(
+    private val isQuoteColorReversed: Boolean = false,
     private val onItemClick: ((PerpsPositionItem) -> Unit)? = null
 ) : SafePagedListAdapter<PerpsPositionItem, OpenPositionAdapter.ViewHolder>(DiffCallback()) {
 
@@ -29,6 +30,7 @@ class OpenPositionAdapter(
                 parent,
                 false
             ),
+            isQuoteColorReversed,
             onItemClick
         )
     }
@@ -40,6 +42,7 @@ class OpenPositionAdapter(
 
     class ViewHolder(
         private val binding: ItemClosedPositionListBinding,
+        private val isQuoteColorReversed: Boolean,
         private val onItemClick: ((PerpsPositionItem) -> Unit)?
     ) : RecyclerView.ViewHolder(binding.root) {
 
@@ -68,18 +71,24 @@ class OpenPositionAdapter(
                 } else {
                     context.getString(R.string.Short)
                 }
-                val sideColor = if (isLong) {
-                    context.getColor(R.color.wallet_green)
-                } else {
-                    context.getColor(R.color.wallet_red)
-                }
+                val sideColor = context.getColor(
+                    if (isLong) {
+                        if (isQuoteColorReversed) R.color.wallet_red else R.color.wallet_green
+                    } else {
+                        if (isQuoteColorReversed) R.color.wallet_green else R.color.wallet_red
+                    }
+                )
                 val displaySymbol = position.tokenSymbol ?: context.getString(R.string.Unknown)
                 titleTv.text = context.getString(R.string.Perpetual_Side_Symbol_Title, sideText, displaySymbol)
                 leverageTv.isVisible = true
                 leverageTv.text = context.getString(R.string.Perpetual_Leverage_Format, position.leverage)
                 leverageTv.setTextColor(sideColor)
                 leverageTv.setBackgroundResource(
-                    if (isLong) R.drawable.bg_perps_leverage_long else R.drawable.bg_perps_leverage_short
+                    if (isLong) {
+                        if (isQuoteColorReversed) R.drawable.bg_perps_leverage_short else R.drawable.bg_perps_leverage_long
+                    } else {
+                        if (isQuoteColorReversed) R.drawable.bg_perps_leverage_long else R.drawable.bg_perps_leverage_short
+                    }
                 )
 
                 val quantity = position.quantity.toBigDecimalOrNull()
@@ -97,11 +106,11 @@ class OpenPositionAdapter(
                 rightBottomValueTv.setTextColor(
                     when {
                         pnl > BigDecimal.ZERO -> {
-                            context.getColor(R.color.wallet_green)
+                            context.getColor(if (isQuoteColorReversed) R.color.wallet_red else R.color.wallet_green)
                         }
 
                         pnl < BigDecimal.ZERO -> {
-                            context.getColor(R.color.wallet_red)
+                            context.getColor(if (isQuoteColorReversed) R.color.wallet_green else R.color.wallet_red)
                         }
 
                         else -> {

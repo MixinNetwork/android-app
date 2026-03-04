@@ -19,6 +19,7 @@ import one.mixin.android.ui.common.recyclerview.SafePagedListAdapter
 import java.math.BigDecimal
 
 class ClosedPositionAdapter(
+    private val isQuoteColorReversed: Boolean = false,
     private val onItemClick: ((PerpsPositionHistoryItem) -> Unit)? = null
 ) : SafePagedListAdapter<PerpsPositionHistoryItem, ClosedPositionAdapter.ViewHolder>(DiffCallback()) {
 
@@ -29,6 +30,7 @@ class ClosedPositionAdapter(
                 parent,
                 false
             ),
+            isQuoteColorReversed,
             onItemClick
         )
     }
@@ -40,6 +42,7 @@ class ClosedPositionAdapter(
 
     class ViewHolder(
         private val binding: ItemClosedPositionListBinding,
+        private val isQuoteColorReversed: Boolean,
         private val onItemClick: ((PerpsPositionHistoryItem) -> Unit)?
     ) : RecyclerView.ViewHolder(binding.root) {
 
@@ -68,11 +71,6 @@ class ClosedPositionAdapter(
                 } else {
                     context.getString(R.string.Short)
                 }
-                val sideColor = if (isLong) {
-                    context.getColor(R.color.wallet_green)
-                } else {
-                    context.getColor(R.color.wallet_red)
-                }
                 val displaySymbol = position.tokenSymbol ?: context.getString(R.string.Unknown)
                 titleTv.text = context.getString(R.string.Perpetual_Side_Symbol_Title, sideText, displaySymbol)
 
@@ -86,11 +84,11 @@ class ClosedPositionAdapter(
                 rightTopValueTv.setTextColor(
                     when {
                         pnl > BigDecimal.ZERO -> {
-                            context.getColor(R.color.wallet_green)
+                            context.getColor(if (isQuoteColorReversed) R.color.wallet_red else R.color.wallet_green)
                         }
 
                         pnl < BigDecimal.ZERO -> {
-                            context.getColor(R.color.wallet_red)
+                            context.getColor(if (isQuoteColorReversed) R.color.wallet_green else R.color.wallet_red)
                         }
 
                         else -> {

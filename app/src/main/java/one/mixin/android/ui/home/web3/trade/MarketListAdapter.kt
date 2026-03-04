@@ -12,6 +12,7 @@ import one.mixin.android.extension.numberFormatCompact
 import java.math.BigDecimal
 
 class MarketListAdapter(
+    private val isQuoteColorReversed: Boolean,
     private val onMarketClick: (PerpsMarket) -> Unit
 ) : RecyclerView.Adapter<MarketListAdapter.MarketViewHolder>() {
 
@@ -73,11 +74,14 @@ class MarketListAdapter(
                 }
 
                 val isPositive = change >= BigDecimal.ZERO
-                val changeColor = if (isPositive) {
-                    ContextCompat.getColor(root.context, R.color.wallet_green)
-                } else {
-                    ContextCompat.getColor(root.context, R.color.wallet_red)
-                }
+                val changeColor = ContextCompat.getColor(
+                    root.context,
+                    if (isPositive) {
+                        if (isQuoteColorReversed) R.color.wallet_red else R.color.wallet_green
+                    } else {
+                        if (isQuoteColorReversed) R.color.wallet_green else R.color.wallet_red
+                    }
+                )
                 val changeText = "${if (isPositive) "+" else ""}${market.change}%"
                 
                 changeTv.text = changeText

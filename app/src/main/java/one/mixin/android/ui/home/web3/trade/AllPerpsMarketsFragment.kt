@@ -21,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -28,9 +29,11 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
@@ -112,6 +115,9 @@ private fun AllMarketsPage(
     pop: () -> Unit,
     onMarketClick: (PerpsMarket) -> Unit,
 ) {
+    val context = LocalContext.current
+    val quoteColorReversed = context.defaultSharedPreferences
+        .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     val viewModel = androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel<PerpetualViewModel>()
     var markets by remember { mutableStateOf<List<PerpsMarket>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
@@ -183,6 +189,7 @@ private fun AllMarketsPage(
                         Column(modifier = Modifier.fillMaxWidth()) {
                             MarketItem(
                                 market = market,
+                                quoteColorReversed = quoteColorReversed,
                                 onClick = { onMarketClick(market) }
                             )
                             Spacer(modifier = Modifier.height(8.dp))

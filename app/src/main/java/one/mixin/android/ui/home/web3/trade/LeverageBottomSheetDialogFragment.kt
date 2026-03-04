@@ -185,7 +185,9 @@ private fun LeverageContent(
                 colors = SliderDefaults.colors(
                     thumbColor = MixinAppTheme.colors.accent,
                     activeTrackColor = MixinAppTheme.colors.accent,
-                    inactiveTrackColor = MixinAppTheme.colors.backgroundWindow
+                    inactiveTrackColor = MixinAppTheme.colors.backgroundWindow,
+                    activeTickColor = Color.Transparent,
+                    inactiveTickColor = Color.Transparent
                 ),
                 modifier = Modifier.fillMaxWidth()
             )
@@ -201,7 +203,7 @@ private fun LeverageContent(
                 for (i in 0 until steps) {
                     val value = if (i == steps - 1) maxLeverage else (i * stepValue)
                     Text(
-                        text = if (i == steps - 1) "Max" else "${value}x",
+                        text = "${value}x",
                         fontSize = 12.sp,
                         color = MixinAppTheme.colors.textAssist
                     )
@@ -211,29 +213,11 @@ private fun LeverageContent(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        val profitInfo = calculateProfitLossInfo(
+        ProfitLossInfo(
             amount = amount,
             leverage = tempLeverage,
             isLong = isLong
         )
-
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 4.dp)
-        ) {
-            Text(
-                text = profitInfo.first,
-                fontSize = 13.sp,
-                color = MixinAppTheme.colors.walletGreen
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = profitInfo.second,
-                fontSize = 13.sp,
-                color = MixinAppTheme.colors.walletRed
-            )
-        }
 
         Spacer(modifier = Modifier.height(28.dp))
 
@@ -277,6 +261,87 @@ private fun LeverageContent(
         }
 
         Spacer(modifier = Modifier.height(16.dp))
+    }
+}
+
+@Composable
+private fun ProfitLossInfo(
+    amount: String,
+    leverage: Float,
+    isLong: Boolean
+) {
+    val amountValue = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    
+    if (amountValue == BigDecimal.ZERO) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.Price_Up_Profit, "1", "0.0", "0.00"),
+                fontSize = 13.sp,
+                color = MixinAppTheme.colors.walletGreen
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = stringResource(R.string.Price_Down_Loss, String.format("%.2f", 100.0 / leverage), "0.00"),
+                fontSize = 13.sp,
+                color = MixinAppTheme.colors.walletRed
+            )
+        }
+        return
+    }
+
+    val priceUpPercent = 1.0
+    val profitPercent = priceUpPercent * leverage
+    val profitAmount = amountValue * BigDecimal(profitPercent / 100)
+
+    val liquidationPercent = 100.0 / leverage
+    val lossAmount = amountValue
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 4.dp)
+    ) {
+        Text(
+            text = if (isLong) {
+                stringResource(
+                    R.string.Price_Up_Profit,
+                    String.format("%.0f", abs(priceUpPercent)),
+                    String.format("%.0f", profitPercent),
+                    String.format("%.2f", profitAmount)
+                )
+            } else {
+                stringResource(
+                    R.string.Price_Down_Profit,
+                    String.format("%.0f", abs(priceUpPercent)),
+                    String.format("%.0f", profitPercent),
+                    String.format("%.2f", profitAmount)
+                )
+            },
+            fontSize = 13.sp,
+            color = MixinAppTheme.colors.walletGreen
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = if (isLong) {
+                stringResource(
+                    R.string.Price_Down_Loss,
+                    String.format("%.2f", liquidationPercent),
+                    String.format("%.2f", lossAmount)
+                )
+            } else {
+                stringResource(
+                    R.string.Price_Up_Loss,
+                    String.format("%.2f", liquidationPercent),
+                    String.format("%.2f", lossAmount)
+                )
+            },
+            fontSize = 13.sp,
+            color = MixinAppTheme.colors.walletRed
+        )
     }
 }
 
