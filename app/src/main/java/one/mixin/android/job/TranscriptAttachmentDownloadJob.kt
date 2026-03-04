@@ -87,8 +87,9 @@ class TranscriptAttachmentDownloadJob(
             }
         attachmentCall = conversationApi.getAttachment(attachmentId)
         val body = attachmentCall!!.execute().body()
-        if (body != null && (body.isSuccess || !isCancelled) && body.data != null) {
-            val viewUrl = body.data?.view_url
+        if (body != null && body.isSuccess && !isCancelled && body.data != null) {
+            val attachmentResponse = body.data
+            val viewUrl = attachmentResponse?.view_url
             if (viewUrl != null) {
                 if (decryptAttachment(viewUrl, transcriptMessage)) {
                     processTranscript()
@@ -162,7 +163,7 @@ class TranscriptAttachmentDownloadJob(
             return true
         } else if (response.isSuccessful && !isCancelled && response.body != null) {
             val sink = destination.sink().buffer()
-            sink.writeAll(response.body!!.source())
+            sink.writeAll(requireNotNull(response.body).source())
             sink.close()
             when {
                 transcriptMessage.type.endsWith("_IMAGE") -> {
