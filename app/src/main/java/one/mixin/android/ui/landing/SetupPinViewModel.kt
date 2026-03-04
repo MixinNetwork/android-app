@@ -22,7 +22,7 @@ import javax.inject.Inject
 class SetupPinViewModel @Inject internal constructor(
     private val tipFlowInteractor: TipFlowInteractor,
 ) : ViewModel() {
-    private val _setupState: MutableLiveData<SetupState> = MutableLiveData<SetupState>(SetupState.Loading)
+    private val _setupState: MutableLiveData<SetupState> = MutableLiveData(SetupState.Loading)
     val setupState: LiveData<SetupState> get() = _setupState
     private val _errorMessage: MutableLiveData<String> = MutableLiveData("")
     val errorMessage: LiveData<String> get() = _errorMessage
@@ -43,6 +43,7 @@ class SetupPinViewModel @Inject internal constructor(
             )
             val success: Boolean = tipFlowInteractor.process(
                 context = context,
+                lifecycleScope = viewModelScope,
                 tipBundle = tipBundle,
                 shouldOpenMainActivity = true,
                 onStepChanged = { _ -> },

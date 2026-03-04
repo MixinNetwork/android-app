@@ -2,7 +2,6 @@ package one.mixin.android.ui.tip
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.security.keystore.UserNotAuthenticatedException
 import android.text.SpannableStringBuilder
 import android.text.method.ScrollingMovementMethod
 import android.view.View
@@ -63,8 +62,6 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
     lateinit var tipFlowInteractor: TipFlowInteractor
 
     private val tipBundle: TipBundle by lazy { requireArguments().getTipBundle() }
-
-    private var nodeFailedInfo = ""
 
     private var disallowClose = true
 
@@ -319,7 +316,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 } else {
                     // We should always input old PIN to decrypt encryptedSalt
                     // even if there are no failed signers.
-                    showVerifyPin(getString(R.string.Enter_your_old_PIN)) { oldPin ->
+                    showInputPin(getString(R.string.Enter_your_old_PIN)) { oldPin ->
                         tipBundle.oldPin = oldPin
                         showInputPin { pin ->
                             tipBundle.pin = pin
@@ -362,6 +359,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             }
             val success: Boolean = tipFlowInteractor.process(
                 context = requireContext(),
+                lifecycleScope = lifecycleScope,
                 tipBundle = tipBundle,
                 shouldOpenMainActivity = activity?.isTaskRoot == true,
                 onStepChanged = { step ->
@@ -429,26 +427,4 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             }
         }
     }
-
-    private val tipObserver =
-        object : Tip.Observer {
-            override fun onSyncing(
-                step: Int,
-                total: Int,
-            ) {
-                lifecycleScope.launch {
-                    updateTipStep(Processing.SyncingNode(step, total))
-                }
-            }
-
-            override fun onSyncingComplete() {
-                lifecycleScope.launch {
-                    updateTipStep(Processing.Updating)
-                }
-            }
-
-            override fun onNodeFailed(info: String) {
-                nodeFailedInfo = info
-            }
-        }
 }
