@@ -18,9 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
@@ -28,7 +26,9 @@ import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.numberFormatCompact
+import one.mixin.android.extension.priceFormat
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
 @Composable
@@ -58,22 +58,17 @@ fun MarketItem(
         }
     }
     val changeText = "${if (isPositive) "+" else ""}${market.change}%"
+    val fiatRate = BigDecimal(Fiats.getRate())
+    val fiatSymbol = Fiats.getSymbol()
 
     val formattedPrice = try {
-        val price = BigDecimal(market.markPrice)
-        if (price >= BigDecimal("1000")) {
-            String.format("%.2f", price)
-        } else if (price >= BigDecimal("1")) {
-            String.format("%.4f", price)
-        } else {
-            String.format("%.6f", price)
-        }
+        BigDecimal(market.markPrice).multiply(fiatRate).priceFormat()
     } catch (e: Exception) {
         market.markPrice
     }
 
     val formattedVolume = try {
-        BigDecimal(market.volume).numberFormatCompact()
+        BigDecimal(market.volume).multiply(fiatRate).numberFormatCompact()
     } catch (e: Exception) {
         market.volume
     }
@@ -125,7 +120,7 @@ fun MarketItem(
                 }
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = stringResource(R.string.Vol, formattedVolume),
+                    text = stringResource(R.string.Vol, "$fiatSymbol$formattedVolume"),
                     fontSize = 12.sp,
                     color = MixinAppTheme.colors.textAssist,
                 )
@@ -136,7 +131,7 @@ fun MarketItem(
             horizontalAlignment = Alignment.End
         ) {
             Text(
-                text = "$$formattedPrice",
+                text = "$fiatSymbol$formattedPrice",
                 fontSize = 16.sp,
                 color = MixinAppTheme.colors.textPrimary,
             )

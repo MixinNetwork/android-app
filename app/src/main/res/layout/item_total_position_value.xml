@@ -16,7 +16,7 @@
         android:layout_height="wrap_content"
         android:text="@string/Total_Position_Value"
         android:textColor="?attr/text_assist"
-        android:textSize="14sp" />
+        android:textSize="13sp" />
 
     <TextView
         android:id="@+id/value_tv"
@@ -25,8 +25,8 @@
         android:layout_marginTop="6dp"
         android:text="$0.00"
         android:textColor="?attr/text_primary"
-        android:textSize="22sp"
-        android:textStyle="bold" />
+        android:textSize="18sp"
+        android:textFontWeight="500" />
 
     <TextView
         android:id="@+id/subtitle_tv"
@@ -35,6 +35,6 @@
         android:layout_marginTop="4dp"
         android:text="$0.00(0.0%)"
         android:textColor="?attr/text_assist"
-        android:textSize="14sp" />
+        android:textSize="13sp" />
 
 </LinearLayout>

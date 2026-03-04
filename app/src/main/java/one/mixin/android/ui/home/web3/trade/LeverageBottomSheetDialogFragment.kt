@@ -167,9 +167,10 @@ private fun LeverageContent(
                 .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
                 .padding(16.dp)
         ) {
+            Spacer(modifier = Modifier.height(24.dp))
             Text(
                 text = "${tempLeverage.toInt()}x",
-                fontSize = 32.sp,
+                fontSize = 48.sp,
                 fontWeight = FontWeight.Bold,
                 color = MixinAppTheme.colors.textPrimary,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -219,7 +220,7 @@ private fun LeverageContent(
             isLong = isLong
         )
 
-        Spacer(modifier = Modifier.height(28.dp))
+        Spacer(modifier = Modifier.height(48.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -279,13 +280,13 @@ private fun ProfitLossInfo(
                 .padding(horizontal = 4.dp)
         ) {
             Text(
-                text = stringResource(R.string.Price_Up_Profit, "1", "0.0", "0.00"),
+                text = stringResource(R.string.Price_Up_Profit, "1", "0.0", "$0.00"),
                 fontSize = 13.sp,
                 color = MixinAppTheme.colors.walletGreen
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = stringResource(R.string.Price_Down_Loss, String.format("%.2f", 100.0 / leverage), "0.00"),
+                text = stringResource(R.string.Price_Down_Loss, String.format("%.2f", 100.0 / leverage), "$0.00", ""),
                 fontSize = 13.sp,
                 color = MixinAppTheme.colors.walletRed
             )
@@ -311,18 +312,18 @@ private fun ProfitLossInfo(
                     R.string.Price_Up_Profit,
                     String.format("%.0f", abs(priceUpPercent)),
                     String.format("%.0f", profitPercent),
-                    String.format("%.2f", profitAmount)
+                    String.format("$%.2f", profitAmount)
                 )
             } else {
                 stringResource(
                     R.string.Price_Down_Profit,
                     String.format("%.0f", abs(priceUpPercent)),
                     String.format("%.0f", profitPercent),
-                    String.format("%.2f", profitAmount)
+                    String.format("$%.2f", profitAmount)
                 )
             },
             fontSize = 13.sp,
-            color = MixinAppTheme.colors.walletGreen
+            color = MixinAppTheme.colors.textAssist
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
@@ -330,53 +331,19 @@ private fun ProfitLossInfo(
                 stringResource(
                     R.string.Price_Down_Loss,
                     String.format("%.2f", liquidationPercent),
-                    String.format("%.2f", lossAmount)
+                    String.format("$%.2f", lossAmount),
+                    ""
                 )
             } else {
                 stringResource(
                     R.string.Price_Up_Loss,
                     String.format("%.2f", liquidationPercent),
-                    String.format("%.2f", lossAmount)
+                    String.format("$%.2f", lossAmount),
+                    ""
                 )
             },
             fontSize = 13.sp,
-            color = MixinAppTheme.colors.walletRed
+            color = MixinAppTheme.colors.textAssist
         )
     }
-}
-
-private fun calculateProfitLossInfo(
-    amount: String,
-    leverage: Float,
-    isLong: Boolean
-): Pair<String, String> {
-    val amountValue = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    
-    if (amountValue == BigDecimal.ZERO) {
-        return Pair(
-            "价格上涨 1% → 盈利 0%（+$0）",
-            "价格下跌 ${String.format("%.2f", 100.0 / leverage)}% → 亏损 -$0"
-        )
-    }
-
-    val priceUpPercent = 1.0
-    val profitPercent = priceUpPercent * leverage
-    val profitAmount = amountValue * BigDecimal(profitPercent / 100)
-
-    val liquidationPercent = 100.0 / leverage
-    val lossAmount = amountValue
-
-    val profitText = if (isLong) {
-        "价格上涨 ${String.format("%.0f", abs(priceUpPercent))}% → 盈利 ${String.format("%.0f", profitPercent)}%（+$${String.format("%.2f", profitAmount)}）"
-    } else {
-        "价格下跌 ${String.format("%.0f", abs(priceUpPercent))}% → 盈利 ${String.format("%.0f", profitPercent)}%（+$${String.format("%.2f", profitAmount)}）"
-    }
-
-    val lossText = if (isLong) {
-        "价格下跌 ${String.format("%.2f", liquidationPercent)}% → 亏损 -$${String.format("%.2f", lossAmount)}"
-    } else {
-        "价格上涨 ${String.format("%.2f", liquidationPercent)}% → 亏损 -$${String.format("%.2f", lossAmount)}"
-    }
-
-    return Pair(profitText, lossText)
 }

@@ -55,15 +55,18 @@ import androidx.compose.ui.unit.sp
 import androidx.fragment.app.FragmentActivity
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.putInt
 import one.mixin.android.extension.numberFormat8
+import one.mixin.android.extension.priceFormat
+import one.mixin.android.extension.putInt
 import one.mixin.android.session.Session
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
 import kotlin.math.abs
@@ -108,6 +111,13 @@ fun OpenPositionPage(
 
     val maxLeverage = market?.leverage ?: 100
     val leverageOptions = generateLeverageOptions(maxLeverage)
+    val quoteColorReversed = context.defaultSharedPreferences
+        .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
+    val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+    val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+    val directionColor = if (isLong) risingColor else fallingColor
+    val fiatRate = BigDecimal(Fiats.getRate())
+    val fiatSymbol = Fiats.getSymbol()
 
     MixinAppTheme {
         PageScaffold(
@@ -144,7 +154,10 @@ fun OpenPositionPage(
                                 color = MixinAppTheme.colors.textPrimary
                             )
                             Text(
-                                text = "${stringResource(R.string.Current_price, "${m.markPrice} USD")} ",
+                                text = stringResource(
+                                    R.string.Current_price,
+                                    formatFiatPrice(m.markPrice, fiatRate, fiatSymbol)
+                                ),
                                 fontSize = 13.sp,
                                 color = MixinAppTheme.colors.textAssist
                             )
@@ -258,8 +271,8 @@ fun OpenPositionPage(
                             }
 
                             val displayText = when (lev) {
-                                -1 -> "Custom"
-                                maxLeverage -> "Max"
+                                -1 -> stringResource(R.string.slippage_custom)
+                                maxLeverage -> stringResource(R.string.Max)
                                 else -> "${lev}x"
                             }
 
@@ -293,7 +306,7 @@ fun OpenPositionPage(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    modifier = Modifier.padding(horizontal = 10.dp).widthIn(min = 16.dp),
+                                    modifier = Modifier.padding(horizontal = 10.dp).widthIn(min = 20.dp),
                                     text = displayText,
                                     fontSize = 12.sp,
                                     color = if (isSelected) MixinAppTheme.colors.accent else MixinAppTheme.colors.textPrimary
@@ -307,13 +320,15 @@ fun OpenPositionPage(
                         amount = usdtAmount,
                         leverage = leverage,
                         isLong = isLong,
-                        priceChangePercent = 1.0
+                        priceChangePercent = 1.0,
+                        fiatRate = fiatRate,
+                        fiatSymbol = fiatSymbol,
                     )
 
                     Text(
                         text = profitInfo,
                         fontSize = 13.sp,
-                        color = MixinAppTheme.colors.textAssist,
+                        color = MixinAppTheme.colors.textMinor,
                         modifier = Modifier.padding(horizontal = 4.dp)
                     )
 
@@ -352,7 +367,9 @@ fun OpenPositionPage(
                             text = calculateLiquidationPrice(
                                 market?.markPrice ?: "0",
                                 leverage,
-                                isLong
+                                isLong,
+                                fiatRate,
+                                fiatSymbol,
                             ),
                             fontSize = 14.sp,
                             color = MixinAppTheme.colors.textAssist
@@ -473,32 +490,36 @@ private fun calculateProfitInfo(
     leverage: Float,
     isLong: Boolean,
     priceChangePercent: Double,
+    fiatRate: BigDecimal,
+    fiatSymbol: String,
 ): String {
     val amountValue = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
     if (amountValue == BigDecimal.ZERO) {
         return if (isLong) {
-            stringResource(R.string.Price_Up_Profit, "1", "0.0", "0.00")
+            stringResource(R.string.Price_Up_Profit, "1", "0.0", "${fiatSymbol}0.00")
         } else {
-            stringResource(R.string.Price_Down_Profit, "1", "0.0", "0.00")
+            stringResource(R.string.Price_Down_Profit, "1", "0.0", "${fiatSymbol}0.00")
         }
     }
 
     val profitPercent = priceChangePercent * leverage
-    val profitAmount = amountValue * BigDecimal(profitPercent / 100)
+    val profitAmount = amountValue
+        .multiply(BigDecimal(profitPercent / 100))
+        .multiply(fiatRate)
 
     return if (isLong) {
         stringResource(
             R.string.Price_Up_Profit,
             String.format("%.0f", abs(priceChangePercent)),
             String.format("%.1f", profitPercent),
-            String.format("%.2f", profitAmount)
+            "${fiatSymbol}${profitAmount.priceFormat()}"
         )
     } else {
         stringResource(
             R.string.Price_Down_Profit,
             String.format("%.0f", abs(priceChangePercent)),
             String.format("%.1f", profitPercent),
-            String.format("%.2f", profitAmount)
+            "${fiatSymbol}${profitAmount.priceFormat()}"
         )
     }
 }
@@ -522,12 +543,14 @@ private fun calculateLiquidationPrice(
     currentPrice: String,
     leverage: Float,
     isLong: Boolean,
+    fiatRate: BigDecimal,
+    fiatSymbol: String,
 ): String {
     val price = currentPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
 
 
     if (price == BigDecimal.ZERO) {
-        return "$0"
+        return "${fiatSymbol}0"
     }
 
     val liquidationPercent = BigDecimal(100.0 / leverage)
@@ -537,7 +560,15 @@ private fun calculateLiquidationPrice(
     } else {
         price * (BigDecimal.ONE + liquidationRatio)
     }
+    val fiatLiquidationPrice = liquidationPrice.multiply(fiatRate)
+    return "${fiatSymbol}${fiatLiquidationPrice.priceFormat()}"
+}
 
-    val result = "$${String.format("%.2f", liquidationPrice)}"
-    return result
+private fun formatFiatPrice(
+    rawPrice: String,
+    fiatRate: BigDecimal,
+    fiatSymbol: String,
+): String {
+    val price = rawPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    return "${fiatSymbol}${price.multiply(fiatRate).priceFormat()}"
 }

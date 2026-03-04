@@ -47,7 +47,6 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
-import one.mixin.android.api.response.perps.PerpsPosition
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.api.response.perps.toPosition
 import one.mixin.android.compose.CoilImage
@@ -58,9 +57,10 @@ import one.mixin.android.ui.wallet.alert.components.cardBackground
 import java.math.BigDecimal
 
 @Composable
-fun MarketDetailPage(
+fun PerpsMarketDetailPage(
     marketId: String,
     marketSymbol: String,
+    displaySymbol: String,
     onBack: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -95,7 +95,7 @@ fun MarketDetailPage(
     }
 
     PageScaffold(
-        title = marketSymbol,
+        title = displaySymbol,
         verticalScrollable = false,
         pop = onBack
     ) {
@@ -118,6 +118,7 @@ fun MarketDetailPage(
                     MarketDetailCard(
                         market = market!!,
                         marketSymbol = marketSymbol,
+                        displaySymbol = displaySymbol,
                         selectedTimeFrame = selectedTimeFrame,
                         timeFrames = timeFrames,
                         onTimeFrameChange = { index ->
@@ -373,6 +374,7 @@ private fun formatVolume(volume: String): String {
 private fun MarketDetailCard(
     market: PerpsMarket,
     marketSymbol: String,
+    displaySymbol: String,
     selectedTimeFrame: Int,
     timeFrames: List<String>,
     onTimeFrameChange: (Int) -> Unit,
@@ -424,7 +426,7 @@ private fun MarketDetailCard(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = marketSymbol,
+                    text = displaySymbol,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = MixinAppTheme.colors.textPrimary

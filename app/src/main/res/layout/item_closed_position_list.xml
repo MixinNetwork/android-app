@@ -45,7 +45,6 @@
                 android:maxLines="1"
                 android:textColor="?attr/text_primary"
                 android:textSize="14sp"
-                android:textStyle="bold"
                 tools:text="Long BTC" />
 
             <TextView
@@ -91,7 +90,6 @@
             android:layout_marginTop="2dp"
             android:textColor="?attr/text_primary"
             android:textSize="14sp"
-            android:textStyle="bold"
             tools:text="$100.00" />
 
         <TextView
@@ -100,7 +98,6 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
             android:textSize="14sp"
-            android:textStyle="bold"
             tools:text="+$10.30"
             tools:textColor="@color/wallet_green" />
     </LinearLayout>

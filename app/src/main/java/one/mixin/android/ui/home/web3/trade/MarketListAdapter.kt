@@ -9,6 +9,8 @@ import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.databinding.ItemMarketListBinding
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormatCompact
+import one.mixin.android.extension.priceFormat
+import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
 class MarketListAdapter(
@@ -45,27 +47,24 @@ class MarketListAdapter(
 
         fun bind(market: PerpsMarket) {
             binding.apply {
+                val fiatRate = BigDecimal(Fiats.getRate())
+                val fiatSymbol = Fiats.getSymbol()
                 iconIv.loadImage(market.iconUrl, R.drawable.ic_avatar_place_holder)
                 symbolTv.text = market.displaySymbol
 
                 val formattedVolume = try {
-                    BigDecimal(market.volume).numberFormatCompact()
+                    BigDecimal(market.volume).multiply(fiatRate).numberFormatCompact()
                 } catch (e: Exception) {
                     market.volume
                 }
-                volumeTv.text = root.context.getString(R.string.Vol, formattedVolume)
+                volumeTv.text = root.context.getString(R.string.Vol, "$fiatSymbol$formattedVolume")
 
                 val formattedPrice = try {
-                    val price = BigDecimal(market.markPrice)
-                    when {
-                        price >= BigDecimal("1000") -> String.format("$%.2f", price)
-                        price >= BigDecimal("1") -> String.format("$%.4f", price)
-                        else -> String.format("$%.6f", price)
-                    }
+                    BigDecimal(market.markPrice).multiply(fiatRate).priceFormat()
                 } catch (e: Exception) {
                     market.markPrice
                 }
-                priceTv.text = formattedPrice
+                priceTv.text = "$fiatSymbol$formattedPrice"
 
                 val change = try {
                     BigDecimal(market.change)

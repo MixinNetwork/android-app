@@ -348,7 +348,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                     }
 
                     val formattedRoe = try {
-                        String.format("%.2f", latestRoe.toDouble())
+                        String.format("%f", latestRoe.toDouble())
                     } catch (e: Exception) {
                         latestRoe
                     }

@@ -28,7 +28,7 @@ import one.mixin.android.extension.navigate
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.numberFormatCompact
-import one.mixin.android.extension.priceFormat2
+import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.setQuoteText
 import one.mixin.android.extension.setQuoteTextWithBackgroud
 import one.mixin.android.extension.toast
@@ -308,7 +308,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     titleView.rightExtraIb.isVisible = true
                     assetSymbol.text = info.symbol
                     assetName.text = info.name
-                    assetRank.text = "#${info.marketCapRank}"
+                    assetRank.text = getString(R.string.Market_Cap_Rank, info.marketCapRank)
                     currentPrice = priceFormat(info.currentPrice)
                     priceValue.text = currentPrice
                     marketHigh.text = priceFormat(info.high24h)
@@ -417,16 +417,16 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         if (price == BigDecimal.ZERO) {
                             "≈ ${Fiats.getSymbol()}0.00"
                         } else {
-                            "≈ ${Fiats.getSymbol()}${price.numberFormat2()}"
+                            "≈ ${Fiats.getSymbol()}${price.priceFormat()}"
                         }
                     } catch (_: NumberFormatException) {
-                        "≈ ${Fiats.getSymbol()}${price.numberFormat2()}"
+                        "≈ ${Fiats.getSymbol()}${price.priceFormat()}"
                     }
                     priceRise.visibility = VISIBLE
                     currentRise = "${(BigDecimal(marketItem.priceChangePercentage24H)).numberFormat2()}%"
                     if (balances != BigDecimal.ZERO && marketItem.priceChangePercentage24H.isNotEmpty()) {
                         val change = changeUsd.multiply(balances).multiply(BigDecimal(Fiats.getRate()))
-                        balanceChange.setQuoteText("${if (change >= BigDecimal.ZERO) "+" else "-"}${Fiats.getSymbol()}${change.priceFormat2().replace("-", "")} ($currentRise)", isPositive)
+                        balanceChange.setQuoteText("${if (change >= BigDecimal.ZERO) "+" else "-"}${Fiats.getSymbol()}${change.abs().priceFormat()} ($currentRise)", isPositive)
                         riseTitle.isVisible = true
                     } else {
                         balanceChange.setTextColor(requireContext().colorAttr(R.attr.text_assist))

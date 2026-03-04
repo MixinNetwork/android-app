@@ -1,9 +1,5 @@
 package one.mixin.android.ui.home.web3.trade
 
-import android.content.Context
-import android.text.SpannableString
-import android.text.Spanned
-import android.text.style.ForegroundColorSpan
 import android.view.View
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -15,7 +11,9 @@ import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.databinding.ItemClosedPositionListBinding
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.priceFormat
 import one.mixin.android.ui.common.recyclerview.SafePagedListAdapter
+import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
 class ClosedPositionAdapter(
@@ -80,7 +78,7 @@ class ClosedPositionAdapter(
                 quantityTv.text = "$quantityStr ${position.tokenSymbol ?: ""}"
 
                 val pnl = position.realizedPnl.toBigDecimalOrNull() ?: BigDecimal.ZERO
-                rightTopValueTv.text = formatSignedUsd(context, pnl)
+                rightTopValueTv.text = formatSignedUsd(pnl)
                 rightTopValueTv.setTextColor(
                     when {
                         pnl > BigDecimal.ZERO -> {
@@ -100,19 +98,14 @@ class ClosedPositionAdapter(
             }
         }
 
-        private fun formatSignedUsd(context: Context, amount: BigDecimal): String {
+        private fun formatSignedUsd(amount: BigDecimal): String {
+            val fiatRate = BigDecimal(Fiats.getRate())
+            val fiatSymbol = Fiats.getSymbol()
+            val fiatAmount = amount.abs().multiply(fiatRate).priceFormat()
             return when {
-                amount > BigDecimal.ZERO -> context.getString(
-                    R.string.Perpetual_Usd_Amount_Signed,
-                    "+",
-                    amount.abs().toDouble()
-                )
-                amount < BigDecimal.ZERO -> context.getString(
-                    R.string.Perpetual_Usd_Amount_Signed,
-                    "-",
-                    amount.abs().toDouble()
-                )
-                else -> context.getString(R.string.Perpetual_Usd_Amount, 0.0)
+                amount > BigDecimal.ZERO -> "+$fiatSymbol$fiatAmount"
+                amount < BigDecimal.ZERO -> "-$fiatSymbol$fiatAmount"
+                else -> "$fiatSymbol${BigDecimal.ZERO.multiply(fiatRate).priceFormat()}"
             }
         }
 

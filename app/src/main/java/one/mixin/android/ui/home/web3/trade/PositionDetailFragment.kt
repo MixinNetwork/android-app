@@ -7,7 +7,9 @@ import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.Constants
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.api.response.perps.PerpsPositionItem
@@ -41,6 +43,10 @@ class PositionDetailFragment : BaseFragment() {
 
     private val viewModel by viewModels<PerpetualViewModel>()
 
+    private val quoteColorReversed: Boolean by lazy {
+        requireContext().defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -57,6 +63,7 @@ class PositionDetailFragment : BaseFragment() {
                     if (position != null) {
                         PositionDetailPage(
                             position = position,
+                            quoteColorReversed = quoteColorReversed,
                             pop = {
                                 activity?.onBackPressedDispatcher?.onBackPressed()
                             },
@@ -70,6 +77,7 @@ class PositionDetailFragment : BaseFragment() {
                     } else if (positionHistory != null) {
                         PositionDetailPage(
                             positionHistory = positionHistory,
+                            quoteColorReversed = quoteColorReversed,
                             pop = {
                                 activity?.onBackPressedDispatcher?.onBackPressed()
                             },

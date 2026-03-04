@@ -20,7 +20,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.Constants
@@ -29,7 +28,9 @@ import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.priceFormat
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
 @Composable
@@ -40,6 +41,8 @@ fun ClosedPositionItem(
     val context = LocalContext.current
     val quoteColorPref = context.defaultSharedPreferences
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
+    val fiatRate = BigDecimal(Fiats.getRate())
+    val fiatSymbol = Fiats.getSymbol()
     
     val pnl = try {
         BigDecimal(position.realizedPnl)
@@ -65,7 +68,7 @@ fun ClosedPositionItem(
     val displaySymbol = position.displaySymbol ?: position.tokenSymbol ?: "Unknown"
     val quantity = try {
         val qty = BigDecimal(position.quantity)
-        String.format("%.4f", qty)
+        String.format("%f", qty)
     } catch (e: Exception) {
         position.quantity
     }
@@ -126,7 +129,7 @@ fun ClosedPositionItem(
             horizontalAlignment = Alignment.End
         ) {
             Text(
-                text = String.format("$%f", pnl.abs()),
+                text = "${if (isProfit) "+" else "-"}$fiatSymbol${pnl.abs().multiply(fiatRate).priceFormat()}",
                 fontSize = 14.sp,
                 color = pnlColor
             )

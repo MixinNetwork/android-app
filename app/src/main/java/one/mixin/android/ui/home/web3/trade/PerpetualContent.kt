@@ -47,8 +47,11 @@ import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.priceFormat
 import one.mixin.android.session.Session
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.vo.Fiats
+import java.math.BigDecimal
 
 @Composable
 fun PerpetualContent(
@@ -67,6 +70,8 @@ fun PerpetualContent(
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
     val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+    val fiatSymbol = Fiats.getSymbol()
+    val fiatRate = BigDecimal(Fiats.getRate())
     val viewModel = hiltViewModel<PerpetualViewModel>()
 
     var markets by remember { mutableStateOf<List<PerpsMarket>>(emptyList()) }
@@ -80,6 +85,7 @@ fun PerpetualContent(
     val openPositionsPreview = openPositions.take(3)
     val marketsPreview = markets.take(3)
     val closedPositionsPreview = closedPositions.take(3)
+    val totalPnlFiatText = "${fiatSymbol}${BigDecimal.valueOf(totalPnl).multiply(fiatRate).priceFormat()}"
 
     LaunchedEffect(Unit) {
         // Refresh positions from API
@@ -145,7 +151,7 @@ fun PerpetualContent(
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = String.format("$%.2f", totalPnl),
+                text = totalPnlFiatText,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.W600,
                 color = MixinAppTheme.colors.textPrimary,
@@ -153,13 +159,13 @@ fun PerpetualContent(
             Spacer(modifier = Modifier.height(4.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = String.format("$%.2f", totalPnl),
+                    text = totalPnlFiatText,
                     fontSize = 14.sp,
                     color = if (totalPnl >= 0) risingColor else fallingColor,
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = String.format("(%s%.1f%%)", if (totalPnl >= 0) "+" else "", totalPnl),
+                    text = String.format("(%s%.2f%%)", if (totalPnl >= 0) "+" else "", totalPnl),
                     fontSize = 14.sp,
                     color = if (totalPnl >= 0) risingColor else fallingColor,
                 )

@@ -35,7 +35,9 @@ import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.priceFormat
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -43,6 +45,7 @@ import java.util.Locale
 @Composable
 fun PositionDetailPage(
     position: PerpsPositionItem,
+    quoteColorReversed: Boolean = false,
     pop: () -> Unit,
     onClose: (() -> Unit)? = null,
     onShare: (() -> Unit)? = null,
@@ -67,7 +70,9 @@ fun PositionDetailPage(
     }
 
     val isProfit = pnl >= BigDecimal.ZERO
-    val pnlColor = if (isProfit) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+    val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+    val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+    val pnlColor = if (isProfit) risingColor else fallingColor
 
     val sideText = if (position.side.lowercase() == "long") {
         stringResource(R.string.Long)
@@ -79,6 +84,12 @@ fun PositionDetailPage(
     val quantity = position.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val markPrice = position.markPrice?.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val orderValue = quantity * markPrice
+    val fiatRate = BigDecimal(Fiats.getRate())
+    val fiatSymbol = Fiats.getSymbol()
+
+    fun formatFiat(value: BigDecimal): String {
+        return "$fiatSymbol${value.multiply(fiatRate).priceFormat()}"
+    }
 
     PageScaffold(
         title = title,
@@ -218,15 +229,15 @@ fun PositionDetailPage(
                 
                 PositionDetailItem(
                     label = stringResource(R.string.Order_Value).uppercase(),
-                    value = "${String.format("%.4f", quantity)} ${position.tokenSymbol ?: ""}",
-                    subtitle = String.format("$%f", orderValue)
+                    value = "${String.format("%f", quantity)} ${position.tokenSymbol ?: ""}",
+                    subtitle = formatFiat(orderValue)
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
 
                 PositionDetailItem(
                     label = stringResource(R.string.Entry_Price).uppercase(),
-                    value = String.format("$%f", position.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+                    value = formatFiat(position.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO)
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -308,6 +319,7 @@ private fun PositionDetailItem(
 @Composable
 fun PositionDetailPage(
     positionHistory: PerpsPositionHistoryItem,
+    quoteColorReversed: Boolean = false,
     pop: () -> Unit,
     onTradeAgain: (() -> Unit)? = null,
     onShare: (() -> Unit)? = null,
@@ -332,7 +344,9 @@ fun PositionDetailPage(
     }
 
     val isProfit = pnl >= BigDecimal.ZERO
-    val pnlColor = if (isProfit) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+    val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+    val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+    val pnlColor = if (isProfit) risingColor else fallingColor
 
     val sideText = if (positionHistory.side.lowercase() == "long") {
         stringResource(R.string.Long)
@@ -344,6 +358,12 @@ fun PositionDetailPage(
     val quantity = positionHistory.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val closePrice = positionHistory.closePrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val orderValue = quantity * closePrice
+    val fiatRate = BigDecimal(Fiats.getRate())
+    val fiatSymbol = Fiats.getSymbol()
+
+    fun formatFiat(value: BigDecimal): String {
+        return "$fiatSymbol${value.multiply(fiatRate).priceFormat()}"
+    }
 
     PageScaffold(
         title = title,
@@ -378,7 +398,7 @@ fun PositionDetailPage(
                 Spacer(modifier = Modifier.height(20.dp))
 
                 Text(
-                    text = String.format("$%f", pnl.abs()),
+                    text = formatFiat(pnl.abs()),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.W500,
                     color = pnlColor,
@@ -471,22 +491,22 @@ fun PositionDetailPage(
 
                 PositionDetailItem(
                     label = stringResource(R.string.Order_Value).uppercase(),
-                    value = "${String.format("%.4f", quantity)} ${positionHistory.tokenSymbol ?: ""}",
-                    subtitle = String.format("$%f", orderValue)
+                    value = "${String.format("%f", quantity)} ${positionHistory.tokenSymbol ?: ""}",
+                    subtitle = formatFiat(orderValue)
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
 
                 PositionDetailItem(
                     label = stringResource(R.string.Entry_Price).uppercase(),
-                    value = String.format("$%f", positionHistory.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+                    value = formatFiat(positionHistory.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO)
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
 
                 PositionDetailItem(
                     label = stringResource(R.string.Close_Price).uppercase(),
-                    value = String.format("$%f", positionHistory.closePrice.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+                    value = formatFiat(positionHistory.closePrice.toBigDecimalOrNull() ?: BigDecimal.ZERO)
                 )
                 
                 Spacer(modifier = Modifier.height(20.dp))

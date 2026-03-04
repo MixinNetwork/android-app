@@ -20,7 +20,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.Constants
@@ -29,7 +28,9 @@ import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.priceFormat
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
 @Composable
@@ -41,9 +42,11 @@ fun OpenPositionItem(
     val quoteColorPref = context.defaultSharedPreferences
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     val pnl = position.unrealizedPnl?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val fiatRate = BigDecimal(Fiats.getRate())
+    val fiatSymbol = Fiats.getSymbol()
 
     val displaySymbol = position.displaySymbol ?: position.tokenSymbol ?: stringResource(R.string.Unknown)
-    val quantity = position.quantity.toBigDecimalOrNull()?.let { String.format("%.4f", it) } ?: position.quantity
+    val quantity = position.quantity.toBigDecimalOrNull()?.let { String.format("%f", it) } ?: position.quantity
 
     Row(
         modifier = Modifier
@@ -110,7 +113,7 @@ fun OpenPositionItem(
 
         Column(horizontalAlignment = Alignment.End) {
             Text(
-                text = String.format("$%f", pnl.abs()),
+                text = "${fiatSymbol}${pnl.abs().multiply(fiatRate).priceFormat()}",
                 fontSize = 14.sp,
                 color = MixinAppTheme.colors.textPrimary
             )
@@ -131,7 +134,7 @@ fun OpenPositionItem(
                 }
             }
             Text(
-                text = String.format("%s%f", if (unrealizedPnl >= BigDecimal.ZERO) "+" else "", unrealizedPnl),
+                text = "${if (unrealizedPnl >= BigDecimal.ZERO) "+" else "-"}$fiatSymbol${unrealizedPnl.abs().multiply(fiatRate).priceFormat()}",
                 fontSize = 12.sp,
                 color = pnlColor
             )

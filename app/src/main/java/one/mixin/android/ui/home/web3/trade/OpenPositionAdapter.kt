@@ -1,9 +1,5 @@
 package one.mixin.android.ui.home.web3.trade
 
-import android.content.Context
-import android.text.SpannableString
-import android.text.Spanned
-import android.text.style.ForegroundColorSpan
 import android.view.View
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -15,7 +11,9 @@ import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.databinding.ItemClosedPositionListBinding
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.priceFormat
 import one.mixin.android.ui.common.recyclerview.SafePagedListAdapter
+import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
 class OpenPositionAdapter(
@@ -97,12 +95,12 @@ class OpenPositionAdapter(
 
                 val markPrice = (position.markPrice ?: "0").toBigDecimalOrNull() ?: BigDecimal.ZERO
                 val positionValue = (quantity ?: BigDecimal.ZERO).abs().multiply(markPrice)
-                rightTopValueTv.text = formatUsd(context, positionValue)
+                rightTopValueTv.text = formatUsd(positionValue)
                 rightTopValueTv.setTextColor(resolveAttrColor(root, R.attr.text_primary))
 
                 rightBottomValueTv.isVisible = true
                 val pnl = (position.unrealizedPnl ?: "0").toBigDecimalOrNull() ?: BigDecimal.ZERO
-                rightBottomValueTv.text = formatSignedUsd(context, pnl)
+                rightBottomValueTv.text = formatSignedUsd(pnl)
                 rightBottomValueTv.setTextColor(
                     when {
                         pnl > BigDecimal.ZERO -> {
@@ -121,23 +119,20 @@ class OpenPositionAdapter(
             }
         }
 
-        private fun formatUsd(context: Context, amount: BigDecimal): String {
-            return context.getString(R.string.Perpetual_Usd_Amount, amount.toDouble())
+        private fun formatUsd(amount: BigDecimal): String {
+            val fiatRate = BigDecimal(Fiats.getRate())
+            val fiatSymbol = Fiats.getSymbol()
+            return "$fiatSymbol${amount.multiply(fiatRate).priceFormat()}"
         }
 
-        private fun formatSignedUsd(context: Context, amount: BigDecimal): String {
+        private fun formatSignedUsd(amount: BigDecimal): String {
+            val fiatRate = BigDecimal(Fiats.getRate())
+            val fiatSymbol = Fiats.getSymbol()
+            val fiatAmount = amount.abs().multiply(fiatRate).priceFormat()
             return when {
-                amount > BigDecimal.ZERO -> context.getString(
-                    R.string.Perpetual_Usd_Amount_Signed,
-                    "+",
-                    amount.abs().toDouble()
-                )
-                amount < BigDecimal.ZERO -> context.getString(
-                    R.string.Perpetual_Usd_Amount_Signed,
-                    "-",
-                    amount.abs().toDouble()
-                )
-                else -> context.getString(R.string.Perpetual_Usd_Amount, 0.0)
+                amount > BigDecimal.ZERO -> "+$fiatSymbol$fiatAmount"
+                amount < BigDecimal.ZERO -> "-$fiatSymbol$fiatAmount"
+                else -> "$fiatSymbol${BigDecimal.ZERO.multiply(fiatRate).priceFormat()}"
             }
         }
 

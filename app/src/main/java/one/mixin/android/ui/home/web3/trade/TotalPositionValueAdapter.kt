@@ -8,12 +8,15 @@ import androidx.annotation.AttrRes
 import androidx.annotation.StringRes
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
+import one.mixin.android.extension.priceFormat
+import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
 class TotalPositionValueAdapter : RecyclerView.Adapter<TotalPositionValueAdapter.ViewHolder>() {
     private var totalValue: BigDecimal = BigDecimal.ZERO
     private var subValue: BigDecimal = BigDecimal.ZERO
     private var subPercent: BigDecimal = BigDecimal.ZERO
+    private var isClosed: Boolean = false
     @StringRes
     private var titleResId: Int = R.string.Total_Position_Value
 
@@ -30,6 +33,7 @@ class TotalPositionValueAdapter : RecyclerView.Adapter<TotalPositionValueAdapter
 
     fun submitTitle(@StringRes titleResId: Int) {
         this.titleResId = titleResId
+        this.isClosed = (titleResId == R.string.Realized_PnL)
         notifyItemChanged(0)
     }
 
@@ -40,7 +44,7 @@ class TotalPositionValueAdapter : RecyclerView.Adapter<TotalPositionValueAdapter
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(totalValue, subValue, subPercent, titleResId)
+        holder.bind(totalValue, subValue, subPercent, titleResId, isClosed)
     }
 
     override fun getItemCount(): Int = 1
@@ -54,26 +58,52 @@ class TotalPositionValueAdapter : RecyclerView.Adapter<TotalPositionValueAdapter
             total: BigDecimal,
             subtitleValue: BigDecimal,
             subtitlePercent: BigDecimal,
-            @StringRes titleResId: Int
+            @StringRes titleResId: Int,
+            isClosed: Boolean
         ) {
             val context = itemView.context
+            val fiatRate = BigDecimal(Fiats.getRate())
+            val fiatSymbol = Fiats.getSymbol()
             titleTv.text = context.getString(titleResId)
-            valueTv.text = context.getString(R.string.Perpetual_Usd_Amount, total.toDouble())
-            valueTv.setTextColor(resolveAttrColor(itemView, R.attr.text_primary))
+            valueTv.text = "$fiatSymbol${total.multiply(fiatRate).priceFormat()}"
+            
+            if (isClosed) {
+                val isProfit = subtitleValue >= BigDecimal.ZERO
+                valueTv.setTextColor(
+                    if (isProfit) {
+                        resolveAttrColor(itemView, R.color.wallet_green)
+                    } else {
+                        resolveAttrColor(itemView, R.color.wallet_red)
+                    }
+                )
+                subtitleTv.setTextColor(
+                    if (isProfit) {
+                        resolveAttrColor(itemView, R.color.wallet_green)
+                    } else {
+                        resolveAttrColor(itemView, R.color.wallet_red)
+                    }
+                )
+            } else {
+                valueTv.setTextColor(resolveAttrColor(itemView, R.attr.text_primary))
+                subtitleTv.setTextColor(resolveAttrColor(itemView, R.attr.text_assist))
+            }
+            
             subtitleTv.text = context.getString(
                 R.string.Perpetual_Amount_Percent_Format,
-                formatSignedUsd(context, subtitleValue),
+                formatSignedUsd(subtitleValue),
                 subtitlePercent.toDouble()
             )
-            subtitleTv.setTextColor(resolveAttrColor(itemView, R.attr.text_assist))
         }
 
-        private fun formatSignedUsd(context: android.content.Context, amount: BigDecimal): String {
-            val sign = when {
-                amount < BigDecimal.ZERO -> "-"
-                else -> ""
+        private fun formatSignedUsd(amount: BigDecimal): String {
+            val fiatRate = BigDecimal(Fiats.getRate())
+            val fiatSymbol = Fiats.getSymbol()
+            val fiatAmount = amount.abs().multiply(fiatRate).priceFormat()
+            return if (amount < BigDecimal.ZERO) {
+                "-$fiatSymbol$fiatAmount"
+            } else {
+                "$fiatSymbol$fiatAmount"
             }
-            return context.getString(R.string.Perpetual_Usd_Amount_Signed, sign, amount.abs().toDouble())
         }
 
         private fun resolveAttrColor(view: View, @AttrRes attr: Int): Int {

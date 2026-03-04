@@ -19,11 +19,13 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.databinding.ActivityPerpsPositionShareBinding
 import one.mixin.android.extension.blurBitmap
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
@@ -38,6 +40,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.web.getScreenshot
 import one.mixin.android.ui.web.refreshScreenshot
+import one.mixin.android.vo.Fiats
 import java.io.File
 import java.io.FileOutputStream
 import java.math.BigDecimal
@@ -86,6 +89,10 @@ class PerpsPositionShareActivity : BaseActivity() {
         } else {
             "$SHARE_INSTALL_URL?ref=$identity"
         }
+    }
+
+    private val quoteColorReversed: Boolean by lazy {
+        defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -215,16 +222,17 @@ class PerpsPositionShareActivity : BaseActivity() {
         binding.sideTagTv.text = "${if (isLong) getString(R.string.Long) else getString(R.string.Short)} $tokenSymbol".trim()
         binding.leverageTagTv.text = getString(R.string.Perpetual_Leverage_Format, leverage)
 
+        val useProfitStyle = if (quoteColorReversed) !isProfit else isProfit
         binding.topCard.setBackgroundResource(
-            if (isProfit) R.drawable.bg_perps_share_card_profit else R.drawable.bg_perps_share_card_loss
+            if (useProfitStyle) R.drawable.bg_perps_share_card_profit else R.drawable.bg_perps_share_card_loss
         )
         binding.trendImage.setImageResource(
             if (isProfit) R.drawable.ic_perps_profit else R.drawable.ic_perps_loss
         )
 
-        binding.entryValueTv.text = formatUsd(entryPrice)
+        binding.entryValueTv.text = formatFiat(entryPrice)
         binding.latestLabelTv.text = latestLabel
-        binding.latestValueTv.text = formatUsd(latestPrice)
+        binding.latestValueTv.text = formatFiat(latestPrice)
     }
 
     private fun bindFooter() {
@@ -325,9 +333,10 @@ class PerpsPositionShareActivity : BaseActivity() {
         return "$sign$number%"
     }
 
-    private fun formatUsd(value: String?): String {
+    private fun formatFiat(value: String?): String {
         val price = value.toBigDecimalSafely() ?: BigDecimal.ZERO
-        return "$${price.priceFormat()}"
+        val fiatPrice = price.multiply(BigDecimal(Fiats.getRate()))
+        return "${Fiats.getSymbol()}${fiatPrice.priceFormat()}"
     }
 
     private fun String?.toBigDecimalSafely(): BigDecimal? {

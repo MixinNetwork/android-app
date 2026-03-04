@@ -1766,6 +1766,7 @@
     <string name="New_Update_Available_desc">We update the app regularly so we can make it better for you</string>
     <string name="Update_Now">Update Now</string>
     <string name="Market_Cap">Market Cap</string>
+    <string name="Market_Cap_Rank">#%1$d</string>
     <string name="Global_Market_Cap">Market Cap</string>
     <string name="Approve">Approve</string>
     <string name="Reject">Reject</string>

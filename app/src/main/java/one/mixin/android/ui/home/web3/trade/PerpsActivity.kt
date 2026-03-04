@@ -83,9 +83,10 @@ class PerpsActivity : BaseActivity() {
                     }
 
                     else -> {
-                        MarketDetailPage(
+                        PerpsMarketDetailPage(
                             marketId = marketId,
                             marketSymbol = marketSymbol,
+                            displaySymbol = displaySymbol,
                             onBack = { finish() }
                         )
                     }
