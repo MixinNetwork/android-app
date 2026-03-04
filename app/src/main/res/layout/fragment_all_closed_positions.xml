@@ -76,7 +76,7 @@
 
     <include
         android:id="@+id/empty_view"
-        layout="@layout/view_empty"
+        layout="@layout/layout_empty_transaction"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:visibility="gone"

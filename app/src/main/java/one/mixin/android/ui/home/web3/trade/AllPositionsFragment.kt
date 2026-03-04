@@ -80,7 +80,7 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
         binding.progressBar.isVisible = false
         openPositionAdapter.submitList(pagedList)
         val isEmpty = pagedList.isEmpty()
-        binding.emptyView.infoTv.text = getString(R.string.No_Positions)
+        binding.emptyView.walletTransactionsEmpty.text = getString(R.string.No_Positions)
         binding.emptyView.root.isVisible = isEmpty
     }
 
@@ -88,7 +88,7 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
         binding.progressBar.isVisible = false
         closedPositionAdapter.submitList(pagedList)
         val isEmpty = pagedList.isEmpty()
-        binding.emptyView.infoTv.text = getString(R.string.No_Closed_Positions)
+        binding.emptyView.walletTransactionsEmpty.text = getString(R.string.No_Closed_Positions)
         binding.emptyView.root.isVisible = isEmpty
     }
 
