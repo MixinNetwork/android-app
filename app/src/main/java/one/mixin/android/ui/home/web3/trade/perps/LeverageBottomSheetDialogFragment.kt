@@ -1,4 +1,4 @@
-package one.mixin.android.ui.home.web3.trade
+package one.mixin.android.ui.home.web3.trade.perps
 
 import android.annotation.SuppressLint
 import android.app.Dialog
@@ -282,13 +282,13 @@ private fun ProfitLossInfo(
             Text(
                 text = stringResource(R.string.Price_Up_Profit, "1", "0.0", "$0.00"),
                 fontSize = 13.sp,
-                color = MixinAppTheme.colors.walletGreen
+                color = MixinAppTheme.colors.textAssist
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = stringResource(R.string.Price_Down_Loss, String.format("%.2f", 100.0 / leverage), "$0.00", ""),
                 fontSize = 13.sp,
-                color = MixinAppTheme.colors.walletRed
+                color = MixinAppTheme.colors.textAssist
             )
         }
         return

@@ -1,4 +1,4 @@
-package one.mixin.android.ui.home.web3.trade
+package one.mixin.android.ui.home.web3.trade.perps
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -13,10 +13,10 @@ import one.mixin.android.extension.priceFormat
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
-class MarketListAdapter(
+class PerpsMarketListAdapter(
     private val isQuoteColorReversed: Boolean,
     private val onMarketClick: (PerpsMarket) -> Unit
-) : RecyclerView.Adapter<MarketListAdapter.MarketViewHolder>() {
+) : RecyclerView.Adapter<PerpsMarketListAdapter.MarketViewHolder>() {
 
     private var markets = listOf<PerpsMarket>()
 

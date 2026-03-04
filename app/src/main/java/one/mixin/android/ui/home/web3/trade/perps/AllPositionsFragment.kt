@@ -1,4 +1,4 @@
-package one.mixin.android.ui.home.web3.trade
+package one.mixin.android.ui.home.web3.trade.perps
 
 import android.os.Bundle
 import android.view.View
@@ -20,6 +20,8 @@ import one.mixin.android.databinding.FragmentAllClosedPositionsBinding
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.home.web3.trade.ClosedPositionAdapter
+import one.mixin.android.ui.home.web3.trade.TotalPositionValueAdapter
 import one.mixin.android.util.viewBinding
 import java.math.BigDecimal
 
@@ -54,7 +56,11 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
         OpenPositionAdapter(isQuoteColorReversed) { position ->
             activity?.supportFragmentManager?.let { fm ->
                 fm.beginTransaction()
-                    .add(android.R.id.content, PositionDetailFragment.newInstance(position), PositionDetailFragment.TAG)
+                    .add(
+                        android.R.id.content,
+                        PositionDetailFragment.Companion.newInstance(position),
+                        PositionDetailFragment.Companion.TAG
+                    )
                     .addToBackStack(null)
                     .commit()
             }
@@ -65,7 +71,11 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
         ClosedPositionAdapter(isQuoteColorReversed) { position ->
             activity?.supportFragmentManager?.let { fm ->
                 fm.beginTransaction()
-                    .add(android.R.id.content, PositionDetailFragment.newInstance(position), PositionDetailFragment.TAG)
+                    .add(
+                        android.R.id.content,
+                        PositionDetailFragment.Companion.newInstance(position),
+                        PositionDetailFragment.Companion.TAG
+                    )
                     .addToBackStack(null)
                     .commit()
             }

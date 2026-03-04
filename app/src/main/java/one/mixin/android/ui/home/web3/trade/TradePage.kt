@@ -61,6 +61,7 @@ import one.mixin.android.extension.openUrl
 import one.mixin.android.session.Session
 import one.mixin.android.ui.components.TabItem
 import one.mixin.android.ui.home.web3.components.OutlinedTab
+import one.mixin.android.ui.home.web3.trade.perps.PerpetualContent
 import one.mixin.android.vo.WalletCategory
 import java.math.BigDecimal
 

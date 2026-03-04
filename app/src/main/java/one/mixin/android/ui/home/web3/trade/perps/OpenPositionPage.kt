@@ -1,4 +1,4 @@
-package one.mixin.android.ui.home.web3.trade
+package one.mixin.android.ui.home.web3.trade.perps
 
 import PageScaffold
 import androidx.compose.foundation.background
@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,19 +24,13 @@ import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
-import androidx.compose.material.ModalBottomSheetLayout
-import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.Slider
-import androidx.compose.material.SliderDefaults
 import androidx.compose.material.Text
-import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,7 +47,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.FragmentActivity
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
@@ -65,10 +57,12 @@ import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.putInt
 import one.mixin.android.session.Session
+import one.mixin.android.ui.home.web3.trade.InputContent
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
+import java.math.RoundingMode
 import kotlin.math.abs
 
 private fun getLeveragePrefKey(marketId: String) = "pref_perps_leverage_$marketId"
@@ -307,6 +301,7 @@ fun OpenPositionPage(
                             ) {
                                 Text(
                                     modifier = Modifier.padding(horizontal = 10.dp).widthIn(min = 20.dp),
+                                    textAlign = TextAlign.Center,
                                     text = displayText,
                                     fontSize = 12.sp,
                                     color = if (isSelected) MixinAppTheme.colors.accent else MixinAppTheme.colors.textPrimary
@@ -533,7 +528,7 @@ private fun calculateOrderValue(amount: String, leverage: Float, price: String):
         return "0"
     }
 
-    val orderValue = (amountValue * BigDecimal(leverage.toDouble())).divide(priceValue, 8, java.math.RoundingMode.HALF_UP)
+    val orderValue = (amountValue * BigDecimal(leverage.toDouble())).divide(priceValue, 8, RoundingMode.HALF_UP)
     val result = orderValue.stripTrailingZeros().toPlainString()
 
     return result
@@ -554,7 +549,7 @@ private fun calculateLiquidationPrice(
     }
 
     val liquidationPercent = BigDecimal(100.0 / leverage)
-    val liquidationRatio = liquidationPercent.divide(BigDecimal(100), 8, java.math.RoundingMode.HALF_UP)
+    val liquidationRatio = liquidationPercent.divide(BigDecimal(100), 8, RoundingMode.HALF_UP)
     val liquidationPrice = if (isLong) {
         price * (BigDecimal.ONE - liquidationRatio)
     } else {

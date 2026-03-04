@@ -1,4 +1,4 @@
-package one.mixin.android.ui.home.web3.trade
+package one.mixin.android.ui.home.web3.trade.perps
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -49,6 +49,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.session.Session
+import one.mixin.android.ui.home.web3.trade.ClosedPositionItem
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
@@ -241,7 +242,9 @@ fun PerpetualContent(
                 }
             } else {
                 openPositionsPreview.forEach { position ->
-                    OpenPositionItem(position = position, onClick = { onOpenPositionClick(position) })
+                    OpenPositionItem(
+                        position = position,
+                        onClick = { onOpenPositionClick(position) })
                     Spacer(modifier = Modifier.height(12.dp))
                 }
 
@@ -312,7 +315,7 @@ fun PerpetualContent(
                 }
             } else {
                 marketsPreview.forEach { market ->
-                    MarketItem(
+                    PerpsMarketItem(
                         market = market,
                         quoteColorReversed = quoteColorReversed,
                         onClick = {
@@ -398,7 +401,9 @@ fun PerpetualContent(
                 }
             } else {
                 closedPositionsPreview.forEach { position ->
-                    ClosedPositionItem(position = position, onClick = { onClosedPositionClick(position) })
+                    ClosedPositionItem(
+                        position = position,
+                        onClick = { onClosedPositionClick(position) })
                     Spacer(modifier = Modifier.height(12.dp))
                 }
 

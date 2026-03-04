@@ -1,4 +1,4 @@
-package one.mixin.android.ui.home.web3.trade
+package one.mixin.android.ui.home.web3.trade.perps
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -10,29 +10,35 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
+import one.mixin.android.api.request.perps.CloseOrderRequest
 import one.mixin.android.api.response.perps.CandleView
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.api.service.RouteService
 import one.mixin.android.api.request.perps.OpenOrderRequest
 import one.mixin.android.api.request.perps.OpenOrderResponse
 import one.mixin.android.api.response.perps.PerpsPosition
-import one.mixin.android.api.response.perps.PerpsPositionHistory
 import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
+import one.mixin.android.db.TokenDao
 import one.mixin.android.db.perps.PerpsPositionDao
 import one.mixin.android.db.perps.PerpsMarketDao
+import one.mixin.android.db.perps.PerpsPositionHistoryDao
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshPerpsPositionsJob
 import one.mixin.android.vo.safe.TokenItem
 import timber.log.Timber
+import java.math.BigDecimal
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
 class PerpetualViewModel @Inject constructor(
     private val routeService: RouteService,
-    private val tokenDao: one.mixin.android.db.TokenDao,
+    private val tokenDao: TokenDao,
     private val perpsPositionDao: PerpsPositionDao,
-    private val perpsPositionHistoryDao: one.mixin.android.db.perps.PerpsPositionHistoryDao,
+    private val perpsPositionHistoryDao: PerpsPositionHistoryDao,
     private val perpsMarketDao: PerpsMarketDao,
     private val jobManager: MixinJobManager
 ) : ViewModel() {
@@ -150,10 +156,10 @@ class PerpetualViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val usdTokens = withContext(Dispatchers.IO) {
-                    val usdIds = one.mixin.android.Constants.usdIds
+                    val usdIds = Constants.usdIds
                     tokenDao.findTokenItems(usdIds)
                         .sortedByDescending { 
-                            it.balance.toBigDecimalOrNull() ?: java.math.BigDecimal.ZERO 
+                            it.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO
                         }
                 }
                 onSuccess(usdTokens)
@@ -212,8 +218,12 @@ class PerpetualViewModel @Inject constructor(
                         unrealizedPnl = "0",
                         roe = "0",
                         walletId = walletId,
-                        createdAt = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", java.util.Locale.US).format(java.util.Date()),
-                        updatedAt = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", java.util.Locale.US).format(java.util.Date())
+                        createdAt = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).format(
+                            Date()
+                        ),
+                        updatedAt = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).format(
+                            Date()
+                        )
                     )
                     
                     withContext(Dispatchers.IO) {
@@ -389,7 +399,7 @@ class PerpetualViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             try {
-                val request = one.mixin.android.api.request.perps.CloseOrderRequest(
+                val request = CloseOrderRequest(
                     positionId = positionId
                 )
                 

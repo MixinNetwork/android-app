@@ -1,6 +1,10 @@
-package one.mixin.android.ui.home.web3.trade
+package one.mixin.android.ui.home.web3.trade.perps
 
 import PageScaffold
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,9 +27,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.viewModels
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -37,6 +43,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.home.web3.trade.SwapViewModel
 import one.mixin.android.vo.market.MarketItem
 
 @AndroidEntryPoint
@@ -51,10 +58,10 @@ class AllPerpsMarketsFragment : BaseFragment() {
     private val swapViewModel by viewModels<SwapViewModel>()
 
     override fun onCreateView(
-        inflater: android.view.LayoutInflater,
-        container: android.view.ViewGroup?,
-        savedInstanceState: android.os.Bundle?,
-    ): android.view.View {
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
+    ): View {
         return ComposeView(inflater.context).apply {
             setContent {
                 MixinAppTheme(darkTheme = context.isNightMode()) {
@@ -74,7 +81,7 @@ class AllPerpsMarketsFragment : BaseFragment() {
     private suspend fun showMarketDetails(market: PerpsMarket) {
         val marketItem = findMarketItemByPerpsMarket(market)
         if (marketItem != null && activity != null) {
-            PerpsActivity.showDetail(
+            PerpsActivity.Companion.showDetail(
                 requireContext(),
                 market.marketId,
                 market.symbol,
@@ -118,7 +125,7 @@ private fun AllMarketsPage(
     val context = LocalContext.current
     val quoteColorReversed = context.defaultSharedPreferences
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
-    val viewModel = androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel<PerpetualViewModel>()
+    val viewModel = hiltViewModel<PerpetualViewModel>()
     var markets by remember { mutableStateOf<List<PerpsMarket>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -137,7 +144,7 @@ private fun AllMarketsPage(
     }
 
     PageScaffold(
-        title = androidx.compose.ui.res.stringResource(R.string.Markets),
+        title = stringResource(R.string.Markets),
         verticalScrollable = false,
         pop = pop
     ) {
@@ -170,7 +177,7 @@ private fun AllMarketsPage(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = androidx.compose.ui.res.stringResource(R.string.No_Markets),
+                        text = stringResource(R.string.No_Markets),
                         fontSize = 14.sp,
                         color = MixinAppTheme.colors.textAssist,
                     )
@@ -187,7 +194,7 @@ private fun AllMarketsPage(
                     item { Spacer(modifier = Modifier.height(8.dp)) }
                     items(markets, key = { it.marketId }) { market ->
                         Column(modifier = Modifier.fillMaxWidth()) {
-                            MarketItem(
+                            PerpsMarketItem(
                                 market = market,
                                 quoteColorReversed = quoteColorReversed,
                                 onClick = { onMarketClick(market) }

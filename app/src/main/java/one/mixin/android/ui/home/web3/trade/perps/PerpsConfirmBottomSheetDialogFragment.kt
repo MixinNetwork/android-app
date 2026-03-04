@@ -1,10 +1,9 @@
-package one.mixin.android.ui.home.web3.trade
+package one.mixin.android.ui.home.web3.trade.perps
 
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.DialogInterface
 import android.net.Uri
-import android.os.Bundle
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -28,6 +27,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -74,7 +75,6 @@ import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
 import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.tip.wc.compose.ItemWalletContent
 import one.mixin.android.ui.wallet.ItemUserContent
-import one.mixin.android.ui.wallet.SwapTransferBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.components.WalletLabel
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.User
@@ -234,18 +234,18 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                         }
 
                         Step.Error -> {
-                            androidx.compose.material.Icon(
+                            Icon(
                                 modifier = Modifier.size(70.dp),
-                                painter = androidx.compose.ui.res.painterResource(id = R.drawable.ic_transfer_status_failed),
+                                painter = painterResource(id = R.drawable.ic_transfer_status_failed),
                                 contentDescription = null,
                                 tint = Color.Unspecified,
                             )
                         }
 
                         Step.Done -> {
-                            androidx.compose.material.Icon(
+                            Icon(
                                 modifier = Modifier.size(70.dp),
-                                painter = androidx.compose.ui.res.painterResource(id = R.drawable.ic_transfer_status_success),
+                                painter = painterResource(id = R.drawable.ic_transfer_status_success),
                                 contentDescription = null,
                                 tint = Color.Unspecified,
                             )

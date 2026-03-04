@@ -1,4 +1,4 @@
-package one.mixin.android.ui.home.web3.trade
+package one.mixin.android.ui.home.web3.trade.perps
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -18,60 +18,35 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.api.response.perps.PerpsMarket
+import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.extension.numberFormatCompact
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
 @Composable
-fun MarketItem(
-    market: PerpsMarket,
-    quoteColorReversed: Boolean = false,
-    onClick: () -> Unit = {}
+fun OpenPositionItem(
+    position: PerpsPositionItem,
+    onClick: () -> Unit = {},
 ) {
-    val change = try {
-        BigDecimal(market.change)
-    } catch (e: Exception) {
-        BigDecimal.ZERO
-    }
-
-    val isPositive = change >= BigDecimal.ZERO
-    val changeColor = if (isPositive) {
-        if (quoteColorReversed) {
-            MixinAppTheme.colors.walletRed
-        } else {
-            MixinAppTheme.colors.walletGreen
-        }
-    } else {
-        if (quoteColorReversed) {
-            MixinAppTheme.colors.walletGreen
-        } else {
-            MixinAppTheme.colors.walletRed
-        }
-    }
-    val changeText = "${if (isPositive) "+" else ""}${market.change}%"
+    val context = LocalContext.current
+    val quoteColorPref = context.defaultSharedPreferences
+        .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
+    val pnl = position.unrealizedPnl?.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val fiatRate = BigDecimal(Fiats.getRate())
     val fiatSymbol = Fiats.getSymbol()
 
-    val formattedPrice = try {
-        BigDecimal(market.markPrice).multiply(fiatRate).priceFormat()
-    } catch (e: Exception) {
-        market.markPrice
-    }
-
-    val formattedVolume = try {
-        BigDecimal(market.volume).multiply(fiatRate).numberFormatCompact()
-    } catch (e: Exception) {
-        market.volume
-    }
+    val displaySymbol = position.displaySymbol ?: position.tokenSymbol ?: stringResource(R.string.Unknown)
+    val quantity = position.quantity.toBigDecimalOrNull()?.let { String.format("%f", it) } ?: position.quantity
 
     Row(
         modifier = Modifier
@@ -82,11 +57,11 @@ fun MarketItem(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             CoilImage(
-                model = market.iconUrl,
+                model = position.iconUrl,
                 placeholder = R.drawable.ic_avatar_place_holder,
                 modifier = Modifier
                     .size(42.dp)
@@ -96,17 +71,26 @@ fun MarketItem(
             Spacer(modifier = Modifier.width(12.dp))
 
             Column {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    val sideText = if (position.side.equals("long", true)) {
+                        stringResource(R.string.Long)
+                    } else {
+                        stringResource(R.string.Short)
+                    }
                     Text(
-                        text = market.displaySymbol,
+                        text = sideText,
                         fontSize = 14.sp,
                         color = MixinAppTheme.colors.textPrimary,
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "${market.leverage}x",
+                        text = displaySymbol,
+                        fontSize = 14.sp,
+                        color = MixinAppTheme.colors.textPrimary
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "${position.leverage}x",
                         fontSize = 12.sp,
                         color = MixinAppTheme.colors.textAssist,
                         modifier = Modifier
@@ -118,28 +102,41 @@ fun MarketItem(
                             .padding(horizontal = 3.dp, vertical = 1.dp)
                     )
                 }
-                Spacer(modifier = Modifier.height(2.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = stringResource(R.string.Vol, "$fiatSymbol$formattedVolume"),
+                    text = "$quantity ${position.tokenSymbol ?: ""}",
                     fontSize = 12.sp,
-                    color = MixinAppTheme.colors.textAssist,
+                    color = MixinAppTheme.colors.textAssist
                 )
             }
         }
 
-        Column(
-            horizontalAlignment = Alignment.End
-        ) {
+        Column(horizontalAlignment = Alignment.End) {
             Text(
-                text = "$fiatSymbol$formattedPrice",
-                fontSize = 16.sp,
-                color = MixinAppTheme.colors.textPrimary,
+                text = "${fiatSymbol}${pnl.abs().multiply(fiatRate).priceFormat()}",
+                fontSize = 14.sp,
+                color = MixinAppTheme.colors.textPrimary
             )
             Spacer(modifier = Modifier.height(2.dp))
+            val unrealizedPnl = position.unrealizedPnl?.toBigDecimalOrNull()?: BigDecimal.ZERO
+            val isProfit = unrealizedPnl >= BigDecimal.ZERO
+            val pnlColor = if (isProfit) {
+                if (quoteColorPref) {
+                    MixinAppTheme.colors.walletRed
+                } else {
+                    MixinAppTheme.colors.walletGreen
+                }
+            } else {
+                if (quoteColorPref) {
+                    MixinAppTheme.colors.walletGreen
+                } else {
+                    MixinAppTheme.colors.walletRed
+                }
+            }
             Text(
-                text = changeText,
+                text = "${if (unrealizedPnl >= BigDecimal.ZERO) "+" else "-"}$fiatSymbol${unrealizedPnl.abs().multiply(fiatRate).priceFormat()}",
                 fontSize = 12.sp,
-                color = changeColor,
+                color = pnlColor
             )
         }
     }

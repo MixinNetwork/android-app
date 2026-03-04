@@ -1,4 +1,4 @@
-package one.mixin.android.ui.home.web3.trade
+package one.mixin.android.ui.home.web3.trade.perps
 
 import PageScaffold
 import androidx.compose.foundation.Image
@@ -42,6 +42,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.fragment.app.FragmentActivity
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
@@ -52,8 +53,12 @@ import one.mixin.android.api.response.perps.toPosition
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.marketPriceFormat
+import one.mixin.android.extension.priceFormat
 import one.mixin.android.session.Session
+import one.mixin.android.ui.home.web3.trade.CandleChart
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
 @Composable
@@ -71,8 +76,18 @@ fun PerpsMarketDetailPage(
     var currentPosition by remember { mutableStateOf<PerpsPositionItem?>(null) }
     val coroutineScope = rememberCoroutineScope()
 
-    val timeFrames = listOf("1h", "1d", "1w", "1M")
-    
+    val timeFrameValues = listOf("1h", "1d", "1w", "1M")
+    val timeFrameLabels = listOf(
+        stringResource(R.string.hours_count_short, 1),
+        stringResource(R.string.days_count_short, 1),
+        stringResource(R.string.weeks_count_short, 1),
+        stringResource(R.string.months_count_short, 1),
+    )
+    val quoteColorReversed = context.defaultSharedPreferences
+        .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
+    val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+    val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+
     val walletId = Session.getAccountId() ?: ""
 
     LaunchedEffect(marketId) {
@@ -86,7 +101,7 @@ fun PerpsMarketDetailPage(
                 isLoading = false
             }
         )
-        
+
         if (walletId.isNotEmpty()) {
             viewModel.getPositionByMarket(walletId, marketId) { position ->
                 currentPosition = position
@@ -120,7 +135,8 @@ fun PerpsMarketDetailPage(
                         marketSymbol = marketSymbol,
                         displaySymbol = displaySymbol,
                         selectedTimeFrame = selectedTimeFrame,
-                        timeFrames = timeFrames,
+                        timeFrameValues = timeFrameValues,
+                        timeFrameLabels = timeFrameLabels,
                         onTimeFrameChange = { index ->
                             coroutineScope.launch { selectedTimeFrame = index }
                         }
@@ -158,14 +174,14 @@ fun PerpsMarketDetailPage(
                             .fillMaxWidth()
                             .height(48.dp),
                         onClick = {
-                            val activity = context as? androidx.fragment.app.FragmentActivity ?: return@Button
+                            val activity = context as? FragmentActivity ?: return@Button
                             val position = currentPosition?.toPosition() ?: return@Button
-                            
-                            PerpsCloseBottomSheetDialogFragment.newInstance(
+
+                            PerpsCloseBottomSheetDialogFragment.Companion.newInstance(
                                 position = position,
                             ).setOnDone {
                                 currentPosition = null
-                            }.show(activity.supportFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)
+                            }.show(activity.supportFragmentManager, PerpsCloseBottomSheetDialogFragment.Companion.TAG)
                         },
                         colors = ButtonDefaults.outlinedButtonColors(
                             backgroundColor = MixinAppTheme.colors.accent
@@ -195,7 +211,7 @@ fun PerpsMarketDetailPage(
                                 .weight(1f)
                                 .height(48.dp),
                             onClick = {
-                                PerpsActivity.showOpenPosition(
+                                PerpsActivity.Companion.showOpenPosition(
                                     context = context,
                                     marketId = marketId,
                                     marketSymbol = marketSymbol,
@@ -204,7 +220,7 @@ fun PerpsMarketDetailPage(
                                 )
                             },
                             colors = ButtonDefaults.outlinedButtonColors(
-                                backgroundColor = MixinAppTheme.colors.walletGreen
+                                backgroundColor = risingColor
                             ),
                             shape = RoundedCornerShape(32.dp),
                             elevation = ButtonDefaults.elevation(
@@ -227,7 +243,7 @@ fun PerpsMarketDetailPage(
                                 .weight(1f)
                                 .height(48.dp),
                             onClick = {
-                                PerpsActivity.showOpenPosition(
+                                PerpsActivity.Companion.showOpenPosition(
                                     context = context,
                                     marketId = marketId,
                                     marketSymbol = marketSymbol,
@@ -236,7 +252,7 @@ fun PerpsMarketDetailPage(
                                 )
                             },
                             colors = ButtonDefaults.outlinedButtonColors(
-                                backgroundColor = MixinAppTheme.colors.walletRed
+                                backgroundColor = fallingColor
                             ),
                             shape = RoundedCornerShape(32.dp),
                             elevation = ButtonDefaults.elevation(
@@ -267,6 +283,20 @@ private fun MarketInfoCard(
     market: PerpsMarket,
     onLearnClick: () -> Unit,
 ) {
+    val context = LocalContext.current
+    val quoteColorReversed = context.defaultSharedPreferences
+        .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
+    val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+    val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+    val fiatRate = BigDecimal(Fiats.getRate())
+    val fiatSymbol = Fiats.getSymbol()
+    val fundingRate = market.fundingRate.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val fundingColor = when {
+        fundingRate > BigDecimal.ZERO -> risingColor
+        fundingRate < BigDecimal.ZERO -> fallingColor
+        else -> MixinAppTheme.colors.textPrimary
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -314,7 +344,7 @@ private fun MarketInfoCard(
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-            text = "$${formatVolume(market.volume)}",
+            text = formatVolume(market.volume, fiatRate, fiatSymbol),
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
             color = MixinAppTheme.colors.textPrimary
@@ -331,7 +361,7 @@ private fun MarketInfoCard(
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "-",
+                text = stringResource(R.string.N_A),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
                 color = MixinAppTheme.colors.textPrimary
@@ -350,23 +380,22 @@ private fun MarketInfoCard(
                 text = "${market.fundingRate}%",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
-                color = MixinAppTheme.colors.textPrimary
+                color = fundingColor
             )
         }
     }
 }
 
-private fun formatVolume(volume: String): String {
+private fun formatVolume(
+    volume: String,
+    fiatRate: BigDecimal,
+    fiatSymbol: String,
+): String {
     return try {
-        val vol = BigDecimal(volume)
-        when {
-            vol >= BigDecimal("1000000000") -> String.format("%.2fB", vol.divide(BigDecimal("1000000000")))
-            vol >= BigDecimal("1000000") -> String.format("%.2fM", vol.divide(BigDecimal("1000000")))
-            vol >= BigDecimal("1000") -> String.format("%.2fK", vol.divide(BigDecimal("1000")))
-            else -> String.format("%.2f", vol)
-        }
+        val fiatVolume = BigDecimal(volume).multiply(fiatRate)
+        "${fiatSymbol}${fiatVolume.priceFormat()}"
     } catch (e: Exception) {
-        volume
+        "${fiatSymbol}${volume}"
     }
 }
 
@@ -376,12 +405,17 @@ private fun MarketDetailCard(
     marketSymbol: String,
     displaySymbol: String,
     selectedTimeFrame: Int,
-    timeFrames: List<String>,
+    timeFrameValues: List<String>,
+    timeFrameLabels: List<String>,
     onTimeFrameChange: (Int) -> Unit,
 ) {
     val context = LocalContext.current
-    val quoteColorPref = context.defaultSharedPreferences
+    val quoteColorReversed = context.defaultSharedPreferences
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
+    val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+    val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+    val fiatRate = BigDecimal(Fiats.getRate())
+    val fiatSymbol = Fiats.getSymbol()
 
     val change = try {
         BigDecimal(market.change)
@@ -390,30 +424,12 @@ private fun MarketDetailCard(
     }
 
     val isPositive = change >= BigDecimal.ZERO
-    val changeColor = if (isPositive) {
-        if (quoteColorPref) {
-            MixinAppTheme.colors.walletRed
-        } else {
-            MixinAppTheme.colors.walletGreen
-        }
-    } else {
-        if (quoteColorPref) {
-            MixinAppTheme.colors.walletGreen
-        } else {
-            MixinAppTheme.colors.walletRed
-        }
-    }
+    val changeColor = if (isPositive) risingColor else fallingColor
     val changeText = "${if (isPositive) "+" else ""}${market.change}%"
 
     val formattedPrice = try {
-        val price = BigDecimal(market.markPrice)
-        if (price >= BigDecimal("1000")) {
-            String.format("%.2f", price)
-        } else if (price >= BigDecimal("1")) {
-            String.format("%.4f", price)
-        } else {
-            String.format("%.6f", price)
-        }
+        val price = BigDecimal(market.markPrice).multiply(fiatRate)
+        price.marketPriceFormat()
     } catch (e: Exception) {
         market.markPrice
     }
@@ -433,7 +449,7 @@ private fun MarketDetailCard(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "$$formattedPrice",
+                    text = "${fiatSymbol}$formattedPrice",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = MixinAppTheme.colors.textPrimary
@@ -459,12 +475,14 @@ private fun MarketDetailCard(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .height(200.dp)) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(180.dp)
+        ) {
             CandleChart(
                 symbol = marketSymbol,
-                timeFrame = timeFrames[selectedTimeFrame]
+                timeFrame = timeFrameValues[selectedTimeFrame]
             )
         }
 
@@ -474,7 +492,7 @@ private fun MarketDetailCard(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            timeFrames.forEachIndexed { index, timeFrame ->
+            timeFrameLabels.forEachIndexed { index, timeFrameLabel ->
                 Box(
                     modifier = Modifier
                         .weight(1f)
@@ -491,7 +509,7 @@ private fun MarketDetailCard(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = timeFrame,
+                        text = timeFrameLabel,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
                         color = if (selectedTimeFrame == index) {

@@ -69,6 +69,12 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.GasCheckBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.trade.perps.AllPerpsMarketsFragment
+import one.mixin.android.ui.home.web3.trade.perps.AllPositionsFragment
+import one.mixin.android.ui.home.web3.trade.perps.PerpetualGuideFragment
+import one.mixin.android.ui.home.web3.trade.perps.PerpsActivity
+import one.mixin.android.ui.home.web3.trade.perps.PerpsMarketListBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.trade.perps.PositionDetailFragment
 import one.mixin.android.ui.wallet.AllOrdersFragment
 import one.mixin.android.ui.wallet.DepositFragment
 import one.mixin.android.ui.wallet.LimitTransferBottomSheetDialogFragment
@@ -334,7 +340,7 @@ class TradeFragment : BaseFragment() {
                                     navigateUp(navController)
                                 },
                                 onShowMarketList = { isLong ->
-                                    MarketListBottomSheetDialogFragment.newInstance(isLong).show(parentFragmentManager, MarketListBottomSheetDialogFragment.TAG)
+                                    PerpsMarketListBottomSheetDialogFragment.newInstance(isLong).show(parentFragmentManager, PerpsMarketListBottomSheetDialogFragment.TAG)
                                 },
                                 onShowAllMarkets = {
                                     navTo(AllPerpsMarketsFragment.newInstance(), AllPerpsMarketsFragment.TAG)

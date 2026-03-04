@@ -28,7 +28,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -48,6 +47,7 @@ import one.mixin.android.Constants
 import one.mixin.android.api.response.perps.CandleView
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.ui.home.web3.trade.perps.PerpetualViewModel
 import java.math.BigDecimal
 import kotlin.math.max
 import kotlin.math.min

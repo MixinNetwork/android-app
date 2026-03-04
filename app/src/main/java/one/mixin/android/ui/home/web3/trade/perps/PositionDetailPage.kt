@@ -1,4 +1,4 @@
-package one.mixin.android.ui.home.web3.trade
+package one.mixin.android.ui.home.web3.trade.perps
 
 import PageScaffold
 import androidx.compose.foundation.background
@@ -18,8 +18,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -28,6 +26,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
@@ -36,6 +35,7 @@ import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.priceFormat
+import one.mixin.android.ui.tip.wc.compose.ItemWalletContent
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
@@ -183,7 +183,7 @@ fun PositionDetailPage(
                             .weight(1f)
                             .clickable { onClose?.invoke() }
                             .padding(vertical = 10.dp),
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        textAlign = TextAlign.Center
                     )
                     Box(
                         modifier = Modifier
@@ -199,7 +199,7 @@ fun PositionDetailPage(
                             .weight(1f)
                             .clickable { onShare?.invoke() }
                             .padding(vertical = 10.dp),
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        textAlign = TextAlign.Center
                     )
                 }
                 
@@ -242,7 +242,7 @@ fun PositionDetailPage(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                one.mixin.android.ui.tip.wc.compose.ItemWalletContent(
+                ItemWalletContent(
                     title = stringResource(R.string.Wallet).uppercase(),
                     fontSize = 16.sp,
                     padding = 0.dp
@@ -445,7 +445,7 @@ fun PositionDetailPage(
                             .weight(1f)
                             .clickable { onTradeAgain?.invoke() }
                             .padding(vertical = 10.dp),
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        textAlign = TextAlign.Center
                     )
                     Box(
                         modifier = Modifier
@@ -461,7 +461,7 @@ fun PositionDetailPage(
                             .weight(1f)
                             .clickable { onShare?.invoke() }
                             .padding(vertical = 10.dp),
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        textAlign = TextAlign.Center
                     )
                 }
 
@@ -510,8 +510,8 @@ fun PositionDetailPage(
                 )
                 
                 Spacer(modifier = Modifier.height(20.dp))
-                
-                one.mixin.android.ui.tip.wc.compose.ItemWalletContent(
+
+                ItemWalletContent(
                     title = stringResource(R.string.Wallet).uppercase(),
                     fontSize = 16.sp,
                     padding = 0.dp

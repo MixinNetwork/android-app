@@ -1,4 +1,4 @@
-package one.mixin.android.ui.home.web3.trade
+package one.mixin.android.ui.home.web3.trade.perps
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
@@ -20,8 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
@@ -29,45 +26,16 @@ import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.numberFormatCompact
+import one.mixin.android.extension.priceFormat
+import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
 @Composable
-fun MarketListBottomSheetContent(
-    markets: List<PerpsMarket>,
-    onMarketClick: (PerpsMarket) -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-            .padding(16.dp)
-    ) {
-        Text(
-            text = "Select Market",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = MixinAppTheme.colors.textPrimary,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-
-        LazyColumn(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            items(markets) { market ->
-                MarketListItem(
-                    market = market,
-                    onClick = { onMarketClick(market) }
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-            }
-        }
-    }
-}
-
-@Composable
-private fun MarketListItem(
+fun PerpsMarketItem(
     market: PerpsMarket,
-    onClick: () -> Unit
+    quoteColorReversed: Boolean = false,
+    onClick: () -> Unit = {}
 ) {
     val change = try {
         BigDecimal(market.change)
@@ -76,24 +44,31 @@ private fun MarketListItem(
     }
 
     val isPositive = change >= BigDecimal.ZERO
-    val changeColor = if (isPositive) Color(0xFF4CAF50) else Color(0xFFF44336)
+    val changeColor = if (isPositive) {
+        if (quoteColorReversed) {
+            MixinAppTheme.colors.walletRed
+        } else {
+            MixinAppTheme.colors.walletGreen
+        }
+    } else {
+        if (quoteColorReversed) {
+            MixinAppTheme.colors.walletGreen
+        } else {
+            MixinAppTheme.colors.walletRed
+        }
+    }
     val changeText = "${if (isPositive) "+" else ""}${market.change}%"
+    val fiatRate = BigDecimal(Fiats.getRate())
+    val fiatSymbol = Fiats.getSymbol()
 
     val formattedPrice = try {
-        val price = BigDecimal(market.markPrice)
-        if (price >= BigDecimal("1000")) {
-            String.format("%.2f", price)
-        } else if (price >= BigDecimal("1")) {
-            String.format("%.4f", price)
-        } else {
-            String.format("%.6f", price)
-        }
+        BigDecimal(market.markPrice).multiply(fiatRate).priceFormat()
     } catch (e: Exception) {
         market.markPrice
     }
 
     val formattedVolume = try {
-        BigDecimal(market.volume).numberFormatCompact()
+        BigDecimal(market.volume).multiply(fiatRate).numberFormatCompact()
     } catch (e: Exception) {
         market.volume
     }
@@ -101,9 +76,8 @@ private fun MarketListItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
             .clickable(onClick = onClick)
-            .padding(12.dp),
+            .padding(vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -115,23 +89,38 @@ private fun MarketListItem(
                 model = market.iconUrl,
                 placeholder = R.drawable.ic_avatar_place_holder,
                 modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape),
-                contentScale = ContentScale.Crop
+                    .size(42.dp)
+                    .clip(CircleShape)
             )
 
             Spacer(modifier = Modifier.width(12.dp))
 
             Column {
-                Text(
-                    text = market.displaySymbol,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MixinAppTheme.colors.textPrimary,
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = market.displaySymbol,
+                        fontSize = 14.sp,
+                        color = MixinAppTheme.colors.textPrimary,
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "${market.leverage}x",
+                        fontSize = 12.sp,
+                        color = MixinAppTheme.colors.textAssist,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .cardBackground(
+                                MixinAppTheme.colors.backgroundGrayLight,
+                                Color.Transparent
+                            )
+                            .padding(horizontal = 3.dp, vertical = 1.dp)
+                    )
+                }
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = "Vol $formattedVolume",
+                    text = stringResource(R.string.Vol, "$fiatSymbol$formattedVolume"),
                     fontSize = 12.sp,
                     color = MixinAppTheme.colors.textAssist,
                 )
@@ -142,9 +131,8 @@ private fun MarketListItem(
             horizontalAlignment = Alignment.End
         ) {
             Text(
-                text = "$$formattedPrice",
+                text = "$fiatSymbol$formattedPrice",
                 fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold,
                 color = MixinAppTheme.colors.textPrimary,
             )
             Spacer(modifier = Modifier.height(2.dp))
@@ -152,7 +140,6 @@ private fun MarketListItem(
                 text = changeText,
                 fontSize = 12.sp,
                 color = changeColor,
-                fontWeight = FontWeight.Medium
             )
         }
     }

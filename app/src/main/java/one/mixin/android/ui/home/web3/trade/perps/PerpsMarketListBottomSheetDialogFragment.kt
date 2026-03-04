@@ -1,4 +1,4 @@
-package one.mixin.android.ui.home.web3.trade
+package one.mixin.android.ui.home.web3.trade.perps
 
 import android.annotation.SuppressLint
 import android.app.Dialog
@@ -23,16 +23,17 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
+import one.mixin.android.widget.SearchView
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class MarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     companion object {
-        const val TAG = "MarketListBottomSheetDialogFragment"
+        const val TAG = "PerpsMarketListBottomSheetDialogFragment"
         private const val ARGS_IS_LONG = "args_is_long"
 
-        fun newInstance(isLong: Boolean) = MarketListBottomSheetDialogFragment().withArgs {
+        fun newInstance(isLong: Boolean) = PerpsMarketListBottomSheetDialogFragment().withArgs {
             putBoolean(ARGS_IS_LONG, isLong)
         }
     }
@@ -42,7 +43,7 @@ class MarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         requireContext().defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     }
     private val adapter by lazy {
-        MarketListAdapter(isQuoteColorReversed) { market -> onMarketClick(market) }
+        PerpsMarketListAdapter(isQuoteColorReversed) { market -> onMarketClick(market) }
     }
 
     @Inject
@@ -74,7 +75,7 @@ class MarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             marketRv.layoutManager = LinearLayoutManager(requireContext())
             marketRv.adapter = adapter
 
-            searchEt.listener = object : one.mixin.android.widget.SearchView.OnSearchViewListener {
+            searchEt.listener = object : SearchView.OnSearchViewListener {
                 override fun afterTextChanged(s: Editable?) {
                     filterMarkets(s?.toString() ?: "")
                 }
@@ -113,7 +114,7 @@ class MarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun onMarketClick(market: PerpsMarket) {
-        PerpsActivity.showOpenPosition(
+        PerpsActivity.Companion.showOpenPosition(
             context = requireContext(),
             marketId = market.marketId,
             marketSymbol = market.symbol,

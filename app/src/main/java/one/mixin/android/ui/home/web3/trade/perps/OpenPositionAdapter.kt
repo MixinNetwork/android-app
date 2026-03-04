@@ -1,5 +1,6 @@
-package one.mixin.android.ui.home.web3.trade
+package one.mixin.android.ui.home.web3.trade.perps
 
+import android.util.TypedValue
 import android.view.View
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -137,7 +138,7 @@ class OpenPositionAdapter(
         }
 
         private fun resolveAttrColor(view: View, @AttrRes attr: Int): Int {
-            val typedValue = android.util.TypedValue()
+            val typedValue = TypedValue()
             view.context.theme.resolveAttribute(attr, typedValue, true)
             return if (typedValue.resourceId != 0) {
                 view.context.getColor(typedValue.resourceId)
