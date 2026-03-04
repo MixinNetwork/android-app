@@ -3,14 +3,12 @@ package one.mixin.android.ui.qr
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Point
-import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import com.google.mlkit.vision.barcode.common.Barcode
-import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
@@ -23,9 +21,8 @@ import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.matchResourcePattern
-import one.mixin.android.extension.openGallery
-import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
+import one.mixin.android.extension.selectMediaType
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
@@ -41,7 +38,6 @@ import one.mixin.android.util.mlkit.scan.analyze.BarcodeResult
 import one.mixin.android.util.mlkit.scan.analyze.BarcodeScanningAnalyzer
 import one.mixin.android.util.mlkit.scan.camera.config.AspectRatioCameraConfig
 import one.mixin.android.util.mlkit.scan.utils.PointUtils
-import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.ViewfinderView
 import one.mixin.android.widget.gallery.ui.GalleryActivity
@@ -113,24 +109,7 @@ class ScanFragment : BaseCameraScanFragment<BarcodeResult>() {
                 flash.bounce()
             }
             galleryIv.setOnClickListener {
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
-                    RxPermissions(requireActivity())
-                        .request(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                        .autoDispose(stopScope)
-                        .subscribe(
-                            { granted ->
-                                if (granted) {
-                                    openGallery()
-                                } else {
-                                    context?.openPermissionSetting()
-                                }
-                            },
-                            {
-                            },
-                        )
-                } else {
-                    openGallery()
-                }
+                selectMediaType("image/*", arrayOf("image/*"), REQUEST_GALLERY)
             }
         }
     }
