@@ -7,6 +7,7 @@ import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
@@ -45,6 +46,33 @@ class PerpetualViewModel @Inject constructor(
 
     fun refreshPositions(walletId: String) {
         jobManager.addJobInBackground(RefreshPerpsPositionsJob(walletId))
+    }
+
+    fun refreshPositionHistory(walletId: String, limit: Int = 100, offset: String? = null) {
+        viewModelScope.launch {
+            try {
+                val response = withContext(Dispatchers.IO) {
+                    routeService.getPerpsPositionHistory(
+                        walletId = walletId,
+                        limit = limit,
+                        offset = offset
+                    )
+                }
+
+                val data = response.data
+                if (response.isSuccess && data != null) {
+                    val histories = data.map { it.copy(walletId = walletId) }
+                    withContext(Dispatchers.IO) {
+                        perpsPositionHistoryDao.insertAll(histories)
+                    }
+                    Timber.d("Perps position history refreshed: ${histories.size} items")
+                } else {
+                    Timber.e("Failed to refresh position history: ${response.errorDescription}")
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Error refreshing position history")
+            }
+        }
     }
 
     fun loadMarkets(
@@ -258,6 +286,14 @@ class PerpetualViewModel @Inject constructor(
         }
     }
 
+    fun observeOpenPositions(walletId: String): Flow<List<PerpsPositionItem>> {
+        return perpsPositionDao.observeOpenPositions(walletId)
+    }
+
+    fun observeClosedPositions(walletId: String, limit: Int): Flow<List<PerpsPositionHistoryItem>> {
+        return perpsPositionHistoryDao.observeHistories(walletId, limit)
+    }
+
     suspend fun getOpenPositionsFromDb(walletId: String): List<PerpsPositionItem> {
         return withContext(Dispatchers.IO) {
             try {
@@ -294,6 +330,14 @@ class PerpetualViewModel @Inject constructor(
         }
     }
 
+    fun observeTotalUnrealizedPnl(walletId: String): Flow<Double> {
+        return perpsPositionDao.observeTotalUnrealizedPnl(walletId)
+    }
+
+    fun observeTotalOpenPositionValue(walletId: String): Flow<Double> {
+        return perpsPositionDao.observeTotalOpenPositionValue(walletId)
+    }
+
     suspend fun getTotalUnrealizedPnlFromDb(walletId: String): Double {
         return withContext(Dispatchers.IO) {
             try {
@@ -327,6 +371,10 @@ class PerpetualViewModel @Inject constructor(
         }
     }
 
+    fun observeTotalRealizedPnl(walletId: String): Flow<Double> {
+        return perpsPositionHistoryDao.observeTotalRealizedPnl(walletId)
+    }
+
     suspend fun getTotalClosedEntryValueFromDb(walletId: String): Double {
         return withContext(Dispatchers.IO) {
             try {
@@ -336,6 +384,10 @@ class PerpetualViewModel @Inject constructor(
                 0.0
             }
         }
+    }
+
+    fun observeTotalClosedEntryValue(walletId: String): Flow<Double> {
+        return perpsPositionHistoryDao.observeTotalClosedEntryValue(walletId)
     }
 
     fun getOpenPositionsPaged(walletId: String, initialLoadKey: Int? = 0): LiveData<PagedList<PerpsPositionItem>> {

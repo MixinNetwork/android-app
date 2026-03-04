@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.paging.DataSource
+import kotlinx.coroutines.flow.Flow
 import one.mixin.android.api.response.perps.PerpsPositionHistory
 import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.db.BaseDao
@@ -26,6 +27,18 @@ interface PerpsPositionHistoryDao : BaseDao<PerpsPositionHistory> {
         LIMIT :limit
     """)
     suspend fun getHistories(walletId: String, limit: Int): List<PerpsPositionHistoryItem>
+
+    @Query(
+        """
+        SELECT h.*, m.display_symbol, m.icon_url, m.token_symbol
+        FROM position_history h
+        LEFT JOIN markets m ON m.market_id = h.product_id
+        WHERE h.wallet_id = :walletId
+        ORDER BY h.closed_at DESC
+        LIMIT :limit
+    """
+    )
+    fun observeHistories(walletId: String, limit: Int): Flow<List<PerpsPositionHistoryItem>>
 
     @Query("""
         SELECT h.*, m.display_symbol, m.icon_url, m.token_symbol
@@ -50,6 +63,12 @@ interface PerpsPositionHistoryDao : BaseDao<PerpsPositionHistory> {
     @Query("SELECT SUM(CAST(realized_pnl AS REAL)) FROM position_history WHERE wallet_id = :walletId")
     suspend fun getTotalRealizedPnl(walletId: String): Double?
 
+    @Query("SELECT COALESCE(SUM(CAST(realized_pnl AS REAL)), 0) FROM position_history WHERE wallet_id = :walletId")
+    fun observeTotalRealizedPnl(walletId: String): Flow<Double>
+
     @Query("SELECT SUM(CAST(entry_price AS REAL) * ABS(CAST(quantity AS REAL))) FROM position_history WHERE wallet_id = :walletId")
     suspend fun getTotalClosedEntryValue(walletId: String): Double?
+
+    @Query("SELECT COALESCE(SUM(CAST(entry_price AS REAL) * ABS(CAST(quantity AS REAL))), 0) FROM position_history WHERE wallet_id = :walletId")
+    fun observeTotalClosedEntryValue(walletId: String): Flow<Double>
 }

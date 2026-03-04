@@ -40,6 +40,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import one.mixin.android.R
 import one.mixin.android.Constants
 import one.mixin.android.api.response.perps.PerpsMarket
@@ -53,6 +59,9 @@ import one.mixin.android.ui.home.web3.trade.ClosedPositionItem
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
+
+private const val POSITION_REFRESH_INTERVAL_MS = 10_000L
+private const val CLOSED_POSITION_PREVIEW_LIMIT = 10
 
 @Composable
 fun PerpetualContent(
@@ -74,24 +83,27 @@ fun PerpetualContent(
     val fiatSymbol = Fiats.getSymbol()
     val fiatRate = BigDecimal(Fiats.getRate())
     val viewModel = hiltViewModel<PerpetualViewModel>()
+    val lifecycleOwner = LocalLifecycleOwner.current
 
     var markets by remember { mutableStateOf<List<PerpsMarket>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    var openPositionsCount by remember { mutableStateOf(0) }
-    var openPositions by remember { mutableStateOf<List<PerpsPositionItem>>(emptyList()) }
-    var totalPnl by remember { mutableStateOf(0.0) }
-    var closedPositions by remember { mutableStateOf<List<PerpsPositionHistoryItem>>(emptyList()) }
-    var isLoadingHistory by remember { mutableStateOf(false) }
+    val openPositions by remember(walletId) {
+        viewModel.observeOpenPositions(walletId)
+    }.collectAsStateWithLifecycle(initialValue = emptyList())
+    val totalPnl by remember(walletId) {
+        viewModel.observeTotalUnrealizedPnl(walletId)
+    }.collectAsStateWithLifecycle(initialValue = 0.0)
+    val closedPositions by remember(walletId) {
+        viewModel.observeClosedPositions(walletId, CLOSED_POSITION_PREVIEW_LIMIT)
+    }.collectAsStateWithLifecycle(initialValue = emptyList())
+    val openPositionsCount = openPositions.size
     val openPositionsPreview = openPositions.take(3)
     val marketsPreview = markets.take(3)
     val closedPositionsPreview = closedPositions.take(3)
     val totalPnlFiatText = "${fiatSymbol}${BigDecimal.valueOf(totalPnl).multiply(fiatRate).priceFormat()}"
 
     LaunchedEffect(Unit) {
-        // Refresh positions from API
-        viewModel.refreshPositions(walletId)
-        
         viewModel.loadMarkets(
             onSuccess = { data ->
                 markets = data
@@ -102,29 +114,15 @@ fun PerpetualContent(
                 isLoading = false
             }
         )
+    }
 
-        if (walletId.isNotEmpty()) {
-            viewModel.getOpenPositions(walletId) { positions ->
-                openPositions = positions
-                openPositionsCount = positions.size
+    LaunchedEffect(walletId, lifecycleOwner) {
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            while (isActive) {
+                viewModel.refreshPositions(walletId)
+                viewModel.refreshPositionHistory(walletId, limit = CLOSED_POSITION_PREVIEW_LIMIT)
+                delay(POSITION_REFRESH_INTERVAL_MS)
             }
-
-            viewModel.getTotalUnrealizedPnl(walletId) { pnl ->
-                totalPnl = pnl
-            }
-
-            isLoadingHistory = true
-            viewModel.loadPositionHistory(
-                walletId = walletId,
-                limit = 10,
-                onSuccess = { history ->
-                    closedPositions = history
-                    isLoadingHistory = false
-                },
-                onError = { error ->
-                    isLoadingHistory = false
-                }
-            )
         }
     }
 
@@ -364,19 +362,7 @@ fun PerpetualContent(
             }
             Spacer(modifier = Modifier.height(12.dp))
 
-            if (isLoadingHistory) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(100.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(
-                        color = MixinAppTheme.colors.accent,
-                        modifier = Modifier.size(32.dp)
-                    )
-                }
-            } else if (closedPositions.isEmpty()) {
+            if (closedPositions.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -475,22 +461,15 @@ private fun ViewAllAction(onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
+            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = onClick),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = stringResource(R.string.view_all),
-            fontSize = 13.sp,
+            fontSize = 14.sp,
             color = MixinAppTheme.colors.accent,
-            fontWeight = FontWeight.Medium,
-        )
-        Spacer(modifier = Modifier.width(4.dp))
-        Icon(
-            painter = painterResource(R.drawable.ic_arrow_right),
-            contentDescription = null,
-            tint = MixinAppTheme.colors.accent,
-            modifier = Modifier.size(14.dp)
+            fontWeight = FontWeight.W500,
         )
     }
 }

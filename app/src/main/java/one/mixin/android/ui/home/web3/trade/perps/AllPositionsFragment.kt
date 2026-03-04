@@ -5,12 +5,18 @@ import android.view.View
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.paging.PagedList
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -33,6 +39,8 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
         private const val ARGS_INITIAL_TAB = "args_initial_tab"
         private const val TAB_OPEN = "tab_open"
         private const val TAB_CLOSED = "tab_closed"
+        private const val POSITION_REFRESH_INTERVAL_MS = 10_000L
+        private const val CLOSED_POSITION_REFRESH_LIMIT = 100
 
         fun newInstance(initialOpenTab: Boolean = false) = AllPositionsFragment().apply {
             arguments = Bundle().apply {
@@ -90,6 +98,7 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
     private var currentTab: PositionTab = PositionTab.CLOSED
     private var openPositionsLiveData: LiveData<PagedList<PerpsPositionItem>>? = null
     private var closedPositionsLiveData: LiveData<PagedList<PerpsPositionHistoryItem>>? = null
+    private var totalValueJob: Job? = null
 
     private val openPositionsObserver = Observer<PagedList<PerpsPositionItem>> { pagedList ->
         binding.progressBar.isVisible = false
@@ -138,11 +147,13 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
         }
 
         loadPositions()
+        observePeriodicRefresh()
     }
 
     private fun loadPositions() {
         openPositionsLiveData?.removeObservers(viewLifecycleOwner)
         closedPositionsLiveData?.removeObservers(viewLifecycleOwner)
+        totalValueJob?.cancel()
 
         if (currentTab == PositionTab.OPEN) {
             binding.titleView.setSubTitle(getString(R.string.Open_Positions_Simple), "")
@@ -170,14 +181,7 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
 
         openPositionsLiveData = viewModel.getOpenPositionsPaged(walletId)
         openPositionsLiveData?.observe(viewLifecycleOwner, openPositionsObserver)
-
-        lifecycleScope.launch {
-            val totalPositionValue = viewModel.getTotalOpenPositionValueFromDb(walletId)
-            val totalPnl = viewModel.getTotalUnrealizedPnlFromDb(walletId)
-            val percent = calculatePercent(totalPnl, totalPositionValue)
-            totalValueAdapter.submitTotal(BigDecimal.valueOf(totalPositionValue))
-            totalValueAdapter.submitSubtitle(BigDecimal.valueOf(totalPnl), BigDecimal.valueOf(percent))
-        }
+        observeOpenTotals(walletId)
     }
 
     private fun loadClosedPositions() {
@@ -193,13 +197,58 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
 
         closedPositionsLiveData = viewModel.getClosedPositionsPaged(walletId)
         closedPositionsLiveData?.observe(viewLifecycleOwner, closedPositionsObserver)
+        observeClosedTotals(walletId)
+    }
 
-        lifecycleScope.launch {
-            val totalPnl = viewModel.getTotalRealizedPnlFromDb(walletId)
-            val totalEntryValue = viewModel.getTotalClosedEntryValueFromDb(walletId)
-            val percent = calculatePercent(totalPnl, totalEntryValue)
-            totalValueAdapter.submitTotal(BigDecimal.valueOf(totalPnl))
-            totalValueAdapter.submitSubtitle(BigDecimal.valueOf(totalPnl), BigDecimal.valueOf(percent))
+    private fun observeOpenTotals(walletId: String) {
+        totalValueJob?.cancel()
+        totalValueJob = viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                combine(
+                    viewModel.observeTotalOpenPositionValue(walletId),
+                    viewModel.observeTotalUnrealizedPnl(walletId)
+                ) { totalPositionValue, totalPnl ->
+                    totalPositionValue to totalPnl
+                }.collect { (totalPositionValue, totalPnl) ->
+                    val percent = calculatePercent(totalPnl, totalPositionValue)
+                    totalValueAdapter.submitTotal(BigDecimal.valueOf(totalPositionValue))
+                    totalValueAdapter.submitSubtitle(BigDecimal.valueOf(totalPnl), BigDecimal.valueOf(percent))
+                }
+            }
+        }
+    }
+
+    private fun observeClosedTotals(walletId: String) {
+        totalValueJob?.cancel()
+        totalValueJob = viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                combine(
+                    viewModel.observeTotalRealizedPnl(walletId),
+                    viewModel.observeTotalClosedEntryValue(walletId)
+                ) { totalPnl, totalEntryValue ->
+                    totalPnl to totalEntryValue
+                }.collect { (totalPnl, totalEntryValue) ->
+                    val percent = calculatePercent(totalPnl, totalEntryValue)
+                    totalValueAdapter.submitTotal(BigDecimal.valueOf(totalPnl))
+                    totalValueAdapter.submitSubtitle(BigDecimal.valueOf(totalPnl), BigDecimal.valueOf(percent))
+                }
+            }
+        }
+    }
+
+    private fun observePeriodicRefresh() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                val walletId = Session.getAccountId() ?: return@repeatOnLifecycle
+                while (isActive) {
+                    viewModel.refreshPositions(walletId)
+                    viewModel.refreshPositionHistory(
+                        walletId = walletId,
+                        limit = CLOSED_POSITION_REFRESH_LIMIT
+                    )
+                    delay(POSITION_REFRESH_INTERVAL_MS)
+                }
+            }
         }
     }
 

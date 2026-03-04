@@ -71,16 +71,16 @@ class TotalPositionValueAdapter : RecyclerView.Adapter<TotalPositionValueAdapter
                 val isProfit = subtitleValue >= BigDecimal.ZERO
                 valueTv.setTextColor(
                     if (isProfit) {
-                        resolveAttrColor(itemView, R.color.wallet_green)
+                        context.getColor(R.color.wallet_green)
                     } else {
-                        resolveAttrColor(itemView, R.color.wallet_red)
+                        context.getColor(R.color.wallet_red)
                     }
                 )
                 subtitleTv.setTextColor(
                     if (isProfit) {
-                        resolveAttrColor(itemView, R.color.wallet_green)
+                        context.getColor(R.color.wallet_green)
                     } else {
-                        resolveAttrColor(itemView, R.color.wallet_red)
+                        context.getColor(R.color.wallet_red)
                     }
                 )
             } else {

@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.paging.DataSource
+import kotlinx.coroutines.flow.Flow
 import one.mixin.android.api.response.perps.PerpsPosition
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.db.BaseDao
@@ -25,6 +26,17 @@ interface PerpsPositionDao : BaseDao<PerpsPosition> {
         ORDER BY p.created_at DESC
     """)
     suspend fun getOpenPositions(walletId: String): List<PerpsPositionItem>
+
+    @Query(
+        """
+        SELECT p.*, m.display_symbol, m.icon_url, m.token_symbol
+        FROM positions p
+        LEFT JOIN markets m ON m.market_id = p.product_id
+        WHERE p.wallet_id = :walletId AND p.state = 'open'
+        ORDER BY p.created_at DESC
+    """
+    )
+    fun observeOpenPositions(walletId: String): Flow<List<PerpsPositionItem>>
 
     @Query("""
         SELECT p.*, m.display_symbol, m.icon_url, m.token_symbol
@@ -52,8 +64,14 @@ interface PerpsPositionDao : BaseDao<PerpsPosition> {
     @Query("SELECT SUM(CAST(unrealized_pnl AS REAL)) FROM positions WHERE wallet_id = :walletId AND state = 'open'")
     suspend fun getTotalUnrealizedPnl(walletId: String): Double?
 
+    @Query("SELECT COALESCE(SUM(CAST(unrealized_pnl AS REAL)), 0) FROM positions WHERE wallet_id = :walletId AND state = 'open'")
+    fun observeTotalUnrealizedPnl(walletId: String): Flow<Double>
+
     @Query("SELECT SUM(CAST(entry_price AS REAL) * ABS(CAST(quantity AS REAL))) FROM positions WHERE wallet_id = :walletId AND state = 'open'")
     suspend fun getTotalOpenPositionValue(walletId: String): Double?
+
+    @Query("SELECT COALESCE(SUM(CAST(entry_price AS REAL) * ABS(CAST(quantity AS REAL))), 0) FROM positions WHERE wallet_id = :walletId AND state = 'open'")
+    fun observeTotalOpenPositionValue(walletId: String): Flow<Double>
 
     @Query("DELETE FROM positions WHERE position_id = :positionId")
     fun deleteById(positionId: String)
