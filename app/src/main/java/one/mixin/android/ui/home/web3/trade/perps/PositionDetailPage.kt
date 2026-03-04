@@ -18,12 +18,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -49,6 +52,7 @@ fun PositionDetailPage(
     pop: () -> Unit,
     onClose: (() -> Unit)? = null,
     onShare: (() -> Unit)? = null,
+    onSupport: (() -> Unit)? = null,
 ) {
     val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
     
@@ -94,7 +98,16 @@ fun PositionDetailPage(
     PageScaffold(
         title = title,
         verticalScrollable = false,
-        pop = pop
+        pop = pop,
+        actions = {
+            IconButton(onClick = { onSupport?.invoke() }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_support),
+                    contentDescription = null,
+                    tint = MixinAppTheme.colors.icon,
+                )
+            }
+        }
     ) {
         Column(
             modifier = Modifier
@@ -323,6 +336,7 @@ fun PositionDetailPage(
     pop: () -> Unit,
     onTradeAgain: (() -> Unit)? = null,
     onShare: (() -> Unit)? = null,
+    onSupport: (() -> Unit)? = null,
 ) {
     val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
 
@@ -368,7 +382,16 @@ fun PositionDetailPage(
     PageScaffold(
         title = title,
         verticalScrollable = false,
-        pop = pop
+        pop = pop,
+        actions = {
+            IconButton(onClick = { onSupport?.invoke() }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_support),
+                    contentDescription = null,
+                    tint = MixinAppTheme.colors.icon,
+                )
+            }
+        }
     ) {
         Column(
             modifier = Modifier

@@ -12,6 +12,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.openUrl
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.api.response.perps.toPosition
@@ -72,6 +73,9 @@ class PositionDetailFragment : BaseFragment() {
                             },
                             onShare = {
                                 PerpsPositionShareActivity.show(requireContext(), position)
+                            },
+                            onSupport = {
+                                context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
                             }
                         )
                     } else if (positionHistory != null) {
@@ -86,6 +90,9 @@ class PositionDetailFragment : BaseFragment() {
                             },
                             onShare = {
                                 PerpsPositionShareActivity.show(requireContext(), positionHistory)
+                            },
+                            onSupport = {
+                                context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
                             }
                         )
                     }

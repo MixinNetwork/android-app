@@ -283,7 +283,7 @@ fun PerpetualContent(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = stringResource(R.string.Markets),
+                    text = stringResource(R.string.Perpetual_Markets),
                     fontSize = 16.sp,
                     color = MixinAppTheme.colors.textPrimary,
                 )

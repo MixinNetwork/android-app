@@ -23,6 +23,7 @@ import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -56,6 +57,7 @@ import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.marketPriceFormat
+import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.session.Session
 import one.mixin.android.ui.home.web3.trade.CandleChart
@@ -119,8 +121,20 @@ fun PerpsMarketDetailPage(
 
     PageScaffold(
         title = displaySymbol,
+        subtitleText = stringResource(R.string.Perpetual),
         verticalScrollable = false,
-        pop = onBack
+        pop = onBack,
+        actions = {
+            IconButton(onClick = {
+                context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+            }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_support),
+                    contentDescription = null,
+                    tint = MixinAppTheme.colors.icon,
+                )
+            }
+        }
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             Column(

@@ -78,6 +78,7 @@ class PerpsActivity : BaseActivity() {
                             displaySymbol = displaySymbol,
                             isLong = isLong,
                             onBack = { finish() },
+                            selectedToken = selectedToken,
                             onTokenSelect = { showTokenSelection() }
                         )
                     }
@@ -97,7 +98,8 @@ class PerpsActivity : BaseActivity() {
 
     private fun showTokenSelection() {
         TokenListBottomSheetDialogFragment.newInstance(
-            fromType = TokenListBottomSheetDialogFragment.TYPE_FROM_PERP
+            fromType = TokenListBottomSheetDialogFragment.TYPE_FROM_PERP,
+            currentAssetId = selectedToken?.assetId
         ).setOnAssetClick { token ->
             selectedToken = token
         }.show(supportFragmentManager, TokenListBottomSheetDialogFragment.TAG)

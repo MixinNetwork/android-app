@@ -24,6 +24,7 @@ import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -54,6 +55,7 @@ import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.numberFormat8
+import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.putInt
 import one.mixin.android.session.Session
@@ -78,13 +80,14 @@ fun OpenPositionPage(
     displaySymbol: String,
     isLong: Boolean,
     onBack: () -> Unit,
+    selectedToken: TokenItem? = null,
     onTokenSelect: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<PerpetualViewModel>()
 
     var market by remember { mutableStateOf<PerpsMarket?>(null) }
-    var selectedToken by remember { mutableStateOf<TokenItem?>(null) }
+    var currentToken by remember { mutableStateOf<TokenItem?>(selectedToken) }
     var availableTokens by remember { mutableStateOf<List<TokenItem>>(emptyList()) }
     var usdtAmount by remember { mutableStateOf("") }
 
@@ -102,7 +105,15 @@ fun OpenPositionPage(
 
         viewModel.loadUsdTokens { tokens ->
             availableTokens = tokens
-            selectedToken = tokens.firstOrNull()
+            currentToken = selectedToken?.let { target ->
+                tokens.firstOrNull { it.assetId == target.assetId } ?: target
+            } ?: tokens.firstOrNull()
+        }
+    }
+
+    LaunchedEffect(selectedToken?.assetId, availableTokens) {
+        selectedToken?.let { target ->
+            currentToken = availableTokens.firstOrNull { it.assetId == target.assetId } ?: target
         }
     }
 
@@ -116,7 +127,7 @@ fun OpenPositionPage(
     val fiatRate = BigDecimal(Fiats.getRate())
     val fiatSymbol = Fiats.getSymbol()
     val inputAmount = usdtAmount.toBigDecimalOrNull()
-    val tokenBalance = selectedToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val tokenBalance = currentToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val hasInputAmount = inputAmount != null && inputAmount > BigDecimal.ZERO
     val insufficientBalance = hasInputAmount && inputAmount > tokenBalance
     val canReview = hasInputAmount && !insufficientBalance
@@ -124,8 +135,20 @@ fun OpenPositionPage(
     MixinAppTheme {
         PageScaffold(
             title = stringResource(R.string.Open_Position),
+            subtitleText = stringResource(R.string.Perpetual),
             verticalScrollable = false,
-            pop = onBack
+            pop = onBack,
+            actions = {
+                IconButton(onClick = {
+                    context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_support),
+                        contentDescription = null,
+                        tint = MixinAppTheme.colors.icon,
+                    )
+                }
+            }
         ) {
             Column(
                 modifier = Modifier
@@ -183,7 +206,7 @@ fun OpenPositionPage(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     InputContent(
-                        token = selectedToken?.toSwapToken(),
+                        token = currentToken?.toSwapToken(),
                         text = usdtAmount,
                         selectClick = {
                             onTokenSelect()
@@ -205,14 +228,14 @@ fun OpenPositionPage(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = selectedToken?.balance?.numberFormat8() ?: "0",
+                            text = currentToken?.balance?.numberFormat8() ?: "0",
                             style = TextStyle(
                                 fontSize = 12.sp,
                                 color = MixinAppTheme.colors.textAssist,
                                 textAlign = TextAlign.Start,
                             ),
                             modifier = Modifier.clickable {
-                                usdtAmount = selectedToken?.balance ?: "0"
+                                usdtAmount = currentToken?.balance ?: "0"
                             }
                         )
                         if (insufficientBalance) {
@@ -225,7 +248,7 @@ fun OpenPositionPage(
                                 ),
                                 modifier = Modifier.clickable {
                                     val activity = context as? FragmentActivity ?: return@clickable
-                                    val token = selectedToken ?: return@clickable
+                                    val token = currentToken ?: return@clickable
                                     AddFeeBottomSheetDialogFragment.newInstance(token)
                                         .apply {
                                             onAction = { type, addToken ->
@@ -448,7 +471,7 @@ fun OpenPositionPage(
                         .fillMaxWidth()
                         .height(48.dp),
                     onClick = {
-                        val token = selectedToken ?: return@Button
+                        val token = currentToken ?: return@Button
                         val amount = usdtAmount.toBigDecimalOrNull() ?: return@Button
 
                         if (amount <= BigDecimal.ZERO) return@Button
@@ -511,7 +534,7 @@ fun OpenPositionPage(
                 ) {
                     Text(
                         text = if (insufficientBalance) {
-                            "${selectedToken?.symbol ?: ""} ${stringResource(R.string.insufficient_balance)}"
+                            "${currentToken?.symbol ?: ""} ${stringResource(R.string.insufficient_balance)}"
                         } else {
                             stringResource(R.string.Review)
                         },
