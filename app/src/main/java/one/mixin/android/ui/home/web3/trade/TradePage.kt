@@ -215,6 +215,7 @@ fun TradePage(
         sheetBackgroundColor = MixinAppTheme.colors.background,
         sheetContent = {
             HelpBottomSheetContent(
+                hideGuide = pagerState.currentPage != 2,
                 onContactSupport = {
                     coroutineScope.launch {
                         bottomSheetState.hide()

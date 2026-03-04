@@ -1,15 +1,15 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
-import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import androidx.compose.ui.platform.ComposeView
-import androidx.fragment.app.Fragment
+import androidx.compose.runtime.Composable
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.getSafeAreaInsetsTop
+import one.mixin.android.extension.screenHeight
+import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
+
 @AndroidEntryPoint
-class PerpetualGuideFragment : Fragment() {
+class PerpetualGuideFragment : MixinComposeBottomSheetDialogFragment() {
 
     companion object {
         const val TAG = "PerpetualGuideFragment"
@@ -17,22 +17,21 @@ class PerpetualGuideFragment : Fragment() {
         fun newInstance() = PerpetualGuideFragment()
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        return ComposeView(requireContext()).apply {
-            setContent {
-                MixinAppTheme {
-                    PerpetualGuidePage(
-                        pop = {
-                            requireActivity().onBackPressedDispatcher.onBackPressed()
-                        }
-                    )
+    @Composable
+    override fun ComposeContent() {
+        MixinAppTheme {
+            PerpetualGuidePage(
+                pop = {
+                    dismiss()
                 }
-            }
+            )
         }
     }
-}
 
+    override fun getBottomSheetHeight(view: View): Int {
+        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+    }
+
+    override fun showError(error: String) {
+    }
+}

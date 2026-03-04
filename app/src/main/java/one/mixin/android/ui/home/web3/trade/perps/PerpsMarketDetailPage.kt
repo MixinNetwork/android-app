@@ -22,6 +22,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -168,24 +169,7 @@ fun PerpsMarketDetailPage(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 if (currentPosition != null) {
-                    OpenPositionCard(
-                        position = currentPosition!!,
-                        onClick = {
-                            val activity = context as? FragmentActivity
-                            val position = currentPosition
-                            if (activity != null && position != null) {
-                                activity.supportFragmentManager
-                                    .beginTransaction()
-                                    .add(
-                                        android.R.id.content,
-                                        PositionDetailFragment.newInstance(position),
-                                        PositionDetailFragment.TAG
-                                    )
-                                    .addToBackStack(null)
-                                    .commit()
-                            }
-                        }
-                    )
+                    OpenPositionCard(position = currentPosition!!)
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
@@ -194,15 +178,8 @@ fun PerpsMarketDetailPage(
                         market = market!!,
                         onLearnClick = {
                             val activity = context as? FragmentActivity ?: return@MarketInfoCard
-                            activity.supportFragmentManager
-                                .beginTransaction()
-                                .add(
-                                    android.R.id.content,
-                                    PerpetualGuideFragment.newInstance(),
-                                    PerpetualGuideFragment.TAG
-                                )
-                                .addToBackStack(null)
-                                .commit()
+                            PerpetualGuideFragment.newInstance()
+                                .show(activity.supportFragmentManager, PerpetualGuideFragment.TAG)
                         }
                     )
                 }
@@ -432,24 +409,6 @@ private fun MarketInfoCard(
         )
 
         Spacer(modifier = Modifier.height(12.dp))
-
-
-        Column {
-            Text(
-                text = stringResource(R.string.Open_Interest),
-                fontSize = 12.sp,
-                color = MixinAppTheme.colors.textAssist
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = stringResource(R.string.N_A),
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                color = MixinAppTheme.colors.textPrimary
-            )
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
         Column {
             Text(
                 text = stringResource(R.string.Funding_Rate),
@@ -608,7 +567,6 @@ private fun MarketDetailCard(
 @Composable
 private fun OpenPositionCard(
     position: PerpsPositionItem,
-    onClick: () -> Unit,
 ) {
     val context = LocalContext.current
     val quoteColorReversed = context.defaultSharedPreferences
@@ -637,7 +595,6 @@ private fun OpenPositionCard(
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
             .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
-            .clickable { onClick() }
             .padding(16.dp)
     ) {
         Row(
@@ -701,12 +658,26 @@ private fun OpenPositionCard(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column {
-                Text(
-                    text = stringResource(R.string.Order_Value),
-                    fontSize = 12.sp,
-                    color = MixinAppTheme.colors.textAssist
-                )
-                Spacer(modifier = Modifier.height(4.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = stringResource(R.string.Order_Value),
+                        fontSize = 12.sp,
+                        color = MixinAppTheme.colors.textAssist
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_tip),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(12.dp)
+                            .clickable {
+                                val activity = context as? FragmentActivity ?: return@clickable
+                                PerpetualGuideFragment.newInstance()
+                                    .show(activity.supportFragmentManager, PerpetualGuideFragment.TAG)
+                            },
+                        tint = MixinAppTheme.colors.textAssist
+                    )
+                }
                 Text(
                     text = "${quantity.stripTrailingZeros().toPlainString()} ${position.tokenSymbol}",
                     fontSize = 14.sp,
@@ -715,12 +686,27 @@ private fun OpenPositionCard(
             }
 
             Column(horizontalAlignment = Alignment.End) {
-                Text(
-                    text = stringResource(R.string.Amount),
-                    fontSize = 12.sp,
-                    color = MixinAppTheme.colors.textAssist
-                )
-                Spacer(modifier = Modifier.height(4.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = stringResource(R.string.Amount),
+                        fontSize = 12.sp,
+                        color = MixinAppTheme.colors.textAssist
+                    )
+
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_tip),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(12.dp)
+                            .clickable {
+                                val activity = context as? FragmentActivity ?: return@clickable
+                                PerpetualGuideFragment.newInstance()
+                                    .show(activity.supportFragmentManager, PerpetualGuideFragment.TAG)
+                            },
+                        tint = MixinAppTheme.colors.textAssist
+                    )
+                }
                 Text(
                     text = "${fiatSymbol}${orderValue.priceFormat()}",
                     fontSize = 14.sp,
@@ -750,12 +736,26 @@ private fun OpenPositionCard(
             }
 
             Column(horizontalAlignment = Alignment.End) {
-                Text(
-                    text = stringResource(R.string.Liquidation_Price),
-                    fontSize = 12.sp,
-                    color = MixinAppTheme.colors.textAssist
-                )
-                Spacer(modifier = Modifier.height(4.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = stringResource(R.string.Liquidation_Price),
+                        fontSize = 12.sp,
+                        color = MixinAppTheme.colors.textAssist
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_tip),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(12.dp)
+                            .clickable {
+                                val activity = context as? FragmentActivity ?: return@clickable
+                                PerpetualGuideFragment.newInstance()
+                                    .show(activity.supportFragmentManager, PerpetualGuideFragment.TAG)
+                            },
+                        tint = MixinAppTheme.colors.textAssist
+                    )
+                }
                 Text(
                     text = "${fiatSymbol}${liquidationPrice.multiply(fiatRate).priceFormat()}",
                     fontSize = 14.sp,

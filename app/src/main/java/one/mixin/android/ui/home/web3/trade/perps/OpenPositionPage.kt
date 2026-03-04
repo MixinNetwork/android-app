@@ -125,8 +125,6 @@ fun OpenPositionPage(
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 16.dp)
             ) {
-                Spacer(modifier = Modifier.height(16.dp))
-
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
@@ -300,7 +298,9 @@ fun OpenPositionPage(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    modifier = Modifier.padding(horizontal = 10.dp).widthIn(min = 20.dp),
+                                    modifier = Modifier
+                                        .padding(horizontal = 10.dp)
+                                        .widthIn(min = 20.dp),
                                     textAlign = TextAlign.Center,
                                     text = displayText,
                                     fontSize = 12.sp,
@@ -338,12 +338,26 @@ fun OpenPositionPage(
                         .padding(horizontal = 4.dp),
                 ) {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text(
-                            text = stringResource(R.string.Order_Value),
-                            fontSize = 14.sp,
-                            color = MixinAppTheme.colors.textAssist
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Row (verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = stringResource(R.string.Order_Value),
+                                fontSize = 14.sp,
+                                color = MixinAppTheme.colors.textAssist
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_tip),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(12.dp)
+                                    .clickable {
+                                        val activity = context as? FragmentActivity ?: return@clickable
+                                        PerpetualGuideFragment.newInstance()
+                                            .show(activity.supportFragmentManager, PerpetualGuideFragment.TAG)
+                                    },
+                                tint = MixinAppTheme.colors.textAssist
+                            )
+                        }
                         Text(
                             text = "${calculateOrderValue(usdtAmount, leverage, market?.markPrice ?: "0")} ${market?.tokenSymbol}",
                             fontSize = 14.sp,
@@ -352,12 +366,26 @@ fun OpenPositionPage(
                     }
 
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text(
-                            text = stringResource(R.string.Liquidation_Price),
-                            fontSize = 14.sp,
-                            color = MixinAppTheme.colors.textAssist
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Row (verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = stringResource(R.string.Liquidation_Price),
+                                fontSize = 14.sp,
+                                color = MixinAppTheme.colors.textAssist
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_tip),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(12.dp)
+                                    .clickable {
+                                        val activity = context as? FragmentActivity ?: return@clickable
+                                        PerpetualGuideFragment.newInstance()
+                                            .show(activity.supportFragmentManager, PerpetualGuideFragment.TAG)
+                                    },
+                                tint = MixinAppTheme.colors.textAssist
+                            )
+                        }
                         Text(
                             text = calculateLiquidationPrice(
                                 market?.markPrice ?: "0",

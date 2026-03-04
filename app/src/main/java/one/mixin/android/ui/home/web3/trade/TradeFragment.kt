@@ -334,7 +334,8 @@ class TradeFragment : BaseFragment() {
                                 },
                                 onShowTradingGuide = {
                                     this@apply.hideKeyboard()
-                                    navTo(PerpetualGuideFragment.newInstance(), PerpetualGuideFragment.TAG)
+                                    PerpetualGuideFragment.newInstance()
+                                        .show(parentFragmentManager, PerpetualGuideFragment.TAG)
                                 },
                                 pop = {
                                     navigateUp(navController)

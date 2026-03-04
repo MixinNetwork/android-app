@@ -8,6 +8,7 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -169,7 +170,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         try {
             val price = entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
             Timber.d("LiquidationPrice - entryPrice: $entryPrice, leverage: $leverage, isLong: $isLong, price: $price")
-            
+
             if (price == BigDecimal.ZERO) {
                 "0"
             } else {
@@ -390,7 +391,8 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                     PerpsInfoItem(
                         title = stringResource(R.string.Estimated_Liquidation_Price).uppercase(),
                         value = liquidationPrice,
-                        subValue = lossSubValue
+                        subValue = lossSubValue,
+                        info = true
                     )
 
                     Box(modifier = Modifier.height(20.dp))
@@ -462,18 +464,36 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         title: String,
         value: String,
         subValue: String? = null,
+        info: Boolean = false,
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp),
         ) {
-            Text(
-                text = title,
-                color = MixinAppTheme.colors.textRemarks,
-                fontSize = 14.sp,
-                maxLines = 1,
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = title,
+                    color = MixinAppTheme.colors.textRemarks,
+                    fontSize = 14.sp,
+                    maxLines = 1,
+                )
+                if (info) {
+                    Spacer(modifier = Modifier.width(4.dp))
+
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_tip),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(12.dp)
+                            .clickable {
+                                PerpetualGuideFragment.newInstance()
+                                    .show(parentFragmentManager, PerpetualGuideFragment.TAG)
+                            },
+                        tint = MixinAppTheme.colors.textAssist
+                    )
+                }
+            }
             Box(modifier = Modifier.height(4.dp))
             Text(
                 text = value,
