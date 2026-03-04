@@ -55,11 +55,25 @@ interface PerpsPositionDao : BaseDao<PerpsPosition> {
     """)
     suspend fun getPosition(positionId: String): PerpsPositionItem?
 
+    @Query("""
+        SELECT p.*, m.display_symbol, m.icon_url, m.token_symbol
+        FROM positions p
+        LEFT JOIN markets m ON m.market_id = p.product_id
+        WHERE p.position_id = :positionId
+    """)
+    fun observePosition(positionId: String): Flow<PerpsPositionItem?>
+
     @Query("UPDATE positions SET state = :status, updated_at = :updatedAt WHERE position_id = :positionId")
     suspend fun updateStatus(positionId: String, status: String, updatedAt: String)
 
     @Query("DELETE FROM positions WHERE wallet_id = :walletId")
     suspend fun deleteByWallet(walletId: String)
+
+    @Query("DELETE FROM positions WHERE wallet_id = :walletId AND state = 'open'")
+    suspend fun deleteOpenByWallet(walletId: String)
+
+    @Query("DELETE FROM positions WHERE wallet_id = :walletId AND state = 'open' AND position_id NOT IN (:positionIds)")
+    suspend fun deleteOpenByWalletAndNotIn(walletId: String, positionIds: List<String>)
 
     @Query("SELECT SUM(CAST(unrealized_pnl AS REAL)) FROM positions WHERE wallet_id = :walletId AND state = 'open'")
     suspend fun getTotalUnrealizedPnl(walletId: String): Double?

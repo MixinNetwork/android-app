@@ -5,8 +5,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import one.mixin.android.Constants
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
@@ -24,6 +32,7 @@ class PositionDetailFragment : BaseFragment() {
         const val TAG = "PositionDetailFragment"
         private const val ARGS_POSITION = "args_position"
         private const val ARGS_POSITION_HISTORY = "args_position_history"
+        private const val POSITION_REFRESH_INTERVAL_MS = 10_000L
 
         fun newInstance(position: PerpsPositionItem): PositionDetailFragment {
             return PositionDetailFragment().apply {
@@ -62,17 +71,43 @@ class PositionDetailFragment : BaseFragment() {
                     darkTheme = context.isNightMode(),
                 ) {
                     if (position != null) {
+                        val lifecycleOwner = LocalLifecycleOwner.current
+                        val positionFlow = remember(position.positionId) {
+                            viewModel.observePosition(position.positionId)
+                        }
+                        val positionState = positionFlow
+                            .collectAsStateWithLifecycle(initialValue = position)
+
+                        LaunchedEffect(position.positionId, lifecycleOwner) {
+                            lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                                while (isActive) {
+                                    viewModel.refreshSinglePosition(
+                                        positionId = position.positionId,
+                                        walletId = position.walletId,
+                                    )
+                                    delay(POSITION_REFRESH_INTERVAL_MS)
+                                }
+                            }
+                        }
+
+                        LaunchedEffect(positionState.value) {
+                            if (positionState.value == null) {
+                                activity?.onBackPressedDispatcher?.onBackPressed()
+                            }
+                        }
+
+                        val currentPosition = positionState.value ?: position
                         PositionDetailPage(
-                            position = position,
+                            position = currentPosition,
                             quoteColorReversed = quoteColorReversed,
                             pop = {
                                 activity?.onBackPressedDispatcher?.onBackPressed()
                             },
                             onClose = {
-                                showCloseDialog(position)
+                                showCloseDialog(currentPosition)
                             },
                             onShare = {
-                                PerpsPositionShareActivity.show(requireContext(), position)
+                                PerpsPositionShareActivity.show(requireContext(), currentPosition)
                             },
                             onSupport = {
                                 context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)

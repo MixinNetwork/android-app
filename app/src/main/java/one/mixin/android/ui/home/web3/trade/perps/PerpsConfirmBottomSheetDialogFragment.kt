@@ -62,6 +62,7 @@ import one.mixin.android.extension.composeDp
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.updatePinCheck
@@ -79,9 +80,11 @@ import one.mixin.android.ui.wallet.ItemUserContent
 import one.mixin.android.ui.wallet.components.WalletLabel
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.User
+import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.toUser
 import timber.log.Timber
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.util.UUID
 
 @AndroidEntryPoint
@@ -163,30 +166,37 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     private val leverage by lazy { requireArguments().getInt(ARGS_LEVERAGE) }
     private val entryPrice by lazy { requireNotNull(requireArguments().getString(ARGS_ENTRY_PRICE)) }
     private val tokenSymbol by lazy { requireNotNull(requireArguments().getString(ARGS_TOKEN_SYMBOL)) }
+    private val fiatRate by lazy { BigDecimal(Fiats.getRate()) }
+    private val fiatSymbol by lazy { Fiats.getSymbol() }
 
     private val payUrl by lazy { requireArguments().getString(ARGS_PAY_URL) }
+    private val entryFiatPrice by lazy {
+        val price = entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
+        "${fiatSymbol}${price.multiply(fiatRate).priceFormat()}"
+    }
 
     private val liquidationPrice by lazy {
         try {
-            val price = entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
-            Timber.d("LiquidationPrice - entryPrice: $entryPrice, leverage: $leverage, isLong: $isLong, price: $price")
-
-            if (price == BigDecimal.ZERO) {
-                "0"
+            if (leverage <= 0) {
+                "${fiatSymbol}0"
             } else {
-                val liquidationPercent = BigDecimal(100.0 / leverage)
-                val liquidation = if (isLong) {
-                    price * (BigDecimal.ONE - liquidationPercent / BigDecimal(100))
+                val price = entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                if (price == BigDecimal.ZERO) {
+                    "${fiatSymbol}0"
                 } else {
-                    price * (BigDecimal.ONE + liquidationPercent / BigDecimal(100))
+                    val liquidationPercent = BigDecimal(100.0 / leverage)
+                    val liquidationRatio = liquidationPercent.divide(BigDecimal(100), 8, RoundingMode.HALF_UP)
+                    val liquidation = if (isLong) {
+                        price * (BigDecimal.ONE - liquidationRatio)
+                    } else {
+                        price * (BigDecimal.ONE + liquidationRatio)
+                    }
+                    "${fiatSymbol}${liquidation.multiply(fiatRate).priceFormat()}"
                 }
-                val result = String.format("%.2f", liquidation)
-                Timber.d("LiquidationPrice - liquidationPercent: $liquidationPercent, liquidation: $liquidation, result: $result")
-                result
             }
         } catch (e: Exception) {
             Timber.e(e, "Failed to calculate liquidation price")
-            "0"
+            "${fiatSymbol}0"
         }
     }
 
@@ -358,7 +368,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
 
                     PerpsInfoItem(
                         title = stringResource(R.string.Entry_Price).uppercase(),
-                        value = "$$entryPrice"
+                        value = entryFiatPrice
                     )
                     Box(modifier = Modifier.height(20.dp))
 

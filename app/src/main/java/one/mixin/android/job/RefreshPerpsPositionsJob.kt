@@ -46,8 +46,11 @@ class RefreshPerpsPositionsJob(
             if (response.isSuccess && response.data != null) {
                 val positions = response.data!!.map { it.copy(walletId = walletId) }
                 Timber.d("RefreshPerpsPositionsJob: Fetched ${positions.size} positions for wallet $walletId")
-                
-                if (positions.isNotEmpty()) {
+
+                if (positions.isEmpty()) {
+                    positionDao.deleteOpenByWallet(walletId)
+                } else {
+                    positionDao.deleteOpenByWalletAndNotIn(walletId, positions.map { it.positionId })
                     positionDao.insertAll(positions)
                 }
             } else {

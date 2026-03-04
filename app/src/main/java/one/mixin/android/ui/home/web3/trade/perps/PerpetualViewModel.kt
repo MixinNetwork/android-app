@@ -26,6 +26,7 @@ import one.mixin.android.db.perps.PerpsMarketDao
 import one.mixin.android.db.perps.PerpsPositionHistoryDao
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshPerpsPositionsJob
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.safe.TokenItem
 import timber.log.Timber
 import java.math.BigDecimal
@@ -288,6 +289,43 @@ class PerpetualViewModel @Inject constructor(
 
     fun observeOpenPositions(walletId: String): Flow<List<PerpsPositionItem>> {
         return perpsPositionDao.observeOpenPositions(walletId)
+    }
+
+    fun observePosition(positionId: String): Flow<PerpsPositionItem?> {
+        return perpsPositionDao.observePosition(positionId)
+    }
+
+    fun refreshSinglePosition(positionId: String, walletId: String? = null) {
+        viewModelScope.launch {
+            try {
+                val response = withContext(Dispatchers.IO) {
+                    routeService.getPerpsPosition(positionId)
+                }
+
+                if (response.isSuccess) {
+                    val remotePosition = response.data
+                    withContext(Dispatchers.IO) {
+                        if (remotePosition == null || !remotePosition.state.equals("open", ignoreCase = true)) {
+                            perpsPositionDao.deleteById(positionId)
+                        } else {
+                            perpsPositionDao.insert(
+                                remotePosition.copy(
+                                    walletId = walletId ?: remotePosition.walletId
+                                )
+                            )
+                        }
+                    }
+                } else if (response.errorCode == ErrorHandler.NOT_FOUND) {
+                    withContext(Dispatchers.IO) {
+                        perpsPositionDao.deleteById(positionId)
+                    }
+                } else {
+                    Timber.e("Failed to refresh position detail: ${response.errorDescription}")
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Error refreshing position detail: ${e.message}")
+            }
+        }
     }
 
     fun observeClosedPositions(walletId: String, limit: Int): Flow<List<PerpsPositionHistoryItem>> {
