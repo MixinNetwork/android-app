@@ -86,6 +86,7 @@ import one.mixin.android.ui.home.inscription.InscriptionActivity
 import one.mixin.android.ui.home.web3.GasCheckBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.PREF_TRADE_SELECTED_TAB_PREFIX
+import one.mixin.android.ui.home.web3.trade.perps.PerpsActivity
 import one.mixin.android.ui.oldwallet.BottomSheetViewModel
 import one.mixin.android.ui.oldwallet.MultisigsBottomSheetDialogFragment
 import one.mixin.android.ui.oldwallet.NftBottomSheetDialogFragment
@@ -1076,10 +1077,34 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
     }
 
     private suspend fun handleTradeScheme(uri: Uri) {
+        val type = uri.getQueryParameter("type")
+        
+        if (type.equals("perps", true)) {
+            val productId = uri.getQueryParameter("product")
+            if (productId.isNullOrBlank() || !productId.isUUID()) {
+                showError(R.string.Invalid_payment_link)
+                return
+            }
+            
+            val market = linkViewModel.getPerpsMarket(productId)
+            if (market == null) {
+                showError(R.string.Data_error)
+                return
+            }
+            
+            PerpsActivity.showDetail(
+                requireContext(),
+                market.marketId,
+                market.symbol,
+                market.displaySymbol
+            )
+            dismiss()
+            return
+        }
+        
         val input = uri.getQueryParameter("input")
         val output = uri.getQueryParameter("output")
         val amount = uri.getQueryParameter("amount")
-        val type = uri.getQueryParameter("type")
         if (output != null && output.isUUID()) {
             checkToken(output)
         }

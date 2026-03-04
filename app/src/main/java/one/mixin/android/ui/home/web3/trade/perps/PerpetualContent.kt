@@ -101,7 +101,18 @@ fun PerpetualContent(
     val openPositionsPreview = openPositions.take(3)
     val marketsPreview = markets.take(3)
     val closedPositionsPreview = closedPositions.take(3)
-    val totalPnlFiatText = "${fiatSymbol}${BigDecimal.valueOf(totalPnl).multiply(fiatRate).priceFormat()}"
+    val totalPositionValue = openPositions.fold(BigDecimal.ZERO) { total, position ->
+        val quantity = position.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
+        val markPrice = position.markPrice?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+        total + quantity.abs().multiply(markPrice)
+    }
+    val totalPositionValueFiatText = "${fiatSymbol}${totalPositionValue.multiply(fiatRate).priceFormat()}"
+    val totalPnlFiatText = "${if (totalPnl >= 0) "+" else "-"}$fiatSymbol${BigDecimal.valueOf(totalPnl).abs().multiply(fiatRate).priceFormat()}"
+    val totalPnlPercent = if (totalPositionValue == BigDecimal.ZERO) {
+        0.0
+    } else {
+        totalPnl / totalPositionValue.toDouble() * 100
+    }
 
     LaunchedEffect(Unit) {
         viewModel.loadMarkets(
@@ -150,7 +161,7 @@ fun PerpetualContent(
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = totalPnlFiatText,
+                text = totalPositionValueFiatText,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.W600,
                 color = MixinAppTheme.colors.textPrimary,
@@ -164,7 +175,7 @@ fun PerpetualContent(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = String.format("(%s%.2f%%)", if (totalPnl >= 0) "+" else "", totalPnl),
+                    text = String.format("(%s%.2f%%)", if (totalPnlPercent >= 0) "+" else "", kotlin.math.abs(totalPnlPercent)),
                     fontSize = 14.sp,
                     color = if (totalPnl >= 0) risingColor else fallingColor,
                 )

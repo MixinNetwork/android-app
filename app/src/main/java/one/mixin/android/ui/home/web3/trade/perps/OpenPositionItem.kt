@@ -41,7 +41,8 @@ fun OpenPositionItem(
     val context = LocalContext.current
     val quoteColorPref = context.defaultSharedPreferences
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
-    val pnl = position.unrealizedPnl?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val markPrice = position.markPrice?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val positionValue = (position.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO).abs().multiply(markPrice)
     val fiatRate = BigDecimal(Fiats.getRate())
     val fiatSymbol = Fiats.getSymbol()
 
@@ -113,7 +114,7 @@ fun OpenPositionItem(
 
         Column(horizontalAlignment = Alignment.End) {
             Text(
-                text = "${fiatSymbol}${pnl.abs().multiply(fiatRate).priceFormat()}",
+                text = "${fiatSymbol}${positionValue.multiply(fiatRate).priceFormat()}",
                 fontSize = 14.sp,
                 color = MixinAppTheme.colors.textPrimary
             )

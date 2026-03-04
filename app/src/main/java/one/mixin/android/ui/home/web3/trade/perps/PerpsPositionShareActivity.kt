@@ -52,7 +52,6 @@ class PerpsPositionShareActivity : BaseActivity() {
     companion object {
         private const val ARGS_POSITION = "args_position"
         private const val ARGS_POSITION_HISTORY = "args_position_history"
-        private const val SHARE_INSTALL_URL = "https://mixin.one/mm"
 
         fun show(context: Context, position: PerpsPositionItem) {
             refreshScreenshot(context, 0x33000000)
@@ -84,11 +83,17 @@ class PerpsPositionShareActivity : BaseActivity() {
     }
 
     private val shareLink: String by lazy {
-        val identity = Session.getAccount()?.identityNumber
-        if (identity.isNullOrEmpty()) {
-            SHARE_INSTALL_URL
+        val identity = Session.getAccount()?.identityNumber ?: ""
+        val productId = position?.productId ?: positionHistory?.productId
+        if (productId != null) {
+            val baseUrl = "https://mixin.one/trade?type=perps&product=$productId"
+            if (identity.isNotEmpty()) {
+                "$baseUrl&referral=$identity"
+            } else {
+                baseUrl
+            }
         } else {
-            "$SHARE_INSTALL_URL?ref=$identity"
+            throw IllegalArgumentException("lost data")
         }
     }
 

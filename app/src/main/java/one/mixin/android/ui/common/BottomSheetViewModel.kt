@@ -2035,4 +2035,9 @@ class BottomSheetViewModel
         suspend fun fetchSessionsSuspend(ids: List<String>) = userRepository.fetchSessionsSuspend(ids)
 
         suspend fun getReferralCodeInfo(code: String) = userRepository.getReferralCodeInfo(code)
+
+        suspend fun getPerpsMarket(marketId: String): one.mixin.android.api.response.perps.PerpsMarket? = withContext(Dispatchers.IO) {
+            val response = web3Repository.routeService.getPerpsMarket(marketId)
+            response.data
+        }
 }
