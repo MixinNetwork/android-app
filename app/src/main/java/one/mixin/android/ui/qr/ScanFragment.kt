@@ -3,18 +3,21 @@ package one.mixin.android.ui.qr
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Point
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import com.google.mlkit.vision.barcode.common.Barcode
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentScanBinding
-import one.mixin.android.extension.REQUEST_GALLERY
 import one.mixin.android.extension.bounce
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getFilePath
@@ -22,7 +25,6 @@ import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.matchResourcePattern
 import one.mixin.android.extension.putBoolean
-import one.mixin.android.extension.selectMediaType
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
@@ -40,7 +42,6 @@ import one.mixin.android.util.mlkit.scan.camera.config.AspectRatioCameraConfig
 import one.mixin.android.util.mlkit.scan.utils.PointUtils
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.ViewfinderView
-import one.mixin.android.widget.gallery.ui.GalleryActivity
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -59,6 +60,7 @@ class ScanFragment : BaseCameraScanFragment<BarcodeResult>() {
 
     private val forScanResult by lazy { requireArguments().getBoolean(ARGS_FOR_SCAN_RESULT) }
     private val fromShortcut by lazy { requireArguments().getBoolean(ARGS_SHORTCUT) }
+    private lateinit var getMediaResult: ActivityResultLauncher<PickVisualMediaRequest>
 
     override fun getLayoutId() = R.layout.fragment_scan
 
@@ -66,6 +68,8 @@ class ScanFragment : BaseCameraScanFragment<BarcodeResult>() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        getMediaResult =
+            registerForActivityResult(ActivityResultContracts.PickVisualMedia(), ::onMediaPicked)
         activity?.onBackPressedDispatcher?.addCallback(
             this,
             object : OnBackPressedCallback(true) {
@@ -109,7 +113,7 @@ class ScanFragment : BaseCameraScanFragment<BarcodeResult>() {
                 flash.bounce()
             }
             galleryIv.setOnClickListener {
-                selectMediaType("image/*", arrayOf("image/*"), REQUEST_GALLERY)
+                getMediaResult.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
             }
         }
     }
@@ -167,24 +171,14 @@ class ScanFragment : BaseCameraScanFragment<BarcodeResult>() {
         }
     }
 
-    override fun onActivityResult(
-        requestCode: Int,
-        resultCode: Int,
-        data: Intent?,
-    ) {
-        if (requestCode == REQUEST_GALLERY && resultCode == Activity.RESULT_OK) {
-            data?.data?.let {
-                @Suppress("DEPRECATION")
-                val path = it.getFilePath(MixinApplication.get())
-                if (path == null) {
-                    toast(R.string.File_error)
-                } else {
-                    if (data.hasExtra(GalleryActivity.IS_VIDEO)) {
-                        openEdit(path, true, fromGallery = true)
-                    } else {
-                        openEdit(path, false, fromGallery = true)
-                    }
-                }
+    private fun onMediaPicked(uri: Uri?) {
+        uri?.let {
+            @Suppress("DEPRECATION")
+            val path = it.getFilePath(MixinApplication.get())
+            if (path == null) {
+                toast(R.string.File_error)
+            } else {
+                openEdit(path, false, fromGallery = true)
             }
         }
     }
