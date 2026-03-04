@@ -58,6 +58,9 @@ import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.putInt
 import one.mixin.android.session.Session
 import one.mixin.android.ui.home.web3.trade.InputContent
+import one.mixin.android.ui.home.web3.trade.SwapActivity
+import one.mixin.android.ui.wallet.AddFeeBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
@@ -112,6 +115,11 @@ fun OpenPositionPage(
     val directionColor = if (isLong) risingColor else fallingColor
     val fiatRate = BigDecimal(Fiats.getRate())
     val fiatSymbol = Fiats.getSymbol()
+    val inputAmount = usdtAmount.toBigDecimalOrNull()
+    val tokenBalance = selectedToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val hasInputAmount = inputAmount != null && inputAmount > BigDecimal.ZERO
+    val insufficientBalance = hasInputAmount && inputAmount > tokenBalance
+    val canReview = hasInputAmount && !insufficientBalance
 
     MixinAppTheme {
         PageScaffold(
@@ -207,6 +215,37 @@ fun OpenPositionPage(
                                 usdtAmount = selectedToken?.balance ?: "0"
                             }
                         )
+                        if (insufficientBalance) {
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = stringResource(R.string.Add),
+                                style = TextStyle(
+                                    fontSize = 12.sp,
+                                    color = MixinAppTheme.colors.accent,
+                                ),
+                                modifier = Modifier.clickable {
+                                    val activity = context as? FragmentActivity ?: return@clickable
+                                    val token = selectedToken ?: return@clickable
+                                    AddFeeBottomSheetDialogFragment.newInstance(token)
+                                        .apply {
+                                            onAction = { type, addToken ->
+                                                if (type == AddFeeBottomSheetDialogFragment.ActionType.SWAP) {
+                                                    SwapActivity.show(
+                                                        context = activity,
+                                                        input = Constants.AssetId.USDT_ASSET_ETH_ID,
+                                                        output = addToken.assetId,
+                                                        amount = null,
+                                                        referral = null
+                                                    )
+                                                } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
+                                                    WalletActivity.showDeposit(activity, addToken)
+                                                }
+                                            }
+                                        }
+                                        .show(activity.supportFragmentManager, AddFeeBottomSheetDialogFragment.TAG)
+                                }
+                            )
+                        }
                     }
                 }
                 Spacer(modifier = Modifier.height(2.dp))
@@ -413,6 +452,7 @@ fun OpenPositionPage(
                         val amount = usdtAmount.toBigDecimalOrNull() ?: return@Button
 
                         if (amount <= BigDecimal.ZERO) return@Button
+                        if (amount > (token.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO)) return@Button
 
                         val m = market ?: return@Button
                         val walletId = Session.getAccountId() ?: "" // Privacy Wallet
@@ -453,9 +493,9 @@ fun OpenPositionPage(
                             }
                         )
                     },
-                    enabled = usdtAmount.isNotBlank() && (usdtAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO) > BigDecimal.ZERO,
+                    enabled = canReview,
                     colors = ButtonDefaults.outlinedButtonColors(
-                        backgroundColor = if (usdtAmount.isNotBlank() && (usdtAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO) > BigDecimal.ZERO) {
+                        backgroundColor = if (canReview) {
                             MixinAppTheme.colors.accent
                         } else {
                             MixinAppTheme.colors.backgroundGrayLight
@@ -470,10 +510,14 @@ fun OpenPositionPage(
                     )
                 ) {
                     Text(
-                        text = stringResource(R.string.Review),
+                        text = if (insufficientBalance) {
+                            "${selectedToken?.symbol ?: ""} ${stringResource(R.string.insufficient_balance)}"
+                        } else {
+                            stringResource(R.string.Review)
+                        },
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (usdtAmount.isNotBlank() && (usdtAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO) > BigDecimal.ZERO) {
+                        color = if (canReview) {
                             Color.White
                         } else {
                             MixinAppTheme.colors.textAssist
