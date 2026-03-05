@@ -41,6 +41,7 @@ import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.viewDestroyed
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
 import one.mixin.android.ui.logs.LogViewerBottomSheet
@@ -526,7 +527,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             } else {
                 mobileEt.hint = getString(R.string.Phone_Number)
                 if (titleSwitcher.displayedChild != 0) {
-                    if (pin != null && presetPhoneNumber == null) {
+                    if (pin != null && presetPhoneNumber == null && Session.hasPhone()) {
                         titleSwitcher.setText(getString(R.string.Enter_new_phone_number))
                     } else {
                         titleSwitcher.setText(getString(R.string.Enter_your_phone_number))
