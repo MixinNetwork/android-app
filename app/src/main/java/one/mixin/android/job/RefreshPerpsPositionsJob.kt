@@ -47,11 +47,10 @@ class RefreshPerpsPositionsJob(
                 val positions = response.data!!.map { it.copy(walletId = walletId) }
                 Timber.d("RefreshPerpsPositionsJob: Fetched ${positions.size} positions for wallet $walletId")
 
-                if (positions.isEmpty()) {
-                    positionDao.deleteOpenByWallet(walletId)
-                } else {
-                    positionDao.deleteOpenByWalletAndNotIn(walletId, positions.map { it.positionId })
+                if (positions.isNotEmpty()) {
                     positionDao.insertAll(positions)
+                } else {
+                    Timber.d("RefreshPerpsPositionsJob: Keep local positions when remote list is empty for wallet $walletId")
                 }
             } else {
                 Timber.e("RefreshPerpsPositionsJob: Failed to fetch positions for wallet $walletId: ${response.errorDescription}")

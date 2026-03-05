@@ -41,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.request.ImageRequest
@@ -62,6 +63,7 @@ fun InputContent(
     onInputChanged: ((String) -> Unit)? = null,
     readOnly: Boolean = false,
     inlineEndCompose: (@Composable () -> Unit)? = null,
+    tokenIconSize: Dp = 32.dp,
 ) {
     if (readOnly) {
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -84,7 +86,7 @@ fun InputContent(
                         }
                     }
                 }
-                Right(token, selectClick)
+                Right(token, selectClick, tokenIconSize)
             }
             Text(text = "", style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Light)) // placeholder
         }
@@ -177,7 +179,7 @@ fun InputContent(
                         }
                     }
                 }
-                Right(token, selectClick)
+                Right(token, selectClick, tokenIconSize)
             }
             Text(text = "", style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Light)) // placeholder
         }
@@ -188,6 +190,7 @@ fun InputContent(
 private fun Right(
     token: SwapToken?,
     selectClick: (() -> Unit)? = null,
+    tokenIconSize: Dp = 32.dp,
 ) {
     Row(modifier = Modifier.clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { selectClick?.invoke() }, verticalAlignment = Alignment.CenterVertically) {
         if (token?.collectionHash != null) {
@@ -195,7 +198,7 @@ private fun Right(
                 model = ImageRequest.Builder(LocalContext.current).data(token.icon).transformations(CoilRoundedHexagonTransformation()).build(),
                 placeholder = R.drawable.ic_inscription_icon,
                 modifier = Modifier
-                    .size(30.dp),
+                    .size(tokenIconSize),
             )
         } else {
             Box {
@@ -203,7 +206,7 @@ private fun Right(
                     model = token?.icon ?: "",
                     placeholder = R.drawable.ic_avatar_place_holder,
                     modifier = Modifier
-                        .size(32.dp)
+                        .size(tokenIconSize)
                         .clip(CircleShape),
                 )
 
@@ -212,7 +215,7 @@ private fun Right(
                     placeholder = R.drawable.ic_avatar_place_holder,
                     modifier = Modifier
                         .align(Alignment.BottomStart)
-                        .size(13.dp)
+                        .size(tokenIconSize * (13f / 32f))
                         .border(1.dp, MixinAppTheme.colors.background, CircleShape)
                         .clip(CircleShape),
                 )

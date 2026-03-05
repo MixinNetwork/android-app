@@ -38,7 +38,6 @@ import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.round
 import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.toast
-import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.web.getScreenshot
 import one.mixin.android.ui.web.refreshScreenshot
@@ -85,22 +84,7 @@ class PerpsPositionShareActivity : BaseActivity() {
         intent.extras?.getParcelableCompat(ARGS_POSITION_HISTORY, PerpsPositionHistoryItem::class.java)
     }
 
-    private val qrShareLink: String = SHARE_QR_URL
-
-    private val copyShareLink: String by lazy {
-        val identity = Session.getAccount()?.identityNumber ?: ""
-        val productId = position?.productId ?: positionHistory?.productId
-        if (productId != null) {
-            val baseUrl = "${Constants.Scheme.HTTPS_TRADE}?type=perps&product=$productId"
-            if (identity.isNotEmpty()) {
-                "$baseUrl&referral=$identity"
-            } else {
-                baseUrl
-            }
-        } else {
-            SHARE_QR_URL
-        }
-    }
+    private val shareLink: String = SHARE_QR_URL
 
     private val quoteColorReversed: Boolean by lazy {
         defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
@@ -245,7 +229,7 @@ class PerpsPositionShareActivity : BaseActivity() {
     }
 
     private fun bindFooter() {
-        val qrCode = qrShareLink.generateQRCode(72.dp, 8.dp).first
+        val qrCode = shareLink.generateQRCode(72.dp, 8.dp).first
         binding.qr.setImageBitmap(qrCode)
     }
 
@@ -273,7 +257,7 @@ class PerpsPositionShareActivity : BaseActivity() {
     }
 
     private val onCopy: () -> Unit = {
-        getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, copyShareLink))
+        getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, shareLink))
         finish()
         toast(R.string.copied_to_clipboard)
     }

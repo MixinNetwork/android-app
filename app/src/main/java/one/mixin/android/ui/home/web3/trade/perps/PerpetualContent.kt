@@ -147,12 +147,14 @@ fun PerpetualContent(
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp)
-    ) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp)
+        ) {
         Spacer(modifier = Modifier.height(16.dp))
 
         Column(
@@ -422,11 +424,13 @@ fun PerpetualContent(
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(24.dp))
+        }
 
-        // Long and Short Buttons
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 24.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Button(
@@ -471,8 +475,6 @@ fun PerpetualContent(
                 )
             }
         }
-
-        Spacer(modifier = Modifier.height(24.dp))
     }
 }
 

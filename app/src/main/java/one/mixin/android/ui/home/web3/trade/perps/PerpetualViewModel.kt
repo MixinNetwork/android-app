@@ -335,20 +335,18 @@ class PerpetualViewModel @Inject constructor(
                 if (response.isSuccess) {
                     val remotePosition = response.data
                     withContext(Dispatchers.IO) {
-                        if (remotePosition == null || !remotePosition.state.equals("open", ignoreCase = true)) {
-                            perpsPositionDao.deleteById(positionId)
-                        } else {
+                        if (remotePosition != null) {
                             perpsPositionDao.insert(
                                 remotePosition.copy(
                                     walletId = walletId ?: remotePosition.walletId
                                 )
                             )
+                        } else {
+                            Timber.d("Skip deleting local position when remote detail is null: $positionId")
                         }
                     }
                 } else if (response.errorCode == ErrorHandler.NOT_FOUND) {
-                    withContext(Dispatchers.IO) {
-                        perpsPositionDao.deleteById(positionId)
-                    }
+                    Timber.d("Skip deleting local position on NOT_FOUND during refresh: $positionId")
                 } else {
                     Timber.e("Failed to refresh position detail: ${response.errorDescription}")
                 }
@@ -543,6 +541,9 @@ class PerpetualViewModel @Inject constructor(
                 }
                 
                 if (response.isSuccess) {
+                    withContext(Dispatchers.IO) {
+                        perpsPositionDao.deleteById(positionId)
+                    }
                     Timber.d("Perps order closed: $positionId")
                     onSuccess()
                 } else {
@@ -573,6 +574,18 @@ class PerpetualViewModel @Inject constructor(
         }
     }
 
+    suspend fun getPositionFromDb(positionId: String): PerpsPositionItem? {
+        return withContext(Dispatchers.IO) {
+            perpsPositionDao.getPosition(positionId)
+        }
+    }
+
+    suspend fun getMarketFromDb(marketId: String): PerpsMarket? {
+        return withContext(Dispatchers.IO) {
+            perpsMarketDao.getMarket(marketId)
+        }
+    }
+
     fun loadPositionDetail(
         positionId: String,
         onSuccess: (PerpsPosition) -> Unit,
@@ -580,19 +593,24 @@ class PerpetualViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             try {
+                val localBefore = withContext(Dispatchers.IO) {
+                    perpsPositionDao.getPosition(positionId)
+                }
+
                 val response = withContext(Dispatchers.IO) {
                     routeService.getPerpsPosition(positionId)
                 }
                 
                 val data = response.data
                 if (response.isSuccess && data != null) {
-                    Timber.d("Position detail loaded: ${data.positionId}")
+                    val resolvedWalletId = data.walletId ?: localBefore?.walletId
+                    val positionForDb = data.copy(walletId = resolvedWalletId)
                     
                     withContext(Dispatchers.IO) {
-                        perpsPositionDao.insert(data)
+                        perpsPositionDao.insert(positionForDb)
                     }
                     
-                    onSuccess(data)
+                    onSuccess(positionForDb)
                 } else {
                     val error = "Failed to load position detail: ${response.errorDescription}"
                     Timber.e(error)

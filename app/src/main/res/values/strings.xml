@@ -2378,8 +2378,10 @@
     <string name="Confirm_Close_Position">Confirm Close Position</string>
     <string name="Close_Position_Success">Close Position Success</string>
     <string name="Close_Position">Close Position</string>
-    <string name="Perpetual_Opened_Side_Title">Opened %1$s</string>
-    <string name="Perpetual_Closed_Side_Title">Closed %1$s</string>
+    <string name="Perpetual_Opened_Long_Title">Open Long</string>
+    <string name="Perpetual_Opened_Short_Title">Open Short</string>
+    <string name="Perpetual_Closed_Long_Title">Close Long</string>
+    <string name="Perpetual_Closed_Short_Title">Close Short</string>
     <string name="Estimated_Liquidation_Price">Estimated Liquidation Price</string>
     <string name="Total_Position_Value">Total Position Value</string>
     <string name="Perpetual_Side_Symbol_Title">%1$s %2$s</string>

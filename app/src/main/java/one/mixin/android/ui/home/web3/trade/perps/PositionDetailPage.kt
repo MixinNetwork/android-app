@@ -76,7 +76,11 @@ fun PositionDetailPage(
     } else {
         stringResource(R.string.Short)
     }
-    val title = stringResource(R.string.Perpetual_Opened_Side_Title, sideText)
+    val title = if (isLong) {
+        stringResource(R.string.Perpetual_Opened_Long_Title)
+    } else {
+        stringResource(R.string.Perpetual_Opened_Short_Title)
+    }
 
     val quantity = position.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val absQuantity = quantity.abs()
@@ -151,7 +155,7 @@ fun PositionDetailPage(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
                         .background(sideColor.copy(alpha = 0.2f))
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                        .padding(horizontal = 3.dp, vertical = 2.dp)
                         .align(Alignment.CenterHorizontally)
                 ) {
                     Text(
@@ -353,7 +357,11 @@ fun PositionDetailPage(
     } else {
         stringResource(R.string.Short)
     }
-    val title = stringResource(R.string.Perpetual_Closed_Side_Title, sideText)
+    val title = if (isLong) {
+        stringResource(R.string.Perpetual_Closed_Long_Title)
+    } else {
+        stringResource(R.string.Perpetual_Closed_Short_Title)
+    }
 
     val quantity = positionHistory.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val absQuantity = quantity.abs()
@@ -429,7 +437,7 @@ fun PositionDetailPage(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
                         .background(sideColor.copy(alpha = 0.2f))
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                        .padding(horizontal = 3.dp, vertical = 2.dp)
                         .align(Alignment.CenterHorizontally)
                 ) {
                     Text(

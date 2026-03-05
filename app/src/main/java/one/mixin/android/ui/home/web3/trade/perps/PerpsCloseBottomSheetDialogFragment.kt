@@ -49,7 +49,6 @@ import androidx.compose.ui.unit.sp
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -161,7 +160,6 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
     }
     private var step by mutableStateOf(Step.Pending)
     private var errorInfo: String? by mutableStateOf(null)
-    private var isLoading by mutableStateOf(true)
 
     private var latestMarkPrice by mutableStateOf("")
     private var latestUnrealizedPnl by mutableStateOf("")
@@ -187,12 +185,37 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
         }
 
         LaunchedEffect(positionId) {
+            val localPosition = viewModel.getPositionFromDb(positionId)
+            localPosition?.let { position ->
+                latestMarkPrice = position.markPrice ?: latestMarkPrice
+                latestUnrealizedPnl = position.unrealizedPnl ?: latestUnrealizedPnl
+                latestRoe = position.roe ?: latestRoe
+                marketIconUrl = position.iconUrl.orEmpty()
+                marketSymbol = position.displaySymbol ?: position.tokenSymbol.orEmpty()
+                refreshAssetAndSender(
+                    settleAssetId = position.settleAssetId,
+                    botId = position.botId
+                )
+
+                viewModel.getMarketFromDb(position.productId)?.let { market ->
+                    marketIconUrl = market.iconUrl
+                    marketSymbol = market.displaySymbol
+                }
+            }
+
             viewModel.loadPositionDetail(
                 positionId = positionId,
                 onSuccess = { position ->
                     latestMarkPrice = position.markPrice ?: "0"
                     latestUnrealizedPnl = position.unrealizedPnl ?: "0"
                     latestRoe = position.roe ?: "0"
+
+                    lifecycleScope.launch {
+                        viewModel.getMarketFromDb(position.productId)?.let { market ->
+                            marketIconUrl = market.iconUrl
+                            marketSymbol = market.displaySymbol
+                        }
+                    }
 
                     viewModel.loadMarketDetail(
                         marketId = position.productId,
@@ -202,26 +225,13 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                         },
                         onError = {}
                     )
-
-                    lifecycleScope.launch {
-                        position.settleAssetId?.let { assetId ->
-                            val asset = bottomViewModel.findAssetItemById(assetId)
-                            asset?.let {
-                                settleAssetSymbol = it.symbol
-                                settleAssetItem = it
-                            }
-                        }
-                        
-                        position.botId?.let { botId ->
-                            sender = bottomViewModel.refreshUser(botId)
-                        }
-                        
-                        isLoading = false
-                    }
+                    refreshAssetAndSender(
+                        settleAssetId = position.settleAssetId,
+                        botId = position.botId
+                    )
                 },
                 onError = { error ->
                     Timber.e("Failed to load position detail: $error")
-                    isLoading = false
                 }
             )
         }
@@ -375,101 +385,87 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                         "${fiatSymbol}0"
                     }
 
-                    if (isLoading) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(200.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(40.dp),
-                                color = MixinAppTheme.colors.accent
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp),
+                    ) {
+                        Text(
+                            text = stringResource(R.string.Perpetual),
+                            color = MixinAppTheme.colors.textRemarks,
+                            fontSize = 14.sp,
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            CoilImage(
+                                model = marketIconUrl,
+                                placeholder = R.drawable.ic_avatar_place_holder,
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .clip(CircleShape),
+                                contentScale = ContentScale.Crop
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = marketSymbol,
+                                color = MixinAppTheme.colors.textPrimary,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold
                             )
                         }
-                    } else {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 20.dp),
-                        ) {
+                        Box(modifier = Modifier.height(20.dp))
+                        settleAssetItem?.let { asset ->
                             Text(
-                                text = stringResource(R.string.Perpetual),
+                                text = stringResource(R.string.Estimated_Receive),
                                 color = MixinAppTheme.colors.textRemarks,
                                 fontSize = 14.sp,
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 CoilImage(
-                                    model = marketIconUrl,
+                                    model = asset.iconUrl,
                                     placeholder = R.drawable.ic_avatar_place_holder,
                                     modifier = Modifier
-                                        .size(24.dp)
+                                        .size(18.dp)
                                         .clip(CircleShape),
                                     contentScale = ContentScale.Crop
                                 )
-                                Spacer(modifier = Modifier.width(4.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = marketSymbol,
+                                    text = "${String.format("%.8f", estimatedReceive)} ${asset.symbol}",
                                     color = MixinAppTheme.colors.textPrimary,
                                     fontSize = 16.sp,
-                                    fontWeight = FontWeight.Bold
+                                    fontWeight = FontWeight.W400
                                 )
-                            }
-                            Box(modifier = Modifier.height(20.dp))
-                            settleAssetItem?.let { asset ->
+                                Spacer(modifier = Modifier.weight(1f))
                                 Text(
-                                    text = stringResource(R.string.Estimated_Receive),
-                                    color = MixinAppTheme.colors.textRemarks,
-                                    fontSize = 14.sp,
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    CoilImage(
-                                        model = asset.iconUrl,
-                                        placeholder = R.drawable.ic_avatar_place_holder,
-                                        modifier = Modifier
-                                            .size(18.dp)
-                                            .clip(CircleShape),
-                                        contentScale = ContentScale.Crop
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(
-                                        text = "${String.format("%.8f", estimatedReceive)} ${asset.symbol}",
-                                        color = MixinAppTheme.colors.textPrimary,
-                                        fontSize = 16.sp,
-                                        fontWeight = FontWeight.W400
-                                    )
-                                    Spacer(modifier = Modifier.weight(1f))
-                                    Text(
-                                        text = asset.chainName ?: "",
-                                        color = MixinAppTheme.colors.textAssist,
-                                        fontSize = 14.sp
-                                    )
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Row {
-                                Text(
-                                    text = "${stringResource(R.string.Perpetual_PnL)}: ",
+                                    text = asset.chainName ?: "",
                                     color = MixinAppTheme.colors.textAssist,
-                                    fontSize = 14.sp
-                                )
-                                Text(
-                                    text = "${if (pnl >= BigDecimal.ZERO) "+" else ""}${latestUnrealizedPnl} $settleAssetSymbol ($formattedRoe%)",
-                                    color = pnlColor,
                                     fontSize = 14.sp
                                 )
                             }
                         }
-                        Box(modifier = Modifier.height(20.dp))
 
-                        ItemWalletContent(title = stringResource(id = R.string.Receiver).uppercase(), fontSize = 16.sp)
-                        Box(modifier = Modifier.height(20.dp))
-
-                        ItemUserContent(title = stringResource(id = R.string.Sender).uppercase(), sender, null)
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row {
+                            Text(
+                                text = "${stringResource(R.string.Perpetual_PnL)}: ",
+                                color = MixinAppTheme.colors.textAssist,
+                                fontSize = 14.sp
+                            )
+                            Text(
+                                text = "${if (pnl >= BigDecimal.ZERO) "+" else ""}${latestUnrealizedPnl} $settleAssetSymbol ($formattedRoe%)",
+                                color = pnlColor,
+                                fontSize = 14.sp
+                            )
+                        }
                     }
+                    Box(modifier = Modifier.height(20.dp))
+
+                    ItemWalletContent(title = stringResource(id = R.string.Receiver).uppercase(), fontSize = 16.sp)
+                    Box(modifier = Modifier.height(20.dp))
+
+                    ItemUserContent(title = stringResource(id = R.string.Sender).uppercase(), sender, null)
                     Box(modifier = Modifier.height(16.dp))
                 }
 
@@ -528,42 +524,6 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
         }
     }
 
-    @Composable
-    private fun CloseInfoItem(
-        title: String,
-        value: String,
-        valueColor: Color = MixinAppTheme.colors.textPrimary,
-        subValue: String? = null,
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp),
-        ) {
-            Text(
-                text = title,
-                color = MixinAppTheme.colors.textRemarks,
-                fontSize = 14.sp,
-                maxLines = 1,
-            )
-            Box(modifier = Modifier.height(4.dp))
-            Text(
-                text = value,
-                color = valueColor,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.W400
-            )
-            subValue?.let {
-                Box(modifier = Modifier.height(4.dp))
-                Text(
-                    text = it,
-                    color = MixinAppTheme.colors.textAssist,
-                    fontSize = 14.sp,
-                )
-            }
-        }
-    }
-
     override fun getBottomSheetHeight(view: View): Int {
         return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
     }
@@ -579,23 +539,33 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
         super.onDismiss(dialog)
     }
 
-    private fun closePosition() = lifecycleScope.launch(Dispatchers.IO) {
-        try {
-            step = Step.Sending
+    private fun closePosition() {
+        step = Step.Sending
+        viewModel.closePerpsOrder(
+            positionId = positionId,
+            onSuccess = {
+                step = Step.Done
+            },
+            onError = { error ->
+                errorInfo = error
+                step = Step.Error
+            }
+        )
+    }
 
-            viewModel.closePerpsOrder(
-                positionId = positionId,
-                onSuccess = {
-                    viewModel.deletePosition(positionId)
-                    step = Step.Done
-                },
-                onError = { error ->
-                    errorInfo = error
-                    step = Step.Error
+    private fun refreshAssetAndSender(settleAssetId: String?, botId: String?) {
+        lifecycleScope.launch {
+            settleAssetId?.let { assetId ->
+                val asset = bottomViewModel.findAssetItemById(assetId)
+                asset?.let {
+                    settleAssetSymbol = it.symbol
+                    settleAssetItem = it
                 }
-            )
-        } catch (e: Exception) {
-            handleException(e)
+            }
+
+            botId?.let { userId ->
+                sender = bottomViewModel.refreshUser(userId)
+            }
         }
     }
 

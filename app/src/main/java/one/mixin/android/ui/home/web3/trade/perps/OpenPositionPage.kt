@@ -149,6 +149,11 @@ fun OpenPositionPage(
     val insufficientBalance = hasInputAmount && inputAmount > tokenBalance
     val canReview = hasInputAmount && !insufficientBalance
     val displayedErrorInfo = errorInfo?.takeIf { it.isNotBlank() }
+    val tokenNetworkName = currentToken?.chainName
+        ?.takeIf { it.isNotBlank() }
+        ?: currentToken?.chainSymbol
+            ?.takeIf { it.isNotBlank() }
+            ?: ""
 
     MixinAppTheme {
         PageScaffold(
@@ -212,11 +217,25 @@ fun OpenPositionPage(
                         .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
                         .padding(16.dp)
                 ) {
-                    Text(
-                        text = stringResource(R.string.Amount),
-                        fontSize = 14.sp,
-                        color = MixinAppTheme.colors.textPrimary
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = stringResource(R.string.Amount),
+                            fontSize = 14.sp,
+                            color = MixinAppTheme.colors.textPrimary
+                        )
+                        Spacer(modifier = Modifier.weight(1f))
+                        if (tokenNetworkName.isNotBlank()) {
+                            Text(
+                                text = tokenNetworkName,
+                                fontSize = 12.sp,
+                                color = MixinAppTheme.colors.textAssist,
+                                textAlign = TextAlign.End
+                            )
+                        }
+                    }
 
                     Spacer(modifier = Modifier.height(8.dp))
 
@@ -226,7 +245,8 @@ fun OpenPositionPage(
                         selectClick = {
                             onTokenSelect()
                         },
-                        onInputChanged = { usdtAmount = it }
+                        onInputChanged = { usdtAmount = it },
+                        tokenIconSize = 25.dp
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -363,7 +383,7 @@ fun OpenPositionPage(
                                     .background(Color.Transparent)
                                     .border(
                                         width = 1.dp,
-                                        color = if (isSelected) MixinAppTheme.colors.accent else MixinAppTheme.colors.textAssist,
+                                        color = MixinAppTheme.colors.borderColor,
                                         shape = RoundedCornerShape(16.dp)
                                     )
                                     .clickable {
@@ -481,13 +501,14 @@ fun OpenPositionPage(
                 if (displayedErrorInfo != null) {
                     Text(
                         text = displayedErrorInfo,
-                        fontSize = 12.sp,
+                        fontSize = 14.sp,
                         color = MixinAppTheme.colors.walletRed,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 24.dp, vertical = 4.dp),
                         textAlign = TextAlign.Center,
                     )
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
 
                 Button(

@@ -652,16 +652,17 @@ private fun OpenPositionCard(
                     color = MixinAppTheme.colors.textAssist
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                Row {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
                             .background(directionColor)
-                            .padding(horizontal = 8.dp, vertical = 0.5.dp)
+                            .padding(horizontal = 3.dp, vertical = 1.dp)
                     ) {
                         Text(
                             text = if (isLong) stringResource(R.string.Long) else stringResource(R.string.Short),
                             fontSize = 10.sp,
+                            lineHeight = 12.sp,
                             color = Color.White
                         )
                     }
