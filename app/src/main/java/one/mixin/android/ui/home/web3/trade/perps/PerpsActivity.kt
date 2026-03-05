@@ -7,14 +7,18 @@ import androidx.activity.compose.setContent
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.perps.PerpsMarketDao
 import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshPerpsPositionsJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.session.Session
@@ -40,6 +44,7 @@ class PerpsActivity : BaseActivity() {
         private const val EXTRA_MARKET_DISPLAY_SYMBOL = "extra_market_display_symbol"
         private const val EXTRA_MODE = "extra_mode"
         private const val EXTRA_IS_LONG = "extra_is_long"
+        private const val POSITION_REFRESH_INTERVAL_MS = 10_000L
 
         const val MODE_DETAIL = "detail"
         const val MODE_OPEN_POSITION = "open_position"
@@ -75,7 +80,7 @@ class PerpsActivity : BaseActivity() {
         val mode = intent.getStringExtra(EXTRA_MODE) ?: MODE_DETAIL
         val isLong = intent.getBooleanExtra(EXTRA_IS_LONG, true)
 
-        refreshPositions()
+        observePositionRefresh()
 
         if (mode == MODE_OPEN_POSITION) {
             lifecycleScope.launch {
@@ -127,6 +132,17 @@ class PerpsActivity : BaseActivity() {
         val walletId = Session.getAccountId()
         walletId?.let {
             jobManager.addJobInBackground(RefreshPerpsPositionsJob(it))
+        }
+    }
+
+    private fun observePositionRefresh() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                while (isActive) {
+                    refreshPositions()
+                    delay(POSITION_REFRESH_INTERVAL_MS)
+                }
+            }
         }
     }
 }

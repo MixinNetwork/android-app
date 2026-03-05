@@ -27,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -326,6 +327,13 @@ private fun LeverageContent() {
 
 @Composable
 private fun PositionContent() {
+    var isLongDirection by remember { mutableStateOf(true) }
+    val directionValue = if (isLongDirection) {
+        stringResource(R.string.Long)
+    } else {
+        stringResource(R.string.Short)
+    }
+
     ExampleWithScenariosCard(
         title = stringResource(R.string.Perpetual_Example),
         rows = listOf(
@@ -336,7 +344,7 @@ private fun PositionContent() {
             ),
             GuideRowData(
                 label = stringResource(R.string.Perpetual_Direction),
-                value = stringResource(R.string.Long)
+                value = directionValue
             ),
             GuideRowData(
                 label = stringResource(R.string.Perpetual_Leverage_Times),
@@ -358,7 +366,7 @@ private fun PositionContent() {
                 initialPercent = 10,
                 basePnlAmount = 1000,
                 basePnlPercent = 100,
-                isProfit = true
+                isProfit = isLongDirection
             ),
             ScenarioData(
                 scenario = stringResource(R.string.Perpetual_Price_Down),
@@ -366,9 +374,12 @@ private fun PositionContent() {
                 initialPercent = 10,
                 basePnlAmount = 1000,
                 basePnlPercent = 100,
-                isProfit = false
+                isProfit = !isLongDirection
             )
-        )
+        ),
+        isDirectionSwitchEnabled = true,
+        isLongDirectionSelected = isLongDirection,
+        onDirectionSelected = { isLongDirection = it },
     )
     Spacer(modifier = Modifier.height(16.dp))
     DescriptionWithInfoAndRiskCard(
@@ -547,6 +558,9 @@ private fun ExampleWithScenariosCard(
     title: String,
     rows: List<GuideRowData>,
     scenarios: List<ScenarioData>,
+    isDirectionSwitchEnabled: Boolean = false,
+    isLongDirectionSelected: Boolean = true,
+    onDirectionSelected: ((Boolean) -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val quoteColorReversed = context.defaultSharedPreferences
@@ -589,16 +603,39 @@ private fun ExampleWithScenariosCard(
                     modifier = Modifier.weight(1f)
                 )
                 if (label == directionLabel && (value == longDirection || value == shortDirection)) {
-                    val directionColor = if (value == longDirection) risingColor else fallingColor
-                    Text(
-                        text = value,
-                        fontSize = 14.sp,
-                        color = Color.White,
+                    if (isDirectionSwitchEnabled && onDirectionSelected != null) {
+                        Row(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(directionColor)
-                            .padding(horizontal = 8.dp, vertical = 1.dp),
-                    )
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(MixinAppTheme.colors.backgroundWindow)
+                                .padding(horizontal = 2.dp, vertical = 1.dp),
+                            horizontalArrangement = Arrangement.spacedBy(2.dp),
+                        ) {
+                            DirectionSwitchItem(
+                                text = longDirection,
+                                selected = isLongDirectionSelected,
+                                selectedColor = risingColor,
+                                onClick = { onDirectionSelected(true) },
+                            )
+                            DirectionSwitchItem(
+                                text = shortDirection,
+                                selected = !isLongDirectionSelected,
+                                selectedColor = fallingColor,
+                                onClick = { onDirectionSelected(false) },
+                            )
+                        }
+                    } else {
+                        val directionColor = if (value == longDirection) risingColor else fallingColor
+                        Text(
+                            text = value,
+                            fontSize = 14.sp,
+                            color = Color.White,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(directionColor)
+                                .padding(horizontal = 8.dp, vertical = 1.dp),
+                        )
+                    }
                 } else {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         row.iconRes?.let { iconRes ->
@@ -719,6 +756,30 @@ private fun ExampleWithScenariosCard(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun DirectionSwitchItem(
+    text: String,
+    selected: Boolean,
+    selectedColor: Color,
+    onClick: () -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(6.dp))
+            .background(if (selected) selectedColor else Color.Transparent)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 12.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = text,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.W500,
+            color = if (selected) Color.White else MixinAppTheme.colors.textPrimary,
+        )
     }
 }
 

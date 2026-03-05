@@ -32,6 +32,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,6 +50,7 @@ import androidx.compose.ui.unit.sp
 import androidx.fragment.app.FragmentActivity
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
@@ -59,7 +61,6 @@ import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.putInt
-import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.home.web3.trade.InputContent
 import one.mixin.android.ui.home.web3.trade.SwapActivity
@@ -100,6 +101,8 @@ fun OpenPositionPage(
     var currentToken by remember { mutableStateOf<TokenItem?>(selectedToken) }
     var availableTokens by remember { mutableStateOf<List<TokenItem>>(emptyList()) }
     var usdtAmount by remember { mutableStateOf("") }
+    var errorInfo by remember { mutableStateOf<String?>(null) }
+    val scope = rememberCoroutineScope()
 
     val savedLeverage = context.defaultSharedPreferences.getInt(getLeveragePrefKey(marketId), 10)
     var leverage by remember { mutableFloatStateOf(savedLeverage.toFloat()) }
@@ -132,13 +135,12 @@ fun OpenPositionPage(
             currentToken = availableTokens.firstOrNull { it.assetId == target.assetId } ?: target
         }
     }
+    LaunchedEffect(usdtAmount, leverage, currentToken?.assetId) {
+        errorInfo = null
+    }
 
     val maxLeverage = currentMarket.leverage
     val leverageOptions = generateLeverageOptions(maxLeverage)
-    val quoteColorReversed = context.defaultSharedPreferences
-        .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
-    val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
-    val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
     val fiatRate = BigDecimal(Fiats.getRate())
     val fiatSymbol = Fiats.getSymbol()
     val inputAmount = usdtAmount.toBigDecimalOrNull()
@@ -146,6 +148,7 @@ fun OpenPositionPage(
     val hasInputAmount = inputAmount != null && inputAmount > BigDecimal.ZERO
     val insufficientBalance = hasInputAmount && inputAmount > tokenBalance
     val canReview = hasInputAmount && !insufficientBalance
+    val displayedErrorInfo = errorInfo?.takeIf { it.isNotBlank() }
 
     MixinAppTheme {
         PageScaffold(
@@ -475,6 +478,18 @@ fun OpenPositionPage(
                 Spacer(modifier = Modifier.weight(1f))
                 Spacer(modifier = Modifier.height(16.dp))
 
+                if (displayedErrorInfo != null) {
+                    Text(
+                        text = displayedErrorInfo,
+                        fontSize = 12.sp,
+                        color = MixinAppTheme.colors.walletRed,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp, vertical = 4.dp),
+                        textAlign = TextAlign.Center,
+                    )
+                }
+
                 Button(
                     modifier = Modifier
                         .padding(horizontal = 20.dp)
@@ -497,39 +512,49 @@ fun OpenPositionPage(
                         if (price == BigDecimal.ZERO) return@Button
 
                         val orderValue = amount * BigDecimal(leverage.toDouble())
+                        errorInfo = null
 
-                        viewModel.openPerpsOrder(
-                            assetId = token.assetId,
-                            productId = m.marketId,
-                            side = if (isLong) "long" else "short",
-                            amount = orderValue.stripTrailingZeros().toPlainString(),
-                            leverage = leverage.toInt(),
-                            walletId = walletId,
-                            marketSymbol = m.symbol,
-                            entryPrice = m.markPrice,
-                            onSuccess = { response ->
-                                PerpsConfirmBottomSheetDialogFragment.newInstance(
-                                    marketSymbol = m.displaySymbol,
-                                    marketIcon = m.iconUrl,
-                                    isLong = isLong,
-                                    amount = response.payAmount ?: "",
-                                    leverage = leverage.toInt(),
-                                    entryPrice = m.markPrice,
-                                    tokenSymbol = token.symbol,
-                                    payUrl = response.payUrl
-                                ).setOnDone {
-                                    onBack()
-                                }.show(activity.supportFragmentManager, PerpsConfirmBottomSheetDialogFragment.TAG)
-                            },
-                            onError = { errorCode, errorMessage ->
-                                val message = if (errorCode > 0) {
-                                    context.getMixinErrorStringByCode(errorCode, errorMessage)
-                                } else {
-                                    errorMessage.ifBlank { context.getString(R.string.Data_error) }
-                                }
-                                toast(message)
+                        scope.launch {
+                            val hasOpeningPosition = viewModel.getOpenPositionsFromDb(walletId)
+                                .any { it.productId == m.marketId }
+                            if (hasOpeningPosition) {
+                                errorInfo = context.getString(R.string.error_waiting_other_orders)
+                                return@launch
                             }
-                        )
+
+                            viewModel.openPerpsOrder(
+                                assetId = token.assetId,
+                                productId = m.marketId,
+                                side = if (isLong) "long" else "short",
+                                amount = orderValue.stripTrailingZeros().toPlainString(),
+                                leverage = leverage.toInt(),
+                                walletId = walletId,
+                                marketSymbol = m.symbol,
+                                entryPrice = m.markPrice,
+                                onSuccess = { response ->
+                                    errorInfo = null
+                                    PerpsConfirmBottomSheetDialogFragment.newInstance(
+                                        marketSymbol = m.displaySymbol,
+                                        marketIcon = m.iconUrl,
+                                        isLong = isLong,
+                                        amount = response.payAmount ?: "",
+                                        leverage = leverage.toInt(),
+                                        entryPrice = m.markPrice,
+                                        tokenSymbol = token.symbol,
+                                        payUrl = response.payUrl
+                                    ).setOnDone {
+                                        onBack()
+                                    }.show(activity.supportFragmentManager, PerpsConfirmBottomSheetDialogFragment.TAG)
+                                },
+                                onError = { errorCode, errorMessage ->
+                                    errorInfo = if (errorCode > 0) {
+                                        context.getMixinErrorStringByCode(errorCode, errorMessage)
+                                    } else {
+                                        errorMessage.ifBlank { context.getString(R.string.Data_error) }
+                                    }
+                                }
+                            )
+                        }
                     },
                     enabled = canReview,
                     colors = ButtonDefaults.outlinedButtonColors(

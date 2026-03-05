@@ -31,7 +31,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,7 +45,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.FragmentActivity
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import kotlinx.coroutines.launch
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.flow.flowOf
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
@@ -66,6 +66,8 @@ import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
+private const val CLOSED_POSITION_PREVIEW_LIMIT = 100
+
 @Composable
 fun PerpsMarketDetailPage(
     marketId: String,
@@ -78,9 +80,23 @@ fun PerpsMarketDetailPage(
     var market by remember { mutableStateOf<PerpsMarket?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     var selectedTimeFrame by remember { mutableIntStateOf(0) }
-    var currentPosition by remember { mutableStateOf<PerpsPositionItem?>(null) }
-    var closedPositions by remember { mutableStateOf<List<PerpsPositionHistoryItem>>(emptyList()) }
-    val coroutineScope = rememberCoroutineScope()
+    val walletId = Session.getAccountId().orEmpty()
+    val openPositions by remember(walletId) {
+        if (walletId.isNotEmpty()) {
+            viewModel.observeOpenPositions(walletId)
+        } else {
+            flowOf(emptyList())
+        }
+    }.collectAsStateWithLifecycle(initialValue = emptyList())
+    val allClosedPositions by remember(walletId) {
+        if (walletId.isNotEmpty()) {
+            viewModel.observeClosedPositions(walletId, CLOSED_POSITION_PREVIEW_LIMIT)
+        } else {
+            flowOf(emptyList())
+        }
+    }.collectAsStateWithLifecycle(initialValue = emptyList())
+    val currentPosition = openPositions.firstOrNull { it.productId == marketId }
+    val closedPositions = allClosedPositions.filter { it.productId == marketId }
 
     val timeFrameValues = listOf("1h", "1d", "1w", "1M")
     val timeFrameLabels = listOf(
@@ -94,8 +110,6 @@ fun PerpsMarketDetailPage(
     val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
     val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
 
-    val walletId = Session.getAccountId() ?: ""
-
     LaunchedEffect(marketId) {
         viewModel.loadMarketDetail(
             marketId = marketId,
@@ -107,16 +121,6 @@ fun PerpsMarketDetailPage(
                 isLoading = false
             }
         )
-
-        if (walletId.isNotEmpty()) {
-            viewModel.getPositionByMarket(walletId, marketId) { position ->
-                currentPosition = position
-            }
-
-            viewModel.getClosedPositionsByMarket(walletId, marketId) { positions ->
-                closedPositions = positions
-            }
-        }
     }
 
     PageScaffold(
@@ -162,7 +166,7 @@ fun PerpsMarketDetailPage(
                             timeFrameValues = timeFrameValues,
                             timeFrameLabels = timeFrameLabels,
                             onTimeFrameChange = { index ->
-                                coroutineScope.launch { selectedTimeFrame = index }
+                                selectedTimeFrame = index
                             }
                         )
                     } else if (isLoading) {
@@ -183,7 +187,7 @@ fun PerpsMarketDetailPage(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 if (currentPosition != null) {
-                    OpenPositionCard(position = currentPosition!!)
+                    OpenPositionCard(position = currentPosition)
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
@@ -248,13 +252,11 @@ fun PerpsMarketDetailPage(
                                 .height(48.dp),
                             onClick = {
                                 val activity = context as? FragmentActivity ?: return@Button
-                                val position = currentPosition?.toPosition() ?: return@Button
+                                val position = currentPosition.toPosition()
 
                                 PerpsCloseBottomSheetDialogFragment.newInstance(
                                     position = position,
-                                ).setOnDone {
-                                    currentPosition = null
-                                }.show(activity.supportFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)
+                                ).show(activity.supportFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)
                             },
                             colors = ButtonDefaults.outlinedButtonColors(
                                 backgroundColor = MixinAppTheme.colors.accent

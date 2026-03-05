@@ -484,6 +484,8 @@
     <string name="error_invalid_quote_amount_detailed">ERROR 10614: The amount exceeds the maximum allowable value of %1$s. Please adjust the amount. Try placing a limit order? No restrictions on amount or token.</string>
     <string name="error_no_available_quote">ERROR 10615: This trading pair is currently not supported, please try switching to a different token.</string>
     <string name="error_perps_order_value_too_small">ERROR 10650: Order value is too small.</string>
+    <string name="error_perps_market_already_has_active_position">ERROR 10651: Market already has an active position.</string>
+    <string name="error_waiting_other_orders">Wait for other orders to complete.</string>
     <string name="error_phone_verification_code_expired">ERROR 20114: Expired phone verification code</string>
     <string name="error_phone_verification_code_invalid">ERROR 20113: Invalid phone verification code</string>
     <string name="error_pin_check_too_many_request">You have tried more than 5 times, please wait at least 24 hours to try again.</string>
