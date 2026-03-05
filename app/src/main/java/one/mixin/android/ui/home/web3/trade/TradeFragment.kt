@@ -247,6 +247,9 @@ class TradeFragment : BaseFragment() {
                             var isLimitOrderTabBadgeDismissed by remember(currentWalletId) {
                                 mutableStateOf(defaultSharedPreferences.getBoolean(Account.PREF_TRADE_LIMIT_ORDER_BADGE_DISMISSED, false))
                             }
+                            var isPerpetualTabBadgeDismissed by remember(currentWalletId) {
+                                mutableStateOf(defaultSharedPreferences.getBoolean(Account.PREF_TRADE_PERPETUAL_BADGE_DISMISSED, false))
+                            }
 
                             if (!isLimitOrderTabBadgeDismissed) {
                                 isLimitOrderTabBadgeDismissed = true
@@ -261,6 +264,7 @@ class TradeFragment : BaseFragment() {
                                 inMixin = inMixin(),
                                 orderBadge = orderBadge,
                                 isLimitOrderTabBadgeDismissed = isLimitOrderTabBadgeDismissed,
+                                isPerpetualTabBadgeDismissed = isPerpetualTabBadgeDismissed,
                                 initialAmount = initialAmount,
                                 lastOrderTime = lastOrderTime,
                                 reviewing = reviewing,
@@ -277,6 +281,12 @@ class TradeFragment : BaseFragment() {
                                     if (!isLimitOrderTabBadgeDismissed) {
                                         isLimitOrderTabBadgeDismissed = true
                                         defaultSharedPreferences.putBoolean(Account.PREF_TRADE_LIMIT_ORDER_BADGE_DISMISSED, true)
+                                    }
+                                },
+                                onDismissPerpetualTabBadge = {
+                                    if (!isPerpetualTabBadgeDismissed) {
+                                        isPerpetualTabBadgeDismissed = true
+                                        defaultSharedPreferences.putBoolean(Account.PREF_TRADE_PERPETUAL_BADGE_DISMISSED, true)
                                     }
                                 },
                                 onTabChanged = { index ->

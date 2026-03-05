@@ -77,6 +77,7 @@ fun TradePage(
     inMixin: Boolean,
     orderBadge: Boolean,
     isLimitOrderTabBadgeDismissed: Boolean,
+    isPerpetualTabBadgeDismissed: Boolean,
     initialAmount: String?,
     lastOrderTime: Long?,
     reviewing: Boolean,
@@ -88,6 +89,7 @@ fun TradePage(
     onDeposit: (SwapToken) -> Unit,
     onOrderList: (String, Boolean) -> Unit,
     onDismissLimitOrderTabBadge: () -> Unit,
+    onDismissPerpetualTabBadge: () -> Unit,
     onTabChanged: (Int) -> Unit,
     onSwitchToLimitOrder: (String, SwapToken, SwapToken) -> Unit,
     pop: () -> Unit,
@@ -175,7 +177,9 @@ fun TradePage(
         )
     }
 
+    var perpetualTabIndex: Int? = null
     if (walletId == null) {
+        perpetualTabIndex = tabs.size
         tabs += TabItem(title = stringResource(R.string.Perpetual)) {
             PerpetualContent(
                 onShowTradingGuide = onShowTradingGuide,
@@ -215,7 +219,7 @@ fun TradePage(
         sheetBackgroundColor = MixinAppTheme.colors.background,
         sheetContent = {
             HelpBottomSheetContent(
-                hideGuide = pagerState.currentPage != 2,
+                hideGuide = perpetualTabIndex == null || pagerState.currentPage != perpetualTabIndex,
                 onContactSupport = {
                     coroutineScope.launch {
                         bottomSheetState.hide()
@@ -270,7 +274,7 @@ fun TradePage(
             Box {
                 IconButton(onClick = {
                     // If on Perpetual tab (page 2), show closed positions
-                    if (walletId == null && pagerState.currentPage == 2) {
+                    if (perpetualTabIndex != null && pagerState.currentPage == perpetualTabIndex) {
                         onShowAllClosedPositions()
                     } else {
                         onOrderList(currentWalletId, false)
@@ -334,16 +338,22 @@ fun TradePage(
             tabs.forEachIndexed { index, tab ->
                 val isAdvancedTab: Boolean = index == 1
                 val showAdvancedBadge: Boolean = isAdvancedTab && !isLimitOrderTabBadgeDismissed
+                val isPerpetualTab: Boolean = perpetualTabIndex != null && index == perpetualTabIndex
+                val showPerpetualBadge: Boolean = isPerpetualTab && !isPerpetualTabBadgeDismissed
                 OutlinedTab(
                     text = tab.title,
                     selected = pagerState.currentPage == index,
-                    showBadge = showAdvancedBadge,
+                    showBadge = showAdvancedBadge || showPerpetualBadge,
                     onClick = {
                         coroutineScope.launch {
                             pagerState.animateScrollToPage(index)
                         }
                         if (isAdvancedTab) {
                             onDismissLimitOrderTabBadge()
+                        }
+                        if (isPerpetualTab && !isPerpetualTabBadgeDismissed) {
+                            onDismissPerpetualTabBadge()
+                            onShowTradingGuide()
                         }
                         onTabChanged(index)
                     },

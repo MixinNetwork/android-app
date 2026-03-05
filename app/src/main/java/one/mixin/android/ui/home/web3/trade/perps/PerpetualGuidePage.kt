@@ -97,7 +97,7 @@ fun PerpetualGuidePage(pop: () -> Unit) {
                     fontSize = 18.sp,
                     fontWeight = FontWeight.W500,
                     color = MixinAppTheme.colors.textPrimary,
-                    modifier = Modifier.align(Alignment.Start),
+                    modifier = Modifier.align(Alignment.CenterStart),
                 )
                 Icon(
                     painter = painterResource(id = R.drawable.ic_circle_close),
