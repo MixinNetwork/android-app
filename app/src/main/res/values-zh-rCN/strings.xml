@@ -2257,7 +2257,6 @@
     <string name="Price_Up_Loss">价格上涨 %1$s%% → 亏损 -%2$s %3$s</string>
     <string name="Perpetual_Leverage_Times">杠杆倍数</string>
     <string name="Perpetual_Investment">投入资金</string>
-    <string name="Perpetual_Position_Value">仓位价值</string>
     <string name="Perpetual_Scenario_1">场景一：价格上涨</string>
     <string name="Perpetual_Scenario_2">场景二：价格下跌</string>
     <string name="Perpetual_Price_Up">价格上涨</string>

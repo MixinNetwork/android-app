@@ -2316,7 +2316,6 @@
     <string name="Price_Up_Loss">Price up %1$s%% → Loss -%2$s %3$s</string>
     <string name="Perpetual_Leverage_Times">Leverage</string>
     <string name="Perpetual_Investment">Investment</string>
-    <string name="Perpetual_Position_Value">Position Value</string>
     <string name="Perpetual_Scenario_1">Scenario 1: Price Rise</string>
     <string name="Perpetual_Scenario_2">Scenario 2: Price Fall</string>
     <string name="Perpetual_Price_Up">Price Rise</string>

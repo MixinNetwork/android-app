@@ -22,7 +22,7 @@ interface PerpsPositionDao : BaseDao<PerpsPosition> {
         SELECT p.*, m.display_symbol, m.icon_url, m.token_symbol 
         FROM positions p 
         LEFT JOIN markets m ON m.market_id = p.product_id 
-        WHERE p.wallet_id = :walletId AND p.state = 'open' 
+        WHERE p.wallet_id = :walletId AND (p.state = 'open' or p.state = 'opening')
         ORDER BY p.created_at DESC
     """)
     suspend fun getOpenPositions(walletId: String): List<PerpsPositionItem>
@@ -32,7 +32,7 @@ interface PerpsPositionDao : BaseDao<PerpsPosition> {
         SELECT p.*, m.display_symbol, m.icon_url, m.token_symbol
         FROM positions p
         LEFT JOIN markets m ON m.market_id = p.product_id
-        WHERE p.wallet_id = :walletId AND p.state = 'open'
+        WHERE p.wallet_id = :walletId AND (p.state = 'open' or p.state = 'opening')
         ORDER BY p.created_at DESC
     """
     )
@@ -42,7 +42,7 @@ interface PerpsPositionDao : BaseDao<PerpsPosition> {
         SELECT p.*, m.display_symbol, m.icon_url, m.token_symbol
         FROM positions p
         LEFT JOIN markets m ON m.market_id = p.product_id
-        WHERE p.wallet_id = :walletId AND p.state = 'open'
+        WHERE p.wallet_id = :walletId AND (p.state = 'open' or p.state = 'opening')
         ORDER BY p.created_at DESC
     """)
     fun getOpenPositionsPaged(walletId: String): DataSource.Factory<Int, PerpsPositionItem>
@@ -69,22 +69,22 @@ interface PerpsPositionDao : BaseDao<PerpsPosition> {
     @Query("DELETE FROM positions WHERE wallet_id = :walletId")
     suspend fun deleteByWallet(walletId: String)
 
-    @Query("DELETE FROM positions WHERE wallet_id = :walletId AND state = 'open'")
+    @Query("DELETE FROM positions WHERE wallet_id = :walletId AND (state = 'open' or state = 'opening')")
     suspend fun deleteOpenByWallet(walletId: String)
 
-    @Query("DELETE FROM positions WHERE wallet_id = :walletId AND state = 'open' AND position_id NOT IN (:positionIds)")
+    @Query("DELETE FROM positions WHERE wallet_id = :walletId AND (state = 'open' or state = 'opening') AND position_id NOT IN (:positionIds)")
     suspend fun deleteOpenByWalletAndNotIn(walletId: String, positionIds: List<String>)
 
-    @Query("SELECT SUM(CAST(unrealized_pnl AS REAL)) FROM positions WHERE wallet_id = :walletId AND state = 'open'")
+    @Query("SELECT SUM(CAST(unrealized_pnl AS REAL)) FROM positions WHERE wallet_id = :walletId AND state = (state = 'open' or state = 'opening')")
     suspend fun getTotalUnrealizedPnl(walletId: String): Double?
 
-    @Query("SELECT COALESCE(SUM(CAST(unrealized_pnl AS REAL)), 0) FROM positions WHERE wallet_id = :walletId AND state = 'open'")
+    @Query("SELECT COALESCE(SUM(CAST(unrealized_pnl AS REAL)), 0) FROM positions WHERE wallet_id = :walletId AND (state = 'open' or state = 'opening')")
     fun observeTotalUnrealizedPnl(walletId: String): Flow<Double>
 
-    @Query("SELECT SUM(CAST(entry_price AS REAL) * ABS(CAST(quantity AS REAL))) FROM positions WHERE wallet_id = :walletId AND state = 'open'")
+    @Query("SELECT SUM(CAST(entry_price AS REAL) * ABS(CAST(quantity AS REAL))) FROM positions WHERE wallet_id = :walletId AND (state = 'open' or state = 'opening')")
     suspend fun getTotalOpenPositionValue(walletId: String): Double?
 
-    @Query("SELECT COALESCE(SUM(CAST(entry_price AS REAL) * ABS(CAST(quantity AS REAL))), 0) FROM positions WHERE wallet_id = :walletId AND state = 'open'")
+    @Query("SELECT COALESCE(SUM(CAST(entry_price AS REAL) * ABS(CAST(quantity AS REAL))), 0) FROM positions WHERE wallet_id = :walletId AND (state = 'open' or state = 'opening')")
     fun observeTotalOpenPositionValue(walletId: String): Flow<Double>
 
     @Query("DELETE FROM positions WHERE position_id = :positionId")

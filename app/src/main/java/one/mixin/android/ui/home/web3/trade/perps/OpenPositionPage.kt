@@ -408,7 +408,7 @@ fun OpenPositionPage(
                     Text(
                         text = profitInfo,
                         fontSize = 13.sp,
-                        color = MixinAppTheme.colors.textMinor,
+                        color = MixinAppTheme.colors.textAssist,
                         modifier = Modifier.padding(horizontal = 4.dp)
                     )
 
@@ -456,19 +456,6 @@ fun OpenPositionPage(
                                 text = stringResource(R.string.Liquidation_Price),
                                 fontSize = 14.sp,
                                 color = MixinAppTheme.colors.textAssist
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_tip),
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .size(12.dp)
-                                    .clickable {
-                                        val activity = context as? FragmentActivity ?: return@clickable
-                                        PerpetualGuideFragment.newInstance()
-                                            .show(activity.supportFragmentManager, PerpetualGuideFragment.TAG)
-                                    },
-                                tint = MixinAppTheme.colors.textAssist
                             )
                         }
                         Text(

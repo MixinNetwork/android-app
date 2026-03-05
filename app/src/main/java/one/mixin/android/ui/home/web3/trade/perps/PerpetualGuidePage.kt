@@ -347,7 +347,7 @@ private fun PositionContent() {
                 value = "1,000 USDT"
             ),
             GuideRowData(
-                label = stringResource(R.string.Perpetual_Position_Value),
+                label = stringResource(R.string.Order_Value),
                 value = "10,000 USDT (74.62 SOL)"
             )
         ),

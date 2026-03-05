@@ -183,7 +183,6 @@ fun PerpetualContent(
                     fontSize = 14.sp,
                     color = if (totalPnl >= 0) risingColor else fallingColor,
                 )
-                Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = String.format("(%s%.2f%%)", if (totalPnlPercent >= 0) "+" else "", abs(totalPnlPercent)),
                     fontSize = 14.sp,
