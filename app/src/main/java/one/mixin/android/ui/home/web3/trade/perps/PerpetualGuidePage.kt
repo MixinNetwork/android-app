@@ -1,7 +1,12 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
-import PageScaffold
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -9,33 +14,46 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.home.web3.components.OutlinedTab
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.widget.components.DotText
 
 data class ScenarioData(
     val scenario: String,
     val change: String,
-    val changeValue: String,
-    val pnl: String,
+    val initialPercent: Int = 10,
+    val basePnlAmount: Int,
+    val basePnlPercent: Int,
+    val pnlAsset: String = "USDT",
     val isProfit: Boolean,
 )
 
@@ -52,43 +70,79 @@ fun PerpetualGuidePage(pop: () -> Unit) {
         stringResource(R.string.Perpetual_Guide_Position)
     )
 
-    PageScaffold(
-        title = stringResource(R.string.Trading_Guide),
-        verticalScrollable = false,
-        pop = pop
-    ) {
+    MixinAppTheme {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp)
+                .clip(RoundedCornerShape(topEnd = 8.dp, topStart = 8.dp))
+                .background(MixinAppTheme.colors.background)
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())) {
-                tabs.forEachIndexed { index, tab ->
-                    OutlinedTab(
-                        text = tab,
-                        selected = selectedTab == index,
-                        showBadge = false,
-                        onClick = { coroutineScope.launch { selectedTab = index } }
-                    )
-                    if (index < tabs.size - 1) Spacer(modifier = Modifier.width(10.dp))
-                }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 20.dp),
+            ) {
+                Text(
+                    text = stringResource(R.string.Perpetual),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.W500,
+                    color = MixinAppTheme.colors.textPrimary,
+                    modifier = Modifier.align(Alignment.Center),
+                )
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_circle_close),
+                    contentDescription = stringResource(id = R.string.close),
+                    tint = Color.Unspecified,
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .clickable {
+                            pop()
+                        },
+                )
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp)
             ) {
-                when (selectedTab) {
-                    0 -> OverviewContent()
-                    1 -> LongContent()
-                    2 -> ShortContent()
-                    3 -> LeverageContent()
-                    4 -> PositionContent()
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())) {
+                    tabs.forEachIndexed { index, tab ->
+                        OutlinedTab(
+                            text = tab,
+                            selected = selectedTab == index,
+                            showBadge = false,
+                            onClick = { coroutineScope.launch { selectedTab = index } }
+                        )
+                        if (index < tabs.size - 1) Spacer(modifier = Modifier.width(10.dp))
+                    }
                 }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    when (selectedTab) {
+                        0 -> OverviewContent()
+                        1 -> LongContent()
+                        2 -> ShortContent()
+                        3 -> LeverageContent()
+                        4 -> PositionContent()
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+                Spacer(modifier = Modifier.height(20.dp))
+                GuideBottomNavigation(
+                    selectedTab = selectedTab,
+                    tabs = tabs,
+                    onSelect = { targetTab ->
+                        coroutineScope.launch { selectedTab = targetTab }
+                    },
+                )
                 Spacer(modifier = Modifier.height(24.dp))
             }
         }
@@ -110,24 +164,26 @@ private fun LongContent() {
         title = stringResource(R.string.Perpetual_Example),
         rows = listOf(
             stringResource(R.string.Perpetual_Trading_Pair) to "BTC - USD",
-            stringResource(R.string.Perpetual_Direction) to "Long",
+            stringResource(R.string.Perpetual_Direction) to stringResource(R.string.Long),
             stringResource(R.string.Perpetual_Leverage_Times) to "10x",
             stringResource(R.string.Perpetual_Investment) to "1,000 USDT"
         ),
         scenarios = listOf(
             ScenarioData(
-                stringResource(R.string.Perpetual_Scenario_1),
-                stringResource(R.string.Perpetual_Price_Up),
-                "10%",
-                "+100 USDT (+10%)",
-                true
+                scenario = stringResource(R.string.Perpetual_Price_Up),
+                change = stringResource(R.string.Perpetual_Price_Down_Amplitude),
+                initialPercent = 10,
+                basePnlAmount = 100,
+                basePnlPercent = 10,
+                isProfit = true
             ),
             ScenarioData(
-                stringResource(R.string.Perpetual_Scenario_2),
-                stringResource(R.string.Perpetual_Price_Down),
-                "10%",
-                "-100 USDT (-10%)",
-                false
+                scenario = stringResource(R.string.Perpetual_Price_Down),
+                change = stringResource(R.string.Perpetual_Price_Up_Amplitude),
+                initialPercent = 10,
+                basePnlAmount = 100,
+                basePnlPercent = 10,
+                isProfit = false
             )
         )
     )
@@ -147,24 +203,26 @@ private fun ShortContent() {
         title = stringResource(R.string.Perpetual_Example),
         rows = listOf(
             stringResource(R.string.Perpetual_Trading_Pair) to "ETH - USD",
-            stringResource(R.string.Perpetual_Direction) to "Short",
+            stringResource(R.string.Perpetual_Direction) to stringResource(R.string.Short),
             stringResource(R.string.Perpetual_Leverage_Times) to "10x",
             stringResource(R.string.Perpetual_Investment) to "1,000 USDT"
         ),
         scenarios = listOf(
             ScenarioData(
-                stringResource(R.string.Perpetual_Scenario_1),
-                stringResource(R.string.Perpetual_Price_Down),
-                "10%",
-                "+100 USDT (+10%)",
-                true
+                scenario = stringResource(R.string.Perpetual_Price_Up),
+                change = stringResource(R.string.Perpetual_Price_Down_Amplitude),
+                initialPercent = 10,
+                basePnlAmount = 100,
+                basePnlPercent = 10,
+                isProfit = false
             ),
             ScenarioData(
-                stringResource(R.string.Perpetual_Scenario_2),
-                stringResource(R.string.Perpetual_Price_Up),
-                "10%",
-                "-100 USDT (-10%)",
-                false
+                scenario = stringResource(R.string.Perpetual_Price_Down),
+                change = stringResource(R.string.Perpetual_Price_Up_Amplitude),
+                initialPercent = 10,
+                basePnlAmount = 100,
+                basePnlPercent = 10,
+                isProfit = true
             )
         )
     )
@@ -184,24 +242,26 @@ private fun LeverageContent() {
         title = stringResource(R.string.Perpetual_Example),
         rows = listOf(
             stringResource(R.string.Perpetual_Trading_Pair) to "SOL - USD",
-            stringResource(R.string.Perpetual_Direction) to "Long",
+            stringResource(R.string.Perpetual_Direction) to stringResource(R.string.Long),
             stringResource(R.string.Perpetual_Leverage_Times) to "10x",
             stringResource(R.string.Perpetual_Investment) to "1,000 USDT"
         ),
         scenarios = listOf(
             ScenarioData(
-                stringResource(R.string.Perpetual_Scenario_1),
-                stringResource(R.string.Perpetual_Price_Up),
-                "10%",
-                "+1,000 USDT (+100%)",
-                true
+                scenario = stringResource(R.string.Perpetual_Price_Up),
+                change = stringResource(R.string.Perpetual_Price_Down_Amplitude),
+                initialPercent = 10,
+                basePnlAmount = 1000,
+                basePnlPercent = 100,
+                isProfit = true
             ),
             ScenarioData(
-                stringResource(R.string.Perpetual_Scenario_2),
-                stringResource(R.string.Perpetual_Price_Down),
-                "10%",
-                "-1,000 USDT (-100%)",
-                false
+                scenario = stringResource(R.string.Perpetual_Price_Down),
+                change = stringResource(R.string.Perpetual_Price_Up_Amplitude),
+                initialPercent = 10,
+                basePnlAmount = 1000,
+                basePnlPercent = 100,
+                isProfit = false
             )
         )
     )
@@ -220,25 +280,27 @@ private fun PositionContent() {
         title = stringResource(R.string.Perpetual_Example),
         rows = listOf(
             stringResource(R.string.Perpetual_Trading_Pair) to "SOL - USD",
-            stringResource(R.string.Perpetual_Direction) to "Long",
+            stringResource(R.string.Perpetual_Direction) to stringResource(R.string.Long),
             stringResource(R.string.Perpetual_Leverage_Times) to "10x",
             stringResource(R.string.Perpetual_Investment) to "1,000 USDT",
             stringResource(R.string.Perpetual_Position_Value) to "10,000 USDT (74.62 SOL)"
         ),
         scenarios = listOf(
             ScenarioData(
-                stringResource(R.string.Perpetual_Scenario_1),
-                stringResource(R.string.Perpetual_Price_Up),
-                "10%",
-                "+1,000 USDT (+100%)",
-                true
+                scenario = stringResource(R.string.Perpetual_Price_Up),
+                change = stringResource(R.string.Perpetual_Price_Down_Amplitude),
+                initialPercent = 10,
+                basePnlAmount = 1000,
+                basePnlPercent = 100,
+                isProfit = true
             ),
             ScenarioData(
-                stringResource(R.string.Perpetual_Scenario_2),
-                stringResource(R.string.Perpetual_Price_Down),
-                "10%",
-                "-1,000 USDT (-100%)",
-                false
+                scenario = stringResource(R.string.Perpetual_Price_Down),
+                change = stringResource(R.string.Perpetual_Price_Up_Amplitude),
+                initialPercent = 10,
+                basePnlAmount = 1000,
+                basePnlPercent = 100,
+                isProfit = false
             )
         )
     )
@@ -253,6 +315,85 @@ private fun PositionContent() {
 
 
 @Composable
+private fun GuideBottomNavigation(
+    selectedTab: Int,
+    tabs: List<String>,
+    onSelect: (Int) -> Unit,
+) {
+    val previousTab = (selectedTab - 1).takeIf { it >= 0 }
+    val nextTab = (selectedTab + 1).takeIf { it < tabs.size }
+    if (previousTab == null && nextTab == null) {
+        return
+    }
+    if (previousTab != null && nextTab != null) {
+        Row(
+            modifier = Modifier
+                .padding(horizontal = 20.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            GuideNavigationButton(
+                text = stringResource(R.string.Perpetual_Guide_Previous_Tab, tabs[previousTab]),
+                modifier = Modifier.weight(1f),
+                onClick = { onSelect(previousTab) },
+            )
+            GuideNavigationButton(
+                text = stringResource(R.string.Perpetual_Guide_Next_Tab, tabs[nextTab]),
+                modifier = Modifier.weight(1f),
+                onClick = { onSelect(nextTab) },
+            )
+        }
+        return
+    }
+    val targetIndex = previousTab ?: nextTab ?: return
+    val buttonText = if (previousTab != null) {
+        stringResource(R.string.Perpetual_Guide_Previous_Tab, tabs[targetIndex])
+    } else {
+        stringResource(R.string.Perpetual_Guide_Next_Tab, tabs[targetIndex])
+    }
+    Box(
+        modifier = Modifier.fillMaxWidth(),
+        contentAlignment = Alignment.Center,
+    ) {
+        GuideNavigationButton(
+            text = buttonText,
+            modifier = Modifier.fillMaxWidth(0.5f),
+            onClick = { onSelect(targetIndex) },
+        )
+    }
+}
+
+@Composable
+private fun GuideNavigationButton(
+    text: String,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    Button(
+        modifier = modifier.height(48.dp),
+        onClick = onClick,
+        colors = ButtonDefaults.outlinedButtonColors(
+            backgroundColor = MixinAppTheme.colors.accent,
+            contentColor = Color.White,
+        ),
+        shape = RoundedCornerShape(32.dp),
+        elevation = ButtonDefaults.elevation(
+            pressedElevation = 0.dp,
+            defaultElevation = 0.dp,
+            hoveredElevation = 0.dp,
+            focusedElevation = 0.dp,
+        ),
+    ) {
+        Text(
+            text = text,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.White,
+        )
+    }
+}
+
+@Composable
 private fun GuideSection(title: String, content: String) {
     Column(
         modifier = Modifier
@@ -263,7 +404,7 @@ private fun GuideSection(title: String, content: String) {
         Text(
             text = title,
             fontSize = 16.sp,
-            fontWeight = FontWeight.SemiBold,
+            fontWeight = FontWeight.W500,
             color = MixinAppTheme.colors.textPrimary
         )
         Spacer(modifier = Modifier.height(12.dp))
@@ -271,12 +412,13 @@ private fun GuideSection(title: String, content: String) {
             text = content,
             fontSize = 14.sp,
             lineHeight = 20.sp,
-            color = MixinAppTheme.colors.textAssist
+            color = MixinAppTheme.colors.textPrimary
         )
+        Spacer(modifier = Modifier.height(12.dp))
         Text(
-            text = title,
+            text = stringResource(R.string.Perpetual_Features),
             fontSize = 16.sp,
-            fontWeight = FontWeight.SemiBold,
+            fontWeight = FontWeight.W500,
             color = MixinAppTheme.colors.textPrimary
         )
         Spacer(modifier = Modifier.height(8.dp))
@@ -288,31 +430,24 @@ private fun GuideSection(title: String, content: String) {
             stringResource(R.string.Perpetual_Feature_5)
         )
             .forEach { feature ->
-                Row(modifier = Modifier.padding(vertical = 4.dp)) {
-                    Text(text = "• ", fontSize = 14.sp, color = MixinAppTheme.colors.textAssist)
-                    Text(
-                        text = feature,
-                        fontSize = 14.sp,
-                        lineHeight = 20.sp,
-                        color = MixinAppTheme.colors.textAssist,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
+                DotText(
+                    text = feature,
+                    modifier = Modifier.padding(vertical = 4.dp),
+                    color = MixinAppTheme.colors.textPrimary,
+                )
             }
 
         Spacer(modifier = Modifier.height(12.dp))
         Text(
             text = stringResource(R.string.Perpetual_Risk_Warning),
             fontSize = 16.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = MixinAppTheme.colors.textMinor
+            fontWeight = FontWeight.W500,
+            color = MixinAppTheme.colors.textPrimary
         )
         Spacer(modifier = Modifier.height(8.dp))
-        Text(
+        DotText(
             text = stringResource(R.string.Perpetual_Risk_Warning_Content),
-            fontSize = 14.sp,
-            lineHeight = 20.sp,
-            color = MixinAppTheme.colors.textMinor
+            color = MixinAppTheme.colors.textPrimary
         )
     }
 }
@@ -323,6 +458,14 @@ private fun ExampleWithScenariosCard(
     rows: List<Pair<String, String>>,
     scenarios: List<ScenarioData>,
 ) {
+    val changePercents = remember(scenarios.size) {
+        mutableStateListOf<Int>().apply {
+            addAll(scenarios.map { it.initialPercent.coerceIn(0, 10) })
+        }
+    }
+    val directionLabel = stringResource(R.string.Perpetual_Direction)
+    val longDirection = stringResource(R.string.Long)
+    val shortDirection = stringResource(R.string.Short)
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -333,11 +476,14 @@ private fun ExampleWithScenariosCard(
         Text(
             text = title,
             fontSize = 16.sp,
-            fontWeight = FontWeight.SemiBold,
+            fontWeight = FontWeight.W500,
             color = MixinAppTheme.colors.textPrimary
         )
         Spacer(modifier = Modifier.height(12.dp))
         rows.forEachIndexed { index, (label, value) ->
+            if (index > 0) {
+                Spacer(modifier = Modifier.height(16.dp))
+            }
             Row(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = label,
@@ -345,12 +491,24 @@ private fun ExampleWithScenariosCard(
                     color = MixinAppTheme.colors.textAssist,
                     modifier = Modifier.weight(1f)
                 )
-                Text(
-                    text = value,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MixinAppTheme.colors.textPrimary
-                )
+                if (label == directionLabel && (value == longDirection || value == shortDirection)) {
+                    val directionColor = if (value == longDirection) Color(0xFF4CAF50) else Color(0xFFF44336)
+                    Text(
+                        text = value,
+                        fontSize = 14.sp,
+                        color = Color.White,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(directionColor)
+                            .padding(horizontal = 8.dp, vertical = 1.dp),
+                    )
+                } else {
+                    Text(
+                        text = value,
+                        fontSize = 14.sp,
+                        color = MixinAppTheme.colors.textPrimary
+                    )
+                }
             }
         }
 
@@ -358,19 +516,33 @@ private fun ExampleWithScenariosCard(
 
         scenarios.forEachIndexed { index, scenario ->
             if (index > 0) {
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+            val scenarioTitle = when (index) {
+                0 -> stringResource(R.string.Perpetual_Scenario_1)
+                1 -> stringResource(R.string.Perpetual_Scenario_2)
+                else -> ""
             }
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
             ) {
+                if (scenarioTitle.isNotEmpty()) {
+                    Text(
+                        text = scenarioTitle,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.W500,
+                        color = MixinAppTheme.colors.textPrimary
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                }
                 Text(
                     text = scenario.scenario,
                     fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MixinAppTheme.colors.textPrimary
+                    fontWeight = FontWeight.W500,
+                    color = MixinAppTheme.colors.textAssist
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(16.dp))
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Text(
                         text = scenario.change,
@@ -378,12 +550,55 @@ private fun ExampleWithScenariosCard(
                         color = MixinAppTheme.colors.textAssist,
                         modifier = Modifier.weight(1f)
                     )
-                    Text(
-                        text = scenario.changeValue,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = if (scenario.isProfit) Color(0xFF4CAF50) else Color(0xFFF44336)
+                    val percent = changePercents[index]
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
                     )
+                    {
+                        Box(
+                            modifier = Modifier
+                                .size(24.dp)
+                                .clip(CircleShape)
+                                .background(MixinAppTheme.colors.backgroundWindow)
+                                .alpha(if (percent > 0) 1f else 0.5f)
+                                .clickable(enabled = percent > 0) {
+                                    changePercents[index] = (percent - 1).coerceAtLeast(0)
+                                },
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_perps_minus),
+                                contentDescription = null,
+                                tint = Color.Unspecified,
+                                modifier = Modifier.size(16.dp),
+                            )
+                        }
+                        Text(
+                            text = "$percent%",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = MixinAppTheme.colors.textPrimary,
+                            modifier = Modifier.padding(horizontal = 8.dp),
+                        )
+                        Box(
+                            modifier = Modifier
+                                .size(24.dp)
+                                .clip(CircleShape)
+                                .background(MixinAppTheme.colors.backgroundWindow)
+                                .alpha(if (percent < 10) 1f else 0.5f)
+                                .clickable(enabled = percent < 10) {
+                                    changePercents[index] = (percent + 1).coerceAtMost(10)
+                                },
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_perps_add),
+                                contentDescription = null,
+                                tint = Color.Unspecified,
+                                modifier = Modifier.size(16.dp),
+                            )
+                        }
+                    }
                 }
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(modifier = Modifier.fillMaxWidth()) {
@@ -394,7 +609,7 @@ private fun ExampleWithScenariosCard(
                         modifier = Modifier.weight(1f)
                     )
                     Text(
-                        text = scenario.pnl,
+                        text = scenario.formatPnl(changePercents[index]),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         color = if (scenario.isProfit) Color(0xFF4CAF50) else Color(0xFFF44336)
@@ -403,6 +618,16 @@ private fun ExampleWithScenariosCard(
             }
         }
     }
+}
+
+private fun ScenarioData.formatPnl(currentPercent: Int): String {
+    val safeInitialPercent = initialPercent.coerceAtLeast(1)
+    val safeCurrentPercent = currentPercent.coerceIn(0, 10)
+    val amount = (basePnlAmount.toFloat() * safeCurrentPercent / safeInitialPercent).roundToInt()
+    val percent = (basePnlPercent.toFloat() * safeCurrentPercent / safeInitialPercent).roundToInt()
+    val sign = if (isProfit) "+" else "-"
+    val amountText = String.format("%,d", amount)
+    return "$sign$amountText $pnlAsset ($sign$percent%)"
 }
 
 @Composable
@@ -420,7 +645,7 @@ private fun DescriptionWithRulesCard(
         Text(
             text = stringResource(R.string.Perpetual_Detail_Desc),
             fontSize = 16.sp,
-            fontWeight = FontWeight.SemiBold,
+            fontWeight = FontWeight.W500,
             color = MixinAppTheme.colors.textPrimary
         )
         Spacer(modifier = Modifier.height(8.dp))
@@ -428,7 +653,7 @@ private fun DescriptionWithRulesCard(
             text = description,
             fontSize = 14.sp,
             lineHeight = 20.sp,
-            color = MixinAppTheme.colors.textAssist
+            color = MixinAppTheme.colors.textPrimary
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -436,21 +661,16 @@ private fun DescriptionWithRulesCard(
         Text(
             text = stringResource(R.string.Perpetual_PnL_Rules),
             fontSize = 16.sp,
-            fontWeight = FontWeight.SemiBold,
+            fontWeight = FontWeight.W500,
             color = MixinAppTheme.colors.textPrimary
         )
         Spacer(modifier = Modifier.height(12.dp))
         rules.forEach { (condition, result) ->
-            Row(modifier = Modifier.padding(vertical = 4.dp)) {
-                Text(text = "$condition：", fontSize = 14.sp, color = MixinAppTheme.colors.textAssist)
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = result,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MixinAppTheme.colors.textPrimary
-                )
-            }
+            DotText(
+                text = "$condition：$result",
+                modifier = Modifier.padding(vertical = 4.dp),
+                color = MixinAppTheme.colors.textPrimary,
+            )
         }
     }
 }
@@ -471,7 +691,7 @@ private fun DescriptionWithInfoAndRiskCard(
         Text(
             text = stringResource(R.string.Perpetual_Detail_Desc),
             fontSize = 16.sp,
-            fontWeight = FontWeight.SemiBold,
+            fontWeight = FontWeight.W500,
             color = MixinAppTheme.colors.textPrimary
         )
         Spacer(modifier = Modifier.height(8.dp))
@@ -479,7 +699,7 @@ private fun DescriptionWithInfoAndRiskCard(
             text = description,
             fontSize = 14.sp,
             lineHeight = 20.sp,
-            color = MixinAppTheme.colors.textAssist
+            color = MixinAppTheme.colors.textPrimary
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -491,7 +711,7 @@ private fun DescriptionWithInfoAndRiskCard(
             Text(
                 text = infoTitle,
                 fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold,
+                fontWeight = FontWeight.W500,
                 color = MixinAppTheme.colors.textMinor
             )
             Spacer(modifier = Modifier.height(6.dp))
@@ -499,7 +719,7 @@ private fun DescriptionWithInfoAndRiskCard(
                 text = infoContent,
                 fontSize = 14.sp,
                 lineHeight = 18.sp,
-                color = MixinAppTheme.colors.textMinor
+                color = MixinAppTheme.colors.textPrimary
             )
         }
 
@@ -512,17 +732,14 @@ private fun DescriptionWithInfoAndRiskCard(
             Text(
                 text = stringResource(R.string.Perpetual_Risk_Warning),
                 fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = MixinAppTheme.colors.textMinor
+                fontWeight = FontWeight.W500,
+                color = MixinAppTheme.colors.textPrimary
             )
             Spacer(modifier = Modifier.height(6.dp))
-            Text(
+            DotText(
                 text = riskContent,
-                fontSize = 14.sp,
-                lineHeight = 18.sp,
-                color = MixinAppTheme.colors.textMinor
+                color = MixinAppTheme.colors.textPrimary
             )
         }
     }
 }
-

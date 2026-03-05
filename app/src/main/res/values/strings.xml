@@ -2287,6 +2287,8 @@
     <string name="Perpetual_Guide_Short">Short</string>
     <string name="Perpetual_Guide_Leverage">Leverage</string>
     <string name="Perpetual_Guide_Close">Close Position</string>
+    <string name="Perpetual_Guide_Previous_Tab">&lt;%1$s</string>
+    <string name="Perpetual_Guide_Next_Tab">%1$s&gt;</string>
     <string name="Perpetual_Guide_Overview_Content">Perpetual contracts allow you to trade cryptocurrency with leverage, enabling you to amplify your potential profits (and losses). You can go long (bet on price increase) or short (bet on price decrease) without owning the underlying asset.</string>
     <string name="Perpetual_Guide_Long_Content">Going long means you expect the price to increase. If the price goes up, you profit. If it goes down, you lose. Your profit/loss is multiplied by your leverage.</string>
     <string name="Perpetual_Guide_Short_Content">Going short means you expect the price to decrease. If the price goes down, you profit. If it goes up, you lose. Your profit/loss is multiplied by your leverage.</string>
@@ -2317,6 +2319,8 @@
     <string name="Perpetual_Scenario_2">Scenario 2: Price Fall</string>
     <string name="Perpetual_Price_Up">Price Rise</string>
     <string name="Perpetual_Price_Down">Price Fall</string>
+    <string name="Perpetual_Price_Up_Amplitude">Upward Change</string>
+    <string name="Perpetual_Price_Down_Amplitude">Downward Change</string>
     <string name="Perpetual_PnL">P&amp;L</string>
     <string name="Perpetual_Detail_Desc">Detailed Description</string>
     <string name="Perpetual_Long_Desc">Going long means establishing a position when expecting price to rise. Profit when price rises, loss when price falls.</string>
