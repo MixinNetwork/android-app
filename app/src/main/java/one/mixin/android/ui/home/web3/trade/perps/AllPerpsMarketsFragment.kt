@@ -30,7 +30,6 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.fragment.app.viewModels
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
@@ -41,10 +40,7 @@ import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.isNightMode
-import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.home.web3.trade.SwapViewModel
-import one.mixin.android.vo.market.MarketItem
 
 @AndroidEntryPoint
 class AllPerpsMarketsFragment : BaseFragment() {
@@ -55,7 +51,6 @@ class AllPerpsMarketsFragment : BaseFragment() {
         fun newInstance() = AllPerpsMarketsFragment()
     }
 
-    private val swapViewModel by viewModels<SwapViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -78,42 +73,15 @@ class AllPerpsMarketsFragment : BaseFragment() {
         }
     }
 
-    private suspend fun showMarketDetails(market: PerpsMarket) {
-        val marketItem = findMarketItemByPerpsMarket(market)
-        if (marketItem != null && activity != null) {
-            PerpsActivity.Companion.showDetail(
+    private fun showMarketDetails(market: PerpsMarket) {
+        if (activity != null) {
+            PerpsActivity.showDetail(
                 requireContext(),
                 market.marketId,
                 market.symbol,
                 market.displaySymbol
             )
-        } else {
-            toast(R.string.Alert_Not_Support)
         }
-    }
-
-    private suspend fun findMarketItemByPerpsMarket(market: PerpsMarket): MarketItem? {
-        val symbols = linkedSetOf(
-            market.tokenSymbol,
-            market.displaySymbol.substringBefore("/"),
-            market.displaySymbol.substringBefore("-"),
-            market.symbol.substringBefore("-"),
-            market.symbol.substringBefore("_"),
-        ).map { it.trim().uppercase() }.filter { it.isNotEmpty() }
-
-        for (symbol in symbols) {
-            val tokens = runCatching { swapViewModel.searchTokens(symbol, true) }
-                .getOrNull()
-                ?.data
-                .orEmpty()
-            val token = tokens.firstOrNull { it.symbol.equals(symbol, ignoreCase = true) } ?: tokens.firstOrNull()
-            val assetId = token?.assetId ?: continue
-            val marketItem = runCatching { swapViewModel.checkMarketById(assetId, false) }.getOrNull()
-            if (marketItem != null) {
-                return marketItem
-            }
-        }
-        return null
     }
 }
 
@@ -144,7 +112,7 @@ private fun AllMarketsPage(
     }
 
     PageScaffold(
-        title = stringResource(R.string.Markets),
+        title = stringResource(R.string.All_Markets),
         verticalScrollable = false,
         pop = pop
     ) {

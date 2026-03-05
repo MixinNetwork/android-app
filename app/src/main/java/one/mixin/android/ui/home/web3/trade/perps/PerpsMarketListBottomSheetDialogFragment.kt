@@ -114,7 +114,7 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
     }
 
     private fun onMarketClick(market: PerpsMarket) {
-        PerpsActivity.Companion.showOpenPosition(
+        PerpsActivity.showOpenPosition(
             context = requireContext(),
             marketId = market.marketId,
             marketSymbol = market.symbol,

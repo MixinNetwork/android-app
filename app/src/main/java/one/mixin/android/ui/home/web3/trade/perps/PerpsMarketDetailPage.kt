@@ -374,12 +374,12 @@ private fun MarketInfoCard(
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
             .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
+            .clickable { onLearnClick() }
             .padding(16.dp)
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onLearnClick() },
+                .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Image(painter = painterResource(id = R.drawable.ic_perps_help), contentDescription = null)
@@ -434,7 +434,7 @@ private fun MarketInfoCard(
                 text = "${market.fundingRate}%",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
-                color = fundingColor
+                color = MixinAppTheme.colors.textPrimary
             )
         }
     }

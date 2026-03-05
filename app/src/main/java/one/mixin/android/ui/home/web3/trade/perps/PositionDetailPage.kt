@@ -79,8 +79,9 @@ fun PositionDetailPage(
     val title = stringResource(R.string.Perpetual_Opened_Side_Title, sideText)
 
     val quantity = position.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val absQuantity = quantity.abs()
     val markPrice = position.markPrice?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    val orderValue = quantity * markPrice
+    val orderValue = absQuantity * markPrice
     val fiatRate = BigDecimal(Fiats.getRate())
     val fiatSymbol = Fiats.getSymbol()
 
@@ -233,7 +234,7 @@ fun PositionDetailPage(
                 
                 PositionDetailItem(
                     label = stringResource(R.string.Order_Value).uppercase(),
-                    value = "${String.format("%f", quantity)} ${position.tokenSymbol ?: ""}",
+                    value = "${String.format("%f", absQuantity)} ${position.tokenSymbol ?: ""}",
                     subtitle = formatFiat(orderValue)
                 )
 
@@ -363,8 +364,9 @@ fun PositionDetailPage(
     val title = stringResource(R.string.Perpetual_Closed_Side_Title, sideText)
 
     val quantity = positionHistory.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val absQuantity = quantity.abs()
     val closePrice = positionHistory.closePrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    val orderValue = quantity * closePrice
+    val orderValue = absQuantity * closePrice
     val fiatRate = BigDecimal(Fiats.getRate())
     val fiatSymbol = Fiats.getSymbol()
 
@@ -510,7 +512,7 @@ fun PositionDetailPage(
 
                 PositionDetailItem(
                     label = stringResource(R.string.Order_Value).uppercase(),
-                    value = "${String.format("%f", quantity)} ${positionHistory.tokenSymbol ?: ""}",
+                    value = "${String.format("%f", absQuantity)} ${positionHistory.tokenSymbol ?: ""}",
                     subtitle = formatFiat(orderValue)
                 )
 

@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.FragmentActivity
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import kotlinx.coroutines.delay
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
@@ -58,12 +59,14 @@ import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.putInt
+import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.home.web3.trade.InputContent
 import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.wallet.AddFeeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
@@ -71,20 +74,20 @@ import java.math.RoundingMode
 import kotlin.math.abs
 
 private fun getLeveragePrefKey(marketId: String) = "pref_perps_leverage_$marketId"
+private const val MARKET_REFRESH_INTERVAL_MS = 5_000L
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun OpenPositionPage(
-    marketId: String,
-    marketSymbol: String,
-    displaySymbol: String,
+    market: PerpsMarket,
     isLong: Boolean,
     onBack: () -> Unit,
-    selectedToken: TokenItem? = null,
+    selectedToken: TokenItem?,
     onTokenSelect: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<PerpetualViewModel>()
+    val marketId = market.marketId
     val acceptedPerpAssetIds = remember {
         context.defaultSharedPreferences
             .getStringSet(Constants.Account.PREF_PERPS_ACCEPTED_ASSET_IDS, emptySet())
@@ -93,7 +96,7 @@ fun OpenPositionPage(
             .toSet()
     }
 
-    var market by remember { mutableStateOf<PerpsMarket?>(null) }
+    var currentMarket by remember(marketId) { mutableStateOf(market) }
     var currentToken by remember { mutableStateOf<TokenItem?>(selectedToken) }
     var availableTokens by remember { mutableStateOf<List<TokenItem>>(emptyList()) }
     var usdtAmount by remember { mutableStateOf("") }
@@ -102,14 +105,19 @@ fun OpenPositionPage(
     var leverage by remember { mutableFloatStateOf(savedLeverage.toFloat()) }
 
     LaunchedEffect(marketId) {
-        viewModel.loadMarketDetail(
-            marketId = marketId,
-            onSuccess = { data ->
-                market = data
-            },
-            onError = {}
-        )
+        while (true) {
+            viewModel.loadMarketDetail(
+                marketId = marketId,
+                onSuccess = { data ->
+                    currentMarket = data
+                },
+                onError = {}
+            )
+            delay(MARKET_REFRESH_INTERVAL_MS)
+        }
+    }
 
+    LaunchedEffect(acceptedPerpAssetIds) {
         viewModel.loadUsdTokens { tokens ->
             val supportedTokens = tokens.filter { it.assetId in acceptedPerpAssetIds }
             availableTokens = supportedTokens
@@ -125,13 +133,12 @@ fun OpenPositionPage(
         }
     }
 
-    val maxLeverage = market?.leverage ?: 100
+    val maxLeverage = currentMarket.leverage
     val leverageOptions = generateLeverageOptions(maxLeverage)
     val quoteColorReversed = context.defaultSharedPreferences
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
     val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
-    val directionColor = if (isLong) risingColor else fallingColor
     val fiatRate = BigDecimal(Fiats.getRate())
     val fiatSymbol = Fiats.getSymbol()
     val inputAmount = usdtAmount.toBigDecimalOrNull()
@@ -143,7 +150,6 @@ fun OpenPositionPage(
     MixinAppTheme {
         PageScaffold(
             title = stringResource(R.string.Open_Position),
-            subtitleText = stringResource(R.string.Perpetual),
             verticalScrollable = false,
             pop = onBack,
             actions = {
@@ -168,31 +174,29 @@ fun OpenPositionPage(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    market?.let { m ->
-                        CoilImage(
-                            model = m.iconUrl,
-                            placeholder = R.drawable.ic_avatar_place_holder,
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape),
-                            contentScale = ContentScale.Crop
+                    CoilImage(
+                        model = currentMarket.iconUrl,
+                        placeholder = R.drawable.ic_avatar_place_holder,
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
+                        Text(
+                            text = "${if (isLong) stringResource(R.string.Long) else stringResource(R.string.Short)} ${currentMarket.tokenSymbol}",
+                            fontSize = 16.sp,
+                            color = MixinAppTheme.colors.textPrimary
                         )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                            Text(
-                                text = "${if (isLong) stringResource(R.string.Long) else stringResource(R.string.Short)} ${m.tokenSymbol}",
-                                fontSize = 16.sp,
-                                color = MixinAppTheme.colors.textPrimary
-                            )
-                            Text(
-                                text = stringResource(
-                                    R.string.Current_price,
-                                    formatFiatPrice(m.markPrice, fiatRate, fiatSymbol)
-                                ),
-                                fontSize = 13.sp,
-                                color = MixinAppTheme.colors.textAssist
-                            )
-                        }
+                        Text(
+                            text = stringResource(
+                                R.string.Current_price,
+                                formatFiatPrice(currentMarket.markPrice, fiatRate, fiatSymbol)
+                            ),
+                            fontSize = 13.sp,
+                            color = MixinAppTheme.colors.textAssist
+                        )
                     }
                 }
 
@@ -277,6 +281,17 @@ fun OpenPositionPage(
                                 }
                             )
                         }
+                        Spacer(modifier = Modifier.weight(1f))
+                        Text(
+                            text = currentToken?.name
+                                ?.takeIf { it.isNotBlank() }
+                                ?: "",
+                            style = TextStyle(
+                                fontSize = 12.sp,
+                                color = MixinAppTheme.colors.textAssist,
+                                textAlign = TextAlign.End,
+                            ),
+                        )
                     }
                 }
                 Spacer(modifier = Modifier.height(2.dp))
@@ -429,7 +444,7 @@ fun OpenPositionPage(
                             )
                         }
                         Text(
-                            text = "${calculateOrderValue(usdtAmount, leverage, market?.markPrice ?: "0")} ${market?.tokenSymbol}",
+                            text = "${calculateOrderValue(usdtAmount, leverage, currentMarket.markPrice)} ${currentMarket.tokenSymbol}",
                             fontSize = 14.sp,
                             color = MixinAppTheme.colors.textAssist
                         )
@@ -458,7 +473,7 @@ fun OpenPositionPage(
                         }
                         Text(
                             text = calculateLiquidationPrice(
-                                market?.markPrice ?: "0",
+                                currentMarket.markPrice,
                                 leverage,
                                 isLong,
                                 fiatRate,
@@ -485,7 +500,7 @@ fun OpenPositionPage(
                         if (amount <= BigDecimal.ZERO) return@Button
                         if (amount > (token.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO)) return@Button
 
-                        val m = market ?: return@Button
+                        val m = currentMarket
                         val walletId = Session.getAccountId() ?: "" // Privacy Wallet
                         if (walletId.isEmpty()) return@Button
 
@@ -498,12 +513,12 @@ fun OpenPositionPage(
 
                         viewModel.openPerpsOrder(
                             assetId = token.assetId,
-                            productId = marketId,
+                            productId = m.marketId,
                             side = if (isLong) "long" else "short",
                             amount = orderValue.stripTrailingZeros().toPlainString(),
                             leverage = leverage.toInt(),
                             walletId = walletId,
-                            marketSymbol = marketSymbol,
+                            marketSymbol = m.symbol,
                             entryPrice = m.markPrice,
                             onSuccess = { response ->
                                 PerpsConfirmBottomSheetDialogFragment.newInstance(
@@ -519,8 +534,13 @@ fun OpenPositionPage(
                                     onBack()
                                 }.show(activity.supportFragmentManager, PerpsConfirmBottomSheetDialogFragment.TAG)
                             },
-                            onError = { error ->
-                                // TODO: Show error toast or dialog
+                            onError = { errorCode, errorMessage ->
+                                val message = if (errorCode > 0) {
+                                    context.getMixinErrorStringByCode(errorCode, errorMessage)
+                                } else {
+                                    errorMessage.ifBlank { context.getString(R.string.Data_error) }
+                                }
+                                toast(message)
                             }
                         )
                     },

@@ -152,6 +152,7 @@ fun PerpetualGuidePage(pop: () -> Unit) {
                     onSelect = { targetTab ->
                         coroutineScope.launch { selectedTab = targetTab }
                     },
+                    onClose = pop,
                 )
                 Spacer(modifier = Modifier.height(24.dp))
             }
@@ -384,10 +385,34 @@ private fun GuideBottomNavigation(
     selectedTab: Int,
     tabs: List<String>,
     onSelect: (Int) -> Unit,
+    onClose: () -> Unit,
 ) {
     val previousTab = (selectedTab - 1).takeIf { it >= 0 }
     val nextTab = (selectedTab + 1).takeIf { it < tabs.size }
     if (previousTab == null && nextTab == null) {
+        return
+    }
+    if (previousTab != null && nextTab == null) {
+        Row(
+            modifier = Modifier
+                .padding(horizontal = 20.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            GuideNavigationButton(
+                text = stringResource(R.string.Perpetual_Guide_Previous_Tab, tabs[previousTab]),
+                modifier = Modifier.weight(1f),
+                onClick = { onSelect(previousTab) },
+            )
+            GuideNavigationButton(
+                text = stringResource(
+                    R.string.Perpetual_Guide_Next_Tab,
+                    stringResource(R.string.Start)
+                ),
+                modifier = Modifier.weight(1f),
+                onClick = onClose,
+            )
+        }
         return
     }
     if (previousTab != null && nextTab != null) {

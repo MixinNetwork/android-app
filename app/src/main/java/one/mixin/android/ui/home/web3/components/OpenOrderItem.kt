@@ -26,9 +26,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.ui.home.web3.trade.SwapViewModel
@@ -40,6 +42,11 @@ fun OpenOrderItem(order: Order, onClick: () -> Unit) {
     val viewModel = hiltViewModel<SwapViewModel>()
     val fromToken by viewModel.assetItemFlow(order.payAssetId).collectAsStateWithLifecycle(null)
     val toToken by viewModel.assetItemFlow(order.receiveAssetId).collectAsStateWithLifecycle(null)
+    val context = LocalContext.current
+    val quoteColorReversed = context.defaultSharedPreferences
+        .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
+    val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+    val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -91,7 +98,7 @@ fun OpenOrderItem(order: Order, onClick: () -> Unit) {
                 Text(
                     text = "-${payAmountText} ${fromToken?.symbol ?: ""}",
                     fontSize = 14.sp,
-                    color = MixinAppTheme.colors.walletRed,
+                    color = fallingColor,
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 val typeText = when (order.orderType.lowercase()) {
@@ -120,8 +127,8 @@ fun OpenOrderItem(order: Order, onClick: () -> Unit) {
                 // Pending orders without received amount should be gray
                 val leftColor = when {
                     orderState.isPending() && !hasReceivedAmount -> MixinAppTheme.colors.textAssist
-                    orderState.isDone() -> MixinAppTheme.colors.walletGreen
-                    else -> MixinAppTheme.colors.walletRed
+                    orderState.isDone() -> risingColor
+                    else -> fallingColor
                 }
                 Text(
                     text = "+${receiveAmountText} ${toToken?.symbol ?: ""}",
@@ -131,10 +138,9 @@ fun OpenOrderItem(order: Order, onClick: () -> Unit) {
                 Spacer(modifier = Modifier.weight(1f))
                 val rightColor = when {
                     orderState.isPending() -> MixinAppTheme.colors.textAssist
-                    orderState.isDone() -> MixinAppTheme.colors.walletGreen
-                    else -> MixinAppTheme.colors.walletRed
+                    orderState.isDone() -> risingColor
+                    else -> fallingColor
                 }
-                val context = LocalContext.current
                 val stateText = orderState.format(context)
                 Text(
                     text = stateText,

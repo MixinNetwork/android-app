@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -100,7 +101,7 @@ fun PerpsMarketItem(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = market.displaySymbol,
+                        text = market.tokenSymbol,
                         fontSize = 14.sp,
                         color = MixinAppTheme.colors.textPrimary,
                     )
@@ -109,13 +110,11 @@ fun PerpsMarketItem(
                         text = "${market.leverage}x",
                         fontSize = 12.sp,
                         color = MixinAppTheme.colors.textAssist,
+                        lineHeight = 14.sp,
                         modifier = Modifier
                             .clip(RoundedCornerShape(4.dp))
-                            .cardBackground(
-                                MixinAppTheme.colors.backgroundGrayLight,
-                                Color.Transparent
-                            )
-                            .padding(horizontal = 3.dp, vertical = 1.dp)
+                            .background(MixinAppTheme.colors.backgroundGrayLight,)
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
                     )
                 }
                 Spacer(modifier = Modifier.height(2.dp))

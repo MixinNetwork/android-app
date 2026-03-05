@@ -530,7 +530,8 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     ) {
         val amountValue = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
         val profitPercent = 1.0 * leverage
-        val profitAmount = amountValue * BigDecimal(profitPercent / 100)
+        val profitAmount = amountValue * BigDecimal(profitPercent / 100) * fiatRate
+        val formattedProfitAmount = "${fiatSymbol}${profitAmount.priceFormat()}"
 
         Timber.d("ProfitLossInfo - amount: $amount, amountValue: $amountValue, leverage: $leverage, isLong: $isLong, profitPercent: $profitPercent, profitAmount: $profitAmount")
 
@@ -543,14 +544,14 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                     R.string.Price_Up_Profit,
                     "1",
                     String.format("%.1f", profitPercent),
-                    String.format("%.2f", profitAmount)
+                    formattedProfitAmount
                 )
             } else {
                 stringResource(
                     R.string.Price_Down_Profit,
                     "1",
                     String.format("%.1f", profitPercent),
-                    String.format("%.2f", profitAmount)
+                    formattedProfitAmount
                 )
             },
             color = MixinAppTheme.colors.textAssist,

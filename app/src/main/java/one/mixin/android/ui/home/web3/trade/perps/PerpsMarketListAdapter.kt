@@ -50,7 +50,7 @@ class PerpsMarketListAdapter(
                 val fiatRate = BigDecimal(Fiats.getRate())
                 val fiatSymbol = Fiats.getSymbol()
                 iconIv.loadImage(market.iconUrl, R.drawable.ic_avatar_place_holder)
-                symbolTv.text = market.displaySymbol
+                symbolTv.text = market.tokenSymbol
 
                 val formattedVolume = try {
                     BigDecimal(market.volume).multiply(fiatRate).numberFormatCompact()

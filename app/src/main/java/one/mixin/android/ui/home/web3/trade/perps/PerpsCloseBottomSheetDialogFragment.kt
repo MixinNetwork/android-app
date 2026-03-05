@@ -61,6 +61,7 @@ import one.mixin.android.extension.composeDp
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BottomSheetViewModel
@@ -71,6 +72,7 @@ import one.mixin.android.ui.wallet.ItemUserContent
 import one.mixin.android.ui.wallet.components.WalletLabel
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.User
+import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
 import timber.log.Timber
 import java.math.BigDecimal
@@ -175,6 +177,8 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
         val context = LocalContext.current
         val quoteColorReversed = context.defaultSharedPreferences
             .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
+        val fiatRate = BigDecimal(Fiats.getRate())
+        val fiatSymbol = Fiats.getSymbol()
 
         LaunchedEffect(Unit) {
             latestMarkPrice = markPrice
@@ -363,6 +367,13 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                     } catch (e: Exception) {
                         latestRoe
                     }
+                    val formattedPnlFiat = try {
+                        val pnlFiat = pnl.multiply(fiatRate)
+                        val sign = if (pnlFiat >= BigDecimal.ZERO) "+" else "-"
+                        "$sign$fiatSymbol${pnlFiat.abs().priceFormat()}"
+                    } catch (e: Exception) {
+                        "${fiatSymbol}0"
+                    }
 
                     if (isLoading) {
                         Box(
@@ -437,7 +448,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                                     fontSize = 14.sp
                                 )
                                 Text(
-                                    text = "${if (pnl >= BigDecimal.ZERO) "+" else ""}${latestUnrealizedPnl} $settleAssetSymbol ($formattedRoe%)",
+                                    text = "${if (pnl >= BigDecimal.ZERO) "+" else ""}${latestUnrealizedPnl} $settleAssetSymbol ($formattedRoe%, $formattedPnlFiat)",
                                     color = pnlColor,
                                     fontSize = 14.sp
                                 )

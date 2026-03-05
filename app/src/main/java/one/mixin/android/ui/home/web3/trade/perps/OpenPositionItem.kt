@@ -1,5 +1,7 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -17,7 +19,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -29,7 +30,6 @@ import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.priceFormat
-import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
@@ -48,6 +48,13 @@ fun OpenPositionItem(
 
     val displaySymbol = position.displaySymbol ?: position.tokenSymbol ?: stringResource(R.string.Unknown)
     val quantity = position.quantity.toBigDecimalOrNull()?.let { String.format("%f", it) } ?: position.quantity
+    val isLong = position.side.equals("long", true)
+    val sideColor = if (isLong) {
+        if (quoteColorPref) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+    } else {
+        if (quoteColorPref) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+    }
+    val leverageBackgroundColor = sideColor.copy(alpha = 0.1f)
 
     Row(
         modifier = Modifier
@@ -73,7 +80,7 @@ fun OpenPositionItem(
 
             Column {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    val sideText = if (position.side.equals("long", true)) {
+                    val sideText = if (isLong) {
                         stringResource(R.string.Long)
                     } else {
                         stringResource(R.string.Short)
@@ -91,16 +98,14 @@ fun OpenPositionItem(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "${position.leverage}x",
+                        text = "${position.leverage}X",
                         fontSize = 12.sp,
-                        color = MixinAppTheme.colors.textAssist,
+                        color = sideColor,
+                        lineHeight = 14.sp,
                         modifier = Modifier
                             .clip(RoundedCornerShape(4.dp))
-                            .cardBackground(
-                                MixinAppTheme.colors.backgroundGrayLight,
-                                Color.Transparent
-                            )
-                            .padding(horizontal = 3.dp, vertical = 1.dp)
+                            .background(leverageBackgroundColor)
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
                     )
                 }
                 Spacer(modifier = Modifier.height(4.dp))

@@ -236,7 +236,7 @@ class PerpetualViewModel @Inject constructor(
         marketSymbol: String,
         entryPrice: String,
         onSuccess: (OpenOrderResponse) -> Unit,
-        onError: (String) -> Unit
+        onError: (Int, String) -> Unit
     ) {
         viewModelScope.launch {
             try {
@@ -287,14 +287,14 @@ class PerpetualViewModel @Inject constructor(
                     
                     onSuccess(data)
                 } else {
-                    val error = "Failed to open perps order: ${response.errorDescription}"
-                    Timber.e(error)
-                    onError(error)
+                    val error = response.errorDescription
+                    Timber.e("Failed to open perps order: code=${response.errorCode}, description=$error")
+                    onError(response.errorCode, error)
                 }
             } catch (e: Exception) {
                 val error = "Error opening perps order: ${e.message}"
                 Timber.e(e, error)
-                onError(error)
+                onError(-1, error)
             }
         }
     }

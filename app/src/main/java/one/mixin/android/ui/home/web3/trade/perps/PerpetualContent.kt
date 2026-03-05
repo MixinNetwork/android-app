@@ -60,6 +60,7 @@ import one.mixin.android.ui.home.web3.trade.ClosedPositionItem
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
+import kotlin.math.abs
 
 private const val POSITION_REFRESH_INTERVAL_MS = 10_000L
 private const val CLOSED_POSITION_PREVIEW_LIMIT = 10
@@ -184,7 +185,7 @@ fun PerpetualContent(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = String.format("(%s%.2f%%)", if (totalPnlPercent >= 0) "+" else "", kotlin.math.abs(totalPnlPercent)),
+                    text = String.format("(%s%.2f%%)", if (totalPnlPercent >= 0) "+" else "", abs(totalPnlPercent)),
                     fontSize = 14.sp,
                     color = if (totalPnl >= 0) risingColor else fallingColor,
                 )

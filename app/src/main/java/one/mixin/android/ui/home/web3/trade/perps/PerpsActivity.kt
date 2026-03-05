@@ -7,11 +7,18 @@ import androidx.activity.compose.setContent
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.db.perps.PerpsMarketDao
+import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshPerpsPositionsJob
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.session.Session
+import one.mixin.android.R
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment
 import one.mixin.android.vo.safe.TokenItem
@@ -22,6 +29,8 @@ class PerpsActivity : BaseActivity() {
 
     @Inject
     lateinit var jobManager: MixinJobManager
+    @Inject
+    lateinit var perpsMarketDao: PerpsMarketDao
 
     private var selectedToken by mutableStateOf<TokenItem?>(null)
 
@@ -68,30 +77,39 @@ class PerpsActivity : BaseActivity() {
 
         refreshPositions()
 
-        setContent {
-            MixinAppTheme {
-                when (mode) {
-                    MODE_OPEN_POSITION -> {
+        if (mode == MODE_OPEN_POSITION) {
+            lifecycleScope.launch {
+                val market = withContext(Dispatchers.IO) {
+                    perpsMarketDao.getMarket(marketId)
+                }
+                if (market == null) {
+                    toast(R.string.Alert_Not_Support)
+                    finish()
+                    return@launch
+                }
+                setContent {
+                    MixinAppTheme {
                         OpenPositionPage(
-                            marketId = marketId,
-                            marketSymbol = marketSymbol,
-                            displaySymbol = displaySymbol,
+                            market = market,
                             isLong = isLong,
                             onBack = { finish() },
                             selectedToken = selectedToken,
                             onTokenSelect = { showTokenSelection() }
                         )
                     }
-
-                    else -> {
-                        PerpsMarketDetailPage(
-                            marketId = marketId,
-                            marketSymbol = marketSymbol,
-                            displaySymbol = displaySymbol,
-                            onBack = { finish() }
-                        )
-                    }
                 }
+            }
+            return
+        }
+
+        setContent {
+            MixinAppTheme {
+                PerpsMarketDetailPage(
+                    marketId = marketId,
+                    marketSymbol = marketSymbol,
+                    displaySymbol = displaySymbol,
+                    onBack = { finish() }
+                )
             }
         }
     }
