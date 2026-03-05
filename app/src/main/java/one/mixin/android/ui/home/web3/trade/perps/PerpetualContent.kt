@@ -429,7 +429,7 @@ fun PerpetualContent(
                     .height(48.dp),
                 shape = RoundedCornerShape(24.dp),
                 colors = ButtonDefaults.buttonColors(
-                    backgroundColor = Color(0xFF4CAF50),
+                    backgroundColor = risingColor,
                     contentColor = Color.White
                 ),
                 enabled = markets.isNotEmpty()
@@ -450,7 +450,7 @@ fun PerpetualContent(
                     .height(48.dp),
                 shape = RoundedCornerShape(24.dp),
                 colors = ButtonDefaults.buttonColors(
-                    backgroundColor = Color(0xFFF44336),
+                    backgroundColor = fallingColor,
                     contentColor = Color.White
                 ),
                 enabled = markets.isNotEmpty()

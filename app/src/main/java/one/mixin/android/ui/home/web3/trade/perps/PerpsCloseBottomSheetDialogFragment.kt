@@ -38,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -50,12 +51,14 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsPosition
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.composeDp
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.screenHeight
@@ -169,6 +172,10 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
 
     @Composable
     override fun ComposeContent() {
+        val context = LocalContext.current
+        val quoteColorReversed = context.defaultSharedPreferences
+            .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
+
         LaunchedEffect(Unit) {
             latestMarkPrice = markPrice
             latestUnrealizedPnl = unrealizedPnl
@@ -335,10 +342,12 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                     } catch (e: Exception) {
                         BigDecimal.ZERO
                     }
+                    val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+                    val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
                     val pnlColor = if (pnl >= BigDecimal.ZERO) {
-                        MixinAppTheme.colors.walletGreen
+                        risingColor
                     } else {
-                        MixinAppTheme.colors.walletRed
+                        fallingColor
                     }
 
                     val estimatedReceive = try {

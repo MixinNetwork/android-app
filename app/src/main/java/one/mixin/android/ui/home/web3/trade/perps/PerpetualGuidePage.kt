@@ -34,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -41,8 +42,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.ui.home.web3.components.OutlinedTab
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.widget.components.DotText
@@ -458,6 +461,11 @@ private fun ExampleWithScenariosCard(
     rows: List<Pair<String, String>>,
     scenarios: List<ScenarioData>,
 ) {
+    val context = LocalContext.current
+    val quoteColorReversed = context.defaultSharedPreferences
+        .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
+    val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+    val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
     val changePercents = remember(scenarios.size) {
         mutableStateListOf<Int>().apply {
             addAll(scenarios.map { it.initialPercent.coerceIn(0, 10) })
@@ -492,7 +500,7 @@ private fun ExampleWithScenariosCard(
                     modifier = Modifier.weight(1f)
                 )
                 if (label == directionLabel && (value == longDirection || value == shortDirection)) {
-                    val directionColor = if (value == longDirection) Color(0xFF4CAF50) else Color(0xFFF44336)
+                    val directionColor = if (value == longDirection) risingColor else fallingColor
                     Text(
                         text = value,
                         fontSize = 14.sp,
@@ -612,7 +620,7 @@ private fun ExampleWithScenariosCard(
                         text = scenario.formatPnl(changePercents[index]),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (scenario.isProfit) Color(0xFF4CAF50) else Color(0xFFF44336)
+                        color = if (scenario.isProfit) risingColor else fallingColor
                     )
                 }
             }
