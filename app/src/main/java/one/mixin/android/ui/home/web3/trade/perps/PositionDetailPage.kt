@@ -89,14 +89,6 @@ fun PositionDetailPage(
         return "$fiatSymbol${value.multiply(fiatRate).priceFormat()}"
     }
 
-    fun formatSignedFiat(value: BigDecimal): String {
-        return when {
-            value > BigDecimal.ZERO -> "+${formatFiat(value)}"
-            value < BigDecimal.ZERO -> "-${formatFiat(value.abs())}"
-            else -> formatFiat(BigDecimal.ZERO)
-        }
-    }
-
     PageScaffold(
         title = title,
         verticalScrollable = false,
@@ -181,7 +173,7 @@ fun PositionDetailPage(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = stringResource(R.string.Close),
+                        text = stringResource(R.string.Perpetual_Guide_Close),
                         color = MixinAppTheme.colors.textPrimary,
                         fontWeight = FontWeight.W500,
                         modifier = Modifier

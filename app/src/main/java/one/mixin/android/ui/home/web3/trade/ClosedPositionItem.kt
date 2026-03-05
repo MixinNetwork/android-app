@@ -32,6 +32,7 @@ import one.mixin.android.extension.priceFormat
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
+import kotlin.math.abs
 
 @Composable
 fun ClosedPositionItem(
@@ -65,7 +66,7 @@ fun ClosedPositionItem(
         }
     }
     
-    val displaySymbol = position.displaySymbol ?: position.tokenSymbol ?: "Unknown"
+    val displaySymbol = position.tokenSymbol ?: "Unknown"
     val quantity = try {
         val qty = BigDecimal(position.quantity)
         String.format("%f", qty)
@@ -118,7 +119,7 @@ fun ClosedPositionItem(
                 }
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "$quantity ${position.tokenSymbol ?: ""}",
+                    text = "${(quantity.toBigDecimalOrNull()?: BigDecimal.ZERO).abs().stripTrailingZeros().toPlainString()} ${position.tokenSymbol ?: ""}",
                     fontSize = 12.sp,
                     color = MixinAppTheme.colors.textAssist
                 )

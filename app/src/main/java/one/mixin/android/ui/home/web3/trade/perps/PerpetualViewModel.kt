@@ -321,6 +321,10 @@ class PerpetualViewModel @Inject constructor(
         return perpsPositionDao.observePosition(positionId)
     }
 
+    fun observeTokenByChainAndSymbol(chainId: String, symbol: String): Flow<TokenItem?> {
+        return tokenDao.assetItemFlowByChainAndSymbol(chainId, symbol)
+    }
+
     fun refreshSinglePosition(positionId: String, walletId: String? = null) {
         viewModelScope.launch {
             try {

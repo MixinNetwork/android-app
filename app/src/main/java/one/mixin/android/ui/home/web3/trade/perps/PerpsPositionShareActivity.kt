@@ -53,6 +53,8 @@ class PerpsPositionShareActivity : BaseActivity() {
     companion object {
         private const val ARGS_POSITION = "args_position"
         private const val ARGS_POSITION_HISTORY = "args_position_history"
+        private const val SHARE_QR_URL = "https://mixin.one/mm"
+        private val MIN_DISPLAY_PNL_PERCENT = BigDecimal("-100")
 
         fun show(context: Context, position: PerpsPositionItem) {
             refreshScreenshot(context, 0x33000000)
@@ -83,18 +85,20 @@ class PerpsPositionShareActivity : BaseActivity() {
         intent.extras?.getParcelableCompat(ARGS_POSITION_HISTORY, PerpsPositionHistoryItem::class.java)
     }
 
-    private val shareLink: String by lazy {
+    private val qrShareLink: String = SHARE_QR_URL
+
+    private val copyShareLink: String by lazy {
         val identity = Session.getAccount()?.identityNumber ?: ""
         val productId = position?.productId ?: positionHistory?.productId
         if (productId != null) {
-            val baseUrl = "https://mixin.one/trade?type=perps&product=$productId"
+            val baseUrl = "${Constants.Scheme.HTTPS_TRADE}?type=perps&product=$productId"
             if (identity.isNotEmpty()) {
                 "$baseUrl&referral=$identity"
             } else {
                 baseUrl
             }
         } else {
-            throw IllegalArgumentException("lost data")
+            SHARE_QR_URL
         }
     }
 
@@ -123,6 +127,7 @@ class PerpsPositionShareActivity : BaseActivity() {
             topMargin = 20.dp
         }
         binding.iconFl.round(6.dp)
+        binding.qr.post { binding.qr.round(4.dp) }
 
         val hasContent = bindContent()
         if (!hasContent) {
@@ -240,7 +245,7 @@ class PerpsPositionShareActivity : BaseActivity() {
     }
 
     private fun bindFooter() {
-        val qrCode = shareLink.generateQRCode(72.dp, 8.dp).first
+        val qrCode = qrShareLink.generateQRCode(72.dp, 8.dp).first
         binding.qr.setImageBitmap(qrCode)
     }
 
@@ -268,7 +273,7 @@ class PerpsPositionShareActivity : BaseActivity() {
     }
 
     private val onCopy: () -> Unit = {
-        getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, shareLink))
+        getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, copyShareLink))
         finish()
         toast(R.string.copied_to_clipboard)
     }
@@ -328,12 +333,13 @@ class PerpsPositionShareActivity : BaseActivity() {
     }
 
     private fun formatSignedPercent(value: BigDecimal): String {
+        val displayValue = value.max(MIN_DISPLAY_PNL_PERCENT)
         val sign = when {
-            value > BigDecimal.ZERO -> "+"
-            value < BigDecimal.ZERO -> "-"
+            displayValue > BigDecimal.ZERO -> "+"
+            displayValue < BigDecimal.ZERO -> "-"
             else -> ""
         }
-        val number = value.abs().setScale(2, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
+        val number = displayValue.abs().setScale(2, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
         return "$sign$number%"
     }
 

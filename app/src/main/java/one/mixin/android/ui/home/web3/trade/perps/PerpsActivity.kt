@@ -42,6 +42,7 @@ class PerpsActivity : BaseActivity() {
         private const val EXTRA_MARKET_ID = "extra_market_id"
         private const val EXTRA_MARKET_SYMBOL = "extra_market_symbol"
         private const val EXTRA_MARKET_DISPLAY_SYMBOL = "extra_market_display_symbol"
+        private const val EXTRA_MARKET_TOKEN_SYMBOL = "extra_market_token_symbol"
         private const val EXTRA_MODE = "extra_mode"
         private const val EXTRA_IS_LONG = "extra_is_long"
         private const val POSITION_REFRESH_INTERVAL_MS = 10_000L
@@ -49,21 +50,36 @@ class PerpsActivity : BaseActivity() {
         const val MODE_DETAIL = "detail"
         const val MODE_OPEN_POSITION = "open_position"
 
-        fun showDetail(context: Context, marketId: String, marketSymbol: String, marketDisplaySymbol: String) {
+        fun showDetail(
+            context: Context,
+            marketId: String,
+            marketSymbol: String,
+            marketDisplaySymbol: String,
+            marketTokenSymbol: String = "",
+        ) {
             val intent = Intent(context, PerpsActivity::class.java).apply {
                 putExtra(EXTRA_MARKET_ID, marketId)
                 putExtra(EXTRA_MARKET_SYMBOL, marketSymbol)
                 putExtra(EXTRA_MARKET_DISPLAY_SYMBOL, marketDisplaySymbol)
+                putExtra(EXTRA_MARKET_TOKEN_SYMBOL, marketTokenSymbol)
                 putExtra(EXTRA_MODE, MODE_DETAIL)
             }
             context.startActivity(intent)
         }
 
-        fun showOpenPosition(context: Context, marketId: String, marketSymbol: String, marketDisplaySymbol: String, isLong: Boolean) {
+        fun showOpenPosition(
+            context: Context,
+            marketId: String,
+            marketSymbol: String,
+            marketDisplaySymbol: String,
+            marketTokenSymbol: String = "",
+            isLong: Boolean,
+        ) {
             val intent = Intent(context, PerpsActivity::class.java).apply {
                 putExtra(EXTRA_MARKET_ID, marketId)
                 putExtra(EXTRA_MARKET_SYMBOL, marketSymbol)
                 putExtra(EXTRA_MARKET_DISPLAY_SYMBOL, marketDisplaySymbol)
+                putExtra(EXTRA_MARKET_TOKEN_SYMBOL, marketTokenSymbol)
                 putExtra(EXTRA_MODE, MODE_OPEN_POSITION)
                 putExtra(EXTRA_IS_LONG, isLong)
             }
@@ -77,6 +93,7 @@ class PerpsActivity : BaseActivity() {
         val marketId = intent.getStringExtra(EXTRA_MARKET_ID) ?: ""
         val marketSymbol = intent.getStringExtra(EXTRA_MARKET_SYMBOL) ?: ""
         val displaySymbol = intent.getStringExtra(EXTRA_MARKET_DISPLAY_SYMBOL) ?: ""
+        val tokenSymbol = intent.getStringExtra(EXTRA_MARKET_TOKEN_SYMBOL) ?: ""
         val mode = intent.getStringExtra(EXTRA_MODE) ?: MODE_DETAIL
         val isLong = intent.getBooleanExtra(EXTRA_IS_LONG, true)
 
@@ -113,6 +130,7 @@ class PerpsActivity : BaseActivity() {
                     marketId = marketId,
                     marketSymbol = marketSymbol,
                     displaySymbol = displaySymbol,
+                    tokenSymbol = tokenSymbol,
                     onBack = { finish() }
                 )
             }

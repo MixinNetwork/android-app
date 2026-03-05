@@ -366,7 +366,13 @@ class TradeFragment : BaseFragment() {
                                     navTo(PositionDetailFragment.newInstance(position), PositionDetailFragment.TAG)
                                 },
                                 onMarketItemClick = { market ->
-                                    PerpsActivity.showDetail(requireContext(), market.marketId, market.symbol, market.displaySymbol)
+                                    PerpsActivity.showDetail(
+                                        requireContext(),
+                                        market.marketId,
+                                        market.symbol,
+                                        market.displaySymbol,
+                                        market.tokenSymbol
+                                    )
                                 },
                                 onClosedPositionClick = { position ->
                                     navTo(PositionDetailFragment.newInstance(position), PositionDetailFragment.TAG)

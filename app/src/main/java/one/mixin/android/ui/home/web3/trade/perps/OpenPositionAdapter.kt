@@ -80,7 +80,7 @@ class OpenPositionAdapter(
                 val displaySymbol = position.tokenSymbol ?: context.getString(R.string.Unknown)
                 titleTv.text = context.getString(R.string.Perpetual_Side_Symbol_Title, sideText, displaySymbol)
                 leverageTv.isVisible = true
-                leverageTv.text = "${position.leverage}X"
+                leverageTv.text = "${position.leverage}x"
                 leverageTv.setTextColor(sideColor)
                 leverageTv.setBackgroundResource(
                     if (isLong) {

@@ -2338,6 +2338,8 @@
     <string name="Perpetual_Position_Desc">The actual trading value of current contract position, determined by "Margin × Leverage".</string>
     <string name="Perpetual_Position_Usage">Usage</string>
     <string name="Perpetual_Position_Usage_Desc">Support current position and offset floating losses.</string>
+    <string name="Perpetual_Position_Usage_Support_Current_Position">Support current position.</string>
+    <string name="Perpetual_Position_Usage_Offset_Floating_Losses">Offset floating losses.</string>
     <string name="Perpetual_Position_Risk">When investment is insufficient to support current position, the position will be forcibly liquidated by the system. Severe price volatility may rapidly consume investment.</string>
     <string name="Perpetual">Perpetual</string>
     <string name="Open_Position">Open Position</string>

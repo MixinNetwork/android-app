@@ -79,7 +79,8 @@ class AllPerpsMarketsFragment : BaseFragment() {
                 requireContext(),
                 market.marketId,
                 market.symbol,
-                market.displaySymbol
+                market.displaySymbol,
+                market.tokenSymbol
             )
         }
     }

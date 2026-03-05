@@ -146,13 +146,12 @@ class PositionDetailFragment : BaseFragment() {
     }
 
     private fun openTradeAgain(positionHistory: PerpsPositionHistoryItem) {
-        val isLong = positionHistory.side.equals("long", ignoreCase = true)
-        PerpsActivity.showOpenPosition(
+        PerpsActivity.showDetail(
             context = requireContext(),
             marketId = positionHistory.productId,
-            marketSymbol = positionHistory.marketSymbol ?: positionHistory.tokenSymbol ?: "",
-            marketDisplaySymbol = positionHistory.displaySymbol ?: positionHistory.tokenSymbol ?: "",
-            isLong = isLong
+            marketSymbol = positionHistory.marketSymbol ?: positionHistory.tokenSymbol.orEmpty(),
+            marketDisplaySymbol = positionHistory.displaySymbol ?: positionHistory.tokenSymbol.orEmpty(),
+            marketTokenSymbol = positionHistory.tokenSymbol.orEmpty()
         )
     }
 }

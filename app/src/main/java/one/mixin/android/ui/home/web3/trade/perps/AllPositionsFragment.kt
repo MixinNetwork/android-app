@@ -24,6 +24,7 @@ import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.databinding.FragmentAllClosedPositionsBinding
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.openUrl
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.trade.ClosedPositionAdapter
@@ -122,6 +123,12 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
         binding.apply {
             titleView.leftIb.setOnClickListener {
                 activity?.onBackPressedDispatcher?.onBackPressed()
+            }
+            titleView.rightIb.setImageResource(R.drawable.ic_support)
+            titleView.rightAnimator.visibility = View.VISIBLE
+            titleView.rightAnimator.displayedChild = 0
+            titleView.rightAnimator.setOnClickListener {
+                context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
             }
             titleView.setSubTitle(getString(R.string.Closed_Positions), "")
 

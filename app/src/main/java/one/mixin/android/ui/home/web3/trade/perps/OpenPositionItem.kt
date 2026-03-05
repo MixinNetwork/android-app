@@ -46,7 +46,7 @@ fun OpenPositionItem(
     val fiatRate = BigDecimal(Fiats.getRate())
     val fiatSymbol = Fiats.getSymbol()
 
-    val displaySymbol = position.displaySymbol ?: position.tokenSymbol ?: stringResource(R.string.Unknown)
+    val displaySymbol = position.tokenSymbol ?: stringResource(R.string.Unknown)
     val quantity = position.quantity.toBigDecimalOrNull()?.let { String.format("%f", it) } ?: position.quantity
     val isLong = position.side.equals("long", true)
     val sideColor = if (isLong) {
@@ -98,14 +98,14 @@ fun OpenPositionItem(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "${position.leverage}X",
+                        text = "${position.leverage}x",
                         fontSize = 12.sp,
                         color = sideColor,
                         lineHeight = 14.sp,
                         modifier = Modifier
                             .clip(RoundedCornerShape(4.dp))
                             .background(leverageBackgroundColor)
-                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                            .padding(horizontal = 3.dp, vertical = 2.dp)
                     )
                 }
                 Spacer(modifier = Modifier.height(4.dp))

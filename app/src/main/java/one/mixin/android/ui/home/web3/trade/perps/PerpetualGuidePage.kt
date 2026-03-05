@@ -27,7 +27,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -42,7 +41,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
+import java.math.BigDecimal
+import java.math.RoundingMode
 import kotlin.math.roundToInt
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -320,19 +323,31 @@ private fun LeverageContent() {
     DescriptionWithInfoAndRiskCard(
         description = stringResource(R.string.Perpetual_Leverage_Desc),
         infoTitle = stringResource(R.string.Perpetual_PnL_Impact),
-        infoContent = stringResource(R.string.Perpetual_Leverage_Impact),
+        infoContents = listOf(stringResource(R.string.Perpetual_Leverage_Impact)),
         riskContent = stringResource(R.string.Perpetual_Leverage_Risk)
     )
 }
 
 @Composable
 private fun PositionContent() {
-    var isLongDirection by remember { mutableStateOf(true) }
-    val directionValue = if (isLongDirection) {
-        stringResource(R.string.Long)
-    } else {
-        stringResource(R.string.Short)
-    }
+    val viewModel = hiltViewModel<PerpetualViewModel>()
+    var leverage by remember { mutableIntStateOf(10) }
+    var investment by remember { mutableIntStateOf(1000) }
+    val solToken by remember {
+        viewModel.observeTokenByChainAndSymbol(
+            chainId = Constants.ChainId.Solana,
+            symbol = "SOL",
+        )
+    }.collectAsStateWithLifecycle(initialValue = null)
+    val localSolPrice = solToken?.priceUsd?.toBigDecimalOrNull()
+
+    val orderValueUsdt = leverage * investment
+    val orderValueText = buildOrderValueText(
+        orderValueUsdt = orderValueUsdt,
+        localSolPrice = localSolPrice
+    )
+    val basePnlAmount = orderValueUsdt / 10
+    val basePnlPercent = leverage * 10
 
     ExampleWithScenariosCard(
         title = stringResource(R.string.Perpetual_Example),
@@ -344,19 +359,19 @@ private fun PositionContent() {
             ),
             GuideRowData(
                 label = stringResource(R.string.Perpetual_Direction),
-                value = directionValue
+                value = stringResource(R.string.Long)
             ),
             GuideRowData(
                 label = stringResource(R.string.Perpetual_Leverage_Times),
-                value = "10x"
+                value = "${leverage}x"
             ),
             GuideRowData(
                 label = stringResource(R.string.Perpetual_Investment),
-                value = "1,000 USDT"
+                value = "${formatGuideInt(investment)} USDT"
             ),
             GuideRowData(
                 label = stringResource(R.string.Order_Value),
-                value = "10,000 USDT (74.62 SOL)"
+                value = orderValueText
             )
         ),
         scenarios = listOf(
@@ -364,28 +379,32 @@ private fun PositionContent() {
                 scenario = stringResource(R.string.Perpetual_Price_Up),
                 change = stringResource(R.string.Perpetual_Price_Down_Amplitude),
                 initialPercent = 10,
-                basePnlAmount = 1000,
-                basePnlPercent = 100,
-                isProfit = isLongDirection
+                basePnlAmount = basePnlAmount,
+                basePnlPercent = basePnlPercent,
+                isProfit = true
             ),
             ScenarioData(
                 scenario = stringResource(R.string.Perpetual_Price_Down),
                 change = stringResource(R.string.Perpetual_Price_Up_Amplitude),
                 initialPercent = 10,
-                basePnlAmount = 1000,
-                basePnlPercent = 100,
-                isProfit = !isLongDirection
+                basePnlAmount = basePnlAmount,
+                basePnlPercent = basePnlPercent,
+                isProfit = false
             )
         ),
-        isDirectionSwitchEnabled = true,
-        isLongDirectionSelected = isLongDirection,
-        onDirectionSelected = { isLongDirection = it },
+        leverageValue = leverage,
+        onLeverageChange = { leverage = it.coerceIn(0, 100) },
+        investmentValue = investment,
+        onInvestmentChange = { investment = it.coerceIn(10, 1000) },
     )
     Spacer(modifier = Modifier.height(16.dp))
     DescriptionWithInfoAndRiskCard(
         description = stringResource(R.string.Perpetual_Position_Desc),
         infoTitle = stringResource(R.string.Perpetual_Position_Usage),
-        infoContent = stringResource(R.string.Perpetual_Position_Usage_Desc),
+        infoContents = listOf(
+            stringResource(R.string.Perpetual_Position_Usage_Support_Current_Position),
+            stringResource(R.string.Perpetual_Position_Usage_Offset_Floating_Losses),
+        ),
         riskContent = stringResource(R.string.Perpetual_Position_Risk)
     )
 }
@@ -558,9 +577,10 @@ private fun ExampleWithScenariosCard(
     title: String,
     rows: List<GuideRowData>,
     scenarios: List<ScenarioData>,
-    isDirectionSwitchEnabled: Boolean = false,
-    isLongDirectionSelected: Boolean = true,
-    onDirectionSelected: ((Boolean) -> Unit)? = null,
+    leverageValue: Int? = null,
+    onLeverageChange: ((Int) -> Unit)? = null,
+    investmentValue: Int? = null,
+    onInvestmentChange: ((Int) -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val quoteColorReversed = context.defaultSharedPreferences
@@ -573,6 +593,8 @@ private fun ExampleWithScenariosCard(
         }
     }
     val directionLabel = stringResource(R.string.Perpetual_Direction)
+    val leverageLabel = stringResource(R.string.Perpetual_Leverage_Times)
+    val investmentLabel = stringResource(R.string.Perpetual_Investment)
     val longDirection = stringResource(R.string.Long)
     val shortDirection = stringResource(R.string.Short)
     Column(
@@ -603,39 +625,32 @@ private fun ExampleWithScenariosCard(
                     modifier = Modifier.weight(1f)
                 )
                 if (label == directionLabel && (value == longDirection || value == shortDirection)) {
-                    if (isDirectionSwitchEnabled && onDirectionSelected != null) {
-                        Row(
+                    val directionColor = if (value == longDirection) risingColor else fallingColor
+                    Text(
+                        text = value,
+                        fontSize = 14.sp,
+                        color = Color.White,
                         modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(MixinAppTheme.colors.backgroundWindow)
-                                .padding(horizontal = 2.dp, vertical = 1.dp),
-                            horizontalArrangement = Arrangement.spacedBy(2.dp),
-                        ) {
-                            DirectionSwitchItem(
-                                text = longDirection,
-                                selected = isLongDirectionSelected,
-                                selectedColor = risingColor,
-                                onClick = { onDirectionSelected(true) },
-                            )
-                            DirectionSwitchItem(
-                                text = shortDirection,
-                                selected = !isLongDirectionSelected,
-                                selectedColor = fallingColor,
-                                onClick = { onDirectionSelected(false) },
-                            )
-                        }
-                    } else {
-                        val directionColor = if (value == longDirection) risingColor else fallingColor
-                        Text(
-                            text = value,
-                            fontSize = 14.sp,
-                            color = Color.White,
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(directionColor)
-                                .padding(horizontal = 8.dp, vertical = 1.dp),
-                        )
-                    }
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(directionColor)
+                            .padding(horizontal = 8.dp, vertical = 1.dp),
+                    )
+                } else if (label == leverageLabel && leverageValue != null && onLeverageChange != null) {
+                    GuideNumberAdjuster(
+                        valueText = "${leverageValue}x",
+                        canDecrease = leverageValue > 0,
+                        canIncrease = leverageValue < 100,
+                        onDecrease = { onLeverageChange((leverageValue - 1).coerceAtLeast(0)) },
+                        onIncrease = { onLeverageChange((leverageValue + 1).coerceAtMost(100)) },
+                    )
+                } else if (label == investmentLabel && investmentValue != null && onInvestmentChange != null) {
+                    GuideNumberAdjuster(
+                        valueText = "${formatGuideInt(investmentValue)} USDT",
+                        canDecrease = investmentValue > 10,
+                        canIncrease = investmentValue < 1000,
+                        onDecrease = { onInvestmentChange((investmentValue - 10).coerceAtLeast(10)) },
+                        onIncrease = { onInvestmentChange((investmentValue + 10).coerceAtMost(1000)) },
+                    )
                 } else {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         row.iconRes?.let { iconRes ->
@@ -760,27 +775,76 @@ private fun ExampleWithScenariosCard(
 }
 
 @Composable
-private fun DirectionSwitchItem(
-    text: String,
-    selected: Boolean,
-    selectedColor: Color,
-    onClick: () -> Unit,
+private fun GuideNumberAdjuster(
+    valueText: String,
+    canDecrease: Boolean,
+    canIncrease: Boolean,
+    onDecrease: () -> Unit,
+    onIncrease: () -> Unit,
 ) {
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(6.dp))
-            .background(if (selected) selectedColor else Color.Transparent)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp),
-        contentAlignment = Alignment.Center,
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
     ) {
+        Box(
+            modifier = Modifier
+                .size(24.dp)
+                .clip(CircleShape)
+                .background(MixinAppTheme.colors.backgroundWindow)
+                .alpha(if (canDecrease) 1f else 0.5f)
+                .clickable(enabled = canDecrease, onClick = onDecrease),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_perps_minus),
+                contentDescription = null,
+                tint = Color.Unspecified,
+                modifier = Modifier.size(16.dp),
+            )
+        }
         Text(
-            text = text,
-            fontSize = 12.sp,
+            text = valueText,
+            fontSize = 14.sp,
             fontWeight = FontWeight.W500,
-            color = if (selected) Color.White else MixinAppTheme.colors.textPrimary,
+            color = MixinAppTheme.colors.textPrimary,
+            modifier = Modifier.padding(horizontal = 8.dp),
         )
+        Box(
+            modifier = Modifier
+                .size(24.dp)
+                .clip(CircleShape)
+                .background(MixinAppTheme.colors.backgroundWindow)
+                .alpha(if (canIncrease) 1f else 0.5f)
+                .clickable(enabled = canIncrease, onClick = onIncrease),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_perps_add),
+                contentDescription = null,
+                tint = Color.Unspecified,
+                modifier = Modifier.size(16.dp),
+            )
+        }
     }
+}
+
+private fun formatGuideInt(value: Int): String {
+    return String.format("%,d", value)
+}
+
+private fun buildOrderValueText(
+    orderValueUsdt: Int,
+    localSolPrice: BigDecimal?,
+): String {
+    val usdtText = "${formatGuideInt(orderValueUsdt)} USDT"
+    val solPrice = localSolPrice ?: return "$usdtText (-- SOL)"
+    if (solPrice <= BigDecimal.ZERO) {
+        return "$usdtText (-- SOL)"
+    }
+    val solAmount = BigDecimal(orderValueUsdt.toString())
+        .divide(solPrice, 2, RoundingMode.HALF_UP)
+        .stripTrailingZeros()
+        .toPlainString()
+    return "$usdtText ($solAmount SOL)"
 }
 
 private fun ScenarioData.formatPnl(currentPercent: Int): String {
@@ -842,7 +906,7 @@ private fun DescriptionWithRulesCard(
 private fun DescriptionWithInfoAndRiskCard(
     description: String,
     infoTitle: String,
-    infoContent: String,
+    infoContents: List<String>,
     riskContent: String,
 ) {
     Column(
@@ -878,12 +942,13 @@ private fun DescriptionWithInfoAndRiskCard(
                 color = MixinAppTheme.colors.textMinor
             )
             Spacer(modifier = Modifier.height(6.dp))
-            Text(
-                text = infoContent,
-                fontSize = 14.sp,
-                lineHeight = 18.sp,
-                color = MixinAppTheme.colors.textPrimary
-            )
+            infoContents.forEach { content ->
+                DotText(
+                    text = content,
+                    modifier = Modifier.padding(vertical = 2.dp),
+                    color = MixinAppTheme.colors.textPrimary,
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(12.dp))

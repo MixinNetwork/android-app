@@ -1096,7 +1096,8 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                 requireContext(),
                 market.marketId,
                 market.symbol,
-                market.displaySymbol
+                market.displaySymbol,
+                market.tokenSymbol
             )
             dismiss()
             return

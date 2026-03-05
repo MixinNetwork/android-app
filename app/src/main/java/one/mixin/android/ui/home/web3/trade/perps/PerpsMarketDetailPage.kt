@@ -73,6 +73,7 @@ fun PerpsMarketDetailPage(
     marketId: String,
     marketSymbol: String,
     displaySymbol: String,
+    tokenSymbol: String,
     onBack: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -162,6 +163,7 @@ fun PerpsMarketDetailPage(
                             market = market!!,
                             marketSymbol = marketSymbol,
                             displaySymbol = displaySymbol,
+                            tokenSymbol = tokenSymbol,
                             selectedTimeFrame = selectedTimeFrame,
                             timeFrameValues = timeFrameValues,
                             timeFrameLabels = timeFrameLabels,
@@ -291,6 +293,7 @@ fun PerpsMarketDetailPage(
                                         marketId = marketId,
                                         marketSymbol = marketSymbol,
                                         marketDisplaySymbol = market?.displaySymbol ?: marketSymbol,
+                                        marketTokenSymbol = market?.tokenSymbol ?: "",
                                         isLong = true
                                     )
                                 },
@@ -323,6 +326,7 @@ fun PerpsMarketDetailPage(
                                         marketId = marketId,
                                         marketSymbol = marketSymbol,
                                         marketDisplaySymbol = market?.displaySymbol ?: marketSymbol,
+                                        marketTokenSymbol = market?.tokenSymbol ?: "",
                                         isLong = false
                                     )
                                 },
@@ -460,6 +464,7 @@ private fun MarketDetailCard(
     market: PerpsMarket,
     marketSymbol: String,
     displaySymbol: String,
+    tokenSymbol: String,
     selectedTimeFrame: Int,
     timeFrameValues: List<String>,
     timeFrameLabels: List<String>,
@@ -482,6 +487,10 @@ private fun MarketDetailCard(
     val isPositive = change >= BigDecimal.ZERO
     val changeColor = if (isPositive) risingColor else fallingColor
     val changeText = "${if (isPositive) "+" else ""}${market.change}%"
+    val displayTokenSymbol = tokenSymbol
+        .takeIf { it.isNotBlank() }
+        ?: market.tokenSymbol.takeIf { it.isNotBlank() }
+        ?: displaySymbol
 
     val formattedPrice = try {
         val price = BigDecimal(market.markPrice).multiply(fiatRate)
@@ -498,19 +507,18 @@ private fun MarketDetailCard(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = displaySymbol,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
+                    text = displayTokenSymbol,
+                    fontSize = 14.sp,
                     color = MixinAppTheme.colors.textPrimary
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(7.dp))
                 Text(
                     text = "${fiatSymbol}$formattedPrice",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.W500,
                     color = MixinAppTheme.colors.textPrimary
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = changeText,
                     fontSize = 14.sp,
@@ -680,7 +688,7 @@ private fun OpenPositionCard(
                         fontSize = 12.sp,
                         color = MixinAppTheme.colors.textAssist
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
+                  /*  Spacer(modifier = Modifier.width(4.dp))
                     Icon(
                         painter = painterResource(id = R.drawable.ic_tip),
                         contentDescription = null,
@@ -692,7 +700,7 @@ private fun OpenPositionCard(
                                     .show(activity.supportFragmentManager, PerpetualGuideFragment.TAG)
                             },
                         tint = MixinAppTheme.colors.textAssist
-                    )
+                    )*/
                 }
                 Text(
                     text = "${quantity.stripTrailingZeros().toPlainString()} ${position.tokenSymbol}",
@@ -709,19 +717,19 @@ private fun OpenPositionCard(
                         color = MixinAppTheme.colors.textAssist
                     )
 
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_tip),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(12.dp)
-                            .clickable {
-                                val activity = context as? FragmentActivity ?: return@clickable
-                                PerpetualGuideFragment.newInstance()
-                                    .show(activity.supportFragmentManager, PerpetualGuideFragment.TAG)
-                            },
-                        tint = MixinAppTheme.colors.textAssist
-                    )
+//                    Spacer(modifier = Modifier.width(4.dp))
+//                    Icon(
+//                        painter = painterResource(id = R.drawable.ic_tip),
+//                        contentDescription = null,
+//                        modifier = Modifier
+//                            .size(12.dp)
+//                            .clickable {
+//                                val activity = context as? FragmentActivity ?: return@clickable
+//                                PerpetualGuideFragment.newInstance()
+//                                    .show(activity.supportFragmentManager, PerpetualGuideFragment.TAG)
+//                            },
+//                        tint = MixinAppTheme.colors.textAssist
+//                    )
                 }
                 Text(
                     text = "${fiatSymbol}${orderValue.priceFormat()}",
@@ -758,19 +766,19 @@ private fun OpenPositionCard(
                         fontSize = 12.sp,
                         color = MixinAppTheme.colors.textAssist
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_tip),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(12.dp)
-                            .clickable {
-                                val activity = context as? FragmentActivity ?: return@clickable
-                                PerpetualGuideFragment.newInstance()
-                                    .show(activity.supportFragmentManager, PerpetualGuideFragment.TAG)
-                            },
-                        tint = MixinAppTheme.colors.textAssist
-                    )
+//                    Spacer(modifier = Modifier.width(4.dp))
+//                    Icon(
+//                        painter = painterResource(id = R.drawable.ic_tip),
+//                        contentDescription = null,
+//                        modifier = Modifier
+//                            .size(12.dp)
+//                            .clickable {
+//                                val activity = context as? FragmentActivity ?: return@clickable
+//                                PerpetualGuideFragment.newInstance()
+//                                    .show(activity.supportFragmentManager, PerpetualGuideFragment.TAG)
+//                            },
+//                        tint = MixinAppTheme.colors.textAssist
+//                    )
                 }
                 Text(
                     text = "${fiatSymbol}${liquidationPrice.multiply(fiatRate).priceFormat()}",

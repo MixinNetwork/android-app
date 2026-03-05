@@ -425,6 +425,15 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Row(verticalAlignment = Alignment.CenterVertically) {
+                                    CoilImage(
+                                        model = asset.iconUrl,
+                                        placeholder = R.drawable.ic_avatar_place_holder,
+                                        modifier = Modifier
+                                            .size(18.dp)
+                                            .clip(CircleShape),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
                                     Text(
                                         text = "${String.format("%.8f", estimatedReceive)} ${asset.symbol}",
                                         color = MixinAppTheme.colors.textPrimary,
@@ -448,7 +457,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                                     fontSize = 14.sp
                                 )
                                 Text(
-                                    text = "${if (pnl >= BigDecimal.ZERO) "+" else ""}${latestUnrealizedPnl} $settleAssetSymbol ($formattedRoe%, $formattedPnlFiat)",
+                                    text = "${if (pnl >= BigDecimal.ZERO) "+" else ""}${latestUnrealizedPnl} $settleAssetSymbol ($formattedRoe%)",
                                     color = pnlColor,
                                     fontSize = 14.sp
                                 )

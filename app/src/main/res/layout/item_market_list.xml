@@ -27,7 +27,6 @@
         android:maxLines="1"
         android:textColor="?attr/text_primary"
         android:textSize="16sp"
-        android:textStyle="bold"
         app:layout_constraintEnd_toStartOf="@id/price_tv"
         app:layout_constraintStart_toEndOf="@id/icon_iv"
         app:layout_constraintTop_toTopOf="@id/icon_iv"
@@ -54,7 +53,6 @@
         android:layout_height="wrap_content"
         android:textColor="?attr/text_primary"
         android:textSize="16sp"
-        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/symbol_tv"
         tools:text="$42,123.45" />
@@ -65,7 +63,6 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
         android:textSize="12sp"
-        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="@id/price_tv"
         app:layout_constraintTop_toBottomOf="@id/price_tv"
         tools:text="+2.34%"

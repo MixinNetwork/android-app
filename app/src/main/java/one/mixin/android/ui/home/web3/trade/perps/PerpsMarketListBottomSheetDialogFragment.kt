@@ -119,6 +119,7 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
             marketId = market.marketId,
             marketSymbol = market.symbol,
             marketDisplaySymbol = market.displaySymbol,
+            marketTokenSymbol = market.tokenSymbol,
             isLong = isLong
         )
         dismiss()

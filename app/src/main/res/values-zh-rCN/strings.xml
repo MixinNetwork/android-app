@@ -2279,6 +2279,8 @@
     <string name="Perpetual_Position_Desc">当前合约持仓的实际交易价值，由「保证金 × 杠杆」决定。</string>
     <string name="Perpetual_Position_Usage">用途</string>
     <string name="Perpetual_Position_Usage_Desc">支撑当前仓位，抵扣浮动亏损。</string>
+    <string name="Perpetual_Position_Usage_Support_Current_Position">支撑当前仓位</string>
+    <string name="Perpetual_Position_Usage_Offset_Floating_Losses">抵扣浮动亏损</string>
     <string name="Perpetual_Position_Risk">当投入资金不足以支撑当前仓位时，仓位将被系统强制平仓。价格剧烈波动可能会快速消耗投入资金。</string>
     <string name="Perpetual">永续合约</string>
     <string name="Open_Position">开仓</string>

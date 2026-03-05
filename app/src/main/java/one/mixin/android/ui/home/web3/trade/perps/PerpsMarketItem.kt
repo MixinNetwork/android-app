@@ -113,8 +113,8 @@ fun PerpsMarketItem(
                         lineHeight = 14.sp,
                         modifier = Modifier
                             .clip(RoundedCornerShape(4.dp))
-                            .background(MixinAppTheme.colors.backgroundGrayLight,)
-                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                            .background(MixinAppTheme.colors.backgroundGrayLight)
+                            .padding(horizontal = 3.dp, vertical = 2.dp)
                     )
                 }
                 Spacer(modifier = Modifier.height(2.dp))
