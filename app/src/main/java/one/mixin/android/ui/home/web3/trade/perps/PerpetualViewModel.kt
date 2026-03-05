@@ -181,6 +181,32 @@ class PerpetualViewModel @Inject constructor(
         }
     }
 
+    fun loadAcceptedAssets(
+        onSuccess: (List<String>) -> Unit,
+        onError: (String) -> Unit = {}
+    ) {
+        viewModelScope.launch {
+            try {
+                val response = withContext(Dispatchers.IO) {
+                    routeService.getAcceptedAssets()
+                }
+
+                val data = response.data
+                if (response.isSuccess && data != null) {
+                    onSuccess(data.filter { it.isNotBlank() })
+                } else {
+                    val error = "Failed to load accepted assets: ${response.errorDescription}"
+                    Timber.e(error)
+                    onError(error)
+                }
+            } catch (e: Exception) {
+                val error = "Error loading accepted assets: ${e.message}"
+                Timber.e(e, error)
+                onError(error)
+            }
+        }
+    }
+
     fun loadUsdTokens(onSuccess: (List<TokenItem>) -> Unit) {
         viewModelScope.launch {
             try {

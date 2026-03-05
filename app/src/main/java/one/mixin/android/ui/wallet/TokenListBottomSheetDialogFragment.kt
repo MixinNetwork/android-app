@@ -99,6 +99,13 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private var currentQuery: String = ""
     private var defaultAssets = emptyList<TokenItem>()
     private var currentChain: String? = null
+    private val acceptedPerpAssetIds: Set<String> by lazy {
+        requireContext().defaultSharedPreferences
+            .getStringSet(Constants.Account.PREF_PERPS_ACCEPTED_ASSET_IDS, emptySet())
+            .orEmpty()
+            .filter { it.isNotBlank() }
+            .toSet()
+    }
 
     private fun initRadio() {
         binding.apply {
@@ -238,7 +245,11 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         } else {
             bottomViewModel.assetItemsNotHidden()
         }.observe(this) {
-            defaultAssets = it
+            defaultAssets = if (fromType == TYPE_FROM_PERP) {
+                it.filter { token -> token.assetId in acceptedPerpAssetIds }
+            } else {
+                it
+            }
             if (fromType == TYPE_FROM_SEND) {
                 adapter.submitList(defaultAssets)
                 if (defaultAssets.isEmpty()) {

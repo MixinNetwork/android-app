@@ -85,6 +85,13 @@ fun OpenPositionPage(
 ) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<PerpetualViewModel>()
+    val acceptedPerpAssetIds = remember {
+        context.defaultSharedPreferences
+            .getStringSet(Constants.Account.PREF_PERPS_ACCEPTED_ASSET_IDS, emptySet())
+            .orEmpty()
+            .filter { it.isNotBlank() }
+            .toSet()
+    }
 
     var market by remember { mutableStateOf<PerpsMarket?>(null) }
     var currentToken by remember { mutableStateOf<TokenItem?>(selectedToken) }
@@ -104,10 +111,11 @@ fun OpenPositionPage(
         )
 
         viewModel.loadUsdTokens { tokens ->
-            availableTokens = tokens
+            val supportedTokens = tokens.filter { it.assetId in acceptedPerpAssetIds }
+            availableTokens = supportedTokens
             currentToken = selectedToken?.let { target ->
-                tokens.firstOrNull { it.assetId == target.assetId } ?: target
-            } ?: tokens.firstOrNull()
+                supportedTokens.firstOrNull { it.assetId == target.assetId }
+            } ?: supportedTokens.firstOrNull()
         }
     }
 

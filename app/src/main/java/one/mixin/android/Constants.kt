@@ -116,6 +116,7 @@ object Constants {
 
         const val PREF_TRADE_LIMIT_ORDER_BADGE_DISMISSED = "pref_trade_limit_order_badge_dismissed"
         const val PREF_TRADE_PERPETUAL_BADGE_DISMISSED = "pref_trade_perpetual_badge_dismissed"
+        const val PREF_PERPS_ACCEPTED_ASSET_IDS = "pref_perps_accepted_asset_ids"
 
         const val PREF_USED_WALLET = "pref_used_wallet"
 

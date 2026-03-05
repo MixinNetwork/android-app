@@ -371,6 +371,9 @@ interface RouteService {
         @Query("time_frame") timeFrame: String
     ): MixinResponse<CandleView>
 
+    @GET("perps/orders/accepted-assets")
+    suspend fun getAcceptedAssets(): MixinResponse<List<String>>
+
     @POST("perps/orders/open")
     suspend fun openPerpsOrder(
         @Body request: OpenOrderRequest
