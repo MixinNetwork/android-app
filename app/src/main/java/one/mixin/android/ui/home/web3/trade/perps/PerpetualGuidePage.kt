@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -60,6 +61,12 @@ data class ScenarioData(
     val isProfit: Boolean,
 )
 
+data class GuideRowData(
+    val label: String,
+    val value: String,
+    @DrawableRes val iconRes: Int? = null,
+)
+
 @Composable
 fun PerpetualGuidePage(pop: () -> Unit) {
     var selectedTab by remember { mutableIntStateOf(0) }
@@ -90,7 +97,7 @@ fun PerpetualGuidePage(pop: () -> Unit) {
                     fontSize = 18.sp,
                     fontWeight = FontWeight.W500,
                     color = MixinAppTheme.colors.textPrimary,
-                    modifier = Modifier.align(Alignment.Center),
+                    modifier = Modifier.align(Alignment.Start),
                 )
                 Icon(
                     painter = painterResource(id = R.drawable.ic_circle_close),
@@ -166,10 +173,23 @@ private fun LongContent() {
     ExampleWithScenariosCard(
         title = stringResource(R.string.Perpetual_Example),
         rows = listOf(
-            stringResource(R.string.Perpetual_Trading_Pair) to "BTC - USD",
-            stringResource(R.string.Perpetual_Direction) to stringResource(R.string.Long),
-            stringResource(R.string.Perpetual_Leverage_Times) to "10x",
-            stringResource(R.string.Perpetual_Investment) to "1,000 USDT"
+            GuideRowData(
+                label = stringResource(R.string.Perpetual_Trading_Pair),
+                value = "BTC - USD",
+                iconRes = R.drawable.ic_chain_btc
+            ),
+            GuideRowData(
+                label = stringResource(R.string.Perpetual_Direction),
+                value = stringResource(R.string.Long)
+            ),
+            GuideRowData(
+                label = stringResource(R.string.Perpetual_Leverage_Times),
+                value = "10x"
+            ),
+            GuideRowData(
+                label = stringResource(R.string.Perpetual_Investment),
+                value = "1,000 USDT"
+            )
         ),
         scenarios = listOf(
             ScenarioData(
@@ -205,10 +225,23 @@ private fun ShortContent() {
     ExampleWithScenariosCard(
         title = stringResource(R.string.Perpetual_Example),
         rows = listOf(
-            stringResource(R.string.Perpetual_Trading_Pair) to "ETH - USD",
-            stringResource(R.string.Perpetual_Direction) to stringResource(R.string.Short),
-            stringResource(R.string.Perpetual_Leverage_Times) to "10x",
-            stringResource(R.string.Perpetual_Investment) to "1,000 USDT"
+            GuideRowData(
+                label = stringResource(R.string.Perpetual_Trading_Pair),
+                value = "ETH - USD",
+                iconRes = R.drawable.ic_chain_eth
+            ),
+            GuideRowData(
+                label = stringResource(R.string.Perpetual_Direction),
+                value = stringResource(R.string.Short)
+            ),
+            GuideRowData(
+                label = stringResource(R.string.Perpetual_Leverage_Times),
+                value = "10x"
+            ),
+            GuideRowData(
+                label = stringResource(R.string.Perpetual_Investment),
+                value = "1,000 USDT"
+            )
         ),
         scenarios = listOf(
             ScenarioData(
@@ -244,10 +277,23 @@ private fun LeverageContent() {
     ExampleWithScenariosCard(
         title = stringResource(R.string.Perpetual_Example),
         rows = listOf(
-            stringResource(R.string.Perpetual_Trading_Pair) to "SOL - USD",
-            stringResource(R.string.Perpetual_Direction) to stringResource(R.string.Long),
-            stringResource(R.string.Perpetual_Leverage_Times) to "10x",
-            stringResource(R.string.Perpetual_Investment) to "1,000 USDT"
+            GuideRowData(
+                label = stringResource(R.string.Perpetual_Trading_Pair),
+                value = "SOL - USD",
+                iconRes = R.drawable.ic_chain_sol
+            ),
+            GuideRowData(
+                label = stringResource(R.string.Perpetual_Direction),
+                value = stringResource(R.string.Long)
+            ),
+            GuideRowData(
+                label = stringResource(R.string.Perpetual_Leverage_Times),
+                value = "10x"
+            ),
+            GuideRowData(
+                label = stringResource(R.string.Perpetual_Investment),
+                value = "1,000 USDT"
+            )
         ),
         scenarios = listOf(
             ScenarioData(
@@ -282,11 +328,27 @@ private fun PositionContent() {
     ExampleWithScenariosCard(
         title = stringResource(R.string.Perpetual_Example),
         rows = listOf(
-            stringResource(R.string.Perpetual_Trading_Pair) to "SOL - USD",
-            stringResource(R.string.Perpetual_Direction) to stringResource(R.string.Long),
-            stringResource(R.string.Perpetual_Leverage_Times) to "10x",
-            stringResource(R.string.Perpetual_Investment) to "1,000 USDT",
-            stringResource(R.string.Perpetual_Position_Value) to "10,000 USDT (74.62 SOL)"
+            GuideRowData(
+                label = stringResource(R.string.Perpetual_Trading_Pair),
+                value = "SOL - USD",
+                iconRes = R.drawable.ic_chain_sol
+            ),
+            GuideRowData(
+                label = stringResource(R.string.Perpetual_Direction),
+                value = stringResource(R.string.Long)
+            ),
+            GuideRowData(
+                label = stringResource(R.string.Perpetual_Leverage_Times),
+                value = "10x"
+            ),
+            GuideRowData(
+                label = stringResource(R.string.Perpetual_Investment),
+                value = "1,000 USDT"
+            ),
+            GuideRowData(
+                label = stringResource(R.string.Perpetual_Position_Value),
+                value = "10,000 USDT (74.62 SOL)"
+            )
         ),
         scenarios = listOf(
             ScenarioData(
@@ -458,7 +520,7 @@ private fun GuideSection(title: String, content: String) {
 @Composable
 private fun ExampleWithScenariosCard(
     title: String,
-    rows: List<Pair<String, String>>,
+    rows: List<GuideRowData>,
     scenarios: List<ScenarioData>,
 ) {
     val context = LocalContext.current
@@ -488,7 +550,9 @@ private fun ExampleWithScenariosCard(
             color = MixinAppTheme.colors.textPrimary
         )
         Spacer(modifier = Modifier.height(12.dp))
-        rows.forEachIndexed { index, (label, value) ->
+        rows.forEachIndexed { index, row ->
+            val label = row.label
+            val value = row.value
             if (index > 0) {
                 Spacer(modifier = Modifier.height(16.dp))
             }
@@ -511,11 +575,22 @@ private fun ExampleWithScenariosCard(
                             .padding(horizontal = 8.dp, vertical = 1.dp),
                     )
                 } else {
-                    Text(
-                        text = value,
-                        fontSize = 14.sp,
-                        color = MixinAppTheme.colors.textPrimary
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        row.iconRes?.let { iconRes ->
+                            Icon(
+                                painter = painterResource(id = iconRes),
+                                contentDescription = null,
+                                tint = Color.Unspecified,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                        }
+                        Text(
+                            text = value,
+                            fontSize = 14.sp,
+                            color = MixinAppTheme.colors.textPrimary
+                        )
+                    }
                 }
             }
         }
@@ -544,12 +619,6 @@ private fun ExampleWithScenariosCard(
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                 }
-                Text(
-                    text = scenario.scenario,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.W500,
-                    color = MixinAppTheme.colors.textAssist
-                )
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Text(
@@ -608,7 +677,7 @@ private fun ExampleWithScenariosCard(
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(16.dp))
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Text(
                         text = stringResource(R.string.Perpetual_PnL),

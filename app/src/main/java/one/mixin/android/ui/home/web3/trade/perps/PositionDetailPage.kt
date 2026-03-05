@@ -67,23 +67,16 @@ fun PositionDetailPage(
         }
     }
 
-    val pnl = try {
-        BigDecimal(position.unrealizedPnl ?: "0")
-    } catch (e: Exception) {
-        BigDecimal.ZERO
-    }
-
-    val isProfit = pnl >= BigDecimal.ZERO
     val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
     val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
-    val pnlColor = if (isProfit) risingColor else fallingColor
-
-    val sideText = if (position.side.lowercase() == "long") {
+    val isLong = position.side.equals("long", ignoreCase = true)
+    val sideColor = if (isLong) risingColor else fallingColor
+    val sideText = if (isLong) {
         stringResource(R.string.Long)
     } else {
         stringResource(R.string.Short)
     }
-    val title = "Opened $sideText"
+    val title = stringResource(R.string.Perpetual_Opened_Side_Title, sideText)
 
     val quantity = position.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val markPrice = position.markPrice?.toBigDecimalOrNull() ?: BigDecimal.ZERO
@@ -93,6 +86,14 @@ fun PositionDetailPage(
 
     fun formatFiat(value: BigDecimal): String {
         return "$fiatSymbol${value.multiply(fiatRate).priceFormat()}"
+    }
+
+    fun formatSignedFiat(value: BigDecimal): String {
+        return when {
+            value > BigDecimal.ZERO -> "+${formatFiat(value)}"
+            value < BigDecimal.ZERO -> "-${formatFiat(value.abs())}"
+            else -> formatFiat(BigDecimal.ZERO)
+        }
     }
 
     PageScaffold(
@@ -137,11 +138,6 @@ fun PositionDetailPage(
                 Spacer(modifier = Modifier.height(20.dp))
 
                 Row(modifier = Modifier.align(Alignment.CenterHorizontally)) {
-                    val sideText = if (position.side.lowercase() == "long") {
-                        stringResource(R.string.Long)
-                    } else {
-                        stringResource(R.string.Short)
-                    }
                     Text(
                         text = "$sideText ",
                         fontSize = 24.sp,
@@ -161,18 +157,13 @@ fun PositionDetailPage(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
-                        .background(pnlColor.copy(alpha = 0.2f))
+                        .background(sideColor.copy(alpha = 0.2f))
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                         .align(Alignment.CenterHorizontally)
                 ) {
-                    val sideText = if (position.side.lowercase() == "long") {
-                        stringResource(R.string.Long)
-                    } else {
-                        stringResource(R.string.Short)
-                    }
                     Text(
                         text = "$sideText ${position.leverage}x",
-                        color = pnlColor,
+                        color = sideColor,
                         fontSize = 14.sp
                     )
                 }
@@ -361,13 +352,15 @@ fun PositionDetailPage(
     val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
     val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
     val pnlColor = if (isProfit) risingColor else fallingColor
+    val isLong = positionHistory.side.equals("long", ignoreCase = true)
+    val sideColor = if (isLong) risingColor else fallingColor
 
-    val sideText = if (positionHistory.side.lowercase() == "long") {
+    val sideText = if (isLong) {
         stringResource(R.string.Long)
     } else {
         stringResource(R.string.Short)
     }
-    val title = "Closed $sideText"
+    val title = stringResource(R.string.Perpetual_Closed_Side_Title, sideText)
 
     val quantity = positionHistory.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val closePrice = positionHistory.closePrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
@@ -377,6 +370,14 @@ fun PositionDetailPage(
 
     fun formatFiat(value: BigDecimal): String {
         return "$fiatSymbol${value.multiply(fiatRate).priceFormat()}"
+    }
+
+    fun formatSignedFiat(value: BigDecimal): String {
+        return when {
+            value > BigDecimal.ZERO -> "+${formatFiat(value)}"
+            value < BigDecimal.ZERO -> "-${formatFiat(value.abs())}"
+            else -> formatFiat(BigDecimal.ZERO)
+        }
     }
 
     PageScaffold(
@@ -421,7 +422,7 @@ fun PositionDetailPage(
                 Spacer(modifier = Modifier.height(20.dp))
 
                 Text(
-                    text = formatFiat(pnl.abs()),
+                    text = formatSignedFiat(pnl),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.W500,
                     color = pnlColor,
@@ -433,18 +434,13 @@ fun PositionDetailPage(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
-                        .background(pnlColor.copy(alpha = 0.2f))
+                        .background(sideColor.copy(alpha = 0.2f))
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                         .align(Alignment.CenterHorizontally)
                 ) {
-                    val sideText = if (positionHistory.side.lowercase() == "long") {
-                        stringResource(R.string.Long)
-                    } else {
-                        stringResource(R.string.Short)
-                    }
                     Text(
                         text = "$sideText ${positionHistory.leverage}x",
-                        color = pnlColor,
+                        color = sideColor,
                         fontSize = 14.sp
                     )
                 }
