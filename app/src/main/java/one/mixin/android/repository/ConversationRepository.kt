@@ -96,6 +96,9 @@ class ConversationRepository
         private val jobManager: MixinJobManager,
         private val ftsDbHelper: FtsDatabase,
     ) {
+        private fun identityNumber(): String =
+            requireNotNull(Session.getAccount()) { "Account is required for database access." }.identityNumber
+
         suspend fun getChatMessages(
             conversationId: String,
             offset: Int,
@@ -104,9 +107,9 @@ class ConversationRepository
 
         fun observeConversations(circleId: String?): DataSource.Factory<Int, ConversationItem> =
             if (circleId.isNullOrBlank()) {
-                DataProvider.observeConversations(MixinDatabase.getDatabase(MixinApplication.appContext))
+                DataProvider.observeConversations(MixinDatabase.getDatabase(MixinApplication.appContext, identityNumber()))
             } else {
-                DataProvider.observeConversationsByCircleId(circleId, MixinDatabase.getDatabase(MixinApplication.appContext))
+                DataProvider.observeConversationsByCircleId(circleId, MixinDatabase.getDatabase(MixinApplication.appContext, identityNumber()))
             }
 
         suspend fun successConversationList(): List<ConversationMinimal> =

@@ -59,7 +59,6 @@ import one.mixin.android.ui.landing.vo.MnemonicPhraseState
 import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.analytics.AnalyticsTracker
-import one.mixin.android.util.database.clearDatabase
 import one.mixin.android.util.database.clearJobsAndRawTransaction
 import one.mixin.android.util.database.getLastUserId
 import one.mixin.android.util.getMixinErrorStringByCode
@@ -341,11 +340,11 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 val sameUser = lastUserId != null && lastUserId == account.userId
                 if (sameUser) {
                     withContext(Dispatchers.IO) {
-                        clearJobsAndRawTransaction(requireContext())
+                        clearJobsAndRawTransaction(requireContext(), account.identityNumber)
                     }
                 } else {
                     withContext(Dispatchers.IO) {
-                        clearDatabase(requireContext())
+                        clearJobsAndRawTransaction(requireContext(), account.identityNumber)
                     }
                     CryptoWalletHelper.clear(requireContext())
                     defaultSharedPreferences.clear()

@@ -341,11 +341,10 @@ abstract class MixinDatabase : RoomDatabase() {
         @SuppressLint("RestrictedApi")
         fun getDatabase(
             context: Context,
-            identityNumber: String? = null,
+            identityNumber: String,
         ): MixinDatabase {
-            val scopedIdentity = identityNumber?.takeIf { it.isNotBlank() }
-                ?: Session.getAccount()?.identityNumber
-                ?: "temp"
+            val scopedIdentity = identityNumber.takeIf { it.isNotBlank() }
+                ?: throw IllegalArgumentException("identityNumber is required for MixinDatabase")
             synchronized(lock) {
                 if (INSTANCE != null && currentIdentityNumber != scopedIdentity) {
                     INSTANCE?.close()

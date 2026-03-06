@@ -6,7 +6,6 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import one.mixin.android.Constants.DataBase.FTS_DB_NAME
-import one.mixin.android.session.Session
 import one.mixin.android.util.database.dbDir
 import java.io.File
 
@@ -39,11 +38,10 @@ abstract class FtsDatabase : RoomDatabase() {
 
         fun getDatabase(
             context: Context,
-            identityNumber: String? = null,
+            identityNumber: String,
         ): FtsDatabase {
-            val scopedIdentity = identityNumber?.takeIf { it.isNotBlank() }
-                ?: Session.getAccount()?.identityNumber
-                ?: "temp"
+            val scopedIdentity = identityNumber.takeIf { it.isNotBlank() }
+                ?: throw IllegalArgumentException("identityNumber is required for FtsDatabase")
             synchronized(lock) {
                 if (INSTANCE != null && currentIdentityNumber != scopedIdentity) {
                     INSTANCE?.close()

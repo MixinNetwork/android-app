@@ -34,7 +34,6 @@ import one.mixin.android.db.web3.vo.Web3Transaction
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.moveTo
-import one.mixin.android.session.Session
 import one.mixin.android.util.SINGLE_DB_EXECUTOR
 import one.mixin.android.util.database.dbDir
 import one.mixin.android.util.reportException
@@ -123,12 +122,15 @@ abstract class WalletDatabase : RoomDatabase() {
             }
         }
 
-        fun moveTempDatabaseFileIfNeeded(context: Context, identityNumber: String?): Boolean {
+        fun moveTempDatabaseFileIfNeeded(
+            context: Context,
+            identityNumber: String,
+        ): Boolean {
             val shouldGoWallet: Boolean = context.defaultSharedPreferences.getBoolean(PREF_LOGIN_OR_SIGN_UP, false)
             if (shouldGoWallet) { // Do not migrate on first entry
                 return false
             }
-            if (identityNumber.isNullOrBlank()) {
+            if (identityNumber.isBlank()) {
                 return false
             }
             val targetDir: File = dbDir(context, identityNumber)
@@ -194,11 +196,10 @@ abstract class WalletDatabase : RoomDatabase() {
 
         fun getDatabase(
             context: Context,
-            identityNumber: String? = null,
+            identityNumber: String,
         ): WalletDatabase {
-            val scopedIdentity = identityNumber?.takeIf { it.isNotBlank() }
-                ?: Session.getAccount()?.identityNumber
-                ?: "temp"
+            val scopedIdentity = identityNumber.takeIf { it.isNotBlank() }
+                ?: throw IllegalArgumentException("identityNumber is required for WalletDatabase")
             synchronized(lock) {
                 if (INSTANCE != null && currentIdentityNumber != scopedIdentity) {
                     INSTANCE?.close()

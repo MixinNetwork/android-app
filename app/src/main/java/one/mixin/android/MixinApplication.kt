@@ -355,7 +355,9 @@ open class MixinApplication :
         jobManager.cancelAllJob()
         jobManager.clear()
         clearPrivacyPreferences(this)
-        MixinDatabase.getDatabase(this, identityNumber).participantSessionDao().clearKey(sessionId)
+        identityNumber?.let { scopedIdentity ->
+            MixinDatabase.getDatabase(this, scopedIdentity).participantSessionDao().clearKey(sessionId)
+        }
         SignalDatabase.getDatabase(this).clearAllTables()
         removeValueFromEncryptedPreferences(this, Constants.Tip.MNEMONIC)
     }

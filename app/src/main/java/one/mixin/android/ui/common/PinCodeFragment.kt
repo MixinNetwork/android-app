@@ -30,7 +30,6 @@ import one.mixin.android.session.resolveCurrentUserScopeManager
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.RestoreActivity
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.util.database.clearDatabase
 import one.mixin.android.util.database.clearJobsAndRawTransaction
 import one.mixin.android.util.database.getLastUserId
 import one.mixin.android.vo.Account
@@ -125,12 +124,12 @@ abstract class PinCodeFragment(
         if (sameUser) {
             showLoading()
             withContext(Dispatchers.IO) {
-                clearJobsAndRawTransaction(requireContext())
+                clearJobsAndRawTransaction(requireContext(), account.identityNumber)
             }
         } else {
             showLoading()
             withContext(Dispatchers.IO) {
-                clearDatabase(requireContext())
+                clearJobsAndRawTransaction(requireContext(), account.identityNumber)
             }
             CryptoWalletHelper.clear(requireContext())
             defaultSharedPreferences.clear()

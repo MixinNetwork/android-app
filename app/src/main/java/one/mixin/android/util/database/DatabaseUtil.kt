@@ -57,13 +57,17 @@ private fun deleteDatabaseAndSidecars(dbFile: File) {
     }
 }
 
+private fun currentIdentityNumber(): String? = Session.getAccount()?.identityNumber?.takeIf { it.isNotBlank() }
+
 suspend fun getLastUserId(context: Context): String? =
     withContext(Dispatchers.IO) {
         val candidates = LinkedHashSet<File>()
         candidates.add(legacyDatabaseFile(context))
-        val scopedCurrent = databaseFile(context)
-        if (scopedCurrent != legacyDatabaseFile(context)) {
-            candidates.add(scopedCurrent)
+        currentIdentityNumber()?.let { identityNumber ->
+            val scopedCurrent = databaseFile(context, identityNumber)
+            if (scopedCurrent != legacyDatabaseFile(context)) {
+                candidates.add(scopedCurrent)
+            }
         }
         val scopedRoot = File(context.filesDir.parent, "databases")
         scopedRoot.listFiles()
@@ -84,10 +88,12 @@ suspend fun clearDatabase(context: Context) {
     try {
         clearFts(context)
         clearPending(context)
-        val scopedDbFile = databaseFile(context)
+        val scopedDbFile = currentIdentityNumber()?.let { databaseFile(context, it) }
         val legacyDbFile = legacyDatabaseFile(context)
-        deleteDatabaseAndSidecars(scopedDbFile)
-        if (legacyDbFile != scopedDbFile) {
+        scopedDbFile?.let { scoped ->
+            deleteDatabaseAndSidecars(scoped)
+        }
+        if (scopedDbFile == null || legacyDbFile != scopedDbFile) {
             deleteDatabaseAndSidecars(legacyDbFile)
         }
     } catch (e: Exception) {
@@ -110,28 +116,35 @@ suspend fun clearDatabase(context: Context) {
 @SuppressLint("ObsoleteSdkInt")
 suspend fun clearPending(context: Context) =
     withContext(Dispatchers.IO) {
-        val scopedDbFile = pendingDatabaseFile(context)
+        val scopedDbFile = currentIdentityNumber()?.let { pendingDatabaseFile(context, it) }
         val legacyDbFile = legacyPendingDatabaseFile(context)
-        deleteDatabaseAndSidecars(scopedDbFile)
-        if (legacyDbFile != scopedDbFile) {
+        scopedDbFile?.let { scoped ->
+            deleteDatabaseAndSidecars(scoped)
+        }
+        if (scopedDbFile == null || legacyDbFile != scopedDbFile) {
             deleteDatabaseAndSidecars(legacyDbFile)
         }
     }
 
 suspend fun clearFts(context: Context) =
     withContext(Dispatchers.IO) {
-        val scopedDbFile = ftsDatabaseFile(context)
+        val scopedDbFile = currentIdentityNumber()?.let { ftsDatabaseFile(context, it) }
         val legacyDbFile = legacyFtsDatabaseFile(context)
-        deleteDatabaseAndSidecars(scopedDbFile)
-        if (legacyDbFile != scopedDbFile) {
+        scopedDbFile?.let { scoped ->
+            deleteDatabaseAndSidecars(scoped)
+        }
+        if (scopedDbFile == null || legacyDbFile != scopedDbFile) {
             deleteDatabaseAndSidecars(legacyDbFile)
         }
     }
 
 @SuppressLint("ObsoleteSdkInt")
-suspend fun clearJobsAndRawTransaction(context: Context) {
+suspend fun clearJobsAndRawTransaction(
+    context: Context,
+    identityNumber: String,
+) {
         val supportsDeferForeignKeys = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-        val scopedDbFile = databaseFile(context)
+        val scopedDbFile = databaseFile(context, identityNumber)
         val legacyDbFile = legacyDatabaseFile(context)
         if (!scopedDbFile.exists() && !legacyDbFile.exists()) {
             return
@@ -139,7 +152,7 @@ suspend fun clearJobsAndRawTransaction(context: Context) {
         var db: SupportSQLiteDatabase? = null
         try {
             // Init database
-            MixinDatabase.getDatabase(context)
+            MixinDatabase.getDatabase(context, identityNumber)
             db = MixinDatabase.getWritableDatabase() ?: return
             if (!supportsDeferForeignKeys) {
                 db.execSQL("PRAGMA foreign_keys = FALSE")
@@ -164,9 +177,13 @@ suspend fun clearJobsAndRawTransaction(context: Context) {
         }
 }
 
-fun dbDir(context: Context, identityNumber: String? = null): File {
+fun dbDir(
+    context: Context,
+    identityNumber: String,
+): File {
+    require(identityNumber.isNotBlank()) { "identityNumber is required for database directory." }
     val baseDir = File(context.filesDir.parent, "databases")
-    val dir = File(baseDir, identityNumber ?: Session.getAccount()?.identityNumber ?: "temp")
+    val dir = File(baseDir, identityNumber)
     if (!dir.exists()) {
         dir.mkdirs()
     }
@@ -182,7 +199,10 @@ fun legacyDatabaseFile(context: Context): File {
     return context.getDatabasePath(Constants.DataBase.DB_NAME)
 }
 
-fun databaseFile(context: Context, identityNumber: String? = null): File {
+fun databaseFile(
+    context: Context,
+    identityNumber: String,
+): File {
     return File(dbDir(context, identityNumber), Constants.DataBase.DB_NAME)
 }
 
@@ -190,7 +210,10 @@ fun legacyPendingDatabaseFile(context: Context): File {
     return context.getDatabasePath(Constants.DataBase.PENDING_DB_NAME)
 }
 
-fun pendingDatabaseFile(context: Context, identityNumber: String? = null): File {
+fun pendingDatabaseFile(
+    context: Context,
+    identityNumber: String,
+): File {
     return File(dbDir(context, identityNumber), Constants.DataBase.PENDING_DB_NAME)
 }
 
@@ -198,7 +221,10 @@ fun legacyFtsDatabaseFile(context: Context): File {
     return context.getDatabasePath(Constants.DataBase.FTS_DB_NAME)
 }
 
-fun ftsDatabaseFile(context: Context, identityNumber: String? = null): File {
+fun ftsDatabaseFile(
+    context: Context,
+    identityNumber: String,
+): File {
     return File(dbDir(context, identityNumber), Constants.DataBase.FTS_DB_NAME)
 }
 

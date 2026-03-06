@@ -14,7 +14,6 @@ import one.mixin.android.Constants.DataBase.PENDING_DB_NAME
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.insertNoReplace
-import one.mixin.android.session.Session
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.database.dbDir
 import one.mixin.android.util.debug.getContent
@@ -48,11 +47,10 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
             context: Context,
             floodMessageDao: FloodMessageDao,
             jobDao: JobDao,
-            identityNumber: String? = null,
+            identityNumber: String,
         ): PendingDatabaseImp {
-            val scopedIdentity = identityNumber?.takeIf { it.isNotBlank() }
-                ?: Session.getAccount()?.identityNumber
-                ?: "temp"
+            val scopedIdentity = identityNumber.takeIf { it.isNotBlank() }
+                ?: throw IllegalArgumentException("identityNumber is required for PendingDatabase")
             synchronized(lock) {
                 if (INSTANCE != null && currentIdentityNumber != scopedIdentity) {
                     INSTANCE?.close()
