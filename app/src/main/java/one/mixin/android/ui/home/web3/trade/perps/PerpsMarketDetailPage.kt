@@ -149,7 +149,6 @@ fun PerpsMarketDetailPage(
                     .padding(horizontal = 16.dp)
                     .padding(bottom = 80.dp)
             ) {
-                Spacer(modifier = Modifier.height(16.dp))
 
                 Column(
                     modifier = Modifier

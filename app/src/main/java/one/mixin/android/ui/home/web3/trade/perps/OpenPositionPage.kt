@@ -4,6 +4,7 @@ import PageScaffold
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -104,8 +105,12 @@ fun OpenPositionPage(
     var errorInfo by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
 
-    val savedLeverage = context.defaultSharedPreferences.getInt(getLeveragePrefKey(marketId), 10)
-    var leverage by remember { mutableFloatStateOf(savedLeverage.toFloat()) }
+    val savedLeverage = remember(marketId) {
+        context.defaultSharedPreferences
+            .getInt(getLeveragePrefKey(marketId), 10)
+            .coerceAtLeast(1)
+    }
+    var leverage by remember(marketId) { mutableFloatStateOf(savedLeverage.toFloat()) }
 
     LaunchedEffect(marketId) {
         while (true) {
@@ -135,11 +140,18 @@ fun OpenPositionPage(
             currentToken = availableTokens.firstOrNull { it.assetId == target.assetId } ?: target
         }
     }
+    val maxLeverage = currentMarket.leverage.coerceAtLeast(1)
     LaunchedEffect(usdtAmount, leverage, currentToken?.assetId) {
         errorInfo = null
     }
+    LaunchedEffect(maxLeverage, marketId) {
+        val boundedLeverage = leverage.coerceIn(1f, maxLeverage.toFloat())
+        if (boundedLeverage != leverage) {
+            leverage = boundedLeverage
+            context.defaultSharedPreferences.putInt(getLeveragePrefKey(marketId), boundedLeverage.toInt())
+        }
+    }
 
-    val maxLeverage = currentMarket.leverage
     val leverageOptions = generateLeverageOptions(maxLeverage)
     val fiatRate = BigDecimal(Fiats.getRate())
     val fiatSymbol = Fiats.getSymbol()
@@ -249,8 +261,6 @@ fun OpenPositionPage(
                         tokenIconSize = 25.dp
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
-
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
@@ -358,7 +368,9 @@ fun OpenPositionPage(
                     Spacer(modifier = Modifier.height(12.dp))
 
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         leverageOptions.forEach { lev ->
@@ -617,22 +629,16 @@ fun OpenPositionPage(
 }
 
 private fun generateLeverageOptions(maxLeverage: Int): List<Int> {
-    val options = mutableListOf<Int>()
+    val safeMaxLeverage = maxLeverage.coerceAtLeast(1)
     val baseOptions = listOf(1, 2, 5, 10, 20)
+    val options = baseOptions
+        .filter { it in 1 until safeMaxLeverage }
+        .toMutableList()
 
-    baseOptions.forEach { option ->
-        if (option < maxLeverage) {
-            options.add(option)
-        }
-    }
-
-    if (options.size < 5) {
-        options.add(maxLeverage)
-    }
-
+    options.add(safeMaxLeverage)
     options.add(-1)
 
-    return options.take(7)
+    return options.distinct()
 }
 
 @Composable
