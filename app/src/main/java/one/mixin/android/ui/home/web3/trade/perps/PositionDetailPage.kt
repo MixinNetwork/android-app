@@ -42,6 +42,7 @@ import one.mixin.android.ui.tip.wc.compose.ItemWalletContent
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -85,6 +86,8 @@ fun PositionDetailPage(
     val quantity = position.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val absQuantity = quantity.abs()
     val markPrice = position.markPrice?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val entryPrice = position.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val liquidationPrice = calculateLiquidationPriceValue(entryPrice, position.leverage, isLong)
     val orderValue = absQuantity * markPrice
     val fiatRate = BigDecimal(Fiats.getRate())
     val fiatSymbol = Fiats.getSymbol()
@@ -155,7 +158,7 @@ fun PositionDetailPage(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
                         .background(sideColor.copy(alpha = 0.2f))
-                        .padding(horizontal = 3.dp, vertical = 2.dp)
+                        .padding(horizontal = 8.dp, vertical = 2.dp)
                         .align(Alignment.CenterHorizontally)
                 ) {
                     Text(
@@ -238,7 +241,14 @@ fun PositionDetailPage(
 
                 PositionDetailItem(
                     label = stringResource(R.string.Entry_Price).uppercase(),
-                    value = formatFiat(position.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+                    value = formatFiat(entryPrice)
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                PositionDetailItem(
+                    label = stringResource(R.string.Liquidation_Price).uppercase(),
+                    value = formatFiat(liquidationPrice)
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -259,6 +269,25 @@ fun PositionDetailPage(
 
             Spacer(modifier = Modifier.height(40.dp))
         }
+    }
+}
+
+private fun calculateLiquidationPriceValue(
+    entryPrice: BigDecimal,
+    leverage: Int,
+    isLong: Boolean,
+): BigDecimal {
+    if (entryPrice == BigDecimal.ZERO || leverage <= 0) {
+        return BigDecimal.ZERO
+    }
+
+    val liquidationPercent = BigDecimal(100.0 / leverage)
+    val liquidationRatio = liquidationPercent.divide(BigDecimal(100), 8, RoundingMode.HALF_UP)
+
+    return if (isLong) {
+        entryPrice.multiply(BigDecimal.ONE.subtract(liquidationRatio))
+    } else {
+        entryPrice.multiply(BigDecimal.ONE.add(liquidationRatio))
     }
 }
 
@@ -437,7 +466,7 @@ fun PositionDetailPage(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
                         .background(sideColor.copy(alpha = 0.2f))
-                        .padding(horizontal = 3.dp, vertical = 2.dp)
+                        .padding(horizontal = 8.dp, vertical = 2.dp)
                         .align(Alignment.CenterHorizontally)
                 ) {
                     Text(

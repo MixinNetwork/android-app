@@ -63,6 +63,7 @@ data class ScenarioData(
     val basePnlPercent: Int,
     val pnlAsset: String = "USDT",
     val isProfit: Boolean,
+    val maxPercent: Int? = null,
 )
 
 data class GuideRowData(
@@ -202,7 +203,7 @@ private fun LongContent() {
         scenarios = listOf(
             ScenarioData(
                 scenario = stringResource(R.string.Perpetual_Price_Up),
-                change = stringResource(R.string.Perpetual_Price_Down_Amplitude),
+                change = stringResource(R.string.Perpetual_Price_Up_Amplitude),
                 initialPercent = 10,
                 basePnlAmount = 100,
                 basePnlPercent = 10,
@@ -210,11 +211,12 @@ private fun LongContent() {
             ),
             ScenarioData(
                 scenario = stringResource(R.string.Perpetual_Price_Down),
-                change = stringResource(R.string.Perpetual_Price_Up_Amplitude),
+                change = stringResource(R.string.Perpetual_Price_Down_Amplitude),
                 initialPercent = 10,
                 basePnlAmount = 100,
                 basePnlPercent = 10,
-                isProfit = false
+                isProfit = false,
+                maxPercent = 100,
             )
         )
     )
@@ -253,20 +255,21 @@ private fun ShortContent() {
         ),
         scenarios = listOf(
             ScenarioData(
-                scenario = stringResource(R.string.Perpetual_Price_Up),
+                scenario = stringResource(R.string.Perpetual_Price_Down),
                 change = stringResource(R.string.Perpetual_Price_Down_Amplitude),
                 initialPercent = 10,
                 basePnlAmount = 100,
                 basePnlPercent = 10,
-                isProfit = false
+                isProfit = true,
+                maxPercent = 100,
             ),
             ScenarioData(
-                scenario = stringResource(R.string.Perpetual_Price_Down),
+                scenario = stringResource(R.string.Perpetual_Price_Up),
                 change = stringResource(R.string.Perpetual_Price_Up_Amplitude),
                 initialPercent = 10,
                 basePnlAmount = 100,
                 basePnlPercent = 10,
-                isProfit = true
+                isProfit = false
             )
         )
     )
@@ -306,7 +309,7 @@ private fun LeverageContent() {
         scenarios = listOf(
             ScenarioData(
                 scenario = stringResource(R.string.Perpetual_Price_Up),
-                change = stringResource(R.string.Perpetual_Price_Down_Amplitude),
+                change = stringResource(R.string.Perpetual_Price_Up_Amplitude),
                 initialPercent = 10,
                 basePnlAmount = 1000,
                 basePnlPercent = 100,
@@ -314,11 +317,12 @@ private fun LeverageContent() {
             ),
             ScenarioData(
                 scenario = stringResource(R.string.Perpetual_Price_Down),
-                change = stringResource(R.string.Perpetual_Price_Up_Amplitude),
+                change = stringResource(R.string.Perpetual_Price_Down_Amplitude),
                 initialPercent = 10,
                 basePnlAmount = 1000,
                 basePnlPercent = 100,
-                isProfit = false
+                isProfit = false,
+                maxPercent = 100,
             )
         )
     )
@@ -380,7 +384,7 @@ private fun PositionContent() {
         scenarios = listOf(
             ScenarioData(
                 scenario = stringResource(R.string.Perpetual_Price_Up),
-                change = stringResource(R.string.Perpetual_Price_Down_Amplitude),
+                change = stringResource(R.string.Perpetual_Price_Up_Amplitude),
                 initialPercent = 10,
                 basePnlAmount = basePnlAmount,
                 basePnlPercent = basePnlPercent,
@@ -388,15 +392,16 @@ private fun PositionContent() {
             ),
             ScenarioData(
                 scenario = stringResource(R.string.Perpetual_Price_Down),
-                change = stringResource(R.string.Perpetual_Price_Up_Amplitude),
+                change = stringResource(R.string.Perpetual_Price_Down_Amplitude),
                 initialPercent = 10,
                 basePnlAmount = basePnlAmount,
                 basePnlPercent = basePnlPercent,
-                isProfit = false
+                isProfit = false,
+                maxPercent = 100,
             )
         ),
         leverageValue = leverage,
-        onLeverageChange = { leverage = it.coerceIn(0, 100) },
+        onLeverageChange = { leverage = it.coerceIn(0, 200) },
         investmentValue = investment,
         onInvestmentChange = { investment = it.coerceIn(10, 1000) },
     )
@@ -590,9 +595,17 @@ private fun ExampleWithScenariosCard(
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
     val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+    val orderedScenarios = scenarios.sortedByDescending { it.isProfit }
     val changePercents = remember(scenarios.size) {
         mutableStateListOf<Int>().apply {
-            addAll(scenarios.map { it.initialPercent.coerceIn(0, 10) })
+            addAll(
+                orderedScenarios.map { scenario ->
+                    val nonNegativePercent = scenario.initialPercent.coerceAtLeast(0)
+                    scenario.maxPercent?.let { maxPercent ->
+                        nonNegativePercent.coerceAtMost(maxPercent)
+                    } ?: nonNegativePercent
+                }
+            )
         }
     }
     val directionLabel = stringResource(R.string.Perpetual_Direction)
@@ -642,9 +655,9 @@ private fun ExampleWithScenariosCard(
                     GuideNumberAdjuster(
                         valueText = "${leverageValue}x",
                         canDecrease = leverageValue > 0,
-                        canIncrease = leverageValue < 100,
+                        canIncrease = leverageValue < 200,
                         onDecrease = { onLeverageChange((leverageValue - 1).coerceAtLeast(0)) },
-                        onIncrease = { onLeverageChange((leverageValue + 1).coerceAtMost(100)) },
+                        onIncrease = { onLeverageChange((leverageValue + 1).coerceAtMost(200)) },
                     )
                 } else if (label == investmentLabel && investmentValue != null && onInvestmentChange != null) {
                     GuideNumberAdjuster(
@@ -677,28 +690,26 @@ private fun ExampleWithScenariosCard(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        scenarios.forEachIndexed { index, scenario ->
+        orderedScenarios.forEachIndexed { index, scenario ->
             if (index > 0) {
                 Spacer(modifier = Modifier.height(16.dp))
             }
-            val scenarioTitle = when (index) {
-                0 -> stringResource(R.string.Perpetual_Scenario_1)
-                1 -> stringResource(R.string.Perpetual_Scenario_2)
-                else -> ""
-            }
+            val scenarioTitle = stringResource(
+                R.string.Perpetual_Scenario_Title_Format,
+                index + 1,
+                scenario.scenario,
+            )
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
             ) {
-                if (scenarioTitle.isNotEmpty()) {
-                    Text(
-                        text = scenarioTitle,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.W500,
-                        color = MixinAppTheme.colors.textPrimary
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                }
+                Text(
+                    text = scenarioTitle,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.W500,
+                    color = MixinAppTheme.colors.textPrimary
+                )
+                Spacer(modifier = Modifier.height(6.dp))
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Text(
@@ -712,6 +723,12 @@ private fun ExampleWithScenariosCard(
                         verticalAlignment = Alignment.CenterVertically,
                     )
                     {
+                        val maxPercent = scenario.maxPercent
+                        val canIncrease = if (maxPercent == null) {
+                            percent < Int.MAX_VALUE
+                        } else {
+                            percent < maxPercent
+                        }
                         Box(
                             modifier = Modifier
                                 .size(24.dp)
@@ -742,9 +759,14 @@ private fun ExampleWithScenariosCard(
                                 .size(24.dp)
                                 .clip(CircleShape)
                                 .background(MixinAppTheme.colors.backgroundWindow)
-                                .alpha(if (percent < 10) 1f else 0.5f)
-                                .clickable(enabled = percent < 10) {
-                                    changePercents[index] = (percent + 1).coerceAtMost(10)
+                                .alpha(if (canIncrease) 1f else 0.5f)
+                                .clickable(enabled = canIncrease) {
+                                    val nextPercent = if (maxPercent == null) {
+                                        if (percent == Int.MAX_VALUE) percent else percent + 1
+                                    } else {
+                                        (percent + 1).coerceAtMost(maxPercent)
+                                    }
+                                    changePercents[index] = nextPercent
                                 },
                             contentAlignment = Alignment.Center,
                         ) {
@@ -852,7 +874,7 @@ private fun buildOrderValueText(
 
 private fun ScenarioData.formatPnl(currentPercent: Int): String {
     val safeInitialPercent = initialPercent.coerceAtLeast(1)
-    val safeCurrentPercent = currentPercent.coerceIn(0, 10)
+    val safeCurrentPercent = currentPercent.coerceAtLeast(0)
     val amount = (basePnlAmount.toFloat() * safeCurrentPercent / safeInitialPercent).roundToInt()
     val percent = (basePnlPercent.toFloat() * safeCurrentPercent / safeInitialPercent).roundToInt()
     val sign = if (isProfit) "+" else "-"

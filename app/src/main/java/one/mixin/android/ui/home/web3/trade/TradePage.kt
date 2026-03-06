@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -62,6 +63,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.components.TabItem
 import one.mixin.android.ui.home.web3.components.OutlinedTab
 import one.mixin.android.ui.home.web3.trade.perps.PerpetualContent
+import one.mixin.android.ui.home.web3.trade.perps.PerpetualViewModel
 import one.mixin.android.vo.WalletCategory
 import java.math.BigDecimal
 
@@ -108,6 +110,7 @@ fun TradePage(
     val context = LocalContext.current
 
     val viewModel = hiltViewModel<SwapViewModel>()
+    val perpsViewModel = hiltViewModel<PerpetualViewModel>()
     var walletDisplayName by remember { mutableStateOf<String?>(null) }
     var pendingOrderCount by remember { mutableIntStateOf(0) }
     
@@ -119,6 +122,14 @@ fun TradePage(
 
     val currentWalletId = walletId ?: Session.getAccountId() ?: ""
     val pendingCount by viewModel.getPendingOrderCountByWallet(currentWalletId).collectAsStateWithLifecycle(initialValue = 0)
+    val openPerpetualPositions by remember(currentWalletId, walletId) {
+        if (walletId == null && currentWalletId.isNotEmpty()) {
+            perpsViewModel.observeOpenPositions(currentWalletId)
+        } else {
+            flowOf(emptyList())
+        }
+    }.collectAsStateWithLifecycle(initialValue = emptyList())
+    val openPerpetualCount = openPerpetualPositions.size
 
     LaunchedEffect(pendingCount) {
         pendingOrderCount = pendingCount
@@ -302,6 +313,22 @@ fun TradePage(
                     ) {
                         Text(
                             text = "${if (pendingOrderCount > 99) "99+" else pendingOrderCount}",
+                            fontSize = 10.sp,
+                            lineHeight = 11.sp,
+                            color = Color.White,
+                        )
+                    }
+                } else if (isPerpetualOrderEntry && openPerpetualCount > 0) {
+                    Box(
+                        modifier = Modifier
+                            .offset(x = (-8).dp, y = (8).dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(color = Color(0xFF3D75E3))
+                            .padding(vertical = 2.dp, horizontal = 6.dp)
+                            .align(Alignment.TopEnd)
+                    ) {
+                        Text(
+                            text = "${if (openPerpetualCount > 99) "99+" else openPerpetualCount}",
                             fontSize = 10.sp,
                             lineHeight = 11.sp,
                             color = Color.White,

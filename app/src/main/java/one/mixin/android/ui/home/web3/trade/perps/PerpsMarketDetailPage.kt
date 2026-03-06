@@ -622,6 +622,21 @@ private fun OpenPositionCard(
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = stringResource(R.string.Perpetual_Guide_Position),
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium,
+                color = MixinAppTheme.colors.textPrimary
+            )
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column {
@@ -712,7 +727,7 @@ private fun OpenPositionCard(
             Column(horizontalAlignment = Alignment.End) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = stringResource(R.string.Amount),
+                        text = stringResource(R.string.Perpetual_Guide_Position),
                         fontSize = 12.sp,
                         color = MixinAppTheme.colors.textAssist
                     )

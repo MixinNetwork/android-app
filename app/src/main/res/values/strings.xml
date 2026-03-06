@@ -2320,6 +2320,7 @@
     <string name="Perpetual_Investment">Investment</string>
     <string name="Perpetual_Scenario_1">Scenario 1: Price Rise</string>
     <string name="Perpetual_Scenario_2">Scenario 2: Price Fall</string>
+    <string name="Perpetual_Scenario_Title_Format">Scenario %1$d: %2$s</string>
     <string name="Perpetual_Price_Up">Price Rise</string>
     <string name="Perpetual_Price_Down">Price Fall</string>
     <string name="Perpetual_Price_Up_Amplitude">Upward Change</string>

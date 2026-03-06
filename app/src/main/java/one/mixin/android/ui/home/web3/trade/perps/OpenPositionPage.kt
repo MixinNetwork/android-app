@@ -395,7 +395,7 @@ fun OpenPositionPage(
                                     .background(Color.Transparent)
                                     .border(
                                         width = 1.dp,
-                                        color = MixinAppTheme.colors.borderColor,
+                                        color = if (isSelected) MixinAppTheme.colors.accent else MixinAppTheme.colors.borderColor,
                                         shape = RoundedCornerShape(16.dp)
                                     )
                                     .clickable {
@@ -455,7 +455,7 @@ fun OpenPositionPage(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 4.dp),
+                        .padding(horizontal = 16.dp),
                 ) {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Row (verticalAlignment = Alignment.CenterVertically) {
@@ -484,7 +484,7 @@ fun OpenPositionPage(
                             color = MixinAppTheme.colors.textAssist
                         )
                     }
-
+                    Spacer(modifier = Modifier.height(16.dp))
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Row (verticalAlignment = Alignment.CenterVertically) {
                             Text(

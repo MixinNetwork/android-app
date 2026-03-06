@@ -264,7 +264,15 @@ fun PerpetualContent(
                 openPositionsPreview.forEach { position ->
                     OpenPositionItem(
                         position = position,
-                        onClick = { onOpenPositionClick(position) })
+                        onClick = {
+                            val targetMarket = markets.firstOrNull { it.marketId == position.productId }
+                            if (targetMarket != null) {
+                                onMarketItemClick(targetMarket)
+                            } else {
+                                onOpenPositionClick(position)
+                            }
+                        }
+                    )
                     Spacer(modifier = Modifier.height(12.dp))
                 }
 

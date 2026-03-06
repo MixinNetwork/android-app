@@ -2261,6 +2261,7 @@
     <string name="Perpetual_Investment">投入资金</string>
     <string name="Perpetual_Scenario_1">场景一：价格上涨</string>
     <string name="Perpetual_Scenario_2">场景二：价格下跌</string>
+    <string name="Perpetual_Scenario_Title_Format">场景%1$d：%2$s</string>
     <string name="Perpetual_Price_Up">价格上涨</string>
     <string name="Perpetual_Price_Down">价格下跌</string>
     <string name="Perpetual_Price_Up_Amplitude">上涨幅度</string>
