@@ -144,7 +144,7 @@ interface TokenDao : BaseDao<Token> {
     fun assetItemsWithBalance(defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<TokenItem>>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
-    @Query("$PREFIX_ASSET_ITEM WHERE ae.balance > 0 AND (ae.hidden IS NULL OR NOT ae.hidden) AND a1.asset_id IN (:usdAssetIds) $POSTFIX_ASSET_ITEM")
+    @Query("$PREFIX_ASSET_ITEM WHERE (ae.hidden IS NULL OR NOT ae.hidden) AND a1.asset_id IN (:usdAssetIds) $POSTFIX_ASSET_ITEM")
     fun usdAssetItemsWithBalance(usdAssetIds: List<String>, defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<TokenItem>>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)

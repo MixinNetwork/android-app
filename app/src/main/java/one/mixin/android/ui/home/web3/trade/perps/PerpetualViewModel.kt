@@ -26,6 +26,7 @@ import one.mixin.android.db.perps.PerpsMarketDao
 import one.mixin.android.db.perps.PerpsPositionHistoryDao
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshPerpsPositionsJob
+import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.safe.TokenItem
 import timber.log.Timber
@@ -193,7 +194,20 @@ class PerpetualViewModel @Inject constructor(
 
                 val data = response.data
                 if (response.isSuccess && data != null) {
-                    onSuccess(data.filter { it.isNotBlank() })
+                    val acceptedAssetIds = data
+                        .filter { it.isNotBlank() }
+                        .distinct()
+
+                    val missingAssetIds = withContext(Dispatchers.IO) {
+                        val localIds = tokenDao.findTokenItems(acceptedAssetIds).map { it.assetId }.toSet()
+                        acceptedAssetIds.filter { it !in localIds }
+                    }
+
+                    missingAssetIds.forEach { assetId ->
+                        jobManager.addJobInBackground(RefreshTokensJob(assetId))
+                    }
+
+                    onSuccess(acceptedAssetIds)
                 } else {
                     val error = "Failed to load accepted assets: ${response.errorDescription}"
                     Timber.e(error)

@@ -59,7 +59,6 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
         const val POS_RV = 0
         const val POS_EMPTY_RECEIVE = 1
-        const val POS_EMPTY_SEND = 2
 
         const val TYPE_FROM_SEND = 0
         const val TYPE_FROM_RECEIVE = 1
@@ -217,16 +216,6 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     }
                 }
             searchEt.setHint(getString(R.string.search_placeholder_asset))
-            depositTitle.setOnClickListener {
-                searchEt.hideKeyboard()
-                dismiss()
-                onDeposit?.invoke()
-            }
-            depositTv.setOnClickListener {
-                searchEt.hideKeyboard()
-                dismiss()
-                onDeposit?.invoke()
-            }
 
             @SuppressLint("AutoDispose")
             disposable =
@@ -236,12 +225,8 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     .subscribe(
                         {
                             if (it.isNullOrBlank()) {
+                                binding.rvVa.displayedChild = POS_RV
                                 adapter.submitList(defaultAssets)
-                                binding.rvVa.displayedChild = if (defaultAssets.isEmpty()) {
-                                    emptyStatePosition()
-                                } else {
-                                    POS_RV
-                                }
                             } else {
                                 if (it.toString() != currentQuery) {
                                     currentQuery = it.toString()
@@ -265,10 +250,10 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             } else {
                 it
             }
-            if (fromType == TYPE_FROM_SEND || fromType == TYPE_FROM_PERP) {
+            if (fromType == TYPE_FROM_SEND) {
                 adapter.submitList(defaultAssets)
                 if (defaultAssets.isEmpty()) {
-                    binding.rvVa.displayedChild = emptyStatePosition()
+                    binding.rvVa.displayedChild = POS_EMPTY_RECEIVE
                 } else {
                     binding.rvVa.displayedChild = POS_RV
                 }
@@ -329,7 +314,7 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private fun loadData() {
         adapter.chain = currentChain
         binding.rvVa.displayedChild = when (adapter.getFilteredTokens().size) {
-            0 -> if (defaultAssets.isEmpty()) emptyStatePosition() else POS_EMPTY_RECEIVE
+            0 -> POS_EMPTY_RECEIVE
             else -> POS_RV
         }
         binding.assetRv.scrollToPosition(0)
@@ -380,24 +365,12 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 binding.pb.isVisible = false
 
                 if (localAssets.isNullOrEmpty() && remoteAssets.isEmpty()) {
-                    binding.rvVa.displayedChild = if (defaultAssets.isEmpty()) {
-                        emptyStatePosition()
-                    } else {
-                        POS_EMPTY_RECEIVE
-                    }
+                    binding.rvVa.displayedChild = POS_EMPTY_RECEIVE
                 }
 
                 if (!isAdded) return@launch
                 loadData()
             }
-    }
-
-    private fun emptyStatePosition(): Int {
-        return if (fromType == TYPE_FROM_SEND || fromType == TYPE_FROM_PERP) {
-            POS_EMPTY_SEND
-        } else {
-            POS_EMPTY_RECEIVE
-        }
     }
 
     fun setOnAssetClick(callback: (TokenItem) -> Unit): TokenListBottomSheetDialogFragment {
