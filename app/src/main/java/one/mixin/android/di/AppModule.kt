@@ -5,9 +5,6 @@ import android.app.Application
 import android.content.ContentResolver
 import android.content.Context
 import android.content.SharedPreferences
-import androidx.datastore.core.DataStore
-import androidx.datastore.core.DataStoreFactory
-import androidx.datastore.dataStoreFile
 import com.birbit.android.jobqueue.config.Configuration
 import com.birbit.android.jobqueue.scheduling.FrameworkJobSchedulerService
 import com.google.android.gms.net.CronetProviderInstaller
@@ -75,10 +72,8 @@ import one.mixin.android.crypto.JobSenderKey
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.db.MessageHistoryDao
-import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
-import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.db.web3.Web3RawTransactionDao
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.filterNonAscii
@@ -93,6 +88,7 @@ import one.mixin.android.job.JobNetworkUtil
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.MyJobService
 import one.mixin.android.job.TipCounterSyncedLiveData
+import one.mixin.android.session.CurrentUserScopeManager
 import one.mixin.android.session.JwtResult
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Ephemeral
@@ -108,8 +104,6 @@ import one.mixin.android.util.LiveDataCallAdapterFactory
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.LinkState
-import one.mixin.android.vo.SafeBox
-import one.mixin.android.vo.route.serializer.SafeBoxSerializer
 import one.mixin.android.web3.Rpc
 import one.mixin.android.webrtc.CallDebugLiveData
 import one.mixin.android.websocket.ChatWebSocket
@@ -445,12 +439,11 @@ object AppModule {
         @ApplicationScope applicationScope: CoroutineScope,
         okHttp: OkHttpClient,
         accountService: AccountService,
-        mixinDatabase: MixinDatabase,
-        pendingDatabase: PendingDatabase,
+        currentUserScopeManager: CurrentUserScopeManager,
         jobManager: MixinJobManager,
         linkState: LinkState,
     ): ChatWebSocket =
-        ChatWebSocket(applicationScope, okHttp, accountService, mixinDatabase, pendingDatabase, jobManager, linkState)
+        ChatWebSocket(applicationScope, okHttp, accountService, currentUserScopeManager, jobManager, linkState)
 
     @Provides
     @Singleton
@@ -609,7 +602,6 @@ object AppModule {
     fun provideTransferStatus() = TransferStatusLiveData()
 
     @Provides
-    @Singleton
     fun providesRpc(routerService: RouteService, web3RawTransactionDao: Web3RawTransactionDao) = Rpc(routerService, web3RawTransactionDao)
 
     @DefaultDispatcher
@@ -639,7 +631,6 @@ object AppModule {
         }
 
     @Provides
-    @Singleton
     fun provideJobSenderKey(
         participantSessionDao: ParticipantSessionDao,
         signalProtocol: SignalProtocol,
@@ -657,27 +648,6 @@ object AppModule {
         linkState,
         messageHistoryDao,
     )
-
-    private const val DATA_STORE_FILE_NAME = "safe_box_%s.store"
-
-    @Singleton
-    @Provides
-    fun providesDataStore(
-        @ApplicationContext appContext: Context,
-    ): DataStore<SafeBox> {
-        return DataStoreFactory.create(
-            serializer = SafeBoxSerializer,
-            produceFile = {
-                appContext.dataStoreFile(
-                    String.format(
-                        DATA_STORE_FILE_NAME,
-                        Session.getAccountId(),
-                    ),
-                )
-            },
-            scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
-        )
-    }
 
     @Singleton
     @Provides

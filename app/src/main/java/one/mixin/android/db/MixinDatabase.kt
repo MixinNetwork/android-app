@@ -81,11 +81,17 @@ import one.mixin.android.db.converter.SafeDepositConverter
 import one.mixin.android.db.converter.SafeWithdrawalConverter
 import one.mixin.android.db.converter.TreasuryConverter
 import one.mixin.android.db.converter.WithdrawalMemoPossibilityConverter
+import one.mixin.android.session.Session
 import one.mixin.android.ui.wallet.alert.vo.Alert
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_EXECUTOR
+import one.mixin.android.util.database.dbDir
+import one.mixin.android.util.database.moveLegacyDatabaseFile
+import one.mixin.android.util.database.moveLegacyFtsDatabaseFile
+import one.mixin.android.util.database.moveLegacyPendingDatabaseFile
 import one.mixin.android.util.debug.getContent
 import one.mixin.android.util.reportException
+import one.mixin.android.vo.Account
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Asset
@@ -134,6 +140,7 @@ import one.mixin.android.vo.safe.RawTransaction
 import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.vo.safe.TokensExtra
+import java.io.File
 import java.util.concurrent.Executors
 import kotlin.math.max
 import kotlin.math.min
@@ -303,18 +310,55 @@ abstract class MixinDatabase : RoomDatabase() {
 
         private val lock = Any()
         private var supportSQLiteDatabase: SupportSQLiteDatabase? = null
+        private var currentIdentityNumber: String? = null
 
-        fun destroy() {
-            INSTANCE = null
+        fun destroy(close: Boolean = false) {
+            synchronized(lock) {
+                if (close) {
+                    INSTANCE?.close()
+                }
+                INSTANCE = null
+                supportSQLiteDatabase = null
+                currentIdentityNumber = null
+            }
+        }
+
+        fun migrateRelatedDatabaseFilesIfNeeded(
+            context: Context,
+            account: Account,
+        ): Boolean {
+            val mixinValidated = moveLegacyDatabaseFile(context, account)
+            if (!mixinValidated) {
+                return false
+            }
+            moveLegacyPendingDatabaseFile(context, account)
+            moveLegacyFtsDatabaseFile(context, account)
+            WalletDatabase.moveTempDatabaseFileIfNeeded(context, account.identityNumber)
+            return true
         }
 
         @Suppress("UNUSED_ANONYMOUS_PARAMETER")
         @SuppressLint("RestrictedApi")
-        fun getDatabase(context: Context): MixinDatabase {
+        fun getDatabase(
+            context: Context,
+            identityNumber: String? = null,
+        ): MixinDatabase {
+            val scopedIdentity = identityNumber?.takeIf { it.isNotBlank() }
+                ?: Session.getAccount()?.identityNumber
+                ?: "temp"
             synchronized(lock) {
+                if (INSTANCE != null && currentIdentityNumber != scopedIdentity) {
+                    INSTANCE?.close()
+                    INSTANCE = null
+                    supportSQLiteDatabase = null
+                }
                 if (INSTANCE == null) {
+                    Session.getAccount()?.let { account ->
+                        migrateRelatedDatabaseFilesIfNeeded(context, account)
+                    }
+                    val dbPath = File(dbDir(context, scopedIdentity), DB_NAME).absolutePath
                     val builder =
-                        Room.databaseBuilder(context, MixinDatabase::class.java, DB_NAME)
+                        Room.databaseBuilder(context, MixinDatabase::class.java, dbPath)
                             .openHelperFactory(
                                 MixinOpenHelperFactory(
                                     FrameworkSQLiteOpenHelperFactory(),
@@ -409,6 +453,7 @@ abstract class MixinDatabase : RoomDatabase() {
                         )
                     }
                     INSTANCE = builder.build()
+                    currentIdentityNumber = scopedIdentity
                 }
                 return INSTANCE as MixinDatabase
             }
@@ -457,5 +502,16 @@ abstract class MixinDatabase : RoomDatabase() {
                     db.execSQL("DROP TRIGGER IF EXISTS conversation_last_message_delete")
                 }
             }
+    }
+
+    override fun close() {
+        super.close()
+        synchronized(lock) {
+            if (INSTANCE === this) {
+                INSTANCE = null
+                supportSQLiteDatabase = null
+                currentIdentityNumber = null
+            }
+        }
     }
 }

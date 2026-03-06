@@ -42,6 +42,7 @@ import one.mixin.android.db.UserDao
 import one.mixin.android.db.pending.PendingMessageDao
 import one.mixin.android.di.ApplicationScope
 import one.mixin.android.fts.FtsDatabase
+import one.mixin.android.session.CurrentUserScopeManager
 import one.mixin.android.session.Session
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.ConversationCategory
@@ -160,10 +161,16 @@ open class Injector {
     @Inject
     lateinit var database: MixinDatabase
 
+    @Inject
+    lateinit var currentUserScopeManager: CurrentUserScopeManager
+
     @ApplicationScope
     @Transient
     @Inject
     lateinit var applicationScope: CoroutineScope
+
+    @Volatile
+    private var injectedScopeVersion: Long = Long.MIN_VALUE
 
     @InstallIn(SingletonComponent::class)
     @EntryPoint
@@ -171,9 +178,28 @@ open class Injector {
         fun inject(injector: Injector)
     }
 
-    init {
+    private fun injectSelf() {
         val entryPoint = EntryPointAccessors.fromApplication(MixinApplication.get().applicationContext, InjectorEntryPoint::class.java)
         entryPoint.inject(this)
+        injectedScopeVersion = currentUserScopeManager.getScopeVersion()
+    }
+
+    protected fun ensureSessionInjection() {
+        val scopeVersion = currentUserScopeManager.getScopeVersion()
+        if (scopeVersion == injectedScopeVersion) {
+            return
+        }
+        synchronized(this) {
+            val latestScopeVersion = currentUserScopeManager.getScopeVersion()
+            if (latestScopeVersion == injectedScopeVersion) {
+                return
+            }
+            injectSelf()
+        }
+    }
+
+    init {
+        injectSelf()
     }
 
     protected tailrec fun signalKeysChannel(blazeMessage: BlazeMessage): JsonElement? {

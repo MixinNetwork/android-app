@@ -34,6 +34,7 @@ import one.mixin.android.db.web3.vo.Web3Transaction
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.moveTo
+import one.mixin.android.session.Session
 import one.mixin.android.util.SINGLE_DB_EXECUTOR
 import one.mixin.android.util.database.dbDir
 import one.mixin.android.util.reportException
@@ -66,6 +67,7 @@ abstract class WalletDatabase : RoomDatabase() {
         private var INSTANCE: WalletDatabase? = null
 
         private val lock = Any()
+        private var currentIdentityNumber: String? = null
 
         private lateinit var supportSQLiteDatabase: SupportSQLiteDatabase
 
@@ -121,23 +123,23 @@ abstract class WalletDatabase : RoomDatabase() {
             }
         }
 
-        fun moveTempDatabaseFileIfNeeded(context: Context, identityNumber: String?) {
+        fun moveTempDatabaseFileIfNeeded(context: Context, identityNumber: String?): Boolean {
             val shouldGoWallet: Boolean = context.defaultSharedPreferences.getBoolean(PREF_LOGIN_OR_SIGN_UP, false)
             if (shouldGoWallet) { // Do not migrate on first entry
-                return
+                return false
             }
             if (identityNumber.isNullOrBlank()) {
-                return
+                return false
             }
             val targetDir: File = dbDir(context, identityNumber)
             val targetDbFile = File(targetDir, Constants.DataBase.WEB3_DB_NAME)
             if (targetDbFile.exists() && targetDbFile.length() > 0) {
-                return
+                return false
             }
             val tempDir: File = dbDir(context, "temp")
             val tempDbFile = File(tempDir, Constants.DataBase.WEB3_DB_NAME)
             if (!tempDbFile.exists() || tempDbFile.length() <= 0) {
-                return
+                return false
             }
             val storedIdentityNumber: String? = readIdentityNumberFromDatabaseFile(tempDbFile)
             if (storedIdentityNumber != identityNumber) {
@@ -145,7 +147,7 @@ abstract class WalletDatabase : RoomDatabase() {
                 File(tempDir, Constants.DataBase.WEB3_DB_NAME + "-wal").delete()
                 File(tempDir, Constants.DataBase.WEB3_DB_NAME + "-shm").delete()
                 File(tempDir, Constants.DataBase.WEB3_DB_NAME + "-journal").delete()
-                return
+                return false
             }
             if (!targetDir.exists()) {
                 targetDir.mkdirs()
@@ -154,6 +156,7 @@ abstract class WalletDatabase : RoomDatabase() {
             moveSidecarIfExists(tempDir, targetDir, Constants.DataBase.WEB3_DB_NAME, "-wal")
             moveSidecarIfExists(tempDir, targetDir, Constants.DataBase.WEB3_DB_NAME, "-shm")
             moveSidecarIfExists(tempDir, targetDir, Constants.DataBase.WEB3_DB_NAME, "-journal")
+            return true
         }
 
         private fun readIdentityNumberFromDatabaseFile(databaseFile: File): String? {
@@ -189,10 +192,20 @@ abstract class WalletDatabase : RoomDatabase() {
             fromFile.moveTo(toFile)
         }
 
-        fun getDatabase(context: Context): WalletDatabase {
+        fun getDatabase(
+            context: Context,
+            identityNumber: String? = null,
+        ): WalletDatabase {
+            val scopedIdentity = identityNumber?.takeIf { it.isNotBlank() }
+                ?: Session.getAccount()?.identityNumber
+                ?: "temp"
             synchronized(lock) {
+                if (INSTANCE != null && currentIdentityNumber != scopedIdentity) {
+                    INSTANCE?.close()
+                    INSTANCE = null
+                }
                 if (INSTANCE == null) {
-                    val dir = dbDir(context)
+                    val dir = dbDir(context, scopedIdentity)
                     val builder =
                         Room.databaseBuilder(
                             context,
@@ -230,6 +243,7 @@ abstract class WalletDatabase : RoomDatabase() {
                             )
                             .setTransactionExecutor(SINGLE_DB_EXECUTOR)
                     INSTANCE = builder.build()
+                    currentIdentityNumber = scopedIdentity
                 }
             }
             return INSTANCE as WalletDatabase
@@ -252,5 +266,6 @@ abstract class WalletDatabase : RoomDatabase() {
     override fun close() {
         super.close()
         INSTANCE = null
+        currentIdentityNumber = null
     }
 }

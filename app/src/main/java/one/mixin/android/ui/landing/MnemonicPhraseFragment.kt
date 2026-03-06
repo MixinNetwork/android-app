@@ -51,6 +51,7 @@ import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.session.decryptPinToken
+import one.mixin.android.session.resolveCurrentUserScopeManager
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.components.MnemonicPhrasePage
@@ -354,6 +355,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 Session.storeEd25519Seed(privateKey.base64Encode())
                 Session.storePinToken(pinToken.base64Encode())
                 Session.storeAccount(account)
+                resolveCurrentUserScopeManager(requireContext()).enter(account)
                 defaultSharedPreferences.putString(DEVICE_ID, requireContext().getStringDeviceId())
                 when {
                     account.fullName.isNullOrBlank() -> {

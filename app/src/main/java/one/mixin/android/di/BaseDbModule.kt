@@ -9,272 +9,139 @@ import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.WalletDatabase
 import one.mixin.android.db.pending.PendingDatabase
-import one.mixin.android.db.pending.PendingDatabaseImp
-import one.mixin.android.db.web3.Web3RawTransactionDao
 import one.mixin.android.fts.FtsDatabase
-import javax.inject.Singleton
+import one.mixin.android.session.CurrentUserScopeManager
 
 @InstallIn(SingletonComponent::class)
 @Module
 internal object BaseDbModule {
-    @Singleton
     @Provides
     fun provideSignalDb(app: Application) = SignalDatabase.getDatabase(app)
-
-    @Singleton
     @Provides
-    fun provideFtsDb(app: Application) = FtsDatabase.getDatabase(app)
-
-    @Singleton
+    fun provideFtsDb(scopeManager: CurrentUserScopeManager) = scopeManager.getFtsDatabase()
     @Provides
-    fun provideWalletDatabase(app: Application) = WalletDatabase.getDatabase(app)
-
-    @Singleton
+    fun provideWalletDatabase(scopeManager: CurrentUserScopeManager) = scopeManager.getWalletDatabase()
     @Provides
     fun provideRatchetSenderKeyDao(db: SignalDatabase) = db.ratchetSenderKeyDao()
-
-    @Singleton
     @Provides
-    fun provideDb(app: Application) = MixinDatabase.getDatabase(app)
-
-    @Singleton
+    fun provideDb(scopeManager: CurrentUserScopeManager) = scopeManager.getMixinDatabase()
     @Provides
-    fun providePendingDatabase(
-        app: Application,
-        mixinDatabase: MixinDatabase,
-    ): PendingDatabase = PendingDatabaseImp.getDatabase(app.applicationContext, mixinDatabase.floodMessageDao(), mixinDatabase.jobDao())
-
-    @Singleton
+    fun providePendingDatabase(scopeManager: CurrentUserScopeManager): PendingDatabase = scopeManager.getPendingDatabase()
     @Provides
     fun provideUserDao(db: MixinDatabase) = db.userDao()
-
-    @Singleton
     @Provides
     fun provideSessionParticipantDao(db: MixinDatabase) = db.participantSessionDao()
-
-    @Singleton
     @Provides
     fun provideConversationDao(db: MixinDatabase) = db.conversationDao()
-
-    @Singleton
     @Provides
     fun provideMessageDao(db: MixinDatabase) = db.messageDao()
-
-    @Singleton
     @Provides
     fun providePendingMessageDao(pendingDatabase: PendingDatabase) =
         pendingDatabase.pendingMessageDao()
-
-    @Singleton
     @Provides
     fun provideParticipantDao(db: MixinDatabase) = db.participantDao()
-
-    @Singleton
     @Provides
     fun provideOffsetDao(db: MixinDatabase) = db.offsetDao()
-
-    @Singleton
     @Provides
     fun provideAssetDao(db: MixinDatabase) = db.assetDao()
-
-    @Singleton
     @Provides
     fun provideTokenDao(db: MixinDatabase) = db.tokenDao()
-
-    @Singleton
     @Provides
     fun provideTokensExtraDao(db: MixinDatabase) = db.tokensExtraDao()
-
-    @Singleton
     @Provides
     fun provideSnapshotDao(db: MixinDatabase) = db.snapshotDao()
-
-    @Singleton
     @Provides
     fun provideSafeSnapshotDao(db: MixinDatabase) = db.safeSnapshotDao()
-
-    @Singleton
     @Provides
     fun provideMessageHistoryDao(db: MixinDatabase) = db.messageHistoryDao()
-
-    @Singleton
     @Provides
     fun provideStickerAlbumDao(db: MixinDatabase) = db.stickerAlbumDao()
-
-    @Singleton
     @Provides
     fun provideStickerDao(db: MixinDatabase) = db.stickerDao()
-
-    @Singleton
     @Provides
     fun provideHyperlinkDao(db: MixinDatabase) = db.hyperlinkDao()
-
-    @Singleton
     @Provides
     fun providesAppDao(db: MixinDatabase) = db.appDao()
-
-    @Singleton
     @Provides
     fun providesFloodMessageDao(db: PendingDatabase) = db.floodMessageDao()
-
-    @Singleton
     @Provides
     fun providesJobDao(db: PendingDatabase) = db.jobDao()
-
-    @Singleton
     @Provides
     fun providesAddressDao(db: MixinDatabase) = db.addressDao()
-
-    @Singleton
     @Provides
     fun providesResendSessionMessageDao(db: MixinDatabase) = db.resendSessionMessageDao()
-
-    @Singleton
     @Provides
     fun providesStickerRelationshipDao(db: MixinDatabase) = db.stickerRelationshipDao()
-
-    @Singleton
     @Provides
     fun providesHotAssetDao(db: MixinDatabase) = db.topAssetDao()
-
-    @Singleton
     @Provides
     fun providesFavoriteAppDao(db: MixinDatabase) = db.favoriteAppDao()
-
-    @Singleton
     @Provides
     fun providesMentionMessageDao(db: MixinDatabase) = db.mentionMessageDao()
-
-    @Singleton
     @Provides
     fun providesCircleDao(db: MixinDatabase) = db.circleDao()
-
-    @Singleton
     @Provides
     fun providesCircleConversationDao(db: MixinDatabase) = db.circleConversationDao()
-
-    @Singleton
     @Provides
     fun providesTraceDao(db: MixinDatabase) = db.traceDao()
-
-    @Singleton
     @Provides
     fun providesTranscriptDao(db: MixinDatabase) = db.transcriptDao()
-
-    @Singleton
     @Provides
     fun providesPinMessageDao(db: MixinDatabase) = db.pinMessageDao()
-
-    @Singleton
     @Provides
     fun providesPropertyDao(db: MixinDatabase) = db.propertyDao()
-
-    @Singleton
     @Provides
     fun providesRemoteMessageStatusDao(db: MixinDatabase) = db.remoteMessageStatusDao()
-
-    @Singleton
     @Provides
     fun providesExpiredMessageDao(db: MixinDatabase) = db.expiredMessageDao()
-
-    @Singleton
     @Provides
     fun providesConversationExtDao(db: MixinDatabase) = db.conversationExtDao()
-
-    @Singleton
     @Provides
     fun providesChainDao(db: MixinDatabase) = db.chainDao()
-
-    @Singleton
     @Provides
     fun provideOutputDao(db: MixinDatabase) = db.outputDao()
-
-    @Singleton
     @Provides
     fun provideDepositDao(db: MixinDatabase) = db.depositDao()
-
-    @Singleton
     @Provides
     fun provideRawTransactionDao(db: MixinDatabase) = db.rawTransactionDao()
-
-    @Singleton
     @Provides
     fun provideInscriptionCollectionDao(db: MixinDatabase) = db.inscriptionCollectionDao()
-
-    @Singleton
     @Provides
     fun provideInscriptionDao(db: MixinDatabase) = db.inscriptionDao()
-
-    @Singleton
     @Provides
     fun provideHistoryPriceDao(db: MixinDatabase) = db.historyPriceDao()
-
-    @Singleton
     @Provides
     fun provideMarketDao(db: MixinDatabase) = db.marketDao()
-
-    @Singleton
     @Provides
     fun provideMarketCoinDao(db: MixinDatabase) = db.marketCoinDao()
-
-    @Singleton
     @Provides
     fun provideMarketFavoredDao(db: MixinDatabase) = db.marketFavoredDao()
-
-    @Singleton
     @Provides
     fun provideAlertDao(db: MixinDatabase) = db.alertDao()
-
-    @Singleton
     @Provides
     fun provideMarketCapRankDao(db: MixinDatabase) = db.marketCapRankDao()
-
-    @Singleton
     @Provides
     fun provideMemberOrderDao(db: MixinDatabase) = db.memberOrderDao()
-
-    @Singleton
     @Provides
     fun provideWeb3TokenDao(db: WalletDatabase) = db.web3TokenDao()
-
-    @Singleton
     @Provides
     fun provideWeb3TransactionDao(db: WalletDatabase) = db.web3TransactionDao()
-
-    @Singleton
     @Provides
     fun provideWeb3WalletDao(db: WalletDatabase) = db.web3WalletDao()
-
-    @Singleton
     @Provides
     fun provideWeb3AddressDao(db: WalletDatabase) = db.web3AddressDao()
-
-    @Singleton
     @Provides
     fun provideWeb3TokensExtraDao(db: WalletDatabase) = db.web3TokensExtraDao()
-
-    @Singleton
     @Provides
     fun provideWeb3ChainDao(db: WalletDatabase) = db.web3ChainDao()
-
-    @Singleton
     @Provides
     fun provideWeb3PropertyDao(db: WalletDatabase) = db.web3PropertyDao()
-
-    @Singleton
     @Provides
     fun provideWeb3RawTransactionDao(db: WalletDatabase) = db.web3RawTransactionDao()
-
-    @Singleton
     @Provides
     fun provideOrderDao(db: WalletDatabase) = db.orderDao()
-
-
-    @Singleton
     @Provides
     fun provideSafeWalletsDao(db: WalletDatabase) = db.safeWalletsDao()
-
-    @Singleton
     @Provides
     fun provideWalletOutputDao(db: WalletDatabase) = db.walletOutputDao()
 }
