@@ -472,7 +472,7 @@ fun OpenPositionPage(
                                     .size(12.dp)
                                     .clickable {
                                         val activity = context as? FragmentActivity ?: return@clickable
-                                        PerpetualGuideFragment.newInstance()
+                                        PerpetualGuideFragment.newInstance(PerpetualGuideFragment.TAB_POSITION)
                                             .show(activity.supportFragmentManager, PerpetualGuideFragment.TAG)
                                     },
                                 tint = MixinAppTheme.colors.textAssist

@@ -2,6 +2,7 @@ package one.mixin.android.ui.home.web3.trade.perps
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.os.Bundle
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -21,8 +22,19 @@ class PerpetualGuideFragment : MixinComposeBottomSheetDialogFragment() {
 
     companion object {
         const val TAG = "PerpetualGuideFragment"
+        private const val ARGS_INITIAL_TAB = "args_initial_tab"
 
-        fun newInstance() = PerpetualGuideFragment()
+        const val TAB_OVERVIEW = 0
+        const val TAB_LONG = 1
+        const val TAB_SHORT = 2
+        const val TAB_LEVERAGE = 3
+        const val TAB_POSITION = 4
+
+        fun newInstance(initialTab: Int = TAB_OVERVIEW) = PerpetualGuideFragment().apply {
+            arguments = Bundle().apply {
+                putInt(ARGS_INITIAL_TAB, initialTab)
+            }
+        }
     }
 
     override fun getTheme() = R.style.AppTheme_Dialog
@@ -52,8 +64,10 @@ class PerpetualGuideFragment : MixinComposeBottomSheetDialogFragment() {
 
     @Composable
     override fun ComposeContent() {
+        val initialTab = arguments?.getInt(ARGS_INITIAL_TAB, TAB_OVERVIEW) ?: TAB_OVERVIEW
         MixinAppTheme {
             PerpetualGuidePage(
+                initialTab = initialTab,
                 pop = {
                     dismiss()
                 }

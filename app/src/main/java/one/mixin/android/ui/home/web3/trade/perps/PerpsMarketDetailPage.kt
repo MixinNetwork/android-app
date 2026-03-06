@@ -197,7 +197,7 @@ fun PerpsMarketDetailPage(
                         market = market!!,
                         onLearnClick = {
                             val activity = context as? FragmentActivity ?: return@MarketInfoCard
-                            PerpetualGuideFragment.newInstance()
+                            PerpetualGuideFragment.newInstance(PerpetualGuideFragment.TAB_OVERVIEW)
                                 .show(activity.supportFragmentManager, PerpetualGuideFragment.TAG)
                         }
                     )

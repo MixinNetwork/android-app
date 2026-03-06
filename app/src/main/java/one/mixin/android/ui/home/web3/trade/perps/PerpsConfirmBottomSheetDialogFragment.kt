@@ -497,7 +497,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                         modifier = Modifier
                             .size(12.dp)
                             .clickable {
-                                PerpetualGuideFragment.newInstance()
+                                PerpetualGuideFragment.newInstance(PerpetualGuideFragment.TAB_POSITION)
                                     .show(parentFragmentManager, PerpetualGuideFragment.TAG)
                             },
                         tint = MixinAppTheme.colors.textAssist

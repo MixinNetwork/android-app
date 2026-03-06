@@ -72,10 +72,11 @@ data class GuideRowData(
 )
 
 @Composable
-fun PerpetualGuidePage(pop: () -> Unit) {
-    var selectedTab by remember { mutableIntStateOf(0) }
+fun PerpetualGuidePage(
+    initialTab: Int = PerpetualGuideFragment.TAB_OVERVIEW,
+    pop: () -> Unit,
+) {
     val coroutineScope = rememberCoroutineScope()
-
     val tabs = listOf(
         stringResource(R.string.Perpetual_Guide_Overview),
         stringResource(R.string.Perpetual_Guide_Long),
@@ -83,6 +84,8 @@ fun PerpetualGuidePage(pop: () -> Unit) {
         stringResource(R.string.Perpetual_Guide_Leverage),
         stringResource(R.string.Perpetual_Guide_Position)
     )
+    val safeInitialTab = initialTab.coerceIn(0, tabs.lastIndex)
+    var selectedTab by remember(safeInitialTab) { mutableIntStateOf(safeInitialTab) }
 
     MixinAppTheme {
         Column(
