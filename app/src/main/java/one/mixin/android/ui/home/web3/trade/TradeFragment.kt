@@ -166,6 +166,18 @@ class TradeFragment : BaseFragment() {
 
     private var orderBadge: Boolean by mutableStateOf(false)
 
+    private fun limitOrderBadgeDismissedPrefKey(walletId: String): String {
+        return "${Account.PREF_TRADE_LIMIT_ORDER_BADGE_DISMISSED}_$walletId"
+    }
+
+    private fun perpetualBadgeDismissedPrefKey(walletId: String): String {
+        return "${Account.PREF_TRADE_PERPETUAL_BADGE_DISMISSED}_$walletId"
+    }
+
+    private fun perpetualOrderBadgeDismissedPrefKey(walletId: String): String {
+        return "${Account.PREF_TRADE_PERPETUAL_ORDER_BADGE_DISMISSED}_$walletId"
+    }
+
     @FlowPreview
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -240,21 +252,29 @@ class TradeFragment : BaseFragment() {
                             }
                             
                             val currentWalletId = walletId ?: Session.getAccountId() ?: ""
+                            val limitBadgePrefKey = remember(currentWalletId) {
+                                limitOrderBadgeDismissedPrefKey(currentWalletId)
+                            }
+                            val perpetualBadgePrefKey = remember(currentWalletId) {
+                                perpetualBadgeDismissedPrefKey(currentWalletId)
+                            }
+                            val perpetualOrderBadgePrefKey = remember(currentWalletId) {
+                                perpetualOrderBadgeDismissedPrefKey(currentWalletId)
+                            }
                             val initialTabIndex = remember(currentWalletId) {
                                 val preferenceKey = "$PREF_TRADE_SELECTED_TAB_PREFIX$currentWalletId"
                                 defaultSharedPreferences.getInt(preferenceKey, 0)
                             }
                             var isLimitOrderTabBadgeDismissed by remember(currentWalletId) {
-                                mutableStateOf(defaultSharedPreferences.getBoolean(Account.PREF_TRADE_LIMIT_ORDER_BADGE_DISMISSED, false))
+                                mutableStateOf(defaultSharedPreferences.getBoolean(limitBadgePrefKey, false))
                             }
                             var isPerpetualTabBadgeDismissed by remember(currentWalletId) {
-                                mutableStateOf(defaultSharedPreferences.getBoolean(Account.PREF_TRADE_PERPETUAL_BADGE_DISMISSED, false))
+                                mutableStateOf(defaultSharedPreferences.getBoolean(perpetualBadgePrefKey, false))
+                            }
+                            var isPerpetualOrderBadgeDismissed by remember(currentWalletId) {
+                                mutableStateOf(defaultSharedPreferences.getBoolean(perpetualOrderBadgePrefKey, false))
                             }
 
-                            if (!isLimitOrderTabBadgeDismissed) {
-                                isLimitOrderTabBadgeDismissed = true
-                                defaultSharedPreferences.putBoolean(Account.PREF_TRADE_LIMIT_ORDER_BADGE_DISMISSED, true)
-                            }
                             TradePage(
                                 walletId = walletId,
                                 swapFrom = fromToken,
@@ -265,6 +285,7 @@ class TradeFragment : BaseFragment() {
                                 orderBadge = orderBadge,
                                 isLimitOrderTabBadgeDismissed = isLimitOrderTabBadgeDismissed,
                                 isPerpetualTabBadgeDismissed = isPerpetualTabBadgeDismissed,
+                                isPerpetualOrderBadgeDismissed = isPerpetualOrderBadgeDismissed,
                                 initialAmount = initialAmount,
                                 lastOrderTime = lastOrderTime,
                                 reviewing = reviewing,
@@ -280,13 +301,19 @@ class TradeFragment : BaseFragment() {
                                 onDismissLimitOrderTabBadge = {
                                     if (!isLimitOrderTabBadgeDismissed) {
                                         isLimitOrderTabBadgeDismissed = true
-                                        defaultSharedPreferences.putBoolean(Account.PREF_TRADE_LIMIT_ORDER_BADGE_DISMISSED, true)
+                                        defaultSharedPreferences.putBoolean(limitBadgePrefKey, true)
                                     }
                                 },
                                 onDismissPerpetualTabBadge = {
                                     if (!isPerpetualTabBadgeDismissed) {
                                         isPerpetualTabBadgeDismissed = true
-                                        defaultSharedPreferences.putBoolean(Account.PREF_TRADE_PERPETUAL_BADGE_DISMISSED, true)
+                                        defaultSharedPreferences.putBoolean(perpetualBadgePrefKey, true)
+                                    }
+                                },
+                                onDismissPerpetualOrderBadge = {
+                                    if (!isPerpetualOrderBadgeDismissed) {
+                                        isPerpetualOrderBadgeDismissed = true
+                                        defaultSharedPreferences.putBoolean(perpetualOrderBadgePrefKey, true)
                                     }
                                 },
                                 onTabChanged = { index ->

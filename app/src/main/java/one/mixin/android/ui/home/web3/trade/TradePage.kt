@@ -78,6 +78,7 @@ fun TradePage(
     orderBadge: Boolean,
     isLimitOrderTabBadgeDismissed: Boolean,
     isPerpetualTabBadgeDismissed: Boolean,
+    isPerpetualOrderBadgeDismissed: Boolean,
     initialAmount: String?,
     lastOrderTime: Long?,
     reviewing: Boolean,
@@ -90,6 +91,7 @@ fun TradePage(
     onOrderList: (String, Boolean) -> Unit,
     onDismissLimitOrderTabBadge: () -> Unit,
     onDismissPerpetualTabBadge: () -> Unit,
+    onDismissPerpetualOrderBadge: () -> Unit,
     onTabChanged: (Int) -> Unit,
     onSwitchToLimitOrder: (String, SwapToken, SwapToken) -> Unit,
     pop: () -> Unit,
@@ -271,10 +273,13 @@ fun TradePage(
         verticalScrollable = true,
         pop = pop,
         actions = {
+            val isPerpetualOrderEntry = perpetualTabIndex != null && pagerState.currentPage == perpetualTabIndex
             Box {
                 IconButton(onClick = {
-                    // If on Perpetual tab (page 2), show closed positions
-                    if (perpetualTabIndex != null && pagerState.currentPage == perpetualTabIndex) {
+                    if (isPerpetualOrderEntry) {
+                        if (!isPerpetualOrderBadgeDismissed) {
+                            onDismissPerpetualOrderBadge()
+                        }
                         onShowAllClosedPositions()
                     } else {
                         onOrderList(currentWalletId, false)
@@ -286,7 +291,7 @@ fun TradePage(
                         tint = MixinAppTheme.colors.icon,
                     )
                 }
-                if (pendingOrderCount > 0) {
+                if (!isPerpetualOrderEntry && pendingOrderCount > 0) {
                     Box(
                         modifier = Modifier
                             .offset(x = (-8).dp, y = (8).dp)
@@ -302,7 +307,18 @@ fun TradePage(
                             color = Color.White,
                         )
                     }
-                } else if (orderBadge) {
+                } else if (!isPerpetualOrderEntry && orderBadge) {
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .offset(x = (-12).dp, y = (12).dp)
+                            .background(
+                                color = MixinAppTheme.colors.badgeRed,
+                                shape = CircleShape
+                            )
+                            .align(Alignment.TopEnd)
+                    )
+                } else if (isPerpetualOrderEntry && !isPerpetualOrderBadgeDismissed) {
                     Box(
                         modifier = Modifier
                             .size(8.dp)
