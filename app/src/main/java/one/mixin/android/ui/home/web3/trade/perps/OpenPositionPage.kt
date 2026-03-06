@@ -86,6 +86,7 @@ fun OpenPositionPage(
     onBack: () -> Unit,
     selectedToken: TokenItem?,
     onTokenSelect: () -> Unit = {},
+    onCurrentTokenChange: (TokenItem?) -> Unit = {},
 ) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<PerpetualViewModel>()
@@ -140,6 +141,9 @@ fun OpenPositionPage(
             currentToken = availableTokens.firstOrNull { it.assetId == target.assetId } ?: target
         }
     }
+    LaunchedEffect(currentToken) {
+        onCurrentTokenChange(currentToken)
+    }
     val maxLeverage = currentMarket.leverage.coerceAtLeast(1)
     LaunchedEffect(usdtAmount, leverage, currentToken?.assetId) {
         errorInfo = null
@@ -159,6 +163,7 @@ fun OpenPositionPage(
     val tokenBalance = currentToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val hasInputAmount = inputAmount != null && inputAmount > BigDecimal.ZERO
     val insufficientBalance = hasInputAmount && inputAmount > tokenBalance
+    val showAddAction = insufficientBalance || tokenBalance <= BigDecimal.ZERO
     val canReview = hasInputAmount && !insufficientBalance
     val displayedErrorInfo = errorInfo?.takeIf { it.isNotBlank() }
     val tokenNetworkName = currentToken?.chainName
@@ -283,7 +288,7 @@ fun OpenPositionPage(
                                 usdtAmount = currentToken?.balance ?: "0"
                             }
                         )
-                        if (insufficientBalance) {
+                        if (showAddAction) {
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 text = stringResource(R.string.Add),
@@ -293,7 +298,11 @@ fun OpenPositionPage(
                                 ),
                                 modifier = Modifier.clickable {
                                     val activity = context as? FragmentActivity ?: return@clickable
-                                    val token = currentToken ?: return@clickable
+                                    val token = currentToken
+                                    if (token == null) {
+                                        onTokenSelect()
+                                        return@clickable
+                                    }
                                     AddFeeBottomSheetDialogFragment.newInstance(token)
                                         .apply {
                                             onAction = { type, addToken ->

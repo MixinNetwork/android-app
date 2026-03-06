@@ -393,30 +393,23 @@ fun PerpetualContent(
             Spacer(modifier = Modifier.height(12.dp))
 
             if (closedPositions.isEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(100.dp),
-                    contentAlignment = Alignment.Center
+                Spacer(modifier = Modifier.height(16.dp))
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_empty_transaction),
-                            contentDescription = null,
-                            tint = MixinAppTheme.colors.backgroundGrayLight,
-                            modifier = Modifier.size(78.dp)
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            text = stringResource(R.string.No_Closed_Positions),
-                            fontSize = 14.sp,
-                            color = MixinAppTheme.colors.textAssist,
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                    }
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_empty_transaction),
+                        contentDescription = null,
+                        tint = MixinAppTheme.colors.backgroundGrayLight,
+                        modifier = Modifier.size(78.dp)
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = stringResource(R.string.No_Closed_Positions),
+                        fontSize = 14.sp,
+                        color = MixinAppTheme.colors.textAssist,
+                    )
                 }
             } else {
                 closedPositionsPreview.forEach { position ->

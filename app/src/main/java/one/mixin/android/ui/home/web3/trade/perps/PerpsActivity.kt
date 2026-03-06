@@ -24,6 +24,7 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.session.Session
 import one.mixin.android.R
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment
 import one.mixin.android.vo.safe.TokenItem
 import javax.inject.Inject
@@ -116,7 +117,8 @@ class PerpsActivity : BaseActivity() {
                             isLong = isLong,
                             onBack = { finish() },
                             selectedToken = selectedToken,
-                            onTokenSelect = { showTokenSelection() }
+                            onTokenSelect = { showTokenSelection() },
+                            onCurrentTokenChange = { token -> selectedToken = token }
                         )
                     }
                 }
@@ -143,7 +145,18 @@ class PerpsActivity : BaseActivity() {
             currentAssetId = selectedToken?.assetId
         ).setOnAssetClick { token ->
             selectedToken = token
+        }.setOnDepositClick {
+            showDepositAssetSelection()
         }.show(supportFragmentManager, TokenListBottomSheetDialogFragment.TAG)
+    }
+
+    private fun showDepositAssetSelection() {
+        val token = selectedToken
+        if (token == null) {
+            toast(R.string.Not_found)
+            return
+        }
+        WalletActivity.showDeposit(this, token)
     }
 
     private fun refreshPositions() {
