@@ -79,16 +79,6 @@
                 app:expandAction="@string/More"
                 app:expandActionColor="?attr/text_blue"/>
 
-            <TextView
-                android:id="@+id/created_tv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="@dimen/margin16"
-                android:maxLines="1"
-                android:textSize="12sp"
-                android:textColor="?attr/text_assist"/>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 </RelativeLayout>

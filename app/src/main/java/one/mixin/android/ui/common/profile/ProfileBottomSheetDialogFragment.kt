@@ -18,6 +18,7 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
+import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.uber.autodispose.autoDispose
@@ -41,6 +42,7 @@ import one.mixin.android.extension.dayTime
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getCapturedImage
 import one.mixin.android.extension.getOtherPath
+import one.mixin.android.extension.getSafeAreaInsetsBottom
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openAsUrlOrWeb
@@ -173,8 +175,6 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                 url.openAsUrlOrWeb(requireContext(), null, parentFragmentManager, lifecycleScope)
                 dismiss()
             }
-
-            createdTv.text = getString(R.string.Joined_in, account.createdAt.dayTime())
 
             bottomViewModel.loadFavoriteApps(account.userId)
             bottomViewModel.observerFavoriteApps(account.userId)
@@ -311,9 +311,15 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
             }
 
         menuListLayout?.removeAllViews()
-        list.createMenuLayout(requireContext()).let { layout ->
+        list.createMenuLayout(requireContext(),
+            getString(R.string.Joined_in, account.createdAt.dayTime())
+        ).let { layout ->
             menuListLayout = layout
-            binding.scrollContent.addView(layout, binding.scrollContent.childCount - 1)
+            binding.scrollContent.addView(layout)
+            val safeBottomHeight = layout.getSafeAreaInsetsBottom()
+            layout.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                bottomMargin = safeBottomHeight
+            }
         }
     }
 
