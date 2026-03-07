@@ -121,8 +121,11 @@ class Web3ViewModel @Inject constructor(
         }
     }
 
-    suspend fun estimateBtcFeeRate(rawTransactionHex: String, currentRate: String?): EstimateFeeResponse? {
-        val cleanedRawHex: String = rawTransactionHex.removePrefix("0x").trim()
+    suspend fun estimateBtcFeeRate(rawTransactionHex: String? = null, currentRate: String?): EstimateFeeResponse? {
+        val cleanedRawHex: String? = rawTransactionHex
+            ?.removePrefix("0x")
+            ?.trim()
+            ?.takeIf { it.isNotEmpty() }
         val response = withContext(Dispatchers.IO) {
             runCatching {
                 web3Repository.estimateFee(

@@ -1446,19 +1446,40 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 null
             }
         if (transaction == null) {
-          delay(3000)
-          refreshGas(t)
+            val handledByBtcFallback = t.chainId == Constants.ChainId.BITCOIN_CHAIN_ID &&
+                isAdded &&
+                applyFallbackBtcFeeWithoutRawTransaction(t)
+            if (handledByBtcFallback) {
+                binding.iconImageView.isVisible = false
+                binding.contentTextView.isVisible = true
+                binding.loadingProgressBar.isVisible = false
+                applyFeeUi()
+                return
+            }
+            delay(3000)
+            refreshGas(t)
+            return
         } else if (isAdded) {
             val estimate= web3ViewModel.calcFee(t, transaction, fromAddress)
             gas = estimate.fee
             rate = estimate.rate
             miniFee = estimate.minFee
             if (gas == null) {
+                val handledByBtcFallback = t.chainId == Constants.ChainId.BITCOIN_CHAIN_ID &&
+                    applyFallbackBtcFeeWithoutRawTransaction(t)
+                if (handledByBtcFallback) {
+                    binding.iconImageView.isVisible = false
+                    binding.contentTextView.isVisible = true
+                    binding.loadingProgressBar.isVisible = false
+                    applyFeeUi()
+                    return
+                }
                 delay(3000)
                 if (dialog.isShowing) {
                     dialog.dismiss()
                 }
                 refreshGas(t)
+                return
             }
             if (chainToken?.assetId == t.assetId) {
                 val balance = runCatching {
@@ -1509,6 +1530,19 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         applyFeeUi()
     }
 
+    private suspend fun applyFallbackBtcFeeWithoutRawTransaction(t: Web3TokenItem): Boolean {
+        val estimate = web3ViewModel.estimateBtcFeeRate(currentRate = rate?.toPlainString()) ?: return false
+        rate = estimate.feeRate?.toBigDecimalOrNull() ?: rate
+        miniFee = estimate.minFee ?: miniFee
+        val fallbackFee: BigDecimal = estimate.minFee?.toBigDecimalOrNull()?.movePointLeft(1) ?: return false
+        gas = fallbackFee
+        binding.insufficientFeeBalance.text = getString(R.string.insufficient_gas, chainToken?.symbol)
+        binding.contentTextView.text = "${fallbackFee.numberFormat8()} ${chainToken?.symbol ?: t.getChainSymbolFromName()}"
+        updateAvailableBalanceForBtcFee()
+        updateUI()
+        return true
+    }
+
     private val dialog by lazy {
         indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
             setCancelable(false)
@@ -1516,4 +1550,3 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         }
     }
 }
-
