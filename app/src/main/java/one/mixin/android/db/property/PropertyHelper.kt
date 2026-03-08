@@ -27,10 +27,14 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.ClearFts4Job.Companion.FTS_CLEAR
 import one.mixin.android.job.MigratedFts4Job.Companion.FTS_NEED_MIGRATED_LAST_ROW_ID
+import one.mixin.android.session.Session
 import one.mixin.android.vo.Property
 
 object PropertyHelper {
     private const val PREF_PROPERTY_MIGRATED = "pref_property_migrated"
+
+    private fun identityNumber() =
+        requireNotNull(Session.getAccount()) { "Account is required for database access." }.identityNumber
 
     suspend fun checkAttachmentMigrated(action: () -> Unit) {
         val value = findValueByKey(PREF_MIGRATION_ATTACHMENT, false)
@@ -103,8 +107,8 @@ object PropertyHelper {
     }
 
     suspend fun checkMigrated(): PropertyDao {
-        val propertyDao = MixinDatabase.getDatabase(MixinApplication.appContext).propertyDao()
-        val messageDao = MixinDatabase.getDatabase(MixinApplication.appContext).messageDao()
+        val propertyDao = MixinDatabase.getDatabase(MixinApplication.appContext, identityNumber()).propertyDao()
+        val messageDao = MixinDatabase.getDatabase(MixinApplication.appContext, identityNumber()).messageDao()
         if (!hasMigrated(propertyDao)) {
             migrateProperties(propertyDao)
         }
@@ -115,7 +119,7 @@ object PropertyHelper {
         key: String,
         value: String,
     ) {
-        val propertyDao = MixinDatabase.getDatabase(MixinApplication.appContext).propertyDao()
+        val propertyDao = MixinDatabase.getDatabase(MixinApplication.appContext, identityNumber()).propertyDao()
         propertyDao.insertSuspend(Property(key, value, nowInUtc()))
     }
 
@@ -141,7 +145,7 @@ object PropertyHelper {
     }
 
     suspend fun deleteKeyValue(key: String) {
-        val propertyDao = MixinDatabase.getDatabase(MixinApplication.appContext).propertyDao()
+        val propertyDao = MixinDatabase.getDatabase(MixinApplication.appContext, identityNumber()).propertyDao()
         propertyDao.deletePropertyByKey(key)
     }
 
@@ -149,7 +153,7 @@ object PropertyHelper {
         key: String,
         default: T,
     ): T {
-        val propertyDao = MixinDatabase.getDatabase(MixinApplication.appContext).propertyDao()
+        val propertyDao = MixinDatabase.getDatabase(MixinApplication.appContext, identityNumber()).propertyDao()
         val value = propertyDao.findValueByKey(key) ?: return default
         return try {
             when (default) {
@@ -204,9 +208,9 @@ object PropertyHelper {
 
     suspend fun migration() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val messageDao = MixinDatabase.getDatabase(MixinApplication.appContext).messageDao()
-            val propertyDao = MixinDatabase.getDatabase(MixinApplication.appContext).propertyDao()
-            val transcriptDao = MixinDatabase.getDatabase(MixinApplication.appContext).transcriptDao()
+            val messageDao = MixinDatabase.getDatabase(MixinApplication.appContext, identityNumber()).messageDao()
+            val propertyDao = MixinDatabase.getDatabase(MixinApplication.appContext, identityNumber()).propertyDao()
+            val transcriptDao = MixinDatabase.getDatabase(MixinApplication.appContext, identityNumber()).transcriptDao()
             val updatedAt = nowInUtc()
             propertyDao.insertSuspend(Property(PREF_MIGRATION_ATTACHMENT, (messageDao.hasDoneAttachment()).toString(), updatedAt))
             val lastDoneAttachmentId = transcriptDao.lastDoneAttachmentId() ?: 0

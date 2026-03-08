@@ -73,6 +73,7 @@ import one.mixin.android.crypto.PrivacyPreference.getIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
 import one.mixin.android.databinding.ActivityMainBinding
 import one.mixin.android.db.ConversationDao
+import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.WalletDatabase
@@ -317,7 +318,9 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             return
         }
 
-        WalletDatabase.moveTempDatabaseFileIfNeeded(this, Session.getAccount()?.identityNumber)
+        Session.getAccount()?.let {
+            MixinDatabase.migrateRelatedDatabaseFilesIfNeeded(this, it)
+        }
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 

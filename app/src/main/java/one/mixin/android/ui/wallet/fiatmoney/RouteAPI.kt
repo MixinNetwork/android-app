@@ -53,8 +53,10 @@ suspend fun <T, R> requestRouteAPI(
                 invokeNetwork = { requestSession(listOf(ROUTE_BOT_USER_ID)) },
                 successBlock = { resp ->
                     val sessionData = requireNotNull(resp.data)[0]
+                    val identityNumber =
+                        requireNotNull(Session.getAccount()) { "Account is required for database access." }.identityNumber
                     MixinApplication.appContext.defaultSharedPreferences.putString(PREF_ROUTE_BOT_PK, sessionData.publicKey)
-                    MixinDatabase.getDatabase(MixinApplication.appContext).participantSessionDao().insertSuspend(ParticipantSession(generateConversationId(sessionData.userId, Session.getAccountId()!!), sessionData.userId, sessionData.sessionId, publicKey = sessionData.publicKey))
+                    MixinDatabase.getDatabase(MixinApplication.appContext, identityNumber).participantSessionDao().insertSuspend(ParticipantSession(generateConversationId(sessionData.userId, Session.getAccountId()!!), sessionData.userId, sessionData.sessionId, publicKey = sessionData.publicKey))
                     return@handleMixinResponse requestRouteAPI(invokeNetwork, successBlock, failureBlock, exceptionBlock, doAfterNetworkSuccess, defaultErrorHandle, defaultExceptionHandle, endBlock, authErrorRetryCount - 1, requestSession)
                 },
             )

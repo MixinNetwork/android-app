@@ -19,6 +19,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.toast
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.WarningBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
@@ -53,7 +54,9 @@ class DatabaseDebugFragment : BaseFragment(R.layout.fragment_database_debug) {
         setupLogsView()
         setupTitleView()
         
-        walletDb = WalletDatabase.getDatabase(requireContext())
+        val identityNumber =
+            requireNotNull(Session.getAccount()) { "Account is required for database access." }.identityNumber
+        walletDb = WalletDatabase.getDatabase(requireContext(), identityNumber)
         showWarning()
     }
 

@@ -320,8 +320,9 @@ class AudioPlayer private constructor() {
         messageItem?.let { item ->
             if (!item.isAudio()) return
             MixinApplication.get().applicationScope.launch(Dispatchers.IO) {
+                val identityNumber = Session.getAccount()?.identityNumber ?: return@launch
                 val nextMessage =
-                    MixinDatabase.getDatabase(MixinApplication.appContext)
+                    MixinDatabase.getDatabase(MixinApplication.appContext, identityNumber)
                         .messageDao()
                         .findNextAudioMessageItem(item.conversationId, item.createdAt, item.messageId)
                         ?: return@launch
@@ -345,7 +346,8 @@ class AudioPlayer private constructor() {
         currentMessage: MessageItem,
         whenPlayNewAction: ((Message) -> Unit)? = null,
     ) = MixinApplication.get().applicationScope.launch(Dispatchers.IO) {
-        val messageDao = MixinDatabase.getDatabase(MixinApplication.appContext).messageDao()
+        val identityNumber = Session.getAccount()?.identityNumber ?: return@launch
+        val messageDao = MixinDatabase.getDatabase(MixinApplication.appContext, identityNumber).messageDao()
         if (currentMessage.mediaStatus == MediaStatus.DONE.name) {
             messageDao.updateMediaStatus(MediaStatus.READ.name, currentMessage.messageId)
             MessageFlow.update(currentMessage.conversationId, currentMessage.messageId)

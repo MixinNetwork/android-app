@@ -244,7 +244,13 @@ fun String.checkUserOrApp(
         return
     }
 
-    val db = MixinDatabase.getDatabase(ctx)
+    val identityNumber = Session.getAccount()?.identityNumber
+    if (identityNumber.isNullOrBlank()) {
+        val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString())
+        bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
+        return
+    }
+    val db = MixinDatabase.getDatabase(ctx, identityNumber)
     val userDao = db.userDao()
     val appDao = db.appDao()
     scope.launch {
@@ -284,7 +290,11 @@ fun String.checkConversation(
     val segments = uri.pathSegments
     if (segments.isEmpty()) return
     scope.launch {
-        val db = MixinDatabase.getDatabase(context)
+        val identityNumber = Session.getAccount()?.identityNumber ?: run {
+            elseAction.invoke()
+            return@launch
+        }
+        val db = MixinDatabase.getDatabase(context, identityNumber)
         val conversationDao = db.conversationDao()
         val conversationId = segments[0]
         if (!conversationId.isNullOrBlank() && conversationId.isUUID()) { // Judge in advance before displaying the interface
@@ -356,7 +366,8 @@ fun Uri.handleSchemeSend(
     if (text != null) {
         if (userId != null) {
             scope.launch {
-                val db = MixinDatabase.getDatabase(context)
+                val identityNumber = Session.getAccount()?.identityNumber ?: return@launch
+                val db = MixinDatabase.getDatabase(context, identityNumber)
                 val userDao = db.userDao()
                 val user = userDao.suspendFindUserById(userId)
                 if (user == null) {
@@ -389,7 +400,8 @@ fun Uri.handleSchemeSend(
         if (shareCategory != null && data != null) {
             if (userId != null) {
                 scope.launch {
-                    val db = MixinDatabase.getDatabase(context)
+                    val identityNumber = Session.getAccount()?.identityNumber ?: return@launch
+                    val db = MixinDatabase.getDatabase(context, identityNumber)
                     val userDao = db.userDao()
                     val user = userDao.suspendFindUserById(userId)
                     if (user == null) {

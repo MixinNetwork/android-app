@@ -24,6 +24,7 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
+import one.mixin.android.session.resolveCurrentUserScopeManager
 import one.mixin.android.tip.TipBody
 import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.ui.common.PinCodeFragment
@@ -124,6 +125,7 @@ class VerificationEmergencyFragment : PinCodeFragment(R.layout.fragment_verifica
                 successBlock = { response ->
                     val a = response.data as Account
                     Session.storeAccount(a)
+                    resolveCurrentUserScopeManager(requireContext()).enter(a)
                     Session.setHasEmergencyContact(a.hasEmergencyContact)
                     activity?.supportFragmentManager?.findFragmentByTag(EmergencyContactFragment.TAG)?.let {
                         (it as? EmergencyContactFragment)?.setEmergencySet()

@@ -26,10 +26,10 @@ import one.mixin.android.extension.putString
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.session.Session
 import one.mixin.android.session.decryptPinToken
+import one.mixin.android.session.resolveCurrentUserScopeManager
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.RestoreActivity
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.util.database.clearDatabase
 import one.mixin.android.util.database.clearJobsAndRawTransaction
 import one.mixin.android.util.database.getLastUserId
 import one.mixin.android.vo.Account
@@ -124,12 +124,12 @@ abstract class PinCodeFragment(
         if (sameUser) {
             showLoading()
             withContext(Dispatchers.IO) {
-                clearJobsAndRawTransaction(requireContext())
+                clearJobsAndRawTransaction(requireContext(), account.identityNumber)
             }
         } else {
             showLoading()
             withContext(Dispatchers.IO) {
-                clearDatabase(requireContext())
+                clearJobsAndRawTransaction(requireContext(), account.identityNumber)
             }
             CryptoWalletHelper.clear(requireContext())
             defaultSharedPreferences.clear()
@@ -139,6 +139,7 @@ abstract class PinCodeFragment(
         Session.storeEd25519Seed(privateKey.base64Encode())
         Session.storePinToken(pinToken.base64Encode())
         Session.storeAccount(account)
+        resolveCurrentUserScopeManager(requireContext()).enter(account)
         if (Session.hasPhone()) {
             // Remove mnemonic if user has phone on sign in
             removeValueFromEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC)

@@ -63,6 +63,7 @@ import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
 import one.mixin.android.job.BlazeMessageService
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.session.resolveCurrentUserScopeManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.PipVideoView
 import one.mixin.android.ui.auth.AppAuthActivity
@@ -303,6 +304,7 @@ open class MixinApplication :
 
         if (force || isOnline.compareAndSet(true, false)) {
             val sessionId = Session.getSessionId()
+            val identityNumber = Session.getAccount()?.identityNumber
             BlazeMessageService.stopService(this)
             val callState = getCallState()
             if (callState.isGroupCall()) {
@@ -320,7 +322,8 @@ open class MixinApplication :
             PipVideoView.release()
             removeValueFromEncryptedPreferences(this@MixinApplication, Constants.Tip.MNEMONIC)
             applicationScope.launch {
-                clearData(sessionId)
+                clearData(sessionId, identityNumber)
+                resolveCurrentUserScopeManager(this@MixinApplication).exit("closeAndClear")
                 withContext(Dispatchers.Main) {
                     val entryPoint =
                         EntryPointAccessors.fromApplication(
@@ -335,7 +338,7 @@ open class MixinApplication :
     }
 
     fun reject() {
-        MixinDatabase.destroy()
+        resolveCurrentUserScopeManager(this).ensureScopeFromSession()
         val entryPoint =
             EntryPointAccessors.fromApplication(
                 this@MixinApplication,
@@ -344,12 +347,17 @@ open class MixinApplication :
         entryPoint.inject(this@MixinApplication)
     }
 
-    private fun clearData(sessionId: String?) {
+    private fun clearData(
+        sessionId: String?,
+        identityNumber: String?,
+    ) {
         val jobManager = getJobManager()
         jobManager.cancelAllJob()
         jobManager.clear()
         clearPrivacyPreferences(this)
-        MixinDatabase.getDatabase(this).participantSessionDao().clearKey(sessionId)
+        identityNumber?.let { scopedIdentity ->
+            MixinDatabase.getDatabase(this, scopedIdentity).participantSessionDao().clearKey(sessionId)
+        }
         SignalDatabase.getDatabase(this).clearAllTables()
         removeValueFromEncryptedPreferences(this, Constants.Tip.MNEMONIC)
     }

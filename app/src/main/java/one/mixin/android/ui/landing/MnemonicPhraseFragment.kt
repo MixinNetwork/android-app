@@ -51,6 +51,7 @@ import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.session.decryptPinToken
+import one.mixin.android.session.resolveCurrentUserScopeManager
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.components.MnemonicPhrasePage
@@ -58,7 +59,6 @@ import one.mixin.android.ui.landing.vo.MnemonicPhraseState
 import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.analytics.AnalyticsTracker
-import one.mixin.android.util.database.clearDatabase
 import one.mixin.android.util.database.clearJobsAndRawTransaction
 import one.mixin.android.util.database.getLastUserId
 import one.mixin.android.util.getMixinErrorStringByCode
@@ -340,11 +340,11 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 val sameUser = lastUserId != null && lastUserId == account.userId
                 if (sameUser) {
                     withContext(Dispatchers.IO) {
-                        clearJobsAndRawTransaction(requireContext())
+                        clearJobsAndRawTransaction(requireContext(), account.identityNumber)
                     }
                 } else {
                     withContext(Dispatchers.IO) {
-                        clearDatabase(requireContext())
+                        clearJobsAndRawTransaction(requireContext(), account.identityNumber)
                     }
                     CryptoWalletHelper.clear(requireContext())
                     defaultSharedPreferences.clear()
@@ -354,6 +354,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 Session.storeEd25519Seed(privateKey.base64Encode())
                 Session.storePinToken(pinToken.base64Encode())
                 Session.storeAccount(account)
+                resolveCurrentUserScopeManager(requireContext()).enter(account)
                 defaultSharedPreferences.putString(DEVICE_ID, requireContext().getStringDeviceId())
                 when {
                     account.fullName.isNullOrBlank() -> {
