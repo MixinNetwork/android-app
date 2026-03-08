@@ -285,6 +285,9 @@ private fun ShortContent() {
 
 @Composable
 private fun LeverageContent() {
+    var leverage by remember { mutableIntStateOf(10) }
+    val basePnlAmount = leverage * 100
+    val basePnlPercent = leverage * 10
     ExampleWithScenariosCard(
         title = stringResource(R.string.Perpetual_Example),
         rows = listOf(
@@ -299,7 +302,7 @@ private fun LeverageContent() {
             ),
             GuideRowData(
                 label = stringResource(R.string.Perpetual_Leverage_Times),
-                value = "10x"
+                value = "${leverage}x"
             ),
             GuideRowData(
                 label = stringResource(R.string.Perpetual_Investment),
@@ -311,20 +314,23 @@ private fun LeverageContent() {
                 scenario = stringResource(R.string.Perpetual_Price_Up),
                 change = stringResource(R.string.Perpetual_Price_Up_Amplitude),
                 initialPercent = 10,
-                basePnlAmount = 1000,
-                basePnlPercent = 100,
+                basePnlAmount = basePnlAmount,
+                basePnlPercent = basePnlPercent,
                 isProfit = true
             ),
             ScenarioData(
                 scenario = stringResource(R.string.Perpetual_Price_Down),
                 change = stringResource(R.string.Perpetual_Price_Down_Amplitude),
                 initialPercent = 10,
-                basePnlAmount = 1000,
-                basePnlPercent = 100,
+                basePnlAmount = basePnlAmount,
+                basePnlPercent = basePnlPercent,
                 isProfit = false,
                 maxPercent = 100,
             )
-        )
+        ),
+        leverageValue = leverage,
+        onLeverageChange = { leverage = it.coerceIn(0, 200) },
+        isScenarioChangeAdjustable = false,
     )
     Spacer(modifier = Modifier.height(16.dp))
     DescriptionWithInfoAndRiskCard(
@@ -404,6 +410,7 @@ private fun PositionContent() {
         onLeverageChange = { leverage = it.coerceIn(0, 200) },
         investmentValue = investment,
         onInvestmentChange = { investment = it.coerceIn(10, 1000) },
+        isScenarioChangeAdjustable = false,
     )
     Spacer(modifier = Modifier.height(16.dp))
     DescriptionWithInfoAndRiskCard(
@@ -589,6 +596,7 @@ private fun ExampleWithScenariosCard(
     onLeverageChange: ((Int) -> Unit)? = null,
     investmentValue: Int? = null,
     onInvestmentChange: ((Int) -> Unit)? = null,
+    isScenarioChangeAdjustable: Boolean = true,
 ) {
     val context = LocalContext.current
     val quoteColorReversed = context.defaultSharedPreferences
@@ -723,58 +731,67 @@ private fun ExampleWithScenariosCard(
                         verticalAlignment = Alignment.CenterVertically,
                     )
                     {
-                        val maxPercent = scenario.maxPercent
-                        val canIncrease = if (maxPercent == null) {
-                            percent < Int.MAX_VALUE
-                        } else {
-                            percent < maxPercent
-                        }
-                        Box(
-                            modifier = Modifier
-                                .size(24.dp)
-                                .clip(CircleShape)
-                                .background(MixinAppTheme.colors.backgroundWindow)
-                                .alpha(if (percent > 0) 1f else 0.5f)
-                                .clickable(enabled = percent > 0) {
-                                    changePercents[index] = (percent - 1).coerceAtLeast(0)
-                                },
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_perps_minus),
-                                contentDescription = null,
-                                tint = Color.Unspecified,
-                                modifier = Modifier.size(16.dp),
+                        if (isScenarioChangeAdjustable) {
+                            val maxPercent = scenario.maxPercent
+                            val canIncrease = if (maxPercent == null) {
+                                percent < Int.MAX_VALUE
+                            } else {
+                                percent < maxPercent
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .clip(CircleShape)
+                                    .background(MixinAppTheme.colors.backgroundWindow)
+                                    .alpha(if (percent > 0) 1f else 0.5f)
+                                    .clickable(enabled = percent > 0) {
+                                        changePercents[index] = (percent - 1).coerceAtLeast(0)
+                                    },
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_perps_minus),
+                                    contentDescription = null,
+                                    tint = Color.Unspecified,
+                                    modifier = Modifier.size(16.dp),
+                                )
+                            }
+                            Text(
+                                text = "$percent%",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = MixinAppTheme.colors.textPrimary,
+                                modifier = Modifier.padding(horizontal = 8.dp),
                             )
-                        }
-                        Text(
-                            text = "$percent%",
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = MixinAppTheme.colors.textPrimary,
-                            modifier = Modifier.padding(horizontal = 8.dp),
-                        )
-                        Box(
-                            modifier = Modifier
-                                .size(24.dp)
-                                .clip(CircleShape)
-                                .background(MixinAppTheme.colors.backgroundWindow)
-                                .alpha(if (canIncrease) 1f else 0.5f)
-                                .clickable(enabled = canIncrease) {
-                                    val nextPercent = if (maxPercent == null) {
-                                        if (percent == Int.MAX_VALUE) percent else percent + 1
-                                    } else {
-                                        (percent + 1).coerceAtMost(maxPercent)
-                                    }
-                                    changePercents[index] = nextPercent
-                                },
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_perps_add),
-                                contentDescription = null,
-                                tint = Color.Unspecified,
-                                modifier = Modifier.size(16.dp),
+                            Box(
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .clip(CircleShape)
+                                    .background(MixinAppTheme.colors.backgroundWindow)
+                                    .alpha(if (canIncrease) 1f else 0.5f)
+                                    .clickable(enabled = canIncrease) {
+                                        val nextPercent = if (maxPercent == null) {
+                                            if (percent == Int.MAX_VALUE) percent else percent + 1
+                                        } else {
+                                            (percent + 1).coerceAtMost(maxPercent)
+                                        }
+                                        changePercents[index] = nextPercent
+                                    },
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_perps_add),
+                                    contentDescription = null,
+                                    tint = Color.Unspecified,
+                                    modifier = Modifier.size(16.dp),
+                                )
+                            }
+                        } else {
+                            Text(
+                                text = "$percent%",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = MixinAppTheme.colors.textPrimary,
                             )
                         }
                     }
@@ -879,7 +896,11 @@ private fun ScenarioData.formatPnl(currentPercent: Int): String {
     val percent = (basePnlPercent.toFloat() * safeCurrentPercent / safeInitialPercent).roundToInt()
     val sign = if (isProfit) "+" else "-"
     val amountText = String.format("%,d", amount)
-    return "$sign$amountText $pnlAsset ($sign$percent%)"
+    return if (isProfit) {
+        "$sign$amountText $pnlAsset ($sign$percent%)"
+    } else {
+        "$sign$amountText $pnlAsset"
+    }
 }
 
 @Composable

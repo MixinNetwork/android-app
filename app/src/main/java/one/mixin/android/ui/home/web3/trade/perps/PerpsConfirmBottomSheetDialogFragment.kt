@@ -401,8 +401,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                     PerpsInfoItem(
                         title = stringResource(R.string.Estimated_Liquidation_Price).uppercase(),
                         value = liquidationPrice,
-                        subValue = lossSubValue,
-                        info = true
+                        subValue = lossSubValue
                     )
 
                     Box(modifier = Modifier.height(20.dp))

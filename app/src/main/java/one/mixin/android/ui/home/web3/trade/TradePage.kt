@@ -291,7 +291,7 @@ fun TradePage(
                         if (!isPerpetualOrderBadgeDismissed) {
                             onDismissPerpetualOrderBadge()
                         }
-                        onShowAllClosedPositions()
+                        onShowAllOpenPositions()
                     } else {
                         onOrderList(currentWalletId, false)
                     }

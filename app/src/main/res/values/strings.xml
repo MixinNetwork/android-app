@@ -2298,7 +2298,7 @@
     <string name="Perpetual_Guide_Short_Content">Going short means you expect the price to decrease. If the price goes down, you profit. If it goes up, you lose. Your profit/loss is multiplied by your leverage.</string>
     <string name="Perpetual_Guide_Leverage_Content">Leverage allows you to control a larger position with less capital. For example, with 10x leverage, a 1%% price move results in a 10%% profit or loss. Higher leverage means higher risk.</string>
     <string name="Perpetual_Guide_Close_Content">You can close your position at any time to realize your profit or loss. The closing price is based on the current market price. Make sure to monitor your positions to avoid liquidation.</string>
-    <string name="Perpetual_Guide_Position">Position</string>
+    <string name="Perpetual_Guide_Position">Open Position</string>
     <string name="Perpetual_Guide_Overview_Title">Instructions</string>
     <string name="Perpetual_Guide_Overview_Desc">Mixin perpetual contracts are derivative trading instruments settled in digital assets, supporting long and short positions with no expiration date. Through leverage, traders can amplify positions to capture trading opportunities from price movements.</string>
     <string name="Perpetual_Features">Product Features</string>
