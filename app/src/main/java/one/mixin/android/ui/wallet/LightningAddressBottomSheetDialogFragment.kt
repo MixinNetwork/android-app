@@ -32,7 +32,6 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.heavyClickVibrate
-import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
@@ -141,7 +140,7 @@ class LightningAddressBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
     }
 
     override fun getBottomSheetHeight(view: View): Int {
-        return 690.dip + requireContext().navigationBarHeight()
+        return 690.dip
     }
 
     override fun showError(error: String) {
@@ -160,4 +159,3 @@ class LightningAddressBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
 
 
 }
-
