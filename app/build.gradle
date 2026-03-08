@@ -203,8 +203,8 @@ android {
     packagingOptions {
         jniLibs {
             useLegacyPackaging true
+            excludes += ['lib/x86_64/libcurve25519.so']
         }
-        exclude 'lib/x86_64/libcurve25519.so'
     }
 
     configurations.configureEach {
