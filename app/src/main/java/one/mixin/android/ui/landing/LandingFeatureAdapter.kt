@@ -39,8 +39,10 @@ class LandingFeatureAdapter(
         fun bindItem(item: LandingFeatureItem, isFirstPage: Boolean) {
             if (!hasSetFeatureHeight) {
                 val screenHeightPx: Int = binding.root.resources.displayMetrics.heightPixels
+                val screenHeightDp = binding.root.resources.configuration.screenHeightDp
+                val featureHeightPercent = if (screenHeightDp <= 700) 0.33f else 0.38f
                 binding.featureFl.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                    height = (screenHeightPx * 0.38f).toInt()
+                    height = (screenHeightPx * featureHeightPercent).toInt()
                 }
                 binding.featureFl.setPadding(0, if (isFirstPage) 40.dp else 70.dp, 0, 0)
                 hasSetFeatureHeight = true

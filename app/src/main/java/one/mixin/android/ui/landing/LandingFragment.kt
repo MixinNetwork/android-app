@@ -85,10 +85,12 @@ class LandingFragment : Fragment(R.layout.fragment_landing) {
         binding.featurePager.offscreenPageLimit = features.size
         
         val screenHeightPx = binding.root.resources.displayMetrics.heightPixels
+        val screenHeightDp = resources.configuration.screenHeightDp
         val targetHeightDp = 156f
         val targetHeightPx = targetHeightDp * resources.displayMetrics.density
         val calculatedPercent = targetHeightPx / screenHeightPx
-        val finalPercent = 0.4f + calculatedPercent
+        val basePercent = if (screenHeightDp <= 700) 0.35f else 0.4f
+        val finalPercent = basePercent + calculatedPercent
         
         (binding.featurePager.layoutParams as ConstraintLayout.LayoutParams).apply {
             matchConstraintPercentHeight = finalPercent
