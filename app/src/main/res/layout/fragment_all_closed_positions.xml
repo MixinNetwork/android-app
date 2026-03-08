@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/bg_white">
+
+    <one.mixin.android.widget.TitleView
+        android:id="@+id/title_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <RadioGroup
+        android:id="@+id/radio_group"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingStart="20dp"
+        android:paddingTop="12dp"
+        android:paddingEnd="20dp"
+        android:paddingBottom="12dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/title_view">
+
+        <androidx.appcompat.widget.AppCompatRadioButton
+            android:id="@+id/radio_open"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
+            android:background="@drawable/selector_radio"
+            android:button="@null"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:text="@string/Open_Positions_Simple"
+            android:textColor="@drawable/radio_button_text_selector"
+            android:textSize="14sp" />
+
+        <androidx.appcompat.widget.AppCompatRadioButton
+            android:id="@+id/radio_closed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/selector_radio"
+            android:button="@null"
+            android:checked="true"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:text="@string/Closed_Positions"
+            android:textColor="@drawable/radio_button_text_selector"
+            android:textSize="14sp" />
+
+    </RadioGroup>
+
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        style="@style/AppTheme.WalletBlue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/radio_group" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/positions_rv"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/radio_group" />
+
+    <include
+        android:id="@+id/empty_view"
+        layout="@layout/layout_empty_transaction"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/radio_group" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

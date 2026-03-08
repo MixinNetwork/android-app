@@ -224,6 +224,8 @@ open class ErrorHandler {
         const val NO_AVAILABLE_QUOTE = 10615
         const val SIMULATE_TRANSACTION_FAILED = 10631
         const val MAX_WALLET_REACHED = 10632
+        const val PERPS_ORDER_VALUE_TOO_SMALL = 10650
+        const val PERPS_MARKET_ALREADY_HAS_ACTIVE_POSITION = 10651
 
         const val UNSUPPORTED_WATCH_ADDRESS = 10633
         const val INVALID_REFERRAL_CODE = 10730
@@ -327,6 +329,12 @@ fun Context.getMixinErrorStringByCode(
         }
         ErrorHandler.MAX_WALLET_REACHED -> {
             getString(R.string.error_too_many_wallets)
+        }
+        ErrorHandler.PERPS_ORDER_VALUE_TOO_SMALL -> {
+            getString(R.string.error_perps_order_value_too_small)
+        }
+        ErrorHandler.PERPS_MARKET_ALREADY_HAS_ACTIVE_POSITION -> {
+            getString(R.string.error_perps_market_already_has_active_position)
         }
         ErrorHandler.UNSUPPORTED_WATCH_ADDRESS -> {
             getString(R.string.error_watch_address_not_supported)

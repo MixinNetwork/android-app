@@ -63,6 +63,7 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         const val TYPE_FROM_SEND = 0
         const val TYPE_FROM_RECEIVE = 1
         const val TYPE_FROM_TRANSFER = 2
+        const val TYPE_FROM_PERP = 3
 
         const val ASSET_PREFERENCE = "TRANSFER_ASSET"
 
@@ -86,6 +87,7 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         when (fromType) {
             TYPE_FROM_SEND, TYPE_FROM_TRANSFER -> Constants.Account.PREF_WALLET_SEND
             TYPE_FROM_RECEIVE -> Constants.Account.PREF_WALLET_RECEIVE
+            TYPE_FROM_PERP -> Constants.Account.PREF_WALLET_SEND
             else -> Constants.Account.PREF_WALLET_SEND
         }
     }
@@ -97,9 +99,20 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private var currentQuery: String = ""
     private var defaultAssets = emptyList<TokenItem>()
     private var currentChain: String? = null
+    private val acceptedPerpAssetIds: Set<String> by lazy {
+        requireContext().defaultSharedPreferences
+            .getStringSet(Constants.Account.PREF_PERPS_ACCEPTED_ASSET_IDS, emptySet())
+            .orEmpty()
+            .filter { it.isNotBlank() }
+            .toSet()
+    }
 
     private fun initRadio() {
         binding.apply {
+            if (fromType == TYPE_FROM_PERP) {
+                radio.isVisible = false
+                return
+            }
             radio.isVisible = true
             radioAll.isChecked = true
             radio.scrollToCenterCheckedRadio(radioGroup)
@@ -227,10 +240,16 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
         if (fromType == TYPE_FROM_SEND || fromType == TYPE_FROM_TRANSFER) {
             bottomViewModel.assetItemsWithBalance()
+        } else if (fromType == TYPE_FROM_PERP) {
+            bottomViewModel.usdAssetItemsWithBalance()
         } else {
             bottomViewModel.assetItemsNotHidden()
         }.observe(this) {
-            defaultAssets = it
+            defaultAssets = if (fromType == TYPE_FROM_PERP) {
+                it.filter { token -> token.assetId in acceptedPerpAssetIds }
+            } else {
+                it
+            }
             if (fromType == TYPE_FROM_SEND) {
                 adapter.submitList(defaultAssets)
                 if (defaultAssets.isEmpty()) {
@@ -252,13 +271,16 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     override fun onStart() {
         super.onStart()
+        if (fromType == TYPE_FROM_PERP) {
+            return
+        }
         binding.apply {
             root.findViewById<ComposeView>(composeId).let {
                 if (it == null) {
                     val composeView = ComposeView(requireContext()).apply {
                         id = View.generateViewId()
                         setContent {
-                            RecentTokens (false, key) {
+                            RecentTokens(false, key) {
                                 defaultSharedPreferences.addToList(key, it.assetId)
                                 if (asyncOnAsset != null) {
                                     asyncClick(it)
@@ -308,15 +330,23 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 binding.rvVa.displayedChild = POS_RV
                 binding.pb.isVisible = true
 
-                val localAssets = bottomViewModel.fuzzySearchAssets(query)?.filter {
-                    if (TYPE_FROM_SEND == fromType) {
-                        it.balance.toBigDecimalOrNull().run { this != null && this > BigDecimal.ZERO }
-                    } else {
-                        true
+                val localAssets = if (TYPE_FROM_PERP == fromType) {
+                    defaultAssets.filter { token ->
+                        token.symbol.containsIgnoreCase(query) || token.name.containsIgnoreCase(query)
+                    }
+                } else {
+                    bottomViewModel.fuzzySearchAssets(query)?.filter {
+                        if (TYPE_FROM_SEND == fromType) {
+                            it.balance.toBigDecimalOrNull().run { this != null && this > BigDecimal.ZERO }
+                        } else {
+                            true
+                        }
                     }
                 }
-                adapter.submitList(localAssets)
-                val remoteAssets = if (TYPE_FROM_SEND == fromType) emptyList() else
+
+                val remoteAssets = if (TYPE_FROM_SEND == fromType || TYPE_FROM_PERP == fromType) {
+                    emptyList()
+                } else {
                     bottomViewModel.queryAsset(walletId = null, query = query).map {
                         val local = bottomViewModel.findAssetItemById(it.assetId)
                         if (local != null) {
@@ -325,6 +355,8 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             it
                         }
                     }
+                }
+
                 val result = sortQueryAsset(query, localAssets, remoteAssets)
 
                 adapter.submitList(result) {
@@ -335,7 +367,7 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 if (localAssets.isNullOrEmpty() && remoteAssets.isEmpty()) {
                     binding.rvVa.displayedChild = POS_EMPTY_RECEIVE
                 }
-                
+
                 if (!isAdded) return@launch
                 loadData()
             }

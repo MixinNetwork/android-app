@@ -9,7 +9,6 @@ import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
-import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
@@ -143,8 +142,6 @@ import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
-import one.mixin.android.ui.home.ExploreFragment.Companion.PREF_BOT_CLICKED_IDS
-import one.mixin.android.ui.home.ExploreFragment.Companion.SHOW_DOT_BOT_IDS
 import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.circle.ConversationCircleEditFragment
 import one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment
@@ -346,27 +343,9 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         RxBus.listen(BadgeEvent::class.java)
             .autoDispose(destroyScope)
             .subscribe { e ->
-                lifecycleScope.launch{
+                lifecycleScope.launch {
                     when (e.badge) {
-                        Account.PREF_HAS_USED_SWAP, Account.PREF_HAS_USED_BUY, Account.PREF_HAS_USED_WALLET_LIST -> {
-                            binding.bottomNav.getOrCreateBadge(R.id.nav_wallet).apply {
-                                isVisible = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_WALLET_LIST, true) || defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_BUY, true) ||
-                                        defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_SWAP, true)
-                                backgroundColor = Color.RED
-                            }
-                        }
-
-                        Account.PREF_HAS_USED_MARKET, PREF_BOT_CLICKED_IDS  -> {
-                            binding.bottomNav.getOrCreateBadge(R.id.nav_more).apply {
-                                isVisible = try {
-                                    defaultSharedPreferences.getString(PREF_BOT_CLICKED_IDS, "")
-                                        ?.split(",")?.toSet() ?: emptySet()
-                                } catch (_: Exception) {
-                                    emptySet()
-                                }.size != SHOW_DOT_BOT_IDS.size || defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_MARKET, true)
-                                backgroundColor = Color.RED
-                            }
-                        }
+                        Account.PREF_NAV_MORE_BADGE_DISMISSED -> updateNavMoreBadge()
                     }
                 }
             }
@@ -1016,24 +995,19 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         }
 
         lifecycleScope.launch {
-            val swap = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_WALLET_LIST, true) || defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_BUY, true) ||
-                    defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_SWAP, true)
-
             binding.bottomNav.getOrCreateBadge(R.id.nav_wallet).apply {
-                isVisible = swap
+                isVisible = false
                 backgroundColor = this@MainActivity.colorFromAttribute(R.attr.badge_red)
             }
+            updateNavMoreBadge()
+        }
+    }
 
-            val market = try {
-                defaultSharedPreferences.getString(PREF_BOT_CLICKED_IDS, "")
-                    ?.split(",")?.toSet() ?: emptySet()
-            } catch (_: Exception) {
-                emptySet()
-            }.size < SHOW_DOT_BOT_IDS.size || defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_MARKET, true)
-            binding.bottomNav.getOrCreateBadge(R.id.nav_more).apply {
-                isVisible = market
-                backgroundColor = this@MainActivity.colorFromAttribute(R.attr.badge_red)
-            }
+    private fun updateNavMoreBadge() {
+        val dismissed = defaultSharedPreferences.getBoolean(Account.PREF_NAV_MORE_BADGE_DISMISSED, false)
+        binding.bottomNav.getOrCreateBadge(R.id.nav_more).apply {
+            isVisible = !dismissed
+            backgroundColor = this@MainActivity.colorFromAttribute(R.attr.badge_red)
         }
     }
 
@@ -1109,6 +1083,10 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             }
 
             R.id.nav_more -> {
+                if (!defaultSharedPreferences.getBoolean(Account.PREF_NAV_MORE_BADGE_DISMISSED, false)) {
+                    defaultSharedPreferences.putBoolean(Account.PREF_NAV_MORE_BADGE_DISMISSED, true)
+                    RxBus.publish(BadgeEvent(Account.PREF_NAV_MORE_BADGE_DISMISSED))
+                }
                 switchToDestination(NavigationController.Explore)
                 lastBottomNavItemId = itemId
                 findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.hideCircles()

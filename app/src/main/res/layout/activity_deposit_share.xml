@@ -231,8 +231,8 @@
                             android:layout_gravity="center" />
 
                         <ImageView
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
                             android:layout_gravity="center"
                             android:src="@drawable/ic_mixin_logo" />
                     </FrameLayout>

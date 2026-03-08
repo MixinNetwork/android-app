@@ -25,7 +25,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
-import one.mixin.android.Constants.Scheme.HTTPS_MARKET
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityDepositShareBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
@@ -60,6 +59,7 @@ class DepositShareActivity : BaseActivity() {
         private const val ARGS_AMOUNT = "amount"
         private const val ARGS_AMOUNT_URL = "amount_url"
         private const val ARGS_USER = "user"
+        private const val SHARE_QR_URL = "https://mixin.one/mm"
 
         fun show(context: Context, token: TokenItem?, address: String? = null, amountUrl: String? = null, amount: String? = null, user: User? = null) {
             refreshScreenshot(context, 0x33000000)
@@ -148,6 +148,7 @@ class DepositShareActivity : BaseActivity() {
         window.statusBarColor = android.graphics.Color.TRANSPARENT
 
         binding.iconFl.round(6.dp)
+        binding.qr.post { binding.qr.round(4.dp) }
         binding.content.updateLayoutParams<MarginLayoutParams> {
             topMargin = 20.dp
         }
@@ -172,7 +173,7 @@ class DepositShareActivity : BaseActivity() {
             }
         }
         Session.getAccount()?.identityNumber.let {
-            val qrcodeContent = "$HTTPS_MARKET/${tokenAssetId}?ref=$it"
+            val qrcodeContent = SHARE_QR_URL
             val qrCode = qrcodeContent.generateQRCode(200.dp, 8.dp).first
             binding.qr.setImageBitmap(qrCode)
         }
