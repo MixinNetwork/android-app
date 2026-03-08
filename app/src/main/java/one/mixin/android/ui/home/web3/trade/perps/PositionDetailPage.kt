@@ -158,7 +158,7 @@ fun PositionDetailPage(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
                         .background(sideColor.copy(alpha = 0.2f))
-                        .padding(horizontal = 8.dp, vertical = 2.dp)
+                        .padding(horizontal = 8.dp, vertical = 2.5.dp)
                         .align(Alignment.CenterHorizontally)
                 ) {
                     Text(
@@ -466,7 +466,7 @@ fun PositionDetailPage(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
                         .background(sideColor.copy(alpha = 0.2f))
-                        .padding(horizontal = 8.dp, vertical = 2.dp)
+                        .padding(horizontal = 8.dp, vertical = 2.5.dp)
                         .align(Alignment.CenterHorizontally)
                 ) {
                     Text(

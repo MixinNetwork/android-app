@@ -35,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -542,6 +543,7 @@ private fun MarketDetailCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(180.dp)
+                .clipToBounds()
         ) {
             CandleChart(
                 symbol = marketSymbol,
