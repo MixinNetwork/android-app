@@ -650,12 +650,12 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     isReverse = !isReverse
                     v =
                         if (isReverse) {
-                            BigDecimal(v).multiply(tokenPrice).setScale(2, RoundingMode.DOWN).stripTrailingZeros().toString()
+                            inputAmountOrZero().multiply(tokenPrice).setScale(2, RoundingMode.DOWN).stripTrailingZeros().toString()
                         } else {
                             if (tokenPrice <= BigDecimal.ZERO) {
                                 tokenBalance
                             } else {
-                                BigDecimal(v).divide(tokenPrice, 8, RoundingMode.DOWN).stripTrailingZeros().toString()
+                                inputAmountOrZero().divide(tokenPrice, 8, RoundingMode.DOWN).stripTrailingZeros().toString()
                             }
                         }
                     updateUI()
@@ -782,8 +782,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         }
 
     private fun applyPrimaryPastedValue(rawText: String) {
-        val normalizedText: String = rawText.trim().replace(",", "")
-        val pastedValue: String = normalizedText.filter { it.isDigit() || it == '.' }
+        val pastedValue: String = inputAmountOrZero(rawText).stripTrailingZeros().toPlainString()
         if (pastedValue.isBlank()) return
         v = pastedValue
         updateUI()
@@ -854,6 +853,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 } else {
                     v
                 }
+            val valueDecimal = inputAmountOrZero(value)
             if (isReverse) {
                 if (value == "0") {
                     primaryTv.text = "0 $currencyName"
@@ -864,11 +864,11 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                         if (tokenPrice <= BigDecimal.ZERO) {
                             "≈ 0 $tokenSymbol"
                         } else {
-                            "≈ ${(value.toBigDecimal().divide(tokenPrice, 8, RoundingMode.UP))} $tokenSymbol"
+                            "≈ ${(valueDecimal.divide(tokenPrice, 8, RoundingMode.UP))} $tokenSymbol"
                         }
                 }
             } else {
-                val currentValue = tokenPrice.multiply(value.toBigDecimal())
+                val currentValue = tokenPrice.multiply(valueDecimal)
                 if (value == "0") {
                     primaryTv.text = "0 $tokenSymbol"
                     minorTv.text = "0 $currencyName"
@@ -893,22 +893,23 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     } else {
                         value
                     }
+                val enteredAmount = inputAmountOrZero(v)
                 scheduleRefreshBtcFeeIfNeeded(v)
-                if (isReverse && (v == "0" || BigDecimal(v) == BigDecimal.ZERO)) {
+                if (isReverse && (v == "0" || enteredAmount == BigDecimal.ZERO)) {
                     insufficientBalance.isVisible = false
                     insufficientFeeBalance.isVisible = false
                     insufficientFunds.isVisible = false
                     continueVa.isEnabled = false
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                     updateAddText()
-                } else if (BigDecimal(v) <= BigDecimal.ZERO){
+                } else if (enteredAmount <= BigDecimal.ZERO) {
                     insufficientBalance.isVisible = false
                     insufficientFeeBalance.isVisible = false
                     insufficientFunds.isVisible = false
                     continueVa.isEnabled = false
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                     updateAddText()
-                } else if (BigDecimal(v) > BigDecimal(tokenBalance) && v != "0") {
+                } else if (enteredAmount > BigDecimal(tokenBalance) && v != "0") {
                     insufficientBalance.isVisible = true
                     insufficientFeeBalance.isVisible = false
                     insufficientFunds.isVisible = false
@@ -916,7 +917,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     continueVa.isEnabled = false
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                 } else if (transferType != TransferType.WEB3 && (currentFee != null && feeTokensExtra == null ||
-                    (currentFee?.token?.assetId == token?.assetId && BigDecimal(v).add(currentFee?.fee?.toBigDecimalOrNull() ?: BigDecimal.ZERO) > (feeTokensExtra?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO)) ||
+                    (currentFee?.token?.assetId == token?.assetId && enteredAmount.add(currentFee?.fee?.toBigDecimalOrNull() ?: BigDecimal.ZERO) > (feeTokensExtra?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO)) ||
                     (currentFee?.token?.assetId != token?.assetId && (currentFee?.fee?.toBigDecimalOrNull() ?: BigDecimal.ZERO) > (feeTokensExtra?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO)))
                 ) {
                     insufficientFeeBalance.isVisible = true
@@ -927,7 +928,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                 } else if (
                     web3Token != null && (chainToken == null || gas == null || (chainToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO) < gas ||
-                            (web3Token?.assetId == chainToken?.assetId && (gas ?: BigDecimal.ZERO).add(BigDecimal(v)) > (web3Token?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO)))
+                            (web3Token?.assetId == chainToken?.assetId && (gas ?: BigDecimal.ZERO).add(enteredAmount) > (web3Token?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO)))
                 ) {
                     insufficientFeeBalance.isVisible = gas != null
                     addTv.text = "${getString(R.string.Add)} ${chainToken?.symbol ?: ""}"
@@ -935,7 +936,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     insufficientFunds.isVisible = false
                     continueVa.isEnabled = false
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
-                } else if (!isSolanaToAccountExists && BigDecimal(v) < BigDecimal("0.00203928")) { // rent
+                } else if (!isSolanaToAccountExists && enteredAmount < BigDecimal("0.00203928")) { // rent
                     insufficientFeeBalance.isVisible = false
                     insufficientBalance.isVisible = false
                     insufficientFunds.isVisible = true
@@ -1145,6 +1146,9 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         }
     }
 
+    private fun inputAmountOrZero(input: String = v): BigDecimal =
+        input.toBigDecimalOrNull() ?: BigDecimal.ZERO
+
     private fun updatePrimarySize() {
         if (viewDestroyed()) return
         binding.apply {
@@ -1184,7 +1188,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         } else {
             baseValue.toPlainString()
         }
-        v = BigDecimal(v).multiply(percentageOfBalance).max(BigDecimal.ZERO).setScale(8, RoundingMode.DOWN).toPlainString()
+        v = inputAmountOrZero().multiply(percentageOfBalance).max(BigDecimal.ZERO).setScale(8, RoundingMode.DOWN).toPlainString()
         updateUI()
     }
 
@@ -1516,4 +1520,3 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         }
     }
 }
-
