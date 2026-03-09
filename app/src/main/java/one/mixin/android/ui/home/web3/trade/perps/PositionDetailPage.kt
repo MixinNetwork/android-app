@@ -398,6 +398,7 @@ fun PositionDetailPage(
     val orderValue = absQuantity * closePrice
     val fiatRate = BigDecimal(Fiats.getRate())
     val fiatSymbol = Fiats.getSymbol()
+    val currencyCode = Fiats.getAccountCurrencyAppearance()
 
     fun formatFiat(value: BigDecimal): String {
         return "$fiatSymbol${value.multiply(fiatRate).priceFormat()}"
@@ -408,6 +409,15 @@ fun PositionDetailPage(
             value > BigDecimal.ZERO -> "+${formatFiat(value)}"
             value < BigDecimal.ZERO -> "-${formatFiat(value.abs())}"
             else -> formatFiat(BigDecimal.ZERO)
+        }
+    }
+    
+    fun formatPnlAmount(value: BigDecimal): String {
+        val convertedValue = value.multiply(fiatRate)
+        return when {
+            value > BigDecimal.ZERO -> "+${convertedValue.priceFormat()}"
+            value < BigDecimal.ZERO -> convertedValue.priceFormat()
+            else -> convertedValue.priceFormat()
         }
     }
 
@@ -452,13 +462,25 @@ fun PositionDetailPage(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                Text(
-                    text = formatSignedFiat(pnl),
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.W500,
-                    color = pnlColor,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
+                Row(
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    verticalAlignment = Alignment.Bottom
+                ) {
+                    Text(
+                        text = formatPnlAmount(pnl),
+                        fontSize = 34.sp,
+                        fontWeight = FontWeight.W500,
+                        color = pnlColor
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = currencyCode,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Normal,
+                        color = MixinAppTheme.colors.textPrimary,
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(10.dp))
 
