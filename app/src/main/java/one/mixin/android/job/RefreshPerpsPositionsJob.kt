@@ -21,16 +21,15 @@ class RefreshPerpsPositionsJob(
     override fun onRun(): Unit = runBlocking {
         val perpsDb = PerpsDatabase.getDatabase(applicationContext)
         val positionDao = perpsDb.perpsPositionDao()
-        val marketDao = perpsDb.perpsMarketDao()
 
         if (walletId != null) {
-            refreshPositions(walletId, positionDao, marketDao)
+            refreshPositions(walletId, positionDao)
         } else {
             val wallets = web3WalletDao.getAllWallets().filter { !it.isWatch() }.map { it.id }.toMutableSet()
             Session.getAccountId()?.let { wallets.add(it) }
 
             wallets.forEach { wId ->
-                refreshPositions(wId, positionDao, marketDao)
+                refreshPositions(wId, positionDao)
             }
         }
     }
@@ -38,7 +37,6 @@ class RefreshPerpsPositionsJob(
     private suspend fun refreshPositions(
         walletId: String,
         positionDao: PerpsPositionDao,
-        marketDao: PerpsMarketDao
     ) {
         try {
             val response = routeService.getPerpsPositions(walletId = walletId)
@@ -47,10 +45,17 @@ class RefreshPerpsPositionsJob(
                 val positions = response.data!!.map { it.copy(walletId = walletId) }
                 Timber.d("RefreshPerpsPositionsJob: Fetched ${positions.size} positions for wallet $walletId")
 
-                if (positions.isNotEmpty()) {
-                    positionDao.insertAll(positions)
-                } else {
-                    Timber.d("RefreshPerpsPositionsJob: Keep local positions when remote list is empty for wallet $walletId")
+                val perpsDb = PerpsDatabase.getDatabase(applicationContext)
+                perpsDb.runInTransaction {
+                    runBlocking {
+                        if (positions.isEmpty()) {
+                            positionDao.deleteOpenByWallet(walletId)
+                        } else {
+                            val positionIds = positions.map { it.positionId }
+                            positionDao.deleteOpenByWalletAndNotIn(walletId, positionIds)
+                            positionDao.insertAll(positions)
+                        }
+                    }
                 }
             } else {
                 Timber.e("RefreshPerpsPositionsJob: Failed to fetch positions for wallet $walletId: ${response.errorDescription}")
