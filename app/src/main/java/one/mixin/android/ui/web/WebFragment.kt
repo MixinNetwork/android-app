@@ -103,6 +103,7 @@ import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getPublicPicturePath
+import one.mixin.android.extension.getSafeAreaInsetsBottom
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isDarkColor
 import one.mixin.android.extension.isExternalTransferUrl
@@ -1515,10 +1516,11 @@ class WebFragment : BaseFragment() {
             }
         list.createMenuLayout(requireContext()).let { layout ->
             viewBinding.root.addView(layout)
+            val safeBottomHeight = layout.getSafeAreaInsetsBottom()
             layout.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                bottomMargin = requireContext().dpToPx(30f)
+                bottomMargin = safeBottomHeight
+
             }
-        }
         bottomSheet.show()
     }
 
