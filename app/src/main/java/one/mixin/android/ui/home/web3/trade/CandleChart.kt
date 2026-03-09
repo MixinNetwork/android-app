@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
@@ -47,6 +48,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.google.protobuf.Mixin
 import one.mixin.android.Constants
 import one.mixin.android.api.response.perps.CandleItem
 import one.mixin.android.api.response.perps.CandleView
@@ -241,6 +243,9 @@ private fun ScrollableCandleChart(candles: List<CandleView>, context: android.co
                     showCurrentPriceLine = showCurrentPriceLine,
                     currentPriceForLine = latestPrice,
                     currentPriceLineColor = MixinAppTheme.colors.textPrimary,
+                    crosshairLineColor = MixinAppTheme.colors.textAssist,
+                    crosshairTagBackgroundColor = MixinAppTheme.colors.background,
+                    crosshairTextColor = MixinAppTheme.colors.textPrimary,
                 )
             }
 
@@ -249,7 +254,7 @@ private fun ScrollableCandleChart(candles: List<CandleView>, context: android.co
                     .align(Alignment.CenterEnd)
                     .fillMaxHeight()
                     .width(axisPanelWidth)
-                    .padding(start = 2.dp, top = 8.dp, bottom = 8.dp, end = 2.dp)
+                    .padding(start = 0.dp, top = 8.dp, bottom = 8.dp, end = 2.dp)
             ) {
                 val containerHeight = maxHeight
                 val priceRange = maxPrice - minPrice
@@ -260,54 +265,102 @@ private fun ScrollableCandleChart(candles: List<CandleView>, context: android.co
                     null
                 }
 
-                Column(
-                    modifier = Modifier.fillMaxHeight(),
-                    verticalArrangement = Arrangement.SpaceBetween,
-                    horizontalAlignment = Alignment.End
-                ) {
-                    Text(
-                        text = maxPriceText,
-                        fontSize = 10.sp,
-                        color = MixinAppTheme.colors.textPrimary,
-                        textAlign = TextAlign.End
-                    )
-                    Text(
-                        text = midPriceText,
-                        fontSize = 10.sp,
-                        color = MixinAppTheme.colors.textPrimary,
-                        textAlign = TextAlign.End
-                    )
-                    Text(
-                        text = minPriceText,
-                        fontSize = 10.sp,
-                        color = MixinAppTheme.colors.textPrimary,
-                        textAlign = TextAlign.End
-                    )
-                }
-
-                if (showCurrentPriceTag && currentPriceRatio != null) {
-                    val offsetY = containerHeight * (1f - currentPriceRatio)
-                    Box(
+                if (!isTouching) {
+                    Column(
                         modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .offset(y = offsetY)
+                            .fillMaxHeight()
+                            .align(Alignment.CenterEnd),
+                        verticalArrangement = Arrangement.SpaceBetween,
+                        horizontalAlignment = Alignment.End
                     ) {
                         Text(
-                            text = formatPrice(currentPrice),
+                            text = maxPriceText,
                             fontSize = 10.sp,
                             color = MixinAppTheme.colors.textPrimary,
+                            textAlign = TextAlign.End,
                             modifier = Modifier
-                                .background(
-                                    color = MixinAppTheme.colors.background,
-                                    shape = RoundedCornerShape(6.dp)
-                                )
-                                .border(
-                                    width = 1.dp,
-                                    color = MixinAppTheme.colors.borderColor,
-                                    shape = RoundedCornerShape(6.dp)
-                                )
                                 .padding(horizontal = 2.dp, vertical = 1.dp)
                         )
+                        Text(
+                            text = midPriceText,
+                            fontSize = 10.sp,
+                            color = MixinAppTheme.colors.textPrimary,
+                            textAlign = TextAlign.End,
+                            modifier = Modifier
+                                .padding(horizontal = 2.dp, vertical = 1.dp)
+                        )
+                        Text(
+                            text = minPriceText,
+                            fontSize = 10.sp,
+                            color = MixinAppTheme.colors.textPrimary,
+                            textAlign = TextAlign.End,
+                            modifier = Modifier
+                                .padding(horizontal = 2.dp, vertical = 1.dp)
+                        )
+                    }
+
+                    if (showCurrentPriceTag && currentPriceRatio != null) {
+                        val offsetY = containerHeight * (1f - currentPriceRatio)
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .offset(y = offsetY),
+                            contentAlignment = Alignment.CenterEnd
+                        ) {
+                            Text(
+                                text = formatPrice(currentPrice),
+                                fontSize = 10.sp,
+                                color = MixinAppTheme.colors.textPrimary,
+                                textAlign = TextAlign.End,
+                                modifier = Modifier
+                                    .background(
+                                        color = MixinAppTheme.colors.background,
+                                        shape = RoundedCornerShape(6.dp)
+                                    )
+                                    .border(
+                                        width = 1.dp,
+                                        color = MixinAppTheme.colors.borderColor,
+                                        shape = RoundedCornerShape(6.dp)
+                                    )
+                                    .padding(horizontal = 2.dp, vertical = 1.dp)
+                            )
+                        }
+                    }
+                } else {
+                    selectedItem?.close?.toBigDecimalOrNull()?.let { selectedPrice ->
+                        val selectedPriceRatio = if (priceRange > BigDecimal.ZERO) {
+                            ((selectedPrice - minPrice).toFloat() / priceRange.toFloat()).coerceIn(0f, 1f)
+                        } else {
+                            null
+                        }
+                        
+                        selectedPriceRatio?.let { ratio ->
+                            val offsetY = containerHeight * (1f - ratio)
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .offset(y = offsetY),
+                                contentAlignment = Alignment.CenterEnd
+                            ) {
+                                Text(
+                                    text = formatPrice(selectedPrice),
+                                    fontSize = 10.sp,
+                                    color = MixinAppTheme.colors.textPrimary,
+                                    textAlign = TextAlign.End,
+                                    modifier = Modifier
+                                        .background(
+                                            color = MixinAppTheme.colors.background,
+                                            shape = RoundedCornerShape(6.dp)
+                                        )
+                                        .border(
+                                            width = 1.dp,
+                                            color = MixinAppTheme.colors.borderColor,
+                                            shape = RoundedCornerShape(6.dp)
+                                        )
+                                        .padding(horizontal = 2.dp, vertical = 1.dp)
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -330,6 +383,9 @@ private fun PerpsCandleChartCanvas(
     showCurrentPriceLine: Boolean,
     currentPriceForLine: BigDecimal?,
     currentPriceLineColor: Color,
+    crosshairLineColor: Color,
+    crosshairTagBackgroundColor: Color,
+    crosshairTextColor: Color,
 ) {
     val quoteColorPref = context.defaultSharedPreferences
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
@@ -435,6 +491,9 @@ private fun PerpsCandleChartCanvas(
                         textMeasurer = textMeasurer,
                         viewportLeft = viewportLeft,
                         viewportRight = viewportRight,
+                        lineColor = crosshairLineColor,
+                        tagBackgroundColor = crosshairTagBackgroundColor,
+                        textColor = crosshairTextColor,
                     )
                 }
             }
@@ -477,54 +536,27 @@ private fun DrawScope.drawTouchCrosshair(
     textMeasurer: androidx.compose.ui.text.TextMeasurer,
     viewportLeft: Float,
     viewportRight: Float,
+    lineColor: Color,
+    tagBackgroundColor: Color,
+    textColor: Color,
 ) {
-    val lineColor = Color(0xFF9E9E9E)
-
     drawLine(
         color = lineColor,
         start = Offset(paddingLeft, y),
         end = Offset(size.width, y),
-        strokeWidth = 1f,
-        pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 5f))
+        strokeWidth = 1f
     )
 
     drawLine(
         color = lineColor,
         start = Offset(x, paddingTop),
         end = Offset(x, size.height - paddingBottom),
-        strokeWidth = 1f,
-        pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 5f))
-    )
-
-    val priceText = formatPrice(price)
-    val priceTextLayout = textMeasurer.measure(
-        text = priceText,
-        style = TextStyle(fontSize = 11.sp, color = Color.White)
-    )
-    val priceTagHorizontalPadding = 10f
-    val priceTagVerticalPadding = 5f
-    val priceTagWidth = priceTextLayout.size.width + priceTagHorizontalPadding * 2
-    val priceTagHeight = priceTextLayout.size.height + priceTagVerticalPadding * 2
-    val priceTagMinX = viewportLeft + 4f
-    val priceTagMaxX = max(priceTagMinX, viewportRight - priceTagWidth - 4f)
-    val priceTagX = (viewportRight - priceTagWidth - 4f).coerceIn(priceTagMinX, priceTagMaxX)
-    val priceTagY = (y - priceTagHeight / 2).coerceIn(paddingTop, size.height - paddingBottom - priceTagHeight)
-
-    drawRoundRect(
-        color = Color(0xFF1F2533),
-        topLeft = Offset(priceTagX, priceTagY),
-        size = Size(priceTagWidth, priceTagHeight),
-        cornerRadius = CornerRadius(12f, 12f)
-    )
-
-    drawText(
-        textLayoutResult = priceTextLayout,
-        topLeft = Offset(priceTagX + priceTagHorizontalPadding, priceTagY + priceTagVerticalPadding)
+        strokeWidth = 1f
     )
 
     val timeTextLayout = textMeasurer.measure(
         text = timeText,
-        style = TextStyle(fontSize = 11.sp, color = Color.White)
+        style = TextStyle(fontSize = 11.sp, color = textColor)
     )
     val timeTagHorizontalPadding = 10f
     val timeTagVerticalPadding = 5f
@@ -536,7 +568,7 @@ private fun DrawScope.drawTouchCrosshair(
     val timeTagY = paddingTop + 2f
 
     drawRoundRect(
-        color = Color(0xFF1F2533),
+        color = tagBackgroundColor,
         topLeft = Offset(timeTagX, timeTagY),
         size = Size(timeTagWidth, timeTagHeight),
         cornerRadius = CornerRadius(12f, 12f)
