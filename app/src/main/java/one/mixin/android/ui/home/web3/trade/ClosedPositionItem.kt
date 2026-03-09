@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home.web3.trade
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -74,6 +75,14 @@ fun ClosedPositionItem(
         position.quantity
     }
 
+    val isLong = position.side.equals("long", true)
+    val sideColor = if (isLong) {
+        if (quoteColorPref) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+    } else {
+        if (quoteColorPref) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+    }
+    val leverageBackgroundColor = sideColor.copy(alpha = 0.1f)
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -115,6 +124,17 @@ fun ClosedPositionItem(
                         text = displaySymbol,
                         fontSize = 14.sp,
                         color = MixinAppTheme.colors.textPrimary,
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "${position.leverage}x",
+                        fontSize = 12.sp,
+                        color = sideColor,
+                        lineHeight = 14.sp,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(leverageBackgroundColor)
+                            .padding(horizontal = 3.dp, vertical = 2.dp)
                     )
                 }
                 Spacer(modifier = Modifier.height(4.dp))

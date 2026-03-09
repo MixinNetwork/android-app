@@ -69,10 +69,26 @@ class ClosedPositionAdapter(
                 } else {
                     context.getString(R.string.Short)
                 }
+                val sideColor = context.getColor(
+                    if (isLong) {
+                        if (isQuoteColorReversed) R.color.wallet_red else R.color.wallet_green
+                    } else {
+                        if (isQuoteColorReversed) R.color.wallet_green else R.color.wallet_red
+                    }
+                )
                 val displaySymbol = position.tokenSymbol ?: context.getString(R.string.Unknown)
                 titleTv.text = context.getString(R.string.Perpetual_Side_Symbol_Title, sideText, displaySymbol)
 
-                leverageTv.isVisible = false
+                leverageTv.isVisible = true
+                leverageTv.text = "${position.leverage}x"
+                leverageTv.setTextColor(sideColor)
+                leverageTv.setBackgroundResource(
+                    if (isLong) {
+                        if (isQuoteColorReversed) R.drawable.bg_perps_leverage_short else R.drawable.bg_perps_leverage_long
+                    } else {
+                        if (isQuoteColorReversed) R.drawable.bg_perps_leverage_long else R.drawable.bg_perps_leverage_short
+                    }
+                )
 
                 val quantityStr = position.quantity
                 quantityTv.text = "$quantityStr ${position.tokenSymbol ?: ""}"
