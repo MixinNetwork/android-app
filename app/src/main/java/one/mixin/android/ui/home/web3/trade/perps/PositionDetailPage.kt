@@ -159,7 +159,7 @@ fun PositionDetailPage(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
-                        .background(sideColor.copy(alpha = 0.2f))
+                        .background(sideColor.copy(alpha = 0.1f))
                         .padding(horizontal = 8.dp, vertical = 2.5.dp)
                         .align(Alignment.CenterHorizontally)
                 ) {
@@ -490,7 +490,7 @@ fun PositionDetailPage(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
-                        .background(sideColor.copy(alpha = 0.2f))
+                        .background(sideColor.copy(alpha = 0.1f))
                         .padding(horizontal = 8.dp, vertical = 2.5.dp)
                         .align(Alignment.CenterHorizontally)
                 ) {

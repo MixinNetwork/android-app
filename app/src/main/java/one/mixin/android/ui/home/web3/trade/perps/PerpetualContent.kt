@@ -62,7 +62,7 @@ import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 import kotlin.math.abs
 
-private const val POSITION_REFRESH_INTERVAL_MS = 10_000L
+private const val POSITION_REFRESH_INTERVAL_MS = 3_000L
 private const val CLOSED_POSITION_PREVIEW_LIMIT = 10
 
 @Composable

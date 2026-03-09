@@ -292,9 +292,10 @@ private fun ShortContent() {
 @Composable
 private fun LeverageContent() {
     var leverage by remember { mutableIntStateOf(10) }
-    val maxLossPercent = if (leverage > 0) 100f / leverage else 100f
+    val fixedScenarioPercent = 10f
     val basePnlAmount = leverage * 100
     val basePnlPercent = leverage * 10
+    val cappedLossAmount = basePnlAmount.coerceAtMost(1000)
     ExampleWithScenariosCard(
         title = stringResource(R.string.Perpetual_Example),
         rows = listOf(
@@ -320,7 +321,7 @@ private fun LeverageContent() {
             ScenarioData(
                 scenario = stringResource(R.string.Perpetual_Price_Up),
                 change = stringResource(R.string.Perpetual_Price_Up_Amplitude),
-                initialPercent = maxLossPercent,
+                initialPercent = fixedScenarioPercent,
                 basePnlAmount = basePnlAmount,
                 basePnlPercent = basePnlPercent,
                 isProfit = true,
@@ -329,11 +330,11 @@ private fun LeverageContent() {
             ScenarioData(
                 scenario = stringResource(R.string.Perpetual_Price_Down),
                 change = stringResource(R.string.Perpetual_Price_Down_Amplitude),
-                initialPercent = maxLossPercent,
-                basePnlAmount = basePnlAmount,
-                basePnlPercent = basePnlPercent,
+                initialPercent = fixedScenarioPercent,
+                basePnlAmount = cappedLossAmount,
+                basePnlPercent = basePnlPercent.coerceAtMost(100),
                 isProfit = false,
-                maxPercent = maxLossPercent,
+                maxPercent = fixedScenarioPercent,
             )
         ),
         leverageValue = leverage,

@@ -13,16 +13,19 @@ import androidx.paging.PagedList
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.databinding.FragmentAllClosedPositionsBinding
+import one.mixin.android.db.perps.PerpsMarketDao
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.openUrl
 import one.mixin.android.session.Session
@@ -31,6 +34,7 @@ import one.mixin.android.ui.home.web3.trade.ClosedPositionAdapter
 import one.mixin.android.ui.home.web3.trade.TotalPositionValueAdapter
 import one.mixin.android.util.viewBinding
 import java.math.BigDecimal
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions) {
@@ -54,6 +58,9 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
         fun newClosedInstance() = newInstance(initialOpenTab = false)
     }
 
+    @Inject
+    lateinit var perpsMarketDao: PerpsMarketDao
+
     private val binding by viewBinding(FragmentAllClosedPositionsBinding::bind)
     private val viewModel by viewModels<PerpetualViewModel>()
     private val totalValueAdapter by lazy { TotalPositionValueAdapter() }
@@ -63,15 +70,19 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
 
     private val openPositionAdapter by lazy {
         OpenPositionAdapter(isQuoteColorReversed) { position ->
-            activity?.supportFragmentManager?.let { fm ->
-                fm.beginTransaction()
-                    .add(
-                        android.R.id.content,
-                        PositionDetailFragment.Companion.newInstance(position),
-                        PositionDetailFragment.Companion.TAG
+            lifecycleScope.launch {
+                val market = withContext(Dispatchers.IO) {
+                    perpsMarketDao.getMarket(position.productId)
+                }
+                activity?.let { ctx ->
+                    PerpsActivity.showDetail(
+                        context = ctx,
+                        marketId = position.productId,
+                        marketSymbol = market?.symbol ?: "",
+                        marketDisplaySymbol = market?.displaySymbol ?: "",
+                        marketTokenSymbol = market?.tokenSymbol ?: ""
                     )
-                    .addToBackStack(null)
-                    .commit()
+                }
             }
         }
     }

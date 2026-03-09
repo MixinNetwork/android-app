@@ -46,7 +46,7 @@ class PerpsActivity : BaseActivity() {
         private const val EXTRA_MARKET_TOKEN_SYMBOL = "extra_market_token_symbol"
         private const val EXTRA_MODE = "extra_mode"
         private const val EXTRA_IS_LONG = "extra_is_long"
-        private const val POSITION_REFRESH_INTERVAL_MS = 10_000L
+        private const val POSITION_REFRESH_INTERVAL_MS = 3_000L
 
         const val MODE_DETAIL = "detail"
         const val MODE_OPEN_POSITION = "open_position"

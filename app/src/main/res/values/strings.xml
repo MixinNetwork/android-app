@@ -484,8 +484,8 @@
     <string name="error_invalid_quote_amount_detailed">ERROR 10614: The amount exceeds the maximum allowable value of %1$s. Please adjust the amount. Try placing a limit order? No restrictions on amount or token.</string>
     <string name="error_no_available_quote">ERROR 10615: This trading pair is currently not supported, please try switching to a different token.</string>
     <string name="error_perps_order_value_too_small">ERROR 10650: Order value is too small.</string>
-    <string name="error_perps_market_already_has_active_position">ERROR 10651: Market already has an active position.</string>
-    <string name="error_waiting_other_orders">Wait for other orders to complete.</string>
+    <string name="error_perps_market_already_has_active_position">ERROR 10651: The current market already has an open position.</string>
+    <string name="error_waiting_other_orders">The current market already has an open position.</string>
     <string name="error_phone_verification_code_expired">ERROR 20114: Expired phone verification code</string>
     <string name="error_phone_verification_code_invalid">ERROR 20113: Invalid phone verification code</string>
     <string name="error_pin_check_too_many_request">You have tried more than 5 times, please wait at least 24 hours to try again.</string>
@@ -2298,7 +2298,7 @@
     <string name="Perpetual_Guide_Short_Content">Going short means you expect the price to decrease. If the price goes down, you profit. If it goes up, you lose. Your profit/loss is multiplied by your leverage.</string>
     <string name="Perpetual_Guide_Leverage_Content">Leverage allows you to control a larger position with less capital. For example, with 10x leverage, a 1%% price move results in a 10%% profit or loss. Higher leverage means higher risk.</string>
     <string name="Perpetual_Guide_Close_Content">You can close your position at any time to realize your profit or loss. The closing price is based on the current market price. Make sure to monitor your positions to avoid liquidation.</string>
-    <string name="Perpetual_Guide_Position">Open Position</string>
+    <string name="Perpetual_Guide_Position">Order Value</string>
     <string name="Perpetual_Guide_Overview_Title">Instructions</string>
     <string name="Perpetual_Guide_Overview_Desc">Mixin perpetual contracts are derivative trading instruments settled in digital assets, supporting long and short positions with no expiration date. Through leverage, traders can amplify positions to capture trading opportunities from price movements.</string>
     <string name="Perpetual_Features">Product Features</string>
@@ -2336,7 +2336,7 @@
     <string name="Perpetual_PnL_Impact">P&amp;L Impact</string>
     <string name="Perpetual_Leverage_Impact">Leverage amplifies both gains and losses. Higher leverage means greater P&amp;L fluctuation with price movements.</string>
     <string name="Perpetual_Leverage_Risk">Please choose leverage reasonably. With high leverage, even small price movements can lead to significant losses.</string>
-    <string name="Perpetual_Position_Desc">The actual trading value of current contract position, determined by "Margin × Leverage".</string>
+    <string name="Perpetual_Position_Desc">The order value of current contract position, determined by "Margin × Leverage".</string>
     <string name="Perpetual_Position_Usage">Usage</string>
     <string name="Perpetual_Position_Usage_Desc">Support current position and offset floating losses.</string>
     <string name="Perpetual_Position_Usage_Support_Current_Position">Support current position.</string>
@@ -2384,7 +2384,7 @@
     <string name="Perpetual_Closed_Long_Title">Close Long</string>
     <string name="Perpetual_Closed_Short_Title">Close Short</string>
     <string name="Estimated_Liquidation_Price">Estimated Liquidation Price</string>
-    <string name="Total_Position_Value">Total Position Value</string>
+    <string name="Total_Position_Value">Total Order Value</string>
     <string name="Perpetual_Side_Symbol_Title">%1$s %2$s</string>
     <string name="Perpetual_Leverage_Format">%1$dx</string>
     <string name="Perpetual_Usd_Amount" translatable="false">$%1$f</string>

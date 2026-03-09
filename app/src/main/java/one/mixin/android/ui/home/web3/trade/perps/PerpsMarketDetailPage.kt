@@ -705,7 +705,7 @@ private fun OpenPositionCard(
                         fontSize = 12.sp,
                         color = MixinAppTheme.colors.textAssist
                     )
-                  /*  Spacer(modifier = Modifier.width(4.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
                     Icon(
                         painter = painterResource(id = R.drawable.ic_tip),
                         contentDescription = null,
@@ -713,11 +713,11 @@ private fun OpenPositionCard(
                             .size(12.dp)
                             .clickable {
                                 val activity = context as? FragmentActivity ?: return@clickable
-                                PerpetualGuideFragment.newInstance()
+                                PerpetualGuideFragment.newInstance(PerpetualGuideFragment.TAB_POSITION)
                                     .show(activity.supportFragmentManager, PerpetualGuideFragment.TAG)
                             },
                         tint = MixinAppTheme.colors.textAssist
-                    )*/
+                    )
                 }
                 Text(
                     text = "${quantity.stripTrailingZeros().toPlainString()} ${position.tokenSymbol}",
