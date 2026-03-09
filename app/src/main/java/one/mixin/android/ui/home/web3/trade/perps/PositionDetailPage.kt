@@ -28,6 +28,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -470,6 +472,7 @@ fun PositionDetailPage(
                         text = formatPnlAmount(pnl),
                         fontSize = 34.sp,
                         fontWeight = FontWeight.W500,
+                        fontFamily = FontFamily(Font(R.font.mixin_font)),
                         color = pnlColor
                     )
                     Spacer(modifier = Modifier.width(4.dp))
