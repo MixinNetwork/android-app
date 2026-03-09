@@ -30,6 +30,8 @@
         android:textColor="?attr/text_primary"
         android:textFontWeight="600"
         android:textSize="24sp"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
         tools:text="Your keys, your crypto" />
 
     <TextView
