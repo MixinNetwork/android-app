@@ -2,7 +2,7 @@ package one.mixin.android.widget
 
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.WindowInsetsCompat.Type.systemBars
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updateMargins
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -13,7 +13,14 @@ internal fun BottomSheetDialog.applyBottomSheetContainerInsets(transparentStatus
         fitsSystemWindows = false
         doOnApplyWindowInsets(this) { insetView, windowInsets, initialMargins ->
             insetView.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                updateMargins(top = initialMargins.top + if (transparentStatusBar) 0 else windowInsets.getInsets(systemBars()).top)
+                val topInset = if (transparentStatusBar) {
+                    0
+                } else {
+                    val systemBars = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+                    val displayCutout = windowInsets.getInsets(WindowInsetsCompat.Type.displayCutout())
+                    maxOf(systemBars.top, displayCutout.top)
+                }
+                updateMargins(top = initialMargins.top + topInset)
             }
             windowInsets
         }

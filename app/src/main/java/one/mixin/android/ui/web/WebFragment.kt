@@ -1521,6 +1521,7 @@ class WebFragment : BaseFragment() {
                 bottomMargin = safeBottomHeight
 
             }
+        }
         bottomSheet.show()
     }
 
