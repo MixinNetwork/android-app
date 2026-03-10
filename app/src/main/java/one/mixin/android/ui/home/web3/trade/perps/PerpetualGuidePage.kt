@@ -130,7 +130,9 @@ fun PerpetualGuidePage(
                     .padding(horizontal = 16.dp)
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
-                Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())) {
+                Row(modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())) {
                     tabs.forEachIndexed { index, tab ->
                         OutlinedTab(
                             text = tab,
@@ -351,8 +353,11 @@ private fun LeverageContent() {
     DescriptionWithInfoAndRiskCard(
         description = stringResource(R.string.Perpetual_Leverage_Desc),
         infoTitle = stringResource(R.string.Perpetual_PnL_Impact),
-        infoContents = listOf(stringResource(R.string.Perpetual_Leverage_Impact)),
-        riskContent = stringResource(R.string.Perpetual_Leverage_Risk)
+        infoContents = listOf(
+            stringResource(R.string.Perpetual_Leverage_Impact_1),
+            stringResource(R.string.Perpetual_Leverage_Impact_2)
+        ),
+        riskContents = listOf(stringResource(R.string.Perpetual_Leverage_Risk))
     )
 }
 
@@ -439,10 +444,10 @@ private fun PositionContent() {
         description = stringResource(R.string.Perpetual_Position_Desc),
         infoTitle = stringResource(R.string.Perpetual_Position_Usage),
         infoContents = listOf(
-            stringResource(R.string.Perpetual_Position_Usage_Support_Current_Position),
-            stringResource(R.string.Perpetual_Position_Usage_Offset_Floating_Losses),
+            stringResource(R.string.Perpetual_Position_Usage_Desc_1),
+            stringResource(R.string.Perpetual_Position_Usage_Desc_2)
         ),
-        riskContent = stringResource(R.string.Perpetual_Position_Risk)
+        riskContents = listOf(stringResource(R.string.Perpetual_Position_Risk_1) , stringResource(R.string.Perpetual_Position_Risk_2))
     )
 }
 
@@ -603,7 +608,15 @@ private fun GuideSection(title: String, content: String) {
         )
         Spacer(modifier = Modifier.height(8.dp))
         DotText(
-            text = stringResource(R.string.Perpetual_Risk_Warning_Content),
+            text = stringResource(R.string.Perpetual_Risk_Warning_Content_1),
+            color = MixinAppTheme.colors.textPrimary
+        )
+        DotText(
+            text = stringResource(R.string.Perpetual_Risk_Warning_Content_2),
+            color = MixinAppTheme.colors.textPrimary
+        )
+        DotText(
+            text = stringResource(R.string.Perpetual_Risk_Warning_Content_3),
             color = MixinAppTheme.colors.textPrimary
         )
     }
@@ -996,7 +1009,7 @@ private fun DescriptionWithInfoAndRiskCard(
     description: String,
     infoTitle: String,
     infoContents: List<String>,
-    riskContent: String,
+    riskContents:  List<String>,
 ) {
     Column(
         modifier = Modifier
@@ -1053,10 +1066,12 @@ private fun DescriptionWithInfoAndRiskCard(
                 color = MixinAppTheme.colors.textPrimary
             )
             Spacer(modifier = Modifier.height(6.dp))
-            DotText(
-                text = riskContent,
-                color = MixinAppTheme.colors.textPrimary
-            )
+            riskContents.forEach { riskContent ->
+                DotText(
+                    text = riskContent,
+                    color = MixinAppTheme.colors.textPrimary
+                )
+            }
         }
     }
 }

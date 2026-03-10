@@ -111,6 +111,11 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
     private var openPositionsLiveData: LiveData<PagedList<PerpsPositionItem>>? = null
     private var closedPositionsLiveData: LiveData<PagedList<PerpsPositionHistoryItem>>? = null
     private var totalValueJob: Job? = null
+    
+    private var lastOpenTotalValue: Double = 0.0
+    private var lastOpenTotalPnl: Double = 0.0
+    private var lastClosedTotalPnl: Double = 0.0
+    private var lastClosedTotalEntryValue: Double = 0.0
 
     private val openPositionsObserver = Observer<PagedList<PerpsPositionItem>> { pagedList ->
         binding.progressBar.isVisible = false
@@ -172,6 +177,11 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
         openPositionsLiveData?.removeObservers(viewLifecycleOwner)
         closedPositionsLiveData?.removeObservers(viewLifecycleOwner)
         totalValueJob?.cancel()
+        
+        lastOpenTotalValue = 0.0
+        lastOpenTotalPnl = 0.0
+        lastClosedTotalPnl = 0.0
+        lastClosedTotalEntryValue = 0.0
 
         if (currentTab == PositionTab.OPEN) {
             binding.titleView.setSubTitle(getString(R.string.Open_Positions_Simple), "")
@@ -228,9 +238,13 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
                 ) { totalPositionValue, totalPnl ->
                     totalPositionValue to totalPnl
                 }.collect { (totalPositionValue, totalPnl) ->
-                    val percent = calculatePercent(totalPnl, totalPositionValue)
-                    totalValueAdapter.submitTotal(BigDecimal.valueOf(totalPositionValue))
-                    totalValueAdapter.submitSubtitle(BigDecimal.valueOf(totalPnl), BigDecimal.valueOf(percent))
+                    if (lastOpenTotalValue != totalPositionValue || lastOpenTotalPnl != totalPnl) {
+                        lastOpenTotalValue = totalPositionValue
+                        lastOpenTotalPnl = totalPnl
+                        val percent = calculatePercent(totalPnl, totalPositionValue)
+                        totalValueAdapter.submitTotal(BigDecimal.valueOf(totalPositionValue))
+                        totalValueAdapter.submitSubtitle(BigDecimal.valueOf(totalPnl), BigDecimal.valueOf(percent))
+                    }
                 }
             }
         }
@@ -246,9 +260,13 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
                 ) { totalPnl, totalEntryValue ->
                     totalPnl to totalEntryValue
                 }.collect { (totalPnl, totalEntryValue) ->
-                    val percent = calculatePercent(totalPnl, totalEntryValue)
-                    totalValueAdapter.submitTotal(BigDecimal.valueOf(totalPnl))
-                    totalValueAdapter.submitSubtitle(BigDecimal.valueOf(totalPnl), BigDecimal.valueOf(percent))
+                    if (lastClosedTotalPnl != totalPnl || lastClosedTotalEntryValue != totalEntryValue) {
+                        lastClosedTotalPnl = totalPnl
+                        lastClosedTotalEntryValue = totalEntryValue
+                        val percent = calculatePercent(totalPnl, totalEntryValue)
+                        totalValueAdapter.submitTotal(BigDecimal.valueOf(totalPnl))
+                        totalValueAdapter.submitSubtitle(BigDecimal.valueOf(totalPnl), BigDecimal.valueOf(percent))
+                    }
                 }
             }
         }
