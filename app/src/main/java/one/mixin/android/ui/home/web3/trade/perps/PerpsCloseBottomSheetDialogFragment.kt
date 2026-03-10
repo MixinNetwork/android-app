@@ -70,8 +70,8 @@ import one.mixin.android.ui.tip.wc.compose.ItemWalletContent
 import one.mixin.android.ui.wallet.ItemUserContent
 import one.mixin.android.ui.wallet.components.WalletLabel
 import one.mixin.android.util.SystemUIManager
-import one.mixin.android.vo.User
 import one.mixin.android.vo.Fiats
+import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
 import timber.log.Timber
 import java.math.BigDecimal

@@ -2304,7 +2304,7 @@
     <string name="Perpetual_Features">Product Features</string>
     <string name="Perpetual_Feature_1">No expiration date, can hold positions long-term</string>
     <string name="Perpetual_Feature_2">Support long/short, bidirectional trading</string>
-    <string name="Perpetual_Feature_3">Up to 100x leverage supported</string>
+    <string name="Perpetual_Feature_3">Up to 200x leverage supported</string>
     <string name="Perpetual_Feature_4">Support isolated margin mode for flexible risk control</string>
     <string name="Perpetual_Feature_5">Delayed liquidation to prevent flash crashes</string>
     <string name="Perpetual_Risk_Warning">Risk Warning</string>

@@ -2245,7 +2245,7 @@
     <string name="Perpetual_Features">产品特点</string>
     <string name="Perpetual_Feature_1">无到期日，可长期持仓</string>
     <string name="Perpetual_Feature_2">支持做多 / 做空，双向交易</string>
-    <string name="Perpetual_Feature_3">最高支持 100 倍杠杆</string>
+    <string name="Perpetual_Feature_3">最高支持 200 倍杠杆</string>
     <string name="Perpetual_Feature_4">支持逐仓模式，灵活控制风险</string>
     <string name="Perpetual_Feature_5">延迟爆仓，防插针</string>
     <string name="Perpetual_Risk_Warning">风险提示</string>

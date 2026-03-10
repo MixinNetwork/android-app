@@ -19,7 +19,7 @@ interface PerpsPositionHistoryDao : BaseDao<PerpsPositionHistory> {
     suspend fun insertAll(histories: List<PerpsPositionHistory>)
 
     @Query("""
-        SELECT h.*, m.display_symbol, m.icon_url, m.token_symbol 
+        SELECT h.*, m.display_symbol, m.icon_url, m.token_symbol, m.symbol 
         FROM position_history h 
         LEFT JOIN markets m ON m.market_id = h.product_id 
         WHERE h.wallet_id = :walletId 
@@ -30,7 +30,7 @@ interface PerpsPositionHistoryDao : BaseDao<PerpsPositionHistory> {
 
     @Query(
         """
-        SELECT h.*, m.display_symbol, m.icon_url, m.token_symbol
+        SELECT h.*, m.display_symbol, m.icon_url, m.token_symbol, m.symbol
         FROM position_history h
         LEFT JOIN markets m ON m.market_id = h.product_id
         WHERE h.wallet_id = :walletId
@@ -41,7 +41,7 @@ interface PerpsPositionHistoryDao : BaseDao<PerpsPositionHistory> {
     fun observeHistories(walletId: String, limit: Int): Flow<List<PerpsPositionHistoryItem>>
 
     @Query("""
-        SELECT h.*, m.display_symbol, m.icon_url, m.token_symbol
+        SELECT h.*, m.display_symbol, m.icon_url, m.token_symbol, m.symbol
         FROM position_history h
         LEFT JOIN markets m ON m.market_id = h.product_id
         WHERE h.wallet_id = :walletId
@@ -50,7 +50,7 @@ interface PerpsPositionHistoryDao : BaseDao<PerpsPositionHistory> {
     fun getHistoriesPaged(walletId: String): DataSource.Factory<Int, PerpsPositionHistoryItem>
 
     @Query("""
-        SELECT h.*, m.display_symbol, m.icon_url, m.token_symbol 
+        SELECT h.*, m.display_symbol, m.icon_url, m.token_symbol, m.symbol 
         FROM position_history h 
         LEFT JOIN markets m ON m.market_id = h.product_id 
         WHERE h.history_id = :historyId

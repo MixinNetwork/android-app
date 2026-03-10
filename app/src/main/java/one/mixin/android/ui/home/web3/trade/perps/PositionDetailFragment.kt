@@ -4,9 +4,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.ui.platform.ComposeView
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -16,14 +16,14 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import one.mixin.android.Constants
+import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
+import one.mixin.android.api.response.perps.PerpsPositionItem
+import one.mixin.android.api.response.perps.toPosition
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.openUrl
-import one.mixin.android.api.response.perps.PerpsPositionItem
-import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
-import one.mixin.android.api.response.perps.toPosition
 import one.mixin.android.ui.common.BaseFragment
 
 @AndroidEntryPoint
@@ -149,8 +149,8 @@ class PositionDetailFragment : BaseFragment() {
         PerpsActivity.showDetail(
             context = requireContext(),
             marketId = positionHistory.productId,
-            marketSymbol = positionHistory.marketSymbol ?: positionHistory.tokenSymbol.orEmpty(),
-            marketDisplaySymbol = positionHistory.displaySymbol ?: positionHistory.tokenSymbol.orEmpty(),
+            marketSymbol = positionHistory.symbol.orEmpty(),
+            marketDisplaySymbol = positionHistory.displaySymbol.orEmpty(),
             marketTokenSymbol = positionHistory.tokenSymbol.orEmpty()
         )
     }

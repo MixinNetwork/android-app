@@ -4,8 +4,6 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +16,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
@@ -30,11 +30,11 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -44,9 +44,6 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
-import java.math.BigDecimal
-import java.math.RoundingMode
-import kotlin.math.roundToInt
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -54,6 +51,9 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.ui.home.web3.components.OutlinedTab
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.widget.components.DotText
+import java.math.BigDecimal
+import java.math.RoundingMode
+import kotlin.math.roundToInt
 
 data class ScenarioData(
     val scenario: String,
@@ -70,6 +70,12 @@ data class GuideRowData(
     val label: String,
     val value: String,
     @DrawableRes val iconRes: Int? = null,
+)
+
+data class AdjusterConfig(
+    val min: Int,
+    val max: Int,
+    val step: Int,
 )
 
 @Composable
@@ -292,10 +298,10 @@ private fun ShortContent() {
 @Composable
 private fun LeverageContent() {
     var leverage by remember { mutableIntStateOf(10) }
-    val fixedScenarioPercent = 10f
-    val basePnlAmount = leverage * 100
-    val basePnlPercent = leverage * 10
-    val cappedLossAmount = basePnlAmount.coerceAtMost(1000)
+    val fixedProfitPercent = 10f
+    val liquidationPercent = if (leverage > 0) 100f / leverage else 100f
+    val profitPnlAmount = leverage * 100
+    val profitPnlPercent = leverage * 10
     ExampleWithScenariosCard(
         title = stringResource(R.string.Perpetual_Example),
         rows = listOf(
@@ -321,20 +327,20 @@ private fun LeverageContent() {
             ScenarioData(
                 scenario = stringResource(R.string.Perpetual_Price_Up),
                 change = stringResource(R.string.Perpetual_Price_Up_Amplitude),
-                initialPercent = fixedScenarioPercent,
-                basePnlAmount = basePnlAmount,
-                basePnlPercent = basePnlPercent,
+                initialPercent = fixedProfitPercent,
+                basePnlAmount = profitPnlAmount,
+                basePnlPercent = profitPnlPercent,
                 isProfit = true,
                 maxPercent = null
             ),
             ScenarioData(
                 scenario = stringResource(R.string.Perpetual_Price_Down),
                 change = stringResource(R.string.Perpetual_Price_Down_Amplitude),
-                initialPercent = fixedScenarioPercent,
-                basePnlAmount = cappedLossAmount,
-                basePnlPercent = basePnlPercent.coerceAtMost(100),
+                initialPercent = liquidationPercent,
+                basePnlAmount = 1000,
+                basePnlPercent = 100,
                 isProfit = false,
-                maxPercent = fixedScenarioPercent,
+                maxPercent = liquidationPercent,
             )
         ),
         leverageValue = leverage,
@@ -356,6 +362,7 @@ private fun PositionContent() {
     var leverage by remember { mutableIntStateOf(10) }
     var investment by remember { mutableIntStateOf(1000) }
     val maxLossPercent = if (leverage > 0) 100f / leverage else 100f
+    val fixedProfitPercent = 10f
     val solToken by remember {
         viewModel.observeTokenByChainAndSymbol(
             chainId = Constants.ChainId.Solana,
@@ -369,8 +376,10 @@ private fun PositionContent() {
         orderValueUsdt = orderValueUsdt,
         localSolPrice = localSolPrice
     )
-    val basePnlAmount = (orderValueUsdt * maxLossPercent / 100).toInt()
-    val basePnlPercent = (leverage * maxLossPercent).toInt()
+    val profitPnlAmount = (orderValueUsdt * fixedProfitPercent / 100).roundToInt()
+    val profitPnlPercent = (leverage * fixedProfitPercent).roundToInt()
+    val lossPnlAmount = investment
+    val lossPnlPercent = 100
 
     ExampleWithScenariosCard(
         title = stringResource(R.string.Perpetual_Example),
@@ -401,9 +410,9 @@ private fun PositionContent() {
             ScenarioData(
                 scenario = stringResource(R.string.Perpetual_Price_Up),
                 change = stringResource(R.string.Perpetual_Price_Up_Amplitude),
-                initialPercent = maxLossPercent,
-                basePnlAmount = basePnlAmount,
-                basePnlPercent = basePnlPercent,
+                initialPercent = fixedProfitPercent,
+                basePnlAmount = profitPnlAmount,
+                basePnlPercent = profitPnlPercent,
                 isProfit = true,
                 maxPercent = null
             ),
@@ -411,18 +420,19 @@ private fun PositionContent() {
                 scenario = stringResource(R.string.Perpetual_Price_Down),
                 change = stringResource(R.string.Perpetual_Price_Down_Amplitude),
                 initialPercent = maxLossPercent,
-                basePnlAmount = basePnlAmount,
-                basePnlPercent = basePnlPercent,
+                basePnlAmount = lossPnlAmount,
+                basePnlPercent = lossPnlPercent,
                 isProfit = false,
                 maxPercent = maxLossPercent,
             )
         ),
         leverageValue = leverage,
-        onLeverageChange = { leverage = it.coerceIn(1, 100) },
+        onLeverageChange = { leverage = it.coerceIn(1, 200) },
+        leverageConfig = AdjusterConfig(min = 1, max = 200, step = 1),
         investmentValue = investment,
-        onInvestmentChange = { investment = it.coerceIn(10, 1000) },
+        onInvestmentChange = { investment = it.coerceIn(100, 100000) },
+        investmentConfig = AdjusterConfig(min = 100, max = 100000, step = 100),
         isScenarioChangeAdjustable = false,
-        maxLeverage = 100,
     )
     Spacer(modifier = Modifier.height(16.dp))
     DescriptionWithInfoAndRiskCard(
@@ -606,10 +616,11 @@ private fun ExampleWithScenariosCard(
     scenarios: List<ScenarioData>,
     leverageValue: Int? = null,
     onLeverageChange: ((Int) -> Unit)? = null,
+    leverageConfig: AdjusterConfig = AdjusterConfig(min = 1, max = 200, step = 1),
     investmentValue: Int? = null,
     onInvestmentChange: ((Int) -> Unit)? = null,
+    investmentConfig: AdjusterConfig = AdjusterConfig(min = 10, max = 1000, step = 10),
     isScenarioChangeAdjustable: Boolean = true,
-    maxLeverage: Int = 200,
 ) {
     val context = LocalContext.current
     val quoteColorReversed = context.defaultSharedPreferences
@@ -674,18 +685,26 @@ private fun ExampleWithScenariosCard(
                 } else if (label == leverageLabel && leverageValue != null && onLeverageChange != null) {
                     GuideNumberAdjuster(
                         valueText = "${leverageValue}x",
-                        canDecrease = leverageValue > 1,
-                        canIncrease = leverageValue < maxLeverage,
-                        onDecrease = { onLeverageChange((leverageValue - 1).coerceAtLeast(1)) },
-                        onIncrease = { onLeverageChange((leverageValue + 1).coerceAtMost(maxLeverage)) },
+                        canDecrease = leverageValue > leverageConfig.min,
+                        canIncrease = leverageValue < leverageConfig.max,
+                        onDecrease = {
+                            onLeverageChange((leverageValue - leverageConfig.step).coerceAtLeast(leverageConfig.min))
+                        },
+                        onIncrease = {
+                            onLeverageChange((leverageValue + leverageConfig.step).coerceAtMost(leverageConfig.max))
+                        },
                     )
                 } else if (label == investmentLabel && investmentValue != null && onInvestmentChange != null) {
                     GuideNumberAdjuster(
                         valueText = "${formatGuideInt(investmentValue)} USDT",
-                        canDecrease = investmentValue > 10,
-                        canIncrease = investmentValue < 1000,
-                        onDecrease = { onInvestmentChange((investmentValue - 10).coerceAtLeast(10)) },
-                        onIncrease = { onInvestmentChange((investmentValue + 10).coerceAtMost(1000)) },
+                        canDecrease = investmentValue > investmentConfig.min,
+                        canIncrease = investmentValue < investmentConfig.max,
+                        onDecrease = {
+                            onInvestmentChange((investmentValue - investmentConfig.step).coerceAtLeast(investmentConfig.min))
+                        },
+                        onIncrease = {
+                            onInvestmentChange((investmentValue + investmentConfig.step).coerceAtMost(investmentConfig.max))
+                        },
                     )
                 } else {
                     Row(verticalAlignment = Alignment.CenterVertically) {

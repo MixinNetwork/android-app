@@ -1,8 +1,8 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
 import android.util.TypedValue
-import android.view.View
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.AttrRes
 import androidx.core.view.isVisible

@@ -16,9 +16,9 @@ data class PerpsPositionHistoryItem(
     @SerializedName("product_id")
     @ColumnInfo(name = "product_id")
     val productId: String,
-    @SerializedName("market_symbol")
-    @ColumnInfo(name = "market_symbol")
-    val marketSymbol: String? = null,
+    @SerializedName("symbol")
+    @ColumnInfo(name = "symbol")
+    val symbol: String? = null,
     @SerializedName("side")
     @ColumnInfo(name = "side")
     val side: String,
