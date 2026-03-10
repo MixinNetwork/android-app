@@ -4,6 +4,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -21,7 +23,6 @@ class MobileViewModel
 internal constructor(
     private val accountRepositoryProvider: Provider<AccountRepository>,
     private val userRepositoryProvider: Provider<UserRepository>,
-    private val jobManager: MixinJobManager,
 ) : ViewModel() {
     private val accountRepository: AccountRepository
         get() = accountRepositoryProvider.get()
@@ -34,5 +35,6 @@ internal constructor(
             userRepository.insertUser(user)
         }
 
-    fun update(request: AccountUpdateRequest) = accountRepository.update(request)
+    fun update(request: AccountUpdateRequest) =
+        accountRepository.update(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 }

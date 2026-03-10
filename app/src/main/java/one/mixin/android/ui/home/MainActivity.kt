@@ -193,6 +193,7 @@ import one.mixin.android.worker.SessionWorker
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import javax.inject.Provider
 
 @AndroidEntryPoint
 class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callback {
@@ -208,28 +209,46 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
     lateinit var userService: UserService
 
     @Inject
-    lateinit var conversationDao: ConversationDao
+    lateinit var conversationDaoProvider: Provider<ConversationDao>
 
     @Inject
-    lateinit var userDao: UserDao
+    lateinit var userDaoProvider: Provider<UserDao>
 
     @Inject
-    lateinit var userRepo: UserRepository
+    lateinit var userRepoProvider: Provider<UserRepository>
 
     @Inject
-    lateinit var accountRepo: AccountRepository
+    lateinit var accountRepoProvider: Provider<AccountRepository>
 
     @Inject
-    lateinit var web3Repository: Web3Repository
+    lateinit var web3RepositoryProvider: Provider<Web3Repository>
 
     private var lastBottomNavItemId: Int = R.id.nav_chat
     private var isRestoringBottomNavSelection: Boolean = false
 
     @Inject
-    lateinit var participantDao: ParticipantDao
+    lateinit var participantDaoProvider: Provider<ParticipantDao>
 
     @Inject
     lateinit var tip: Tip
+
+    private val conversationDao: ConversationDao
+        get() = conversationDaoProvider.get()
+
+    private val userDao: UserDao
+        get() = userDaoProvider.get()
+
+    private val userRepo: UserRepository
+        get() = userRepoProvider.get()
+
+    private val accountRepo: AccountRepository
+        get() = accountRepoProvider.get()
+
+    private val web3Repository: Web3Repository
+        get() = web3RepositoryProvider.get()
+
+    private val participantDao: ParticipantDao
+        get() = participantDaoProvider.get()
 
     private val appUpdateManager by lazy { AppUpdateManagerFactory.create(this) }
     private val updatedListener =
