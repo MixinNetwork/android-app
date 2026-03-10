@@ -591,6 +591,7 @@
         <item quantity="one">%d Hour</item>
         <item quantity="other">%d Hours</item>
     </plurals>
+    <string name="minutes_count_short">%1$dm</string>
     <string name="hours_count_short">%1$dH</string>
     <string name="days_count_short" >%1$dD</string>
     <string name="weeks_count_short" >%1$dW</string>
@@ -2396,10 +2397,11 @@
     <string name="Perpetual_Usd_Amount_Signed" translatable="false">%1$s$%2$f</string>
     <string name="Perpetual_Amount_Percent_Format" translatable="false">%1$s(%2$.2f%%)</string>
     <string name="Open_Positions_Simple">Open Positions</string>
-    <string name="Open_Positions">Open Positions(%1$d)</string>
-    <string name="Closed_Positions">Closed Positions</string>
+    <string name="Open_Positions">Positions(%1$d)</string>
+    <string name="perps_positions">Positions</string>
+    <string name="perps_activity">Activity</string>
     <string name="No_Positions">No Positions</string>
-    <string name="No_Closed_Positions">No Closed Positions</string>
+    <string name="No_Closed_Positions">No Activities</string>
     <string name="PNL">PNL</string>
     <string name="Direction">Direction</string>
     <string name="No_Markets">No Markets</string>

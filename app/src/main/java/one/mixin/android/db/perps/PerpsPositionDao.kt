@@ -21,7 +21,7 @@ interface PerpsPositionDao : BaseDao<PerpsPosition> {
     @Query("""
         SELECT p.*, m.display_symbol, m.icon_url, m.token_symbol 
         FROM positions p 
-        LEFT JOIN markets m ON m.market_id = p.product_id 
+        LEFT JOIN markets m ON m.market_id = p.market_id 
         WHERE p.wallet_id = :walletId AND (p.state = 'open' or p.state = 'opening')
         ORDER BY p.created_at DESC
     """)
@@ -31,7 +31,7 @@ interface PerpsPositionDao : BaseDao<PerpsPosition> {
         """
         SELECT p.*, m.display_symbol, m.icon_url, m.token_symbol
         FROM positions p
-        LEFT JOIN markets m ON m.market_id = p.product_id
+        LEFT JOIN markets m ON m.market_id = p.market_id
         WHERE p.wallet_id = :walletId AND (p.state = 'open' or p.state = 'opening')
         ORDER BY p.created_at DESC
     """
@@ -41,7 +41,7 @@ interface PerpsPositionDao : BaseDao<PerpsPosition> {
     @Query("""
         SELECT p.*, m.display_symbol, m.icon_url, m.token_symbol
         FROM positions p
-        LEFT JOIN markets m ON m.market_id = p.product_id
+        LEFT JOIN markets m ON m.market_id = p.market_id
         WHERE p.wallet_id = :walletId AND (p.state = 'open' or p.state = 'opening')
         ORDER BY p.created_at DESC
     """)
@@ -50,7 +50,7 @@ interface PerpsPositionDao : BaseDao<PerpsPosition> {
     @Query("""
         SELECT p.*, m.display_symbol, m.icon_url, m.token_symbol 
         FROM positions p 
-        LEFT JOIN markets m ON m.market_id = p.product_id 
+        LEFT JOIN markets m ON m.market_id = p.market_id 
         WHERE p.position_id = :positionId
     """)
     suspend fun getPosition(positionId: String): PerpsPositionItem?
@@ -58,7 +58,7 @@ interface PerpsPositionDao : BaseDao<PerpsPosition> {
     @Query("""
         SELECT p.*, m.display_symbol, m.icon_url, m.token_symbol
         FROM positions p
-        LEFT JOIN markets m ON m.market_id = p.product_id
+        LEFT JOIN markets m ON m.market_id = p.market_id
         WHERE p.position_id = :positionId
     """)
     fun observePosition(positionId: String): Flow<PerpsPositionItem?>

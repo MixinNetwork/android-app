@@ -19,9 +19,9 @@ interface PerpsPositionHistoryDao : BaseDao<PerpsPositionHistory> {
     suspend fun insertAll(histories: List<PerpsPositionHistory>)
 
     @Query("""
-        SELECT h.*, m.display_symbol, m.icon_url, m.token_symbol, m.symbol 
+        SELECT h.*, m.display_symbol, m.icon_url, m.token_symbol
         FROM position_history h 
-        LEFT JOIN markets m ON m.market_id = h.product_id 
+        LEFT JOIN markets m ON m.market_id = h.market_id 
         WHERE h.wallet_id = :walletId 
         ORDER BY h.closed_at DESC 
         LIMIT :limit
@@ -30,9 +30,9 @@ interface PerpsPositionHistoryDao : BaseDao<PerpsPositionHistory> {
 
     @Query(
         """
-        SELECT h.*, m.display_symbol, m.icon_url, m.token_symbol, m.symbol
+        SELECT h.*, m.display_symbol, m.icon_url, m.token_symbol
         FROM position_history h
-        LEFT JOIN markets m ON m.market_id = h.product_id
+        LEFT JOIN markets m ON m.market_id = h.market_id
         WHERE h.wallet_id = :walletId
         ORDER BY h.closed_at DESC
         LIMIT :limit
@@ -41,18 +41,18 @@ interface PerpsPositionHistoryDao : BaseDao<PerpsPositionHistory> {
     fun observeHistories(walletId: String, limit: Int): Flow<List<PerpsPositionHistoryItem>>
 
     @Query("""
-        SELECT h.*, m.display_symbol, m.icon_url, m.token_symbol, m.symbol
+        SELECT h.*, m.display_symbol, m.icon_url, m.token_symbol
         FROM position_history h
-        LEFT JOIN markets m ON m.market_id = h.product_id
+        LEFT JOIN markets m ON m.market_id = h.market_id
         WHERE h.wallet_id = :walletId
         ORDER BY h.closed_at DESC
     """)
     fun getHistoriesPaged(walletId: String): DataSource.Factory<Int, PerpsPositionHistoryItem>
 
     @Query("""
-        SELECT h.*, m.display_symbol, m.icon_url, m.token_symbol, m.symbol 
+        SELECT h.*, m.display_symbol, m.icon_url, m.token_symbol
         FROM position_history h 
-        LEFT JOIN markets m ON m.market_id = h.product_id 
+        LEFT JOIN markets m ON m.market_id = h.market_id 
         WHERE h.history_id = :historyId
     """)
     suspend fun getHistory(historyId: String): PerpsPositionHistoryItem?

@@ -102,7 +102,8 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
         } else {
             val filtered = allMarkets.filter { market ->
                 market.displaySymbol.contains(query, ignoreCase = true) ||
-                market.symbol.contains(query, ignoreCase = true)
+                market.tokenSymbol.contains(query, ignoreCase = true) ||
+                market.quoteSymbol.contains(query, ignoreCase = true)
             }
             updateList(filtered)
         }
@@ -117,7 +118,7 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
         PerpsActivity.showOpenPosition(
             context = requireContext(),
             marketId = market.marketId,
-            marketSymbol = market.symbol,
+            marketSymbol = market.displaySymbol,
             marketDisplaySymbol = market.displaySymbol,
             marketTokenSymbol = market.tokenSymbol,
             isLong = isLong

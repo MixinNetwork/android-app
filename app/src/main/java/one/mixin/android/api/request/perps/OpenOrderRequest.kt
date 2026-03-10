@@ -5,8 +5,8 @@ import com.google.gson.annotations.SerializedName
 data class OpenOrderRequest(
     @SerializedName("asset_id")
     val assetId: String,
-    @SerializedName("product_id")
-    val productId: String,
+    @SerializedName("market_id")
+    val marketId: String,
     @SerializedName("side")
     val side: String,
     @SerializedName("amount")
@@ -22,8 +22,8 @@ data class OpenOrderRequest(
 data class OpenOrderResponse(
     @SerializedName("order_id")
     val orderId: String,
-    @SerializedName("pay_url")
-    val payUrl: String?,
+    @SerializedName("payment_url")
+    val paymentUrl: String?,
     @SerializedName("pay_amount")
     val payAmount: String?,
     @SerializedName("deposit_destination")

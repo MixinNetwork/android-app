@@ -396,7 +396,7 @@ class TradeFragment : BaseFragment() {
                                     PerpsActivity.showDetail(
                                         requireContext(),
                                         market.marketId,
-                                        market.symbol,
+                                        market.displaySymbol,
                                         market.displaySymbol,
                                         market.tokenSymbol
                                     )

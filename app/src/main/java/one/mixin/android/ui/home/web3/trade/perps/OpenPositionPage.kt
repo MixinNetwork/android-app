@@ -558,7 +558,7 @@ fun OpenPositionPage(
 
                         scope.launch {
                             val hasOpeningPosition = viewModel.getOpenPositionsFromDb(walletId)
-                                .any { it.productId == m.marketId }
+                                .any { it.marketId == m.marketId }
                             if (hasOpeningPosition) {
                                 errorInfo = context.getString(R.string.error_waiting_other_orders)
                                 return@launch
@@ -566,12 +566,11 @@ fun OpenPositionPage(
 
                             viewModel.openPerpsOrder(
                                 assetId = token.assetId,
-                                productId = m.marketId,
+                                marketId = m.marketId,
                                 side = if (isLong) "long" else "short",
                                 amount = orderValue.stripTrailingZeros().toPlainString(),
                                 leverage = leverage.toInt(),
                                 walletId = walletId,
-                                marketSymbol = m.symbol,
                                 entryPrice = m.markPrice,
                                 onSuccess = { response ->
                                     errorInfo = null
@@ -583,7 +582,7 @@ fun OpenPositionPage(
                                         leverage = leverage.toInt(),
                                         entryPrice = m.markPrice,
                                         tokenSymbol = token.symbol,
-                                        payUrl = response.payUrl
+                                        payUrl = response.paymentUrl
                                     ).setOnDone {
                                         onBack()
                                     }.show(activity.supportFragmentManager, PerpsConfirmBottomSheetDialogFragment.TAG)

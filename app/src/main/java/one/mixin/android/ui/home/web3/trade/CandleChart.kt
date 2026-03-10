@@ -64,7 +64,7 @@ import kotlin.math.min
 
 @Composable
 fun CandleChart(
-    symbol: String,
+    marketId: String,
     timeFrame: String
 ) {
     val context = LocalContext.current
@@ -73,11 +73,11 @@ fun CandleChart(
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    LaunchedEffect(symbol, timeFrame) {
+    LaunchedEffect(marketId, timeFrame) {
         isLoading = true
         errorMessage = null
         viewModel.loadCandles(
-            symbol = symbol,
+            marketId = marketId,
             timeFrame = timeFrame,
             onSuccess = { data ->
                 candles = data

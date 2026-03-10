@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "aa2a40bfcda9610faa30a7e0d18637fa",
+    "identityHash": "f17028ee96c6829315578a046a8e4856",
     "entities": [
       {
         "tableName": "positions",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`position_id` TEXT NOT NULL, `product_id` TEXT NOT NULL, `side` TEXT NOT NULL, `quantity` TEXT NOT NULL, `entry_price` TEXT NOT NULL, `leverage` INTEGER NOT NULL, `settle_asset_id` TEXT, `bot_id` TEXT, `margin` TEXT, `state` TEXT, `mark_price` TEXT, `unrealized_pnl` TEXT, `roe` TEXT, `wallet_id` TEXT, `created_at` TEXT, `updated_at` TEXT, PRIMARY KEY(`position_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`position_id` TEXT NOT NULL, `market_id` TEXT NOT NULL, `side` TEXT NOT NULL, `quantity` TEXT NOT NULL, `entry_price` TEXT NOT NULL, `leverage` INTEGER NOT NULL, `settle_asset_id` TEXT, `bot_id` TEXT, `margin` TEXT, `open_pay_amount` TEXT, `open_pay_asset_id` TEXT, `state` TEXT, `mark_price` TEXT, `unrealized_pnl` TEXT, `roe` TEXT, `wallet_id` TEXT, `created_at` TEXT, `updated_at` TEXT, PRIMARY KEY(`position_id`))",
         "fields": [
           {
             "fieldPath": "positionId",
@@ -15,8 +15,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "productId",
-            "columnName": "product_id",
+            "fieldPath": "marketId",
+            "columnName": "market_id",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -57,6 +57,16 @@
           {
             "fieldPath": "margin",
             "columnName": "margin",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "openPayAmount",
+            "columnName": "open_pay_amount",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "openPayAssetId",
+            "columnName": "open_pay_asset_id",
             "affinity": "TEXT"
           },
           {
@@ -104,7 +114,7 @@
       },
       {
         "tableName": "position_history",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`history_id` TEXT NOT NULL, `position_id` TEXT NOT NULL, `product_id` TEXT NOT NULL, `market_symbol` TEXT, `side` TEXT NOT NULL, `quantity` TEXT NOT NULL, `entry_price` TEXT NOT NULL, `close_price` TEXT NOT NULL, `realized_pnl` TEXT NOT NULL, `leverage` INTEGER NOT NULL, `margin_method` TEXT, `open_at` TEXT NOT NULL, `closed_at` TEXT NOT NULL, `wallet_id` TEXT NOT NULL, PRIMARY KEY(`history_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`history_id` TEXT NOT NULL, `position_id` TEXT NOT NULL, `market_id` TEXT NOT NULL, `market_symbol` TEXT, `side` TEXT NOT NULL, `quantity` TEXT NOT NULL, `entry_price` TEXT NOT NULL, `close_price` TEXT NOT NULL, `realized_pnl` TEXT NOT NULL, `leverage` INTEGER NOT NULL, `margin_method` TEXT, `open_at` TEXT NOT NULL, `closed_at` TEXT NOT NULL, `wallet_id` TEXT NOT NULL, PRIMARY KEY(`history_id`))",
         "fields": [
           {
             "fieldPath": "historyId",
@@ -119,8 +129,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "productId",
-            "columnName": "product_id",
+            "fieldPath": "marketId",
+            "columnName": "market_id",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -198,23 +208,11 @@
       },
       {
         "tableName": "markets",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`market_id` TEXT NOT NULL, `market` TEXT NOT NULL, `symbol` TEXT NOT NULL, `display_symbol` TEXT NOT NULL, `token_symbol` TEXT NOT NULL, `mark_price` TEXT NOT NULL, `funding_rate` TEXT NOT NULL, `maker_fee` TEXT NOT NULL, `taker_fee` TEXT NOT NULL, `min_order_size` TEXT NOT NULL, `max_order_size` TEXT NOT NULL, `min_order_value` TEXT NOT NULL, `quantity_increment` TEXT NOT NULL, `price_increment` TEXT NOT NULL, `last` TEXT NOT NULL, `volume` TEXT NOT NULL, `leverage` INTEGER NOT NULL, `icon_url` TEXT NOT NULL, `change` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`market_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`market_id` TEXT NOT NULL, `display_symbol` TEXT NOT NULL, `token_symbol` TEXT NOT NULL, `quote_symbol` TEXT NOT NULL, `mark_price` TEXT NOT NULL, `leverage` INTEGER NOT NULL, `icon_url` TEXT NOT NULL, `funding_rate` TEXT NOT NULL, `min_order_size` TEXT NOT NULL, `max_order_size` TEXT NOT NULL, `min_order_value` TEXT NOT NULL, `max_order_value` TEXT NOT NULL, `last` TEXT NOT NULL, `volume` TEXT NOT NULL, `amount` TEXT NOT NULL, `high` TEXT NOT NULL, `low` TEXT NOT NULL, `open` TEXT NOT NULL, `change` TEXT NOT NULL, `bid_price` TEXT NOT NULL, `ask_price` TEXT NOT NULL, `trade_count` INTEGER NOT NULL, `first_trade_id` INTEGER NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`market_id`))",
         "fields": [
           {
             "fieldPath": "marketId",
             "columnName": "market_id",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "market",
-            "columnName": "market",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "symbol",
-            "columnName": "symbol",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -231,26 +229,32 @@
             "notNull": true
           },
           {
+            "fieldPath": "quoteSymbol",
+            "columnName": "quote_symbol",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
             "fieldPath": "markPrice",
             "columnName": "mark_price",
             "affinity": "TEXT",
             "notNull": true
           },
           {
+            "fieldPath": "leverage",
+            "columnName": "leverage",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "iconUrl",
+            "columnName": "icon_url",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
             "fieldPath": "fundingRate",
             "columnName": "funding_rate",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "makerFee",
-            "columnName": "maker_fee",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "takerFee",
-            "columnName": "taker_fee",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -273,14 +277,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "quantityIncrement",
-            "columnName": "quantity_increment",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "priceIncrement",
-            "columnName": "price_increment",
+            "fieldPath": "maxOrderValue",
+            "columnName": "max_order_value",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -297,20 +295,62 @@
             "notNull": true
           },
           {
-            "fieldPath": "leverage",
-            "columnName": "leverage",
-            "affinity": "INTEGER",
+            "fieldPath": "amount",
+            "columnName": "amount",
+            "affinity": "TEXT",
             "notNull": true
           },
           {
-            "fieldPath": "iconUrl",
-            "columnName": "icon_url",
+            "fieldPath": "high",
+            "columnName": "high",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "low",
+            "columnName": "low",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "open",
+            "columnName": "open",
             "affinity": "TEXT",
             "notNull": true
           },
           {
             "fieldPath": "change",
             "columnName": "change",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bidPrice",
+            "columnName": "bid_price",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "askPrice",
+            "columnName": "ask_price",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tradeCount",
+            "columnName": "trade_count",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "firstTradeId",
+            "columnName": "first_trade_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -331,7 +371,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'aa2a40bfcda9610faa30a7e0d18637fa')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f17028ee96c6829315578a046a8e4856')"
     ]
   }
 }

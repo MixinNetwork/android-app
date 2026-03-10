@@ -3,7 +3,7 @@ package one.mixin.android.api.response.perps
 fun PerpsPositionItem.toPosition(): PerpsPosition {
     return PerpsPosition(
         positionId = positionId,
-        productId = productId,
+        marketId = marketId,
         side = side,
         quantity = quantity,
         entryPrice = entryPrice,
@@ -11,6 +11,8 @@ fun PerpsPositionItem.toPosition(): PerpsPosition {
         settleAssetId = settleAssetId,
         botId = botId,
         margin = margin,
+        openPayAmount = openPayAmount,
+        openPayAssetId = openPayAssetId,
         state = state,
         markPrice = markPrice,
         unrealizedPnl = unrealizedPnl,
@@ -20,4 +22,3 @@ fun PerpsPositionItem.toPosition(): PerpsPosition {
         updatedAt = updatedAt,
     )
 }
-

@@ -10,9 +10,9 @@ data class PerpsPositionItem(
     @SerializedName("position_id")
     @ColumnInfo(name = "position_id")
     val positionId: String,
-    @SerializedName("product_id")
-    @ColumnInfo(name = "product_id")
-    val productId: String,
+    @SerializedName(value = "market_id", alternate = ["product_id"])
+    @ColumnInfo(name = "market_id")
+    val marketId: String,
     @SerializedName("side")
     @ColumnInfo(name = "side")
     val side: String,
@@ -34,6 +34,12 @@ data class PerpsPositionItem(
     @SerializedName("margin")
     @ColumnInfo(name = "margin")
     val margin: String? = null,
+    @SerializedName("open_pay_amount")
+    @ColumnInfo(name = "open_pay_amount")
+    val openPayAmount: String? = null,
+    @SerializedName("open_pay_asset_id")
+    @ColumnInfo(name = "open_pay_asset_id")
+    val openPayAssetId: String? = null,
     @SerializedName("state")
     @ColumnInfo(name = "state")
     val state: String? = null,

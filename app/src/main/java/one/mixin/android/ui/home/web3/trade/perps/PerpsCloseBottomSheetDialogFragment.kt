@@ -197,7 +197,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                     botId = position.botId
                 )
 
-                viewModel.getMarketFromDb(position.productId)?.let { market ->
+                viewModel.getMarketFromDb(position.marketId)?.let { market ->
                     marketIconUrl = market.iconUrl
                     marketSymbol = market.displaySymbol
                 }
@@ -211,14 +211,14 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                     latestRoe = position.roe ?: "0"
 
                     lifecycleScope.launch {
-                        viewModel.getMarketFromDb(position.productId)?.let { market ->
+                        viewModel.getMarketFromDb(position.marketId)?.let { market ->
                             marketIconUrl = market.iconUrl
                             marketSymbol = market.displaySymbol
                         }
                     }
 
                     viewModel.loadMarketDetail(
-                        marketId = position.productId,
+                        marketId = position.marketId,
                         onSuccess = { market ->
                             marketIconUrl = market.iconUrl
                             marketSymbol = market.displaySymbol

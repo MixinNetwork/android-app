@@ -264,7 +264,7 @@ fun PerpetualContent(
                     OpenPositionItem(
                         position = position,
                         onClick = {
-                            val targetMarket = markets.firstOrNull { it.marketId == position.productId }
+                            val targetMarket = markets.firstOrNull { it.marketId == position.marketId }
                             if (targetMarket != null) {
                                 onMarketItemClick(targetMarket)
                             } else {
@@ -378,7 +378,7 @@ fun PerpetualContent(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = stringResource(R.string.Closed_Positions),
+                    text = stringResource(R.string.perps_activity),
                     fontSize = 16.sp,
                     color = MixinAppTheme.colors.textPrimary,
                 )

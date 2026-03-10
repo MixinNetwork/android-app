@@ -21,7 +21,15 @@ interface PerpsMarketDao : BaseDao<PerpsMarket> {
     @Query("SELECT * FROM markets WHERE market_id = :marketId")
     suspend fun getMarket(marketId: String): PerpsMarket?
 
-    @Query("SELECT * FROM markets WHERE symbol LIKE '%' || :query || '%' ORDER BY CAST(volume AS REAL) DESC")
+    @Query(
+        """
+        SELECT * FROM markets
+        WHERE display_symbol LIKE '%' || :query || '%'
+            OR token_symbol LIKE '%' || :query || '%'
+            OR quote_symbol LIKE '%' || :query || '%'
+        ORDER BY CAST(volume AS REAL) DESC
+        """
+    )
     suspend fun searchMarkets(query: String): List<PerpsMarket>
 
     @Query("DELETE FROM markets")

@@ -5,8 +5,8 @@ import com.google.gson.annotations.SerializedName
 data class CandleView(
     @SerializedName("market")
     val market: String,
-    @SerializedName("product")
-    val product: String,
+    @SerializedName(value = "market_id")
+    val marketId: String,
     @SerializedName("time_frame")
     val timeFrame: String,
     @SerializedName("updated_at")

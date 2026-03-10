@@ -4,6 +4,7 @@ import PageScaffold
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -97,15 +98,17 @@ fun PerpsMarketDetailPage(
             flowOf(emptyList())
         }
     }.collectAsStateWithLifecycle(initialValue = emptyList())
-    val currentPosition = openPositions.firstOrNull { it.productId == marketId }
-    val closedPositions = allClosedPositions.filter { it.productId == marketId }
-
-    val timeFrameValues = listOf("1h", "1d", "1w", "1M")
+    val currentPosition = openPositions.firstOrNull { it.marketId == marketId }
+    val closedPositions = allClosedPositions.filter { it.marketId == marketId }
+    val timeFrameValues = listOf("1m", "5m", "15m", "1h", "4h", "1d", "1w")
     val timeFrameLabels = listOf(
+        stringResource(R.string.minutes_count_short, 1),
+        stringResource(R.string.minutes_count_short, 5),
+        stringResource(R.string.minutes_count_short, 15),
         stringResource(R.string.hours_count_short, 1),
+        stringResource(R.string.hours_count_short, 4),
         stringResource(R.string.days_count_short, 1),
         stringResource(R.string.weeks_count_short, 1),
-        stringResource(R.string.months_count_short, 1),
     )
     val quoteColorReversed = context.defaultSharedPreferences
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
@@ -161,7 +164,7 @@ fun PerpsMarketDetailPage(
                     if (market != null) {
                         MarketDetailCard(
                             market = market!!,
-                            marketSymbol = marketSymbol,
+                            marketId = marketId,
                             displaySymbol = displaySymbol,
                             tokenSymbol = tokenSymbol,
                             selectedTimeFrame = selectedTimeFrame,
@@ -361,19 +364,8 @@ private fun MarketInfoCard(
     market: PerpsMarket,
     onLearnClick: () -> Unit,
 ) {
-    val context = LocalContext.current
-    val quoteColorReversed = context.defaultSharedPreferences
-        .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
-    val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
-    val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
     val fiatRate = BigDecimal(Fiats.getRate())
     val fiatSymbol = Fiats.getSymbol()
-    val fundingRate = market.fundingRate.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    val fundingColor = when {
-        fundingRate > BigDecimal.ZERO -> risingColor
-        fundingRate < BigDecimal.ZERO -> fallingColor
-        else -> MixinAppTheme.colors.textPrimary
-    }
 
     Column(
         modifier = Modifier
@@ -429,20 +421,18 @@ private fun MarketInfoCard(
         )
 
         Spacer(modifier = Modifier.height(12.dp))
-        Column {
-            Text(
-                text = stringResource(R.string.Funding_Rate),
-                fontSize = 12.sp,
-                color = MixinAppTheme.colors.textAssist
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "${market.fundingRate}%",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                color = MixinAppTheme.colors.textPrimary
-            )
-        }
+        Text(
+            text = stringResource(R.string.Funding_Rate),
+            fontSize = 12.sp,
+            color = MixinAppTheme.colors.textAssist
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = market.fundingRate,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium,
+            color = MixinAppTheme.colors.textPrimary
+        )
     }
 }
 
@@ -462,7 +452,7 @@ private fun formatVolume(
 @Composable
 private fun MarketDetailCard(
     market: PerpsMarket,
-    marketSymbol: String,
+    marketId: String,
     displaySymbol: String,
     tokenSymbol: String,
     selectedTimeFrame: Int,
@@ -546,7 +536,7 @@ private fun MarketDetailCard(
                 .clipToBounds()
         ) {
             CandleChart(
-                symbol = marketSymbol,
+                marketId = marketId,
                 timeFrame = timeFrameValues[selectedTimeFrame]
             )
         }
@@ -554,13 +544,14 @@ private fun MarketDetailCard(
         Spacer(modifier = Modifier.height(16.dp))
 
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             timeFrameLabels.forEachIndexed { index, timeFrameLabel ->
                 Box(
                     modifier = Modifier
-                        .weight(1f)
                         .height(36.dp)
                         .clip(RoundedCornerShape(18.dp))
                         .then(
@@ -570,7 +561,8 @@ private fun MarketDetailCard(
                                 Modifier
                             }
                         )
-                        .clickable { onTimeFrameChange(index) },
+                        .clickable { onTimeFrameChange(index) }
+                        .padding(horizontal = 12.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -828,7 +820,7 @@ private fun ClosedPositionsSection(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = stringResource(R.string.Closed_Positions),
+                text = stringResource(R.string.perps_activity),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
                 color = MixinAppTheme.colors.textPrimary

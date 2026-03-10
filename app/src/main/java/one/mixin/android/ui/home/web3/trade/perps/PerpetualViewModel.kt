@@ -154,7 +154,7 @@ class PerpetualViewModel @Inject constructor(
     }
 
     fun loadCandles(
-        symbol: String,
+        marketId: String,
         timeFrame: String,
         onSuccess: (List<CandleView>) -> Unit,
         onError: (String) -> Unit
@@ -162,7 +162,7 @@ class PerpetualViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val response = withContext(Dispatchers.IO) {
-                    routeService.getPerpsCandles(symbol, timeFrame)
+                    routeService.getPerpsCandles(marketId, timeFrame)
                 }
                 
                 val data = response.data
@@ -241,13 +241,12 @@ class PerpetualViewModel @Inject constructor(
 
     fun openPerpsOrder(
         assetId: String,
-        productId: String,
+        marketId: String,
         side: String,
         amount: String,
         leverage: Int,
         walletId: String,
         destination: String? = null,
-        marketSymbol: String,
         entryPrice: String,
         onSuccess: (OpenOrderResponse) -> Unit,
         onError: (Int, String) -> Unit
@@ -256,7 +255,7 @@ class PerpetualViewModel @Inject constructor(
             try {
                 val request = OpenOrderRequest(
                     assetId = assetId,
-                    productId = productId,
+                    marketId = marketId,
                     side = side,
                     amount = amount,
                     leverage = leverage,
@@ -270,17 +269,19 @@ class PerpetualViewModel @Inject constructor(
                 
                 val data = response.data
                 if (response.isSuccess && data != null) {
-                    Timber.d("Perps order opened: ${data.orderId}, payUrl: ${data.payUrl}")
+                    Timber.d("Perps order opened: ${data.orderId}, payUrl: ${data.paymentUrl}")
                     
                     val position = PerpsPosition(
                         positionId = data.orderId,
-                        productId = productId,
+                        marketId = marketId,
                         side = side,
                         quantity = amount,
                         settleAssetId = assetId,
                         botId = "",
                         entryPrice = entryPrice,
                         margin = amount,
+                        openPayAmount = data.payAmount,
+                        openPayAssetId = assetId,
                         leverage = leverage,
                         state = "pending",
                         markPrice = entryPrice,
@@ -515,7 +516,7 @@ class PerpetualViewModel @Inject constructor(
                 val positions = withContext(Dispatchers.IO) {
                     perpsPositionDao.getOpenPositions(walletId)
                 }
-                val position = positions.firstOrNull { it.productId == marketId }
+                val position = positions.firstOrNull { it.marketId == marketId }
                 onSuccess(position)
             } catch (e: Exception) {
                 Timber.e(e, "Error loading position by market")
@@ -530,7 +531,7 @@ class PerpetualViewModel @Inject constructor(
                 val allHistories = withContext(Dispatchers.IO) {
                     perpsPositionHistoryDao.getHistories(walletId, 100)
                 }
-                val filteredHistories = allHistories.filter { it.productId == marketId }
+                val filteredHistories = allHistories.filter { it.marketId == marketId }
                 onSuccess(filteredHistories)
             } catch (e: Exception) {
                 Timber.e(e, "Error loading closed positions by market")

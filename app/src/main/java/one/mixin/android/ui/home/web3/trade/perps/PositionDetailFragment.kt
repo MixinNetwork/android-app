@@ -148,8 +148,8 @@ class PositionDetailFragment : BaseFragment() {
     private fun openTradeAgain(positionHistory: PerpsPositionHistoryItem) {
         PerpsActivity.showDetail(
             context = requireContext(),
-            marketId = positionHistory.productId,
-            marketSymbol = positionHistory.symbol.orEmpty(),
+            marketId = positionHistory.marketId,
+            marketSymbol = positionHistory.displaySymbol.orEmpty(),
             marketDisplaySymbol = positionHistory.displaySymbol.orEmpty(),
             marketTokenSymbol = positionHistory.tokenSymbol.orEmpty()
         )

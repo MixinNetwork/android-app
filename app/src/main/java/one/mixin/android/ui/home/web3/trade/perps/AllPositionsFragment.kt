@@ -41,21 +41,21 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
 
     companion object {
         const val TAG = "AllPositionsFragment"
-        private const val ARGS_INITIAL_TAB = "args_initial_tab"
-        private const val TAB_OPEN = "tab_open"
-        private const val TAB_CLOSED = "tab_closed"
+        private const val ARGS_POSITION_TYPE = "args_position_type"
+        private const val TYPE_OPEN = "type_open"
+        private const val TYPE_CLOSED = "type_closed"
         private const val POSITION_REFRESH_INTERVAL_MS = 10_000L
         private const val CLOSED_POSITION_REFRESH_LIMIT = 100
 
-        fun newInstance(initialOpenTab: Boolean = false) = AllPositionsFragment().apply {
+        fun newInstance(showOpenPositions: Boolean = false) = AllPositionsFragment().apply {
             arguments = Bundle().apply {
-                putString(ARGS_INITIAL_TAB, if (initialOpenTab) TAB_OPEN else TAB_CLOSED)
+                putString(ARGS_POSITION_TYPE, if (showOpenPositions) TYPE_OPEN else TYPE_CLOSED)
             }
         }
 
-        fun newOpenInstance() = newInstance(initialOpenTab = true)
+        fun newOpenInstance() = newInstance(showOpenPositions = true)
 
-        fun newClosedInstance() = newInstance(initialOpenTab = false)
+        fun newClosedInstance() = newInstance(showOpenPositions = false)
     }
 
     @Inject
@@ -72,13 +72,13 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
         OpenPositionAdapter(isQuoteColorReversed) { position ->
             lifecycleScope.launch {
                 val market = withContext(Dispatchers.IO) {
-                    perpsMarketDao.getMarket(position.productId)
+                    perpsMarketDao.getMarket(position.marketId)
                 }
                 activity?.let { ctx ->
                     PerpsActivity.showDetail(
                         context = ctx,
-                        marketId = position.productId,
-                        marketSymbol = market?.symbol ?: "",
+                        marketId = position.marketId,
+                        marketSymbol = market?.displaySymbol ?: "",
                         marketDisplaySymbol = market?.displaySymbol ?: "",
                         marketTokenSymbol = market?.tokenSymbol ?: ""
                     )
@@ -102,12 +102,12 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
         }
     }
 
-    private enum class PositionTab {
+    private enum class PositionType {
         OPEN,
         CLOSED
     }
 
-    private var currentTab: PositionTab = PositionTab.CLOSED
+    private var positionType: PositionType = PositionType.CLOSED
     private var openPositionsLiveData: LiveData<PagedList<PerpsPositionItem>>? = null
     private var closedPositionsLiveData: LiveData<PagedList<PerpsPositionHistoryItem>>? = null
     private var totalValueJob: Job? = null
@@ -146,27 +146,16 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
             titleView.rightAnimator.setOnClickListener {
                 context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
             }
-            titleView.setSubTitle(getString(R.string.Closed_Positions), "")
+            positionType = when (arguments?.getString(ARGS_POSITION_TYPE, TYPE_CLOSED)) {
+                TYPE_OPEN -> PositionType.OPEN
+                else -> PositionType.CLOSED
+            }
+            titleView.setSubTitle(
+                getString(if (positionType == PositionType.OPEN) R.string.perps_positions else R.string.perps_activity),
+                ""
+            )
 
             positionsRv.layoutManager = LinearLayoutManager(requireContext())
-
-            radioGroup.setOnCheckedChangeListener { _, checkedId ->
-                currentTab = if (checkedId == R.id.radio_open) {
-                    PositionTab.OPEN
-                } else {
-                    PositionTab.CLOSED
-                }
-                loadPositions()
-            }
-
-            val initialTab = arguments?.getString(ARGS_INITIAL_TAB, TAB_CLOSED)
-            currentTab = if (initialTab == TAB_OPEN) {
-                radioOpen.isChecked = true
-                PositionTab.OPEN
-            } else {
-                radioClosed.isChecked = true
-                PositionTab.CLOSED
-            }
         }
 
         loadPositions()
@@ -183,13 +172,13 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
         lastClosedTotalPnl = 0.0
         lastClosedTotalEntryValue = 0.0
 
-        if (currentTab == PositionTab.OPEN) {
-            binding.titleView.setSubTitle(getString(R.string.Open_Positions_Simple), "")
+        if (positionType == PositionType.OPEN) {
+            binding.titleView.setSubTitle(getString(R.string.perps_positions), "")
             totalValueAdapter.submitTitle(R.string.Total_Position_Value)
             binding.positionsRv.adapter = ConcatAdapter(totalValueAdapter, openPositionAdapter)
             loadOpenPositions()
         } else {
-            binding.titleView.setSubTitle(getString(R.string.Closed_Positions), "")
+            binding.titleView.setSubTitle(getString(R.string.perps_activity), "")
             totalValueAdapter.submitTitle(R.string.Realized_PnL)
             binding.positionsRv.adapter = ConcatAdapter(totalValueAdapter, closedPositionAdapter)
             loadClosedPositions()

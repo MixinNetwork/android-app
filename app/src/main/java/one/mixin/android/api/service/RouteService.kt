@@ -360,14 +360,14 @@ interface RouteService {
         @Query("limit") limit: Int = 20
     ): MixinResponse<List<PerpsMarket>>
 
-    @GET("perps/market")
+    @GET("perps/markets/{market_id}")
     suspend fun getPerpsMarket(
-        @Query("market_id") marketId: String
+        @Path("market_id") marketId: String
     ): MixinResponse<PerpsMarket>
 
     @GET("perps/markets/candles")
     suspend fun getPerpsCandles(
-        @Query("product") product: String,
+        @Query("market_id") marketId: String,
         @Query("time_frame") timeFrame: String
     ): MixinResponse<CandleView>
 

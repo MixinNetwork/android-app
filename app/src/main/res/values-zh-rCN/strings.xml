@@ -577,6 +577,7 @@
         <item quantity="one">%d 小时</item>
         <item quantity="other">%d 小时</item>
     </plurals>
+    <string name="minutes_count_short">%1$d分钟</string>
     <string name="hours_count_short">%1$d小时</string>
     <string name="days_count_short">%1$d天</string>
     <string name="weeks_count_short">%1$d周</string>
@@ -2329,9 +2330,10 @@
     <string name="Perpetual_Leverage_Format">%1$d倍</string>
     <string name="Open_Positions_Simple">持仓中</string>
     <string name="Open_Positions">持仓中(%1$d)</string>
-    <string name="Closed_Positions">已平仓</string>
+    <string name="perps_positions">持仓</string>
+    <string name="perps_activity">历史记录</string>
     <string name="No_Positions">暂无持仓</string>
-    <string name="No_Closed_Positions">暂无已平仓记录</string>
+    <string name="No_Closed_Positions">暂无历史记录</string>
     <string name="PNL">盈亏</string>
     <string name="Direction">方向</string>
     <string name="No_Markets">暂无行情</string>
