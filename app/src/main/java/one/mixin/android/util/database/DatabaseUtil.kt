@@ -17,127 +17,6 @@ import one.mixin.android.vo.Account
 import timber.log.Timber
 import java.io.File
 
-private fun readMixinUserIdFromFile(dbFile: File): String? {
-    if (!dbFile.exists() || dbFile.length() <= 0) {
-        return null
-    }
-    var c: Cursor? = null
-    var db: SQLiteDatabase? = null
-    return try {
-        db =
-            SQLiteDatabase.openDatabase(
-                dbFile.absolutePath,
-                null,
-                SQLiteDatabase.OPEN_READONLY,
-            )
-        c = db.rawQuery("SELECT user_id FROM users WHERE relationship = 'ME' LIMIT 1", null)
-        if (c.moveToFirst()) {
-            c.getString(0)
-        } else {
-            null
-        }
-    } catch (e: Exception) {
-        null
-    } finally {
-        c?.close()
-        db?.close()
-    }
-}
-
-private fun deleteDatabaseAndSidecars(dbFile: File) {
-    dbFile.parent?.let {
-        File("$it${File.separator}${dbFile.name}-shm").delete()
-        File("$it${File.separator}${dbFile.name}-wal").delete()
-        File("$it${File.separator}${dbFile.name}-journal").delete()
-    }
-    if (dbFile.exists()) {
-        do {
-            dbFile.delete()
-        } while (dbFile.exists())
-    }
-}
-
-private fun currentIdentityNumber(): String? = Session.getAccount()?.identityNumber?.takeIf { it.isNotBlank() }
-
-suspend fun getLastUserId(context: Context): String? =
-    withContext(Dispatchers.IO) {
-        val candidates = LinkedHashSet<File>()
-        candidates.add(legacyDatabaseFile(context))
-        currentIdentityNumber()?.let { identityNumber ->
-            val scopedCurrent = databaseFile(context, identityNumber)
-            if (scopedCurrent != legacyDatabaseFile(context)) {
-                candidates.add(scopedCurrent)
-            }
-        }
-        val scopedRoot = File(context.filesDir.parent, "databases")
-        scopedRoot.listFiles()
-            ?.map { File(it, Constants.DataBase.DB_NAME) }
-            ?.sortedByDescending { it.lastModified() }
-            ?.forEach { candidates.add(it) }
-        for (dbFile in candidates) {
-            val userId = readMixinUserIdFromFile(dbFile)
-            if (!userId.isNullOrBlank()) {
-                return@withContext userId
-            }
-        }
-        return@withContext null
-    }
-
-@SuppressLint("ObsoleteSdkInt")
-suspend fun clearDatabase(context: Context) {
-    try {
-        clearFts(context)
-        clearPending(context)
-        val scopedDbFile = currentIdentityNumber()?.let { databaseFile(context, it) }
-        val legacyDbFile = legacyDatabaseFile(context)
-        scopedDbFile?.let { scoped ->
-            deleteDatabaseAndSidecars(scoped)
-        }
-        if (scopedDbFile == null || legacyDbFile != scopedDbFile) {
-            deleteDatabaseAndSidecars(legacyDbFile)
-        }
-    } catch (e: Exception) {
-        Timber.e(e)
-    }
-
-    try {
-        if (Build.VERSION.SDK_INT >= 28) {
-            context.getDatabasePath(Constants.DataBase.DB_NAME).delete()
-            context.getDatabasePath(Constants.DataBase.DB_NAME + "-shm").delete()
-            context.getDatabasePath(Constants.DataBase.DB_NAME + "-wal").delete()
-        } else {
-            SQLiteDatabase.deleteDatabase(context.getDatabasePath(Constants.DataBase.DB_NAME))
-        }
-    } catch (e: Exception) {
-        reportException(e)
-    }
-}
-
-@SuppressLint("ObsoleteSdkInt")
-suspend fun clearPending(context: Context) =
-    withContext(Dispatchers.IO) {
-        val scopedDbFile = currentIdentityNumber()?.let { pendingDatabaseFile(context, it) }
-        val legacyDbFile = legacyPendingDatabaseFile(context)
-        scopedDbFile?.let { scoped ->
-            deleteDatabaseAndSidecars(scoped)
-        }
-        if (scopedDbFile == null || legacyDbFile != scopedDbFile) {
-            deleteDatabaseAndSidecars(legacyDbFile)
-        }
-    }
-
-suspend fun clearFts(context: Context) =
-    withContext(Dispatchers.IO) {
-        val scopedDbFile = currentIdentityNumber()?.let { ftsDatabaseFile(context, it) }
-        val legacyDbFile = legacyFtsDatabaseFile(context)
-        scopedDbFile?.let { scoped ->
-            deleteDatabaseAndSidecars(scoped)
-        }
-        if (scopedDbFile == null || legacyDbFile != scopedDbFile) {
-            deleteDatabaseAndSidecars(legacyDbFile)
-        }
-    }
-
 @SuppressLint("ObsoleteSdkInt")
 suspend fun clearJobsAndRawTransaction(
     context: Context,
@@ -188,11 +67,6 @@ fun dbDir(
         dir.mkdirs()
     }
     return dir
-}
-
-fun legacyDatabaseExists(context: Context): Boolean {
-    val dbFile = legacyDatabaseFile(context)
-    return dbFile.exists() && dbFile.length() > 0
 }
 
 fun legacyDatabaseFile(context: Context): File {

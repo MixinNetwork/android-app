@@ -7,37 +7,23 @@ import android.widget.TextView
 import androidx.annotation.LayoutRes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import one.mixin.android.Constants
-import one.mixin.android.Constants.DEVICE_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.ResponseError
-import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.EdKeyPair
-import one.mixin.android.crypto.removeValueFromEncryptedPreferences
-import one.mixin.android.extension.base64Encode
-import one.mixin.android.extension.clear
 import one.mixin.android.extension.clickVibrate
-import one.mixin.android.extension.decodeBase64
-import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.getStringDeviceId
-import one.mixin.android.extension.putString
+import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.tickVibrate
-import one.mixin.android.session.Session
-import one.mixin.android.session.decryptPinToken
-import one.mixin.android.session.resolveCurrentUserScopeManager
+import one.mixin.android.session.initializeAccountSession
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.RestoreActivity
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.util.database.clearJobsAndRawTransaction
-import one.mixin.android.util.database.getLastUserId
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.VerificationCodeView
-import one.mixin.android.extension.hideKeyboard
 
 abstract class PinCodeFragment(
     @LayoutRes contentLayoutId: Int,
@@ -119,32 +105,8 @@ abstract class PinCodeFragment(
 
         val account = response.data as Account
 
-        val lastUserId = getLastUserId(requireContext())
-        val sameUser = lastUserId != null && lastUserId == account.userId
-        if (sameUser) {
-            showLoading()
-            withContext(Dispatchers.IO) {
-                clearJobsAndRawTransaction(requireContext(), account.identityNumber)
-            }
-        } else {
-            showLoading()
-            withContext(Dispatchers.IO) {
-                clearJobsAndRawTransaction(requireContext(), account.identityNumber)
-            }
-            CryptoWalletHelper.clear(requireContext())
-            defaultSharedPreferences.clear()
-        }
-        val privateKey = sessionKey.privateKey
-        val pinToken = decryptPinToken(account.pinToken.decodeBase64(), privateKey)
-        Session.storeEd25519Seed(privateKey.base64Encode())
-        Session.storePinToken(pinToken.base64Encode())
-        Session.storeAccount(account)
-        resolveCurrentUserScopeManager(requireContext()).enter(account)
-        if (Session.hasPhone()) {
-            // Remove mnemonic if user has phone on sign in
-            removeValueFromEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC)
-        }
-        defaultSharedPreferences.putString(DEVICE_ID, requireContext().getStringDeviceId())
+        showLoading()
+        initializeAccountSession(requireContext(), account, sessionKey)
 
         verificationKeyboard.animate().translationY(300f).start()
         MixinApplication.get().isOnline.set(true)

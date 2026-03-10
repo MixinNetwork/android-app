@@ -333,7 +333,6 @@ abstract class MixinDatabase : RoomDatabase() {
             }
             moveLegacyPendingDatabaseFile(context, account)
             moveLegacyFtsDatabaseFile(context, account)
-            WalletDatabase.moveTempDatabaseFileIfNeeded(context, account.identityNumber)
             return true
         }
 

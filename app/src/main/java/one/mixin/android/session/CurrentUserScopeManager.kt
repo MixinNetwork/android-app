@@ -56,12 +56,8 @@ class CurrentUserScopeManager
 
         fun getMixinDatabase(): MixinDatabase {
             synchronized(lock) {
-                val account = Session.getAccount()
-                if (account == null) {
-                    ensureTempScopeLocked()
-                } else {
-                    ensureScopeLocked(account)
-                }
+                val account = requireNotNull(Session.getAccount()) { "Account is required for MixinDatabase scope." }
+                ensureScopeLocked(account)
                 return mixinDatabase
                     ?: throw IllegalStateException("Unable to create MixinDatabase scope")
             }
@@ -69,12 +65,8 @@ class CurrentUserScopeManager
 
         fun getWalletDatabase(): WalletDatabase {
             synchronized(lock) {
-                val account = Session.getAccount()
-                if (account == null) {
-                    ensureTempScopeLocked()
-                } else {
-                    ensureScopeLocked(account)
-                }
+                val account = requireNotNull(Session.getAccount()) { "Account is required for WalletDatabase scope." }
+                ensureScopeLocked(account)
                 return walletDatabase
                     ?: throw IllegalStateException("Unable to create WalletDatabase scope")
             }
@@ -82,12 +74,8 @@ class CurrentUserScopeManager
 
         fun getPendingDatabase(): PendingDatabase {
             synchronized(lock) {
-                val account = Session.getAccount()
-                if (account == null) {
-                    ensureTempScopeLocked()
-                } else {
-                    ensureScopeLocked(account)
-                }
+                val account = requireNotNull(Session.getAccount()) { "Account is required for PendingDatabase scope." }
+                ensureScopeLocked(account)
                 return pendingDatabase
                     ?: throw IllegalStateException("Unable to create PendingDatabase scope")
             }
@@ -95,12 +83,8 @@ class CurrentUserScopeManager
 
         fun getFtsDatabase(): FtsDatabase {
             synchronized(lock) {
-                val account = Session.getAccount()
-                if (account == null) {
-                    ensureTempScopeLocked()
-                } else {
-                    ensureScopeLocked(account)
-                }
+                val account = requireNotNull(Session.getAccount()) { "Account is required for FtsDatabase scope." }
+                ensureScopeLocked(account)
                 return ftsDatabase
                     ?: throw IllegalStateException("Unable to create FtsDatabase scope")
             }
@@ -137,36 +121,6 @@ class CurrentUserScopeManager
 
             currentUserId = account.userId
             currentIdentityNumber = account.identityNumber
-            mixinDatabase = scopedMixinDatabase
-            pendingDatabase = scopedPendingDatabase
-            walletDatabase = scopedWalletDatabase
-            ftsDatabase = scopedFtsDatabase
-            scopeVersion++
-        }
-
-        private fun ensureTempScopeLocked() {
-            val isTempScope = currentUserId == null &&
-                currentIdentityNumber == "temp" &&
-                mixinDatabase != null &&
-                walletDatabase != null &&
-                pendingDatabase != null &&
-                ftsDatabase != null
-            if (isTempScope) {
-                return
-            }
-            closeScopeLocked()
-            val scopedMixinDatabase = MixinDatabase.getDatabase(appContext, "temp")
-            val scopedPendingDatabase =
-                PendingDatabaseImp.getDatabase(
-                    appContext,
-                    scopedMixinDatabase.floodMessageDao(),
-                    scopedMixinDatabase.jobDao(),
-                    "temp",
-                )
-            val scopedWalletDatabase = WalletDatabase.getDatabase(appContext, "temp")
-            val scopedFtsDatabase = FtsDatabase.getDatabase(appContext, "temp")
-            currentUserId = null
-            currentIdentityNumber = "temp"
             mixinDatabase = scopedMixinDatabase
             pendingDatabase = scopedPendingDatabase
             walletDatabase = scopedWalletDatabase

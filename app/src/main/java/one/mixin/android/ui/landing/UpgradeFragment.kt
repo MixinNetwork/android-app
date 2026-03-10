@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -35,7 +34,6 @@ class UpgradeFragment : BaseFragment(R.layout.fragment_upgrade) {
             }
     }
 
-    private val viewModel by viewModels<MobileViewModel>()
     private val binding by viewBinding(FragmentUpgradeBinding::bind)
 
     private val type: Int by lazy { requireArguments().getInt(ARGS_TYPE) }

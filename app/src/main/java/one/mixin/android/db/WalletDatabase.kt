@@ -1,8 +1,6 @@
 package one.mixin.android.db
 
 import android.content.Context
-import android.database.Cursor
-import android.database.sqlite.SQLiteDatabase
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -11,7 +9,6 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import one.mixin.android.Constants
-import one.mixin.android.Constants.Account.PREF_LOGIN_OR_SIGN_UP
 import one.mixin.android.api.response.web3.WalletOutput
 import one.mixin.android.db.converter.AssetChangeListConverter
 import one.mixin.android.db.converter.Web3TypeConverters
@@ -32,8 +29,6 @@ import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3TokensExtra
 import one.mixin.android.db.web3.vo.Web3Transaction
 import one.mixin.android.db.web3.vo.Web3Wallet
-import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.moveTo
 import one.mixin.android.util.SINGLE_DB_EXECUTOR
 import one.mixin.android.util.database.dbDir
 import one.mixin.android.util.reportException
@@ -69,8 +64,6 @@ abstract class WalletDatabase : RoomDatabase() {
         private var currentIdentityNumber: String? = null
 
         private lateinit var supportSQLiteDatabase: SupportSQLiteDatabase
-
-        private const val ACCOUNT_PROPERTY_KEY: String = "account"
 
         val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(db: SupportSQLiteDatabase) {
@@ -120,78 +113,6 @@ abstract class WalletDatabase : RoomDatabase() {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("CREATE TABLE IF NOT EXISTS `outputs` (`output_id` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `transaction_hash` TEXT NOT NULL, `output_index` INTEGER NOT NULL, `amount` TEXT NOT NULL, `address` TEXT NOT NULL, `pubkey_hex` TEXT NOT NULL, `pubkey_type` TEXT NOT NULL, `status` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`output_id`))")
             }
-        }
-
-        fun moveTempDatabaseFileIfNeeded(
-            context: Context,
-            identityNumber: String,
-        ): Boolean {
-            val shouldGoWallet: Boolean = context.defaultSharedPreferences.getBoolean(PREF_LOGIN_OR_SIGN_UP, false)
-            if (shouldGoWallet) { // Do not migrate on first entry
-                return false
-            }
-            if (identityNumber.isBlank()) {
-                return false
-            }
-            val targetDir: File = dbDir(context, identityNumber)
-            val targetDbFile = File(targetDir, Constants.DataBase.WEB3_DB_NAME)
-            if (targetDbFile.exists() && targetDbFile.length() > 0) {
-                return false
-            }
-            val tempDir: File = dbDir(context, "temp")
-            val tempDbFile = File(tempDir, Constants.DataBase.WEB3_DB_NAME)
-            if (!tempDbFile.exists() || tempDbFile.length() <= 0) {
-                return false
-            }
-            val storedIdentityNumber: String? = readIdentityNumberFromDatabaseFile(tempDbFile)
-            if (storedIdentityNumber != identityNumber) {
-                tempDbFile.delete()
-                File(tempDir, Constants.DataBase.WEB3_DB_NAME + "-wal").delete()
-                File(tempDir, Constants.DataBase.WEB3_DB_NAME + "-shm").delete()
-                File(tempDir, Constants.DataBase.WEB3_DB_NAME + "-journal").delete()
-                return false
-            }
-            if (!targetDir.exists()) {
-                targetDir.mkdirs()
-            }
-            tempDbFile.moveTo(targetDbFile)
-            moveSidecarIfExists(tempDir, targetDir, Constants.DataBase.WEB3_DB_NAME, "-wal")
-            moveSidecarIfExists(tempDir, targetDir, Constants.DataBase.WEB3_DB_NAME, "-shm")
-            moveSidecarIfExists(tempDir, targetDir, Constants.DataBase.WEB3_DB_NAME, "-journal")
-            return true
-        }
-
-        private fun readIdentityNumberFromDatabaseFile(databaseFile: File): String? {
-            var cursor: Cursor? = null
-            var database: SQLiteDatabase? = null
-            return try {
-                database = SQLiteDatabase.openDatabase(databaseFile.absolutePath, null, SQLiteDatabase.OPEN_READONLY)
-                cursor = database.rawQuery("SELECT value FROM properties WHERE `key` = ? LIMIT 1", arrayOf(ACCOUNT_PROPERTY_KEY))
-                if (cursor.moveToFirst()) {
-                    cursor.getString(0)
-                } else {
-                    null
-                }
-            } catch (e: Exception) {
-                null
-            } finally {
-                cursor?.close()
-                database?.close()
-            }
-        }
-
-        private fun moveSidecarIfExists(
-            fromDir: File,
-            toDir: File,
-            databaseName: String,
-            suffix: String,
-        ) {
-            val fromFile = File(fromDir, databaseName + suffix)
-            if (!fromFile.exists()) {
-                return
-            }
-            val toFile = File(toDir, databaseName + suffix)
-            fromFile.moveTo(toFile)
         }
 
         fun getDatabase(
