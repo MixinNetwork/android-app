@@ -252,9 +252,8 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
                     if (lastClosedTotalPnl != totalPnl || lastClosedTotalEntryValue != totalEntryValue) {
                         lastClosedTotalPnl = totalPnl
                         lastClosedTotalEntryValue = totalEntryValue
-                        val percent = calculatePercent(totalPnl, totalEntryValue)
                         totalValueAdapter.submitTotal(BigDecimal.valueOf(totalPnl))
-                        totalValueAdapter.submitSubtitle(BigDecimal.valueOf(totalPnl), BigDecimal.valueOf(percent))
+                        totalValueAdapter.submitSubtitle(BigDecimal.valueOf(totalPnl), BigDecimal.ZERO)
                     }
                 }
             }

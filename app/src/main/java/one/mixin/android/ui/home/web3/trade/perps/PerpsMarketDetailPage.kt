@@ -192,7 +192,10 @@ fun PerpsMarketDetailPage(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 if (currentPosition != null) {
-                    OpenPositionCard(position = currentPosition)
+                    OpenPositionCard(
+                        position = currentPosition,
+                        viewModel = viewModel
+                    )
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
@@ -584,6 +587,7 @@ private fun MarketDetailCard(
 @Composable
 private fun OpenPositionCard(
     position: PerpsPositionItem,
+    viewModel: PerpetualViewModel,
 ) {
     val context = LocalContext.current
     val quoteColorReversed = context.defaultSharedPreferences
@@ -601,8 +605,17 @@ private fun OpenPositionCard(
     val directionColor = if (isLong) risingColor else fallingColor
 
     val quantity = position.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    val markPrice = position.markPrice?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    val orderValue = quantity.multiply(markPrice).multiply(fiatRate)
+    val openPayToken by remember(position.openPayAssetId) {
+        if (position.openPayAssetId.isNullOrEmpty()) {
+            flowOf(null)
+        } else {
+            viewModel.observeTokenByAssetId(position.openPayAssetId)
+        }
+    }.collectAsStateWithLifecycle(initialValue = null)
+    val openPayAmount = position.openPayAmount?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val openPayPrice = openPayToken?.priceUsd?.toBigDecimalOrNull()
+        ?: if (position.openPayAssetId in Constants.usdIds) BigDecimal.ONE else BigDecimal.ZERO
+    val amountValue = openPayAmount.multiply(openPayPrice).multiply(fiatRate)
 
     val entryPrice = position.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val liquidationPrice = calculateLiquidationPriceValue(entryPrice, position.leverage, isLong)
@@ -741,7 +754,7 @@ private fun OpenPositionCard(
 //                    )
                 }
                 Text(
-                    text = "${fiatSymbol}${orderValue.priceFormat()}",
+                    text = "${fiatSymbol}${amountValue.priceFormat()}",
                     fontSize = 14.sp,
                     color = MixinAppTheme.colors.textPrimary
                 )

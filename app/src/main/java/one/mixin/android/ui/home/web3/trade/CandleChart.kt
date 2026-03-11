@@ -55,10 +55,11 @@ import one.mixin.android.api.response.perps.CandleView
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.ui.home.web3.trade.perps.PerpetualViewModel
+import org.threeten.bp.Instant
+import org.threeten.bp.ZoneId
+import org.threeten.bp.ZonedDateTime
+import org.threeten.bp.format.DateTimeFormatter
 import java.math.BigDecimal
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import kotlin.math.max
 import kotlin.math.min
 
@@ -590,15 +591,20 @@ private fun formatPrice(price: BigDecimal): String {
 
 private fun formatCandleTime(timestamp: Long, timeFrame: String): String {
     val millis = if (timestamp < 1_000_000_000_000L) timestamp * 1000 else timestamp
+    val instant = Instant.ofEpochMilli(millis)
+    val localeZone = ZoneId.systemDefault()
+    val zonedDateTime = instant.atZone(localeZone)
+    
     val pattern = when (timeFrame.lowercase()) {
-        "1h" -> "MM-dd HH:mm"
-        "1d" -> "yyyy-MM-dd HH:mm"
+        "1m", "5m", "15m" -> "MM-dd HH:mm"
+        "1h", "4h" -> "MM-dd HH:mm"
+        "1d" -> "yyyy-MM-dd"
         "1w" -> "yyyy-MM-dd"
-        "1m" -> "yyyy-MM"
         else -> "MM-dd HH:mm"
     }
+    
     return runCatching {
-        SimpleDateFormat(pattern, Locale.getDefault()).format(Date(millis))
+        zonedDateTime.format(DateTimeFormatter.ofPattern(pattern).withZone(localeZone))
     }.getOrDefault("--")
 }
 

@@ -2396,7 +2396,6 @@
     <string name="Perpetual_Usd_Amount" translatable="false">$%1$f</string>
     <string name="Perpetual_Usd_Amount_Signed" translatable="false">%1$s$%2$f</string>
     <string name="Perpetual_Amount_Percent_Format" translatable="false">%1$s(%2$.2f%%)</string>
-    <string name="Open_Positions_Simple">Open Positions</string>
     <string name="Open_Positions">Positions(%1$d)</string>
     <string name="perps_positions">Positions</string>
     <string name="perps_activity">Activity</string>

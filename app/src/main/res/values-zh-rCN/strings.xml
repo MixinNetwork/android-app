@@ -2328,8 +2328,7 @@
     <string name="Total_Position_Value">订单总价值</string>
     <string name="Perpetual_Side_Symbol_Title">%1$s %2$s</string>
     <string name="Perpetual_Leverage_Format">%1$d倍</string>
-    <string name="Open_Positions_Simple">持仓中</string>
-    <string name="Open_Positions">持仓中(%1$d)</string>
+    <string name="Open_Positions">持仓(%1$d)</string>
     <string name="perps_positions">持仓</string>
     <string name="perps_activity">历史记录</string>
     <string name="No_Positions">暂无持仓</string>

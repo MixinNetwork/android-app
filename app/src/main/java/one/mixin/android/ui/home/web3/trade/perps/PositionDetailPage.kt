@@ -43,10 +43,11 @@ import one.mixin.android.extension.priceFormat
 import one.mixin.android.ui.tip.wc.compose.ItemWalletContent
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.Fiats
+import org.threeten.bp.Instant
+import org.threeten.bp.ZoneId
+import org.threeten.bp.format.DateTimeFormatter
 import java.math.BigDecimal
 import java.math.RoundingMode
-import java.text.SimpleDateFormat
-import java.util.Locale
 
 @Composable
 fun PositionDetailPage(
@@ -57,14 +58,13 @@ fun PositionDetailPage(
     onShare: (() -> Unit)? = null,
     onSupport: (() -> Unit)? = null,
 ) {
-    val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+    val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault())
     
     fun formatDate(dateStr: String?): String {
         if (dateStr == null) return ""
         return try {
-            val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)
-            val date = inputFormat.parse(dateStr)
-            date?.let { dateFormat.format(it) } ?: dateStr
+            val instant = Instant.parse(dateStr)
+            instant.atZone(ZoneId.systemDefault()).format(dateFormat)
         } catch (e: Exception) {
             dateStr
         }
@@ -357,14 +357,13 @@ fun PositionDetailPage(
     onShare: (() -> Unit)? = null,
     onSupport: (() -> Unit)? = null,
 ) {
-    val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+    val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault())
 
     fun formatDate(dateStr: String?): String {
         if (dateStr == null) return ""
         return try {
-            val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)
-            val date = inputFormat.parse(dateStr)
-            date?.let { dateFormat.format(it) } ?: dateStr
+            val instant = Instant.parse(dateStr)
+            instant.atZone(ZoneId.systemDefault()).format(dateFormat)
         } catch (e: Exception) {
             dateStr
         }

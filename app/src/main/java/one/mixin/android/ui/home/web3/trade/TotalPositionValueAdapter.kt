@@ -6,6 +6,8 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.annotation.AttrRes
 import androidx.annotation.StringRes
+import androidx.core.view.isGone
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.extension.priceFormat
@@ -15,7 +17,7 @@ import java.math.BigDecimal
 class TotalPositionValueAdapter : RecyclerView.Adapter<TotalPositionValueAdapter.ViewHolder>() {
     private var totalValue: BigDecimal = BigDecimal.ZERO
     private var subValue: BigDecimal = BigDecimal.ZERO
-    private var subPercent: BigDecimal = BigDecimal.ZERO
+    private var subPercent: BigDecimal? = null
     private var isClosed: Boolean = false
     @StringRes
     private var titleResId: Int = R.string.Total_Position_Value
@@ -25,7 +27,7 @@ class TotalPositionValueAdapter : RecyclerView.Adapter<TotalPositionValueAdapter
         notifyItemChanged(0)
     }
 
-    fun submitSubtitle(value: BigDecimal, percent: BigDecimal) {
+    fun submitSubtitle(value: BigDecimal, percent: BigDecimal?) {
         subValue = value
         subPercent = percent
         notifyItemChanged(0)
@@ -57,7 +59,7 @@ class TotalPositionValueAdapter : RecyclerView.Adapter<TotalPositionValueAdapter
         fun bind(
             total: BigDecimal,
             subtitleValue: BigDecimal,
-            subtitlePercent: BigDecimal,
+            subtitlePercent: BigDecimal?,
             @StringRes titleResId: Int,
             isClosed: Boolean
         ) {
@@ -65,7 +67,13 @@ class TotalPositionValueAdapter : RecyclerView.Adapter<TotalPositionValueAdapter
             val fiatRate = BigDecimal(Fiats.getRate())
             val fiatSymbol = Fiats.getSymbol()
             titleTv.text = context.getString(titleResId)
-            valueTv.text = "$fiatSymbol${total.multiply(fiatRate).priceFormat()}"
+            valueTv.text = "${
+                if (total >= BigDecimal.ZERO) {
+                    "+"
+                } else {
+                    "-"
+                }
+            }$fiatSymbol${total.abs().multiply(fiatRate).priceFormat()}"
             val gainColor = context.getColor(R.color.wallet_green)
             val lossColor = context.getColor(R.color.wallet_red)
 
@@ -78,23 +86,27 @@ class TotalPositionValueAdapter : RecyclerView.Adapter<TotalPositionValueAdapter
                         lossColor
                     }
                 )
+                subtitleTv.isGone = true
             } else {
                 valueTv.setTextColor(resolveAttrColor(itemView, R.attr.text_primary))
-            }
-
-            subtitleTv.setTextColor(
-                when {
-                    subtitlePercent > BigDecimal.ZERO -> gainColor
-                    subtitlePercent < BigDecimal.ZERO -> lossColor
-                    else -> resolveAttrColor(itemView, R.attr.text_assist)
+                if (subtitlePercent == null) {
+                    subtitleTv.isGone = true
+                } else {
+                    subtitleTv.isVisible = true
+                    subtitleTv.text = context.getString(
+                        R.string.Perpetual_Amount_Percent_Format,
+                        formatSignedUsd(subtitleValue),
+                        subtitlePercent.toDouble()
+                    )
+                    subtitleTv.setTextColor(
+                        when {
+                            subtitlePercent > BigDecimal.ZERO -> gainColor
+                            subtitlePercent < BigDecimal.ZERO -> lossColor
+                            else -> resolveAttrColor(itemView, R.attr.text_assist)
+                        }
+                    )
                 }
-            )
-
-            subtitleTv.text = context.getString(
-                R.string.Perpetual_Amount_Percent_Format,
-                formatSignedUsd(subtitleValue),
-                subtitlePercent.toDouble()
-            )
+            }
         }
 
         private fun formatSignedUsd(amount: BigDecimal): String {
