@@ -252,8 +252,10 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
                     if (lastClosedTotalPnl != totalPnl || lastClosedTotalEntryValue != totalEntryValue) {
                         lastClosedTotalPnl = totalPnl
                         lastClosedTotalEntryValue = totalEntryValue
+                        val nowValue = totalEntryValue + totalPnl
+                        val percent = calculateClosedPercent(nowValue, totalEntryValue)
                         totalValueAdapter.submitTotal(BigDecimal.valueOf(totalPnl))
-                        totalValueAdapter.submitSubtitle(BigDecimal.valueOf(totalPnl), BigDecimal.ZERO)
+                        totalValueAdapter.submitSubtitle(BigDecimal.valueOf(totalPnl), BigDecimal.valueOf(percent))
                     }
                 }
             }
@@ -281,5 +283,12 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
             return 0.0
         }
         return value / base * 100
+    }
+
+    private fun calculateClosedPercent(nowValue: Double, entryValue: Double): Double {
+        if (entryValue == 0.0) {
+            return 0.0
+        }
+        return (nowValue / entryValue - 1.0) * 100
     }
 }

@@ -86,7 +86,23 @@ class TotalPositionValueAdapter : RecyclerView.Adapter<TotalPositionValueAdapter
                         lossColor
                     }
                 )
-                subtitleTv.isGone = true
+                if (subtitlePercent == null) {
+                    subtitleTv.isGone = true
+                } else {
+                    subtitleTv.isVisible = true
+                    subtitleTv.text = context.getString(
+                        R.string.Perpetual_Amount_Percent_Format,
+                        formatSignedUsd(subtitleValue),
+                        subtitlePercent.toDouble()
+                    )
+                    subtitleTv.setTextColor(
+                        if (isProfit) {
+                            gainColor
+                        } else {
+                            lossColor
+                        }
+                    )
+                }
             } else {
                 valueTv.setTextColor(resolveAttrColor(itemView, R.attr.text_primary))
                 if (subtitlePercent == null) {

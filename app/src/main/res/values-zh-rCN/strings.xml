@@ -2323,6 +2323,7 @@
     <string name="Perpetual_Leverage_Format">%1$d倍</string>
     <string name="Open_Positions">持仓(%1$d)</string>
     <string name="perps_positions">持仓</string>
+    <string name="perps_position">持仓</string>
     <string name="perps_activity">历史记录</string>
     <string name="No_Positions">暂无持仓</string>
     <string name="No_Closed_Positions">暂无历史记录</string>
