@@ -86,10 +86,10 @@ fun PerpetualGuidePage(
     val coroutineScope = rememberCoroutineScope()
     val tabs = listOf(
         stringResource(R.string.Perpetual_Guide_Overview),
-        stringResource(R.string.Perpetual_Guide_Long),
-        stringResource(R.string.Perpetual_Guide_Short),
-        stringResource(R.string.Perpetual_Guide_Leverage),
-        stringResource(R.string.Perpetual_Guide_Position)
+        stringResource(R.string.Long),
+        stringResource(R.string.Short),
+        stringResource(R.string.Leverage),
+        stringResource(R.string.Order_Value)
     )
     val safeInitialTab = initialTab.coerceIn(0, tabs.lastIndex)
     var selectedTab by remember(safeInitialTab) { mutableIntStateOf(safeInitialTab) }
@@ -198,11 +198,11 @@ private fun LongContent() {
                 iconRes = R.drawable.ic_chain_btc
             ),
             GuideRowData(
-                label = stringResource(R.string.Perpetual_Direction),
+                label = stringResource(R.string.Direction),
                 value = stringResource(R.string.Long)
             ),
             GuideRowData(
-                label = stringResource(R.string.Perpetual_Leverage_Times),
+                label = stringResource(R.string.Leverage),
                 value = "${leverage}x"
             ),
             GuideRowData(
@@ -254,11 +254,11 @@ private fun ShortContent() {
                 iconRes = R.drawable.ic_chain_eth
             ),
             GuideRowData(
-                label = stringResource(R.string.Perpetual_Direction),
+                label = stringResource(R.string.Direction),
                 value = stringResource(R.string.Short)
             ),
             GuideRowData(
-                label = stringResource(R.string.Perpetual_Leverage_Times),
+                label = stringResource(R.string.Leverage),
                 value = "${leverage}x"
             ),
             GuideRowData(
@@ -313,11 +313,11 @@ private fun LeverageContent() {
                 iconRes = R.drawable.ic_chain_sol
             ),
             GuideRowData(
-                label = stringResource(R.string.Perpetual_Direction),
+                label = stringResource(R.string.Direction),
                 value = stringResource(R.string.Long)
             ),
             GuideRowData(
-                label = stringResource(R.string.Perpetual_Leverage_Times),
+                label = stringResource(R.string.Leverage),
                 value = "${leverage}x"
             ),
             GuideRowData(
@@ -395,11 +395,11 @@ private fun PositionContent() {
                 iconRes = R.drawable.ic_chain_sol
             ),
             GuideRowData(
-                label = stringResource(R.string.Perpetual_Direction),
+                label = stringResource(R.string.Direction),
                 value = stringResource(R.string.Long)
             ),
             GuideRowData(
-                label = stringResource(R.string.Perpetual_Leverage_Times),
+                label = stringResource(R.string.Leverage),
                 value = "${leverage}x"
             ),
             GuideRowData(
@@ -653,8 +653,8 @@ private fun ExampleWithScenariosCard(
             )
         }
     }
-    val directionLabel = stringResource(R.string.Perpetual_Direction)
-    val leverageLabel = stringResource(R.string.Perpetual_Leverage_Times)
+    val directionLabel = stringResource(R.string.Direction)
+    val leverageLabel = stringResource(R.string.Leverage)
     val investmentLabel = stringResource(R.string.Perpetual_Investment)
     val longDirection = stringResource(R.string.Long)
     val shortDirection = stringResource(R.string.Short)

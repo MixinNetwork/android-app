@@ -2288,10 +2288,6 @@
     <string name="wallet_summary_tip_safe">Co-managed safes are excluded from the total</string>
     <string name="Trading_Guide">Trading Guide</string>
     <string name="Perpetual_Guide_Overview">Overview</string>
-    <string name="Perpetual_Guide_Long">Long</string>
-    <string name="Perpetual_Guide_Short">Short</string>
-    <string name="Perpetual_Guide_Leverage">Leverage</string>
-    <string name="Perpetual_Guide_Close">Close Position</string>
     <string name="Perpetual_Guide_Previous_Tab">&lt;%1$s</string>
     <string name="Perpetual_Guide_Next_Tab">%1$s&gt;</string>
     <string name="Perpetual_Guide_Overview_Content">Perpetual contracts allow you to trade cryptocurrency with leverage, enabling you to amplify your potential profits (and losses). You can go long (bet on price increase) or short (bet on price decrease) without owning the underlying asset.</string>
@@ -2299,7 +2295,6 @@
     <string name="Perpetual_Guide_Short_Content">Going short means you expect the price to decrease. If the price goes down, you profit. If it goes up, you lose. Your profit/loss is multiplied by your leverage.</string>
     <string name="Perpetual_Guide_Leverage_Content">Leverage allows you to control a larger position with less capital. For example, with 10x leverage, a 1%% price move results in a 10%% profit or loss. Higher leverage means higher risk.</string>
     <string name="Perpetual_Guide_Close_Content">You can close your position at any time to realize your profit or loss. The closing price is based on the current market price. Make sure to monitor your positions to avoid liquidation.</string>
-    <string name="Perpetual_Guide_Position">Order Value</string>
     <string name="Perpetual_Guide_Overview_Title">Instructions</string>
     <string name="Perpetual_Guide_Overview_Desc">Mixin perpetual contracts are derivative trading instruments settled in digital assets, supporting long and short positions with no expiration date. Through leverage, traders can amplify positions to capture trading opportunities from price movements.</string>
     <string name="Perpetual_Features">Product Features</string>
@@ -2314,12 +2309,10 @@
     <string name="Perpetual_Risk_Warning_Content_3">Please control leverage and position size reasonably and trade cautiously.</string>
     <string name="Perpetual_Example">Example</string>
     <string name="Perpetual_Trading_Pair">Trading Pair</string>
-    <string name="Perpetual_Direction">Direction</string>
     <string name="Price_Up_Profit">Price up %1$s%% → Profit %2$s%% (+%3$s)</string>
     <string name="Price_Down_Profit">Price down %1$s%% → Profit %2$s%% (+%3$s)</string>
     <string name="Price_Down_Loss">Price down %1$s%% → Loss -%2$s %3$s</string>
     <string name="Price_Up_Loss">Price up %1$s%% → Loss -%2$s %3$s</string>
-    <string name="Perpetual_Leverage_Times">Leverage</string>
     <string name="Perpetual_Investment">Investment</string>
     <string name="Perpetual_Scenario_1">Scenario 1: Price Rise</string>
     <string name="Perpetual_Scenario_2">Scenario 2: Price Fall</string>

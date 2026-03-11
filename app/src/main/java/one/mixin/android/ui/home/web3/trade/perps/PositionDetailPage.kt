@@ -182,7 +182,7 @@ fun PositionDetailPage(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = stringResource(R.string.Perpetual_Guide_Close),
+                        text = stringResource(R.string.Close_Position),
                         color = MixinAppTheme.colors.textPrimary,
                         fontWeight = FontWeight.W500,
                         modifier = Modifier

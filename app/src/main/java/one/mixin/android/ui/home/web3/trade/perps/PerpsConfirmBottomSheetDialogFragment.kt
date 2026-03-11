@@ -349,7 +349,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                     Box(modifier = Modifier.height(20.dp))
 
                     PerpsInfoItem(
-                        title = stringResource(R.string.Perpetual_Direction).uppercase(),
+                        title = stringResource(R.string.Direction).uppercase(),
                         value = "${if (isLong) stringResource(R.string.Long) else stringResource(R.string.Short)} ${leverage}x"
                     )
                     Box(modifier = Modifier.height(6.dp))

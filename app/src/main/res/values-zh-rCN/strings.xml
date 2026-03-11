@@ -2229,10 +2229,6 @@
     <string name="wallet_summary_tip_safe">共管的 Safe 金库不计入统计</string>
     <string name="Trading_Guide">交易说明</string>
     <string name="Perpetual_Guide_Overview">简介</string>
-    <string name="Perpetual_Guide_Long">做多</string>
-    <string name="Perpetual_Guide_Short">做空</string>
-    <string name="Perpetual_Guide_Leverage">杠杆</string>
-    <string name="Perpetual_Guide_Close">平仓</string>
     <string name="Perpetual_Guide_Previous_Tab">&lt;%1$s</string>
     <string name="Perpetual_Guide_Next_Tab">%1$s&gt;</string>
     <string name="Perpetual_Guide_Overview_Content">永续合约允许您使用杠杆交易加密货币，从而放大您的潜在利润（和损失）。您可以做多（押注价格上涨）或做空（押注价格下跌），而无需拥有标的资产。</string>
@@ -2240,7 +2236,6 @@
     <string name="Perpetual_Guide_Short_Content">做空意味着您预期价格会下跌。如果价格下跌，您就会获利。如果价格上涨，您就会亏损。您的盈亏会被杠杆倍数放大。</string>
     <string name="Perpetual_Guide_Leverage_Content">杠杆允许您用更少的资金控制更大的仓位。例如，使用 10 倍杠杆，1%% 的价格变动会导致 10%% 的盈亏。杠杆越高，风险越大。</string>
     <string name="Perpetual_Guide_Close_Content">您可以随时平仓以实现盈亏。平仓价格基于当前市场价格。请务必监控您的仓位以避免爆仓。</string>
-    <string name="Perpetual_Guide_Position">订单价值</string>
     <string name="Perpetual_Guide_Overview_Title">具体说明</string>
     <string name="Perpetual_Guide_Overview_Desc">Mixin 永续合约是一种以数字资产结算的衍生品交易方式，支持做多和做空，无到期日。通过杠杆机制，交易者可以放大仓位，把握价格上涨或下跌带来的交易机会。</string>
     <string name="Perpetual_Features">产品特点</string>
@@ -2255,12 +2250,10 @@
     <string name="Perpetual_Risk_Warning_Content_3">请合理控制杠杆倍数与仓位规模，谨慎交易。</string>
     <string name="Perpetual_Example">举例说明</string>
     <string name="Perpetual_Trading_Pair">交易对</string>
-    <string name="Perpetual_Direction">开仓方向</string>
     <string name="Price_Up_Profit">价格上涨 %1$s%% → 盈利 %2$s%% (+%3$s)</string>
     <string name="Price_Down_Profit">价格下跌 %1$s%% → 盈利 %2$s%% (+%3$s)</string>
     <string name="Price_Down_Loss">价格下跌 %1$s%% → 亏损 -%2$s %3$s</string>
     <string name="Price_Up_Loss">价格上涨 %1$s%% → 亏损 -%2$s %3$s</string>
-    <string name="Perpetual_Leverage_Times">杠杆倍数</string>
     <string name="Perpetual_Investment">投入资金</string>
     <string name="Perpetual_Scenario_1">场景一：价格上涨</string>
     <string name="Perpetual_Scenario_2">场景二：价格下跌</string>

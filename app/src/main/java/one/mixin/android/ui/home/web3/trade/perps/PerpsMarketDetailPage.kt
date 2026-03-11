@@ -633,7 +633,7 @@ private fun OpenPositionCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = stringResource(R.string.Perpetual_Guide_Position),
+                text = stringResource(R.string.Order_Value),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
                 color = MixinAppTheme.colors.textPrimary
