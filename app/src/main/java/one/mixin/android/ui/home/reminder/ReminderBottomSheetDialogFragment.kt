@@ -113,6 +113,8 @@ class ReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
         }
     }
 
+    fun isForType(type: PopupType): Boolean = popupType::class == type::class
+
     override fun getTheme() = R.style.AppTheme_Dialog
 
     @SuppressLint("RestrictedApi")
