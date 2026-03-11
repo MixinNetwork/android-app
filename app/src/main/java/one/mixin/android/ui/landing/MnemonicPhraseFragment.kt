@@ -157,9 +157,14 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 }
                 newKeyPairFromMnemonic(mnemonic)
             } else {
-                val mnemonic = toMnemonic(tip.getMnemonicFromEncryptedPreferences(requireContext()) ?: tip.generateEntropyAndStore(requireContext()))
-                val entropy  = runCatching { toEntropy(mnemonic.split(" "))}.getOrNull() ?: return@launch
-                if (getValueFromEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC).contentEquals(entropy).not()) {
+                val entropy = tip.getMnemonicFromEncryptedPreferences(requireContext()) ?: tip.generateEntropyAndStore(requireContext())
+                val mnemonic = runCatching {
+                    toMnemonic(entropy)
+                }.onFailure {
+                    errorInfo = getString(R.string.invalid_mnemonic_phrase)
+                }.getOrNull() ?: return@launch
+                val verifiedEntropy  = runCatching { toEntropy(mnemonic.split(" "))}.getOrNull() ?: return@launch
+                if (getValueFromEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC).contentEquals(verifiedEntropy).not()) {
                     errorInfo = getString(R.string.Save_failure) // Save entropy failure
                     return@launch
                 }
@@ -243,7 +248,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
         }
 
     private suspend fun buildAnonymousRequestPayload(edKey: EdKeyPair): Pair<String, String> =
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.Default) {
             val message = AnonymousMessage(
                 createdAt = nowInUtc(),
                 masterPublicHex = edKey.publicKey.hexString(),
