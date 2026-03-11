@@ -59,7 +59,6 @@ import one.mixin.android.Constants.Account.PREF_LOGIN_VERIFY
 import one.mixin.android.Constants.Account.PREF_SYNC_CIRCLE
 import one.mixin.android.Constants.DEVICE_ID
 import one.mixin.android.Constants.DataBase.CURRENT_VERSION
-import one.mixin.android.Constants.DataBase.DB_NAME
 import one.mixin.android.Constants.DataBase.MINI_VERSION
 import one.mixin.android.Constants.INTERVAL_24_HOURS
 import one.mixin.android.Constants.INTERVAL_7_DAYS
@@ -178,6 +177,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.RomUtil
 import one.mixin.android.util.RootUtil
 import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.database.databaseFile
 import one.mixin.android.util.reportException
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.Conversation
@@ -316,6 +316,10 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             return
         }
 
+        Session.getAccount()?.let {
+            MixinDatabase.migrateRelatedDatabaseFilesIfNeeded(this, it)
+        }
+
         MixinApplication.get().isOnline.set(true)
         if (checkNeedGo2MigrationPage()) {
             InitializeActivity.showDBUpgrade(this)
@@ -335,10 +339,6 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             InitializeActivity.showLoading(this, false)
             finish()
             return
-        }
-
-        Session.getAccount()?.let {
-            MixinDatabase.migrateRelatedDatabaseFilesIfNeeded(this, it)
         }
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -641,9 +641,18 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
 
     @SuppressLint("RestrictedApi")
     private fun checkNeedGo2MigrationPage(): Boolean {
+        val dbFile =
+            Session.getAccount()?.identityNumber?.let { identityNumber ->
+                val scopedDbFile = databaseFile(this, identityNumber)
+                if (scopedDbFile.exists()) {
+                    scopedDbFile
+                } else {
+                    null
+                }
+            } ?: return false
         val currentVersion =
             try {
-                readVersion(getDatabasePath(DB_NAME))
+                readVersion(dbFile)
             } catch (_: Exception) {
                 0
             }

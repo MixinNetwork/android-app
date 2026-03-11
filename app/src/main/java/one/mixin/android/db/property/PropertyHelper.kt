@@ -108,7 +108,6 @@ object PropertyHelper {
 
     suspend fun checkMigrated(): PropertyDao {
         val propertyDao = MixinDatabase.getDatabase(MixinApplication.appContext, identityNumber()).propertyDao()
-        val messageDao = MixinDatabase.getDatabase(MixinApplication.appContext, identityNumber()).messageDao()
         if (!hasMigrated(propertyDao)) {
             migrateProperties(propertyDao)
         }

@@ -32,8 +32,8 @@ import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.dayTime
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getClipboardManager
+import one.mixin.android.extension.getSafeAreaInsetsBottom
 import one.mixin.android.extension.localTime
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.notNullWithElse
@@ -405,9 +405,8 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
             .let { layout ->
                 menuListLayout = layout
                 binding.scrollContent.addView(layout)
-                layout.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                    bottomMargin = requireContext().dpToPx(30f)
-                }
+                val safeBottomHeight = layout.getSafeAreaInsetsBottom()
+                binding.scrollContent.setPadding(0,0,0,safeBottomHeight)
                 binding.moreFl.setOnClickListener {
                     if (behavior?.state == BottomSheetBehavior.STATE_COLLAPSED) {
                         behavior?.state = BottomSheetBehavior.STATE_EXPANDED
