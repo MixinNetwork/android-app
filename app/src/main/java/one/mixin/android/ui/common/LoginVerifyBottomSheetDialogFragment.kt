@@ -40,6 +40,7 @@ import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.common.biometric.BiometricLayout
 import one.mixin.android.databinding.ViewLoginVerifyMoreBottomBinding
 import one.mixin.android.ui.logs.LogViewerBottomSheet
+import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
@@ -130,7 +131,7 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
         }
         menuBinding.logsTv.setOnClickListener {
             bottomSheet.dismiss()
-            LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
+            context?.let(SettingActivity::showPinLogs)
         }
         bottomSheet.show()
     }
