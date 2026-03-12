@@ -12,6 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -58,7 +59,8 @@ fun MixinMemberUpgradePage(
     onContactTeamMixin: () -> Unit = {},
     onViewInvoice: (MembershipOrder) -> Unit = {}
 ) {
-    val viewModel: MemberViewModel = hiltViewModel()
+    val isInPreview = LocalInspectionMode.current
+    val viewModel: MemberViewModel? = if (isInPreview) null else hiltViewModel()
 
     var purchaseState by remember { mutableStateOf(PlanPurchaseState()) }
     var savedOrderId by remember { mutableStateOf<String?>(null) }
@@ -76,12 +78,28 @@ fun MixinMemberUpgradePage(
         )
     }
 
-    val pendingOrderState by viewModel.pendingOrder.collectAsState()
-    val subscriptionPlans by viewModel.subscriptionPlans.collectAsState()
+    val pendingOrderState = if (isInPreview) {
+        null
+    } else {
+        viewModel?.pendingOrder?.collectAsState()?.value
+    }
+    val subscriptionPlans = if (isInPreview) {
+        emptyList()
+    } else {
+        viewModel?.subscriptionPlans?.collectAsState()?.value.orEmpty()
+    }
 
     LaunchedEffect(Unit) {
+        if (isInPreview) {
+            purchaseState = purchaseState.copy(
+                availablePlans = emptyList(),
+                availablePlayStorePlans = emptySet(),
+                loading = false,
+            )
+            return@LaunchedEffect
+        }
         try {
-            val response = viewModel.getPlans()
+            val response = requireNotNull(viewModel).getPlans()
             if (response.isSuccess && response.data != null) {
                 val availablePlayStorePlans = if (BuildConfig.IS_GOOGLE_PLAY) {
                     val billingPlanIds = subscriptionPlans.map { it.planId }.toSet()
@@ -117,9 +135,10 @@ fun MixinMemberUpgradePage(
     }
 
     LaunchedEffect(pendingOrderState?.orderId ?: "") {
+        if (isInPreview) return@LaunchedEffect
         try {
             while (pendingOrderState?.orderId.isNullOrEmpty().not()) {
-                val orderResponse = viewModel.getOrder(pendingOrderState!!.orderId)
+                val orderResponse = requireNotNull(viewModel).getOrder(pendingOrderState!!.orderId)
                 if (orderResponse?.isSuccess == true && orderResponse.data != null) {
                     val order = orderResponse.data!!
                     val status = MemberOrderStatus.fromString(order.status)
@@ -127,14 +146,14 @@ fun MixinMemberUpgradePage(
                     when (status) {
                         MemberOrderStatus.PAID, MemberOrderStatus.COMPLETED -> {
                             Timber.d("Order completed: ${order.orderId}")
-                            viewModel.insertOrders(order)
+                            requireNotNull(viewModel).insertOrders(order)
                             onClose()
                             break
                         }
 
                         MemberOrderStatus.FAILED, MemberOrderStatus.EXPIRED, MemberOrderStatus.CANCEL -> {
                             Timber.d("Order failed: ${order.orderId}")
-                            viewModel.insertOrders(order)
+                            requireNotNull(viewModel).insertOrders(order)
                             onClose()
                             break
                         }
@@ -188,7 +207,8 @@ fun MixinMemberUpgradePage(
                     val plan =
                         mapLocalPlanToMemberOrderPlan(selectedPlan, purchaseState.availablePlans)
                             ?: return@MemberUpgradePaymentButton
-                    viewModel.viewModelScope.launch(CoroutineExceptionHandler { _, error ->
+                    val memberViewModel = viewModel ?: return@MemberUpgradePaymentButton
+                    memberViewModel.viewModelScope.launch(CoroutineExceptionHandler { _, error ->
                         purchaseState = purchaseState.copy(loading = false)
                         purchaseState = purchaseState.copy(
                             error = ErrorHandler.getErrorMessage(error)
@@ -200,7 +220,7 @@ fun MixinMemberUpgradePage(
                         } else {
                             MemberOrderRequest(plan = plan.plan)
                         }
-                        val orderResponse = viewModel.createMemberOrder(orderRequest)
+                        val orderResponse = memberViewModel.createMemberOrder(orderRequest)
 
                         if (orderResponse.isSuccess && orderResponse.data != null) {
                             orderResponse.data?.orderId?.let { orderId ->

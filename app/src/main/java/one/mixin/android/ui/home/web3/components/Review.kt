@@ -675,9 +675,10 @@ private fun Item(
 @Preview
 @Composable
 fun PreviewMessage() {
-    Box(modifier = Modifier.background(MixinAppTheme.colors.background)) {
-        MessagePreview(
-            content = """{
+    MixinAppTheme {
+        Box(modifier = Modifier.background(MixinAppTheme.colors.background)) {
+            MessagePreview(
+                content = """{
           "raw": [
             "0x9df67f5a05fb594c4357d87221cbd69f1d5a6fbb",
             "{\"types\":{\"Alias\":[{\"name\":\"from\",\"type\":\"address\"},{\"name\":\"alias\",\"type\":\"address\"},{\"name\":\"timestamp\",\"type\":\"uint64\"}],\"EIP712Domain\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"version\",\"type\":\"string\"}]},\"domain\":{\"name\":\"snapshot\",\"version\":\"0.1.4\"},\"primaryType\":\"Alias\",\"message\":{\"from\":\"0x9df67f5a05fb594c4357d87221cbd69f1d5a6fbb\",\"alias\":\"0x8f14e8dbc7b3619e5210201022f637f271545c90\",\"timestamp\":\"1710766295\"}}"
@@ -685,7 +686,8 @@ fun PreviewMessage() {
           "type": "TYPED_MESSAGE"
         }
     """,
-        ) {
+            ) {
+            }
         }
     }
 }
@@ -693,27 +695,31 @@ fun PreviewMessage() {
 @Preview
 @Composable
 private fun TransactionPreview() {
-    TransactionPreview(balance = BigDecimal(0.134), chain = Chain.Ethereum, null)
+    MixinAppTheme {
+        TransactionPreview(balance = BigDecimal(0.134), chain = Chain.Ethereum, null)
+    }
 }
 
 @Preview
 @Composable
 private fun WarningPreview() {
-    Box(
-        modifier =
-        Modifier
-            .fillMaxWidth()
-            .height(300.dp),
-    ) {
-        ActionBottom(
-            modifier = Modifier.align(Alignment.BottomCenter),
-            cancelTitle = stringResource(id = R.string.Cancel),
-            confirmTitle = stringResource(id = R.string.Confirm),
-            cancelAction = { },
+    MixinAppTheme {
+        Box(
+            modifier =
+            Modifier
+                .fillMaxWidth()
+                .height(300.dp),
         ) {
-        }
+            ActionBottom(
+                modifier = Modifier.align(Alignment.BottomCenter),
+                cancelTitle = stringResource(id = R.string.Cancel),
+                confirmTitle = stringResource(id = R.string.Confirm),
+                cancelAction = { },
+            ) {
+            }
 
-        Warning(modifier = Modifier.align(Alignment.BottomCenter))
+            Warning(modifier = Modifier.align(Alignment.BottomCenter))
+        }
     }
 }
 
@@ -788,9 +794,11 @@ fun ActionBottom(
 @Preview
 @Composable
 fun TransferBottomPreview() {
-    Column {
-        ActionBottom(modifier = Modifier, stringResource(id = R.string.Cancel), stringResource(id = R.string.Confirm), {}, {})
-        ActionBottom(modifier = Modifier, stringResource(id = R.string.Discard), stringResource(id = R.string.Send), {}, {})
+    MixinAppTheme {
+        Column {
+            ActionBottom(modifier = Modifier, stringResource(id = R.string.Cancel), stringResource(id = R.string.Confirm), {}, {})
+            ActionBottom(modifier = Modifier, stringResource(id = R.string.Discard), stringResource(id = R.string.Send), {}, {})
+        }
     }
 }
 
@@ -804,7 +812,9 @@ fun BalanceChangePreview() {
 @Preview
 @Composable
 fun ItemPreview() {
-    Item(Item("Compute Unit Limit", "1400000 compute units"))
+    MixinAppTheme {
+        Item(Item("Compute Unit Limit", "1400000 compute units"))
+    }
 }
 
 @Preview
@@ -822,13 +832,17 @@ fun SolanaParsedTxPreviewPreview() {
 @Preview
 @Composable
 fun InstructionPreview() {
-    Instruction(ParsedInstruction("", "", "", info = "cannot decode instruction for Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB"))
+    MixinAppTheme {
+        Instruction(ParsedInstruction("", "", "", info = "cannot decode instruction for Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB"))
+    }
 }
 
 @Preview
 @Composable
 fun SolanaParsedTxNullPreview() {
-    ParsedTxPreview(parsedTx = null, asset = null, solanaTxSource = SolanaTxSource.Web)
+    MixinAppTheme {
+        ParsedTxPreview(parsedTx = null, asset = null, solanaTxSource = SolanaTxSource.Web)
+    }
 }
 
 @Preview
@@ -836,7 +850,9 @@ fun SolanaParsedTxNullPreview() {
 fun SolanaParsedTxInstructionNullPreview() {
     val data = """{"instructions":[]}"""
     val parsedTx = GsonHelper.customGson.fromJson(data, ParsedTx::class.java)
-    ParsedTxPreview(parsedTx = parsedTx, asset = null, solanaTxSource = SolanaTxSource.Web)
+    MixinAppTheme {
+        ParsedTxPreview(parsedTx = parsedTx, asset = null, solanaTxSource = SolanaTxSource.Web)
+    }
 }
 
 @Preview
@@ -844,7 +860,9 @@ fun SolanaParsedTxInstructionNullPreview() {
 fun SolanaParsedTxBalanceChangeNullWebPreview() {
     val data = """{"instructions":[{"program_id":"ComputeBudget111111111111111111111111111111","program_name":"ComputeBudget","instruction_name":"SetComputeUnitLimit","items":[{"key":"Compute Unit Limit","value":"600000 compute units"}]},{"program_id":"ComputeBudget111111111111111111111111111111","program_name":"ComputeBudget","instruction_name":"SetComputeUnitPrice","items":[{"key":"Compute Unit Price","value":"0.1 lamports per compute unit"}]},{"program_id":"ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL","program_name":"AssociatedTokenAccount","instruction_name":"Create"},{"program_id":"11111111111111111111111111111111","program_name":"System","instruction_name":"Transfer","items":[{"key":"Transfer Amount (SOL)","value":"0.01"}]},{"program_id":"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA","program_name":"Token","instruction_name":"SyncNative"},{"program_id":"JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4","program_name":"Jupiter","instruction_name":"Route","items":[{"key":"Route Plan","value":""},{"key":"In Amount","value":"824635312696"},{"key":"Quoted Out Amount","value":"824635312704"},{"key":"Slippage Bps","value":"824635312712"},{"key":"Platform Fee Bps","value":"50"}],"token_changes":[{"address":"So11111111111111111111111111111111111111112","amount":10000000,"is_pay":true},{"address":"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v","amount":1323264,"is_pay":false}]},{"program_id":"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA","program_name":"Token","instruction_name":"CloseAccount"}]}"""
     val parsedTx = GsonHelper.customGson.fromJson(data, ParsedTx::class.java)
-    ParsedTxPreview(parsedTx = parsedTx, asset = null, solanaTxSource = SolanaTxSource.Web)
+    MixinAppTheme {
+        ParsedTxPreview(parsedTx = parsedTx, asset = null, solanaTxSource = SolanaTxSource.Web)
+    }
 }
 
 @Preview
@@ -852,7 +870,9 @@ fun SolanaParsedTxBalanceChangeNullWebPreview() {
 fun SolanaParsedTxBalanceChangeNullInnerPreview() {
     val data = """{"instructions":[{"program_id":"ComputeBudget111111111111111111111111111111","program_name":"ComputeBudget","instruction_name":"SetComputeUnitLimit","items":[{"key":"Compute Unit Limit","value":"600000 compute units"}]},{"program_id":"ComputeBudget111111111111111111111111111111","program_name":"ComputeBudget","instruction_name":"SetComputeUnitPrice","items":[{"key":"Compute Unit Price","value":"0.1 lamports per compute unit"}]},{"program_id":"ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL","program_name":"AssociatedTokenAccount","instruction_name":"Create"},{"program_id":"11111111111111111111111111111111","program_name":"System","instruction_name":"Transfer","items":[{"key":"Transfer Amount (SOL)","value":"0.01"}]},{"program_id":"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA","program_name":"Token","instruction_name":"SyncNative"},{"program_id":"JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4","program_name":"Jupiter","instruction_name":"Route","items":[{"key":"Route Plan","value":""},{"key":"In Amount","value":"824635312696"},{"key":"Quoted Out Amount","value":"824635312704"},{"key":"Slippage Bps","value":"824635312712"},{"key":"Platform Fee Bps","value":"50"}],"token_changes":[{"address":"So11111111111111111111111111111111111111112","amount":10000000,"is_pay":true},{"address":"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v","amount":1323264,"is_pay":false}]},{"program_id":"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA","program_name":"Token","instruction_name":"CloseAccount"}]}"""
     val parsedTx = GsonHelper.customGson.fromJson(data, ParsedTx::class.java)
-    ParsedTxPreview(parsedTx = parsedTx, asset = null, solanaTxSource = SolanaTxSource.InnerSwap)
+    MixinAppTheme {
+        ParsedTxPreview(parsedTx = parsedTx, asset = null, solanaTxSource = SolanaTxSource.InnerSwap)
+    }
 }
 
 @Preview
@@ -860,5 +880,7 @@ fun SolanaParsedTxBalanceChangeNullInnerPreview() {
 fun SolanaParsedTxTokenNullPreview() {
     val data = """{"balance_changes":[{"address":"So11111111111111111111111111111111111111112","amount":-10000000},{"address":"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v","amount":1323264}],"instructions":[{"program_id":"ComputeBudget111111111111111111111111111111","program_name":"ComputeBudget","instruction_name":"SetComputeUnitLimit","items":[{"key":"Compute Unit Limit","value":"600000 compute units"}]},{"program_id":"ComputeBudget111111111111111111111111111111","program_name":"ComputeBudget","instruction_name":"SetComputeUnitPrice","items":[{"key":"Compute Unit Price","value":"0.1 lamports per compute unit"}]},{"program_id":"ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL","program_name":"AssociatedTokenAccount","instruction_name":"Create"},{"program_id":"11111111111111111111111111111111","program_name":"System","instruction_name":"Transfer","items":[{"key":"Transfer Amount (SOL)","value":"0.01"}]},{"program_id":"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA","program_name":"Token","instruction_name":"SyncNative"},{"program_id":"JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4","program_name":"Jupiter","instruction_name":"Route","items":[{"key":"Route Plan","value":""},{"key":"In Amount","value":"824635312696"},{"key":"Quoted Out Amount","value":"824635312704"},{"key":"Slippage Bps","value":"824635312712"},{"key":"Platform Fee Bps","value":"50"}],"token_changes":[{"address":"So11111111111111111111111111111111111111112","amount":10000000,"is_pay":true},{"address":"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v","amount":1323264,"is_pay":false}]},{"program_id":"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA","program_name":"Token","instruction_name":"CloseAccount"}]}"""
     val parsedTx = GsonHelper.customGson.fromJson(data, ParsedTx::class.java)
-    ParsedTxPreview(parsedTx = parsedTx, asset = null, solanaTxSource = SolanaTxSource.InnerSwap)
+    MixinAppTheme {
+        ParsedTxPreview(parsedTx = parsedTx, asset = null, solanaTxSource = SolanaTxSource.InnerSwap)
+    }
 }

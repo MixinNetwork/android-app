@@ -143,12 +143,14 @@ fun ShareCard(modifier: Modifier, qrcode: Bitmap, inscriptionHash: String, value
 @Preview
 @Composable
 private fun DashedDividerPreview() {
-    DashedDivider(
-        thickness = 1.dp,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-    )
+    MixinAppTheme {
+        DashedDivider(
+            thickness = 1.dp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+    }
 }
 
 @Composable

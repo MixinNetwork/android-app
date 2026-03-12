@@ -18,10 +18,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -52,6 +50,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -67,7 +66,6 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.checkout.threedsobfuscation.le
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.MixinApp
@@ -128,11 +126,12 @@ fun MnemonicPhraseInput(
         }
     }
 
+    val isInPreview = LocalInspectionMode.current
     var loading by remember { mutableStateOf(false) }
     var errorInfo by remember { mutableStateOf("") }
     val context = LocalContext.current
     val keyboardController = LocalSoftwareKeyboardController.current
-    val walletViewModel = hiltViewModel<WalletViewModel>()
+    val walletViewModel = if (isInPreview) null else hiltViewModel<WalletViewModel>()
     val coroutineScope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
     var currentText by remember { mutableStateOf("") }
@@ -491,11 +490,11 @@ fun MnemonicPhraseInput(
                                                                             val selfId = Session.getAccountId()!!
                                                                             val seed = tip?.getOrRecoverTipPriv(context, pin!!)?.getOrThrow()
                                                                             val edKey = tip?.getMnemonicEdKey(context, pin!!, seed!!)
-                                                                            val r = walletViewModel.saltExport(
+                                                                            val r = requireNotNull(walletViewModel).saltExport(
                                                                                 ExportRequest(
                                                                                     publicKey = edKey!!.publicKey.toHex(),
                                                                                     signature = initFromSeedAndSign(edKey.privateKey, selfId.toByteArray()).toHex(),
-                                                                                    pinBase64 = walletViewModel.getEncryptedTipBody(selfId, pin!!),
+                                                                                    pinBase64 = requireNotNull(walletViewModel).getEncryptedTipBody(selfId, pin!!),
                                                                                 )
                                                                             )
                                                                             r.data?.let {
@@ -740,11 +739,11 @@ fun MnemonicPhraseInput(
                                                         val selfId = Session.getAccountId()!!
                                                         val seed = tip?.getOrRecoverTipPriv(context, pin!!)?.getOrThrow()
                                                         val edKey = tip?.getMnemonicEdKey(context, pin!!, seed!!)
-                                                        val r = walletViewModel.saltExport(
+                                                        val r = requireNotNull(walletViewModel).saltExport(
                                                             ExportRequest(
                                                                 publicKey = edKey!!.publicKey.toHex(),
                                                                 signature = initFromSeedAndSign(edKey.privateKey, selfId.toByteArray()).toHex(),
-                                                                pinBase64 = walletViewModel.getEncryptedTipBody(selfId, pin!!),
+                                                                pinBase64 = requireNotNull(walletViewModel).getEncryptedTipBody(selfId, pin!!),
                                                             )
                                                         )
                                                         r.data?.let {
@@ -951,11 +950,13 @@ fun InputBar(string: String, callback: (String) -> Unit) {
 @Preview(backgroundColor = 0xFFFFFFFF, showSystemUi = true)
 @Composable
 fun MnemonicPhraseInputPreview() {
-    MnemonicPhraseInput(
-        state = MnemonicState.Input,
-        onScan = {},
-        onComplete = { mnemonicList -> /* Handle mnemonic change */ },
-    )
+    MixinAppTheme {
+        MnemonicPhraseInput(
+            state = MnemonicState.Input,
+            onScan = {},
+            onComplete = { },
+        )
+    }
 }
 
 @Composable

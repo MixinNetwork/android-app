@@ -586,17 +586,21 @@ fun FeeInfo(
 @Preview
 @Composable
 private fun NetworkInfoPreview() {
-    FeeInfo("0.0169028 ETH", BigDecimal("7.57"))
+    MixinAppTheme {
+        FeeInfo("0.0169028 ETH", BigDecimal("7.57"))
+    }
 }
 
 @Preview
 @Composable
 private fun HintPreview() {
-    Column(modifier = Modifier.padding(8.dp)) {
-        Hint(Hint.NoPreview)
-        Box(modifier = Modifier.height(8.dp))
-        Hint(Hint.Cancel)
-        Box(modifier = Modifier.height(8.dp))
-        Hint(Hint.SpeedUp)
+    MixinAppTheme {
+        Column(modifier = Modifier.padding(8.dp)) {
+            Hint(Hint.NoPreview)
+            Box(modifier = Modifier.height(8.dp))
+            Hint(Hint.Cancel)
+            Box(modifier = Modifier.height(8.dp))
+            Hint(Hint.SpeedUp)
+        }
     }
 }

@@ -768,9 +768,11 @@ fun CreateSafeCard(
 @Preview
 @Composable
 fun CardPreview() {
-    Column {
-        CreateSafeCard {}
-        Spacer(modifier = Modifier.height(8.dp))
-        UpgradeSafeCard({}, {})
+    MixinAppTheme {
+        Column {
+            CreateSafeCard {}
+            Spacer(modifier = Modifier.height(8.dp))
+            UpgradeSafeCard({}, {})
+        }
     }
 }

@@ -55,6 +55,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -83,14 +84,19 @@ fun PinKeyBoard(
     onVerifyRequest: ((String) -> Unit)?,
 ) {
     val context = LocalContext.current
+    val isInPreview = LocalInspectionMode.current
     // val open = context.defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
     // val biometricEnable = !open && BiometricUtil.isSupport(context)
-    val showBiometric = BiometricUtil.shouldShowBiometric(context)
-    val randomKeyboardEnabled by LocalContext.current.defaultSharedPreferences
-        .booleanValueAsState(
-            key = Constants.Account.PREF_RANDOM,
-            defaultValue = false,
-        )
+    val showBiometric = if (isInPreview) false else BiometricUtil.shouldShowBiometric(context)
+    val randomKeyboardEnabled by if (isInPreview) {
+        remember { mutableStateOf(false) }
+    } else {
+        LocalContext.current.defaultSharedPreferences
+            .booleanValueAsState(
+                key = Constants.Account.PREF_RANDOM,
+                defaultValue = false,
+            )
+    }
     val list =
         if (randomKeyboardEnabled) {
             mutableListOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "0").apply {
@@ -426,5 +432,7 @@ fun PinKeyBoard(
 @Preview
 @Composable
 fun PinKeyBoardPreview() {
-    PinKeyBoard(AuthStep.INPUT, "", {}, null, null)
+    MixinAppTheme {
+        PinKeyBoard(AuthStep.INPUT, "", {}, null, null)
+    }
 }

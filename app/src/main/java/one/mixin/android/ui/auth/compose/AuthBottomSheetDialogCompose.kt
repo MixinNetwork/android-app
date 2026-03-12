@@ -375,30 +375,32 @@ fun Modifier.verticalScrollbar(
 @Composable
 @Preview
 fun AuthBottomSheetDialogComposePreview() {
-    val context = LocalContext.current
-    AuthBottomSheetDialogCompose(
-        name = "Team Mixin",
-        iconUrl = "https://mixin-images.zeromesh.net/E2y0BnTopFK9qey0YI-8xV3M82kudNnTaGw0U5SU065864SsewNUo6fe9kDF1HIzVYhXqzws4lBZnLj1lPsjk-0=s256",
-        scopes =
-            listOf(
-                Scope.generateScopeFromString(context, "PROFILE:READ"),
-                Scope.generateScopeFromString(context, "PHONE:READ"),
-                Scope.generateScopeFromString(context, "MESSAGES:REPRESENT"),
-                Scope.generateScopeFromString(context, "CONTACTS:READ"),
-                Scope.generateScopeFromString(context, "ASSETS:READ"),
-                Scope.generateScopeFromString(context, "SNAPSHOTS:READ"),
-                Scope.generateScopeFromString(context, "APPS:READ"),
-                Scope.generateScopeFromString(context, "APPS:WRITE"),
-                Scope.generateScopeFromString(context, "CIRCLES:READ"),
-                Scope.generateScopeFromString(context, "CIRCLES:WRITE"),
-                Scope.generateScopeFromString(context, "COLLECTIBLES:READ"),
-            ),
-        {},
-        AuthStep.INPUT,
-        "",
-        {},
-        {},
-        {},
-        null,
-    )
+    MixinAppTheme {
+        val context = LocalContext.current
+        AuthBottomSheetDialogCompose(
+            name = "Team Mixin",
+            iconUrl = "https://mixin-images.zeromesh.net/E2y0BnTopFK9qey0YI-8xV3M82kudNnTaGw0U5SU065864SsewNUo6fe9kDF1HIzVYhXqzws4lBZnLj1lPsjk-0=s256",
+            scopes =
+                listOf(
+                    Scope.generateScopeFromString(context, "PROFILE:READ"),
+                    Scope.generateScopeFromString(context, "PHONE:READ"),
+                    Scope.generateScopeFromString(context, "MESSAGES:REPRESENT"),
+                    Scope.generateScopeFromString(context, "CONTACTS:READ"),
+                    Scope.generateScopeFromString(context, "ASSETS:READ"),
+                    Scope.generateScopeFromString(context, "SNAPSHOTS:READ"),
+                    Scope.generateScopeFromString(context, "APPS:READ"),
+                    Scope.generateScopeFromString(context, "APPS:WRITE"),
+                    Scope.generateScopeFromString(context, "CIRCLES:READ"),
+                    Scope.generateScopeFromString(context, "CIRCLES:WRITE"),
+                    Scope.generateScopeFromString(context, "COLLECTIBLES:READ"),
+                ),
+            {},
+            AuthStep.INPUT,
+            "",
+            {},
+            {},
+            {},
+            null,
+        )
+    }
 }

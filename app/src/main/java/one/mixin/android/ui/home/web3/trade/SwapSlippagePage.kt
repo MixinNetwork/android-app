@@ -282,23 +282,27 @@ private fun String.isSlippageValid(): Boolean {
 @Preview
 @Composable
 fun PreviewAuto() {
-    Auto(
-        auto =
-            remember {
-                mutableStateOf(true)
-            },
-        originAuto = true,
-        originBps = 80,
-    )
+    MixinAppTheme {
+        Auto(
+            auto =
+                remember {
+                    mutableStateOf(true)
+                },
+            originAuto = true,
+            originBps = 80,
+        )
+    }
 }
 
 @Preview
 @Composable
 fun PreviewCustom() {
-    Custom(
-        bps =
-            remember {
-                mutableStateOf("50")
-            },
-    )
+    MixinAppTheme {
+        Custom(
+            bps =
+                remember {
+                    mutableStateOf("50")
+                },
+        )
+    }
 }
