@@ -1080,13 +1080,13 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
         val type = uri.getQueryParameter("type")
         
         if (type.equals("perps", true)) {
-            val productId = uri.getQueryParameter("product")
-            if (productId.isNullOrBlank() || !productId.isUUID()) {
+            val marketId = uri.getQueryParameter("market")
+            if (marketId.isNullOrBlank() || !marketId.isUUID()) {
                 showError(R.string.Invalid_payment_link)
                 return
             }
             
-            val market = linkViewModel.getPerpsMarket(productId)
+            val market = linkViewModel.getPerpsMarket(marketId)
             if (market == null) {
                 showError(R.string.Data_error)
                 return
