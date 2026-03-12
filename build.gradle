@@ -193,9 +193,8 @@ allprojects {
         maven {
             url = "https://maven.pkg.github.com/checkout/checkout-3ds-sdk-android"
             credentials {
-                username = project.properties['GITHUB_ID']
-                password = project.properties['GITHUB_PACKAGES_TOKEN']
-
+                username = project.findProperty('GITHUB_ID') ?: System.getenv('GITHUB_ID') ?: ""
+                password = project.findProperty('GITHUB_PACKAGES_TOKEN') ?: System.getenv('GITHUB_PACKAGES_TOKEN') ?: ""
             }
         }
 
