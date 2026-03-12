@@ -14,6 +14,7 @@ import androidx.annotation.RequiresApi
 import androidx.camera.camera2.Camera2Config
 import androidx.camera.core.CameraXConfig
 import androidx.hilt.work.HiltWorkerFactory
+import androidx.media3.common.util.UnstableApi
 import androidx.work.Configuration
 import coil3.ImageLoader
 import coil3.PlatformContext
@@ -78,6 +79,7 @@ import one.mixin.android.ui.player.MusicService
 import one.mixin.android.ui.transfer.TransferActivity
 import one.mixin.android.ui.web.FloatingWebClip
 import one.mixin.android.ui.web.WebActivity
+import one.mixin.android.util.BiometricUtil
 import one.mixin.android.ui.web.clips
 import one.mixin.android.ui.web.refresh
 import one.mixin.android.ui.web.releaseAll
@@ -295,6 +297,7 @@ open class MixinApplication :
         }
     }
 
+
     fun closeAndClear(force: Boolean = false) {
         val activity = currentActivity
         if (activity is TransferActivity) {
@@ -305,22 +308,10 @@ open class MixinApplication :
         if (force || isOnline.compareAndSet(true, false)) {
             val sessionId = Session.getSessionId()
             val identityNumber = Session.getAccount()?.identityNumber
-            BlazeMessageService.stopService(this)
-            val callState = getCallState()
-            if (callState.isGroupCall()) {
-                disconnect<GroupCallService>(this)
-            } else if (callState.isVoiceCall()) {
-                disconnect<VoiceCallService>(this)
-            }
-            notificationManager.cancelAll()
-            CryptoWalletHelper.clear(this)
-            Session.clearAccount()
-            CookieManager.getInstance().removeAllCookies(null)
-            CookieManager.getInstance().flush()
-            WebStorage.getInstance().deleteAllData()
-            releaseAll()
-            PipVideoView.release()
-            removeValueFromEncryptedPreferences(this@MixinApplication, Constants.Tip.MNEMONIC)
+            stopRealtimeServices()
+            clearLocalAuthState()
+            clearWebState()
+            releaseRuntimeState()
             applicationScope.launch {
                 clearData(sessionId, identityNumber)
                 resolveCurrentUserScopeManager(this@MixinApplication).exit("closeAndClear")
@@ -335,6 +326,41 @@ open class MixinApplication :
                 }
             }
         }
+    }
+
+    private fun stopRealtimeServices() {
+        BlazeMessageService.stopService(this)
+        val callState = getCallState()
+        if (callState.isGroupCall()) {
+            disconnect<GroupCallService>(this)
+        } else if (callState.isVoiceCall()) {
+            disconnect<VoiceCallService>(this)
+        }
+        notificationManager.cancelAll()
+    }
+
+    private fun clearLocalAuthState() {
+        CryptoWalletHelper.clear(this)
+        // Clear biometric key material and prefs so a later relogin cannot reuse the old fingerprint state.
+        BiometricUtil.deleteKey(this)
+        // Remove the in-memory and persisted account session, including session id and account profile.
+        Session.clearAccount()
+        // Remove locally cached mnemonic from encrypted storage during logout.
+        removeValueFromEncryptedPreferences(this, Constants.Tip.MNEMONIC)
+    }
+
+    private fun clearWebState() {
+        // Clear all WebView cookies so embedded login/auth pages do not keep the old session.
+        CookieManager.getInstance().removeAllCookies(null)
+        CookieManager.getInstance().flush()
+        // Clear WebView local storage/cache for web-based auth and app pages.
+        WebStorage.getInstance().deleteAllData()
+    }
+
+    @UnstableApi
+    private fun releaseRuntimeState() {
+        releaseAll()
+        PipVideoView.release()
     }
 
     fun reject() {
