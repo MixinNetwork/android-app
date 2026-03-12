@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white"
+    android:orientation="vertical"
+    >
+
+  <View
+      android:id="@+id/country_picker_top_space"
+      android:layout_width="match_parent"
+      android:layout_height="0dp"
+      android:layout_alignParentTop="true"
+      />
+
+  <ImageView
+      android:id="@+id/close"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:padding="8dp"
+      android:layout_marginTop="8dp"
+      android:layout_marginStart="8dp"
+      android:layout_below="@+id/country_picker_top_space"
+      app:srcCompat="@drawable/ic_close_black_24dp"
+      tools:ignore="ContentDescription"
+      />
+
+  <TextView
+      android:id="@+id/title"
+      android:layout_width="wrap_content"
+      android:layout_height="56dp"
+      android:layout_centerHorizontal="true"
+      android:layout_below="@+id/country_picker_top_space"
+      android:gravity="center"
+      android:padding="8dp"
+      android:text="@string/title"
+      android:textColor="@android:color/black"
+      android:textSize="18sp"
+      />
+
+  <EditText
+      android:id="@+id/country_code_picker_search"
+      android:layout_width="match_parent"
+      android:layout_height="50dp"
+      android:layout_below="@+id/title"
+      android:background="@null"
+      android:drawablePadding="8dp"
+      android:drawableStart="@drawable/ic_search"
+      android:hint="@string/search"
+      android:imeOptions="actionSearch"
+      android:maxLines="1"
+      android:textColor="@android:color/black"
+      android:textColorHint="@color/text_gray"
+      android:textSize="14sp"
+      android:paddingStart="@dimen/margin_start"
+      android:paddingEnd="@dimen/margin_start"
+      />
+
+  <View
+      android:id="@+id/line"
+      android:layout_width="match_parent"
+      android:layout_height="1dp"
+      android:layout_below="@+id/country_code_picker_search"
+      android:background="@color/bg_gray"
+      />
+
+  <in.myinnos.alphabetsindexfastscrollrecycler.IndexFastScrollRecyclerView
+      android:id="@+id/country_code_picker_rv"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:divider="@color/bg_gray"
+      android:layout_below="@+id/line" />
+</RelativeLayout>

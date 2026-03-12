@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -14,6 +15,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -62,7 +66,6 @@ import one.mixin.android.extension.safeNavigateUp
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshOrdersJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.GasCheckBottomSheetDialogFragment
@@ -209,7 +212,27 @@ class TradeFragment : BaseFragment() {
                         },
                     ) {
                         composable(TradeDestination.Swap.name) {
-                            startOrdersPolling()
+                            val lifecycleOwner = LocalLifecycleOwner.current
+                            DisposableEffect(lifecycleOwner) {
+                                val observer = LifecycleEventObserver { _, event ->
+                                    when (event) {
+                                        Lifecycle.Event.ON_RESUME -> {
+                                            startOrdersPolling()
+                                        }
+
+                                        Lifecycle.Event.ON_PAUSE -> {
+                                            stopOrdersPolling()
+                                        }
+
+                                        else -> {}
+                                    }
+                                }
+                                lifecycleOwner.lifecycle.addObserver(observer)
+                                onDispose {
+                                    lifecycleOwner.lifecycle.removeObserver(observer)
+                                }
+                            }
+                            
                             val currentWalletId = walletId ?: Session.getAccountId() ?: ""
                             val initialTabIndex = remember(currentWalletId) {
                                 val preferenceKey = "$PREF_TRADE_SELECTED_TAB_PREFIX$currentWalletId"
@@ -254,6 +277,11 @@ class TradeFragment : BaseFragment() {
                                     val preferenceKey = "$PREF_TRADE_SELECTED_TAB_PREFIX$currentWalletId"
                                     defaultSharedPreferences.putInt(preferenceKey, index)
                                 },
+                                onSwitchToLimitOrder = { inputText, from, to ->
+                                    initialAmount = inputText
+                                    limitFromToken = from
+                                    limitToToken = to
+                                },
                                 onReview = { quote, from, to, amount ->
                                     AnalyticsTracker.trackTradePreview()
                                     this@apply.hideKeyboard()
@@ -280,7 +308,7 @@ class TradeFragment : BaseFragment() {
                                                 toast(R.string.Alert_Not_Support)
                                                 return@launch
                                             }
-                                            navTo(Web3AddressFragment.newInstance(t, address?.destination, true), Web3AddressFragment.TAG)
+                                            navTo(Web3AddressFragment.newInstance(t, address.destination, true), Web3AddressFragment.TAG)
                                         }
                                     }
                                 },
@@ -549,7 +577,7 @@ class TradeFragment : BaseFragment() {
     }
 
     private fun openSwapTransfer(swapResult: SwapResponse, from: SwapToken, to: SwapToken) {
-        if (from.chain.chainId == Constants.ChainId.Solana || inMixin()) {
+        if (from.chain.chainId == Constants.ChainId.Solana || from.chain.chainId == Constants.ChainId.BITCOIN_CHAIN_ID || inMixin()) {
             AnalyticsTracker.trackTradePreview()
             SwapTransferBottomSheetDialogFragment.newInstance(swapResult, from, to).apply {
                 setOnDone {
@@ -880,8 +908,27 @@ class TradeFragment : BaseFragment() {
         refreshJob = null
     }
 
+    override fun onPause() {
+        super.onPause()
+        stopOrdersPolling()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (view != null) {
+            startOrdersPolling()
+        }
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         stopOrdersPolling()
+        if (dialog.isShowing) {
+            dialog.dismiss()
+        }
+        swapTokens = emptyList()
+        stocks = emptyList()
+        tokenItems = null
+        web3tokens = null
     }
 }

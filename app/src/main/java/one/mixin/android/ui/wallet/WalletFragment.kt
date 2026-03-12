@@ -40,6 +40,7 @@ import one.mixin.android.event.WalletOperationType
 import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putString
@@ -50,6 +51,7 @@ import one.mixin.android.job.RefreshSingleWalletJob
 import one.mixin.android.job.RefreshSafeAccountsJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.LoginVerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.home.MainActivity
@@ -438,7 +440,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
 
     private fun handleWalletCardClick(destination: WalletDestination) {
         if (destination is WalletDestination.Safe) {
-            WebActivity.show(requireContext(), url = destination.url ?: "", null, null, null)
+            destination.url?.openAsUrlOrWeb(requireActivity(), null, parentFragmentManager, lifecycleScope)
             return
         }
         selectedWalletDestination = destination
@@ -762,6 +764,9 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     }
 
     private fun checkPin() {
+        if (activity is MainActivity && parentFragmentManager.findFragmentByTag(LoginVerifyBottomSheetDialogFragment.TAG) != null) {
+            return
+        }
         val cur = System.currentTimeMillis()
         val last = defaultSharedPreferences.getLong(Constants.Account.PREF_PIN_CHECK, 0)
         var interval = getPrefPinInterval(requireContext(), 0)

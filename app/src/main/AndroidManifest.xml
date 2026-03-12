@@ -414,8 +414,7 @@
             android:exported="false" />
         <service
             android:name=".fcm.FcmService"
-            android:foregroundServiceType="remoteMessaging"
-            android:exported="false">
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
@@ -433,7 +432,7 @@
             android:foregroundServiceType="microphone" />
         <service
             android:name=".job.BlazeMessageService"
-            android:foregroundServiceType="dataSync"
+            android:foregroundServiceType="remoteMessaging"
             android:enabled="true" />
         <service
             android:name=".ui.player.MusicService"

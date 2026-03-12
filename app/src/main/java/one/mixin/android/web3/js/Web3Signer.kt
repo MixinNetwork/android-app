@@ -2,8 +2,10 @@ package one.mixin.android.web3.js
 
 import okio.Buffer
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Account.ChainAddress.BTC_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
+import one.mixin.android.Constants.ChainId.BITCOIN_CHAIN_ID
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -25,6 +27,14 @@ import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.encodeToBase58String
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.Web3Exception
+import org.bitcoinj.base.Coin
+import org.bitcoinj.core.Transaction
+import org.bitcoinj.core.TransactionInput
+import org.bitcoinj.core.TransactionWitness
+import org.bitcoinj.crypto.ECKey
+import org.bitcoinj.crypto.TransactionSignature
+import org.bitcoinj.script.Script
+import org.bitcoinj.script.ScriptBuilder
 import org.sol4k.Keypair
 import org.sol4kt.SignInAccount
 import org.sol4kt.SignInInput
@@ -41,6 +51,7 @@ import org.web3j.protocol.core.Response
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigInteger
+import java.nio.ByteBuffer
 import org.sol4k.Constants as ConstantsSolana
 
 object Web3Signer {
@@ -60,6 +71,7 @@ object Web3Signer {
         const val ADDRESS = "signer_address"
         const val EVM_ADDRESS = "signer_evm_address"
         const val SOLANA_ADDRESS = "signer_solana_address"
+        const val BTC_ADDRESS = "signer_btc_address"
         const val PATH = "signer_path"
         const val CURRENT_WALLET_CATEGORY = "signer_current_wallet_category"
         const val CLASSIC_WALLET_ID = "signer_classic_wallet_id"
@@ -72,6 +84,8 @@ object Web3Signer {
     var evmAddress: String = ""
         private set
     var solanaAddress: String = ""
+        private set
+    var btcAddress: String = ""
         private set
     var path: String = ""
         private set
@@ -96,6 +110,7 @@ object Web3Signer {
         address = sp.getString(Keys.ADDRESS, "") ?: ""
         evmAddress = sp.getString(Keys.EVM_ADDRESS, "") ?: ""
         solanaAddress = sp.getString(Keys.SOLANA_ADDRESS, "") ?: ""
+        btcAddress = sp.getString(Keys.BTC_ADDRESS, "") ?: ""
         path = sp.getString(Keys.PATH, "") ?: ""
         currentWalletId = sp.getString(Keys.SELECTED_WEB3_WALLET_ID, "") ?: ""
         currentWalletCategory = sp.getString(Keys.CURRENT_WALLET_CATEGORY, WalletCategory.CLASSIC.value)
@@ -110,6 +125,7 @@ object Web3Signer {
         sp.putString(Keys.ADDRESS, address)
         sp.putString(Keys.EVM_ADDRESS, evmAddress)
         sp.putString(Keys.SOLANA_ADDRESS, solanaAddress)
+        sp.putString(Keys.BTC_ADDRESS, btcAddress)
         sp.putString(Keys.PATH, path)
         sp.putString(Keys.SELECTED_WEB3_WALLET_ID, currentWalletId)
         sp.putString(Keys.CURRENT_WALLET_CATEGORY, currentWalletCategory)
@@ -193,10 +209,12 @@ object Web3Signer {
             solanaAddress =
                 addresses.firstOrNull { it.chainId == SOLANA_CHAIN_ID }?.destination
                     ?: ""
+            btcAddress = addresses.firstOrNull {it.chainId == BITCOIN_CHAIN_ID}?.destination ?:""
             address = evmAddress
         } else {
             evmAddress = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
             solanaAddress = PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
+            btcAddress = PropertyHelper.findValueByKey(BTC_ADDRESS, "")
             address = evmAddress
             path = ""
         }
@@ -367,6 +385,37 @@ object Web3Signer {
         System.arraycopy(signature.s, 0, b, 32, 32)
         System.arraycopy(signature.v, 0, b, 64, 1)
         return Numeric.toHexString(b)
+    }
+
+    fun signBTCTransaction(priv: ByteArray, rawHex: String, amountSats: Long): String {
+        val key: ECKey = ECKey.fromPrivate(priv, true)
+        val rawTxBytes: ByteArray = rawHex.hexStringToByteArray()
+        val transaction: Transaction = Transaction.read(ByteBuffer.wrap(rawTxBytes))
+        if (transaction.inputs.isEmpty()) {
+            throw IllegalArgumentException("Empty transaction inputs")
+        }
+        transaction.inputs.forEachIndexed { inputIndex: Int, input: TransactionInput ->
+            val value: Coin = Coin.valueOf(amountSats)
+            if (value.isZero) {
+                throw IllegalArgumentException("Invalid utxo amount on input $inputIndex")
+            }
+            val scriptCode: Script = ScriptBuilder.createP2PKHOutputScript(key)
+            val signature: TransactionSignature = transaction.calculateWitnessSignature(
+                inputIndex,
+                key,
+                scriptCode,
+                value,
+                Transaction.SigHash.ALL,
+                false,
+            )
+            val witness = TransactionWitness.of(
+                signature.encodeToBitcoin(),
+                key.pubKey,
+            )
+            val newInput = input.withScriptBytes(byteArrayOf()).withWitness(witness)
+            transaction.inputs[inputIndex] = newInput
+        }
+        return transaction.serialize().toHex()
     }
 
     fun signSolanaMessage(

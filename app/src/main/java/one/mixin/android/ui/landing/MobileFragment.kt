@@ -11,13 +11,13 @@ import android.view.View.AUTOFILL_HINT_PHONE
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.WindowManager
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.google.i18n.phonenumbers.Phonenumber
-import com.mukesh.countrypicker.Country
-import com.mukesh.countrypicker.CountryPicker
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -33,12 +33,15 @@ import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.navTo
+import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.viewDestroyed
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
 import one.mixin.android.ui.logs.LogViewerBottomSheet
@@ -55,6 +58,8 @@ import one.mixin.android.widget.CaptchaView
 import one.mixin.android.widget.CaptchaView.Companion.gtCAPTCHA
 import one.mixin.android.widget.CaptchaView.Companion.hCAPTCHA
 import one.mixin.android.widget.Keyboard
+import one.mixin.android.widget.countrypicker.Country
+import one.mixin.android.widget.countrypicker.CountryPicker
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -67,10 +72,12 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
         const val FROM_LANDING_CREATE = 1
         const val FROM_CHANGE_PHONE_ACCOUNT = 2
         const val FROM_DELETE_ACCOUNT = 3
+        const val FROM_VERIFY_MOBILE_REMINDER = 4
 
         fun newInstance(
             pin: String? = null,
             from: Int = FROM_LANDING,
+            phoneNumber: String? = null,
         ): MobileFragment =
             MobileFragment().apply {
                 val b =
@@ -79,6 +86,9 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                             putString(ARGS_PIN, pin)
                         }
                         putInt(ARGS_FROM, from)
+                        if (!phoneNumber.isNullOrBlank()) {
+                            putString(ARGS_PHONE_NUM, phoneNumber)
+                        }
                     }
                 arguments = b
             }
@@ -98,13 +108,17 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
         requireArguments().getInt(ARGS_FROM, FROM_LANDING)
     }
 
+    private val presetPhoneNumber: String? by lazy {
+        requireArguments().getString(ARGS_PHONE_NUM)
+    }
+
     private var captchaView: CaptchaView? = null
 
     private val mixinCountry by lazy {
         Country().apply {
             name = getString(R.string.Mixin)
             code = getString(R.string.Mixin)
-            flag = com.mukesh.countrypicker.R.drawable.flag_mixin
+            flag = R.drawable.flag_mixin
             dialCode = xinDialCode
         }
     }
@@ -115,6 +129,9 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        if (activity is LandingActivity) {
+            applySafeTopPadding(view)
+        }
         Timber.e("MobileFragment onViewCreated")
         binding.apply {
             pin = requireArguments().getString(ARGS_PIN)
@@ -149,7 +166,15 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             countryIconIv.setOnClickListener { showCountry() }
             countryCodeEt.addTextChangedListener(countryCodeWatcher)
             countryCodeEt.showSoftInputOnFocus = false
-            continueBn.setOnClickListener { showDialog() }
+            continueBn.setOnClickListener {
+                if (from == FROM_VERIFY_MOBILE_REMINDER
+                    && presetPhoneNumber != null
+                ) {
+                    requestSend()
+                } else {
+                    showDialog()
+                }
+            }
             mobileEt.showSoftInputOnFocus = false
             mobileEt.addTextChangedListener(mWatcher)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -174,6 +199,12 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             }
             getUserCountryInfo()
 
+            if (from == FROM_VERIFY_MOBILE_REMINDER) {
+                presetPhoneNumber?.let { phoneNumber ->
+                    presetVerifyMobilePhoneNumber(phoneNumber)
+                }
+            }
+
             keyboard.tipTitleEnabled = false
             keyboard.initPinKeys()
             keyboard.setOnClickKeyboardListener(mKeyboardListener)
@@ -186,14 +217,66 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                 )
             }
             noAccount.setOnClickListener {
-                activity?.addFragment(
-                    this@MobileFragment,
-                    CreateAccountFragment.newInstance(),
-                    CreateAccountFragment.TAG
-                )
+                CreateAccountConfirmBottomSheetDialogFragment.newInstance()
+                    .setOnCreateAccount {
+                        activity?.addFragment(
+                            this@MobileFragment,
+                            MnemonicPhraseFragment.newInstance(),
+                            MnemonicPhraseFragment.TAG,
+                        )
+                    }
+                    .setOnPrivacyPolicy {
+                        activity?.openUrl(getString(R.string.landing_privacy_policy_url))
+                    }
+                    .setOnTermsOfService {
+                        activity?.openUrl(getString(R.string.landing_terms_url))
+                    }
+                    .showNow(parentFragmentManager, CreateAccountConfirmBottomSheetDialogFragment.TAG)
             }
         }
         setupFocusListeners()
+    }
+
+    private fun applySafeTopPadding(rootView: View) {
+        val originalPaddingTop: Int = rootView.paddingTop
+        ViewCompat.setOnApplyWindowInsetsListener(rootView) { v: View, insets: WindowInsetsCompat ->
+            val topInset: Int = insets.getInsets(WindowInsetsCompat.Type.displayCutout()).top
+            v.setPadding(v.paddingLeft, originalPaddingTop + topInset, v.paddingRight, v.paddingBottom)
+            insets
+        }
+        ViewCompat.requestApplyInsets(rootView)
+    }
+
+    private fun presetVerifyMobilePhoneNumber(phoneNumber: String) {
+        if (viewDestroyed()) return
+
+        val parsedPhoneNumber: Phonenumber.PhoneNumber? = runCatching {
+            phoneUtil.parse(phoneNumber, null)
+        }.getOrNull()
+
+        if (parsedPhoneNumber == null) {
+            return
+        }
+
+        val dialCode: String = "+${parsedPhoneNumber.countryCode}"
+        val country: Country? =
+            if (dialCode == xinDialCode) {
+                mixinCountry
+            } else {
+                countryPicker.getCountryByDialCode(dialCode)
+            }
+        if (country != null) {
+            mCountry = country
+            binding.countryIconIv.setImageResource(country.flag)
+            binding.countryCodeEt.setText(country.dialCode)
+        }
+        binding.mobileTv.setText(getString(R.string.Confirm_your_mobile_number))
+        binding.mobileEt.setText(parsedPhoneNumber.nationalNumber.toString())
+        binding.countryIconIv.isEnabled = false
+        binding.countryCodeEt.isEnabled = false
+        binding.mobileEt.isEnabled = false
+        binding.mobileCover.isClickable = false
+        handleEditView()
     }
 
     override fun onBackPressed(): Boolean {
@@ -254,6 +337,10 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
 
                     FROM_CHANGE_PHONE_ACCOUNT -> {
                         VerificationPurpose.PHONE.name
+                    }
+
+                    FROM_VERIFY_MOBILE_REMINDER -> {
+                        VerificationPurpose.NONE.name
                     }
 
                     else -> {
@@ -416,6 +503,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                 setCustomAnimations(R.anim.slide_in_bottom, 0, 0, R.anim.slide_out_bottom)
                     .add(R.id.container, countryPicker).addToBackStack(null)
             }
+            if (activity is LandingActivity) countryPicker.setTopViewHeight(binding.root.getSafeAreaInsetsTop())
         } catch (e: Exception) {
             val msg = "open countryPicker ${e.stackTraceToString()}"
             Timber.e(msg)
@@ -439,7 +527,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             } else {
                 mobileEt.hint = getString(R.string.Phone_Number)
                 if (titleSwitcher.displayedChild != 0) {
-                    if (pin != null) {
+                    if (pin != null && presetPhoneNumber == null && Session.hasPhone()) {
                         titleSwitcher.setText(getString(R.string.Enter_new_phone_number))
                     } else {
                         titleSwitcher.setText(getString(R.string.Enter_your_phone_number))

@@ -95,11 +95,11 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
         requireArguments().getString(ARGS_ADDRESS)
     }
 
-    private val web3Token by lazy {
+    private val initialWeb3Token by lazy {
         requireArguments().getParcelableCompat(ARGS_WEB3_TOKEN, Web3TokenItem::class.java)
     }
 
-    private val chainToken by lazy {
+    private val initialChainToken by lazy {
         requireArguments().getParcelableCompat(ARGS_CHAIN_TOKEN, Web3TokenItem::class.java)
     }
 
@@ -108,6 +108,9 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
     }
 
     private val web3ViewModel by viewModels<Web3ViewModel>()
+    
+    private var web3Token by mutableStateOf<Web3TokenItem?>(null)
+    private var chainToken by mutableStateOf<Web3TokenItem?>(null)
 
     // for testing
     private lateinit var resultRegistry: ActivityResultRegistry
@@ -165,6 +168,25 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        
+        web3Token = initialWeb3Token
+        chainToken = initialChainToken
+        
+        initialWeb3Token?.let { token ->
+            lifecycleScope.launch {
+                web3ViewModel.observeWeb3Token(token.walletId, token.assetId).collect { updatedToken ->
+                    updatedToken?:return@collect
+                    web3Token = updatedToken
+                }
+            }
+            lifecycleScope.launch {
+                web3ViewModel.observeWeb3Token(token.walletId, token.chainId).collect { updatedChain ->
+                    updatedChain?:return@collect
+                    chainToken = updatedChain
+                }
+            }
+        }
+        
         jobManager.addJobInBackground(SyncOutputJob())
         (token?.chainId ?: web3Token?.chainId)?.let {
             jobManager.addJobInBackground(RefreshAddressJob(it))

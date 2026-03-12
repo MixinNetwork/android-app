@@ -578,7 +578,8 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                 days <= 1 -> R.string.expiry_1_day
                 days <= 3 -> R.string.expiry_3_days
                 days <= 7 -> R.string.expiry_1_week
-                else -> R.string.expiry_1_month
+                days <= 30 -> R.string.expiry_1_month
+                else -> R.string.expiry_1_year
             }
         }.getOrElse { R.string.expiry_never }
     }

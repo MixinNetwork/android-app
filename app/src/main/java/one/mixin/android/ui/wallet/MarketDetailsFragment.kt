@@ -162,7 +162,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
             } else {
                 walletViewModel.anyAlertByCoinId(marketItem.coinId)
             }.observe(this@MarketDetailsFragment.viewLifecycleOwner) { exist ->
-                swapAlert.setAlertTitle(if (exist) R.string.Alert else R.string.Add_Alert)
+                swapAlert.setAlertTitle(R.string.Alert)
                 swapAlert.alertVa.setOnClickListener {
                     if (NotificationManagerCompat.from(requireContext()).areNotificationsEnabled()) {
                         viewLifecycleOwner.lifecycleScope.launch {

@@ -84,6 +84,7 @@ import one.mixin.android.receiver.ShareBroadcastReceiver
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.RomUtil
+import one.mixin.android.util.RomPermissionUtil
 import one.mixin.android.util.XiaomiUtilities
 import one.mixin.android.util.blurhash.BlurHashEncoder
 import one.mixin.android.util.getChainName
@@ -232,8 +233,8 @@ fun View.getSafeAreaInsetsBottom(): Int {
     val insets = ViewCompat.getRootWindowInsets(this) ?: return 0
 
     val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-    val displayCutout = insets.getInsets(WindowInsetsCompat.Type.displayCutout())
-    return maxOf(systemBars.bottom, displayCutout.bottom)
+    val navigationBarsInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
+    return maxOf(systemBars.bottom, navigationBarsInsets.bottom)
 }
 
 fun Context.statusBarHeight(): Int = getSystemBarHeight("status_bar_height")
@@ -1096,6 +1097,7 @@ fun Fragment.getTipsByAsset(asset: TokenItem) =
 
 fun Fragment.getTipsByAsset(asset: Web3TokenItem, chain: Web3Chain?) =
     when (asset.assetId) {
+        Constants.ChainId.BITCOIN_CHAIN_ID -> getString(R.string.deposit_tip_btc)
         Constants.ChainId.ETHEREUM_CHAIN_ID -> getString(R.string.deposit_tip_eth)
         else -> getString(R.string.deposit_tip_chain, asset.symbol, chain?.name ?: getChainName(asset.chainId, asset.chainName, asset.assetKey))
     }
@@ -1177,7 +1179,7 @@ val defaultThemeId =
     }
 
 fun Context.checkInlinePermissions(): Boolean {
-    if (RomUtil.isMiui && !XiaomiUtilities.isCustomPermissionGranted(XiaomiUtilities.OP_BACKGROUND_START_ACTIVITY)) {
+    if (!RomPermissionUtil.checkBackgroundStartPermission(this)) {
         return false
     }
     if (Settings.canDrawOverlays(this)) {
@@ -1187,23 +1189,12 @@ fun Context.checkInlinePermissions(): Boolean {
 }
 
 fun Context.checkInlinePermissions(showAlert: () -> Unit): Boolean {
-    if (RomUtil.isMiui && !XiaomiUtilities.isCustomPermissionGranted(XiaomiUtilities.OP_BACKGROUND_START_ACTIVITY)) {
-        var intent = XiaomiUtilities.getPermissionManagerIntent()
-        if (intent != null) {
-            try {
-                startActivity(intent)
-            } catch (x: Exception) {
-                try {
-                    intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                    intent.data =
-                        Uri.parse("package:" + MixinApplication.appContext.packageName)
-                    startActivity(intent)
-                } catch (xx: Exception) {
-                    Timber.e(xx)
-                }
-            }
+    if (!RomPermissionUtil.checkBackgroundStartPermission(this)) {
+        if (RomPermissionUtil.openBackgroundPermissionSetting(this)) {
+            toast(R.string.need_background_permission)
+        } else {
+            toast(R.string.need_background_permission)
         }
-        toast(R.string.need_background_permission)
         return false
     }
     if (Settings.canDrawOverlays(this)) {

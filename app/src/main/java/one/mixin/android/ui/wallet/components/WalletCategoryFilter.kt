@@ -1,17 +1,11 @@
 package one.mixin.android.ui.wallet.components
 
-import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyListItemInfo
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -71,27 +65,7 @@ private fun WalletCategoryTabRow(
     selectedIndex: Int,
     onTabSelected: (Int) -> Unit
 ) {
-    val listState: LazyListState = rememberLazyListState()
-    LaunchedEffect(selectedIndex, tabs.size) {
-        if (tabs.isEmpty()) return@LaunchedEffect
-        listState.animateScrollToItem(index = selectedIndex)
-        val delta: Float? = withFrameNanos { _: Long ->
-            val itemInfo: LazyListItemInfo? = listState.layoutInfo.visibleItemsInfo
-                .firstOrNull { info: LazyListItemInfo -> info.index == selectedIndex }
-            if (itemInfo == null) return@withFrameNanos null
-            val viewportStartOffset: Int = listState.layoutInfo.viewportStartOffset
-            val viewportEndOffset: Int = listState.layoutInfo.viewportEndOffset
-            val viewportWidth: Int = viewportEndOffset - viewportStartOffset
-            val viewportCenter: Int = viewportStartOffset + (viewportWidth / 2)
-            val itemCenter: Int = itemInfo.offset + (itemInfo.size / 2)
-            (itemCenter - viewportCenter).toFloat()
-        }
-        if (delta != null && delta != 0f) {
-            listState.animateScrollBy(delta)
-        }
-    }
     LazyRow(
-        state = listState,
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp),

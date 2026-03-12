@@ -20,9 +20,7 @@ class AddPhoneBeforeFragment : BaseFragment(R.layout.fragment_compose) {
 
         fun newInstance(
         ): AddPhoneBeforeFragment =
-            AddPhoneBeforeFragment().apply {
-
-            }
+            AddPhoneBeforeFragment().apply {}
     }
 
     private val binding by viewBinding(FragmentComposeBinding::bind)

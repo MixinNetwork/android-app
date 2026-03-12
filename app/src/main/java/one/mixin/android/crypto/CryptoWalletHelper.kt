@@ -18,11 +18,17 @@ import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.encodeToBase58String
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.js.Web3Signer
+import org.bitcoinj.base.BitcoinNetwork
+import org.bitcoinj.base.ScriptType
+import org.bitcoinj.crypto.DumpedPrivateKey
+import org.bitcoinj.crypto.ECKey
 import org.bitcoinj.crypto.MnemonicCode
+import org.bitcoinj.params.MainNetParams
 import org.sol4k.Base58
 import org.sol4k.Keypair.Companion.fromSecretKey
 import org.web3j.utils.Numeric
 import timber.log.Timber
+import java.math.BigInteger
 import java.security.MessageDigest
 
 object CryptoWalletHelper {
@@ -62,11 +68,31 @@ object CryptoWalletHelper {
                         .removeSuffix("'/0'")
                         .toIntOrNull()
                 }
+                // Bitcoin SegWit path: m/84'/0'/0'/0/{index}
+                path.startsWith("m/84'/0'/") -> {
+                    path.removePrefix("m/84'/0'/0'/0/").toIntOrNull()
+                }
                 else -> null
             }
         } catch (e: Exception) {
             Timber.e(e, "Failed to extract index from path: $path")
             null
+        }
+    }
+
+    fun mnemonicToBitcoinSegwitWallet(mnemonic: String, passphrase: String = "", index: Int = 0): CryptoWallet {
+        try {
+            val path: String = Bip44Path.bitcoinSegwitPathString(index)
+            val privateKeyBytes: ByteArray = BitcoinKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, passphrase, index)
+            val address: String = BitcoinKeyGenerator.privateKeyToAddress(privateKeyBytes)
+            return CryptoWallet(
+                mnemonic = mnemonic,
+                privateKey = Numeric.toHexString(privateKeyBytes),
+                address = address,
+                path = path,
+            )
+        } catch (e: Exception) {
+            throw RuntimeException("Bitcoin SegWit wallet generation failed: ${e.message}", e)
         }
     }
 
@@ -112,14 +138,27 @@ object CryptoWalletHelper {
     fun privateKeyToAddress(privateKey: String, chainId: String): String {
         return when (chainId) {
             Constants.ChainId.SOLANA_CHAIN_ID -> {
-                val privateKeyBytes = Base58.decode(privateKey)
+                val privateKeyBytes: ByteArray = Base58.decode(privateKey)
                 val keyPair = fromSecretKey(privateKeyBytes)
                 keyPair.publicKey.toBase58()
             }
+
+            Constants.ChainId.BITCOIN_CHAIN_ID -> {
+                val ecKey: ECKey = if (isBitcoinWifPrivateKey(privateKey)) {
+                    DumpedPrivateKey.fromBase58(BitcoinNetwork.MAINNET, privateKey).key
+                } else {
+                    val privateKeyBytes: ByteArray = Numeric.hexStringToByteArray(privateKey)
+                    ECKey.fromPrivate(BigInteger(1, privateKeyBytes), true)
+                }
+                val address = ecKey.toAddress(ScriptType.P2WPKH, BitcoinNetwork.MAINNET)
+                address.toString()
+            }
+
             in Constants.Web3EvmChainIds -> {
-                val privateKeyBytes = Numeric.hexStringToByteArray(privateKey)
+                val privateKeyBytes: ByteArray = Numeric.hexStringToByteArray(privateKey)
                 EthKeyGenerator.privateKeyToAddress(privateKeyBytes)
             }
+
             else -> {
                 throw IllegalArgumentException("Unsupported chainId: $chainId")
             }
@@ -134,12 +173,16 @@ object CryptoWalletHelper {
     ): String {
         return when (chainId) {
             Constants.ChainId.SOLANA_CHAIN_ID -> {
-                val keyPair = SolanaKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, passphrase, index)
-                newKeyPairFromSeed(keyPair).publicKey.encodeToBase58String()
+                val privateKey: ByteArray = SolanaKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, passphrase, index)
+                newKeyPairFromSeed(privateKey).publicKey.encodeToBase58String()
+            }
+            Constants.ChainId.BITCOIN_CHAIN_ID -> {
+                BitcoinKeyGenerator.mnemonicToAddress(mnemonic, passphrase, index)
             }
             in Constants.Web3EvmChainIds -> {
-                val privateKey = EthKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, passphrase, index)
-                    ?: throw IllegalArgumentException("Private key generation failed")
+                val privateKey: ByteArray =
+                    EthKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, passphrase, index)
+                        ?: throw IllegalArgumentException("Private key generation failed")
                 EthKeyGenerator.privateKeyToAddress(privateKey)
             }
             else -> {
@@ -147,29 +190,6 @@ object CryptoWalletHelper {
             }
         }
     }
-
-    fun mnemonicToPrivate(
-        mnemonic: String,
-        chainId: String,
-        passphrase: String = "",
-        index: Int = 0
-    ): String {
-        return when (chainId) {
-            Constants.ChainId.SOLANA_CHAIN_ID -> {
-                val keyPair = SolanaKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, passphrase, index)
-                newKeyPairFromSeed(keyPair).privateKey.encodeToBase58String()
-            }
-            in Constants.Web3EvmChainIds -> {
-                val privateKey = EthKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, passphrase, index)
-                    ?: throw IllegalArgumentException("Private key generation failed")
-                Numeric.toHexString(privateKey)
-            }
-            else -> {
-                throw IllegalArgumentException("Unsupported chainId: $chainId")
-            }
-        }
-    }
-
 
     fun encryptPrivateKeyWithSpendKey(spendKey: ByteArray, privateKey: String): String {
         val sha256Digest = MessageDigest.getInstance("SHA-256")
@@ -199,10 +219,7 @@ object CryptoWalletHelper {
     fun getWeb3Mnemonic(context: Context, spendKey: ByteArray, walletId: String): String? {
         return try {
             val encryptedPrefs = getSecureStorage(context)
-            val encryptedString = encryptedPrefs?.getString(walletId, null)
-            if (encryptedString == null) {
-                return null
-            }
+            val encryptedString = encryptedPrefs?.getString(walletId, null) ?: return null
             decryptMnemonicWithSpendKey(spendKey, encryptedString).joinToString(" ")
         } catch (e: Exception) {
             Timber.e(e, "Failed to decrypt mnemonic for walletId: $walletId")
@@ -223,14 +240,36 @@ object CryptoWalletHelper {
             val aesKeyBytes = sha256Digest.digest(spendKey)
             val encryptedBytes = encryptedString.base64RawURLDecode()
             val privateKeyStr = String(aesGcmDecrypt(encryptedBytes, aesKeyBytes))
-            if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
-                privateKeyStr.decodeBase58()
-            } else {
-                Numeric.hexStringToByteArray(privateKeyStr)
+            when (chainId) {
+                Constants.ChainId.SOLANA_CHAIN_ID -> {
+                    privateKeyStr.decodeBase58()
+                }
+                Constants.ChainId.BITCOIN_CHAIN_ID -> {
+                    if (isBitcoinWifPrivateKey(privateKeyStr)) {
+                        DumpedPrivateKey.fromBase58(BitcoinNetwork.MAINNET, privateKeyStr).key.privKeyBytes
+                    } else {
+                        Numeric.hexStringToByteArray(privateKeyStr)
+                    }
+                }
+                in Constants.Web3EvmChainIds -> {
+                    Numeric.hexStringToByteArray(privateKeyStr)
+                }
+                else -> {
+                    throw IllegalArgumentException("Unsupported chainId: $chainId")
+                }
             }
         } catch (e: Exception) {
             Timber.e(e, "Failed to decrypt private key for walletId: $walletId")
             null
+        }
+    }
+
+    private fun isBitcoinWifPrivateKey(privateKey: String): Boolean {
+        return try {
+            DumpedPrivateKey.fromBase58(BitcoinNetwork.MAINNET, privateKey)
+            true
+        } catch (e: Exception) {
+            false
         }
     }
 
@@ -255,10 +294,16 @@ object CryptoWalletHelper {
                         ?: return null
                     val derivationIndex = requireNotNull(extractIndexFromPath(Web3Signer.path))
 
-                    if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
-                        SolanaKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, index = derivationIndex)
-                    } else {
-                        EthKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, index = derivationIndex)
+                    when (chainId) {
+                        Constants.ChainId.SOLANA_CHAIN_ID -> {
+                            SolanaKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, index = derivationIndex)
+                        }
+                        Constants.ChainId.BITCOIN_CHAIN_ID -> {
+                            BitcoinKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, "", derivationIndex)
+                        }
+                        else -> {
+                            EthKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, index = derivationIndex)
+                        }
                     }
                 }
             }
