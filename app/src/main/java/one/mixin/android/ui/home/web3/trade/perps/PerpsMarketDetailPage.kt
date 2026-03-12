@@ -431,7 +431,7 @@ private fun MarketInfoCard(
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-            text = market.fundingRate,
+            text = formatFundingRate(market.fundingRate),
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
             color = MixinAppTheme.colors.textPrimary
@@ -450,6 +450,12 @@ private fun formatVolume(
     } catch (e: Exception) {
         "${fiatSymbol}${volume}"
     }
+}
+
+private fun formatFundingRate(fundingRate: String): String {
+    return runCatching {
+        BigDecimal(fundingRate).multiply(BigDecimal(100)).stripTrailingZeros().toPlainString() + "%"
+    }.getOrElse { fundingRate }
 }
 
 @Composable
@@ -734,7 +740,7 @@ private fun OpenPositionCard(
             Column(horizontalAlignment = Alignment.End) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = stringResource(R.string.Amount),
+                        text = stringResource(R.string.Margin),
                         fontSize = 12.sp,
                         color = MixinAppTheme.colors.textAssist
                     )

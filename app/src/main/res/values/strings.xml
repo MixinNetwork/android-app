@@ -90,6 +90,7 @@
     <string name="Allow_bot_manage_circles">Allow bot to add, modify and delete your circles.</string>
     <string name="Allow_bot_send_messages">Allow bot to send messages represent of you.</string>
     <string name="Amount">Amount</string>
+    <string name="Margin">Margin</string>
     <string name="an_audio">an audio</string>
     <string name="Anonymous_Number">Anonymous Number</string>
     <string name="ANSWER">ANSWER</string>
@@ -2383,7 +2384,7 @@
     <string name="Perpetual_Closed_Long_Title">Close Long</string>
     <string name="Perpetual_Closed_Short_Title">Close Short</string>
     <string name="Estimated_Liquidation_Price">Estimated Liquidation Price</string>
-    <string name="Total_Position_Value">Total Size</string>
+    <string name="Total_Position_Value">Total Position Value</string>
     <string name="Perpetual_Side_Symbol_Title">%1$s %2$s</string>
     <string name="Perpetual_Leverage_Format">%1$dx</string>
     <string name="Perpetual_Usd_Amount" translatable="false">$%1$f</string>

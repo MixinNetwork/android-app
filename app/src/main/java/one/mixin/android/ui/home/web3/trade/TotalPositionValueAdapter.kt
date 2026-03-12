@@ -67,17 +67,17 @@ class TotalPositionValueAdapter : RecyclerView.Adapter<TotalPositionValueAdapter
             val fiatRate = BigDecimal(Fiats.getRate())
             val fiatSymbol = Fiats.getSymbol()
             titleTv.text = context.getString(titleResId)
-            valueTv.text = "${
-                if (total >= BigDecimal.ZERO) {
-                    "+"
-                } else {
-                    "-"
-                }
-            }$fiatSymbol${total.abs().multiply(fiatRate).priceFormat()}"
             val gainColor = context.getColor(R.color.wallet_green)
             val lossColor = context.getColor(R.color.wallet_red)
 
             if (isClosed) {
+                valueTv.text = "${
+                    if (total >= BigDecimal.ZERO) {
+                        "+"
+                    } else {
+                        "-"
+                    }
+                }$fiatSymbol${total.abs().multiply(fiatRate).priceFormat()}"
                 val isProfit = subtitleValue >= BigDecimal.ZERO
                 valueTv.setTextColor(
                     if (isProfit) {
@@ -104,6 +104,7 @@ class TotalPositionValueAdapter : RecyclerView.Adapter<TotalPositionValueAdapter
                     )
                 }
             } else {
+                valueTv.text = "$fiatSymbol${total.abs().multiply(fiatRate).priceFormat()}"
                 valueTv.setTextColor(resolveAttrColor(itemView, R.attr.text_primary))
                 if (subtitlePercent == null) {
                     subtitleTv.isGone = true

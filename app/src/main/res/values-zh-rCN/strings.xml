@@ -2287,7 +2287,7 @@
     <string name="Leverage">杠杆</string>
     <string name="Select_Token">选择代币</string>
     <string name="Select_Leverage">选择杠杆</string>
-    <string name="Order_Value">订单价值</string>
+    <string name="Order_Value">规模</string>
     <string name="Liquidation_Price">清算价格</string>
     <string name="Price_Change_Profit">价格%1$s %2$s%% → 盈利 %3$s%4$s%% (%5$s%6$s)</string>
     <string name="Long">做多</string>
@@ -2318,7 +2318,8 @@
     <string name="Perpetual_Closed_Long_Title">平仓做多</string>
     <string name="Perpetual_Closed_Short_Title">平仓做空</string>
     <string name="Estimated_Liquidation_Price">预估清算价格</string>
-    <string name="Total_Position_Value">订单总价值</string>
+    <string name="Total_Position_Value">持仓总价值</string>
+    <string name="Margin">保证金</string>
     <string name="Perpetual_Side_Symbol_Title">%1$s %2$s</string>
     <string name="Perpetual_Leverage_Format">%1$d倍</string>
     <string name="Open_Positions">持仓(%1$d)</string>
