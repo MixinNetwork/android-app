@@ -2249,12 +2249,12 @@
     <string name="Perpetual_Risk_Warning_Content_2">当保证金不足时，仓位可能被强制平仓。</string>
     <string name="Perpetual_Risk_Warning_Content_3">请合理控制杠杆倍数与仓位规模，谨慎交易。</string>
     <string name="Perpetual_Example">举例说明</string>
-    <string name="Perpetual_Trading_Pair">交易对</string>
+    <string name="Perpetual_Trading_Pair">开仓交易</string>
     <string name="Price_Up_Profit">价格上涨 %1$s%% → 盈利 %2$s%% (+%3$s)</string>
     <string name="Price_Down_Profit">价格下跌 %1$s%% → 盈利 %2$s%% (+%3$s)</string>
     <string name="Price_Down_Loss">价格下跌 %1$s%% → 亏损 -%2$s %3$s</string>
     <string name="Price_Up_Loss">价格上涨 %1$s%% → 亏损 -%2$s %3$s</string>
-    <string name="Perpetual_Investment">投入资金</string>
+    <string name="Perpetual_Investment">保证金</string>
     <string name="Perpetual_Scenario_1">场景一：价格上涨</string>
     <string name="Perpetual_Scenario_2">场景二：价格下跌</string>
     <string name="Perpetual_Scenario_Title_Format">场景%1$d：%2$s</string>
@@ -2284,10 +2284,10 @@
     <string name="Perpetual_Position_Risk_2">价格剧烈波动可能会快速消耗投入资金。</string>
     <string name="Perpetual">永续合约</string>
     <string name="Open_Position">开仓</string>
-    <string name="Leverage">杠杆</string>
+    <string name="Leverage">杠杆倍数</string>
     <string name="Select_Token">选择代币</string>
     <string name="Select_Leverage">选择杠杆</string>
-    <string name="Position_Size">规模</string>
+    <string name="Position_Size">仓位规模</string>
     <string name="Liquidation_Price">清算价格</string>
     <string name="Price_Change_Profit">价格%1$s %2$s%% → 盈利 %3$s%4$s%% (%5$s%6$s)</string>
     <string name="Long">做多</string>
@@ -2329,7 +2329,7 @@
     <string name="No_Positions">暂无持仓</string>
     <string name="No_Closed_Positions">暂无历史记录</string>
     <string name="PNL">盈亏</string>
-    <string name="Direction">方向</string>
+    <string name="Direction">开仓方向</string>
     <string name="No_Markets">暂无行情</string>
     <string name="View_More">查看更多</string>
     <string name="Loading">加载中...</string>

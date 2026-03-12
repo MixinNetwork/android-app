@@ -2309,12 +2309,12 @@
     <string name="Perpetual_Risk_Warning_Content_2">When margin is insufficient, positions may be forcibly liquidated.</string>
     <string name="Perpetual_Risk_Warning_Content_3">Please control leverage and position size reasonably and trade cautiously.</string>
     <string name="Perpetual_Example">Example</string>
-    <string name="Perpetual_Trading_Pair">Trading Pair</string>
+    <string name="Perpetual_Trading_Pair">Opening Trade</string>
     <string name="Price_Up_Profit">Price up %1$s%% → Profit %2$s%% (+%3$s)</string>
     <string name="Price_Down_Profit">Price down %1$s%% → Profit %2$s%% (+%3$s)</string>
     <string name="Price_Down_Loss">Price down %1$s%% → Loss -%2$s %3$s</string>
     <string name="Price_Up_Loss">Price up %1$s%% → Loss -%2$s %3$s</string>
-    <string name="Perpetual_Investment">Investment</string>
+    <string name="Perpetual_Investment">Margin</string>
     <string name="Perpetual_Scenario_1">Scenario 1: Price Rise</string>
     <string name="Perpetual_Scenario_2">Scenario 2: Price Fall</string>
     <string name="Perpetual_Scenario_Title_Format">Scenario %1$d: %2$s</string>
@@ -2344,10 +2344,10 @@
     <string name="Perpetual_Position_Risk_2">Severe price volatility may rapidly consume investment.</string>
     <string name="Perpetual">Perpetual</string>
     <string name="Open_Position">Open Position</string>
-    <string name="Leverage">Leverage</string>
+    <string name="Leverage">Leverage Multiplier</string>
     <string name="Select_Token">Select Token</string>
     <string name="Select_Leverage">Select Leverage</string>
-    <string name="Position_Size">Position Size</string>
+    <string name="Position_Size">Position Scale</string>
     <string name="Liquidation_Price">Liquidation Price</string>
     <string name="Price_Change_Profit">Price %1$s %2$s%% → Profit %3$s%4$s%% (%5$s%6$s)</string>
     <string name="Long">Long</string>
@@ -2397,7 +2397,7 @@
     <string name="No_Positions">No Positions</string>
     <string name="No_Closed_Positions">No Activities</string>
     <string name="PNL">PNL</string>
-    <string name="Direction">Direction</string>
+    <string name="Direction">Opening Direction</string>
     <string name="No_Markets">No Markets</string>
     <string name="View_More">View More</string>
     <string name="Loading">Loading...</string>

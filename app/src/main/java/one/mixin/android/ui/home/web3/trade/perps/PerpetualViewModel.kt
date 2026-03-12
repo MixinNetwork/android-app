@@ -50,14 +50,17 @@ class PerpetualViewModel @Inject constructor(
         jobManager.addJobInBackground(RefreshPerpsPositionsJob(walletId))
     }
 
-    fun refreshPositionHistory(walletId: String, limit: Int = 100, offset: String? = null) {
+    fun refreshPositionHistory(walletId: String, limit: Int = 100) {
         viewModelScope.launch {
             try {
+                val latestClosedAt = withContext(Dispatchers.IO) {
+                    perpsPositionHistoryDao.getLatestClosedAt(walletId)
+                }
                 val response = withContext(Dispatchers.IO) {
                     routeService.getPerpsPositionHistory(
                         walletId = walletId,
                         limit = limit,
-                        offset = offset
+                        offset = latestClosedAt
                     )
                 }
 
@@ -653,7 +656,7 @@ class PerpetualViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val cachedHistories = withContext(Dispatchers.IO) {
-                    perpsPositionHistoryDao.getHistories(walletId, limit)
+                    perpsPositionHistoryDao.getHistories(walletId, limit, offset)
                 }
                 
                 if (cachedHistories.isNotEmpty()) {
@@ -679,7 +682,7 @@ class PerpetualViewModel @Inject constructor(
                     }
                     
                     val updatedHistories = withContext(Dispatchers.IO) {
-                        perpsPositionHistoryDao.getHistories(walletId, limit)
+                        perpsPositionHistoryDao.getHistories(walletId, limit, offset)
                     }
                     onSuccess(updatedHistories)
                 } else {
@@ -694,7 +697,7 @@ class PerpetualViewModel @Inject constructor(
                 Timber.e(e, error)
                 
                 val cachedHistories = withContext(Dispatchers.IO) {
-                    perpsPositionHistoryDao.getHistories(walletId, limit)
+                    perpsPositionHistoryDao.getHistories(walletId, limit, offset)
                 }
                 if (cachedHistories.isEmpty()) {
                     onError(error)

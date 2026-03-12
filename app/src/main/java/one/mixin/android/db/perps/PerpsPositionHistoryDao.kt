@@ -23,10 +23,11 @@ interface PerpsPositionHistoryDao : BaseDao<PerpsPositionHistory> {
         FROM position_history h 
         LEFT JOIN markets m ON m.market_id = h.market_id 
         WHERE h.wallet_id = :walletId 
+        AND (:offset IS NULL OR h.closed_at < :offset)
         ORDER BY h.closed_at DESC 
         LIMIT :limit
     """)
-    suspend fun getHistories(walletId: String, limit: Int): List<PerpsPositionHistoryItem>
+    suspend fun getHistories(walletId: String, limit: Int, offset: String? = null): List<PerpsPositionHistoryItem>
 
     @Query(
         """
@@ -34,11 +35,12 @@ interface PerpsPositionHistoryDao : BaseDao<PerpsPositionHistory> {
         FROM position_history h
         LEFT JOIN markets m ON m.market_id = h.market_id
         WHERE h.wallet_id = :walletId
+        AND (:offset IS NULL OR h.closed_at < :offset)
         ORDER BY h.closed_at DESC
         LIMIT :limit
     """
     )
-    fun observeHistories(walletId: String, limit: Int): Flow<List<PerpsPositionHistoryItem>>
+    fun observeHistories(walletId: String, limit: Int, offset: String? = null): Flow<List<PerpsPositionHistoryItem>>
 
     @Query("""
         SELECT h.*, m.display_symbol, m.icon_url, m.token_symbol
@@ -59,6 +61,9 @@ interface PerpsPositionHistoryDao : BaseDao<PerpsPositionHistory> {
 
     @Query("DELETE FROM position_history WHERE wallet_id = :walletId")
     suspend fun deleteByWallet(walletId: String)
+
+    @Query("SELECT MAX(closed_at) FROM position_history WHERE wallet_id = :walletId")
+    suspend fun getLatestClosedAt(walletId: String): String?
 
     @Query("SELECT SUM(CAST(realized_pnl AS REAL)) FROM position_history WHERE wallet_id = :walletId")
     suspend fun getTotalRealizedPnl(walletId: String): Double?

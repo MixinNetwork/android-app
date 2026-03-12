@@ -122,6 +122,7 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
         openPositionAdapter.submitList(pagedList)
         val isEmpty = pagedList.isEmpty()
         binding.emptyView.walletTransactionsEmpty.text = getString(R.string.No_Positions)
+        binding.emptyView.helpAction.isVisible = isEmpty
         binding.emptyView.root.isVisible = isEmpty
     }
 
@@ -130,6 +131,7 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
         closedPositionAdapter.submitList(pagedList)
         val isEmpty = pagedList.isEmpty()
         binding.emptyView.walletTransactionsEmpty.text = getString(R.string.No_Closed_Positions)
+        binding.emptyView.helpAction.isVisible = false
         binding.emptyView.root.isVisible = isEmpty
     }
 
@@ -156,6 +158,16 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
             )
 
             positionsRv.layoutManager = LinearLayoutManager(requireContext())
+            emptyView.helpAction.setOnClickListener {
+                parentFragmentManager.beginTransaction()
+                    .add(
+                        android.R.id.content,
+                        PerpetualGuideFragment.newInstance(initialTab = PerpetualGuideFragment.TAB_OVERVIEW),
+                        PerpetualGuideFragment.TAG
+                    )
+                    .addToBackStack(null)
+                    .commit()
+            }
         }
 
         loadPositions()
@@ -193,6 +205,7 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
 
         binding.progressBar.isVisible = true
         binding.emptyView.root.isVisible = false
+        binding.emptyView.helpAction.isVisible = false
         totalValueAdapter.submitTotal(BigDecimal.ZERO)
         totalValueAdapter.submitSubtitle(BigDecimal.ZERO, BigDecimal.ZERO)
 
@@ -209,6 +222,7 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
 
         binding.progressBar.isVisible = true
         binding.emptyView.root.isVisible = false
+        binding.emptyView.helpAction.isVisible = false
         totalValueAdapter.submitTotal(BigDecimal.ZERO)
         totalValueAdapter.submitSubtitle(BigDecimal.ZERO, BigDecimal.ZERO)
 
