@@ -29,7 +29,6 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.RxBus
-import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PrivacyPreference.getPrefPinInterval
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.databinding.FragmentWalletBinding
@@ -453,7 +452,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             }
             lifecycleScope.launch(Dispatchers.IO) {
                 val wallet = walletViewModel.findWalletById(walletId)
-                if (wallet != null && (wallet.category == WalletCategory.CLASSIC.value || CryptoWalletHelper.hasPrivateKey(requireActivity(), walletId))) {
+                if (wallet != null) {
                     Web3Signer.setWallet(walletId, wallet.category) { queryWalletId ->
                         runBlocking { walletViewModel.getAddresses(queryWalletId) }
                     }
