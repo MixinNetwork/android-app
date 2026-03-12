@@ -771,15 +771,25 @@ class ConversationListFragment : LinkFragment() {
                 ReminderBottomSheetDialogFragment.getType(requireContext(), totalUsd)
                     .let { type ->
                         val existingDialog = parentFragmentManager.findFragmentByTag(ReminderBottomSheetDialogFragment.TAG) as? ReminderBottomSheetDialogFragment
-                        existingDialog?.dismiss()
+                        if (type == null) {
+                            existingDialog?.dismissAllowingStateLoss()
+                            return@launch
+                        }
 
-                        if (type != null) {
-                            if (parentFragmentManager.findFragmentByTag(ReminderBottomSheetDialogFragment.TAG) == null) {
-                                try {
-                                    ReminderBottomSheetDialogFragment.newInstance(type).show(parentFragmentManager, ReminderBottomSheetDialogFragment.TAG)
-                                } catch (e: IllegalStateException) {
-                                    // Fragment state already saved, skip showing dialog
-                                }
+                        if (existingDialog?.isForType(type) == true) {
+                            return@launch
+                        }
+
+                        if (existingDialog != null) {
+                            existingDialog.dismissAllowingStateLoss()
+                            parentFragmentManager.executePendingTransactions()
+                        }
+
+                        if (parentFragmentManager.findFragmentByTag(ReminderBottomSheetDialogFragment.TAG) == null) {
+                            try {
+                                ReminderBottomSheetDialogFragment.newInstance(type).show(parentFragmentManager, ReminderBottomSheetDialogFragment.TAG)
+                            } catch (e: IllegalStateException) {
+                                // Fragment state already saved, skip showing dialog
                             }
                         }
                     }

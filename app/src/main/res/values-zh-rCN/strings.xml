@@ -2346,4 +2346,6 @@
     <string name="title">选择一个国家或地区</string>
     <string name="anonymous_number">匿名号码</string>
     <string name="Perpetual_Markets">市场</string>
+    <string name="Forget_Pin">忘记 PIN</string>
+    <string name="Switch_Account">切换账号</string>
 </resources>

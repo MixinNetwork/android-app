@@ -2409,4 +2409,6 @@
     <string name="title">Choose a Country or Region</string>
     <string name="anonymous_number">Anonymous Number</string>
     <string name="Perpetual_Markets">Markets</string>
+    <string name="Forget_Pin">Forget Pin</string>
+    <string name="Switch_Account">Switch Account</string>
 </resources>
