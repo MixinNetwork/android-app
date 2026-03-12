@@ -2283,4 +2283,6 @@
     <string name="no_sim_detected">No sim card detected.</string>
     <string name="title">Choose a Country or Region</string>
     <string name="anonymous_number">Anonymous Number</string>
+    <string name="Forget_Pin">Forget Pin</string>
+    <string name="Switch_Account">Switch Account</string>
 </resources>

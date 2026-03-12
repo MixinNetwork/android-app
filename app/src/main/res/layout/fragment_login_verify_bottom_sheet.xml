@@ -9,22 +9,34 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:visibility="gone"/>
+        android:visibility="gone" />
 
-    <FrameLayout
+    <RelativeLayout
         android:id="@+id/debug"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="32dp"
         android:padding="16dp">
 
         <ImageView
             android:id="@+id/support"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
             android:layout_gravity="end"
+            android:layout_marginEnd="16dp"
+            android:layout_toStartOf="@id/more"
             android:src="@drawable/ic_support" />
-    </FrameLayout>
+
+        <ImageView
+            android:id="@+id/more"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_gravity="end"
+            android:src="@drawable/ic_more" />
+    </RelativeLayout>
 
     <TextView
         android:id="@+id/title"
@@ -33,21 +45,21 @@
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="70dp"
         android:layout_marginBottom="@dimen/activity_vertical_margin"
-        android:textColor="?attr/text_primary"
         android:text="@string/For_your_security"
-        android:textSize="18sp"
-        android:textFontWeight="600"/>
+        android:textColor="?attr/text_primary"
+        android:textFontWeight="600"
+        android:textSize="18sp" />
 
     <one.mixin.android.ui.common.biometric.BiometricLayout
         android:id="@+id/biometric_layout"
-        android:layout_marginTop="87dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_marginTop="87dp" />
 
     <View
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_weight="1"/>
+        android:layout_weight="1" />
 
     <one.mixin.android.widget.Keyboard
         android:id="@+id/keyboard"
