@@ -133,6 +133,9 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             applySafeTopPadding(view)
         }
         Timber.e("MobileFragment onViewCreated")
+        if (from == FROM_LANDING) {
+            AnalyticsTracker.trackLoginStart()
+        }
         binding.apply {
             pin = requireArguments().getString(ARGS_PIN)
             if (pin != null) {
@@ -209,7 +212,6 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             keyboard.initPinKeys()
             keyboard.setOnClickKeyboardListener(mKeyboardListener)
             mnemonicPhrase.setOnClickListener {
-                AnalyticsTracker.trackLoginMnemonicPhrase()
                 activity?.addFragment(
                     this@MobileFragment,
                     LandingMnemonicPhraseFragment.newInstance(),
@@ -306,6 +308,9 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             )
             .setNegativeButton(R.string.Change) { dialog, _ -> dialog.dismiss() }
             .setPositiveButton(R.string.Confirm) { dialog, _ ->
+                if (from == FROM_LANDING) {
+                    AnalyticsTracker.trackLoginSmsSendConfirmed()
+                }
                 requestSend()
                 dialog.dismiss()
             }
@@ -438,7 +443,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                 (view as ViewGroup).addView(captchaView?.webView, MATCH_PARENT, MATCH_PARENT)
             }
             if (from == FROM_LANDING_CREATE) {
-                AnalyticsTracker.trackSignUpCaptcha("phone_number")
+                AnalyticsTracker.trackSignUpCaptcha()
             } else if (from == FROM_LANDING) {
                 AnalyticsTracker.trackLoginCaptcha("phone_number")
             }

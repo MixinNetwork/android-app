@@ -46,6 +46,7 @@ import one.mixin.android.ui.wallet.LoadingProgressDialogFragment
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.generateConversationId
@@ -63,6 +64,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         const val CURRENT_CURRENCY = "current_currency"
         const val CURRENT_ASSET_ID = "current_asset_id"
         const val ARGS_IS_WEB3 = "args_is_web3"
+        const val ARGS_BUY_SOURCE = "args_buy_source"
         const val ARGS_WALLET_ID_FOR_CALCULATE = "args_wallet_id_for_calculate"
 
         fun newInstance() = CalculateFragment()
@@ -73,6 +75,9 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
     private val web3ViewModel by viewModels<one.mixin.android.ui.home.web3.Web3ViewModel>()
 
     private val isWeb3 by lazy { requireArguments().getBoolean(ARGS_IS_WEB3, false) }
+    private val buySource by lazy {
+        requireArguments().getString(ARGS_BUY_SOURCE) ?: AnalyticsTracker.TradeSource.WALLET_HOME
+    }
     private val walletIdForCalculate by lazy { requireArguments().getString(ARGS_WALLET_ID_FOR_CALCULATE) }
 
     private suspend fun initData() {
@@ -204,6 +209,10 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        AnalyticsTracker.trackBuyStart(
+            wallet = if (isWeb3) AnalyticsTracker.TradeWallet.WEB3 else AnalyticsTracker.TradeWallet.MAIN,
+            source = buySource
+        )
         lifecycleScope.launch {
             binding.apply {
                 titleView.leftIb.setOnClickListener {
@@ -237,6 +246,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                         ArrayList(supportAssetIds),
                     ).setOnAssetClick { asset ->
                         this@CalculateFragment.lifecycleScope.launch {
+                            AnalyticsTracker.trackBuyTokenSelect()
                             val oldAsset = fiatMoneyViewModel.asset
                             fiatMoneyViewModel.asset = asset
                             requireContext().defaultSharedPreferences.putString(
@@ -268,6 +278,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                             object : FiatListBottomSheetDialogFragment.Callback {
                                 override fun onCurrencyClick(currency: Currency) {
                                     this@CalculateFragment.lifecycleScope.launch {
+                                        AnalyticsTracker.trackBuyFiatSelect()
                                         val oldCurrency = fiatMoneyViewModel.currency
                                         fiatMoneyViewModel.currency = currency
                                         v = "0"
@@ -351,6 +362,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 )
                 continueVa.setOnClickListener {
                     lifecycleScope.launch {
+                        AnalyticsTracker.trackBuyPreview()
                         if (VerifyMobileReminderBottomSheetDialogFragment.shouldShowForBuy(requireContext()) && isFragmentVisible()) {
                             VerifyMobileReminderBottomSheetDialogFragment.showSafely(
                                 parentFragmentManager,
