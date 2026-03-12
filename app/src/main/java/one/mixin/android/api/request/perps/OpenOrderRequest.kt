@@ -25,7 +25,7 @@ data class OpenOrderResponse(
     @SerializedName("payment_url")
     val paymentUrl: String?,
     @SerializedName("pay_amount")
-    val payAmount: String?,
+    val payAmount: String,
     @SerializedName("deposit_destination")
     val depositDestination: String?,
     @SerializedName("app_id")

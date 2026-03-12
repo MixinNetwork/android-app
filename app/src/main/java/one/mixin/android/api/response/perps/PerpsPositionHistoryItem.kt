@@ -13,7 +13,7 @@ data class PerpsPositionHistoryItem(
     @SerializedName("position_id")
     @ColumnInfo(name = "position_id")
     val positionId: String,
-    @SerializedName(value = "market_id", alternate = ["product_id"])
+    @SerializedName(value = "market_id")
     @ColumnInfo(name = "market_id")
     val marketId: String,
     @SerializedName("side")
@@ -36,15 +36,13 @@ data class PerpsPositionHistoryItem(
     val leverage: Int,
     @SerializedName("margin_method")
     @ColumnInfo(name = "margin_method")
-    val marginMethod: String? = null,
+    val marginMethod: String,
     @SerializedName("open_at")
     @ColumnInfo(name = "open_at")
     val openAt: String,
     @SerializedName("closed_at")
     @ColumnInfo(name = "closed_at")
     val closedAt: String,
-    @ColumnInfo(name = "wallet_id")
-    val walletId: String,
     @ColumnInfo(name = "display_symbol")
     val displaySymbol: String? = null,
     @ColumnInfo(name = "icon_url")

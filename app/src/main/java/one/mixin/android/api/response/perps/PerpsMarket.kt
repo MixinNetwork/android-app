@@ -91,14 +91,6 @@ data class PerpsMarket(
     @ColumnInfo(name = "ask_price")
     val askPrice: String,
 
-    @SerializedName("trade_count")
-    @ColumnInfo(name = "trade_count")
-    val tradeCount: Int,
-
-    @SerializedName("first_trade_id")
-    @ColumnInfo(name = "first_trade_id")
-    val firstTradeId: Long,
-
     @SerializedName("created_at")
     @ColumnInfo(name = "created_at")
     val createdAt: String,

@@ -20,60 +20,57 @@ interface PerpsPositionHistoryDao : BaseDao<PerpsPositionHistory> {
 
     @Query("""
         SELECT h.*, m.display_symbol, m.icon_url, m.token_symbol
-        FROM position_history h 
+        FROM position_histories h 
         LEFT JOIN markets m ON m.market_id = h.market_id 
-        WHERE h.wallet_id = :walletId 
-        AND (:offset IS NULL OR h.closed_at < :offset)
+        WHERE (:offset IS NULL OR h.closed_at < :offset)
         ORDER BY h.closed_at DESC 
         LIMIT :limit
     """)
-    suspend fun getHistories(walletId: String, limit: Int, offset: String? = null): List<PerpsPositionHistoryItem>
+    suspend fun getHistories(limit: Int, offset: String? = null): List<PerpsPositionHistoryItem>
 
     @Query(
         """
         SELECT h.*, m.display_symbol, m.icon_url, m.token_symbol
-        FROM position_history h
+        FROM position_histories h
         LEFT JOIN markets m ON m.market_id = h.market_id
-        WHERE h.wallet_id = :walletId
-        AND (:offset IS NULL OR h.closed_at < :offset)
+        WHERE (:offset IS NULL OR h.closed_at < :offset)
         ORDER BY h.closed_at DESC
         LIMIT :limit
     """
     )
-    fun observeHistories(walletId: String, limit: Int, offset: String? = null): Flow<List<PerpsPositionHistoryItem>>
+    fun observeHistories(limit: Int, offset: String? = null): Flow<List<PerpsPositionHistoryItem>>
 
     @Query("""
         SELECT h.*, m.display_symbol, m.icon_url, m.token_symbol
-        FROM position_history h
+        FROM position_histories h
         LEFT JOIN markets m ON m.market_id = h.market_id
-        WHERE h.wallet_id = :walletId
         ORDER BY h.closed_at DESC
     """)
-    fun getHistoriesPaged(walletId: String): DataSource.Factory<Int, PerpsPositionHistoryItem>
+    fun getHistoriesPaged(): DataSource.Factory<Int, PerpsPositionHistoryItem>
 
     @Query("""
         SELECT h.*, m.display_symbol, m.icon_url, m.token_symbol
-        FROM position_history h 
+        FROM position_histories h 
         LEFT JOIN markets m ON m.market_id = h.market_id 
         WHERE h.history_id = :historyId
     """)
     suspend fun getHistory(historyId: String): PerpsPositionHistoryItem?
 
-    @Query("DELETE FROM position_history WHERE wallet_id = :walletId")
-    suspend fun deleteByWallet(walletId: String)
+    @Query("DELETE FROM position_histories")
+    suspend fun deleteAll()
 
-    @Query("SELECT MAX(closed_at) FROM position_history WHERE wallet_id = :walletId")
-    suspend fun getLatestClosedAt(walletId: String): String?
+    @Query("SELECT MAX(closed_at) FROM position_histories")
+    suspend fun getLatestClosedAt(): String?
 
-    @Query("SELECT SUM(CAST(realized_pnl AS REAL)) FROM position_history WHERE wallet_id = :walletId")
-    suspend fun getTotalRealizedPnl(walletId: String): Double?
+    @Query("SELECT SUM(CAST(realized_pnl AS REAL)) FROM position_histories")
+    suspend fun getTotalRealizedPnl(): Double?
 
-    @Query("SELECT COALESCE(SUM(CAST(realized_pnl AS REAL)), 0) FROM position_history WHERE wallet_id = :walletId")
-    fun observeTotalRealizedPnl(walletId: String): Flow<Double>
+    @Query("SELECT COALESCE(SUM(CAST(realized_pnl AS REAL)), 0) FROM position_histories")
+    fun observeTotalRealizedPnl(): Flow<Double>
 
-    @Query("SELECT SUM(CAST(entry_price AS REAL) * ABS(CAST(quantity AS REAL))) FROM position_history WHERE wallet_id = :walletId")
-    suspend fun getTotalClosedEntryValue(walletId: String): Double?
+    @Query("SELECT SUM(CAST(entry_price AS REAL) * ABS(CAST(quantity AS REAL))) FROM position_histories")
+    suspend fun getTotalClosedEntryValue(): Double?
 
-    @Query("SELECT COALESCE(SUM(CAST(entry_price AS REAL) * ABS(CAST(quantity AS REAL))), 0) FROM position_history WHERE wallet_id = :walletId")
-    fun observeTotalClosedEntryValue(walletId: String): Flow<Double>
+    @Query("SELECT COALESCE(SUM(CAST(entry_price AS REAL) * ABS(CAST(quantity AS REAL))), 0) FROM position_histories")
+    fun observeTotalClosedEntryValue(): Flow<Double>
 }

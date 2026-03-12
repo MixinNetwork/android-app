@@ -10,7 +10,7 @@ data class PerpsPositionItem(
     @SerializedName("position_id")
     @ColumnInfo(name = "position_id")
     val positionId: String,
-    @SerializedName(value = "market_id", alternate = ["product_id"])
+    @SerializedName(value = "market_id")
     @ColumnInfo(name = "market_id")
     val marketId: String,
     @SerializedName("side")

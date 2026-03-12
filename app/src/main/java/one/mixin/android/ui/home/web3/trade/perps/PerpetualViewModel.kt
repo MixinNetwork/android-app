@@ -54,7 +54,7 @@ class PerpetualViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val latestClosedAt = withContext(Dispatchers.IO) {
-                    perpsPositionHistoryDao.getLatestClosedAt(walletId)
+                    perpsPositionHistoryDao.getLatestClosedAt()
                 }
                 val response = withContext(Dispatchers.IO) {
                     routeService.getPerpsPositionHistory(
@@ -66,11 +66,10 @@ class PerpetualViewModel @Inject constructor(
 
                 val data = response.data
                 if (response.isSuccess && data != null) {
-                    val histories = data.map { it.copy(walletId = walletId) }
                     withContext(Dispatchers.IO) {
-                        perpsPositionHistoryDao.insertAll(histories)
+                        perpsPositionHistoryDao.insertAll(data)
                     }
-                    Timber.d("Perps position history refreshed: ${histories.size} items")
+                    Timber.d("Perps position history refreshed: ${data.size} items")
                 } else {
                     Timber.e("Failed to refresh position history: ${response.errorDescription}")
                 }
@@ -379,7 +378,7 @@ class PerpetualViewModel @Inject constructor(
     }
 
     fun observeClosedPositions(walletId: String, limit: Int): Flow<List<PerpsPositionHistoryItem>> {
-        return perpsPositionHistoryDao.observeHistories(walletId, limit)
+        return perpsPositionHistoryDao.observeHistories(limit)
     }
 
     suspend fun getOpenPositionsFromDb(walletId: String): List<PerpsPositionItem> {
@@ -396,7 +395,7 @@ class PerpetualViewModel @Inject constructor(
     suspend fun getClosedPositionsFromDb(walletId: String, limit: Int): List<PerpsPositionHistoryItem> {
         return withContext(Dispatchers.IO) {
             try {
-                perpsPositionHistoryDao.getHistories(walletId, limit)
+                perpsPositionHistoryDao.getHistories(limit)
             } catch (e: Exception) {
                 Timber.e(e, "Error loading closed positions from db")
                 emptyList()
@@ -451,7 +450,7 @@ class PerpetualViewModel @Inject constructor(
     suspend fun getTotalRealizedPnlFromDb(walletId: String): Double {
         return withContext(Dispatchers.IO) {
             try {
-                perpsPositionHistoryDao.getTotalRealizedPnl(walletId) ?: 0.0
+                perpsPositionHistoryDao.getTotalRealizedPnl() ?: 0.0
             } catch (e: Exception) {
                 Timber.e(e, "Error loading total realized PnL from db")
                 0.0
@@ -460,13 +459,13 @@ class PerpetualViewModel @Inject constructor(
     }
 
     fun observeTotalRealizedPnl(walletId: String): Flow<Double> {
-        return perpsPositionHistoryDao.observeTotalRealizedPnl(walletId)
+        return perpsPositionHistoryDao.observeTotalRealizedPnl()
     }
 
     suspend fun getTotalClosedEntryValueFromDb(walletId: String): Double {
         return withContext(Dispatchers.IO) {
             try {
-                perpsPositionHistoryDao.getTotalClosedEntryValue(walletId) ?: 0.0
+                perpsPositionHistoryDao.getTotalClosedEntryValue() ?: 0.0
             } catch (e: Exception) {
                 Timber.e(e, "Error loading total closed entry value from db")
                 0.0
@@ -475,7 +474,7 @@ class PerpetualViewModel @Inject constructor(
     }
 
     fun observeTotalClosedEntryValue(walletId: String): Flow<Double> {
-        return perpsPositionHistoryDao.observeTotalClosedEntryValue(walletId)
+        return perpsPositionHistoryDao.observeTotalClosedEntryValue()
     }
 
     fun getOpenPositionsPaged(walletId: String, initialLoadKey: Int? = 0): LiveData<PagedList<PerpsPositionItem>> {
@@ -498,7 +497,7 @@ class PerpetualViewModel @Inject constructor(
             .setPageSize(Constants.PAGE_SIZE)
             .setEnablePlaceholders(false)
             .build()
-        return LivePagedListBuilder(perpsPositionHistoryDao.getHistoriesPaged(walletId), config)
+        return LivePagedListBuilder(perpsPositionHistoryDao.getHistoriesPaged(), config)
             .setInitialLoadKey(initialLoadKey)
             .build()
     }
@@ -536,7 +535,7 @@ class PerpetualViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val allHistories = withContext(Dispatchers.IO) {
-                    perpsPositionHistoryDao.getHistories(walletId, 100)
+                    perpsPositionHistoryDao.getHistories(100)
                 }
                 val filteredHistories = allHistories.filter { it.marketId == marketId }
                 onSuccess(filteredHistories)
@@ -625,7 +624,7 @@ class PerpetualViewModel @Inject constructor(
                 
                 val data = response.data
                 if (response.isSuccess && data != null) {
-                    val resolvedWalletId = data.walletId ?: localBefore?.walletId
+                    val resolvedWalletId = data.walletId.ifBlank { localBefore?.walletId ?: "" }
                     val positionForDb = data.copy(walletId = resolvedWalletId)
                     
                     withContext(Dispatchers.IO) {
@@ -656,7 +655,7 @@ class PerpetualViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val cachedHistories = withContext(Dispatchers.IO) {
-                    perpsPositionHistoryDao.getHistories(walletId, limit, offset)
+                    perpsPositionHistoryDao.getHistories(limit, offset)
                 }
                 
                 if (cachedHistories.isNotEmpty()) {
@@ -674,15 +673,12 @@ class PerpetualViewModel @Inject constructor(
                 val data = response.data
                 if (response.isSuccess && data != null) {
                     Timber.d("Position history loaded: ${data.size} items")
-                    
-                    val histories = data.map { it.copy(walletId = walletId) }
-                    
                     withContext(Dispatchers.IO) {
-                        perpsPositionHistoryDao.insertAll(histories)
+                        perpsPositionHistoryDao.insertAll(data)
                     }
                     
                     val updatedHistories = withContext(Dispatchers.IO) {
-                        perpsPositionHistoryDao.getHistories(walletId, limit, offset)
+                        perpsPositionHistoryDao.getHistories(limit, offset)
                     }
                     onSuccess(updatedHistories)
                 } else {
@@ -697,7 +693,7 @@ class PerpetualViewModel @Inject constructor(
                 Timber.e(e, error)
                 
                 val cachedHistories = withContext(Dispatchers.IO) {
-                    perpsPositionHistoryDao.getHistories(walletId, limit, offset)
+                    perpsPositionHistoryDao.getHistories(limit, offset)
                 }
                 if (cachedHistories.isEmpty()) {
                     onError(error)

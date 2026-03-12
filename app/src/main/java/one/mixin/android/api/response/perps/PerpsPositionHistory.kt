@@ -8,7 +8,7 @@ import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-@Entity(tableName = "position_history")
+@Entity(tableName = "position_histories")
 data class PerpsPositionHistory(
     @PrimaryKey
     @SerializedName("history_id")
@@ -17,12 +17,9 @@ data class PerpsPositionHistory(
     @SerializedName("position_id")
     @ColumnInfo(name = "position_id")
     val positionId: String,
-    @SerializedName(value = "market_id", alternate = ["product_id"])
+    @SerializedName(value = "market_id")
     @ColumnInfo(name = "market_id")
     val marketId: String,
-    @SerializedName("market_symbol")
-    @ColumnInfo(name = "market_symbol")
-    val marketSymbol: String? = null,
     @SerializedName("side")
     @ColumnInfo(name = "side")
     val side: String,
@@ -43,13 +40,11 @@ data class PerpsPositionHistory(
     val leverage: Int,
     @SerializedName("margin_method")
     @ColumnInfo(name = "margin_method")
-    val marginMethod: String? = null,
+    val marginMethod: String,
     @SerializedName("open_at")
     @ColumnInfo(name = "open_at")
     val openAt: String,
     @SerializedName("closed_at")
     @ColumnInfo(name = "closed_at")
     val closedAt: String,
-    @ColumnInfo(name = "wallet_id")
-    val walletId: String = ""
 ) : Parcelable
