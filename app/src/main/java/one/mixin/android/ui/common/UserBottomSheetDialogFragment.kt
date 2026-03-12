@@ -218,12 +218,12 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 contentView.doOnPreDraw {
                     if (!isAdded) return@doOnPreDraw
                     binding.opLl.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                        bottomMargin = requireContext().navigationBarHeight() + 24.dp
+                        bottomMargin = 24.dp
                     }
-                    behavior?.peekHeight =
-                        binding.title.height +
+                    val contentHeight = binding.title.height +
                         binding.scrollContent.height -
                         (menuListLayout?.height ?: 0) - if (menuListLayout != null) 38.dp else 8.dp
+                    behavior?.peekHeight = requireContext().resolveBottomSheetPeekHeight(contentView, contentHeight)
                 }
             },
         )
@@ -285,12 +285,9 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             apps?.let {
                 binding.avatarGroup.setApps(it)
                 contentView.doOnPreDraw {
-                    behavior?.peekHeight =
-                        binding.title.height + binding.scrollContent.height -
-                        (
-                            menuListLayout?.height
-                                ?: 0
-                        ) - if (menuListLayout != null) 38.dp else 8.dp
+                    val contentHeight = binding.title.height + binding.scrollContent.height -
+                        (menuListLayout?.height ?: 0) - if (menuListLayout != null) 38.dp else 8.dp
+                    behavior?.peekHeight = requireContext().resolveBottomSheetPeekHeight(contentView, contentHeight)
                 }
             }
         }

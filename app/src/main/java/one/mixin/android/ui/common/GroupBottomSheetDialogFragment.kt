@@ -224,10 +224,11 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
 
         contentView.doOnPreDraw {
             binding.opsLl.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                bottomMargin = requireContext().navigationBarHeight() + 24.dp
+                bottomMargin = 24.dp
             }
-            behavior?.peekHeight = binding.title.height + binding.scrollContent.height -
+            val contentHeight = binding.title.height + binding.scrollContent.height -
                 (menuListLayout?.height ?: 0) - if (menuListLayout != null) 38.dp else 8.dp
+            behavior?.peekHeight = requireContext().resolveBottomSheetPeekHeight(contentView, contentHeight)
         }
     }
 
