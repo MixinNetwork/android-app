@@ -712,7 +712,7 @@ private fun OpenPositionCard(
             Column {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = stringResource(R.string.Order_Value),
+                        text = stringResource(R.string.Position_Size),
                         fontSize = 12.sp,
                         color = MixinAppTheme.colors.textAssist
                     )

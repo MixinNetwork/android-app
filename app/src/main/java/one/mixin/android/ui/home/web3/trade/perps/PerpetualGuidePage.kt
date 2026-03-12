@@ -89,7 +89,7 @@ fun PerpetualGuidePage(
         stringResource(R.string.Long),
         stringResource(R.string.Short),
         stringResource(R.string.Leverage),
-        stringResource(R.string.Order_Value)
+        stringResource(R.string.Position_Size)
     )
     val safeInitialTab = initialTab.coerceIn(0, tabs.lastIndex)
     var selectedTab by remember(safeInitialTab) { mutableIntStateOf(safeInitialTab) }
@@ -407,7 +407,7 @@ private fun PositionContent() {
                 value = "${formatGuideInt(investment)} USDT"
             ),
             GuideRowData(
-                label = stringResource(R.string.Order_Value),
+                label = stringResource(R.string.Position_Size),
                 value = orderValueText
             )
         ),

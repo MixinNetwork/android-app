@@ -234,7 +234,7 @@ fun PositionDetailPage(
                 Spacer(modifier = Modifier.height(20.dp))
                 
                 PositionDetailItem(
-                    label = stringResource(R.string.Order_Value).uppercase(),
+                    label = stringResource(R.string.Position_Size).uppercase(),
                     value = "${String.format("%f", absQuantity)} ${position.tokenSymbol ?: ""}",
                     subtitle = formatFiat(orderValue)
                 )
@@ -564,7 +564,7 @@ fun PositionDetailPage(
                 Spacer(modifier = Modifier.height(20.dp))
 
                 PositionDetailItem(
-                    label = stringResource(R.string.Order_Value).uppercase(),
+                    label = stringResource(R.string.Position_Size).uppercase(),
                     value = "${String.format("%f", absQuantity)} ${positionHistory.tokenSymbol ?: ""}",
                     subtitle = formatFiat(orderValue)
                 )
