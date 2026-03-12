@@ -75,6 +75,8 @@ class PinLogsFragment : BaseFragment(R.layout.fragment_pin_logs) {
                     return Pair(context.getString(R.string.Sign_in), context.getString(R.string.Sign_with_mobile_number))
                 "ACTIVITY_LOGIN_BY_EMERGENCY_CONTACT" ->
                     return Pair(context.getString(R.string.Sign_in), context.getString(R.string.Sign_with_emergency_contact))
+                "ACTIVITY_LOGIN_BY_MNEMONIC" ->
+                    return Pair(context.getString(R.string.Sign_in), context.getString(R.string.Sign_in_with_Mnemonic_Phrase))
                 "ACTIVITY_LOGIN_FROM_DESKTOP" ->
                     return Pair(context.getString(R.string.Sign_in), context.getString(R.string.Sign_in_desktop_app))
                 "USER_EXPORT_PRIVATE" ->
