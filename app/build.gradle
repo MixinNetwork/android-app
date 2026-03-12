@@ -1,14 +1,11 @@
 plugins {
     id 'com.android.application'
-    id 'kotlin-android'
-    id 'org.jetbrains.kotlin.android'
     id 'dagger.hilt.android.plugin'
     id 'kotlin-parcelize'
     id 'de.undercouch.download'
     id "com.google.devtools.ksp"
     id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
     id 'kotlinx-serialization'
-    id "com.google.protobuf" version "0.9.1"
     id "org.jetbrains.kotlin.plugin.compose" version "${kotlinVersion}"
     id 'com.google.firebase.firebase-perf'
     id 'com.bugsnag.android.gradle'
@@ -17,7 +14,7 @@ plugins {
 
 def versionMajor = 3
 def versionMinor = 10
-def versionPatch = 1
+def versionPatch = 2
 def versionBuild = 1
 
 apply plugin: 'com.google.gms.google-services'
@@ -53,11 +50,6 @@ android {
             resources {
                 excludes += '/META-INF/{AL2.0,LGPL2.1}'
             }
-        }
-
-        kotlinOptions {
-            jvmTarget = '17'
-            freeCompilerArgs += ['-opt-in=kotlin.contracts.ExperimentalContracts']
         }
 
         lintOptions{
