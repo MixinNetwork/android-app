@@ -2368,7 +2368,6 @@
     <string name="Time_Info">Time Info</string>
     <string name="Open_Time">Open Time</string>
     <string name="Close_Time">Close Time</string>
-    <string name="Isolated">Isolated</string>
     <string name="Mixin_Futures">Mixin Futures</string>
     <string name="Wallet_Not_Found">Wallet not found</string>
     <string name="How_Perps_Works">How perps works?</string>

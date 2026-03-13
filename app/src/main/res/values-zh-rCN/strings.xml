@@ -2308,7 +2308,6 @@
     <string name="Time_Info">时间信息</string>
     <string name="Open_Time">开仓时间</string>
     <string name="Close_Time">平仓时间</string>
-    <string name="Isolated">逐仓</string>
     <string name="Mixin_Futures">Mixin Futures</string>
     <string name="Confirm_Open_Position">确认开仓</string>
     <string name="Open_Position_Success">开仓成功</string>

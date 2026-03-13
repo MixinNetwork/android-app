@@ -361,7 +361,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                     Box(modifier = Modifier.height(20.dp))
 
                     PerpsInfoItem(
-                        title = stringResource(R.string.Margin).uppercase() + " (${stringResource(R.string.Isolated)})",
+                        title = stringResource(R.string.Margin).uppercase(),
                         value = "$amount $tokenSymbol"
                     )
                     Box(modifier = Modifier.height(20.dp))

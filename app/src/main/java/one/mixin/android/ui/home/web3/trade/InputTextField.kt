@@ -42,6 +42,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.request.ImageRequest
@@ -64,6 +65,8 @@ fun InputContent(
     readOnly: Boolean = false,
     inlineEndCompose: (@Composable () -> Unit)? = null,
     tokenIconSize: Dp = 32.dp,
+    inputFontSize: TextUnit = 24.sp,
+    inputFontWeight: FontWeight = FontWeight.Black,
 ) {
     if (readOnly) {
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -79,8 +82,8 @@ fun InputContent(
                             AutoSizeText(
                                 text = text,
                                 color = if (text == "0") MixinAppTheme.colors.textRemarks else MixinAppTheme.colors.textPrimary,
-                                fontSize = 24.sp,
-                                fontWeight = FontWeight.Black,
+                                fontSize = inputFontSize,
+                                fontWeight = inputFontWeight,
                                 textAlign = TextAlign.Start,
                             )
                         }
@@ -146,15 +149,15 @@ fun InputContent(
                             .alpha(if (inlineEndCompose != null) 0f else 1f),
                         textStyle = TextStyle(
                             fontSize = when {
-                                textFieldValue.text.length <= 15 -> 24.sp
+                                textFieldValue.text.length <= 15 -> inputFontSize
                                 else -> {
                                     val excess = textFieldValue.text.length - 15
                                     val reduction = excess * 2
-                                    (24 - reduction).coerceAtLeast(16).sp
+                                    (inputFontSize.value - reduction).coerceAtLeast(16f).sp
                                 }
                             },
                             color = MixinAppTheme.colors.textPrimary,
-                            fontWeight = FontWeight.Black,
+                            fontWeight = inputFontWeight,
                             textAlign = TextAlign.Start,
                         ),
                         cursorBrush = SolidColor(MixinAppTheme.colors.textPrimary),
@@ -166,8 +169,8 @@ fun InputContent(
                         AutoSizeText(
                             text = "0",
                             color = MixinAppTheme.colors.textRemarks,
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Black,
+                            fontSize = inputFontSize,
+                            fontWeight = inputFontWeight,
                             modifier = Modifier.align(Alignment.CenterStart)
                         )
                     }

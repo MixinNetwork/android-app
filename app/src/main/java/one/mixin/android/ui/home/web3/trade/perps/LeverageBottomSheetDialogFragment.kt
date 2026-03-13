@@ -144,7 +144,10 @@ private fun LeverageContent(
     onCancel: () -> Unit,
     onApply: (Float) -> Unit
 ) {
-    var tempLeverage by remember { mutableFloatStateOf(currentLeverage) }
+    val boundedMaxLeverage = maxLeverage.coerceAtLeast(1)
+    var tempLeverage by remember(currentLeverage, boundedMaxLeverage) {
+        mutableFloatStateOf(currentLeverage.coerceIn(1f, boundedMaxLeverage.toFloat()))
+    }
 
     Column(
         modifier = Modifier
@@ -181,8 +184,8 @@ private fun LeverageContent(
             Slider(
                 value = tempLeverage,
                 onValueChange = { tempLeverage = it },
-                valueRange = 1f..maxLeverage.toFloat(),
-                steps = maxLeverage - 2,
+                valueRange = 1f..boundedMaxLeverage.toFloat(),
+                steps = (boundedMaxLeverage - 2).coerceAtLeast(0),
                 colors = SliderDefaults.colors(
                     thumbColor = MixinAppTheme.colors.accent,
                     activeTrackColor = MixinAppTheme.colors.accent,
@@ -199,10 +202,18 @@ private fun LeverageContent(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                val steps = 5
-                val stepValue = maxLeverage / (steps - 1)
-                for (i in 0 until steps) {
-                    val value = if (i == steps - 1) maxLeverage else (i * stepValue)
+                val labels = if (boundedMaxLeverage == 1) {
+                    listOf(1)
+                } else {
+                    List(5) { index ->
+                        when (index) {
+                            0 -> 1
+                            4 -> boundedMaxLeverage
+                            else -> 1 + ((boundedMaxLeverage - 1) * index / 4)
+                        }
+                    }.distinct()
+                }
+                labels.forEach { value ->
                     Text(
                         text = "${value}x",
                         fontSize = 12.sp,

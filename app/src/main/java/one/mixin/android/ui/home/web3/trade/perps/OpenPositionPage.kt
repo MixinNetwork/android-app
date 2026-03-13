@@ -109,7 +109,7 @@ fun OpenPositionPage(
 
     val savedLeverage = remember(marketId) {
         context.defaultSharedPreferences
-            .getInt(getLeveragePrefKey(marketId), 10)
+            .getInt(getLeveragePrefKey(marketId), 1)
             .coerceAtLeast(1)
     }
     var leverage by remember(marketId) { mutableFloatStateOf(savedLeverage.toFloat()) }
@@ -279,7 +279,9 @@ fun OpenPositionPage(
                             onTokenSelect()
                         },
                         onInputChanged = { usdtAmount = it },
-                        tokenIconSize = 25.dp
+                        tokenIconSize = 25.dp,
+                        inputFontSize = 28.sp,
+                        inputFontWeight = FontWeight.W500,
                     )
 
                     Row(
@@ -385,8 +387,8 @@ fun OpenPositionPage(
                             }.show(activity.supportFragmentManager, LeverageBottomSheetDialogFragment.TAG)
                         },
                         text = "${leverage.toInt()}x",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.W500,
                         color = MixinAppTheme.colors.textPrimary
                     )
 
@@ -409,7 +411,7 @@ fun OpenPositionPage(
 
                             val displayText = when (lev) {
                                 -1 -> stringResource(R.string.slippage_custom)
-                                maxLeverage -> stringResource(R.string.Max)
+                                maxLeverage.takeIf { it > 1 } -> stringResource(R.string.Max)
                                 else -> "${lev}x"
                             }
 
@@ -668,7 +670,7 @@ fun OpenPositionPage(
 
 private fun generateLeverageOptions(maxLeverage: Int): List<Int> {
     val safeMaxLeverage = maxLeverage.coerceAtLeast(1)
-    val baseOptions = listOf(1, 2, 5, 10, 20)
+    val baseOptions = listOf(2, 5, 10, 20)
     val options = baseOptions
         .filter { it in 1 until safeMaxLeverage }
         .toMutableList()
