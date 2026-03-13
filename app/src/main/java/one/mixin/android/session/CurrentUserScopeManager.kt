@@ -16,6 +16,10 @@ import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
+class MissingAccountScopeException(
+    scopeName: String,
+) : IllegalStateException("Account is required for $scopeName scope.")
+
 @Singleton
 class CurrentUserScopeManager
     @Inject
@@ -56,7 +60,7 @@ class CurrentUserScopeManager
 
         fun getMixinDatabase(): MixinDatabase {
             synchronized(lock) {
-                val account = requireNotNull(Session.getAccount()) { "Account is required for MixinDatabase scope." }
+                val account = requireAccount("MixinDatabase")
                 ensureScopeLocked(account)
                 return mixinDatabase
                     ?: throw IllegalStateException("Unable to create MixinDatabase scope")
@@ -65,7 +69,7 @@ class CurrentUserScopeManager
 
         fun getWalletDatabase(): WalletDatabase {
             synchronized(lock) {
-                val account = requireNotNull(Session.getAccount()) { "Account is required for WalletDatabase scope." }
+                val account = requireAccount("WalletDatabase")
                 ensureScopeLocked(account)
                 return walletDatabase
                     ?: throw IllegalStateException("Unable to create WalletDatabase scope")
@@ -74,7 +78,7 @@ class CurrentUserScopeManager
 
         fun getPendingDatabase(): PendingDatabase {
             synchronized(lock) {
-                val account = requireNotNull(Session.getAccount()) { "Account is required for PendingDatabase scope." }
+                val account = requireAccount("PendingDatabase")
                 ensureScopeLocked(account)
                 return pendingDatabase
                     ?: throw IllegalStateException("Unable to create PendingDatabase scope")
@@ -83,7 +87,7 @@ class CurrentUserScopeManager
 
         fun getFtsDatabase(): FtsDatabase {
             synchronized(lock) {
-                val account = requireNotNull(Session.getAccount()) { "Account is required for FtsDatabase scope." }
+                val account = requireAccount("FtsDatabase")
                 ensureScopeLocked(account)
                 return ftsDatabase
                     ?: throw IllegalStateException("Unable to create FtsDatabase scope")
@@ -141,6 +145,10 @@ class CurrentUserScopeManager
             currentUserId = null
             currentIdentityNumber = null
             scopeVersion++
+        }
+
+        private fun requireAccount(scopeName: String): Account {
+            return Session.getAccount() ?: throw MissingAccountScopeException(scopeName)
         }
     }
 

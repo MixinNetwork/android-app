@@ -84,12 +84,14 @@ import one.mixin.android.extension.show
 import one.mixin.android.extension.toUri
 import one.mixin.android.job.BaseJob
 import one.mixin.android.job.JobLogger
+import one.mixin.android.job.MixinJob
 import one.mixin.android.job.JobNetworkUtil
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.MyJobService
 import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.session.CurrentUserScopeManager
 import one.mixin.android.session.JwtResult
+import one.mixin.android.session.MissingAccountScopeException
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Ephemeral
 import one.mixin.android.tip.Identity
@@ -409,7 +411,24 @@ object AppModule {
                 .injector { job ->
                     if (job is BaseJob) {
                         val entryPoint = EntryPointAccessors.fromApplication(app.applicationContext, BaseJob.JobEntryPoint::class.java)
-                        entryPoint.inject(job)
+                        try {
+                            entryPoint.inject(job)
+                        } catch (t: Throwable) {
+                            val missingAccountScope = t.findMissingAccountScopeException()
+                            if (missingAccountScope != null) {
+                                job.setCancelled(true)
+                                if (job is MixinJob) {
+                                    runCatching { job.cancel() }
+                                        .onFailure { cancelError ->
+                                            Timber.w(cancelError, "Failed to cancel job after skipped injection: %s", job.javaClass.simpleName)
+                                        }
+                                }
+                                Timber.w(missingAccountScope, "Skip job injection because account scope is unavailable: %s", job.javaClass.simpleName)
+                                reportException("Skip job injection: ${job.javaClass.simpleName}", missingAccountScope)
+                            } else {
+                                throw t
+                            }
+                        }
                     }
                 }
                 .customLogger(JobLogger())
@@ -419,6 +438,12 @@ object AppModule {
                 .createSchedulerFor(app.applicationContext, MyJobService::class.java),
         )
         return MixinJobManager(builder.build())
+    }
+
+    private fun Throwable.findMissingAccountScopeException(): MissingAccountScopeException? {
+        return generateSequence(this) { it.cause }
+            .filterIsInstance<MissingAccountScopeException>()
+            .firstOrNull()
     }
 
     @Provides
