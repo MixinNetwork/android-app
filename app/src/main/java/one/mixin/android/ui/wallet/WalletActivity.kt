@@ -22,6 +22,7 @@ import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_FROM_MARK
 import one.mixin.android.ui.wallet.fiatmoney.CalculateFragment
 import one.mixin.android.ui.wallet.fiatmoney.FiatMoneyViewModel
 import one.mixin.android.ui.wallet.fiatmoney.RouteProfile
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.User
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.TokenItem
@@ -118,6 +119,10 @@ class WalletActivity : BlazeBaseActivity() {
                     putBoolean(
                         CalculateFragment.ARGS_IS_WEB3,
                         intent.getBooleanExtra(CalculateFragment.ARGS_IS_WEB3, false)
+                    )
+                    putString(
+                        CalculateFragment.ARGS_BUY_SOURCE,
+                        intent.getStringExtra(CalculateFragment.ARGS_BUY_SOURCE)
                     )
                     putString(
                         CalculateFragment.ARGS_WALLET_ID_FOR_CALCULATE,
@@ -260,6 +265,7 @@ class WalletActivity : BlazeBaseActivity() {
             state: FiatMoneyViewModel.CalculateState?,
             routeProfile: RouteProfile?,
             walletId: String? = null,
+            source: String = AnalyticsTracker.TradeSource.WALLET_HOME,
         ) {
             activity.startActivity(
                 Intent(activity, WalletActivity::class.java).apply {
@@ -267,6 +273,7 @@ class WalletActivity : BlazeBaseActivity() {
                     state?.let { putExtra(CalculateFragment.CALCULATE_STATE, it) }
                     routeProfile?.let { putExtra(ARGS_ROUTE_PROFILE, it) }
                     putExtra(CalculateFragment.ARGS_IS_WEB3, isWeb3)
+                    putExtra(CalculateFragment.ARGS_BUY_SOURCE, source)
                     walletId?.let { putExtra(CalculateFragment.ARGS_WALLET_ID_FOR_CALCULATE, it) }
                 },
             )
