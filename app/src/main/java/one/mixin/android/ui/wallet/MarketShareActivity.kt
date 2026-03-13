@@ -12,6 +12,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
 import androidx.core.content.FileProvider
+import androidx.core.view.WindowCompat
 import androidx.core.view.drawToBitmap
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
@@ -78,10 +79,7 @@ class MarketShareActivity : BaseActivity() {
                 binding.container.background = BitmapDrawable(resources, it.blurBitmap(25))
             })
         }
-        window.decorView.systemUiVisibility = (
-            View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-            )
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         SystemUIManager.setSafePadding(window, android.graphics.Color.TRANSPARENT)
         binding.test.round(8.dp)
         binding.content.updateLayoutParams<MarginLayoutParams> {

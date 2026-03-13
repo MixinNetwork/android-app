@@ -479,7 +479,6 @@ class WebFragment : BaseFragment() {
 
     private var customView: View? = null
     private var customViewCallback: WebChromeClient.CustomViewCallback? = null
-    private var originalSystemUiVisibility = 0
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun initView() {
@@ -605,20 +604,13 @@ class WebFragment : BaseFragment() {
                     }
                     customView = view
                     customViewCallback = callback
-                    originalSystemUiVisibility = requireActivity().window.decorView.systemUiVisibility
 
                     binding.customViewContainer.addView(view)
                     binding.customViewContainer.isVisible = true
                     binding.webLl.isVisible = false
                     binding.webControl.isVisible = false
 
-                    requireActivity().window.decorView.systemUiVisibility =
-                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
-                        View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
-                        View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
-                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
-                        View.SYSTEM_UI_FLAG_FULLSCREEN or
-                        View.SYSTEM_UI_FLAG_IMMERSIVE
+                    SystemUIManager.hideSystemUI(requireActivity().window)
                     requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
                 }
 
@@ -636,7 +628,7 @@ class WebFragment : BaseFragment() {
 
                     customView = null
 
-                    requireActivity().window.decorView.systemUiVisibility = originalSystemUiVisibility
+                    SystemUIManager.showSystemUI(requireActivity().window)
                     requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
                     customViewCallback?.onCustomViewHidden()
@@ -1285,7 +1277,7 @@ class WebFragment : BaseFragment() {
         binding.webLl.removeView(webView)
         processor.close()
         if (requireActivity().requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
-            requireActivity().window.decorView.systemUiVisibility = originalSystemUiVisibility
+            SystemUIManager.showSystemUI(requireActivity().window)
             requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
         super.onDestroyView()
