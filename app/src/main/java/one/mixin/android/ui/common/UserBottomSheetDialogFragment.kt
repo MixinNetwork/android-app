@@ -169,6 +169,32 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         FragmentUserBottomSheetBinding.bind(contentView)
     }
 
+    override fun getPeekHeight(
+        contentView: View,
+        behavior: BottomSheetBehavior<*>,
+    ): Int {
+        val titleView = contentView.findViewById<View>(R.id.title) ?: return 0
+        val scrollContent = contentView.findViewById<View>(R.id.scroll_content) ?: return 0
+
+        val width = contentView.measuredWidth.takeIf { it > 0 } ?: contentView.width
+        val widthSpec = View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY)
+
+        titleView.measure(
+            widthSpec,
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+        )
+        scrollContent.measure(
+            widthSpec,
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+        )
+
+        // Calculate height excluding menu layout and adding proper spacing
+        val menuHeight = menuListLayout?.measuredHeight ?: 0
+        val spacing = if (menuHeight > 0) 38.dp else 8.dp
+
+        return titleView.measuredHeight + scrollContent.measuredHeight - menuHeight - spacing
+    }
+
     override fun setupDialog(
         dialog: Dialog,
         style: Int,
@@ -220,10 +246,13 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     binding.opLl.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                         bottomMargin = 24.dp
                     }
-                    val contentHeight = binding.title.height +
-                        binding.scrollContent.height -
-                        (menuListLayout?.height ?: 0) - if (menuListLayout != null) 38.dp else 8.dp
-                    behavior?.peekHeight = requireContext().resolveBottomSheetPeekHeight(contentView, contentHeight)
+                    // Update peek height only if menu layout exists and has been measured
+                    if (menuListLayout != null && menuListLayout?.measuredHeight != 0) {
+                        val contentHeight = binding.title.height +
+                            binding.scrollContent.height -
+                            (menuListLayout?.height ?: 0) - 38.dp
+                        behavior?.peekHeight = requireContext().resolveBottomSheetPeekHeight(contentView, contentHeight)
+                    }
                 }
             },
         )
@@ -285,9 +314,12 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             apps?.let {
                 binding.avatarGroup.setApps(it)
                 contentView.doOnPreDraw {
-                    val contentHeight = binding.title.height + binding.scrollContent.height -
-                        (menuListLayout?.height ?: 0) - if (menuListLayout != null) 38.dp else 8.dp
-                    behavior?.peekHeight = requireContext().resolveBottomSheetPeekHeight(contentView, contentHeight)
+                    // Update peek height when apps are loaded
+                    if (menuListLayout != null && menuListLayout?.measuredHeight != 0) {
+                        val contentHeight = binding.title.height + binding.scrollContent.height -
+                            (menuListLayout?.height ?: 0) - 38.dp
+                        behavior?.peekHeight = requireContext().resolveBottomSheetPeekHeight(contentView, contentHeight)
+                    }
                 }
             }
         }
