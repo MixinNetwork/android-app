@@ -13,6 +13,7 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.util.reportEvent
 import timber.log.Timber
+import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
@@ -36,6 +37,7 @@ fun debugLongClick(
     }
 }
 
+@OptIn(ExperimentalContracts::class)
 inline fun <T> measureTimeMillis(
     tag: String,
     block: () -> T,
@@ -49,6 +51,7 @@ inline fun <T> measureTimeMillis(
     return result
 }
 
+@OptIn(ExperimentalContracts::class)
 inline fun <T> timeoutEarlyWarning(
     block: () -> T,
     timeout: Long = 50L,
