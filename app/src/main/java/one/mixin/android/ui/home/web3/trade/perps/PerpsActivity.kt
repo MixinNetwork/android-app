@@ -12,6 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -38,6 +39,7 @@ class PerpsActivity : BaseActivity() {
     lateinit var perpsMarketDao: PerpsMarketDao
 
     private var selectedToken by mutableStateOf<TokenItem?>(null)
+    private var renderJob: Job? = null
 
     companion object {
         private const val EXTRA_MARKET_ID = "extra_market_id"
@@ -59,6 +61,7 @@ class PerpsActivity : BaseActivity() {
             marketTokenSymbol: String = "",
         ) {
             val intent = Intent(context, PerpsActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
                 putExtra(EXTRA_MARKET_ID, marketId)
                 putExtra(EXTRA_MARKET_SYMBOL, marketSymbol)
                 putExtra(EXTRA_MARKET_DISPLAY_SYMBOL, marketDisplaySymbol)
@@ -77,6 +80,7 @@ class PerpsActivity : BaseActivity() {
             isLong: Boolean,
         ) {
             val intent = Intent(context, PerpsActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
                 putExtra(EXTRA_MARKET_ID, marketId)
                 putExtra(EXTRA_MARKET_SYMBOL, marketSymbol)
                 putExtra(EXTRA_MARKET_DISPLAY_SYMBOL, marketDisplaySymbol)
@@ -90,18 +94,28 @@ class PerpsActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val marketId = intent.getStringExtra(EXTRA_MARKET_ID) ?: ""
-        val marketSymbol = intent.getStringExtra(EXTRA_MARKET_SYMBOL) ?: ""
-        val displaySymbol = intent.getStringExtra(EXTRA_MARKET_DISPLAY_SYMBOL) ?: ""
-        val tokenSymbol = intent.getStringExtra(EXTRA_MARKET_TOKEN_SYMBOL) ?: ""
-        val mode = intent.getStringExtra(EXTRA_MODE) ?: MODE_DETAIL
-        val isLong = intent.getBooleanExtra(EXTRA_IS_LONG, true)
-
         observePositionRefresh()
+        renderPage()
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        renderPage()
+    }
+
+    private fun renderPage() {
+        renderJob?.cancel()
+        val currentIntent = intent
+        val marketId = currentIntent.getStringExtra(EXTRA_MARKET_ID) ?: ""
+        val marketSymbolExtra = currentIntent.getStringExtra(EXTRA_MARKET_SYMBOL).orEmpty()
+        val displaySymbolExtra = currentIntent.getStringExtra(EXTRA_MARKET_DISPLAY_SYMBOL).orEmpty()
+        val tokenSymbolExtra = currentIntent.getStringExtra(EXTRA_MARKET_TOKEN_SYMBOL).orEmpty()
+        val mode = currentIntent.getStringExtra(EXTRA_MODE) ?: MODE_DETAIL
+        val isLong = currentIntent.getBooleanExtra(EXTRA_IS_LONG, true)
 
         if (mode == MODE_OPEN_POSITION) {
-            lifecycleScope.launch {
+            renderJob = lifecycleScope.launch {
                 val market = withContext(Dispatchers.IO) {
                     perpsMarketDao.getMarket(marketId)
                 }
@@ -116,6 +130,9 @@ class PerpsActivity : BaseActivity() {
                             market = market,
                             isLong = isLong,
                             onBack = { finish() },
+                            onOpenSuccess = { openedMarketId ->
+                                showDetail(this@PerpsActivity, openedMarketId, "", "", "")
+                            },
                             selectedToken = selectedToken,
                             onTokenSelect = { showTokenSelection() },
                             onCurrentTokenChange = { token -> selectedToken = token }
@@ -126,15 +143,24 @@ class PerpsActivity : BaseActivity() {
             return
         }
 
-        setContent {
-            MixinAppTheme {
-                PerpsMarketDetailPage(
-                    marketId = marketId,
-                    marketSymbol = marketSymbol,
-                    displaySymbol = displaySymbol,
-                    tokenSymbol = tokenSymbol,
-                    onBack = { finish() }
-                )
+        renderJob = lifecycleScope.launch {
+            val market = withContext(Dispatchers.IO) {
+                perpsMarketDao.getMarket(marketId)
+            }
+            val displaySymbol = displaySymbolExtra.ifBlank { market?.displaySymbol.orEmpty() }
+            val marketSymbol = marketSymbolExtra.ifBlank { displaySymbol }
+            val tokenSymbol = tokenSymbolExtra.ifBlank { market?.tokenSymbol.orEmpty() }
+
+            setContent {
+                MixinAppTheme {
+                    PerpsMarketDetailPage(
+                        marketId = marketId,
+                        marketSymbol = marketSymbol,
+                        displaySymbol = displaySymbol,
+                        tokenSymbol = tokenSymbol,
+                        onBack = { finish() }
+                    )
+                }
             }
         }
     }

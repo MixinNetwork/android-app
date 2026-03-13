@@ -84,6 +84,7 @@ fun OpenPositionPage(
     market: PerpsMarket,
     isLong: Boolean,
     onBack: () -> Unit,
+    onOpenSuccess: (String) -> Unit = { onBack() },
     selectedToken: TokenItem?,
     onTokenSelect: () -> Unit = {},
     onCurrentTokenChange: (TokenItem?) -> Unit = {},
@@ -584,9 +585,9 @@ fun OpenPositionPage(
                                         tokenSymbol = token.symbol,
                                         payUrl = response.paymentUrl
                                     ).setOnDone {
-                                        onBack()
-                                    }.show(activity.supportFragmentManager, PerpsConfirmBottomSheetDialogFragment.TAG)
-                                },
+                                            onOpenSuccess(m.marketId)
+                                        }.show(activity.supportFragmentManager, PerpsConfirmBottomSheetDialogFragment.TAG)
+                                    },
                                 onError = { errorCode, errorMessage ->
                                     errorInfo = if (errorCode > 0) {
                                         context.getMixinErrorStringByCode(errorCode, errorMessage)
