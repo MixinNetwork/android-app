@@ -71,7 +71,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.GasCheckBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.trade.perps.AllPerpsMarketsFragment
 import one.mixin.android.ui.home.web3.trade.perps.AllPositionsFragment
-import one.mixin.android.ui.home.web3.trade.perps.PerpetualGuideFragment
+import one.mixin.android.ui.home.web3.trade.perps.PerpetualGuideBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.trade.perps.PerpsActivity
 import one.mixin.android.ui.home.web3.trade.perps.PerpsMarketListBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.trade.perps.PositionDetailFragment
@@ -371,8 +371,8 @@ class TradeFragment : BaseFragment() {
                                 },
                                 onShowTradingGuide = {
                                     this@apply.hideKeyboard()
-                                    PerpetualGuideFragment.newInstance()
-                                        .show(parentFragmentManager, PerpetualGuideFragment.TAG)
+                                    PerpetualGuideBottomSheetDialogFragment.newInstance()
+                                        .show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
                                 },
                                 pop = {
                                     navigateUp(navController)

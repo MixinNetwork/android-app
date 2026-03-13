@@ -86,13 +86,13 @@ fun OpenPositionItem(
                     }
                     Text(
                         text = sideText,
-                        fontSize = 14.sp,
+                        fontSize = 16.sp,
                         color = MixinAppTheme.colors.textPrimary,
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = displaySymbol,
-                        fontSize = 14.sp,
+                        fontSize = 16.sp,
                         color = MixinAppTheme.colors.textPrimary
                     )
                     Spacer(modifier = Modifier.width(6.dp))
@@ -110,7 +110,7 @@ fun OpenPositionItem(
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "$quantity ${position.tokenSymbol ?: ""}",
-                    fontSize = 12.sp,
+                    fontSize = 14.sp,
                     color = MixinAppTheme.colors.textAssist
                 )
             }
@@ -119,7 +119,7 @@ fun OpenPositionItem(
         Column(horizontalAlignment = Alignment.End) {
             Text(
                 text = "${fiatSymbol}${positionValue.multiply(fiatRate).priceFormat()}",
-                fontSize = 14.sp,
+                fontSize = 16.sp,
                 color = MixinAppTheme.colors.textPrimary
             )
             Spacer(modifier = Modifier.height(2.dp))
@@ -140,7 +140,7 @@ fun OpenPositionItem(
             }
             Text(
                 text = "${if (unrealizedPnl >= BigDecimal.ZERO) "+" else "-"}$fiatSymbol${unrealizedPnl.abs().multiply(fiatRate).priceFormat()}",
-                fontSize = 12.sp,
+                fontSize = 14.sp,
                 color = pnlColor
             )
         }

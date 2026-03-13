@@ -80,7 +80,7 @@ data class AdjusterConfig(
 
 @Composable
 fun PerpetualGuidePage(
-    initialTab: Int = PerpetualGuideFragment.TAB_OVERVIEW,
+    initialTab: Int = PerpetualGuideBottomSheetDialogFragment.TAB_OVERVIEW,
     pop: () -> Unit,
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -923,16 +923,15 @@ private fun buildOrderValueText(
     orderValueUsdt: Int,
     localSolPrice: BigDecimal?,
 ): String {
-    val usdtText = "${formatGuideInt(orderValueUsdt)} USDT"
-    val solPrice = localSolPrice ?: return "$usdtText (-- SOL)"
+    val solPrice = localSolPrice ?: return "-- SOL"
     if (solPrice <= BigDecimal.ZERO) {
-        return "$usdtText (-- SOL)"
+        return "-- SOL"
     }
     val solAmount = BigDecimal(orderValueUsdt.toString())
         .divide(solPrice, 2, RoundingMode.HALF_UP)
         .stripTrailingZeros()
         .toPlainString()
-    return "$usdtText ($solAmount SOL)"
+    return "$solAmount SOL"
 }
 
 private fun formatPercent(percent: Float): String {

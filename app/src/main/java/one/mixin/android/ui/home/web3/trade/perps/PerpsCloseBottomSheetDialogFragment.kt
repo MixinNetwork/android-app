@@ -65,6 +65,7 @@ import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
+import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.tip.wc.compose.ItemWalletContent
 import one.mixin.android.ui.wallet.ItemUserContent
@@ -502,7 +503,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                                 cancelTitle = stringResource(R.string.Cancel),
                                 confirmTitle = stringResource(id = R.string.Retry),
                                 cancelAction = { dismiss() },
-                                confirmAction = { closePosition() },
+                                confirmAction = { showVerifyPinThenClose() },
                             )
                         }
 
@@ -512,7 +513,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                                 cancelTitle = stringResource(R.string.Cancel),
                                 confirmTitle = stringResource(id = R.string.Confirm),
                                 cancelAction = { dismiss() },
-                                confirmAction = { closePosition() },
+                                confirmAction = { showVerifyPinThenClose() },
                             )
                         }
 
@@ -539,7 +540,19 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
         super.onDismiss(dialog)
     }
 
+    private fun showVerifyPinThenClose() {
+        VerifyBottomSheetDialogFragment.newInstance(
+            title = getString(R.string.Verify_PIN),
+            disableBiometric = true,
+        ).apply {
+            disableToast = true
+        }.setOnPinSuccess {
+            closePosition()
+        }.showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
+    }
+
     private fun closePosition() {
+        errorInfo = null
         step = Step.Sending
         viewModel.closePerpsOrder(
             positionId = positionId,

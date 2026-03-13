@@ -44,7 +44,7 @@
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:textColor="?attr/text_primary"
-                android:textSize="14sp"
+                android:textSize="16sp"
                 tools:text="Long BTC" />
 
             <TextView
@@ -68,7 +68,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:textColor="?attr/text_assist"
-            android:textSize="12sp"
+            android:textSize="14sp"
             tools:text="0.0028 BTC" />
     </LinearLayout>
 
@@ -89,7 +89,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
             android:textColor="?attr/text_primary"
-            android:textSize="14sp"
+            android:textSize="16sp"
             tools:text="$100.00" />
 
         <TextView

@@ -159,14 +159,9 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
 
             positionsRv.layoutManager = LinearLayoutManager(requireContext())
             emptyView.helpAction.setOnClickListener {
-                parentFragmentManager.beginTransaction()
-                    .add(
-                        android.R.id.content,
-                        PerpetualGuideFragment.newInstance(initialTab = PerpetualGuideFragment.TAB_OVERVIEW),
-                        PerpetualGuideFragment.TAG
-                    )
-                    .addToBackStack(null)
-                    .commit()
+                PerpetualGuideBottomSheetDialogFragment.newInstance(
+                    initialTab = PerpetualGuideBottomSheetDialogFragment.TAB_OVERVIEW
+                ).show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
             }
         }
 

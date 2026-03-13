@@ -18,10 +18,10 @@ import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.util.SystemUIManager
 
 @AndroidEntryPoint
-class PerpetualGuideFragment : MixinComposeBottomSheetDialogFragment() {
+class PerpetualGuideBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
 
     companion object {
-        const val TAG = "PerpetualGuideFragment"
+        const val TAG = "PerpetualGuideBottomSheetDialogFragment"
         private const val ARGS_INITIAL_TAB = "args_initial_tab"
 
         const val TAB_OVERVIEW = 0
@@ -30,7 +30,7 @@ class PerpetualGuideFragment : MixinComposeBottomSheetDialogFragment() {
         const val TAB_LEVERAGE = 3
         const val TAB_POSITION = 4
 
-        fun newInstance(initialTab: Int = TAB_OVERVIEW) = PerpetualGuideFragment().apply {
+        fun newInstance(initialTab: Int = TAB_OVERVIEW) = PerpetualGuideBottomSheetDialogFragment().apply {
             arguments = Bundle().apply {
                 putInt(ARGS_INITIAL_TAB, initialTab)
             }

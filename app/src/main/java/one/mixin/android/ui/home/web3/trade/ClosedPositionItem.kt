@@ -116,13 +116,13 @@ fun ClosedPositionItem(
                     }
                     Text(
                         text = sideText,
-                        fontSize = 14.sp,
+                        fontSize = 16.sp,
                         color = MixinAppTheme.colors.textPrimary,
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = displaySymbol,
-                        fontSize = 14.sp,
+                        fontSize = 16.sp,
                         color = MixinAppTheme.colors.textPrimary,
                     )
                     Spacer(modifier = Modifier.width(6.dp))
@@ -140,7 +140,7 @@ fun ClosedPositionItem(
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "${(quantity.toBigDecimalOrNull()?: BigDecimal.ZERO).abs().stripTrailingZeros().toPlainString()} ${position.tokenSymbol ?: ""}",
-                    fontSize = 12.sp,
+                    fontSize = 14.sp,
                     color = MixinAppTheme.colors.textAssist
                 )
             }
@@ -151,7 +151,7 @@ fun ClosedPositionItem(
         ) {
             Text(
                 text = "${if (isProfit) "+" else "-"}$fiatSymbol${pnl.abs().multiply(fiatRate).priceFormat()}",
-                fontSize = 14.sp,
+                fontSize = 16.sp,
                 color = pnlColor
             )
         }

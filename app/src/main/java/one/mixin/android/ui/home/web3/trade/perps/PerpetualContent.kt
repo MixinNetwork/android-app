@@ -304,7 +304,7 @@ fun PerpetualContent(
             ) {
                 Text(
                     text = stringResource(R.string.Perpetual_Markets),
-                    fontSize = 16.sp,
+                    fontSize = 14.sp,
                     color = MixinAppTheme.colors.textPrimary,
                 )
                 Icon(
@@ -381,7 +381,7 @@ fun PerpetualContent(
             ) {
                 Text(
                     text = stringResource(R.string.perps_activity),
-                    fontSize = 16.sp,
+                    fontSize = 14.sp,
                     color = MixinAppTheme.colors.textPrimary,
                 )
                 Icon(

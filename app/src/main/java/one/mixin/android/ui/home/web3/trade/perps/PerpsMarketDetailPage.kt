@@ -204,8 +204,9 @@ fun PerpsMarketDetailPage(
                         market = market!!,
                         onLearnClick = {
                             val activity = context as? FragmentActivity ?: return@MarketInfoCard
-                            PerpetualGuideFragment.newInstance(PerpetualGuideFragment.TAB_OVERVIEW)
-                                .show(activity.supportFragmentManager, PerpetualGuideFragment.TAG)
+                            PerpetualGuideBottomSheetDialogFragment.newInstance(
+                                PerpetualGuideBottomSheetDialogFragment.TAB_OVERVIEW
+                            ).show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
                         }
                     )
                 }
@@ -724,8 +725,9 @@ private fun OpenPositionCard(
                             .size(12.dp)
                             .clickable {
                                 val activity = context as? FragmentActivity ?: return@clickable
-                                PerpetualGuideFragment.newInstance(PerpetualGuideFragment.TAB_POSITION)
-                                    .show(activity.supportFragmentManager, PerpetualGuideFragment.TAG)
+                                PerpetualGuideBottomSheetDialogFragment.newInstance(
+                                    PerpetualGuideBottomSheetDialogFragment.TAB_POSITION
+                                ).show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
                             },
                         tint = MixinAppTheme.colors.textAssist
                     )
@@ -753,8 +755,8 @@ private fun OpenPositionCard(
 //                            .size(12.dp)
 //                            .clickable {
 //                                val activity = context as? FragmentActivity ?: return@clickable
-//                                PerpetualGuideFragment.newInstance()
-//                                    .show(activity.supportFragmentManager, PerpetualGuideFragment.TAG)
+//                                PerpetualGuideBottomSheetDialogFragment.newInstance()
+//                                    .show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
 //                            },
 //                        tint = MixinAppTheme.colors.textAssist
 //                    )
@@ -802,8 +804,8 @@ private fun OpenPositionCard(
 //                            .size(12.dp)
 //                            .clickable {
 //                                val activity = context as? FragmentActivity ?: return@clickable
-//                                PerpetualGuideFragment.newInstance()
-//                                    .show(activity.supportFragmentManager, PerpetualGuideFragment.TAG)
+//                                PerpetualGuideBottomSheetDialogFragment.newInstance()
+//                                    .show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
 //                            },
 //                        tint = MixinAppTheme.colors.textAssist
 //                    )
