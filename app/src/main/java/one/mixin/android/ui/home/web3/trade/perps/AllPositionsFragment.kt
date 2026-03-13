@@ -63,7 +63,7 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
 
     private val binding by viewBinding(FragmentAllClosedPositionsBinding::bind)
     private val viewModel by viewModels<PerpetualViewModel>()
-    private val totalValueAdapter by lazy { TotalPositionValueAdapter() }
+    private val totalValueAdapter by lazy { TotalPositionValueAdapter(isQuoteColorReversed) }
     private val isQuoteColorReversed by lazy {
         requireContext().defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     }

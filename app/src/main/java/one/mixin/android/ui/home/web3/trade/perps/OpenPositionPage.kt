@@ -162,11 +162,26 @@ fun OpenPositionPage(
     val fiatSymbol = Fiats.getSymbol()
     val inputAmount = usdtAmount.toBigDecimalOrNull()
     val tokenBalance = currentToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val minimumMargin = currentMarket.minAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val maximumMargin = currentMarket.maxAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val hasInputAmount = inputAmount != null && inputAmount > BigDecimal.ZERO
+    val belowMinimumMargin = hasInputAmount && minimumMargin > BigDecimal.ZERO && inputAmount < minimumMargin
+    val aboveMaximumMargin = hasInputAmount && maximumMargin > BigDecimal.ZERO && inputAmount > maximumMargin
     val insufficientBalance = hasInputAmount && inputAmount > tokenBalance
     val showAddAction = insufficientBalance || tokenBalance <= BigDecimal.ZERO
-    val canReview = hasInputAmount && !insufficientBalance
-    val displayedErrorInfo = errorInfo?.takeIf { it.isNotBlank() }
+    val canReview = hasInputAmount && !belowMinimumMargin && !aboveMaximumMargin && !insufficientBalance
+    val marginLimitError = when {
+        belowMinimumMargin -> stringResource(
+            R.string.perps_minimum_margin,
+            minimumMargin.stripTrailingZeros().toPlainString()
+        )
+        aboveMaximumMargin -> stringResource(
+            R.string.perps_maximum_margin,
+            maximumMargin.stripTrailingZeros().toPlainString()
+        )
+        else -> null
+    }
+    val displayedErrorInfo = errorInfo?.takeIf { it.isNotBlank() } ?: marginLimitError
     val tokenNetworkName = currentToken?.chainName
         ?.takeIf { it.isNotBlank() }
         ?: currentToken?.chainSymbol
@@ -543,6 +558,20 @@ fun OpenPositionPage(
                         val amount = usdtAmount.toBigDecimalOrNull() ?: return@Button
 
                         if (amount <= BigDecimal.ZERO) return@Button
+                        if (minimumMargin > BigDecimal.ZERO && amount < minimumMargin) {
+                            errorInfo = context.getString(
+                                R.string.perps_minimum_margin,
+                                minimumMargin.stripTrailingZeros().toPlainString()
+                            )
+                            return@Button
+                        }
+                        if (maximumMargin > BigDecimal.ZERO && amount > maximumMargin) {
+                            errorInfo = context.getString(
+                                R.string.perps_maximum_margin,
+                                maximumMargin.stripTrailingZeros().toPlainString()
+                            )
+                            return@Button
+                        }
                         if (amount > (token.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO)) return@Button
 
                         val m = currentMarket

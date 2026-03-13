@@ -39,21 +39,13 @@ data class PerpsMarket(
     @ColumnInfo(name = "funding_rate")
     val fundingRate: String,
 
-    @SerializedName("min_order_size")
-    @ColumnInfo(name = "min_order_size")
-    val minOrderSize: String,
+    @SerializedName("min_amount")
+    @ColumnInfo(name = "min_amount")
+    val minAmount: String,
 
-    @SerializedName("max_order_size")
-    @ColumnInfo(name = "max_order_size")
-    val maxOrderSize: String,
-
-    @SerializedName("min_order_value")
-    @ColumnInfo(name = "min_order_value")
-    val minOrderValue: String,
-
-    @SerializedName("max_order_value")
-    @ColumnInfo(name = "max_order_value")
-    val maxOrderValue: String,
+    @SerializedName("max_amount")
+    @ColumnInfo(name = "max_amount")
+    val maxAmount: String,
 
     @SerializedName("last")
     @ColumnInfo(name = "last")

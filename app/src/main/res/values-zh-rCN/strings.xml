@@ -1618,6 +1618,8 @@
     <string name="single_transaction_should_be_greater_than">最低金额 %1$s %2$s</string>
     <string name="single_transaction_should_be_less_than">最高金额 %1$s %2$s</string>
     <string name="single_transaction_should_be_between">金额范围 %1$s %2$s ~ %3$s %4$s</string>
+    <string name="perps_minimum_margin">最小保证金为 %1$s</string>
+    <string name="perps_maximum_margin">最大保证金为 %1$s</string>
     <!-- Web3 -->
     <string name="web3_approve">授权</string>
     <string name="web3_borrow">借款</string>

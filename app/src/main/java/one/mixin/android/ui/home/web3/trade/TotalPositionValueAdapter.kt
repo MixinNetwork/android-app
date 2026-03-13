@@ -14,7 +14,9 @@ import one.mixin.android.extension.priceFormat
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
-class TotalPositionValueAdapter : RecyclerView.Adapter<TotalPositionValueAdapter.ViewHolder>() {
+class TotalPositionValueAdapter(
+    private val isQuoteColorReversed: Boolean = false,
+) : RecyclerView.Adapter<TotalPositionValueAdapter.ViewHolder>() {
     private var totalValue: BigDecimal = BigDecimal.ZERO
     private var subValue: BigDecimal = BigDecimal.ZERO
     private var subPercent: BigDecimal? = null
@@ -42,7 +44,7 @@ class TotalPositionValueAdapter : RecyclerView.Adapter<TotalPositionValueAdapter
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_total_position_value, parent, false)
-        return ViewHolder(view)
+        return ViewHolder(view, isQuoteColorReversed)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -51,7 +53,10 @@ class TotalPositionValueAdapter : RecyclerView.Adapter<TotalPositionValueAdapter
 
     override fun getItemCount(): Int = 1
 
-    class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class ViewHolder(
+        itemView: View,
+        private val isQuoteColorReversed: Boolean,
+    ) : RecyclerView.ViewHolder(itemView) {
         private val titleTv: TextView = itemView.findViewById(R.id.title_tv)
         private val valueTv: TextView = itemView.findViewById(R.id.value_tv)
         private val subtitleTv: TextView = itemView.findViewById(R.id.subtitle_tv)
@@ -67,8 +72,12 @@ class TotalPositionValueAdapter : RecyclerView.Adapter<TotalPositionValueAdapter
             val fiatRate = BigDecimal(Fiats.getRate())
             val fiatSymbol = Fiats.getSymbol()
             titleTv.text = context.getString(titleResId)
-            val gainColor = context.getColor(R.color.wallet_green)
-            val lossColor = context.getColor(R.color.wallet_red)
+            val gainColor = context.getColor(
+                if (isQuoteColorReversed) R.color.wallet_red else R.color.wallet_green,
+            )
+            val lossColor = context.getColor(
+                if (isQuoteColorReversed) R.color.wallet_green else R.color.wallet_red,
+            )
 
             if (isClosed) {
                 valueTv.text = "${
