@@ -100,6 +100,7 @@ fun PerpetualContent(
     val closedPositions by remember(walletId) {
         viewModel.observeClosedPositions(walletId, CLOSED_POSITION_PREVIEW_LIMIT)
     }.collectAsStateWithLifecycle(initialValue = emptyList())
+    var previousOpenPositionsCount by remember(walletId) { mutableStateOf<Int?>(null) }
     val openPositionsCount = openPositions.size
     val openPositionsPreview = openPositions.take(3)
     val marketsPreview = markets.take(3)
@@ -140,12 +141,20 @@ fun PerpetualContent(
                     )
                 }
             )
+            viewModel.refreshPositionHistory(walletId, limit = CLOSED_POSITION_PREVIEW_LIMIT)
             while (isActive) {
                 viewModel.refreshPositions(walletId)
-                viewModel.refreshPositionHistory(walletId, limit = CLOSED_POSITION_PREVIEW_LIMIT)
                 delay(POSITION_REFRESH_INTERVAL_MS)
             }
         }
+    }
+
+    LaunchedEffect(walletId, openPositionsCount) {
+        val lastCount = previousOpenPositionsCount
+        if (lastCount != null && openPositionsCount < lastCount) {
+            viewModel.refreshPositionHistory(walletId, limit = CLOSED_POSITION_PREVIEW_LIMIT)
+        }
+        previousOpenPositionsCount = openPositionsCount
     }
 
     Column(modifier = Modifier.fillMaxSize()) {

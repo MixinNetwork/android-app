@@ -140,7 +140,13 @@ class PositionDetailFragment : BaseFragment() {
         val perpsPosition = position.toPosition()
         PerpsCloseBottomSheetDialogFragment.newInstance(perpsPosition)
             .setOnDone {
-                activity?.onBackPressedDispatcher?.onBackPressed()
+                PerpsActivity.showDetail(
+                    requireContext(),
+                    position.marketId,
+                    position.displaySymbol.orEmpty(),
+                    position.displaySymbol.orEmpty(),
+                    position.tokenSymbol.orEmpty()
+                )
             }
             .showNow(parentFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)
     }

@@ -44,7 +44,7 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
         private const val ARGS_POSITION_TYPE = "args_position_type"
         private const val TYPE_OPEN = "type_open"
         private const val TYPE_CLOSED = "type_closed"
-        private const val POSITION_REFRESH_INTERVAL_MS = 10_000L
+        private const val POSITION_REFRESH_INTERVAL_MS = 3_000L
         private const val CLOSED_POSITION_REFRESH_LIMIT = 100
 
         fun newInstance(showOpenPositions: Boolean = false) = AllPositionsFragment().apply {
@@ -111,6 +111,7 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
     private var openPositionsLiveData: LiveData<PagedList<PerpsPositionItem>>? = null
     private var closedPositionsLiveData: LiveData<PagedList<PerpsPositionHistoryItem>>? = null
     private var totalValueJob: Job? = null
+    private var previousOpenPositionsCount: Int? = null
     
     private var lastOpenTotalValue: Double = 0.0
     private var lastOpenTotalPnl: Double = 0.0
@@ -166,6 +167,7 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
         }
 
         loadPositions()
+        observeOpenPositionCountChanges()
         observePeriodicRefresh()
     }
 
@@ -178,6 +180,7 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
         lastOpenTotalPnl = 0.0
         lastClosedTotalPnl = 0.0
         lastClosedTotalEntryValue = 0.0
+        previousOpenPositionsCount = null
 
         if (positionType == PositionType.OPEN) {
             binding.titleView.setSubTitle(getString(R.string.perps_positions), "")
@@ -275,13 +278,32 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 val walletId = Session.getAccountId() ?: return@repeatOnLifecycle
+                viewModel.refreshPositionHistory(
+                    walletId = walletId,
+                    limit = CLOSED_POSITION_REFRESH_LIMIT
+                )
                 while (isActive) {
                     viewModel.refreshPositions(walletId)
-                    viewModel.refreshPositionHistory(
-                        walletId = walletId,
-                        limit = CLOSED_POSITION_REFRESH_LIMIT
-                    )
                     delay(POSITION_REFRESH_INTERVAL_MS)
+                }
+            }
+        }
+    }
+
+    private fun observeOpenPositionCountChanges() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                val walletId = Session.getAccountId() ?: return@repeatOnLifecycle
+                viewModel.observeOpenPositions(walletId).collect { positions ->
+                    val currentCount = positions.size
+                    val lastCount = previousOpenPositionsCount
+                    if (lastCount != null && currentCount < lastCount) {
+                        viewModel.refreshPositionHistory(
+                            walletId = walletId,
+                            limit = CLOSED_POSITION_REFRESH_LIMIT
+                        )
+                    }
+                    previousOpenPositionsCount = currentCount
                 }
             }
         }

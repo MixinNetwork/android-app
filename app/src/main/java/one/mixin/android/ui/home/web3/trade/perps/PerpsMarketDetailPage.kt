@@ -98,6 +98,7 @@ fun PerpsMarketDetailPage(
             flowOf(emptyList())
         }
     }.collectAsStateWithLifecycle(initialValue = emptyList())
+    var previousOpenPositionsCount by remember(walletId) { mutableStateOf<Int?>(null) }
     val currentPosition = openPositions.firstOrNull { it.marketId == marketId }
     val closedPositions = allClosedPositions.filter { it.marketId == marketId }
     val timeFrameValues = listOf("1m", "5m", "15m", "1h", "4h", "1d", "1w")
@@ -126,6 +127,16 @@ fun PerpsMarketDetailPage(
                 isLoading = false
             }
         )
+    }
+
+    LaunchedEffect(walletId, openPositions.size) {
+        if (walletId.isEmpty()) return@LaunchedEffect
+        val lastCount = previousOpenPositionsCount
+        val currentCount = openPositions.size
+        if (lastCount != null && currentCount < lastCount) {
+            viewModel.refreshPositionHistory(walletId, limit = CLOSED_POSITION_PREVIEW_LIMIT)
+        }
+        previousOpenPositionsCount = currentCount
     }
 
     PageScaffold(
