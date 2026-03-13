@@ -76,6 +76,7 @@ fun InputAction(
 @Preview
 @Composable
 fun PreviewInputActionMax() {
-    InputAction("MAX") {}
+    MixinAppTheme {
+        InputAction("MAX") {}
+    }
 }
-

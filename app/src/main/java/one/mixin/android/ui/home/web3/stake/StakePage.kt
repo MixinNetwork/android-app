@@ -344,11 +344,15 @@ fun Item(
 @Preview
 @Composable
 private fun InputPreview() {
-    Input(text = "123") {}
+    MixinAppTheme {
+        Input(text = "123") {}
+    }
 }
 
 @Preview
 @Composable
 private fun ValidatorInfoPreview() {
-    ValidatorInfo(Validator("J2nUHEAgZFRyuJbFjdqPrAa9gyWDuc7hErtDQHPhsYRp", "Mixin Validator", "", "", "", "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png", "", 123123131231231, 9, 123124, 123123))
+    MixinAppTheme {
+        ValidatorInfo(Validator("J2nUHEAgZFRyuJbFjdqPrAa9gyWDuc7hErtDQHPhsYRp", "Mixin Validator", "", "", "", "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png", "", 123123131231231, 9, 123124, 123123))
+    }
 }

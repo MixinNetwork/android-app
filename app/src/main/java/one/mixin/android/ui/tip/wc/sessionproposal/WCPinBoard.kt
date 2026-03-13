@@ -56,6 +56,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -92,13 +93,18 @@ fun WCPinBoard(
     onPinComplete: ((String) -> Unit)?,
 ) {
     val context = LocalContext.current
+    val isInPreview = LocalInspectionMode.current
     val clipboardManager: ClipboardManager = LocalClipboardManager.current
-    val showBiometric = allowBiometric && BiometricUtil.shouldShowBiometric(context)
-    val randomKeyboardEnabled by LocalContext.current.defaultSharedPreferences
-        .booleanValueAsState(
-            key = Constants.Account.PREF_RANDOM,
-            defaultValue = false,
-        )
+    val showBiometric = allowBiometric && !isInPreview && BiometricUtil.shouldShowBiometric(context)
+    val randomKeyboardEnabled by if (isInPreview) {
+        remember { mutableStateOf(false) }
+    } else {
+        LocalContext.current.defaultSharedPreferences
+            .booleanValueAsState(
+                key = Constants.Account.PREF_RANDOM,
+                defaultValue = false,
+            )
+    }
     val list =
         if (randomKeyboardEnabled) {
             mutableListOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "0").apply {
@@ -468,5 +474,7 @@ fun WCPinBoard(
 @Preview
 @Composable
 fun WCPinBoardPreview() {
-    WCPinBoard(Step.Input, null, allowBiometric = false, true, {}, {}, {}, null, null)
+    MixinAppTheme {
+        WCPinBoard(Step.Input, null, allowBiometric = false, true, {}, {}, {}, null, null)
+    }
 }

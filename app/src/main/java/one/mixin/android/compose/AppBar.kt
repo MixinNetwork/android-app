@@ -110,21 +110,23 @@ fun MixinTopAppBar(
 @Preview
 @Composable
 fun PreviewMixinAppBar() {
-    MixinTopAppBar(
-        navigationIcon = {
-            MixinBackButton()
-        },
-        title = {
-            Text(text = "Title")
-        },
-        actions = {
-            IconButton(onClick = { }) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_more),
-                    contentDescription = null,
-                    tint = MixinAppTheme.colors.icon,
-                )
-            }
-        },
-    )
+    MixinAppTheme {
+        MixinTopAppBar(
+            navigationIcon = {
+                MixinBackButton()
+            },
+            title = {
+                Text(text = "Title")
+            },
+            actions = {
+                IconButton(onClick = { }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_more),
+                        contentDescription = null,
+                        tint = MixinAppTheme.colors.icon,
+                    )
+                }
+            },
+        )
+    }
 }
