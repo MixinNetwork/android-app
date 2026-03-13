@@ -35,32 +35,72 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.openUrl
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.landing.SetupPinViewModel
 import one.mixin.android.ui.landing.vo.SetupState
+import one.mixin.android.ui.tip.LegacyPIN
+import one.mixin.android.ui.tip.Processing
+import one.mixin.android.ui.tip.RetryConnect
+import one.mixin.android.ui.tip.RetryProcess
+import one.mixin.android.ui.tip.RetryRegister
+import one.mixin.android.ui.tip.TryConnecting
 
 @Composable
 fun SetPinLoadingPage(
-    pin: String, 
+    pin: String,
     next: () -> Unit,
-    onError: ((String) -> Unit)? = null
 ) {
     val viewModel = hiltViewModel<SetupPinViewModel>()
     val coroutineScope = rememberCoroutineScope()
     val setupState by viewModel.setupState.observeAsState(SetupState.Loading)
+    val tipStep by viewModel.tipStep.observeAsState(TryConnecting)
+    val errorMessage by viewModel.errorMessage.observeAsState("")
     val context = LocalContext.current
-    
+
     LaunchedEffect(pin) {
         if (pin.isNotBlank()) {
             viewModel.executeCreatePin(context, pin)
         }
     }
-    
+
     LaunchedEffect(setupState) {
         if (setupState == SetupState.Success) {
             next()
         }
     }
-    
+
+    val statusMessage =
+        when (val step = tipStep) {
+            TryConnecting -> stringResource(R.string.Trying_connect_tip_network)
+            Processing.Creating -> stringResource(R.string.Trying_connect_tip_node)
+            is Processing.SyncingNode -> {
+                val percent = if (step.total > 0) {
+                    ((step.step * 100f) / step.total.toFloat()).toInt().coerceIn(0, 100)
+                } else {
+                    0
+                }
+                stringResource(R.string.Exchanging_data, percent.toString())
+            }
+            Processing.Updating -> stringResource(R.string.Generating_keys)
+            Processing.Registering -> stringResource(R.string.Registering)
+            is RetryConnect -> buildString {
+                if (step.reason.isNotBlank()) {
+                    append(step.reason)
+                    append('\n')
+                }
+                append(stringResource(R.string.Connect_to_TIP_network_failed))
+            }
+            is RetryProcess -> step.reason
+            is RetryRegister -> step.reason
+            is LegacyPIN -> step.message
+            else -> stringResource(R.string.Set_up_pin_error_message)
+        }
+    val statusColor =
+        when (tipStep) {
+            is RetryConnect, is RetryProcess, is RetryRegister, is LegacyPIN -> MixinAppTheme.colors.red
+            else -> MixinAppTheme.colors.textAssist
+        }
+
     PageScaffold(
         title = "",
         verticalScrollable = false,
@@ -104,8 +144,8 @@ fun SetPinLoadingPage(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = stringResource(R.string.Trying_connect_tip_node),
-                        color = MixinAppTheme.colors.textAssist,
+                        text = statusMessage,
+                        color = statusColor,
                         textAlign = TextAlign.Center
                     )
                 }
@@ -137,8 +177,8 @@ fun SetPinLoadingPage(
                     }
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = stringResource(R.string.Set_up_pin_error_message),
-                        color = MixinAppTheme.colors.red,
+                        text = statusMessage,
+                        color = statusColor,
                         fontSize = 14.sp,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(horizontal = 16.dp)

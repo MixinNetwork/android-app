@@ -534,8 +534,6 @@ class ConversationRepository
 
         suspend fun findTranscriptIdByConversationId(conversationId: String) = messageDao.findTranscriptIdByConversationId(conversationId)
 
-        fun create(request: ConversationRequest) = conversationService.create(request)
-
         suspend fun createSuspend(request: ConversationRequest) = conversationService.createSuspend(request)
 
         fun participants(
