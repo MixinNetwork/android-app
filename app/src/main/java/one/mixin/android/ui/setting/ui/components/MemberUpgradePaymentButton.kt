@@ -64,7 +64,7 @@ fun MemberUpgradePaymentButton(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 30.dp)
+                .padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 12.dp)
         ) {
             var buttonOffset by remember { mutableFloatStateOf(0f) }
             val interactionSource = remember { MutableInteractionSource() }
@@ -95,7 +95,6 @@ fun MemberUpgradePaymentButton(
             Button(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
                     .height(48.dp)
                     .offset(x = buttonOffset.dp),
                 shape = RoundedCornerShape(24.dp),
@@ -132,7 +131,7 @@ fun MemberUpgradePaymentButton(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 30.dp)
+                .padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 12.dp)
         ) {
             val isPlanAvailable = isPlanAvailableInGooglePlay(
                 selectedPlan,
@@ -168,7 +167,6 @@ fun MemberUpgradePaymentButton(
                     !isGooglePlayUnavailable),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
                     .height(48.dp),
                 shape = RoundedCornerShape(24.dp),
                 elevation = ButtonDefaults.elevation(

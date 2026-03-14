@@ -1184,7 +1184,12 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         } else {
             baseValue.toPlainString()
         }
-        v = BigDecimal(v).multiply(percentageOfBalance).max(BigDecimal.ZERO).setScale(8, RoundingMode.DOWN).toPlainString()
+        v = BigDecimal(v)
+            .multiply(percentageOfBalance)
+            .max(BigDecimal.ZERO)
+            .setScale(8, RoundingMode.DOWN)
+            .stripTrailingZeros()
+            .toPlainString()
         updateUI()
     }
 
@@ -1516,4 +1521,3 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         }
     }
 }
-
