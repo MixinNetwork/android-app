@@ -255,7 +255,7 @@ fun OpenPositionPage(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = stringResource(R.string.Margin),
+                            text = stringResource(R.string.Amount),
                             fontSize = 14.sp,
                             color = MixinAppTheme.colors.textPrimary
                         )
