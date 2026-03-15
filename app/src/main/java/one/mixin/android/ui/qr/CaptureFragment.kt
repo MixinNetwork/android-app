@@ -228,7 +228,12 @@ class CaptureFragment() : BaseCameraxFragment() {
             }
 
             override fun onError(exception: ImageCaptureException) {
-                toast("Photo capture failed: ${exception.message}")
+                toast(
+                    getString(
+                        R.string.photo_capture_failed,
+                        exception.message ?: getString(R.string.Unknown),
+                    ),
+                )
                 reportException("$CRASHLYTICS_CAMERAX-Photo capture failed,", exception)
             }
         }
@@ -360,7 +365,12 @@ class CaptureFragment() : BaseCameraxFragment() {
             if (event !is VideoRecordEvent.Finalize) return@Consumer
 
             if (event.hasError()) {
-                toast("Video capture failed: ${event.cause?.message}")
+                toast(
+                    getString(
+                        R.string.video_capture_failed,
+                        event.cause?.message ?: getString(R.string.Unknown),
+                    ),
+                )
                 reportException(
                     IllegalStateException(
                         "$CRASHLYTICS_CAMERAX-Video capture failed, " +

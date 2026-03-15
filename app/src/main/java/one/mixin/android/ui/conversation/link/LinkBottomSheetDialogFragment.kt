@@ -575,7 +575,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                         val user = result.second as User
                         val account = Session.getAccount()
                         if (account != null && account.userId == (result.second as User).userId) {
-                            toast("It's your QR Code, please try another.")
+                            toast(R.string.qr_code_self_hint)
                         } else {
                             showUserBottom(parentFragmentManager, user)
                         }
