@@ -167,7 +167,7 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
                     binding.stickerVa.displayedChild = POS_EMPTY
                     Timber.d("Search gifs failed, t: ${t.printStackTrace()}")
                     if (t is HttpException && t.code() == 429) {
-                        toast("Giphy API rate limit exceeded")
+                        toast(R.string.giphy_api_rate_limit_exceeded)
                     }
                 },
             )

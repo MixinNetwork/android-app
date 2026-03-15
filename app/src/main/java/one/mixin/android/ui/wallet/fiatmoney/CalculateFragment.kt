@@ -388,7 +388,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                                 value
                             }
                         if (amount == null) {
-                            toast("number error")
+                            toast(R.string.error_invalid_number)
                         } else {
                             lifecycleScope.launch inner@{
                                 if (viewDestroyed()) throw IllegalStateException("View has been destroyed")

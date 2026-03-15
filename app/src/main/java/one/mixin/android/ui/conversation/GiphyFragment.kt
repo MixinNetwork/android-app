@@ -129,7 +129,7 @@ class GiphyFragment : BaseFragment(R.layout.fragment_sticker) {
                     { t ->
                         Timber.d("Trending gifs failed, t: ${t.printStackTrace()}")
                         if (t is HttpException && t.code() == 429) {
-                            toast("Giphy API rate limit exceeded")
+                            toast(R.string.giphy_api_rate_limit_exceeded)
                         }
                         stickerProgress.visibility = View.GONE
                     },
