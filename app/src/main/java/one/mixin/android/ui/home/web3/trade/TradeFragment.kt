@@ -147,6 +147,8 @@ class TradeFragment : BaseFragment() {
     private var toToken: SwapToken? by mutableStateOf(null)
     private var limitFromToken: SwapToken? by mutableStateOf(null)
     private var limitToToken: SwapToken? by mutableStateOf(null)
+    private var initialSwapToSymbol: String? by mutableStateOf(null)
+    private var initialLimitToSymbol: String? by mutableStateOf(null)
 
     private var initialAmount: String? = null
     private var lastOrderTime: Long by mutableLongStateOf(0)
@@ -186,6 +188,7 @@ class TradeFragment : BaseFragment() {
     ): View {
         initAmount()
         lifecycleScope.launch {
+            preloadTradeTitleSymbols()
             val chainIds = walletId?.let {
                 swapViewModel.getAddresses(it).map {
                     it.chainId
@@ -281,6 +284,8 @@ class TradeFragment : BaseFragment() {
                                 swapTo = toToken,
                                 limitFrom = limitFromToken,
                                 limitTo = limitToToken,
+                                initialSwapToSymbol = initialSwapToSymbol,
+                                initialLimitToSymbol = initialLimitToSymbol,
                                 inMixin = inMixin(),
                                 orderBadge = orderBadge,
                                 isLimitOrderTabBadgeDismissed = isLimitOrderTabBadgeDismissed,
@@ -777,6 +782,45 @@ class TradeFragment : BaseFragment() {
             toToken = tempToToken
         }
     }
+
+    private suspend fun preloadTradeTitleSymbols() {
+        initialSwapToSymbol = resolveInitialToTokenSymbol(isLimit = false)
+        initialLimitToSymbol = resolveInitialToTokenSymbol(isLimit = true)
+    }
+
+    private suspend fun resolveInitialToTokenSymbol(isLimit: Boolean): String? {
+        val output = requireArguments().getString(ARGS_OUTPUT)
+        if (!output.isNullOrBlank()) {
+            return findTokenSymbolByAssetId(output)
+        }
+
+        val lastSelectedPairJson = defaultSharedPreferences.getString(getPreferenceKey(isLimit), null)
+        val lastSelectedPair: List<SwapToken>? = lastSelectedPairJson?.let {
+            val type = object : TypeToken<List<SwapToken>>() {}.type
+            GsonHelper.customGson.fromJson(it, type)
+        }
+        val lastToSymbol = lastSelectedPair?.getOrNull(1)?.symbol?.trim()
+        if (!lastToSymbol.isNullOrEmpty()) {
+            return lastToSymbol
+        }
+
+        val input = requireArguments().getString(ARGS_INPUT)
+        if (input.isNullOrBlank()) {
+            return null
+        }
+        val fallbackOutputAssetId = if (input in Constants.usdIds) XIN_ASSET_ID else USDT_ASSET_ETH_ID
+        return findTokenSymbolByAssetId(fallbackOutputAssetId)
+    }
+
+    private suspend fun findTokenSymbolByAssetId(assetId: String): String? {
+        return if (inMixin()) {
+            swapViewModel.findToken(assetId)?.symbol?.trim()
+        } else {
+            val currentWalletId = walletId ?: return null
+            swapViewModel.web3TokenItemById(currentWalletId, assetId)?.symbol?.trim()
+        }?.takeIf { it.isNotEmpty() }
+    }
+
     private suspend fun refreshStocks(chainIds: List<String>?) {
         val chainIdSet: Set<String>? = chainIds?.toSet()?.takeIf { it.isNotEmpty() }
         requestRouteAPI(
@@ -1005,5 +1049,7 @@ class TradeFragment : BaseFragment() {
         stocks = emptyList()
         tokenItems = null
         web3tokens = null
+        initialSwapToSymbol = null
+        initialLimitToSymbol = null
     }
 }
