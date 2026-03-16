@@ -565,7 +565,7 @@ fun Fragment.openImage(output: Uri) {
     galleryIntent.type = "image/*"
     galleryIntent.action = Intent.ACTION_PICK
 
-    val chooserIntent = Intent.createChooser(galleryIntent, "Select Picture")
+    val chooserIntent = Intent.createChooser(galleryIntent, getString(R.string.select_picture))
     chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, cameraIntents.toTypedArray())
     try {
         this.startActivityForResult(chooserIntent, REQUEST_IMAGE)

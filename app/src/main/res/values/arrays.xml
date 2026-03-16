@@ -77,7 +77,7 @@
         <item>Русский</item>
         <item>Bahasa Indonesia</item>
         <item>Bahasa Melayu</item>
-        <item>Española</item>
+        <item>Español</item>
     </string-array>
 
     <string-array name="setting_night_array">
@@ -88,7 +88,7 @@
     <string-array name="setting_night_array_oreo">
         <item>Light</item>
         <item>Dark</item>
-        <item>Follow system</item>
+        <item>Follow System</item>
     </string-array>
 
     <plurals name="time_interval_unit_second">

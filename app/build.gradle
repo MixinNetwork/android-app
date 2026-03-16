@@ -16,6 +16,7 @@ def versionMajor = 3
 def versionMinor = 10
 def versionPatch = 2
 def versionBuild = 1
+def includeDebugX86_64 = project.findProperty("includeDebugX86_64")?.toString()?.toBoolean() ?: false // Enable debug package for x86_64
 
 apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
@@ -167,7 +168,11 @@ android {
             signingConfig signingConfigs.debug
             jniDebuggable false
             ndk {
-                abiFilters "arm64-v8a", "x86_64"
+                if (includeDebugX86_64) {
+                    abiFilters "arm64-v8a", "x86_64"
+                } else {
+                    abiFilters "arm64-v8a"
+                }
             }
         }
 
@@ -555,6 +560,5 @@ task syncStrings {
         }
     }
 }
-
 
 
