@@ -369,10 +369,30 @@ class TradeFragment : BaseFragment() {
                                     this@apply.hideKeyboard()
                                     navTo(OrderDetailFragment.newInstance(orderId), OrderDetailFragment.TAG)
                                 },
-                                onShowTradingGuide = {
+                                onShowTradingGuide = { tabIndex ->
                                     this@apply.hideKeyboard()
-                                    PerpetualGuideBottomSheetDialogFragment.newInstance()
-                                        .show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
+                                    when {
+                                        walletId == null && tabIndex >= SpotTradeGuideBottomSheetDialogFragment.TAB_LIMIT -> {
+                                            PerpetualGuideBottomSheetDialogFragment.newInstance()
+                                                .show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
+                                        }
+                                        tabIndex == 1 -> {
+                                            SpotTradeGuideBottomSheetDialogFragment.newInstance(
+                                                SpotTradeGuideBottomSheetDialogFragment.TAB_LIMIT
+                                            ).show(parentFragmentManager, SpotTradeGuideBottomSheetDialogFragment.TAG)
+                                        }
+                                        tabIndex == 0 -> {
+                                            SpotTradeGuideBottomSheetDialogFragment.newInstance(
+                                                SpotTradeGuideBottomSheetDialogFragment.TAB_SWAP
+                                            ).show(parentFragmentManager, SpotTradeGuideBottomSheetDialogFragment.TAG)
+                                        }
+                                        else -> {
+                                            SpotTradeGuideBottomSheetDialogFragment.newInstance(
+                                                SpotTradeGuideBottomSheetDialogFragment.TAB_OVERVIEW
+                                            )
+                                                .show(parentFragmentManager, SpotTradeGuideBottomSheetDialogFragment.TAG)
+                                        }
+                                    }
                                 },
                                 pop = {
                                     navigateUp(navController)

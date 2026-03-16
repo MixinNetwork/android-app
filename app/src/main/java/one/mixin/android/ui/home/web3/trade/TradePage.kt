@@ -98,7 +98,7 @@ fun TradePage(
     onSwitchToLimitOrder: (String, SwapToken, SwapToken) -> Unit,
     pop: () -> Unit,
     onLimitOrderClick: (String) -> Unit,
-    onShowTradingGuide: () -> Unit,
+    onShowTradingGuide: (Int) -> Unit,
     onShowMarketList: (Boolean) -> Unit,
     onShowAllMarkets: () -> Unit,
     onShowAllOpenPositions: () -> Unit,
@@ -195,7 +195,7 @@ fun TradePage(
         perpetualTabIndex = tabs.size
         tabs += TabItem(title = stringResource(R.string.Perpetual)) {
             PerpetualContent(
-                onShowTradingGuide = onShowTradingGuide,
+                onShowTradingGuide = { onShowTradingGuide(perpetualTabIndex ?: 0) },
                 onShowMarketList = onShowMarketList,
                 onShowAllMarkets = onShowAllMarkets,
                 onShowAllOpenPositions = onShowAllOpenPositions,
@@ -232,7 +232,6 @@ fun TradePage(
         sheetBackgroundColor = MixinAppTheme.colors.background,
         sheetContent = {
             HelpBottomSheetContent(
-                hideGuide = perpetualTabIndex == null || pagerState.currentPage != perpetualTabIndex,
                 onContactSupport = {
                     coroutineScope.launch {
                         bottomSheetState.hide()
@@ -242,7 +241,7 @@ fun TradePage(
                 onTradingGuide = {
                     coroutineScope.launch {
                         bottomSheetState.hide()
-                        onShowTradingGuide()
+                        onShowTradingGuide(pagerState.currentPage)
                     }
                 },
                 onDismiss = {
@@ -396,7 +395,7 @@ fun TradePage(
                         }
                         if (isPerpetualTab && !isPerpetualTabBadgeDismissed) {
                             onDismissPerpetualTabBadge()
-                            onShowTradingGuide()
+                            onShowTradingGuide(index)
                         }
                         onTabChanged(index)
                     },
