@@ -13,9 +13,12 @@ import coil3.load
 import coil3.request.ErrorResult
 import coil3.request.ImageRequest
 import coil3.request.SuccessResult
+import coil3.request.CachePolicy
 import coil3.request.allowHardware
 import coil3.request.bitmapConfig
+import coil3.request.diskCachePolicy
 import coil3.request.error
+import coil3.request.memoryCachePolicy
 import coil3.request.placeholder
 import coil3.request.transformations
 import coil3.transform.Transformation
@@ -123,7 +126,10 @@ fun ImageView.loadSvgWithTint(url: String, isRising: Boolean, isColorReversed: B
         else -> R.color.wallet_green
     }
     setColorFilter(ContextCompat.getColor(context, colorRes))
-    load(url)
+    load(url) {
+        memoryCachePolicy(CachePolicy.DISABLED)
+        diskCachePolicy(CachePolicy.DISABLED)
+    }
 }
 
 fun ImageView.clear() {
