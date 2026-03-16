@@ -15,10 +15,12 @@ import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.database.dbDir
 import one.mixin.android.util.debug.getContent
 import one.mixin.android.vo.FloodMessage
 import one.mixin.android.vo.Job
 import one.mixin.android.vo.MessageMedia
+import java.io.File
 
 @Database(
     entities = [
@@ -39,19 +41,28 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
         private var INSTANCE: PendingDatabaseImp? = null
 
         private val lock = Any()
+        private var currentIdentityNumber: String? = null
 
         fun getDatabase(
             context: Context,
             floodMessageDao: FloodMessageDao,
             jobDao: JobDao,
+            identityNumber: String,
         ): PendingDatabaseImp {
+            val scopedIdentity = identityNumber.takeIf { it.isNotBlank() }
+                ?: throw IllegalArgumentException("identityNumber is required for PendingDatabase")
             synchronized(lock) {
+                if (INSTANCE != null && currentIdentityNumber != scopedIdentity) {
+                    INSTANCE?.close()
+                    INSTANCE = null
+                }
                 if (INSTANCE == null) {
+                    val dbPath = File(dbDir(context, scopedIdentity), PENDING_DB_NAME).absolutePath
                     val builder =
                         Room.databaseBuilder(
                             context,
                             PendingDatabaseImp::class.java,
-                            PENDING_DB_NAME,
+                            dbPath,
                         ).enableMultiInstanceInvalidation().addCallback(
                             object : Callback() {
                                 override fun onOpen(db: SupportSQLiteDatabase) {
@@ -99,6 +110,7 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
                             },
                         )
                     INSTANCE = builder.build()
+                    currentIdentityNumber = scopedIdentity
                 }
             }
             return INSTANCE as PendingDatabaseImp
@@ -172,5 +184,11 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
 
     override fun findMessageMediaById(messageId: String): MessageMedia? {
         return pendingMessageDao().findMessageMediaById(messageId)
+    }
+
+    override fun close() {
+        super.close()
+        INSTANCE = null
+        currentIdentityNumber = null
     }
 }

@@ -3,15 +3,18 @@ package one.mixin.android.db.property
 import one.mixin.android.MixinApplication
 import one.mixin.android.db.WalletDatabase
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.session.Session
 import one.mixin.android.vo.Property
 
 object Web3PropertyHelper {
+    private fun identityNumber() =
+        requireNotNull(Session.getAccount()) { "Account is required for database access." }.identityNumber
 
     suspend fun updateKeyValue(
         key: String,
         value: String,
     ) {
-        val propertyDao = WalletDatabase.getDatabase(MixinApplication.appContext).web3PropertyDao()
+        val propertyDao = WalletDatabase.getDatabase(MixinApplication.appContext, identityNumber()).web3PropertyDao()
         propertyDao.insertSuspend(Property(key, value, nowInUtc()))
     }
 
@@ -37,7 +40,7 @@ object Web3PropertyHelper {
     }
 
     suspend fun deleteKeyValue(key: String) {
-        val propertyDao = WalletDatabase.getDatabase(MixinApplication.appContext).web3PropertyDao()
+        val propertyDao = WalletDatabase.getDatabase(MixinApplication.appContext, identityNumber()).web3PropertyDao()
         propertyDao.deletePropertyByKey(key)
     }
 
@@ -45,7 +48,7 @@ object Web3PropertyHelper {
         key: String,
         default: T,
     ): T {
-        val propertyDao = WalletDatabase.getDatabase(MixinApplication.appContext).web3PropertyDao()
+        val propertyDao = WalletDatabase.getDatabase(MixinApplication.appContext, identityNumber()).web3PropertyDao()
         val value = propertyDao.findValueByKey(key) ?: return default
         return try {
             when (default) {

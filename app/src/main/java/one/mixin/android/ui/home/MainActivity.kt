@@ -59,7 +59,6 @@ import one.mixin.android.Constants.Account.PREF_LOGIN_VERIFY
 import one.mixin.android.Constants.Account.PREF_SYNC_CIRCLE
 import one.mixin.android.Constants.DEVICE_ID
 import one.mixin.android.Constants.DataBase.CURRENT_VERSION
-import one.mixin.android.Constants.DataBase.DB_NAME
 import one.mixin.android.Constants.DataBase.MINI_VERSION
 import one.mixin.android.Constants.INTERVAL_24_HOURS
 import one.mixin.android.Constants.INTERVAL_7_DAYS
@@ -73,6 +72,7 @@ import one.mixin.android.crypto.PrivacyPreference.getIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
 import one.mixin.android.databinding.ActivityMainBinding
 import one.mixin.android.db.ConversationDao
+import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.WalletDatabase
@@ -177,6 +177,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.RomUtil
 import one.mixin.android.util.RootUtil
 import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.database.databaseFile
 import one.mixin.android.util.reportException
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.Conversation
@@ -192,6 +193,7 @@ import one.mixin.android.worker.SessionWorker
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import javax.inject.Provider
 
 @AndroidEntryPoint
 class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callback {
@@ -207,28 +209,46 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
     lateinit var userService: UserService
 
     @Inject
-    lateinit var conversationDao: ConversationDao
+    lateinit var conversationDaoProvider: Provider<ConversationDao>
 
     @Inject
-    lateinit var userDao: UserDao
+    lateinit var userDaoProvider: Provider<UserDao>
 
     @Inject
-    lateinit var userRepo: UserRepository
+    lateinit var userRepoProvider: Provider<UserRepository>
 
     @Inject
-    lateinit var accountRepo: AccountRepository
+    lateinit var accountRepoProvider: Provider<AccountRepository>
 
     @Inject
-    lateinit var web3Repository: Web3Repository
+    lateinit var web3RepositoryProvider: Provider<Web3Repository>
 
     private var lastBottomNavItemId: Int = R.id.nav_chat
     private var isRestoringBottomNavSelection: Boolean = false
 
     @Inject
-    lateinit var participantDao: ParticipantDao
+    lateinit var participantDaoProvider: Provider<ParticipantDao>
 
     @Inject
     lateinit var tip: Tip
+
+    private val conversationDao: ConversationDao
+        get() = conversationDaoProvider.get()
+
+    private val userDao: UserDao
+        get() = userDaoProvider.get()
+
+    private val userRepo: UserRepository
+        get() = userRepoProvider.get()
+
+    private val accountRepo: AccountRepository
+        get() = accountRepoProvider.get()
+
+    private val web3Repository: Web3Repository
+        get() = web3RepositoryProvider.get()
+
+    private val participantDao: ParticipantDao
+        get() = participantDaoProvider.get()
 
     private val appUpdateManager by lazy { AppUpdateManagerFactory.create(this) }
     private val updatedListener =
@@ -296,6 +316,10 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             return
         }
 
+        Session.getAccount()?.let {
+            MixinDatabase.migrateRelatedDatabaseFilesIfNeeded(this, it)
+        }
+
         MixinApplication.get().isOnline.set(true)
         if (checkNeedGo2MigrationPage()) {
             InitializeActivity.showDBUpgrade(this)
@@ -316,8 +340,6 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             finish()
             return
         }
-
-        WalletDatabase.moveTempDatabaseFileIfNeeded(this, Session.getAccount()?.identityNumber)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -619,9 +641,18 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
 
     @SuppressLint("RestrictedApi")
     private fun checkNeedGo2MigrationPage(): Boolean {
+        val dbFile =
+            Session.getAccount()?.identityNumber?.let { identityNumber ->
+                val scopedDbFile = databaseFile(this, identityNumber)
+                if (scopedDbFile.exists()) {
+                    scopedDbFile
+                } else {
+                    null
+                }
+            } ?: return false
         val currentVersion =
             try {
-                readVersion(getDatabasePath(DB_NAME))
+                readVersion(dbFile)
             } catch (_: Exception) {
                 0
             }

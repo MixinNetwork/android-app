@@ -1,7 +1,6 @@
 package one.mixin.android.repository
 
 import android.os.CancellationSignal
-import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.paging.DataSource
 import androidx.paging.ExperimentalPagingApi
@@ -153,12 +152,10 @@ import java.math.RoundingMode
 import java.nio.ByteBuffer
 import java.util.UUID
 import javax.inject.Inject
-import javax.inject.Singleton
 import kotlin.String
 import org.bitcoinj.core.Transaction
 import org.sol4kt.VersionedTransactionCompat
 
-@Singleton
 class TokenRepository
     @Inject
     constructor(
@@ -194,7 +191,7 @@ class TokenRepository
         private val walletOutputDao: WalletOutputDao,
         private val web3WalletDao: Web3WalletDao,
         private val jobManager: MixinJobManager,
-        private val safeBox: DataStore<SafeBox>,
+        private val safeBoxStoreManager: SafeBoxStoreManager,
         private val web3AddressDao: Web3AddressDao,
     ) {
         fun assets() = tokenService.assets()
@@ -837,10 +834,10 @@ class TokenRepository
         suspend fun getOrder(orderId: String): MixinResponse<RouteOrderResponse> =
             routeService.getOrder(orderId)
 
-        fun cards(): Flow<SafeBox?> = safeBox.data
+        fun cards(): Flow<SafeBox?> = safeBoxStoreManager.current().data
 
         suspend fun addCard(card: Card) {
-            safeBox.updateData { box ->
+            safeBoxStoreManager.current().updateData { box ->
                 val list = box.cards.toMutableList()
                 list.add(card)
                 SafeBox(list)
@@ -848,7 +845,7 @@ class TokenRepository
         }
 
         suspend fun removeCard(index: Int) {
-            safeBox.updateData { box ->
+            safeBoxStoreManager.current().updateData { box ->
                 val list = box.cards.toMutableList()
                 list.removeAt(index)
                 SafeBox(list)
@@ -856,7 +853,7 @@ class TokenRepository
         }
 
         suspend fun initSafeBox(cards: List<Card>) {
-            safeBox.updateData { _ ->
+            safeBoxStoreManager.current().updateData { _ ->
                 SafeBox(cards)
             }
         }

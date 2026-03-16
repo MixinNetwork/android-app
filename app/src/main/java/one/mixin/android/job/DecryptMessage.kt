@@ -162,9 +162,11 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
     private var refreshKeyMap = arrayMapOf<String, Long?>()
     private val gson = GsonHelper.customGson
 
-    private val accountId = Session.getAccountId()
+    private val accountId: String?
+        get() = Session.getAccountId()
 
     fun onRun(data: BlazeMessageData) {
+        ensureSessionInjection()
         if (isExistMessage(data.messageId)) {
             updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
             return

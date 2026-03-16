@@ -27,6 +27,7 @@ import one.mixin.android.extension.notificationManager
 import one.mixin.android.extension.supportsOreo
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.repository.ConversationRepository
+import one.mixin.android.session.CurrentUserScopeManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.call.CallNotificationBuilder
 import one.mixin.android.ui.call.CallNotificationBuilder.Companion.CHANNEL_CALL
@@ -66,7 +67,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     lateinit var jobManager: MixinJobManager
 
     @Inject
-    lateinit var database: MixinDatabase
+    lateinit var currentUserScopeManager: CurrentUserScopeManager
 
     @Inject
     lateinit var accountService: AccountService
@@ -82,6 +83,9 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
 
     @Inject
     lateinit var signalProtocol: SignalProtocol
+
+    protected val database: MixinDatabase
+        get() = currentUserScopeManager.getMixinDatabase()
 
     protected val gson = Gson()
 

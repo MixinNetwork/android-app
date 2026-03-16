@@ -91,6 +91,7 @@ import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.session.MissingAccountScopeException
 import one.mixin.android.tip.Tip
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.LinkState
@@ -429,6 +430,9 @@ abstract class BaseJob(params: Params) : Job(params) {
     lateinit var jobSenderKey: JobSenderKey
 
     open fun shouldRetry(throwable: Throwable): Boolean {
+        if (throwable is MissingAccountScopeException) {
+            return false
+        }
         if (throwable is SocketTimeoutException) {
             return true
         }

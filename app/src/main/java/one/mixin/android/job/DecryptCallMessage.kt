@@ -66,6 +66,7 @@ class DecryptCallMessage(
     private val listPendingCandidateMap = ArrayMap<String, ArrayList<IceCandidate>>()
 
     fun onRun(data: BlazeMessageData) {
+        ensureSessionInjection()
         try {
             syncConversation(data)
             when {

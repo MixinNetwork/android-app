@@ -9,9 +9,7 @@ import one.mixin.android.api.response.MembershipOrder
 import one.mixin.android.api.service.MemberService
 import one.mixin.android.db.MembershipOrderDao
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 class MemberRepository @Inject constructor(
     private val memberService: MemberService,
     private val orderDao: MembershipOrderDao
