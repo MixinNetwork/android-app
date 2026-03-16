@@ -585,8 +585,6 @@ fun OpenPositionPage(
                         val price = m.markPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
                         if (price == BigDecimal.ZERO) return@Button
 
-                        val orderValue = amount * BigDecimal(leverage.toDouble())
-                        errorInfo = null
 
                         scope.launch {
                             val hasOpeningPosition = viewModel.getOpenPositionsFromDb(walletId)
@@ -600,12 +598,11 @@ fun OpenPositionPage(
                                 assetId = token.assetId,
                                 marketId = m.marketId,
                                 side = if (isLong) "long" else "short",
-                                amount = orderValue.stripTrailingZeros().toPlainString(),
+                                amount = amount.stripTrailingZeros().toPlainString(),
                                 leverage = leverage.toInt(),
                                 walletId = walletId,
                                 entryPrice = m.markPrice,
                                 onSuccess = { response ->
-                                    errorInfo = null
                                     PerpsConfirmBottomSheetDialogFragment.newInstance(
                                         marketSymbol = m.displaySymbol,
                                         marketIcon = m.iconUrl,

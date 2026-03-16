@@ -55,10 +55,6 @@ data class PerpsMarket(
     @ColumnInfo(name = "volume")
     val volume: String,
 
-    @SerializedName("amount")
-    @ColumnInfo(name = "amount")
-    val amount: String,
-
     @SerializedName("high")
     @ColumnInfo(name = "high")
     val high: String,
