@@ -1,0 +1,809 @@
+package one.mixin.android.ui.home.web3.trade
+
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Icon
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import one.mixin.android.Constants
+import one.mixin.android.R
+import one.mixin.android.compose.CoilImage
+import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.numberFormat8
+import one.mixin.android.extension.priceFormat
+import one.mixin.android.ui.home.web3.components.OutlinedTab
+import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.widget.components.DotText
+import java.math.BigDecimal
+import java.math.RoundingMode
+
+private enum class LimitStrategy(
+    val titleRes: Int,
+    val multiplier: BigDecimal,
+) {
+    BuyLow(
+        titleRes = R.string.Spot_Trade_Guide_Limit_Strategy_Buy_Low,
+        multiplier = BigDecimal("0.941473"),
+    ),
+    SellHigh(
+        titleRes = R.string.Spot_Trade_Guide_Limit_Strategy_Sell_High,
+        multiplier = BigDecimal("1.046081"),
+    ),
+}
+
+@Composable
+fun SpotTradeGuidePage(
+    initialTab: Int = SpotTradeGuideBottomSheetDialogFragment.TAB_OVERVIEW,
+    pop: () -> Unit,
+) {
+    val coroutineScope = rememberCoroutineScope()
+    val tabs = listOf(
+        stringResource(R.string.Perpetual_Guide_Overview),
+        stringResource(R.string.Trade_Simple),
+        stringResource(R.string.Trade_Advanced),
+    )
+    val safeInitialTab = initialTab.coerceIn(0, tabs.lastIndex)
+    var selectedTab by remember(safeInitialTab) { mutableIntStateOf(safeInitialTab) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
+            .background(MixinAppTheme.colors.background)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 20.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.Trading_Guide),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.W500,
+                color = MixinAppTheme.colors.textPrimary,
+                modifier = Modifier.align(Alignment.CenterStart),
+            )
+            Icon(
+                painter = painterResource(id = R.drawable.ic_circle_close),
+                contentDescription = stringResource(id = R.string.close),
+                tint = Color.Unspecified,
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .clickable(onClick = pop),
+            )
+        }
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp)
+        ) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+            ) {
+                tabs.forEachIndexed { index, tab ->
+                    OutlinedTab(
+                        text = tab,
+                        selected = selectedTab == index,
+                        showBadge = false,
+                        onClick = { coroutineScope.launch { selectedTab = index } }
+                    )
+                    if (index < tabs.lastIndex) {
+                        Spacer(modifier = Modifier.width(10.dp))
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                when (selectedTab) {
+                    SpotTradeGuideBottomSheetDialogFragment.TAB_OVERVIEW -> OverviewContent()
+                    SpotTradeGuideBottomSheetDialogFragment.TAB_SWAP -> SimpleSwapContent()
+                    SpotTradeGuideBottomSheetDialogFragment.TAB_LIMIT -> LimitTradeContent()
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+            SpotTradeGuideBottomNavigation(
+                selectedTab = selectedTab,
+                tabs = tabs,
+                onSelect = { targetTab ->
+                    coroutineScope.launch { selectedTab = targetTab }
+                },
+                onClose = pop,
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+    }
+}
+
+@Composable
+private fun OverviewContent() {
+    TradeGuideInfoCard(
+        title = stringResource(R.string.Perpetual_Guide_Overview_Title),
+        description = stringResource(R.string.Spot_Trade_Guide_Overview_Desc),
+        sections = listOf(
+            stringResource(R.string.Perpetual_Features) to listOf(
+                stringResource(R.string.Spot_Trade_Guide_Feature_1),
+                stringResource(R.string.Spot_Trade_Guide_Feature_2),
+            ),
+            stringResource(R.string.Spot_Trade_Guide_Additional_Notes) to listOf(
+                stringResource(R.string.Spot_Trade_Guide_Note_1),
+                stringResource(R.string.Spot_Trade_Guide_Note_2),
+            ),
+        )
+    )
+}
+
+@Composable
+private fun SimpleSwapContent() {
+    SpotTradeExampleCard(limitStrategy = null)
+    Spacer(modifier = Modifier.height(16.dp))
+    TradeGuideInfoCard(
+        title = stringResource(R.string.Perpetual_Detail_Desc),
+        description = stringResource(R.string.Spot_Trade_Guide_Swap_Desc),
+        sections = listOf(
+            stringResource(R.string.Spot_Trade_Guide_Suitable_Scenarios) to listOf(
+                stringResource(R.string.Spot_Trade_Guide_Swap_Scenario_1),
+                stringResource(R.string.Spot_Trade_Guide_Swap_Scenario_2),
+                stringResource(R.string.Spot_Trade_Guide_Swap_Scenario_3),
+            ),
+            stringResource(R.string.Spot_Trade_Guide_Quote_Explanation) to listOf(
+                stringResource(R.string.Spot_Trade_Guide_Swap_Quote_1),
+                stringResource(R.string.Spot_Trade_Guide_Swap_Quote_2),
+            ),
+            stringResource(R.string.Perpetual_Risk_Warning) to listOf(
+                stringResource(R.string.Spot_Trade_Guide_Swap_Risk),
+            ),
+        )
+    )
+}
+
+@Composable
+private fun LimitTradeContent() {
+    SpotTradeExampleCard(limitStrategy = LimitStrategy.BuyLow)
+    Spacer(modifier = Modifier.height(16.dp))
+    TradeGuideInfoCard(
+        title = stringResource(R.string.Perpetual_Detail_Desc),
+        description = stringResource(R.string.Spot_Trade_Guide_Limit_Desc),
+        sections = listOf(
+            stringResource(R.string.Spot_Trade_Guide_Suitable_Scenarios) to listOf(
+                stringResource(R.string.Spot_Trade_Guide_Limit_Scenario_1),
+                stringResource(R.string.Spot_Trade_Guide_Limit_Scenario_2),
+                stringResource(R.string.Spot_Trade_Guide_Limit_Scenario_3),
+                stringResource(R.string.Spot_Trade_Guide_Limit_Scenario_4),
+            ),
+            stringResource(R.string.Perpetual_Risk_Warning) to listOf(
+                stringResource(R.string.Spot_Trade_Guide_Limit_Risk),
+            ),
+        )
+    )
+}
+
+@Composable
+private fun SpotTradeExampleCard(
+    limitStrategy: LimitStrategy?,
+) {
+    val viewModel = hiltViewModel<SwapViewModel>()
+    val usdtToken by viewModel.assetItemFlow(Constants.AssetId.USDT_ASSET_ETH_ID).collectAsStateWithLifecycle(initialValue = null)
+    val btcToken by viewModel.assetItemFlow(Constants.ChainId.BITCOIN_CHAIN_ID).collectAsStateWithLifecycle(initialValue = null)
+    var priceRefreshFlag by remember { mutableStateOf(false) }
+    val marketPrice = remember(usdtToken?.priceUsd, btcToken?.priceUsd, priceRefreshFlag) {
+        calculateMarketPrice(usdtToken, btcToken)
+    }
+    var isPairReversed by remember(limitStrategy) { mutableStateOf(false) }
+    var isPriceDisplayReversed by remember(limitStrategy) { mutableStateOf(false) }
+    var payAmount by remember(limitStrategy) { mutableStateOf(BigDecimal("1000")) }
+    var strategy by remember(limitStrategy) { mutableStateOf(limitStrategy ?: LimitStrategy.BuyLow) }
+
+    val fromToken = if (isPairReversed) btcToken else usdtToken
+    val toToken = if (isPairReversed) usdtToken else btcToken
+    val amountStep = remember(isPairReversed) {
+        if (isPairReversed) BigDecimal("0.001") else BigDecimal("100")
+    }
+    val effectivePrice = if (limitStrategy == null) {
+        marketPrice
+    } else {
+        marketPrice.multiply(strategy.multiplier)
+    }
+    val estimatedReceive = remember(payAmount, effectivePrice, isPairReversed) {
+        calculateReceiveAmount(
+            amount = payAmount,
+            price = effectivePrice,
+            reversed = isPairReversed,
+        )
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
+            .padding(16.dp)
+    ) {
+        Text(
+            text = stringResource(R.string.Perpetual_Example),
+            fontSize = 16.sp,
+            fontWeight = FontWeight.W500,
+            color = MixinAppTheme.colors.textPrimary,
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        if (limitStrategy != null) {
+            StrategyRow(
+                strategy = strategy,
+                onStrategySelected = { strategy = it },
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+        ExampleValueRow(
+            title = stringResource(R.string.Trade_Guide_Trading_Pair),
+            value = {
+                PairSwitcher(
+                    fromToken = fromToken,
+                    toToken = toToken,
+                    fromFallbackSymbol = if (isPairReversed) "BTC" else "USDT",
+                    toFallbackSymbol = if (isPairReversed) "USDT" else "BTC",
+                    onSwitch = {
+                        val currentFromPrice = if (isPairReversed) btcToken.safePrice() else usdtToken.safePrice()
+                        val newFromPrice = if (isPairReversed) usdtToken.safePrice() else btcToken.safePrice()
+                        payAmount = convertPayAmount(payAmount, currentFromPrice, newFromPrice)
+                        isPairReversed = !isPairReversed
+                    },
+                )
+            },
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        ExampleValueRow(
+            title = stringResource(R.string.Trade_Guide_Pay_Amount),
+            value = {
+                AmountStepper(
+                    amount = payAmount,
+                    symbol = fromToken?.symbol ?: if (isPairReversed) "BTC" else "USDT",
+                    step = amountStep,
+                    onDecrease = {
+                        payAmount = (payAmount - amountStep).max(amountStep)
+                    },
+                    onIncrease = {
+                        payAmount += amountStep
+                    },
+                )
+            },
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        ExampleValueRow(
+            title = stringResource(
+                if (limitStrategy == null) R.string.Trade_Guide_Exchange_Price else R.string.Trade_Guide_Order_Price
+            ),
+            value = {
+                PriceSubtitle(
+                    marketPrice = effectivePrice,
+                    isReversed = isPriceDisplayReversed,
+                    onSwitchDirection = { isPriceDisplayReversed = !isPriceDisplayReversed },
+                    onPriceExpired = { priceRefreshFlag = !priceRefreshFlag },
+                )
+            },
+        )
+        if (limitStrategy != null) {
+            Spacer(modifier = Modifier.height(12.dp))
+            ExampleValueRow(
+                title = stringResource(R.string.Trade_Guide_Market_Price),
+                value = {
+                    PriceSubtitle(
+                        marketPrice = marketPrice,
+                        isReversed = isPriceDisplayReversed,
+                        onSwitchDirection = { isPriceDisplayReversed = !isPriceDisplayReversed },
+                        onPriceExpired = { priceRefreshFlag = !priceRefreshFlag },
+                    )
+                },
+            )
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        ExampleValueRow(
+            title = stringResource(R.string.Estimated_Receive),
+            value = {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    CoilImage(
+                        model = toToken?.iconUrl,
+                        placeholder = R.drawable.ic_avatar_place_holder,
+                        modifier = Modifier
+                            .size(18.dp)
+                            .clip(CircleShape),
+                    )
+                    Text(
+                        text = "${estimatedReceive.numberFormat8()} ${toToken?.symbol ?: if (isPairReversed) "USDT" else "BTC"}",
+                        fontSize = 15.sp,
+                        lineHeight = 22.sp,
+                        color = MixinAppTheme.colors.textPrimary,
+                        fontWeight = FontWeight.W500,
+                        textAlign = TextAlign.End,
+                    )
+                }
+            },
+        )
+    }
+}
+
+@Composable
+private fun StrategyRow(
+    strategy: LimitStrategy,
+    onStrategySelected: (LimitStrategy) -> Unit,
+) {
+    ExampleValueRow(
+        title = stringResource(R.string.Trade_Guide_Trading_Strategy),
+        value = {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                LimitStrategy.entries.forEach { item ->
+                    val selected = item == strategy
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(
+                                if (selected) MixinAppTheme.colors.accent
+                                else MixinAppTheme.colors.backgroundWindow
+                            )
+                            .clickable { onStrategySelected(item) }
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = stringResource(item.titleRes),
+                            color = if (selected) Color.White else MixinAppTheme.colors.textPrimary,
+                            fontSize = 13.sp,
+                            lineHeight = 18.sp,
+                        )
+                    }
+                }
+            }
+        },
+    )
+}
+
+@Composable
+private fun ExampleValueRow(
+    title: String,
+    subtitle: (@Composable () -> Unit)? = null,
+    value: @Composable () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                fontSize = 13.sp,
+                lineHeight = 18.sp,
+                color = MixinAppTheme.colors.textAssist,
+            )
+            subtitle?.let {
+                Spacer(modifier = Modifier.height(4.dp))
+                it()
+            }
+        }
+        Box(contentAlignment = Alignment.CenterEnd) {
+            value()
+        }
+    }
+}
+
+@Composable
+private fun PairSwitcher(
+    fromToken: TokenItem?,
+    toToken: TokenItem?,
+    fromFallbackSymbol: String,
+    toFallbackSymbol: String,
+    onSwitch: () -> Unit,
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        modifier = Modifier.clickable(onClick = onSwitch),
+    ) {
+        GuideTokenBadge(token = fromToken, fallbackSymbol = fromFallbackSymbol)
+        Text(
+            text = "->",
+            fontSize = 14.sp,
+            color = MixinAppTheme.colors.textAssist,
+        )
+        GuideTokenBadge(token = toToken, fallbackSymbol = toFallbackSymbol)
+        Icon(
+            painter = painterResource(id = R.drawable.ic_price_switch),
+            contentDescription = null,
+            tint = Color.Unspecified,
+            modifier = Modifier.size(18.dp),
+        )
+    }
+}
+
+@Composable
+private fun GuideTokenBadge(
+    token: TokenItem?,
+    fallbackSymbol: String,
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        CoilImage(
+            model = token?.iconUrl,
+            placeholder = R.drawable.ic_avatar_place_holder,
+            modifier = Modifier
+                .size(20.dp)
+                .clip(CircleShape),
+        )
+        Text(
+            text = token?.symbol ?: fallbackSymbol,
+            fontSize = 14.sp,
+            lineHeight = 20.sp,
+            color = MixinAppTheme.colors.textPrimary,
+            fontWeight = FontWeight.W500,
+        )
+    }
+}
+
+@Composable
+private fun AmountStepper(
+    amount: BigDecimal,
+    symbol: String,
+    step: BigDecimal,
+    onDecrease: () -> Unit,
+    onIncrease: () -> Unit,
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        StepperButton(
+            text = "-",
+            enabled = amount > step,
+            onClick = onDecrease,
+        )
+        Text(
+            text = "${amount.numberFormat8()} $symbol",
+            fontSize = 15.sp,
+            lineHeight = 22.sp,
+            color = MixinAppTheme.colors.textPrimary,
+            fontWeight = FontWeight.W500,
+        )
+        StepperButton(
+            text = "+",
+            enabled = true,
+            onClick = onIncrease,
+        )
+    }
+}
+
+@Composable
+private fun StepperButton(
+    text: String,
+    enabled: Boolean,
+    onClick: () -> Unit,
+) {
+    Surface(
+        color = if (enabled) Color.Transparent else MixinAppTheme.colors.backgroundWindow,
+        shape = CircleShape,
+        border = BorderStroke(1.dp, MixinAppTheme.colors.borderColor),
+        modifier = Modifier
+            .size(24.dp)
+            .clickable(enabled = enabled, onClick = onClick),
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Text(
+                text = text,
+                fontSize = 14.sp,
+                color = if (enabled) MixinAppTheme.colors.textPrimary else MixinAppTheme.colors.textAssist,
+            )
+        }
+    }
+}
+
+@Composable
+private fun PriceSubtitle(
+    marketPrice: BigDecimal,
+    isReversed: Boolean,
+    onSwitchDirection: () -> Unit,
+    onPriceExpired: () -> Unit = {},
+) {
+    var quoteCountDown by remember(marketPrice) { mutableFloatStateOf(0f) }
+
+    LaunchedEffect(marketPrice) {
+        while (isActive) {
+            quoteCountDown = 0f
+            while (isActive && quoteCountDown < 1f) {
+                delay(100)
+                quoteCountDown += 0.01f
+            }
+            onPriceExpired()
+        }
+    }
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Text(
+            text = if (isReversed) {
+                val inverted = safeDivide(BigDecimal.ONE, marketPrice)
+                "1 USDT ≈ ${inverted.numberFormat8()} BTC"
+            } else {
+                "1 BTC ≈ ${marketPrice.priceFormat()} USDT"
+            },
+            fontSize = 14.sp,
+            color = MixinAppTheme.colors.textAssist,
+        )
+        CircularProgressIndicator(
+            progress = quoteCountDown,
+            modifier = Modifier.size(12.dp),
+            strokeWidth = 2.dp,
+            color = MixinAppTheme.colors.textPrimary,
+            backgroundColor = MixinAppTheme.colors.textAssist,
+        )
+        Icon(
+            painter = painterResource(id = R.drawable.ic_price_switch),
+            contentDescription = null,
+            tint = Color.Unspecified,
+            modifier = Modifier
+                .size(16.dp)
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = onSwitchDirection,
+                ),
+        )
+    }
+}
+
+@Composable
+private fun TradeGuideInfoCard(
+    title: String,
+    description: String,
+    sections: List<Pair<String, List<String>>>,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
+            .padding(16.dp)
+    ) {
+        Text(
+            text = title,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.W500,
+            color = MixinAppTheme.colors.textPrimary,
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        Text(
+            text = description,
+            fontSize = 14.sp,
+            lineHeight = 20.sp,
+            color = MixinAppTheme.colors.textPrimary,
+        )
+        sections.forEach { (sectionTitle, items) ->
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = sectionTitle,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.W500,
+                color = MixinAppTheme.colors.textPrimary,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            items.forEach { item ->
+                DotText(
+                    text = item,
+                    modifier = Modifier.padding(vertical = 4.dp),
+                    color = MixinAppTheme.colors.textPrimary,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SpotTradeGuideBottomNavigation(
+    selectedTab: Int,
+    tabs: List<String>,
+    onSelect: (Int) -> Unit,
+    onClose: () -> Unit,
+) {
+    val previousTab = (selectedTab - 1).takeIf { it >= 0 }
+    val nextTab = (selectedTab + 1).takeIf { it < tabs.size }
+    if (previousTab == null && nextTab == null) {
+        return
+    }
+    if (previousTab != null && nextTab == null) {
+        Row(
+            modifier = Modifier
+                .padding(horizontal = 20.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            SpotTradeGuideNavigationButton(
+                text = stringResource(R.string.Perpetual_Guide_Previous_Tab, tabs[previousTab]),
+                modifier = Modifier.weight(1f),
+                onClick = { onSelect(previousTab) },
+            )
+            SpotTradeGuideNavigationButton(
+                text = stringResource(
+                    R.string.Perpetual_Guide_Next_Tab,
+                    stringResource(R.string.Start)
+                ),
+                modifier = Modifier.weight(1f),
+                onClick = onClose,
+            )
+        }
+        return
+    }
+    if (previousTab != null && nextTab != null) {
+        Row(
+            modifier = Modifier
+                .padding(horizontal = 20.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            SpotTradeGuideNavigationButton(
+                text = stringResource(R.string.Perpetual_Guide_Previous_Tab, tabs[previousTab]),
+                modifier = Modifier.weight(1f),
+                onClick = { onSelect(previousTab) },
+            )
+            SpotTradeGuideNavigationButton(
+                text = stringResource(R.string.Perpetual_Guide_Next_Tab, tabs[nextTab]),
+                modifier = Modifier.weight(1f),
+                onClick = { onSelect(nextTab) },
+            )
+        }
+        return
+    }
+    val targetIndex = previousTab ?: nextTab ?: return
+    val buttonText = if (previousTab != null) {
+        stringResource(R.string.Perpetual_Guide_Previous_Tab, tabs[targetIndex])
+    } else {
+        stringResource(R.string.Perpetual_Guide_Next_Tab, tabs[targetIndex])
+    }
+    Box(
+        modifier = Modifier.fillMaxWidth(),
+        contentAlignment = Alignment.Center,
+    ) {
+        SpotTradeGuideNavigationButton(
+            text = buttonText,
+            modifier = Modifier.fillMaxWidth(0.5f),
+            onClick = { onSelect(targetIndex) },
+        )
+    }
+}
+
+@Composable
+private fun SpotTradeGuideNavigationButton(
+    text: String,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    Button(
+        modifier = modifier.height(48.dp),
+        onClick = onClick,
+        colors = ButtonDefaults.outlinedButtonColors(
+            backgroundColor = MixinAppTheme.colors.accent,
+            contentColor = Color.White,
+        ),
+        shape = RoundedCornerShape(32.dp),
+        elevation = ButtonDefaults.elevation(
+            pressedElevation = 0.dp,
+            defaultElevation = 0.dp,
+            hoveredElevation = 0.dp,
+            focusedElevation = 0.dp,
+        ),
+    ) {
+        Text(
+            text = text,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.White,
+        )
+    }
+}
+
+private fun calculateMarketPrice(
+    usdtToken: TokenItem?,
+    btcToken: TokenItem?,
+): BigDecimal {
+    val usdtPrice = usdtToken?.priceUsd?.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: BigDecimal.ONE
+    val btcPrice = btcToken?.priceUsd?.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: BigDecimal("95594.89")
+    return safeDivide(btcPrice, usdtPrice)
+}
+
+private fun calculateReceiveAmount(
+    amount: BigDecimal,
+    price: BigDecimal,
+    reversed: Boolean,
+): BigDecimal {
+    return if (reversed) {
+        amount.multiply(price).setScale(8, RoundingMode.HALF_UP).stripTrailingZeros()
+    } else {
+        safeDivide(amount, price).setScale(8, RoundingMode.HALF_UP).stripTrailingZeros()
+    }
+}
+
+private fun convertPayAmount(
+    amount: BigDecimal,
+    currentFromPrice: BigDecimal,
+    newFromPrice: BigDecimal,
+): BigDecimal {
+    if (currentFromPrice <= BigDecimal.ZERO || newFromPrice <= BigDecimal.ZERO) {
+        return amount
+    }
+    return amount
+        .multiply(currentFromPrice)
+        .divide(newFromPrice, 8, RoundingMode.HALF_UP)
+        .stripTrailingZeros()
+}
+
+private fun TokenItem?.safePrice(): BigDecimal {
+    return this?.priceUsd?.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: BigDecimal.ONE
+}
+
+private fun safeDivide(
+    dividend: BigDecimal,
+    divisor: BigDecimal,
+): BigDecimal {
+    if (divisor.compareTo(BigDecimal.ZERO) == 0) {
+        return BigDecimal.ZERO
+    }
+    return dividend.divide(divisor, 8, RoundingMode.HALF_UP).stripTrailingZeros()
+}
