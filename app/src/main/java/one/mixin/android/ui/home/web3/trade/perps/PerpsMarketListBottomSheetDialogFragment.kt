@@ -16,10 +16,12 @@ import one.mixin.android.Constants
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.databinding.FragmentMarketListBottomSheetBinding
 import one.mixin.android.db.perps.PerpsMarketDao
+import one.mixin.android.db.perps.PerpsPositionDao
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.withArgs
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
@@ -48,6 +50,8 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
 
     @Inject
     lateinit var perpsMarketDao: PerpsMarketDao
+    @Inject
+    lateinit var perpsPositionDao: PerpsPositionDao
 
     private val isLong by lazy { requireArguments().getBoolean(ARGS_IS_LONG, true) }
     private var allMarkets = listOf<PerpsMarket>()
@@ -115,14 +119,35 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
     }
 
     private fun onMarketClick(market: PerpsMarket) {
-        PerpsActivity.showOpenPosition(
-            context = requireContext(),
-            marketId = market.marketId,
-            marketSymbol = market.displaySymbol,
-            marketDisplaySymbol = market.displaySymbol,
-            marketTokenSymbol = market.tokenSymbol,
-            isLong = isLong
-        )
-        dismiss()
+        lifecycleScope.launch {
+            val walletId = Session.getAccountId()
+            val hasOpenPosition = if (walletId.isNullOrEmpty()) {
+                false
+            } else {
+                withContext(Dispatchers.IO) {
+                    perpsPositionDao.getOpenPositions(walletId).any { it.marketId == market.marketId }
+                }
+            }
+
+            if (hasOpenPosition) {
+                PerpsActivity.showDetail(
+                    context = requireContext(),
+                    marketId = market.marketId,
+                    marketSymbol = market.displaySymbol,
+                    marketDisplaySymbol = market.displaySymbol,
+                    marketTokenSymbol = market.tokenSymbol
+                )
+            } else {
+                PerpsActivity.showOpenPosition(
+                    context = requireContext(),
+                    marketId = market.marketId,
+                    marketSymbol = market.displaySymbol,
+                    marketDisplaySymbol = market.displaySymbol,
+                    marketTokenSymbol = market.tokenSymbol,
+                    isLong = isLong
+                )
+            }
+            dismiss()
+        }
     }
 }
