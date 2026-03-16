@@ -183,12 +183,12 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 },
 
                 failureBlock = { r ->
-                    if (r.errorCode == NEED_CAPTCHA) {
-                        if (words.isNullOrEmpty()) {
-                            AnalyticsTracker.trackSignUpCaptcha("mnemonic_phrase")
-                        } else {
-                            AnalyticsTracker.trackLoginCaptcha("mnemonic_phrase")
-                        }
+                        if (r.errorCode == NEED_CAPTCHA) {
+                            if (words.isNullOrEmpty()) {
+                                AnalyticsTracker.trackSignUpCaptcha()
+                            } else {
+                                AnalyticsTracker.trackLoginCaptcha("mnemonic_phrase")
+                            }
                         initAndLoadCaptcha(sessionKey, edKey, r.errorDescription)
                     } else {
                         errorInfo = requireContext().getMixinErrorStringByCode(r.errorCode, r.errorDescription)

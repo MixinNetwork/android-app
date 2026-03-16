@@ -94,7 +94,7 @@ class RestoreFragment : BaseFragment(R.layout.fragment_restore) {
             skipTv.setOnClickListener {
                 AnalyticsTracker.trackLoginRestore("skip")
                 Timber.e("RestoreFragment skip")
-                InitializeActivity.showLoading(requireContext())
+                InitializeActivity.showLoading(requireContext(), source = InitializeActivity.SOURCE_LOGIN)
                 defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
                 requireActivity().finish()
             }

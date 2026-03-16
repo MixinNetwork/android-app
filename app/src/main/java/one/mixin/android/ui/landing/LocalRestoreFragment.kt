@@ -75,7 +75,7 @@ class LocalRestoreFragment : BaseFragment(R.layout.fragment_local_restore) {
             .setMessage(R.string.restore_message)
             .setNegativeButton(R.string.Skip) { dialog, _ ->
                 defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
-                InitializeActivity.showLoading(requireContext())
+                InitializeActivity.showLoading(requireContext(), source = InitializeActivity.SOURCE_LOGIN)
                 dialog.dismiss()
                 requireActivity().finish()
             }
@@ -93,7 +93,7 @@ class LocalRestoreFragment : BaseFragment(R.layout.fragment_local_restore) {
                                 }
                             },
                             {
-                                InitializeActivity.showLoading(requireContext())
+                                InitializeActivity.showLoading(requireContext(), source = InitializeActivity.SOURCE_LOGIN)
                                 requireActivity().finish()
                             },
                         )
@@ -204,7 +204,7 @@ class LocalRestoreFragment : BaseFragment(R.layout.fragment_local_restore) {
             .setPositiveButton(R.string.Skip) { dialog, _ ->
                 dialog.dismiss()
                 defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
-                InitializeActivity.showLoading(requireContext())
+                InitializeActivity.showLoading(requireContext(), source = InitializeActivity.SOURCE_LOGIN)
                 requireActivity().finish()
             }.create().run {
                 this.setCanceledOnTouchOutside(false)
@@ -276,7 +276,10 @@ class LocalRestoreFragment : BaseFragment(R.layout.fragment_local_restore) {
         }
         binding.restoreSkip.setOnClickListener {
             try {
-                InitializeActivity.showLoading(requireContext())
+                InitializeActivity.showLoading(
+                    requireContext(),
+                    source = InitializeActivity.SOURCE_LOGIN,
+                )
                 defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
                 requireActivity().finish()
             } catch (e: Exception) {
@@ -308,7 +311,12 @@ class LocalRestoreFragment : BaseFragment(R.layout.fragment_local_restore) {
     private val restoreCallback: (result: Result) -> Unit = { result ->
         BackupNotification.cancel()
         if (result == Result.SUCCESS) {
-            context?.let { InitializeActivity.showLoading(it) }
+            context?.let {
+                InitializeActivity.showLoading(
+                    it,
+                    source = InitializeActivity.SOURCE_LOGIN,
+                )
+            }
             defaultSharedPreferences.putBoolean(
                 Constants.Account.PREF_RESTORE,
                 false,
