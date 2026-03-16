@@ -29,4 +29,15 @@
         android:layout_marginTop="@dimen/margin16"
         android:text="@string/No_transactions"
         android:textColor="?attr/text_assist" />
+
+    <TextView
+        android:id="@+id/help_action"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/wallet_transactions_empty"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="@dimen/margin16"
+        android:text="@string/How_Perps_Works"
+        android:textColor="@color/colorAccent"
+        android:visibility="gone" />
 </RelativeLayout>

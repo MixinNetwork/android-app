@@ -69,6 +69,12 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.GasCheckBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.trade.perps.AllPerpsMarketsFragment
+import one.mixin.android.ui.home.web3.trade.perps.AllPositionsFragment
+import one.mixin.android.ui.home.web3.trade.perps.PerpetualGuideBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.trade.perps.PerpsActivity
+import one.mixin.android.ui.home.web3.trade.perps.PerpsMarketListBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.trade.perps.PositionDetailFragment
 import one.mixin.android.ui.wallet.AllOrdersFragment
 import one.mixin.android.ui.wallet.DepositFragment
 import one.mixin.android.ui.wallet.LimitTransferBottomSheetDialogFragment
@@ -141,6 +147,8 @@ class TradeFragment : BaseFragment() {
     private var toToken: SwapToken? by mutableStateOf(null)
     private var limitFromToken: SwapToken? by mutableStateOf(null)
     private var limitToToken: SwapToken? by mutableStateOf(null)
+    private var initialSwapToSymbol: String? by mutableStateOf(null)
+    private var initialLimitToSymbol: String? by mutableStateOf(null)
 
     private var initialAmount: String? = null
     private var lastOrderTime: Long by mutableLongStateOf(0)
@@ -160,6 +168,18 @@ class TradeFragment : BaseFragment() {
 
     private var orderBadge: Boolean by mutableStateOf(false)
 
+    private fun limitOrderBadgeDismissedPrefKey(walletId: String): String {
+        return "${Account.PREF_TRADE_LIMIT_ORDER_BADGE_DISMISSED}_$walletId"
+    }
+
+    private fun perpetualBadgeDismissedPrefKey(walletId: String): String {
+        return "${Account.PREF_TRADE_PERPETUAL_BADGE_DISMISSED}_$walletId"
+    }
+
+    private fun perpetualOrderBadgeDismissedPrefKey(walletId: String): String {
+        return "${Account.PREF_TRADE_PERPETUAL_ORDER_BADGE_DISMISSED}_$walletId"
+    }
+
     @FlowPreview
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -168,6 +188,7 @@ class TradeFragment : BaseFragment() {
     ): View {
         initAmount()
         lifecycleScope.launch {
+            preloadTradeTitleSymbols()
             val chainIds = walletId?.let {
                 swapViewModel.getAddresses(it).map {
                     it.chainId
@@ -234,27 +255,42 @@ class TradeFragment : BaseFragment() {
                             }
                             
                             val currentWalletId = walletId ?: Session.getAccountId() ?: ""
+                            val limitBadgePrefKey = remember(currentWalletId) {
+                                limitOrderBadgeDismissedPrefKey(currentWalletId)
+                            }
+                            val perpetualBadgePrefKey = remember(currentWalletId) {
+                                perpetualBadgeDismissedPrefKey(currentWalletId)
+                            }
+                            val perpetualOrderBadgePrefKey = remember(currentWalletId) {
+                                perpetualOrderBadgeDismissedPrefKey(currentWalletId)
+                            }
                             val initialTabIndex = remember(currentWalletId) {
                                 val preferenceKey = "$PREF_TRADE_SELECTED_TAB_PREFIX$currentWalletId"
                                 defaultSharedPreferences.getInt(preferenceKey, 0)
                             }
                             var isLimitOrderTabBadgeDismissed by remember(currentWalletId) {
-                                mutableStateOf(defaultSharedPreferences.getBoolean(Account.PREF_TRADE_LIMIT_ORDER_BADGE_DISMISSED, false))
+                                mutableStateOf(defaultSharedPreferences.getBoolean(limitBadgePrefKey, false))
+                            }
+                            var isPerpetualTabBadgeDismissed by remember(currentWalletId) {
+                                mutableStateOf(defaultSharedPreferences.getBoolean(perpetualBadgePrefKey, false))
+                            }
+                            var isPerpetualOrderBadgeDismissed by remember(currentWalletId) {
+                                mutableStateOf(defaultSharedPreferences.getBoolean(perpetualOrderBadgePrefKey, false))
                             }
 
-                            if (!isLimitOrderTabBadgeDismissed) {
-                                isLimitOrderTabBadgeDismissed = true
-                                defaultSharedPreferences.putBoolean(Account.PREF_TRADE_LIMIT_ORDER_BADGE_DISMISSED, true)
-                            }
                             TradePage(
                                 walletId = walletId,
                                 swapFrom = fromToken,
                                 swapTo = toToken,
                                 limitFrom = limitFromToken,
                                 limitTo = limitToToken,
+                                initialSwapToSymbol = initialSwapToSymbol,
+                                initialLimitToSymbol = initialLimitToSymbol,
                                 inMixin = inMixin(),
                                 orderBadge = orderBadge,
                                 isLimitOrderTabBadgeDismissed = isLimitOrderTabBadgeDismissed,
+                                isPerpetualTabBadgeDismissed = isPerpetualTabBadgeDismissed,
+                                isPerpetualOrderBadgeDismissed = isPerpetualOrderBadgeDismissed,
                                 initialAmount = initialAmount,
                                 lastOrderTime = lastOrderTime,
                                 reviewing = reviewing,
@@ -270,7 +306,19 @@ class TradeFragment : BaseFragment() {
                                 onDismissLimitOrderTabBadge = {
                                     if (!isLimitOrderTabBadgeDismissed) {
                                         isLimitOrderTabBadgeDismissed = true
-                                        defaultSharedPreferences.putBoolean(Account.PREF_TRADE_LIMIT_ORDER_BADGE_DISMISSED, true)
+                                        defaultSharedPreferences.putBoolean(limitBadgePrefKey, true)
+                                    }
+                                },
+                                onDismissPerpetualTabBadge = {
+                                    if (!isPerpetualTabBadgeDismissed) {
+                                        isPerpetualTabBadgeDismissed = true
+                                        defaultSharedPreferences.putBoolean(perpetualBadgePrefKey, true)
+                                    }
+                                },
+                                onDismissPerpetualOrderBadge = {
+                                    if (!isPerpetualOrderBadgeDismissed) {
+                                        isPerpetualOrderBadgeDismissed = true
+                                        defaultSharedPreferences.putBoolean(perpetualOrderBadgePrefKey, true)
                                     }
                                 },
                                 onTabChanged = { index ->
@@ -326,8 +374,40 @@ class TradeFragment : BaseFragment() {
                                     this@apply.hideKeyboard()
                                     navTo(OrderDetailFragment.newInstance(orderId), OrderDetailFragment.TAG)
                                 },
+                                onShowTradingGuide = {
+                                    this@apply.hideKeyboard()
+                                    PerpetualGuideBottomSheetDialogFragment.newInstance()
+                                        .show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
+                                },
                                 pop = {
                                     navigateUp(navController)
+                                },
+                                onShowMarketList = { isLong ->
+                                    PerpsMarketListBottomSheetDialogFragment.newInstance(isLong).show(parentFragmentManager, PerpsMarketListBottomSheetDialogFragment.TAG)
+                                },
+                                onShowAllMarkets = {
+                                    navTo(AllPerpsMarketsFragment.newInstance(), AllPerpsMarketsFragment.TAG)
+                                },
+                                onShowAllOpenPositions = {
+                                    navTo(AllPositionsFragment.newOpenInstance(), AllPositionsFragment.TAG)
+                                },
+                                onShowAllClosedPositions = {
+                                    navTo(AllPositionsFragment.newClosedInstance(), AllPositionsFragment.TAG)
+                                },
+                                onOpenPositionClick = { position ->
+                                    navTo(PositionDetailFragment.newInstance(position), PositionDetailFragment.TAG)
+                                },
+                                onMarketItemClick = { market ->
+                                    PerpsActivity.showDetail(
+                                        requireContext(),
+                                        market.marketId,
+                                        market.displaySymbol,
+                                        market.displaySymbol,
+                                        market.tokenSymbol
+                                    )
+                                },
+                                onClosedPositionClick = { position ->
+                                    navTo(PositionDetailFragment.newInstance(position), PositionDetailFragment.TAG)
                                 }
                             )
                         }
@@ -702,6 +782,45 @@ class TradeFragment : BaseFragment() {
             toToken = tempToToken
         }
     }
+
+    private suspend fun preloadTradeTitleSymbols() {
+        initialSwapToSymbol = resolveInitialToTokenSymbol(isLimit = false)
+        initialLimitToSymbol = resolveInitialToTokenSymbol(isLimit = true)
+    }
+
+    private suspend fun resolveInitialToTokenSymbol(isLimit: Boolean): String? {
+        val output = requireArguments().getString(ARGS_OUTPUT)
+        if (!output.isNullOrBlank()) {
+            return findTokenSymbolByAssetId(output)
+        }
+
+        val lastSelectedPairJson = defaultSharedPreferences.getString(getPreferenceKey(isLimit), null)
+        val lastSelectedPair: List<SwapToken>? = lastSelectedPairJson?.let {
+            val type = object : TypeToken<List<SwapToken>>() {}.type
+            GsonHelper.customGson.fromJson(it, type)
+        }
+        val lastToSymbol = lastSelectedPair?.getOrNull(1)?.symbol?.trim()
+        if (!lastToSymbol.isNullOrEmpty()) {
+            return lastToSymbol
+        }
+
+        val input = requireArguments().getString(ARGS_INPUT)
+        if (input.isNullOrBlank()) {
+            return null
+        }
+        val fallbackOutputAssetId = if (input in Constants.usdIds) XIN_ASSET_ID else USDT_ASSET_ETH_ID
+        return findTokenSymbolByAssetId(fallbackOutputAssetId)
+    }
+
+    private suspend fun findTokenSymbolByAssetId(assetId: String): String? {
+        return if (inMixin()) {
+            swapViewModel.findToken(assetId)?.symbol?.trim()
+        } else {
+            val currentWalletId = walletId ?: return null
+            swapViewModel.web3TokenItemById(currentWalletId, assetId)?.symbol?.trim()
+        }?.takeIf { it.isNotEmpty() }
+    }
+
     private suspend fun refreshStocks(chainIds: List<String>?) {
         val chainIdSet: Set<String>? = chainIds?.toSet()?.takeIf { it.isNotEmpty() }
         requestRouteAPI(
@@ -930,5 +1049,7 @@ class TradeFragment : BaseFragment() {
         stocks = emptyList()
         tokenItems = null
         web3tokens = null
+        initialSwapToSymbol = null
+        initialLimitToSymbol = null
     }
 }
