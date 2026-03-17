@@ -2429,6 +2429,11 @@
     <string name="perps_positions">Positions</string>
     <string name="perps_position">Position</string>
     <string name="perps_activity">Activity</string>
+    <string name="candle_open">Open</string>
+    <string name="candle_high">High</string>
+    <string name="candle_low">Low</string>
+    <string name="candle_close">Close</string>
+    <string name="candle_volume">Volume</string>
     <string name="No_Positions">No Positions</string>
     <string name="No_Closed_Positions">No Activities</string>
     <string name="PNL">PNL</string>

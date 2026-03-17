@@ -3,7 +3,10 @@ package one.mixin.android.ui.home.web3.trade
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.calculateZoom
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -39,6 +42,7 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
@@ -48,7 +52,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.google.protobuf.Mixin
+import kotlinx.coroutines.withTimeoutOrNull
 import one.mixin.android.Constants
 import one.mixin.android.api.response.perps.CandleItem
 import one.mixin.android.api.response.perps.CandleView
@@ -60,13 +64,22 @@ import org.threeten.bp.ZoneId
 import org.threeten.bp.ZonedDateTime
 import org.threeten.bp.format.DateTimeFormatter
 import java.math.BigDecimal
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
+
+private const val DEFAULT_CANDLE_ZOOM_SCALE = 1f
+private const val MIN_CANDLE_ZOOM_SCALE = 1f
+private const val MAX_CANDLE_ZOOM_SCALE = 3f
+private const val PINCH_ZOOM_SENSITIVITY = 0.15f
+private const val CANDLE_DETAIL_SHOW_DELAY_MS = 120L
 
 @Composable
 fun CandleChart(
     marketId: String,
-    timeFrame: String
+    timeFrame: String,
+    fiatRate: BigDecimal = BigDecimal.ONE,
+    onCandleSelectionChanged: (CandleItem?) -> Unit = {}
 ) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<PerpetualViewModel>()
@@ -119,31 +132,62 @@ fun CandleChart(
                 )
             }
             else -> {
-                ScrollableCandleChart(candles = candles, context = context)
+                ScrollableCandleChart(
+                    candles = candles,
+                    context = context,
+                    fiatRate = fiatRate,
+                    onCandleSelectionChanged = onCandleSelectionChanged
+                )
             }
         }
     }
 }
 
 @Composable
-private fun ScrollableCandleChart(candles: List<CandleView>, context: android.content.Context) {
+private fun ScrollableCandleChart(
+    candles: List<CandleView>,
+    context: android.content.Context,
+    fiatRate: BigDecimal,
+    onCandleSelectionChanged: (CandleItem?) -> Unit,
+) {
     val candleView = candles.firstOrNull() ?: return
     val items = candleView.items
     if (items.isEmpty()) return
 
-    val candleWidth = 6.dp
-    val spacing = 2.dp
+    val baseCandleWidth = 6.dp
+    val baseSpacing = 2.dp
     val density = LocalDensity.current
 
     val scrollState = rememberScrollState()
     var touchXOnChart by remember { mutableStateOf<Float?>(null) }
     var isTouching by remember { mutableStateOf(false) }
+    var isPinching by remember { mutableStateOf(false) }
+    var zoomScale by remember { mutableStateOf(DEFAULT_CANDLE_ZOOM_SCALE) }
+    var pendingScrollTarget by remember { mutableStateOf<Float?>(null) }
+
+    LaunchedEffect(scrollState.maxValue) {
+        pendingScrollTarget?.let { target ->
+            scrollState.scrollTo(target.toInt().coerceIn(0, scrollState.maxValue))
+            pendingScrollTarget = null
+        }
+    }
+
+    val candleWidth = baseCandleWidth * zoomScale
+    val spacing = baseSpacing
 
     val candleStepPx = with(density) { (candleWidth + spacing).toPx() }
     val candleWidthPx = with(density) { candleWidth.toPx() }
     val chartStartPaddingPx = with(density) { 8.dp.toPx() }
     val totalChartWidthPx = with(density) {
         (8.dp + (candleWidth * items.size) + (spacing * (items.size - 1).coerceAtLeast(0))).toPx()
+    }
+    val maxChartX = max(totalChartWidthPx, chartStartPaddingPx)
+
+    fun findItemByChartX(chartX: Float): CandleItem? {
+        val index = ((chartX - chartStartPaddingPx) / candleStepPx)
+            .toInt()
+            .coerceIn(0, items.lastIndex)
+        return items.getOrNull(index)
     }
 
     LaunchedEffect(items.size) {
@@ -188,13 +232,17 @@ private fun ScrollableCandleChart(candles: List<CandleView>, context: android.co
             val maxPrice = prices.maxOrNull() ?: BigDecimal.ZERO
             val minPrice = prices.minOrNull() ?: BigDecimal.ZERO
             val midPrice = (maxPrice + minPrice) / BigDecimal(2)
-            val maxPriceText = formatPrice(maxPrice)
-            val midPriceText = formatPrice(midPrice)
-            val minPriceText = formatPrice(minPrice)
+            val maxDisplayPrice = maxPrice.multiply(fiatRate)
+            val midDisplayPrice = midPrice.multiply(fiatRate)
+            val minDisplayPrice = minPrice.multiply(fiatRate)
+            val maxPriceText = formatPrice(maxDisplayPrice)
+            val midPriceText = formatPrice(midDisplayPrice)
+            val minPriceText = formatPrice(minDisplayPrice)
 
             val selectedPrice = selectedItem?.close?.toBigDecimalOrNull()
             val showCurrentPrice = selectedPrice == null && latestPrice != null
-            val currentPriceText = latestPrice?.let { formatPrice(it) }
+            val latestDisplayPrice = latestPrice?.multiply(fiatRate)
+            val currentPriceText = latestDisplayPrice?.let { formatPrice(it) }
             val isCurrentPriceInRange = latestPrice?.let { it >= minPrice && it <= maxPrice } == true
             val isCurrentPriceOverlapping = currentPriceText != null &&
                 currentPriceText in setOf(maxPriceText, midPriceText, minPriceText)
@@ -205,29 +253,114 @@ private fun ScrollableCandleChart(candles: List<CandleView>, context: android.co
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(end = axisPanelWidth)
+                    .pointerInput(items.size, scrollState.value, isPinching, isTouching) {
+                        detectTapGestures(
+                            onPress = { offset ->
+                                if (isPinching || isTouching) {
+                                    tryAwaitRelease()
+                                    return@detectTapGestures
+                                }
+                                val downChartX = (offset.x + scrollState.value)
+                                    .coerceIn(chartStartPaddingPx, maxChartX)
+
+                                val releasedBeforeDelay = withTimeoutOrNull(CANDLE_DETAIL_SHOW_DELAY_MS) {
+                                    tryAwaitRelease()
+                                }
+                                if (releasedBeforeDelay != null) {
+                                    return@detectTapGestures
+                                }
+
+                                onCandleSelectionChanged(findItemByChartX(downChartX))
+                                tryAwaitRelease()
+                                onCandleSelectionChanged(null)
+                            }
+                        )
+                    }
+                    .pointerInput(items.size) {
+                        awaitEachGesture {
+                            var event: androidx.compose.ui.input.pointer.PointerEvent
+                            do {
+                                event = awaitPointerEvent()
+                                val pressedChanges = event.changes.filter { it.pressed }
+                                if (pressedChanges.size >= 2) {
+                                    isPinching = true
+                                    onCandleSelectionChanged(null)
+                                    val rawZoomChange = event.calculateZoom()
+                                    val zoomChange =
+                                        1f + (rawZoomChange - 1f) * PINCH_ZOOM_SENSITIVITY
+                                    if (abs(zoomChange - 1f) < 0.0005f) {
+                                        continue
+                                    }
+                                    val previousScale = zoomScale
+                                    val updatedScale = (previousScale * zoomChange)
+                                        .coerceIn(MIN_CANDLE_ZOOM_SCALE, MAX_CANDLE_ZOOM_SCALE)
+                                    if (updatedScale != previousScale) {
+                                        val centroidX = pressedChanges
+                                            .map { it.position.x }
+                                            .average()
+                                            .toFloat()
+                                        val oldAbsoluteX = scrollState.value + centroidX
+                                        val previousStepPx =
+                                            with(density) { (baseCandleWidth * previousScale + baseSpacing).toPx() }
+                                        val updatedStepPx =
+                                            with(density) { (baseCandleWidth * updatedScale + baseSpacing).toPx() }
+                                        val oldRelativeX =
+                                            (oldAbsoluteX - chartStartPaddingPx).coerceAtLeast(0f)
+                                        val candleFloatIndex = oldRelativeX / previousStepPx
+                                        val newAbsoluteX = chartStartPaddingPx + candleFloatIndex * updatedStepPx
+                                        val targetScroll = (newAbsoluteX - centroidX).coerceAtLeast(0f)
+                                        zoomScale = updatedScale
+                                        // defer scroll until maxValue is recalculated after recompose
+                                        pendingScrollTarget = targetScroll
+                                    }
+                                    if (isTouching) {
+                                        isTouching = false
+                                        touchXOnChart = null
+                                    }
+                                    event.changes.forEach { change ->
+                                        if (change.positionChanged()) {
+                                            change.consume()
+                                        }
+                                    }
+                                }
+                            } while (event.changes.any { it.pressed })
+                            isPinching = false
+                        }
+                    }
                     .pointerInput(items.size, scrollState.value) {
                         detectDragGesturesAfterLongPress(
                             onDragStart = { offset ->
+                                if (isPinching) {
+                                    return@detectDragGesturesAfterLongPress
+                                }
                                 isTouching = true
                                 touchXOnChart = (offset.x + scrollState.value)
-                                    .coerceIn(chartStartPaddingPx, max(totalChartWidthPx, chartStartPaddingPx))
+                                    .coerceIn(chartStartPaddingPx, maxChartX)
+                                onCandleSelectionChanged(touchXOnChart?.let { findItemByChartX(it) })
                             },
                             onDrag = { change, _ ->
+                                if (isPinching) {
+                                    change.consume()
+                                    return@detectDragGesturesAfterLongPress
+                                }
                                 touchXOnChart = (change.position.x + scrollState.value)
-                                    .coerceIn(chartStartPaddingPx, max(totalChartWidthPx, chartStartPaddingPx))
+                                    .coerceIn(chartStartPaddingPx, maxChartX)
+                                onCandleSelectionChanged(touchXOnChart?.let { findItemByChartX(it) })
                                 change.consume()
                             },
                             onDragEnd = {
                                 isTouching = false
                                 touchXOnChart = null
+                                onCandleSelectionChanged(null)
                             },
                             onDragCancel = {
                                 isTouching = false
                                 touchXOnChart = null
+                                onCandleSelectionChanged(null)
                             }
                         )
                     }
-                    .horizontalScroll(scrollState, enabled = !isTouching)
+                    .horizontalScroll(scrollState, enabled = !isTouching && !isPinching)
                     .clipToBounds()
             ) {
                 PerpsCandleChartCanvas(
@@ -309,7 +442,7 @@ private fun ScrollableCandleChart(candles: List<CandleView>, context: android.co
                             contentAlignment = Alignment.CenterEnd
                         ) {
                             Text(
-                                text = formatPrice(currentPrice),
+                                text = formatPrice(currentPrice.multiply(fiatRate)),
                                 fontSize = 10.sp,
                                 color = MixinAppTheme.colors.textPrimary,
                                 textAlign = TextAlign.End,
@@ -344,7 +477,7 @@ private fun ScrollableCandleChart(candles: List<CandleView>, context: android.co
                                 contentAlignment = Alignment.CenterEnd
                             ) {
                                 Text(
-                                    text = formatPrice(selectedPrice),
+                                    text = formatPrice(selectedPrice.multiply(fiatRate)),
                                     fontSize = 10.sp,
                                     color = MixinAppTheme.colors.textPrimary,
                                     textAlign = TextAlign.End,

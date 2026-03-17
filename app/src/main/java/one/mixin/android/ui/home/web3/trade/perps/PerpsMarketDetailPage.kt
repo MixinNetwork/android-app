@@ -1,6 +1,8 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
 import PageScaffold
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -51,6 +53,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.flow.flowOf
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.api.response.perps.CandleItem
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
@@ -69,6 +72,10 @@ import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
 private const val CLOSED_POSITION_PREVIEW_LIMIT = 100
+private val MARKET_HEADER_HEIGHT = 96.dp
+private val MARKET_ICON_SIZE = 48.dp
+private val MARKET_ICON_SMALL_SIZE = 20.dp
+private val MARKET_TITLE_TO_CONTENT_SPACING = 7.dp
 
 @Composable
 fun PerpsMarketDetailPage(
@@ -512,43 +519,88 @@ private fun MarketDetailCard(
     } catch (e: Exception) {
         market.markPrice
     }
+    var selectedCandle by remember(selectedTimeFrame) { mutableStateOf<CandleItem?>(null) }
+    val showCandleDetail = selectedCandle != null
+    val iconSize by animateDpAsState(
+        targetValue = if (showCandleDetail) MARKET_ICON_SMALL_SIZE else MARKET_ICON_SIZE,
+        animationSpec = tween(durationMillis = 300),
+        label = "iconSize"
+    )
 
     Column(modifier = Modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(MARKET_HEADER_HEIGHT)
         ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = displayTokenSymbol,
-                    fontSize = 14.sp,
-                    color = MixinAppTheme.colors.textPrimary
-                )
-                Spacer(modifier = Modifier.height(7.dp))
-                Text(
-                    text = "${fiatSymbol}$formattedPrice",
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.W500,
-                    color = MixinAppTheme.colors.textPrimary
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = changeText,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = changeColor
-                )
+            if (showCandleDetail) {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = displayTokenSymbol,
+                            fontSize = 14.sp,
+                            color = MixinAppTheme.colors.textPrimary,
+                            modifier = Modifier.weight(1f)
+                        )
+                        CoilImage(
+                            model = market.iconUrl,
+                            placeholder = R.drawable.ic_avatar_place_holder,
+                            modifier = Modifier
+                                .size(iconSize)
+                                .clip(CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(MARKET_TITLE_TO_CONTENT_SPACING))
+                    selectedCandle?.let { candle ->
+                        CandleOhlcvRow(
+                            candle = candle,
+                            fiatRate = fiatRate,
+                            fiatSymbol = fiatSymbol,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+            } else {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    Text(
+                        text = displayTokenSymbol,
+                        fontSize = 14.sp,
+                        color = MixinAppTheme.colors.textPrimary
+                    )
+                    Spacer(modifier = Modifier.height(MARKET_TITLE_TO_CONTENT_SPACING))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "${fiatSymbol}$formattedPrice",
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.W500,
+                            color = MixinAppTheme.colors.textPrimary,
+                            modifier = Modifier.weight(1f)
+                        )
+                        CoilImage(
+                            model = market.iconUrl,
+                            placeholder = R.drawable.ic_avatar_place_holder,
+                            modifier = Modifier
+                                .size(iconSize)
+                                .clip(CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = changeText,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = changeColor
+                    )
+                }
             }
-
-            CoilImage(
-                model = market.iconUrl,
-                placeholder = R.drawable.ic_avatar_place_holder,
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape),
-                contentScale = ContentScale.Crop
-            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -561,7 +613,11 @@ private fun MarketDetailCard(
         ) {
             CandleChart(
                 marketId = marketId,
-                timeFrame = timeFrameValues[selectedTimeFrame]
+                timeFrame = timeFrameValues[selectedTimeFrame],
+                fiatRate = fiatRate,
+                onCandleSelectionChanged = { candle ->
+                    selectedCandle = candle
+                }
             )
         }
 
@@ -603,6 +659,64 @@ private fun MarketDetailCard(
             }
         }
     }
+}
+
+@Composable
+private fun CandleOhlcvRow(
+    candle: CandleItem,
+    fiatRate: BigDecimal,
+    fiatSymbol: String,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier
+            .horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        OhlcvItem(label = stringResource(R.string.candle_open), value = formatCandlePriceValue(candle.open, fiatRate, fiatSymbol))
+        OhlcvItem(label = stringResource(R.string.candle_high), value = formatCandlePriceValue(candle.high, fiatRate, fiatSymbol))
+        OhlcvItem(label = stringResource(R.string.candle_low), value = formatCandlePriceValue(candle.low, fiatRate, fiatSymbol))
+        OhlcvItem(label = stringResource(R.string.candle_close), value = formatCandlePriceValue(candle.close, fiatRate, fiatSymbol))
+        OhlcvItem(label = stringResource(R.string.candle_volume), value = formatCandleVolumeValue(candle.volume))
+    }
+}
+
+@Composable
+private fun OhlcvItem(
+    label: String,
+    value: String,
+) {
+    Column {
+        Text(
+            text = label,
+            fontSize = 10.sp,
+            color = MixinAppTheme.colors.textAssist
+        )
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(
+            text = value,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Medium,
+            color = MixinAppTheme.colors.textPrimary
+        )
+    }
+}
+
+private fun formatCandlePriceValue(
+    value: String,
+    fiatRate: BigDecimal,
+    fiatSymbol: String,
+): String {
+    return runCatching {
+        val fiatPrice = BigDecimal(value).multiply(fiatRate)
+        "${fiatSymbol}${fiatPrice.marketPriceFormat()}"
+    }.getOrElse { "${fiatSymbol}$value" }
+}
+
+private fun formatCandleVolumeValue(value: String): String {
+    return runCatching {
+        BigDecimal(value).priceFormat()
+    }.getOrElse { value }
 }
 
 @Composable

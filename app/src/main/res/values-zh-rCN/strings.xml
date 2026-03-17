@@ -2355,6 +2355,11 @@
     <string name="perps_positions">持仓</string>
     <string name="perps_position">持仓</string>
     <string name="perps_activity">历史记录</string>
+    <string name="candle_open">开盘价</string>
+    <string name="candle_high">最高价</string>
+    <string name="candle_low">最低价</string>
+    <string name="candle_close">收盘价</string>
+    <string name="candle_volume">成交量</string>
     <string name="No_Positions">暂无持仓</string>
     <string name="No_Closed_Positions">暂无历史记录</string>
     <string name="PNL">盈亏</string>
