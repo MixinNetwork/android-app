@@ -14,6 +14,7 @@ import android.os.Looper
 import android.view.MenuItem
 import android.view.View
 import android.widget.AdapterView
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.addCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.media3.common.util.UnstableApi
@@ -70,9 +71,10 @@ class GalleryActivity :
             setTheme(getDefaultThemeId())
             SystemUIManager.lightUI(window, true)
         }
-        SystemUIManager.setSafePadding(window, colorFromAttribute(R.attr.bg_white))
         mSpec = SelectionSpec.getInstance()
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        SystemUIManager.setSafePadding(window, colorFromAttribute(R.attr.bg_white))
         if (!mSpec.hasInited) {
             setResult(Activity.RESULT_CANCELED)
             finish()

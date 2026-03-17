@@ -22,7 +22,6 @@ import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
-import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
@@ -61,7 +60,7 @@ class MixinMemberNotificationBottomSheetDialogFragment : MixinComposeBottomSheet
     }
 
     override fun getBottomSheetHeight(view: View): Int {
-        return 450.dp + requireContext().navigationBarHeight()
+        return 450.dp
 
     }
 

@@ -84,13 +84,24 @@ abstract class PinCodeFragment(
     }
 
     protected fun handleFailure(error: ResponseError) {
+        hideLoading()
         pinVerificationView.error()
         pinVerificationTipTv.visibility = View.VISIBLE
-        pinVerificationTipTv.text = getString(R.string.The_code_is_incorrect)
-        if (error.code == ErrorHandler.PHONE_VERIFICATION_CODE_INVALID ||
-            error.code == ErrorHandler.PHONE_VERIFICATION_CODE_EXPIRED
-        ) {
-            verificationNextFab.visibility = View.INVISIBLE
+        
+        when (error.code) {
+            ErrorHandler.PHONE_VERIFICATION_CODE_INVALID -> {
+                pinVerificationTipTv.text = getString(R.string.error_phone_verification_code_invalid)
+                verificationNextFab.visibility = View.INVISIBLE
+                return
+            }
+            ErrorHandler.PHONE_VERIFICATION_CODE_EXPIRED -> {
+                pinVerificationTipTv.text = getString(R.string.error_phone_verification_code_expired)
+                verificationNextFab.visibility = View.INVISIBLE
+                return
+            }
+            else -> {
+                pinVerificationTipTv.text = getString(R.string.The_code_is_incorrect)
+            }
         }
         ErrorHandler.handleMixinError(error.code, error.description)
     }

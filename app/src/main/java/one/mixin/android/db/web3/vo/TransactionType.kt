@@ -14,3 +14,11 @@ enum class TransactionStatus(val value: String) {
     FAILED("failed"),
     NOT_FOUND("notfound"),
 }
+
+private val terminalTransactionStatuses: Set<String> =
+    setOf(TransactionStatus.SUCCESS.value, TransactionStatus.FAILED.value, TransactionStatus.NOT_FOUND.value)
+
+fun String?.isTerminalTransactionStatus(): Boolean {
+    val status: String = this ?: return false
+    return terminalTransactionStatuses.contains(status)
+}

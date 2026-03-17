@@ -1,6 +1,7 @@
 package one.mixin.android.tip
 
 import android.content.Context
+import com.bugsnag.android.Bugsnag
 import com.lambdapioneer.argon2kt.Argon2Kt
 import ed25519.Ed25519
 import one.mixin.android.Constants
@@ -95,8 +96,8 @@ class Tip
                 val ephemeralSeed = ephemeral.getEphemeralSeed(context, deviceId)
                 Timber.e("updateTipPriv after getEphemeralSeed")
 
-                if (!counterEqual) { // node success
-                    Timber.e("updateTipPriv oldPin isNullOrBlank")
+                if (!counterEqual && failedSigners.isNullOrEmpty()) { // node success but subsequent steps failed
+                    Timber.e("updateTipPriv counter NOT equal and NO failed signers")
                     val (priKey, watcher) = identity.getIdentityPrivAndWatcher(newPin)
                     Timber.e("updateTipPriv after getIdentityPrivAndWatcher")
                     updatePriv(context, priKey, ephemeralSeed, watcher, newPin, oldPin, null)
@@ -177,7 +178,7 @@ class Tip
                     throw TipNullException("Salt not matched")
                 }
             } else {
-                var local = getMnemonicFromEncryptedPreferences(context)
+                val local = getMnemonicFromEncryptedPreferences(context)
                 if (local != null && !salt.contentEquals(local)) {
                     // Clear local mnemonic if salt not matched
                     removeValueFromEncryptedPreferences(context, Constants.Tip.MNEMONIC)
@@ -587,8 +588,9 @@ class Tip
             if (e != null) {
                 if (e is TipNetworkException && e.error.code == ErrorHandler.BAD_DATA) {
                     reportException("Tip tip-secret meet bad data", e)
-
-                    val msg = TipBody.forVerify(timestamp)
+                    Bugsnag.notify(e)
+                    val ts = Ed25519.getTimestamp()
+                    val msg = TipBody.forVerify(ts)
                     val goSigBase64 = Ed25519.sign(msg, stSeed).base64RawURLEncode()
                     Timber.e("signature go-ed25519 $goSigBase64")
 
@@ -598,12 +600,16 @@ class Tip
                             seedBase64 = seedBase64,
                             secretBase64 = secretBase64,
                             signatureBase64 = goSigBase64,
-                            timestamp = timestamp,
+                            timestamp = ts,
                         )
                     Timber.e("use go-ed25519 before updateTipSecret")
                     tipNetworkNullable { tipService.updateTipSecret(request) }.getOrThrow()
                     reportException("Tip tip-secret go update success after bad data", e)
                 } else {
+                    Bugsnag.notify(e) { report ->
+                        report.addError("", "Tip secret update failed")
+                        true
+                    }
                     throw e
                 }
             }

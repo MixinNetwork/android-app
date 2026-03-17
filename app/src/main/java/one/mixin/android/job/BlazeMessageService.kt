@@ -337,7 +337,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         }
 
         try {
-            ServiceCompat.startForeground(this, FOREGROUND_ID, builder.build(), ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+            ServiceCompat.startForeground(this, FOREGROUND_ID, builder.build(), ServiceInfo.FOREGROUND_SERVICE_TYPE_REMOTE_MESSAGING)
         } catch (e: Exception) {
             reportException(e)
             Timber.e(e)

@@ -73,6 +73,7 @@ import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
+import one.mixin.android.util.getChainName
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.WalletCategory
@@ -141,7 +142,11 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
         jobManager.addJobInBackground(RefreshPriceJob(token.assetId))
         refreshToken(token.assetId)
         binding.titleView.apply {
-            titleTv.setTextOnly(token.name)
+            val sub = getChainName(token.chainId, token.chainName, token.assetKey)
+            if (sub != null)
+                setSubTitle(token.name, sub)
+            else
+                titleTv.setTextOnly(token.name)
             leftIb.setOnClickListener {
                 requireActivity().onBackPressedDispatcher.onBackPressed()
             }
@@ -229,7 +234,6 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                                     address?.let {
                                         putString(TransferDestinationInputFragment.ARGS_ADDRESS, it)
                                     }
-                                    putParcelable(TransferDestinationInputFragment.ARGS_WALLET, wallet)
                                     putParcelable(TransferDestinationInputFragment.ARGS_WALLET, wallet?.toWeb3Wallet())
                                     putParcelable(TransferDestinationInputFragment.ARGS_WEB3_TOKEN, token)
                                     putParcelable(TransferDestinationInputFragment.ARGS_CHAIN_TOKEN, chain)
@@ -434,6 +438,15 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
             avatar.setOnClickListener(
                 object : DebugClickListener() {
                     override fun onDebugClick() {
+                        if (token.chainId != Constants.ChainId.BITCOIN_CHAIN_ID) return
+                        val fromAddress: String = address ?: return
+                        requireView().navigate(
+                            R.id.action_web3_transactions_to_web3_btc_outputs,
+                            Bundle().apply {
+                                putString(Web3BtcOutputsFragment.ARGS_WALLET_ID, token.walletId)
+                                putString(Web3BtcOutputsFragment.ARGS_ADDRESS, fromAddress)
+                            },
+                        )
                     }
 
                     override fun onSingleClick() {

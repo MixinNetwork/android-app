@@ -44,15 +44,3 @@ val ethTransactionSerializer =
         }
         array
     }
-
-fun WCEthereumTransaction.toTransaction(): Transaction {
-    return Transaction(
-        from,
-        nonce?.let { Numeric.decodeQuantity(it) },
-        gasPrice?.let { Numeric.decodeQuantity(it) },
-        gasLimit?.let { Numeric.decodeQuantity(it) },
-        to,
-        value?.let { Numeric.decodeQuantity(it) },
-        data,
-    )
-}

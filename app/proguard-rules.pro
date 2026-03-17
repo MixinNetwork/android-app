@@ -93,6 +93,13 @@
 -keep public class com.reown.android.** { *; }
 -keep public class com.reown.walletkit.** { *; }
 
+-dontwarn com.sun.jna.**
+-keep class com.sun.jna.** { *; }
+-keepclassmembers class com.sun.jna.Native { *; }
+
+-dontwarn uniffi.**
+-keep class uniffi.** { *; }
+
 -dontwarn groovy.lang.GroovyShell
 
 -dontwarn com.yalantis.ucrop**

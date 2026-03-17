@@ -17,6 +17,24 @@ object Bip44Path {
             index,
         )
 
+    fun bitcoinSegwit(index: Int = 0): IntArray =
+        intArrayOf(
+            84 or HARDENED_BIT,
+            0 or HARDENED_BIT,
+            0 or HARDENED_BIT,
+            0,
+            index,
+        )
+
+    fun bitcoinTaproot(index: Int = 0): IntArray =
+        intArrayOf(
+            86 or HARDENED_BIT,
+            0 or HARDENED_BIT,
+            0 or HARDENED_BIT,
+            0,
+            index,
+        )
+
     /**
      * Generate Ethereum derivation path with variable index
      * Ethereum path: m/44'/60'/0'/0/{index}
@@ -48,6 +66,14 @@ object Bip44Path {
 
     fun solanaPathString(index: Int = 0): String {
         return "m/44'/501'/${index}'/0'"
+    }
+
+    fun bitcoinSegwitPathString(index: Int = 0): String {
+        return "m/84'/0'/0'/0/$index"
+    }
+
+    fun bitcoinTaprootPathString(index: Int = 0): String {
+        return "m/86'/0'/0'/0/$index"
     }
 }
 

@@ -75,6 +75,7 @@ object Constants {
         const val PREF_SYNC_CIRCLE = "pref_sync_circle"
         const val PREF_BACKUP = "pref_attachment_backup"
         const val PREF_BACKUP_DIRECTORY = "pref_attachment_backup_directory"
+        const val PREF_WEB3_ADDRESSES_SYNCED = "pref_web3_addresses_synced"
         const val PREF_CHECK_STORAGE = "pref_check_storage"
         const val PREF_TRIED_UPDATE_KEY = "pref_tried_update_key"
         const val PREF_DUPLICATE_TRANSFER = "pref_duplicate_transfer"
@@ -90,6 +91,7 @@ object Constants {
         const val PREF_CLEANUP_QUOTE_CONTENT = "pref_cleanup_quote_content"
         const val PREF_TRANSFER_SCENE = "pref_transfer_scene"
         const val PREF_LOGIN_VERIFY = "pref_login_verify"
+        const val PREF_LOGIN_OR_SIGN_UP = "pref_login_or_sign_up"
         const val PREF_NOTIFY_ENABLE_BIOMETRIC = "pref_notify_enable_biometric"
         const val PREF_SNAPSHOT_OFFSET = "pref_snapshot_offset"
         const val PREF_EXPLORE_SELECT = "pref_explore_select"
@@ -147,6 +149,7 @@ object Constants {
         object ChainAddress {
             const val EVM_ADDRESS = "evm_address"
             const val SOLANA_ADDRESS = "solana_address"
+            const val BTC_ADDRESS = "btc_address"
         }
 
     }
@@ -254,7 +257,7 @@ object Constants {
     }
 
 
-    val Web3EvmChainIds = listOf(ETHEREUM_CHAIN_ID, Polygon, BinanceSmartChain, Base, Arbitrum, Optimism)
+    val Web3EvmChainIds = listOf(ETHEREUM_CHAIN_ID, Polygon, BinanceSmartChain, Base, Arbitrum, Optimism, Avalanche)
     val Web3ChainIds = listOf(ETHEREUM_CHAIN_ID, Polygon, BinanceSmartChain, Base, Arbitrum, Optimism, Avalanche)
 
     object ChainId {
@@ -410,6 +413,7 @@ object Constants {
     const val INTERVAL_30_MINS: Long = (1000 * 60 * 30).toLong()
     const val INTERVAL_1_MIN: Long = (1000 * 60).toLong()
     const val INTERVAL_7_DAYS: Long = INTERVAL_24_HOURS * 7
+    const val INTERVAL_60_DAYS: Long = INTERVAL_24_HOURS * 60
     const val DELAY_SECOND = 60
     const val ALLOW_INTERVAL: Long = (5 * 60 * 1000).toLong()
 

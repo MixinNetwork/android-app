@@ -26,20 +26,20 @@
     <string name="Add_circle">Añadir círculo</string>
     <string name="Add_Contact">Añadir contacto</string>
     <string name="Add_conversations">Añadir conversaciones</string>
-    <string name="Add_emergency_contact">Añadir contacto de emergencia</string>
+    <string name="Add_emergency_contact">Añadir contacto de recuperación</string>
     <string name="Add_group_description">Añadir descripción del grupo</string>
     <string name="Add_memo">Añadir nota</string>
     <string name="Add_participants">Añadir participantes</string>
     <string name="Add_people_hint">Añadir personas por ID de Mixin o número de teléfono</string>
     <string name="add_people_search_hint">ID de Mixin o Número de teléfono</string>
     <string name="Add_Sticker">Añadir pegatina</string>
-    <string name="Add_sticker_failed">No se ha podido añadir la etiqueta</string>
+    <string name="Add_sticker_failed">No se pudo añadir la pegatina</string>
     <string name="Add_stickers">Añadir pegatinas</string>
-    <string name="Add_success">Añadir éxito</string>
+    <string name="Add_success">Añadido con éxito</string>
     <string name="Add_Tag">Añadir etiqueta</string>
     <string name="Add_to_Home_screen">Añadir a la pantalla principal</string>
     <string name="Added">Añadido</string>
-    <string name="Adding">Añadido…</string>
+    <string name="Adding">Añadiendo…</string>
     <string name="Address">Dirección</string>
     <string name="Admin">Administrador</string>
     <string name="After_1_minute">Después de 1 minuto</string>
@@ -73,7 +73,7 @@
     <string name="All">Todo</string>
     <string name="All_Conversations">Todas las conversaciones</string>
     <string name="All_Media">Todos los medios</string>
-    <string name="All_signer_failure">Falla de todos los nodos</string>
+    <string name="All_signer_failure">Todos los nodos fallaron</string>
     <string name="All_Transactions">Todas las transacciones</string>
     <string name="Allow_bot_access_asset">Permite que el bot acceda a tu lista de activos y saldo.</string>
     <string name="Allow_bot_access_bots">Permite que el bot acceda a tu lista de bots.</string>
@@ -85,7 +85,7 @@
     <string name="Allow_bot_access_snapshots">Permite que el bot acceda a tus registros de transferencia, incluidos los depósitos y retiros.</string>
     <string name="Allow_bot_manage_bots">Permite que el bot añada o modifique tus bots.</string>
     <string name="Allow_bot_manage_circles">Permite que el bot añada, modifique y elimine tus círculos.</string>
-    <string name="Allow_bot_send_messages">Permita que el bot envíe mensajes que lo representen.</string>
+    <string name="Allow_bot_send_messages">Permite que el bot envíe mensajes en tu nombre.</string>
     <string name="Amount">Cantidad</string>
     <string name="an_audio">un audio</string>
     <string name="ANSWER">RESPUESTA</string>
@@ -100,7 +100,7 @@
     <string name="Audio">Audio</string>
     <string name="Audios">Audios</string>
     <string name="auth_assets_more">%1$s y más</string>
-    <string name="auth_messages_represent_description">permitir que el bot envíe mensajes que lo representen</string>
+    <string name="auth_messages_represent_description">permitir que el bot envíe mensajes en tu nombre</string>
     <string name="auth_profile_content">%1$s, %2$s, foto de perfil</string>
     <string name="authorization">autorización</string>
     <string name="Authorizations">Autorizaciones</string>
@@ -120,7 +120,7 @@
     <string name="backup_ing">Copia de seguridad de almacenamiento externo…</string>
     <string name="backup_media">Incluir archivos multimedia</string>
     <string name="backup_media_title">Copia de seguridad en almacenamiento externo</string>
-    <string name="backup_no_available_memory">No hay memoria disponible para la copia de seguridad.</string>
+    <string name="backup_no_available_memory">No hay suficiente espacio para la copia de seguridad.</string>
     <string name="backup_notification_content">Preparando copia de seguridad…</string>
     <string name="backup_notification_title">Copia de seguridad en proceso</string>
     <string name="Backup_success">Éxito de la copia de seguridad</string>
@@ -128,14 +128,14 @@
     <string name="block_tip">Los usuarios bloqueados no pueden enviarte mensajes ni añadirte a grupos.</string>
     <string name="Blocked">Bloqueado</string>
     <string name="Blocked_Users">Usuarios bloqueados</string>
-    <string name="bold">atrevido</string>
+    <string name="bold">negrita</string>
     <string name="bot_dock_empty">Mantén presionado y arrastra el bot hacia arriba</string>
     <string name="bot_empty_tip">Por favor añade tu bot favorito primero.</string>
     <string name="bot_not_auth_yet">No se ha concedido ningún permiso a este bot</string>
     <string name="Bot_not_found">Bot no encontrado</string>
     <string name="BOTS">BOTS</string>
     <string name="bots_title">Bots</string>
-    <string name="bottom_transfer_stranger_tip">El ID de Mixin %1$s no está en tu lista de contactos. Asegúrate de que el destinatario que hayas elegido sea el correcto. Si transfieres a la persona equivocada, ¡perderá tus activos!</string>
+    <string name="bottom_transfer_stranger_tip">El ID de Mixin %1$s no está en tu lista de contactos. Asegúrate de que el destinatario elegido sea correcto. Si transfieres a la persona equivocada, ¡perderás tus activos!</string>
     <string name="Call">Llamar</string>
     <string name="Call_declined">Llamada rechazada</string>
     <string name="call_encryption_description">Nadie fuera de esta llamada puede verla o escucharla. Ni siquiera Mixin.</string>
@@ -146,11 +146,11 @@
     <string name="call_who">Llamar a %1$s</string>
     <string name="Calling">Llamando…</string>
     <string name="Camera">Cámara</string>
-    <string name="can_not_recognize_qr_code">No puedo reconocer el código QR</string>
+    <string name="can_not_recognize_qr_code">No se puede reconocer el código QR</string>
     <string name="Cancel">Cancelar</string>
-    <string name="Cancel_Floating">Cancelar flotante</string>
+    <string name="Cancel_Floating">Cerrar flotante</string>
     <string name="Canceled">Cancelado</string>
-    <string name="Canceled_by_caller">Cancelado por la persona que llama</string>
+    <string name="Canceled_by_caller">Cancelado por el llamante</string>
     <string name="Cant_receive_the_code">¿No puedes recibir el código?</string>
     <string name="cant_talk_self">No puedes hablar contigo mismo</string>
     <string name="cant_transfer_self">No puedes transferirte a ti mismo</string>
@@ -158,13 +158,13 @@
     <string name="Chain">Cadena</string>
     <string name="Change">Cambiar</string>
     <string name="Change_Amount">Cambiar cantidad</string>
-    <string name="Change_emergency_contact">Cambiar contacto de emergencia</string>
+    <string name="Change_emergency_contact">Cambiar contacto de recuperación</string>
     <string name="Change_Number_Instead">Cambiar número en su lugar</string>
     <string name="Change_Phone_Number">Cambiar número de teléfono</string>
     <string name="Change_PIN">Cambiar PIN</string>
     <string name="Change_PIN_successfully">Cambiar PIN con éxito</string>
     <string name="Change_Profile_Photo_with_Camera">Cambiar foto de perfil con cámara</string>
-    <string name="Change_Profile_Photo_with_Library">Cambiar foto de perfil con biblioteca</string>
+    <string name="Change_Profile_Photo_with_Library">Cambiar foto de perfil desde la galería</string>
     <string name="Changed">Cambiado</string>
     <string name="changed_disappearing_message_settings">%1$s ha cambiado la configuración de los mensajes que desaparecen.</string>
     <string name="Changing">Cambiando…</string>
@@ -194,7 +194,7 @@
     <string name="chat_import_fail_content">¡Error en la importación de mensajes! ¿Quieres enviarlo como un archivo?</string>
     <string name="chat_list_empty_info">Puedes chatear con contactos que tengan Mixin instalado en tu teléfono.</string>
     <string name="chat_not_support">Este tipo de mensaje no es compatible, actualiza Mixin a la última versión. %1$s.</string>
-    <string name="chat_on_mixin_content">¡Chateemos en Mixin Messenger! Sencillo, seguro y fácil de usar. También es compatible con Bitcoin, Ethereum y otras criptomonedas. Descarga https://mixin.one/messenger y busca \@%1$s para añadirme como amigo.</string>
+    <string name="chat_on_mixin_content">¡Chateemos en Mixin! Sencillo, seguro y fácil de usar. También es compatible con Bitcoin, Ethereum y otras criptomonedas. Descarga https://mixin.one/messenger y busca \@%1$s para añadirme como amigo.</string>
     <string name="chat_pin_message">%1$s ha fijado %2$s</string>
     <string name="Chat_pinned">Chat fijado</string>
     <string name="chat_recall_delete_alert">Los mensajes que has seleccionado se eliminarán para todos en la última versión de Mixin en este chat.</string>
@@ -239,7 +239,7 @@
     </plurals>
     <string name="Contact_Developer">Contactar al desarrollador</string>
     <string name="contact_empty_tip">Mixin necesita acceder a tus contactos para ayudarte a conectarse con otras personas en Mixin.</string>
-    <string name="contact_invite_content">Oye, estoy usando Mixin Messenger para chatear. Descárgalo aquí: https://mixin.one/messenger</string>
+    <string name="contact_invite_content">Oye, estoy usando Mixin para chatear. Descárgalo aquí: https://mixin.one/messenger</string>
     <string name="contact_mixin_id">ID de Mixin: %1$s</string>
     <string name="contact_mobile">Móvil: %1$s</string>
     <string name="contact_mute_title">Silenciar notificaciones para…</string>
@@ -307,7 +307,7 @@
     <string name="Delete_Synced_Contact">Eliminar contactos sincronizados</string>
     <string name="Delete_withdraw_Address">Eliminar dirección de %1$s</string>
     <string name="Deposit">Depósito</string>
-    <string name="deposit_account_attention">Atención: prueba con una pequeña cantidad para el primer depósito. Se requiere una nota y una dirección para depositar correctamente tu %1$s en Mixin Messenger.</string>
+    <string name="deposit_account_attention">Atención: prueba con una pequeña cantidad para el primer depósito. Se requiere una nota y una dirección para depositar correctamente tu %1$s en Mixin.</string>
     <string name="deposit_attention">Prueba con una pequeña cantidad para el primer depósito.</string>
     <plurals name="deposit_confirmation" tools:ignore="UnusedQuantity">
         <item quantity="one">El depósito llegará %1$d confirmación de bloqueo</item>
@@ -321,7 +321,7 @@
     <string name="desktop">escritorio</string>
     <string name="desktop_login_no_pin">Para la seguridad de tu cuenta, configura el PIN antes de iniciar sesión en la aplicación de escritorio.</string>
     <string name="desktop_on_hint">Tienes tu escritorio conectado</string>
-    <string name="desktop_upgrade">Actualiza Mixin Messenger Desktop a la última versión.</string>
+    <string name="desktop_upgrade">Actualiza Mixin Desktop a la última versión.</string>
     <string name="detect_qr_tip">Se ha detectado un código QR de Mixin, toca para reconocer</string>
     <string name="Developer">Desarrollador</string>
     <string name="Device_unsupported">Dispositivo no compatible</string>
@@ -581,7 +581,7 @@
     <string name="Mixin">Mixin</string>
     <string name="Mixin_ID">ID de Mixin</string>
     <string name="Mixin_Locked">Mixin bloqueado</string>
-    <string name="Mixin_Messenger_Desktop">Mixin Messenger de Escritorio</string>
+    <string name="Mixin_Messenger_Desktop">Mixin de Escritorio</string>
     <string name="Model">Modelo</string>
     <string name="Monday">Lunes</string>
     <string name="More">Más</string>
@@ -649,7 +649,7 @@
     <string name="not_supported_deposit">Mixin Wallet no admite el depósito de %1$s. Ten en cuenta que puedes seguir transfiriendo o retirando los %2$s depositados. Lee el documento para **obtener más información**.</string>
     <string name="Notice">Aviso</string>
     <string name="Notification_and_Confirmation">Notificación y Confirmación</string>
-    <string name="notification_channel_description">Muestra qué música se está reproduciendo actualmente en Mixin Messenger</string>
+    <string name="notification_channel_description">Muestra qué música se está reproduciendo actualmente en Mixin</string>
     <string name="notification_content">No te pierdas los mensajes de tus amigos.</string>
     <string name="Notifications">Notificaciones</string>
     <string name="Now_Playing">Reproduciendo ahora</string>
@@ -855,7 +855,7 @@
     <string name="setting_delete_account_pin_content">Si continúas, tu perfil y los detalles de tu cuenta se eliminarán el %1$s. le nuestro documento para **aprender más**.</string>
     <string name="setting_delete_account_send">Enviaremos un código de 4 dígitos a %1$s</string>
     <string name="setting_delete_account_tip">Tu cartera Mixin todavía tiene algunos activos que se pueden retirar a otras carteras o intercambios. Una vez que se cancele la cuenta, estos activos serán abandonados junto con la cartera y no podrán recuperarse.</string>
-    <string name="setting_desktop_confirm">Confirmar inicio de sesión en Mixin Messenger Desktop</string>
+    <string name="setting_desktop_confirm">Confirmar inicio de sesión en Mixin Desktop</string>
     <string name="setting_desktop_logout_failed">El cierre de sesión del escritorio ha fallado.</string>
     <string name="setting_duplicate_transfer_desc">Muestra un cuadro de diálogo de confirmación cuando transfieres la misma cantidad a la misma persona dentro de las 6 horas.</string>
     <string name="setting_emergency_change_mobile">¿Quieres cambiar tu número de móvil ahora?</string>

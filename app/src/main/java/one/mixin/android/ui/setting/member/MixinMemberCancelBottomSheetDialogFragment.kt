@@ -24,7 +24,6 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
-import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
@@ -66,7 +65,7 @@ class MixinMemberCancelBottomSheetDialogFragment : MixinComposeBottomSheetDialog
     }
 
     override fun getBottomSheetHeight(view: View): Int {
-        return 450.dp + requireContext().navigationBarHeight()
+        return 450.dp
     }
 
     override fun showError(error: String) {
