@@ -129,7 +129,11 @@ fun OpenPositionPage(
 
     LaunchedEffect(acceptedPerpAssetIds) {
         viewModel.loadUsdTokens { tokens ->
-            val supportedTokens = tokens.filter { it.assetId in acceptedPerpAssetIds }
+            val supportedTokens = if (acceptedPerpAssetIds.isEmpty()) {
+                tokens
+            } else {
+                tokens.filter { it.assetId in acceptedPerpAssetIds }
+            }
             availableTokens = supportedTokens
             currentToken = selectedToken?.let { target ->
                 supportedTokens.firstOrNull { it.assetId == target.assetId }

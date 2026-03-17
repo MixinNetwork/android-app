@@ -216,6 +216,11 @@ class BottomSheetViewModel
 
         fun assetItemsWithBalance(): LiveData<List<TokenItem>> = tokenRepository.assetItemsWithBalance()
 
+        suspend fun findAssetItemsWithBalance(): List<TokenItem> =
+            withContext(Dispatchers.IO) {
+                tokenRepository.findAssetItemsWithBalance()
+            }
+
         fun usdAssetItemsWithBalance(): LiveData<List<TokenItem>> = tokenRepository.usdAssetItemsWithBalance()
 
         fun assetItemsNotHidden(): LiveData<List<TokenItem>> = tokenRepository.assetItemsNotHidden()

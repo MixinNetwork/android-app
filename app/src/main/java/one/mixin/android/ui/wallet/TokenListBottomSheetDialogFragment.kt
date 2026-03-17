@@ -62,6 +62,7 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
         const val TYPE_FROM_SEND = 0
         const val TYPE_FROM_RECEIVE = 1
+
         const val TYPE_FROM_TRANSFER = 2
         const val TYPE_FROM_PERP = 3
 
@@ -105,6 +106,32 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             .orEmpty()
             .filter { it.isNotBlank() }
             .toSet()
+    }
+
+    private fun filterAssets(items: List<TokenItem>): List<TokenItem> =
+        if (fromType == TYPE_FROM_PERP) {
+            if (acceptedPerpAssetIds.isEmpty()) {
+                items
+            } else {
+                items.filter { token -> token.assetId in acceptedPerpAssetIds }
+            }
+        } else {
+            items
+        }
+
+    private fun updateDefaultAssets(
+        items: List<TokenItem>,
+    ) {
+        val filteredAssets = filterAssets(items)
+        defaultAssets = filteredAssets
+        if (binding.searchEt.et.text.isNullOrBlank()) {
+            adapter.submitList(defaultAssets)
+            binding.rvVa.displayedChild = if (defaultAssets.isEmpty()) {
+                POS_EMPTY_RECEIVE
+            } else {
+                POS_RV
+            }
+        }
     }
 
     private fun initRadio() {
@@ -239,29 +266,16 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
 
         if (fromType == TYPE_FROM_SEND || fromType == TYPE_FROM_TRANSFER) {
-            bottomViewModel.assetItemsWithBalance()
+            lifecycleScope.launch {
+                val snapshot = bottomViewModel.findAssetItemsWithBalance()
+                updateDefaultAssets(snapshot)
+            }
         } else if (fromType == TYPE_FROM_PERP) {
             bottomViewModel.usdAssetItemsWithBalance()
         } else {
             bottomViewModel.assetItemsNotHidden()
-        }.observe(this) {
-            defaultAssets = if (fromType == TYPE_FROM_PERP) {
-                it.filter { token -> token.assetId in acceptedPerpAssetIds }
-            } else {
-                it
-            }
-            if (fromType == TYPE_FROM_SEND) {
-                adapter.submitList(defaultAssets)
-                if (defaultAssets.isEmpty()) {
-                    binding.rvVa.displayedChild = POS_EMPTY_RECEIVE
-                } else {
-                    binding.rvVa.displayedChild = POS_RV
-                }
-            } else {
-                if (binding.searchEt.et.text.isNullOrBlank()) {
-                    adapter.submitList(defaultAssets)
-                }
-            }
+        }.observe(this) { items ->
+            updateDefaultAssets(items)
         }
     }
 
@@ -313,7 +327,8 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private fun loadData() {
         adapter.chain = currentChain
-        binding.rvVa.displayedChild = when (adapter.getFilteredTokens().size) {
+        val filteredCount = adapter.getFilteredTokens().size
+        binding.rvVa.displayedChild = when (filteredCount) {
             0 -> POS_EMPTY_RECEIVE
             else -> POS_RV
         }
