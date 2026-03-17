@@ -589,7 +589,6 @@ private fun GuideSection(title: String, content: String) {
             stringResource(R.string.Perpetual_Feature_2),
             stringResource(R.string.Perpetual_Feature_3),
             stringResource(R.string.Perpetual_Feature_4),
-            stringResource(R.string.Perpetual_Feature_5)
         )
             .forEach { feature ->
                 DotText(

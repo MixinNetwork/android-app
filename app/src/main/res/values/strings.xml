@@ -2310,7 +2310,6 @@
     <string name="Perpetual_Feature_2">Support long/short, bidirectional trading</string>
     <string name="Perpetual_Feature_3">Up to 200x leverage supported</string>
     <string name="Perpetual_Feature_4">Support isolated margin mode for flexible risk control</string>
-    <string name="Perpetual_Feature_5">Delayed liquidation to prevent flash crashes</string>
     <string name="Perpetual_Risk_Warning">Risk Warning</string>
     <string name="Perpetual_Risk_Warning_Content_1">Leverage trading can amplify gains but also losses.</string>
     <string name="Perpetual_Risk_Warning_Content_2">When margin is insufficient, positions may be forcibly liquidated.</string>
