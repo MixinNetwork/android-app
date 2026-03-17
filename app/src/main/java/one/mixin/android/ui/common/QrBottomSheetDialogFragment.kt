@@ -4,8 +4,10 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.graphics.Bitmap
 import android.os.Build
+import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
+import android.view.WindowManager
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
@@ -67,6 +69,19 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private val type: Int by lazy { requireArguments().getInt(ARGS_TYPE) }
 
     private val binding by viewBinding(FragmentQrBottomSheetBinding::inflate)
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): BottomSheet {
+        return super.onCreateDialog(savedInstanceState).apply {
+            if (type == TYPE_MNEMONIC_QR) {
+                window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+            }
+        }
+    }
+
+    override fun onDestroyView() {
+        dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        super.onDestroyView()
+    }
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(
