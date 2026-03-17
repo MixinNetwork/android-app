@@ -25,13 +25,16 @@ suspend fun clearJobsAndRawTransaction(
         val supportsDeferForeignKeys = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
         val scopedDbFile = databaseFile(context, identityNumber)
         val legacyDbFile = legacyDatabaseFile(context)
+
+        // Check if any database exists before proceeding
         if (!scopedDbFile.exists() && !legacyDbFile.exists()) {
             return
         }
+
         var db: SupportSQLiteDatabase? = null
         try {
-            // Init database
-            MixinDatabase.getDatabase(context, identityNumber)
+            // At this point, migration should have already happened via CurrentUserScopeManager.enter()
+            // So we can safely get the database which should be the migrated scoped database
             db = MixinDatabase.getWritableDatabase() ?: return
             if (!supportsDeferForeignKeys) {
                 db.execSQL("PRAGMA foreign_keys = FALSE")

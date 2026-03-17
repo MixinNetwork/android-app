@@ -8,6 +8,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import one.mixin.android.session.Session
 import one.mixin.android.vo.SafeBox
 import one.mixin.android.vo.route.serializer.SafeBoxSerializer
@@ -21,16 +22,45 @@ class SafeBoxStoreManager
     constructor(
         @ApplicationContext private val appContext: Context,
     ) {
-        private val stores = ConcurrentHashMap<String, DataStore<SafeBox>>()
+        private data class StoreEntry(
+            val store: DataStore<SafeBox>,
+            val scope: CoroutineScope,
+        )
+
+        private val stores = ConcurrentHashMap<String, StoreEntry>()
 
         fun current(): DataStore<SafeBox> {
             val accountId = Session.getAccountId() ?: "temp"
             return stores.getOrPut(accountId) {
-                DataStoreFactory.create(
+                val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+                val store = DataStoreFactory.create(
                     serializer = SafeBoxSerializer,
                     produceFile = { appContext.dataStoreFile("safe_box_$accountId.store") },
-                    scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
+                    scope = scope,
                 )
+                StoreEntry(store, scope)
+            }.store
+        }
+
+        /**
+         * Clear the DataStore for the current account.
+         * This cancels the associated coroutine scope and removes the store from the cache.
+         */
+        fun clearCurrent() {
+            val accountId = Session.getAccountId() ?: return
+            stores.remove(accountId)?.let { entry ->
+                entry.scope.cancel()
             }
+        }
+
+        /**
+         * Clear all DataStores and cancel all associated coroutine scopes.
+         * This should be called on logout or when switching accounts.
+         */
+        fun clearAll() {
+            stores.values.forEach { entry ->
+                entry.scope.cancel()
+            }
+            stores.clear()
         }
     }
