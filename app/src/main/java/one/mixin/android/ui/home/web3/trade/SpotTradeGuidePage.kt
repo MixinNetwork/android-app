@@ -1,6 +1,5 @@
 package one.mixin.android.ui.home.web3.trade
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -24,7 +23,6 @@ import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
-import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -35,6 +33,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -55,7 +54,6 @@ import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.numberFormat8
-import one.mixin.android.extension.priceFormat
 import one.mixin.android.ui.home.web3.components.OutlinedTab
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.safe.TokenItem
@@ -69,11 +67,11 @@ private enum class LimitStrategy(
 ) {
     BuyLow(
         titleRes = R.string.Spot_Trade_Guide_Limit_Strategy_Buy_Low,
-        multiplier = BigDecimal("0.941473"),
+        multiplier = BigDecimal("0.9"),
     ),
     SellHigh(
         titleRes = R.string.Spot_Trade_Guide_Limit_Strategy_Sell_High,
-        multiplier = BigDecimal("1.046081"),
+        multiplier = BigDecimal("1.1"),
     ),
 }
 
@@ -261,10 +259,18 @@ private fun SpotTradeExampleCard(
     } else {
         marketPrice.multiply(strategy.multiplier)
     }
-    val estimatedReceive = remember(payAmount, effectivePrice, isPairReversed) {
+    var orderPrice by remember(marketPrice, strategy) {
+        mutableStateOf(
+            if (limitStrategy == null) marketPrice
+            else marketPrice.multiply(strategy.multiplier).setScale(0, RoundingMode.HALF_UP)
+        )
+    }
+    val orderPriceStep = BigDecimal("100")
+    val displayPrice = if (limitStrategy == null) effectivePrice else orderPrice
+    val estimatedReceive = remember(payAmount, displayPrice, isPairReversed) {
         calculateReceiveAmount(
             amount = payAmount,
-            price = effectivePrice,
+            price = displayPrice,
             reversed = isPairReversed,
         )
     }
@@ -281,13 +287,13 @@ private fun SpotTradeExampleCard(
             fontWeight = FontWeight.W500,
             color = MixinAppTheme.colors.textPrimary,
         )
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(16.dp))
         if (limitStrategy != null) {
             StrategyRow(
                 strategy = strategy,
                 onStrategySelected = { strategy = it },
             )
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
         }
         ExampleValueRow(
             title = stringResource(R.string.Trade_Guide_Trading_Pair),
@@ -300,13 +306,19 @@ private fun SpotTradeExampleCard(
                     onSwitch = {
                         val currentFromPrice = if (isPairReversed) btcToken.safePrice() else usdtToken.safePrice()
                         val newFromPrice = if (isPairReversed) usdtToken.safePrice() else btcToken.safePrice()
-                        payAmount = convertPayAmount(payAmount, currentFromPrice, newFromPrice)
+                        val converted = convertPayAmount(payAmount, currentFromPrice, newFromPrice)
+                        // switching to USDT as from token: ceil to integer
+                        payAmount = if (isPairReversed) {
+                            converted.setScale(0, RoundingMode.CEILING)
+                        } else {
+                            converted
+                        }
                         isPairReversed = !isPairReversed
                     },
                 )
             },
         )
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(16.dp))
         ExampleValueRow(
             title = stringResource(R.string.Trade_Guide_Pay_Amount),
             value = {
@@ -323,35 +335,42 @@ private fun SpotTradeExampleCard(
                 )
             },
         )
-        Spacer(modifier = Modifier.height(12.dp))
-        ExampleValueRow(
-            title = stringResource(
-                if (limitStrategy == null) R.string.Trade_Guide_Exchange_Price else R.string.Trade_Guide_Order_Price
-            ),
-            value = {
-                PriceSubtitle(
-                    marketPrice = effectivePrice,
-                    isReversed = isPriceDisplayReversed,
-                    onSwitchDirection = { isPriceDisplayReversed = !isPriceDisplayReversed },
-                    onPriceExpired = { priceRefreshFlag = !priceRefreshFlag },
-                )
-            },
-        )
         if (limitStrategy != null) {
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             ExampleValueRow(
-                title = stringResource(R.string.Trade_Guide_Market_Price),
+                title = stringResource(R.string.Trade_Guide_Order_Price),
                 value = {
-                    PriceSubtitle(
-                        marketPrice = marketPrice,
-                        isReversed = isPriceDisplayReversed,
-                        onSwitchDirection = { isPriceDisplayReversed = !isPriceDisplayReversed },
-                        onPriceExpired = { priceRefreshFlag = !priceRefreshFlag },
+                    AmountStepper(
+                        amount = orderPrice,
+                        symbol = "USDT",
+                        step = orderPriceStep,
+                        onDecrease = {
+                            orderPrice = (orderPrice - orderPriceStep).max(orderPriceStep)
+                        },
+                        onIncrease = {
+                            orderPrice += orderPriceStep
+                        },
                     )
                 },
             )
         }
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(16.dp))
+        Column {
+            Text(
+                text = stringResource(if (limitStrategy == null) R.string.Trade_Guide_Exchange_Price else R.string.Trade_Guide_Market_Price),
+                fontSize = 14.sp,
+                lineHeight = 18.sp,
+                color = MixinAppTheme.colors.textAssist,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            PriceSubtitle(
+                marketPrice = marketPrice,
+                isReversed = isPriceDisplayReversed,
+                onSwitchDirection = { isPriceDisplayReversed = !isPriceDisplayReversed },
+                onPriceExpired = { priceRefreshFlag = !priceRefreshFlag },
+            )
+        }
+        Spacer(modifier = Modifier.height(16.dp))
         ExampleValueRow(
             title = stringResource(R.string.Estimated_Receive),
             value = {
@@ -388,24 +407,28 @@ private fun StrategyRow(
     ExampleValueRow(
         title = stringResource(R.string.Trade_Guide_Trading_Strategy),
         value = {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row( modifier = Modifier
+                .clip(RoundedCornerShape(8.dp))
+                .background(MixinAppTheme.colors.backgroundWindow)
+                .padding(2.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 LimitStrategy.entries.forEach { item ->
                     val selected = item == strategy
                     Box(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(20.dp))
+                            .clip(RoundedCornerShape(8.dp))
                             .background(
                                 if (selected) MixinAppTheme.colors.accent
-                                else MixinAppTheme.colors.backgroundWindow
+                                else Color.Transparent
                             )
                             .clickable { onStrategySelected(item) }
-                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                            .padding(horizontal = 8.dp, vertical = 2.dp),
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
                             text = stringResource(item.titleRes),
                             color = if (selected) Color.White else MixinAppTheme.colors.textPrimary,
-                            fontSize = 13.sp,
+                            fontSize = 14.sp,
                             lineHeight = 18.sp,
                         )
                     }
@@ -429,7 +452,7 @@ private fun ExampleValueRow(
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title,
-                fontSize = 13.sp,
+                fontSize = 14.sp,
                 lineHeight = 18.sp,
                 color = MixinAppTheme.colors.textAssist,
             )
@@ -468,7 +491,7 @@ private fun PairSwitcher(
             painter = painterResource(id = R.drawable.ic_price_switch),
             contentDescription = null,
             tint = Color.Unspecified,
-            modifier = Modifier.size(18.dp),
+            modifier = Modifier.size(16.dp),
         )
     }
 }
@@ -512,7 +535,7 @@ private fun AmountStepper(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         StepperButton(
-            text = "-",
+            isAdd = false,
             enabled = amount > step,
             onClick = onDecrease,
         )
@@ -524,34 +547,35 @@ private fun AmountStepper(
             fontWeight = FontWeight.W500,
         )
         StepperButton(
-            text = "+",
+            isAdd = true,
             enabled = true,
             onClick = onIncrease,
         )
     }
 }
-
 @Composable
 private fun StepperButton(
-    text: String,
+    isAdd: Boolean,
     enabled: Boolean,
     onClick: () -> Unit,
 ) {
-    Surface(
-        color = if (enabled) Color.Transparent else MixinAppTheme.colors.backgroundWindow,
-        shape = CircleShape,
-        border = BorderStroke(1.dp, MixinAppTheme.colors.borderColor),
+    Box(
         modifier = Modifier
             .size(24.dp)
+            .clip(CircleShape)
+            .background(MixinAppTheme.colors.backgroundWindow)
+            .alpha(if (enabled) 1f else 0.5f)
             .clickable(enabled = enabled, onClick = onClick),
+        contentAlignment = Alignment.Center,
     ) {
-        Box(contentAlignment = Alignment.Center) {
-            Text(
-                text = text,
-                fontSize = 14.sp,
-                color = if (enabled) MixinAppTheme.colors.textPrimary else MixinAppTheme.colors.textAssist,
-            )
-        }
+        Icon(
+            painter = painterResource(
+                id = if (isAdd) R.drawable.ic_perps_add else R.drawable.ic_perps_minus
+            ),
+            contentDescription = null,
+            tint = Color.Unspecified,
+            modifier = Modifier.size(16.dp),
+        )
     }
 }
 
@@ -561,6 +585,7 @@ private fun PriceSubtitle(
     isReversed: Boolean,
     onSwitchDirection: () -> Unit,
     onPriceExpired: () -> Unit = {},
+    fill: Boolean = false,
 ) {
     var quoteCountDown by remember(marketPrice) { mutableFloatStateOf(0f) }
 
@@ -584,7 +609,7 @@ private fun PriceSubtitle(
                 val inverted = safeDivide(BigDecimal.ONE, marketPrice)
                 "1 USDT ≈ ${inverted.numberFormat8()} BTC"
             } else {
-                "1 BTC ≈ ${marketPrice.priceFormat()} USDT"
+                "1 BTC ≈ ${"%,d".format(marketPrice.toLong())} USDT"
             },
             fontSize = 14.sp,
             color = MixinAppTheme.colors.textAssist,
@@ -596,6 +621,9 @@ private fun PriceSubtitle(
             color = MixinAppTheme.colors.textPrimary,
             backgroundColor = MixinAppTheme.colors.textAssist,
         )
+        if(fill){
+            Spacer(modifier = Modifier.weight(1f))
+        }
         Icon(
             painter = painterResource(id = R.drawable.ic_price_switch),
             contentDescription = null,
@@ -629,7 +657,7 @@ private fun TradeGuideInfoCard(
             fontWeight = FontWeight.W500,
             color = MixinAppTheme.colors.textPrimary,
         )
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = description,
             fontSize = 14.sp,

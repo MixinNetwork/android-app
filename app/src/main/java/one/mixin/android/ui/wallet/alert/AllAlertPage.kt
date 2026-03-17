@@ -82,7 +82,7 @@ fun AllAlertPage(coins: Set<CoinItem>?, openFilter: () -> Unit, pop: () -> Unit,
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = stringResource(R.string.Add_Alert), color = Color(0xFF3D75E3)
+                            text = stringResource(R.string.Alert), color = Color(0xFF3D75E3)
                         )
                     }
                 }
@@ -117,7 +117,7 @@ fun AllAlertPage(coins: Set<CoinItem>?, openFilter: () -> Unit, pop: () -> Unit,
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = stringResource(R.string.Add_Alert), color = Color(0xFF3D75E3)
+                        text = stringResource(R.string.Alert), color = Color(0xFF3D75E3)
                     )
                 }
             }

@@ -205,7 +205,10 @@ fun PerpsMarketDetailPage(
                 if (currentPosition != null) {
                     OpenPositionCard(
                         position = currentPosition,
-                        viewModel = viewModel
+                        viewModel = viewModel,
+                        onShare = {
+                            PerpsPositionShareActivity.show(context, currentPosition)
+                        },
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                 }
@@ -606,6 +609,7 @@ private fun MarketDetailCard(
 private fun OpenPositionCard(
     position: PerpsPositionItem,
     viewModel: PerpetualViewModel,
+    onShare: () -> Unit,
 ) {
     val context = LocalContext.current
     val quoteColorReversed = context.defaultSharedPreferences
@@ -655,6 +659,15 @@ private fun OpenPositionCard(
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
                 color = MixinAppTheme.colors.textPrimary
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            Icon(
+                painter = painterResource(id = R.drawable.ic_share_arrow),
+                contentDescription = null,
+                tint = MixinAppTheme.colors.accent,
+                modifier = Modifier
+                    .size(24.dp)
+                    .clickable(onClick = onShare),
             )
         }
 

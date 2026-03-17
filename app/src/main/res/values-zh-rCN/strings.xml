@@ -27,8 +27,8 @@
     <string name="Add_Contact">添加联系人</string>
     <string name="Add_conversations">添加会话</string>
     <string name="Add_emergency_contact">添加恢复联系人</string>
-    <string name="Add_group_description">添加群公告</string>
-    <string name="Add_memo">点击添加 Memo（备注）</string>
+    <string name="Add_group_description">添加群描述</string>
+    <string name="Add_memo">添加备注</string>
     <string name="Add_participants">添加成员</string>
     <string name="Add_people_hint">通过 Mixin ID 或手机号添加联系人</string>
     <string name="add_people_search_hint">Mixin ID 或手机号</string>
@@ -36,7 +36,7 @@
     <string name="Add_sticker_failed">添加贴纸失败</string>
     <string name="Add_stickers">添加贴纸</string>
     <string name="Add_success">添加成功</string>
-    <string name="Add_Tag">点击添加 Tag（标签）</string>
+    <string name="Add_Tag">添加标签</string>
     <string name="Add_to_Home_screen">添加到桌面</string>
     <string name="add_or_remove_favorite_bots">添加或删除收藏的机器人</string>
     <string name="Added">已添加</string>
@@ -74,7 +74,7 @@
     <string name="alert_key_group_video_message">%1$s发送一个视频</string>
     <string name="All">全部</string>
     <string name="All_Conversations">所有会话</string>
-    <string name="All_Media">全部</string>
+    <string name="All_Media">所有媒体</string>
     <string name="All_signer_failure">所有节点失败</string>
     <string name="All_Transactions">所有交易记录</string>
     <string name="Allow_bot_access_asset">允许机器人查看你的所有资产和余额。</string>
@@ -87,7 +87,7 @@
     <string name="Allow_bot_access_snapshots">允许机器人访问你的转账记录，包括充值和提现。</string>
     <string name="Allow_bot_manage_bots">允许机器人添加或修改你的机器人列表。</string>
     <string name="Allow_bot_manage_circles">允许机器人添加、修改和删除你的所有圈子。</string>
-    <string name="Allow_bot_send_messages">允许机器人代表你发消息。</string>
+    <string name="Allow_bot_send_messages">允许机器人代表你发送消息。</string>
     <string name="Amount">金额</string>
     <string name="an_audio">一条语音</string>
     <string name="Anonymous_Number">匿名号码</string>
@@ -102,7 +102,7 @@
     <string name="Audio">语音</string>
     <string name="Audios">音频</string>
     <string name="auth_assets_more">%1$s等</string>
-    <string name="auth_messages_represent_description">允许机器人代表你发消息</string>
+    <string name="auth_messages_represent_description">允许机器人代表你发送消息</string>
     <string name="auth_profile_content">%1$s, %2$s, 头像</string>
     <string name="authorization">授权</string>
     <string name="Authorizations">授权</string>
@@ -136,7 +136,7 @@
     <string name="Blocked_Users">屏蔽名单</string>
     <string name="bold">粗体</string>
     <string name="bot_dock_empty">长按并拖拽机器人置顶</string>
-    <string name="bot_empty_tip">可以添加你喜欢的机器人</string>
+    <string name="bot_empty_tip">请先添加你喜欢的机器人。</string>
     <string name="bot_not_auth_yet">还未授权此机器人任何权限</string>
     <string name="Bot_not_found">找不到这个机器人</string>
     <string name="BOTS">机器人</string>
@@ -147,7 +147,7 @@
     <string name="call_encryption_description">除了参与通话的人，其他人包含 Mixin 在内都无法听取或查看。</string>
     <string name="call_encryption_title">此通话使用端对端加密进行保护</string>
     <string name="Call_failed">呼叫失败</string>
-    <string name="call_on_another_call_hint">无法在 Mixin 通话时拨打电话</string>
+    <string name="call_on_another_call_hint">你正在其他通话中，请在结束后重试。</string>
     <string name="call_pip_permission">你的手机没有授权 Mixin 获得浮窗权限，语音通话最小化不能正常使用</string>
     <string name="call_who">呼叫 %1$s</string>
     <string name="Calling">正在呼叫…</string>
@@ -1321,14 +1321,14 @@
     <string name="fast">快速</string>
     <string name="normal">普通</string>
     <string name="slow">缓慢</string>
-    <string name="Message">Message</string>
+    <string name="Message">消息</string>
     <string name="Balance_Change">余额变化（估算）</string>
     <string name="Success">成功</string>
     <string name="TIP_Wallet">TIP 钱包</string>
     <string name="Cancel_transaction">取消交易</string>
-    <string name="cancel_transaction_tip">if the transaction is too far along cancellation may bot be possible.</string>
+    <string name="cancel_transaction_tip">如果交易进度过深，可能无法取消。</string>
     <string name="Speed_up_transaction">加速交易</string>
-    <string name="speed_up_transaction_tip">if the transaction is too far along cancellation may bot be possible.</string>
+    <string name="speed_up_transaction_tip">如果交易进度过深，可能无法加速。</string>
     <string name="blocked_action">Mixin 已经禁止了 WalletConnect 的 %1$s 行为</string>
     <string name="not_supported_wc_version">不支持该版本的 WalletConnect</string>
     <string name="not_support_network">不支持该网络：%s</string>
@@ -1766,7 +1766,6 @@
     <string name="Alert">价格预警</string>
     <string name="Edit_Alert">编辑价格预警</string>
     <string name="NO_ALERTS">没有价格预警</string>
-    <string name="Add_Alert">添加价格预警</string>
     <string name="Current_price">当前价格：%1$s</string>
     <string name="Alert_Type">预警类型</string>
     <string name="Alert_Frequency">预警频率</string>
@@ -2305,7 +2304,6 @@
     <string name="Spot_Trade_Guide_Swap_Quote_1">交易报价为 DEX 和 CEX 聚合最优价。</string>
     <string name="Spot_Trade_Guide_Swap_Quote_2">交易报价已包含交易所手续费和网络提现手续费。</string>
     <string name="Spot_Trade_Guide_Swap_Risk">市场剧烈波动时，实际成交价格可能与预期有差异。</string>
-    <string name="Spot_Trade_Guide_Limit_Strategy_Value">低价买入\n高价卖出</string>
     <string name="Spot_Trade_Guide_Limit_Strategy_Buy_Low">低价买入</string>
     <string name="Spot_Trade_Guide_Limit_Strategy_Sell_High">高价卖出</string>
     <string name="Spot_Trade_Guide_Limit_Desc">专业模式支持限价挂单，这是一种由用户自行设定成交价格，在市场价格达到预期时才会成交的交易方式。</string>

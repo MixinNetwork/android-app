@@ -1816,7 +1816,6 @@
     <string name="Alert">Alert</string>
     <string name="Edit_Alert">Edit Alert</string>
     <string name="NO_ALERTS">NO ALERTS</string>
-    <string name="Add_Alert">Add Alert</string>
     <string name="Current_price">Current price: %1$s</string>
     <string name="Alert_Type">Alert Type</string>
     <string name="Alert_Frequency">Frequency</string>
@@ -2371,7 +2370,6 @@
     <string name="Spot_Trade_Guide_Swap_Quote_1">Quotes are aggregated from the best prices available across DEXs and CEXs.</string>
     <string name="Spot_Trade_Guide_Swap_Quote_2">Quotes already include exchange fees and network withdrawal fees.</string>
     <string name="Spot_Trade_Guide_Swap_Risk">During sharp market movements, the final execution price may differ from the expected quote.</string>
-    <string name="Spot_Trade_Guide_Limit_Strategy_Value">Buy low\nSell high</string>
     <string name="Spot_Trade_Guide_Limit_Strategy_Buy_Low">Buy low</string>
     <string name="Spot_Trade_Guide_Limit_Strategy_Sell_High">Sell high</string>
     <string name="Spot_Trade_Guide_Limit_Desc">Professional mode supports limit orders, letting you set your own execution price so the order is matched only when the market reaches your target price or better.</string>
