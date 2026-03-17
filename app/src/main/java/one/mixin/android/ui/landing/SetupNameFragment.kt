@@ -112,7 +112,7 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
                         if (!PrivacyPreference.getIsLoaded(requireContext(), false) ||
                             !PrivacyPreference.getIsSyncSession(context, false)
                         ) {
-                            InitializeActivity.showLoading(context, false)
+                            InitializeActivity.showLoading(context, false, source = InitializeActivity.SOURCE_SIGN_UP)
                         } else {
                             startActivity(Intent(context, MainActivity::class.java))
                         }

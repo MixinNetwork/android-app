@@ -18,6 +18,7 @@ import one.mixin.android.ui.landing.components.MnemonicPhraseInput
 import one.mixin.android.ui.landing.components.MnemonicState
 import one.mixin.android.ui.logs.LogViewerBottomSheet
 import one.mixin.android.ui.web.WebFragment
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 import timber.log.Timber
 
@@ -44,6 +45,7 @@ class LandingMnemonicPhraseFragment : BaseFragment(R.layout.fragment_landing_mne
             applySafeTopPadding(view)
         }
         Timber.e("LandingMnemonicPhraseFragment onViewCreated")
+        AnalyticsTracker.trackLoginMnemonicPhrase()
         binding.titleView.leftIb.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }

@@ -328,7 +328,13 @@ class ExploreFragment : BaseFragment() {
                     DeviceFragment.newInstance().showNow(parentFragmentManager, DeviceFragment.TAG)
                 }
                 INTERNAL_BUY_ID -> {
-                    WalletActivity.showBuy(requireActivity(), false, null, null)
+                    WalletActivity.showBuy(
+                        requireActivity(),
+                        false,
+                        null,
+                        null,
+                        source = AnalyticsTracker.TradeSource.EXPLORE
+                    )
                 }
                 INTERNAL_SWAP_ID -> {
                     AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, AnalyticsTracker.TradeSource.EXPLORE)
