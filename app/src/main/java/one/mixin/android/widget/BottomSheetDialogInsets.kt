@@ -5,6 +5,7 @@ import android.view.ViewGroup
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updateMargins
+import androidx.core.view.updatePadding
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.internal.ViewUtils.doOnApplyWindowInsets
 
@@ -27,4 +28,13 @@ internal fun BottomSheetDialog.applyBottomSheetContainerInsets(transparentStatus
     }
 
     findViewById<View>(com.google.android.material.R.id.coordinator)?.fitsSystemWindows = false
+    findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)?.apply {
+        fitsSystemWindows = false
+        doOnApplyWindowInsets(this) { insetView, windowInsets, initialPadding ->
+            insetView.updatePadding(
+                bottom = initialPadding.bottom + windowInsets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom,
+            )
+            windowInsets
+        }
+    }
 }
