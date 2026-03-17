@@ -158,7 +158,7 @@ fun AlertEditPage(coin: CoinItem?, alert: Alert?, onAdd: (CoinItem) -> Unit, pop
                 },
             ) {
                 PageScaffold(
-                    title = stringResource(id = if (alert == null) R.string.Add_Alert else R.string.Edit_Alert),
+                    title = stringResource(id = if (alert == null) R.string.Alert else R.string.Edit_Alert),
                     verticalScrollable = false,
                     pop = pop,
                 ) {
@@ -508,7 +508,7 @@ fun AlertEditPage(coin: CoinItem?, alert: Alert?, onAdd: (CoinItem) -> Unit, pop
                                 }
                                 Text(
                                     modifier = Modifier.alpha(if (isLoading) 0f else 1f),
-                                    text = stringResource(if (alert == null) R.string.Add_Alert else R.string.Save),
+                                    text = stringResource(if (alert == null) R.string.Alert else R.string.Save),
                                     color = if (enable) Color.White else MixinAppTheme.colors.textAssist,
                                 )
                             }

@@ -1766,7 +1766,6 @@
     <string name="Alert">价格预警</string>
     <string name="Edit_Alert">编辑价格预警</string>
     <string name="NO_ALERTS">没有价格预警</string>
-    <string name="Add_Alert">添加价格预警</string>
     <string name="Current_price">当前价格：%1$s</string>
     <string name="Alert_Type">预警类型</string>
     <string name="Alert_Frequency">预警频率</string>

@@ -1816,7 +1816,6 @@
     <string name="Alert">Alert</string>
     <string name="Edit_Alert">Edit Alert</string>
     <string name="NO_ALERTS">NO ALERTS</string>
-    <string name="Add_Alert">Add Alert</string>
     <string name="Current_price">Current price: %1$s</string>
     <string name="Alert_Type">Alert Type</string>
     <string name="Alert_Frequency">Frequency</string>
