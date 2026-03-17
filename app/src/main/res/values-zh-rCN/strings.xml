@@ -2274,7 +2274,7 @@
     <string name="Perpetual_Leverage_Impact_1">杠杆会同时放大收益和亏损。</string>
     <string name="Perpetual_Leverage_Impact_2">杠杆倍数越高，盈亏随价格波动的变化越大。</string>
     <string name="Perpetual_Leverage_Risk">请合理选择杠杆倍数，高杠杆下，价格小幅波动也可能导致较大亏损。</string>
-    <string name="Perpetual_Position_Desc">当前合约的仓位规模由「保证金 × 杠杆倍数」计算得出，表示本次交易所控制的资产仓位规模。</string>
+    <string name="Perpetual_Position_Desc">当前合约的仓位规模由「投入资金 × 杠杆倍数」计算得出，表示本次交易所控制的资产规模。</string>
     <string name="Perpetual_Position_Usage">用途</string>
     <string name="Perpetual_Position_Usage_Desc_1">决定本次交易的市场敞口仓位。</string>
     <string name="Perpetual_Position_Usage_Desc_2">影响盈亏变化的放大倍数。</string>
