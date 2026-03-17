@@ -209,7 +209,7 @@
     <string name="chat_group_call_mute">Your mic will be off to start</string>
     <string name="chat_group_call_remote_peer_closed">Peer connection has been closed, please try again</string>
     <string name="chat_group_exit">%1$s left</string>
-    <string name="chat_group_join">%1$s joined the group via an invite link</string>
+    <string name="chat_group_join">%1$s joined the group via an invitation link</string>
     <string name="chat_group_remove">%1$s removed %2$s</string>
     <string name="chat_import_content">Do you want to import messages to %1$s?</string>
     <string name="chat_import_fail_content">Message import failed! Do you want to send it as a file?</string>

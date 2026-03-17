@@ -165,7 +165,7 @@ fun BrowserPage(
                     .weight(weight = 1f, fill = true),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Box(modifier = Modifier.height(50.dp))
+                Box(modifier = Modifier.height(32.dp))
                 when (step) {
                     WalletConnectBottomSheetDialogFragment.Step.Loading -> {
                         CircularProgressIndicator(
