@@ -59,6 +59,7 @@ import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.marketPriceFormat
+import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.session.Session
@@ -454,6 +455,7 @@ private fun MarketInfoCard(
     }
 }
 
+@Composable
 private fun formatVolume(
     volume: String,
     fiatRate: BigDecimal,
@@ -461,9 +463,9 @@ private fun formatVolume(
 ): String {
     return try {
         val fiatVolume = BigDecimal(volume).multiply(fiatRate)
-        "${fiatSymbol}${fiatVolume.priceFormat()}"
-    } catch (e: Exception) {
-        "${fiatSymbol}${volume}"
+        "${fiatSymbol}${fiatVolume.numberFormatCompact()}"
+    } catch (e: NumberFormatException) {
+        stringResource(R.string.N_A)
     }
 }
 
