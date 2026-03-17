@@ -2254,7 +2254,7 @@
     <string name="Price_Down_Profit">价格下跌 %1$s%% → 盈利 %2$s%% (+%3$s)</string>
     <string name="Price_Down_Loss">价格下跌 %1$s%% → 亏损 -%2$s %3$s</string>
     <string name="Price_Up_Loss">价格上涨 %1$s%% → 亏损 -%2$s %3$s</string>
-    <string name="Perpetual_Investment">保证金</string>
+    <string name="Perpetual_Amount">投入资金</string>
     <string name="Perpetual_Scenario_1">场景一：价格上涨</string>
     <string name="Perpetual_Scenario_2">场景二：价格下跌</string>
     <string name="Perpetual_Scenario_Title_Format">场景%1$d：%2$s</string>
@@ -2269,14 +2269,14 @@
     <string name="Perpetual_Profit">产生盈利</string>
     <string name="Perpetual_Loss">产生亏损</string>
     <string name="Perpetual_PnL_Rules">盈亏规则</string>
-    <string name="Perpetual_Leverage_Desc">杠杆倍数用于放大交易仓位规模，以较少的保证金控制更大的合约仓位。</string>
+    <string name="Perpetual_Leverage_Desc">杠杆倍数用于放大交易仓位，以较少的保证金控制更大的合约仓位。</string>
     <string name="Perpetual_PnL_Impact">盈亏影响</string>
     <string name="Perpetual_Leverage_Impact_1">杠杆会同时放大收益和亏损。</string>
     <string name="Perpetual_Leverage_Impact_2">杠杆倍数越高，盈亏随价格波动的变化越大。</string>
     <string name="Perpetual_Leverage_Risk">请合理选择杠杆倍数，高杠杆下，价格小幅波动也可能导致较大亏损。</string>
     <string name="Perpetual_Position_Desc">当前合约的仓位规模由「保证金 × 杠杆倍数」计算得出，表示本次交易所控制的资产仓位规模。</string>
     <string name="Perpetual_Position_Usage">用途</string>
-    <string name="Perpetual_Position_Usage_Desc_1">决定本次交易的市场敞口仓位规模。</string>
+    <string name="Perpetual_Position_Usage_Desc_1">决定本次交易的市场敞口仓位。</string>
     <string name="Perpetual_Position_Usage_Desc_2">影响盈亏变化的放大倍数。</string>
     <string name="Perpetual_Position_Usage_Support_Current_Position">支撑当前仓位</string>
     <string name="Perpetual_Position_Usage_Offset_Floating_Losses">抵扣浮动亏损</string>

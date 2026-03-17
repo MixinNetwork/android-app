@@ -206,7 +206,7 @@ private fun LongContent() {
                 value = "${leverage}x"
             ),
             GuideRowData(
-                label = stringResource(R.string.Perpetual_Investment),
+                label = stringResource(R.string.Perpetual_Amount),
                 value = "1,000 USDT"
             )
         ),
@@ -262,7 +262,7 @@ private fun ShortContent() {
                 value = "${leverage}x"
             ),
             GuideRowData(
-                label = stringResource(R.string.Perpetual_Investment),
+                label = stringResource(R.string.Perpetual_Amount),
                 value = "1,000 USDT"
             )
         ),
@@ -321,7 +321,7 @@ private fun LeverageContent() {
                 value = "${leverage}x"
             ),
             GuideRowData(
-                label = stringResource(R.string.Perpetual_Investment),
+                label = stringResource(R.string.Perpetual_Amount),
                 value = "1,000 USDT"
             )
         ),
@@ -403,7 +403,7 @@ private fun PositionContent() {
                 value = "${leverage}x"
             ),
             GuideRowData(
-                label = stringResource(R.string.Perpetual_Investment),
+                label = stringResource(R.string.Perpetual_Amount),
                 value = "${formatGuideInt(investment)} USDT"
             ),
             GuideRowData(
@@ -654,7 +654,7 @@ private fun ExampleWithScenariosCard(
     }
     val directionLabel = stringResource(R.string.Direction)
     val leverageLabel = stringResource(R.string.Leverage)
-    val investmentLabel = stringResource(R.string.Perpetual_Investment)
+    val investmentLabel = stringResource(R.string.Perpetual_Amount)
     val longDirection = stringResource(R.string.Long)
     val shortDirection = stringResource(R.string.Short)
     Column(

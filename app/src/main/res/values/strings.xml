@@ -2320,7 +2320,7 @@
     <string name="Price_Down_Profit">Price down %1$s%% → Profit %2$s%% (+%3$s)</string>
     <string name="Price_Down_Loss">Price down %1$s%% → Loss -%2$s %3$s</string>
     <string name="Price_Up_Loss">Price up %1$s%% → Loss -%2$s %3$s</string>
-    <string name="Perpetual_Investment">Margin</string>
+    <string name="Perpetual_Amount">Amount</string>
     <string name="Perpetual_Scenario_1">Scenario 1: Price Rise</string>
     <string name="Perpetual_Scenario_2">Scenario 2: Price Fall</string>
     <string name="Perpetual_Scenario_Title_Format">Scenario %1$d: %2$s</string>
