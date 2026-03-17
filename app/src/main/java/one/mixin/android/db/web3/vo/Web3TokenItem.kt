@@ -9,9 +9,11 @@ import one.mixin.android.Constants
 import one.mixin.android.api.response.web3.SwapChain
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Swappable
+import one.mixin.android.api.response.web3.WalletOutput
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
+import one.mixin.android.ui.common.biometric.EmptyUtxoException
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.Rpc
@@ -19,6 +21,7 @@ import one.mixin.android.web3.Web3Exception
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.js.Web3Signer
+import one.mixin.android.web3.send.BtcTransactionBuilder
 import org.sol4k.Constants.TOKEN_2022_PROGRAM_ID
 import org.sol4k.Constants.TOKEN_PROGRAM_ID
 import org.sol4k.Convert.solToLamport
@@ -35,8 +38,10 @@ import org.web3j.abi.datatypes.Function
 import org.web3j.abi.datatypes.Uint
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
+import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
+import org.bitcoinj.core.Transaction as BtcTransaction
 
 @Parcelize
 data class Web3TokenItem(
@@ -82,8 +87,9 @@ data class Web3TokenItem(
             chainId == Constants.ChainId.Base -> "ETH"
             chainId == Constants.ChainId.Arbitrum -> "Arbitrum One"
             chainId == Constants.ChainId.Optimism -> "Optimism"
-            chainId == Constants.ChainId.BinanceSmartChain -> "Polygon"
-            chainId == Constants.ChainId.Polygon -> "BNB Chain"
+            chainId == Constants.ChainId.Polygon -> "Polygon"
+            chainId == Constants.ChainId.BinanceSmartChain -> "BNB Chain"
+            chainId == Constants.ChainId.BITCOIN_CHAIN_ID -> "Bitcoin"
             chainId == Constants.ChainId.SOLANA_CHAIN_ID -> "Solana"
             else -> chainId
         }
@@ -190,6 +196,7 @@ fun Web3TokenItem.getChainFromName(): Chain {
         chainId == Constants.ChainId.BinanceSmartChain-> Chain.BinanceSmartChain
         chainId == Constants.ChainId.Avalanche -> Chain.Avalanche
         chainId == Constants.ChainId.SOLANA_CHAIN_ID -> Chain.Solana
+        chainId == Constants.ChainId.BITCOIN_CHAIN_ID -> Chain.Bitcoin
         else -> throw IllegalArgumentException("Not support: $chainId")
     }
 }
@@ -201,9 +208,9 @@ fun Web3TokenItem.getChainSymbolFromName(): String {
         chainId == Constants.ChainId.Optimism -> "ETH"
         chainId == Constants.ChainId.Arbitrum -> "ETH"
         chainId == Constants.ChainId.Avalanche -> "AVAX"
-        // chainId.equals("blast", true) -> "ETH"
-        chainId == Constants.ChainId.BinanceSmartChain -> "POL"
-        chainId == Constants.ChainId.Polygon -> "BNB"
+        chainId == Constants.ChainId.BinanceSmartChain -> "BNB"
+        chainId == Constants.ChainId.Polygon -> "POL"
+        chainId == Constants.ChainId.BITCOIN_CHAIN_ID -> "BTC"
         chainId == Constants.ChainId.SOLANA_CHAIN_ID -> "SOL"
         else -> throw IllegalArgumentException("Not support: $chainId")
     }
@@ -215,6 +222,9 @@ suspend fun Web3TokenItem.buildTransaction(
     fromAddress: String,
     toAddress: String,
     v: String,
+    localUtxos: List<WalletOutput>? = null,
+    rate: BigDecimal? = BigDecimal.ONE,
+    minFee: String? = null,
 ): JsSignMessage {
     if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
         Web3Signer.useSolana()
@@ -317,7 +327,32 @@ suspend fun Web3TokenItem.buildTransaction(
                 WCEthereumTransaction(fromAddress, assetKey, null, null, null, null, null, null, "0x0", data)
             }
         return JsSignMessage(0, JsSignMessage.TYPE_TRANSACTION, transaction)
+    } else if (chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+        if (!localUtxos.isNullOrEmpty()) {
+            val feeRate: BigDecimal = rate ?: BigDecimal.ONE
+            val minFeeBtc: BigDecimal? = minFee?.toBigDecimalOrNull()
+            val built: BtcTransactionBuilder.BuiltBtcTransaction = BtcTransactionBuilder.buildSendTransaction(
+                fromAddress = fromAddress,
+                toAddress = toAddress,
+                amountBtc = v,
+                localUtxos = localUtxos,
+                feeRate = feeRate,
+                minFeeBtc = minFeeBtc,
+            )
+            Timber.e("rawTxHex: ${built.rawHex} virtualSize: ${built.virtualSize} rate: $rate")
+            return JsSignMessage(
+                callbackId = 0,
+                type = JsSignMessage.TYPE_BTC_TRANSACTION,
+                data = built.rawHex,
+                fee = built.feeBtc,
+                virtualSize = built.virtualSize,
+            )
+
+        } else {
+            throw EmptyUtxoException
+        }
     } else {
         throw IllegalStateException("Not support: $chainId")
     }
 }
+

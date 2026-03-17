@@ -37,6 +37,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.home.reminder.VerifyMobileReminderBottomSheetDialogFragment
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.setting.getCurrencyData
 import one.mixin.android.ui.wallet.AssetListFixedBottomSheetDialogFragment
@@ -45,6 +46,7 @@ import one.mixin.android.ui.wallet.LoadingProgressDialogFragment
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.generateConversationId
@@ -62,6 +64,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         const val CURRENT_CURRENCY = "current_currency"
         const val CURRENT_ASSET_ID = "current_asset_id"
         const val ARGS_IS_WEB3 = "args_is_web3"
+        const val ARGS_BUY_SOURCE = "args_buy_source"
         const val ARGS_WALLET_ID_FOR_CALCULATE = "args_wallet_id_for_calculate"
 
         fun newInstance() = CalculateFragment()
@@ -72,6 +75,9 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
     private val web3ViewModel by viewModels<one.mixin.android.ui.home.web3.Web3ViewModel>()
 
     private val isWeb3 by lazy { requireArguments().getBoolean(ARGS_IS_WEB3, false) }
+    private val buySource by lazy {
+        requireArguments().getString(ARGS_BUY_SOURCE) ?: AnalyticsTracker.TradeSource.WALLET_HOME
+    }
     private val walletIdForCalculate by lazy { requireArguments().getString(ARGS_WALLET_ID_FOR_CALCULATE) }
 
     private suspend fun initData() {
@@ -203,6 +209,10 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        AnalyticsTracker.trackBuyStart(
+            wallet = if (isWeb3) AnalyticsTracker.TradeWallet.WEB3 else AnalyticsTracker.TradeWallet.MAIN,
+            source = buySource
+        )
         lifecycleScope.launch {
             binding.apply {
                 titleView.leftIb.setOnClickListener {
@@ -236,6 +246,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                         ArrayList(supportAssetIds),
                     ).setOnAssetClick { asset ->
                         this@CalculateFragment.lifecycleScope.launch {
+                            AnalyticsTracker.trackBuyTokenSelect()
                             val oldAsset = fiatMoneyViewModel.asset
                             fiatMoneyViewModel.asset = asset
                             requireContext().defaultSharedPreferences.putString(
@@ -267,6 +278,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                             object : FiatListBottomSheetDialogFragment.Callback {
                                 override fun onCurrencyClick(currency: Currency) {
                                     this@CalculateFragment.lifecycleScope.launch {
+                                        AnalyticsTracker.trackBuyFiatSelect()
                                         val oldCurrency = fiatMoneyViewModel.currency
                                         fiatMoneyViewModel.currency = currency
                                         v = "0"
@@ -349,58 +361,71 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     white = true,
                 )
                 continueVa.setOnClickListener {
-                    val value =
-                        if (v.endsWith(".")) {
-                            v.substring(0, v.length)
-                        } else {
-                            v
+                    lifecycleScope.launch {
+                        AnalyticsTracker.trackBuyPreview()
+                        if (VerifyMobileReminderBottomSheetDialogFragment.shouldShowForBuy(requireContext()) && isFragmentVisible()) {
+                            VerifyMobileReminderBottomSheetDialogFragment.showSafely(
+                                parentFragmentManager,
+                                R.string.Verify_Mobile_Number_Security_Desc,
+                                false
+                            )
+                            setLoading(false)
+                            return@launch
                         }
-                    val feePercent = fiatMoneyViewModel.calculateState?.feePercent ?: 0f
-                    val assetPrice = fiatMoneyViewModel.calculateState?.assetPrice ?: 1f
-                    val amount =
-                        if (fiatMoneyViewModel.isReverse) {
-                            getPayAmount(value.toFloat(), assetPrice, feePercent)
+
+                        val value =
+                            if (v.endsWith(".")) {
+                                v.substring(0, v.length)
+                            } else {
+                                v
+                            }
+                        val feePercent = fiatMoneyViewModel.calculateState?.feePercent ?: 0f
+                        val assetPrice = fiatMoneyViewModel.calculateState?.assetPrice ?: 1f
+                        val amount =
+                            if (fiatMoneyViewModel.isReverse) {
+                                getPayAmount(value.toFloat(), assetPrice, feePercent)
+                            } else {
+                                value
+                            }
+                        if (amount == null) {
+                            toast(R.string.error_invalid_number)
                         } else {
-                            value
-                        }
-                    if (amount == null) {
-                        toast("number error")
-                    } else {
-                        lifecycleScope.launch inner@{
-                            if (viewDestroyed()) throw IllegalStateException("View has been destroyed")
-                            try {
-                                val asset = fiatMoneyViewModel.asset ?: throw IllegalStateException("Asset is null")
-                                val destination = if (isWeb3) {
-                                    val walletId = walletIdForCalculate ?: throw IllegalStateException("Wallet ID for calculate is null")
-                                    val address = web3ViewModel.getAddressesByChainId(walletId, asset.chainId)?.destination
-                                    if (address.isNullOrEmpty()) {
-                                        toast(R.string.Alert_Not_Support)
-                                        return@inner
+                            lifecycleScope.launch inner@{
+                                if (viewDestroyed()) throw IllegalStateException("View has been destroyed")
+                                try {
+                                    val asset = fiatMoneyViewModel.asset ?: throw IllegalStateException("Asset is null")
+                                    val destination = if (isWeb3) {
+                                        val walletId = walletIdForCalculate ?: throw IllegalStateException("Wallet ID for calculate is null")
+                                        val address = web3ViewModel.getAddressesByChainId(walletId, asset.chainId)?.destination
+                                        if (address.isNullOrEmpty()) {
+                                            toast(R.string.Alert_Not_Support)
+                                            return@inner
+                                        }
+                                        address
+                                    } else {
+                                        fiatMoneyViewModel.findAndSyncDepositEntry(asset.chainId, asset.assetId)?.destination ?: throw IllegalStateException("Destination address is null")
                                     }
-                                    address
-                                } else {
-                                    fiatMoneyViewModel.findAndSyncDepositEntry(asset.chainId, asset.assetId)?.destination ?: throw IllegalStateException("Destination address is null")
-                                }
-                                binding.continueVa.displayedChild = 1
-                                val response = fiatMoneyViewModel.rampWebUrl(
-                                    amount,
-                                    asset.assetId,
-                                    fiatMoneyViewModel.currency?.name ?: throw IllegalStateException("Currency name is null"),
-                                    destination
-                                )
-                                if (response.isSuccess) {
-                                    WebActivity.show(
-                                        requireActivity(),
-                                        response.data?.url ?: "",
-                                        null
+                                    binding.continueVa.displayedChild = 1
+                                    val response = fiatMoneyViewModel.rampWebUrl(
+                                        amount,
+                                        asset.assetId,
+                                        fiatMoneyViewModel.currency?.name ?: throw IllegalStateException("Currency name is null"),
+                                        destination
                                     )
-                                } else {
-                                    ErrorHandler.handleMixinError(response.errorCode, response.errorDescription)
+                                    if (response.isSuccess) {
+                                        WebActivity.show(
+                                            requireActivity(),
+                                            response.data?.url ?: "",
+                                            null
+                                        )
+                                    } else {
+                                        ErrorHandler.handleMixinError(response.errorCode, response.errorDescription)
+                                    }
+                                    binding.continueVa.displayedChild = 0
+                                } catch (e: Exception) {
+                                    binding.continueVa.displayedChild = 0
+                                    ErrorHandler.handleError(e)
                                 }
-                                binding.continueVa.displayedChild = 0
-                            } catch (e: Exception) {
-                                binding.continueVa.displayedChild = 0
-                                ErrorHandler.handleError(e)
                             }
                         }
                     }
@@ -547,6 +572,23 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         val payingAmount =
             roundedFee.plus(BigDecimal(merchant.toDouble())).setScale(2, RoundingMode.UP)
         return payingAmount.toPlainString()
+    }
+
+    private fun isFragmentVisible(): Boolean {
+        if (!isVisible || isHidden || view == null || view?.visibility != View.VISIBLE) {
+            return false
+        }
+        
+        if (!isAdded || isDetached || isRemoving) {
+            return false
+        }
+        
+        val fragments = parentFragmentManager.fragments
+        val visibleFragments = fragments.filter { 
+            it.isVisible && !it.isHidden && it.view?.visibility == View.VISIBLE 
+        }
+        
+        return visibleFragments.lastOrNull() == this
     }
 
     private fun checkData() {

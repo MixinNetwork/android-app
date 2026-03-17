@@ -22,8 +22,7 @@ interface Web3WalletDao : BaseDao<Web3Wallet> {
             UNION ALL
             SELECT wallet_id AS id, 'mixin_safe' AS category, name, created_at AS createdAt, updated_at AS updatedAt,
                    role AS safeRole, chain_id AS safeChainId, address AS safeAddress, url AS safeUrl
-            FROM safe_wallets
-        """
+            FROM `safe_wallets`"""
     }
 
     @Query("""
@@ -44,6 +43,9 @@ interface Web3WalletDao : BaseDao<Web3Wallet> {
 
     @Query("SELECT wallet_id FROM wallets WHERE category = 'classic' ORDER BY created_at ASC LIMIT 1 ")
     suspend fun getClassicWalletId(): String?
+
+    @Query("SELECT * FROM wallets WHERE category = 'classic' LIMIT 1 ")
+    suspend fun anyClassicWallet(): Web3Wallet?
 
     @Query("SELECT * FROM ($WALLET_ITEM_QUERY) WHERE id = :walletId")
     suspend fun getWalletById(walletId: String): WalletItem?

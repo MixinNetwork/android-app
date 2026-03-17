@@ -21,11 +21,7 @@ import one.mixin.android.api.response.RampWebUrlResponse
 import one.mixin.android.api.response.RouteCreateTokenResponse
 import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
-import one.mixin.android.api.response.SafeAsset
-import one.mixin.android.api.response.SchemeResponse
-import one.mixin.android.api.response.SessionSecretResponse
 import one.mixin.android.api.response.UserAddressView
-import one.mixin.android.api.response.UserSafe
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.StakeAccount
@@ -35,7 +31,7 @@ import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Tx
 import one.mixin.android.api.response.web3.Validator
-import one.mixin.android.api.response.web3.Web3WalletResponse
+import one.mixin.android.api.response.web3.WalletOutput
 import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.db.web3.vo.Web3RawTransaction
 import one.mixin.android.db.web3.vo.Web3Token
@@ -61,7 +57,7 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 import one.mixin.android.api.request.LimitOrderRequest
 import one.mixin.android.api.response.CreateLimitOrderResponse
- 
+
 import retrofit2.http.Query
 
 interface RouteService {
@@ -276,7 +272,7 @@ interface RouteService {
     @POST("wallets")
     suspend fun createWallet(
         @Body request: WalletRequest
-    ): MixinResponse<Web3WalletResponse>
+    ): MixinResponse<Web3Wallet>
 
     @GET("wallets")
     suspend fun getWallets(): MixinResponse<List<Web3Wallet>>
@@ -306,6 +302,13 @@ interface RouteService {
     suspend fun getWalletAddresses(
         @Path("id") walletId: String
     ): MixinResponse<List<Web3Address>>
+
+    @GET("wallets/outputs")
+    suspend fun getWalletOutputs(
+        @Query("wallet_id") walletId: String? = null,
+        @Query("address") address: String? = null,
+        @Query("asset_id") assetId: String? = null,
+    ): MixinResponse<List<WalletOutput>>
 
     @GET("transactions")
     suspend fun getAllTransactions(

@@ -8,6 +8,7 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.view.doOnPreDraw
 import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -20,6 +21,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.ui.common.BottomSheetViewModel
+import one.mixin.android.ui.common.resolveBottomSheetPeekHeight
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.widget.MixinBottomSheetDialog
@@ -55,26 +57,21 @@ abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragm
         contentView = View.inflate(context, getLayoutId(), null)
         dialog.setContentView(contentView)
         val params = (contentView.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
-        behavior = params?.behavior as? BottomSheetBehavior<*>
-        if (behavior != null && behavior is BottomSheetBehavior<*>) {
-            val defaultPeekHeight = getPeekHeight(contentView, behavior!!)
-            behavior?.peekHeight =
-                if (defaultPeekHeight == 0) {
-                    val scrollContent = contentView.findViewById<View>(R.id.scroll_content)
-                    val titleView = contentView.findViewById<View>(R.id.title)
-                    scrollContent.measure(
-                        View.MeasureSpec.makeMeasureSpec(contentView.width, View.MeasureSpec.EXACTLY),
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
-                    )
-                    titleView.measure(
-                        View.MeasureSpec.makeMeasureSpec(contentView.width, View.MeasureSpec.EXACTLY),
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
-                    )
-                    scrollContent.measuredHeight + titleView.measuredHeight
-                } else {
-                    defaultPeekHeight
-                }
-            behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
+        val bottomSheetBehavior = params?.behavior as? BottomSheetBehavior<*>
+        behavior = bottomSheetBehavior
+        if (bottomSheetBehavior != null) {
+            bottomSheetBehavior.addBottomSheetCallback(bottomSheetBehaviorCallback)
+            contentView.doOnPreDraw {
+                val defaultPeekHeight = getPeekHeight(contentView, bottomSheetBehavior)
+                val contentHeight =
+                    if (defaultPeekHeight == 0) {
+                        calculateMeasuredContentHeight(contentView)
+                    } else {
+                        defaultPeekHeight
+                    }
+                bottomSheetBehavior.peekHeight = requireContext().resolveBottomSheetPeekHeight(contentView, contentHeight)
+                bottomSheetBehavior.isGestureInsetBottomIgnored = true
+            }
             dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
             dialog.window?.setGravity(Gravity.BOTTOM)
         }
@@ -159,6 +156,23 @@ abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragm
         bottomSheet: View,
         slideOffset: Float,
     ) {}
+
+    private fun calculateMeasuredContentHeight(contentView: View): Int {
+        val scrollContent = contentView.findViewById<View>(R.id.scroll_content)
+        val titleView = contentView.findViewById<View>(R.id.title)
+        val width = contentView.measuredWidth.takeIf { it > 0 } ?: contentView.width
+        val widthSpec = View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY)
+
+        scrollContent.measure(
+            widthSpec,
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+        )
+        titleView.measure(
+            widthSpec,
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+        )
+        return scrollContent.measuredHeight + titleView.measuredHeight
+    }
 
     private val bottomSheetBehaviorCallback =
         object : BottomSheetBehavior.BottomSheetCallback() {

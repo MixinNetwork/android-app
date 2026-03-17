@@ -235,11 +235,21 @@
         <item name="android:indeterminateTintMode">src_atop</item>
     </style>
 
-    <style name="BottomSheetModal" parent="@style/Widget.Design.BottomSheet.Modal">
-        <item name="android:background">@drawable/bg_upper_round</item>
+    <style name="BottomSheetModal" parent="@style/Widget.MaterialComponents.BottomSheet.Modal">
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay.MixinBottomSheet.TopRounded</item>
+        <item name="backgroundTint">?attr/bg_white</item>
     </style>
 
-    <style name="MixinBottomSheet" parent="Theme.Design.Light.BottomSheetDialog">
+    <style name="ShapeAppearanceOverlay.MixinBottomSheet.TopRounded" parent="">
+        <item name="cornerFamilyTopLeft">rounded</item>
+        <item name="cornerFamilyTopRight">rounded</item>
+        <item name="cornerSizeTopLeft">12dp</item>
+        <item name="cornerSizeTopRight">12dp</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
+        <item name="cornerSizeBottomRight">0dp</item>
+    </style>
+
+    <style name="MixinBottomSheet" parent="Theme.MaterialComponents.Light.BottomSheetDialog">
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">?attr/bg_white</item>
         <item name="android:windowFrame">@null</item>
@@ -252,7 +262,7 @@
         <item name="bottomSheetStyle">@style/BottomSheetModal</item>
     </style>
 
-    <style name="AppTheme.Dialog" parent="Theme.Design.Light.BottomSheetDialog">
+    <style name="AppTheme.Dialog" parent="Theme.MaterialComponents.Light.BottomSheetDialog">
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">?attr/bg_white</item>
         <item name="android:windowFrame">@null</item>

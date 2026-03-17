@@ -632,6 +632,14 @@
             app:popEnterAnim="@anim/stay"/>
 
         <action
+            android:id="@+id/action_web3_transactions_to_web3_btc_outputs"
+            app:destination="@id/web3_btc_outputs_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay" />
+
+        <action
             android:id="@+id/action_web3_transactions_to_staking"
             app:destination="@id/staking_fragment"
             app:enterAnim="@anim/slide_in_right"
@@ -668,6 +676,26 @@
         <argument
             android:name="args_token"
             app:argType="one.mixin.android.db.web3.vo.Web3TokenItem" />
+
+        <action
+            android:id="@+id/action_web3_transaction_to_web3_btc_outputs"
+            app:destination="@id/web3_btc_outputs_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/web3_btc_outputs_fragment"
+        android:name="one.mixin.android.web3.details.Web3BtcOutputsFragment"
+        tools:layout="@layout/fragment_web3_btc_outputs">
+        <argument
+            android:name="args_wallet_id"
+            app:argType="string" />
+        <argument
+            android:name="args_address"
+            app:argType="string" />
     </fragment>
 
 </navigation>

@@ -91,7 +91,8 @@ class RefreshSafeAccountsJob : BaseJob(
             val tokens = account.assets.mapNotNull { asset ->
                 convertSafeAssetToWeb3Token(walletId, asset)
             }
-            web3TokenDao.insertList(tokens)
+            val tokensToInsert = applyBitcoinTokenBalanceBeforeInsert(walletId, tokens)
+            web3TokenDao.insertList(tokensToInsert)
             web3TokenDao.deleteNotIn(account.accountId, tokens.map { it.assetId })
             Timber.d("Saved ${tokens.size} tokens for wallet $walletId")
         } else {
@@ -106,6 +107,9 @@ class RefreshSafeAccountsJob : BaseJob(
         return local?.copy(
             walletId = walletId,
             balance = asset.balance,
+            priceUsd = asset.priceUsd,
+            precision = asset.decimal,
+            iconUrl = asset.iconUrl,
         ) ?: assetService.getAssetByIdSuspend(asset.mixinAssetId).data?.let {
             Web3Token(
                 walletId = walletId,
@@ -114,10 +118,10 @@ class RefreshSafeAccountsJob : BaseJob(
                 name = it.name,
                 assetKey = it.assetKey ?: asset.address,
                 symbol = it.symbol,
-                iconUrl = it.iconUrl,
+                iconUrl = asset.iconUrl,
                 precision = asset.decimal,
                 balance = asset.balance,
-                priceUsd = it.priceUsd,
+                priceUsd = asset.priceUsd,
                 changeUsd = it.changeUsd,
             )
         }

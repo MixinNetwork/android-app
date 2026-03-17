@@ -19,6 +19,7 @@ import org.chromium.net.CronetException
 import retrofit2.HttpException
 import java.io.IOException
 import java.net.ConnectException
+import java.net.SocketException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.util.concurrent.ExecutionException
@@ -32,9 +33,13 @@ open class ErrorHandler {
                     is HttpException -> {
                         handleErrorCode(throwable.code(), ctx)
                     }
+                    is UtxoException -> {
+                        toast(R.string.no_available_utxo)
+                    }
                     is IOException ->
                         when (throwable) {
                             is SocketTimeoutException -> toast(R.string.error_connection_timeout)
+                            is SocketException -> ctx.getString(R.string.error_connection_error)
                             is UnknownHostException -> toast(R.string.No_network_connection)
                             is ServerErrorException -> toast(getString(R.string.error_server_5xx_code, throwable.code))
                             is ClientErrorException -> {
@@ -48,7 +53,7 @@ open class ErrorHandler {
                             is CronetException -> {
                                 handleCronetException(throwable)
                             }
-                            else -> toast(getString(R.string.error_unknown_with_message, throwable.msg()))
+                            else -> toast(getString(R.string.Network_error))
                         }
                     is CancellationException -> {
                         // ignore kotlin coroutine job cancellation exception
@@ -74,6 +79,7 @@ open class ErrorHandler {
                 is IOException ->
                     when (throwable) {
                         is SocketTimeoutException -> ctx.getString(R.string.error_connection_timeout)
+                        is SocketException -> ctx.getString(R.string.error_connection_error)
                         is UnknownHostException -> ctx.getString(R.string.No_network_connection)
                         is NetworkException -> ctx.getString(R.string.No_network_connection)
                         is DataErrorException -> ctx.getString(R.string.Data_error)
@@ -90,7 +96,7 @@ open class ErrorHandler {
 
                         is ServerErrorException -> ctx.getString(R.string.error_server_5xx_code, throwable.code)
 
-                        else -> ctx.getString(R.string.error_unknown_with_message, throwable.msg())
+                        else -> ctx.getString(R.string.Network_error)
                     }
 
                 is UtxoException -> {

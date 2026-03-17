@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/list_normal_height"
+    android:background="?attr/selectableItemBackground">
+  
+  <ImageView
+      android:id="@+id/icon"
+      android:layout_width="30dp"
+      android:layout_height="30dp"
+      android:layout_marginStart="32dp"
+      android:layout_centerVertical="true"
+      tools:ignore="ContentDescription"
+      />
+
+  <TextView
+      android:id="@+id/normal"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_toEndOf="@id/icon"
+      android:layout_marginStart="@dimen/margin_start"
+      android:textSize="16sp"
+      android:textColor="@color/text_black"
+      android:text="@string/app_name"
+      android:layout_centerVertical="true" />
+
+
+  <TextView
+      android:id="@+id/code"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="@dimen/margin_start"
+      android:layout_marginEnd="48dp"
+      android:textColor="@color/text_gray"
+      android:layout_centerVertical="true"
+      android:layout_alignParentEnd="true"
+      tools:text="+44"/>
+</RelativeLayout>

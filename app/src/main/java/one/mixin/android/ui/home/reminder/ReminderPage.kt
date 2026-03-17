@@ -73,7 +73,10 @@ fun ReminderPage(@DrawableRes contentImage: Int, @StringRes title: Int, @StringR
             )
             Spacer(modifier = Modifier.height(10.dp))
             Text(
-                stringResource(content), color = MixinAppTheme.colors.textAssist
+                text = stringResource(content),
+                color = MixinAppTheme.colors.textAssist,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
             Spacer(modifier = Modifier.height(50.dp))
             Button(

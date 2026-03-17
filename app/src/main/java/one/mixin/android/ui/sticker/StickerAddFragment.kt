@@ -227,7 +227,7 @@ class StickerAddFragment : BaseFragment() {
                     return@withContext null
                 }
                 val f = File(path)
-                if (f.length() < MIN_FILE_SIZE || f.length() > MAX_FILE_SIZE) {
+                if (f.length() !in MIN_FILE_SIZE..MAX_FILE_SIZE) {
                     handleBack(R.string.sticker_add_invalid_size)
                     return@withContext null
                 }
