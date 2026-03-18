@@ -2284,8 +2284,7 @@
     <string name="Perpetual_Position_Risk_2">价格剧烈波动可能会快速消耗投入资金。</string>
     <string name="Perpetual">永续合约</string>
     <string name="Open_Position">开仓</string>
-    <string name="Leverage">杠杆倍数</string>
-    <string name="Leverage_Short">杠杆</string>
+    <string name="Leverage">杠杆</string>
     <string name="Select_Token">选择代币</string>
     <string name="Select_Leverage">选择杠杆</string>
     <string name="Position_Size">仓位规模</string>

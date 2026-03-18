@@ -369,7 +369,7 @@ fun OpenPositionPage(
 
 
                     Text(
-                        text = stringResource(R.string.Leverage_Short),
+                        text = stringResource(R.string.Leverage),
                         fontSize = 14.sp,
                         color = MixinAppTheme.colors.textPrimary
                     )
