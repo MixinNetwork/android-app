@@ -479,8 +479,8 @@
     <string name="error_inconsistent_country">ERROR 10610: Inconsistent country</string>
     <string name="error_invalid_swap">ERROR 10611: No quotes available at the moment, please try again later.</string>
     <string name="error_trading_pair_not_supported">ERROR 10615: This trading pair is currently not supported, please try switching to a different token.</string>
-    <string name="error_trading_pair_not_supported_detailed">ERROR 10615: This trading pair is not supported yet. Please try switching to a different token. Try placing a limit order? No restrictions on amount or token.</string>
-    <string name="error_no_quote_detailed">ERROR 10611: No quotes available at the moment, please try again later. Try placing a limit order? No restrictions on amount or token.</string>
+    <string name="error_trading_pair_not_supported_detailed">ERROR 10611: This trading pair is not supported yet. Please try switching to a different token. Try placing a limit order? No restrictions on amount or token.</string>
+    <string name="error_no_quote_detailed">ERROR 10615: No quotes available at the moment, please try again later. Try placing a limit order? No restrictions on amount or token.</string>
     <string name="error_invalid_quote_amount">ERROR 10614: The input amount is either too small or too large, please adjust the amount.</string>
     <string name="error_invalid_quote_amount_detailed">ERROR 10614: The amount exceeds the maximum allowable value of %1$s. Please adjust the amount. Try placing a limit order? No restrictions on amount or token.</string>
     <string name="error_no_available_quote">ERROR 10615: This trading pair is currently not supported, please try switching to a different token.</string>
