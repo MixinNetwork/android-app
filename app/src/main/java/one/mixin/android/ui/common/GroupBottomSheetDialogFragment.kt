@@ -117,7 +117,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
 
     override fun shouldIncludeBottomInsetInPeekHeight(): Boolean = false
 
-    override fun extraPeekOffsetWhenNavigationBarPresent(): Int = 6.dp
+    override fun extraPeekOffsetWhenNavigationBarPresent(): Int = 5.dp
 
     override fun setupDialog(
         dialog: Dialog,
