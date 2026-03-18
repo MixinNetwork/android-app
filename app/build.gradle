@@ -14,7 +14,7 @@ plugins {
 
 def versionMajor = 3
 def versionMinor = 10
-def versionPatch = 2
+def versionPatch = 3
 def versionBuild = 1
 
 def includeDebugX86_64 = project.findProperty("includeDebugX86_64")?.toString()?.toBoolean() ?: false // Enable debug package for x86_64
@@ -29,7 +29,7 @@ android {
     defaultConfig {
         applicationId "one.mixin.messenger"
         minSdkVersion 26
-        targetSdkVersion 35
+        targetSdkVersion 36
         versionCode versionMajor * 1000000 + versionMinor * 10000 + versionPatch * 100 + versionBuild
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
         multiDexEnabled true
