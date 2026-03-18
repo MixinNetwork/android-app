@@ -80,9 +80,9 @@ fun PositionDetailPage(
         stringResource(R.string.Short)
     }
     val title = if (isLong) {
-        stringResource(R.string.Perpetual_Opened_Long_Title)
+        stringResource(R.string.Opened_Long)
     } else {
-        stringResource(R.string.Perpetual_Opened_Short_Title)
+        stringResource(R.string.Opened_Short)
     }
 
     val quantity = position.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
@@ -388,9 +388,9 @@ fun PositionDetailPage(
         stringResource(R.string.Short)
     }
     val title = if (isLong) {
-        stringResource(R.string.Perpetual_Closed_Long_Title)
+        stringResource(R.string.Closed_Long)
     } else {
-        stringResource(R.string.Perpetual_Closed_Short_Title)
+        stringResource(R.string.Closed_Short)
     }
 
     val quantity = positionHistory.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO

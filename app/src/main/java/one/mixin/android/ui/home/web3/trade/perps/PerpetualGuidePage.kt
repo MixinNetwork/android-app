@@ -181,7 +181,7 @@ fun PerpetualGuidePage(
 private fun OverviewContent() {
     GuideSection(
         title = stringResource(R.string.Perpetual_Guide_Overview_Title),
-        content = stringResource(R.string.Perpetual_Guide_Overview_Desc)
+        content = stringResource(R.string.perps_intro_overview)
     )
 }
 
@@ -190,10 +190,10 @@ private fun LongContent() {
     val leverage = 10
     val maxLossPercent = 100f / leverage
     ExampleWithScenariosCard(
-        title = stringResource(R.string.Perpetual_Example),
+        title = stringResource(R.string.Example),
         rows = listOf(
             GuideRowData(
-                label = stringResource(R.string.Perpetual_Trading_Pair),
+                label = stringResource(R.string.example_perpetual),
                 value = "BTC - USD",
                 iconRes = R.drawable.ic_chain_btc
             ),
@@ -206,14 +206,14 @@ private fun LongContent() {
                 value = "${leverage}x"
             ),
             GuideRowData(
-                label = stringResource(R.string.Perpetual_Amount),
+                label = stringResource(R.string.example_amount),
                 value = "1,000 USDT"
             )
         ),
         scenarios = listOf(
             ScenarioData(
                 scenario = stringResource(R.string.Perpetual_Price_Up),
-                change = stringResource(R.string.Perpetual_Price_Up_Amplitude),
+                change = stringResource(R.string.example_price_increased),
                 initialPercent = maxLossPercent,
                 basePnlAmount = 1000,
                 basePnlPercent = 100,
@@ -222,7 +222,7 @@ private fun LongContent() {
             ),
             ScenarioData(
                 scenario = stringResource(R.string.Perpetual_Price_Down),
-                change = stringResource(R.string.Perpetual_Price_Down_Amplitude),
+                change = stringResource(R.string.example_price_decreased),
                 initialPercent = maxLossPercent,
                 basePnlAmount = 1000,
                 basePnlPercent = 100,
@@ -233,7 +233,7 @@ private fun LongContent() {
     )
     Spacer(modifier = Modifier.height(16.dp))
     DescriptionWithRulesCard(
-        description = stringResource(R.string.Perpetual_Long_Desc),
+        description = stringResource(R.string.perps_long_overview),
         rules = listOf(
             stringResource(R.string.Perpetual_Price_Up) to stringResource(R.string.Perpetual_Profit),
             stringResource(R.string.Perpetual_Price_Down) to stringResource(R.string.Perpetual_Loss)
@@ -246,10 +246,10 @@ private fun ShortContent() {
     val leverage = 10
     val maxLossPercent = 100f / leverage
     ExampleWithScenariosCard(
-        title = stringResource(R.string.Perpetual_Example),
+        title = stringResource(R.string.Example),
         rows = listOf(
             GuideRowData(
-                label = stringResource(R.string.Perpetual_Trading_Pair),
+                label = stringResource(R.string.example_perpetual),
                 value = "ETH - USD",
                 iconRes = R.drawable.ic_chain_eth
             ),
@@ -262,14 +262,14 @@ private fun ShortContent() {
                 value = "${leverage}x"
             ),
             GuideRowData(
-                label = stringResource(R.string.Perpetual_Amount),
+                label = stringResource(R.string.example_amount),
                 value = "1,000 USDT"
             )
         ),
         scenarios = listOf(
             ScenarioData(
                 scenario = stringResource(R.string.Perpetual_Price_Down),
-                change = stringResource(R.string.Perpetual_Price_Down_Amplitude),
+                change = stringResource(R.string.example_price_decreased),
                 initialPercent = maxLossPercent,
                 basePnlAmount = 1000,
                 basePnlPercent = 100,
@@ -278,7 +278,7 @@ private fun ShortContent() {
             ),
             ScenarioData(
                 scenario = stringResource(R.string.Perpetual_Price_Up),
-                change = stringResource(R.string.Perpetual_Price_Up_Amplitude),
+                change = stringResource(R.string.example_price_increased),
                 initialPercent = maxLossPercent,
                 basePnlAmount = 1000,
                 basePnlPercent = 100,
@@ -289,7 +289,7 @@ private fun ShortContent() {
     )
     Spacer(modifier = Modifier.height(16.dp))
     DescriptionWithRulesCard(
-        description = stringResource(R.string.Perpetual_Short_Desc),
+        description = stringResource(R.string.perps_short_overview),
         rules = listOf(
             stringResource(R.string.Perpetual_Price_Down) to stringResource(R.string.Perpetual_Profit),
             stringResource(R.string.Perpetual_Price_Up) to stringResource(R.string.Perpetual_Loss)
@@ -305,10 +305,10 @@ private fun LeverageContent() {
     val profitPnlAmount = leverage * 100
     val profitPnlPercent = leverage * 10
     ExampleWithScenariosCard(
-        title = stringResource(R.string.Perpetual_Example),
+        title = stringResource(R.string.Example),
         rows = listOf(
             GuideRowData(
-                label = stringResource(R.string.Perpetual_Trading_Pair),
+                label = stringResource(R.string.example_perpetual),
                 value = "SOL - USD",
                 iconRes = R.drawable.ic_chain_sol
             ),
@@ -321,14 +321,14 @@ private fun LeverageContent() {
                 value = "${leverage}x"
             ),
             GuideRowData(
-                label = stringResource(R.string.Perpetual_Amount),
+                label = stringResource(R.string.example_amount),
                 value = "1,000 USDT"
             )
         ),
         scenarios = listOf(
             ScenarioData(
                 scenario = stringResource(R.string.Perpetual_Price_Up),
-                change = stringResource(R.string.Perpetual_Price_Up_Amplitude),
+                change = stringResource(R.string.example_price_increased),
                 initialPercent = fixedProfitPercent,
                 basePnlAmount = profitPnlAmount,
                 basePnlPercent = profitPnlPercent,
@@ -337,7 +337,7 @@ private fun LeverageContent() {
             ),
             ScenarioData(
                 scenario = stringResource(R.string.Perpetual_Price_Down),
-                change = stringResource(R.string.Perpetual_Price_Down_Amplitude),
+                change = stringResource(R.string.example_price_decreased),
                 initialPercent = liquidationPercent,
                 basePnlAmount = 1000,
                 basePnlPercent = 100,
@@ -351,13 +351,13 @@ private fun LeverageContent() {
     )
     Spacer(modifier = Modifier.height(16.dp))
     DescriptionWithInfoAndRiskCard(
-        description = stringResource(R.string.Perpetual_Leverage_Desc),
-        infoTitle = stringResource(R.string.Perpetual_PnL_Impact),
+        description = stringResource(R.string.perps_leverage_overview),
+        infoTitle = stringResource(R.string.impact_on_pnl),
         infoContents = listOf(
-            stringResource(R.string.Perpetual_Leverage_Impact_1),
-            stringResource(R.string.Perpetual_Leverage_Impact_2)
+            stringResource(R.string.impact_on_pnl_1),
+            stringResource(R.string.impact_on_pnl_2)
         ),
-        riskContents = listOf(stringResource(R.string.Perpetual_Leverage_Risk))
+        riskContents = listOf(stringResource(R.string.perps_leverage_risk_notice))
     )
 }
 
@@ -387,10 +387,10 @@ private fun PositionContent() {
     val lossPnlPercent = 100
 
     ExampleWithScenariosCard(
-        title = stringResource(R.string.Perpetual_Example),
+        title = stringResource(R.string.Example),
         rows = listOf(
             GuideRowData(
-                label = stringResource(R.string.Perpetual_Trading_Pair),
+                label = stringResource(R.string.example_perpetual),
                 value = "SOL - USD",
                 iconRes = R.drawable.ic_chain_sol
             ),
@@ -403,7 +403,7 @@ private fun PositionContent() {
                 value = "${leverage}x"
             ),
             GuideRowData(
-                label = stringResource(R.string.Perpetual_Amount),
+                label = stringResource(R.string.example_amount),
                 value = "${formatGuideInt(investment)} USDT"
             ),
             GuideRowData(
@@ -414,7 +414,7 @@ private fun PositionContent() {
         scenarios = listOf(
             ScenarioData(
                 scenario = stringResource(R.string.Perpetual_Price_Up),
-                change = stringResource(R.string.Perpetual_Price_Up_Amplitude),
+                change = stringResource(R.string.example_price_increased),
                 initialPercent = fixedProfitPercent,
                 basePnlAmount = profitPnlAmount,
                 basePnlPercent = profitPnlPercent,
@@ -423,7 +423,7 @@ private fun PositionContent() {
             ),
             ScenarioData(
                 scenario = stringResource(R.string.Perpetual_Price_Down),
-                change = stringResource(R.string.Perpetual_Price_Down_Amplitude),
+                change = stringResource(R.string.example_price_decreased),
                 initialPercent = maxLossPercent,
                 basePnlAmount = lossPnlAmount,
                 basePnlPercent = lossPnlPercent,
@@ -441,13 +441,13 @@ private fun PositionContent() {
     )
     Spacer(modifier = Modifier.height(16.dp))
     DescriptionWithInfoAndRiskCard(
-        description = stringResource(R.string.Perpetual_Position_Desc),
-        infoTitle = stringResource(R.string.Perpetual_Position_Usage),
+        description = stringResource(R.string.perps_position_size_overview),
+        infoTitle = stringResource(R.string.Purpose),
         infoContents = listOf(
-            stringResource(R.string.Perpetual_Position_Usage_Desc_1),
-            stringResource(R.string.Perpetual_Position_Usage_Desc_2)
+            stringResource(R.string.perps_position_size_purpose_1),
+            stringResource(R.string.perps_position_size_purpose_2)
         ),
-        riskContents = listOf(stringResource(R.string.Perpetual_Position_Risk_1) , stringResource(R.string.Perpetual_Position_Risk_2))
+        riskContents = listOf(stringResource(R.string.perps_position_size_risk_1) , stringResource(R.string.perps_position_size_risk_2))
     )
 }
 
@@ -578,17 +578,17 @@ private fun GuideSection(title: String, content: String) {
         )
         Spacer(modifier = Modifier.height(12.dp))
         Text(
-            text = stringResource(R.string.Perpetual_Features),
+            text = stringResource(R.string.Product_Features),
             fontSize = 16.sp,
             fontWeight = FontWeight.W500,
             color = MixinAppTheme.colors.textPrimary
         )
         Spacer(modifier = Modifier.height(8.dp))
         listOf(
-            stringResource(R.string.Perpetual_Feature_1),
-            stringResource(R.string.Perpetual_Feature_2),
-            stringResource(R.string.Perpetual_Feature_3),
-            stringResource(R.string.Perpetual_Feature_4),
+            stringResource(R.string.product_features_1),
+            stringResource(R.string.product_features_2),
+            stringResource(R.string.product_features_3, 200),
+            stringResource(R.string.product_features_4),
         )
             .forEach { feature ->
                 DotText(
@@ -600,22 +600,22 @@ private fun GuideSection(title: String, content: String) {
 
         Spacer(modifier = Modifier.height(12.dp))
         Text(
-            text = stringResource(R.string.Perpetual_Risk_Warning),
+            text = stringResource(R.string.Risk_Notice),
             fontSize = 16.sp,
             fontWeight = FontWeight.W500,
             color = MixinAppTheme.colors.textPrimary
         )
         Spacer(modifier = Modifier.height(8.dp))
         DotText(
-            text = stringResource(R.string.Perpetual_Risk_Warning_Content_1),
+            text = stringResource(R.string.perps_intro_risk_notice_1),
             color = MixinAppTheme.colors.textPrimary
         )
         DotText(
-            text = stringResource(R.string.Perpetual_Risk_Warning_Content_2),
+            text = stringResource(R.string.perps_intro_risk_notice_2),
             color = MixinAppTheme.colors.textPrimary
         )
         DotText(
-            text = stringResource(R.string.Perpetual_Risk_Warning_Content_3),
+            text = stringResource(R.string.perps_intro_risk_notice_3),
             color = MixinAppTheme.colors.textPrimary
         )
     }
@@ -654,7 +654,7 @@ private fun ExampleWithScenariosCard(
     }
     val directionLabel = stringResource(R.string.Direction)
     val leverageLabel = stringResource(R.string.Leverage)
-    val investmentLabel = stringResource(R.string.Perpetual_Amount)
+    val investmentLabel = stringResource(R.string.example_amount)
     val longDirection = stringResource(R.string.Long)
     val shortDirection = stringResource(R.string.Short)
     Column(
@@ -844,7 +844,7 @@ private fun ExampleWithScenariosCard(
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = stringResource(R.string.Perpetual_PnL),
+                        text = stringResource(R.string.PnL),
                         fontSize = 14.sp,
                         color = MixinAppTheme.colors.textAssist,
                         modifier = Modifier.weight(1f)
@@ -970,7 +970,7 @@ private fun DescriptionWithRulesCard(
             .padding(16.dp)
     ) {
         Text(
-            text = stringResource(R.string.Perpetual_Detail_Desc),
+            text = stringResource(R.string.Overview),
             fontSize = 16.sp,
             fontWeight = FontWeight.W500,
             color = MixinAppTheme.colors.textPrimary
@@ -986,7 +986,7 @@ private fun DescriptionWithRulesCard(
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = stringResource(R.string.Perpetual_PnL_Rules),
+            text = stringResource(R.string.PnL_Rules),
             fontSize = 16.sp,
             fontWeight = FontWeight.W500,
             color = MixinAppTheme.colors.textPrimary
@@ -1016,7 +1016,7 @@ private fun DescriptionWithInfoAndRiskCard(
             .padding(16.dp)
     ) {
         Text(
-            text = stringResource(R.string.Perpetual_Detail_Desc),
+            text = stringResource(R.string.Overview),
             fontSize = 16.sp,
             fontWeight = FontWeight.W500,
             color = MixinAppTheme.colors.textPrimary
@@ -1058,7 +1058,7 @@ private fun DescriptionWithInfoAndRiskCard(
                 .fillMaxWidth()
         ) {
             Text(
-                text = stringResource(R.string.Perpetual_Risk_Warning),
+                text = stringResource(R.string.Risk_Notice),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.W500,
                 color = MixinAppTheme.colors.textPrimary

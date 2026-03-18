@@ -276,8 +276,8 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                     Text(
                         text = stringResource(
                             id = when (step) {
-                                Step.Pending -> R.string.Confirm_Open_Position
-                                Step.Done -> R.string.Open_Position_Success
+                                Step.Pending -> R.string.confirm_opening_position
+                                Step.Done -> R.string.Position_Opened
                                 Step.Error -> R.string.swap_failed
                                 Step.Sending -> R.string.Sending
                             }

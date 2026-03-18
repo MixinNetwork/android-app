@@ -311,8 +311,8 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                     Text(
                         text = stringResource(
                             id = when (step) {
-                                Step.Pending -> R.string.Confirm_Close_Position
-                                Step.Done -> R.string.Close_Position_Success
+                                Step.Pending -> R.string.confirm_closing_position
+                                Step.Done -> R.string.Position_Closed
                                 Step.Error -> R.string.swap_failed
                                 Step.Sending -> R.string.Sending
                             }
@@ -450,7 +450,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                         Spacer(modifier = Modifier.height(4.dp))
                         Row {
                             Text(
-                                text = "${stringResource(R.string.Perpetual_PnL)}: ",
+                                text = "${stringResource(R.string.PnL)}: ",
                                 color = MixinAppTheme.colors.textAssist,
                                 fontSize = 14.sp
                             )
