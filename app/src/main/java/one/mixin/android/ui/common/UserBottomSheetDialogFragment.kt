@@ -15,7 +15,6 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.core.content.res.ResourcesCompat
-import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentManager
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
@@ -59,6 +58,7 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.showConfirmDialog
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.dp
 import one.mixin.android.session.Session
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.ui.common.info.MenuStyle
@@ -172,6 +172,12 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         contentView: View,
         behavior: BottomSheetBehavior<*>,
     ): Int = calculateCollapsedContentHeight()
+
+    override fun shouldApplyBottomInsetToBottomSheetContainer(): Boolean = false
+
+    override fun shouldIncludeBottomInsetInPeekHeight(): Boolean = false
+
+    override fun extraPeekOffsetWhenNavigationBarPresent(): Int = 6.dp
 
     override fun setupDialog(
         dialog: Dialog,
@@ -876,22 +882,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
     }
 
     private fun updateCollapsedPeekHeight() {
-        contentView.doOnPreDraw {
-            if (!isAdded) return@doOnPreDraw
-
-            val collapsedContentHeight = calculateCollapsedContentHeight()
-            if (collapsedContentHeight <= 0) return@doOnPreDraw
-
-            val peekHeight =
-                (
-                    requireContext().resolveBottomSheetPeekHeight(contentView, collapsedContentHeight) -
-                        calculateCollapsedOverflowHeight()
-                    )
-                    .coerceAtLeast(collapsedContentHeight)
-            if (behavior?.peekHeight != peekHeight) {
-                behavior?.peekHeight = peekHeight
-            }
-        }
+        schedulePeekHeightUpdate()
     }
 
     private fun calculateCollapsedContentHeight(): Int {
@@ -909,9 +900,6 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         view.measure(widthSpec, heightSpec)
         return view.measuredHeight
     }
-
-    private fun calculateCollapsedOverflowHeight(): Int =
-        (binding.scrollView.height - binding.topContent.height).coerceAtLeast(0)
 
     private val blockDrawable: Drawable by lazy {
         val d = requireNotNull(ResourcesCompat.getDrawable(resources, R.drawable.ic_bottom_block, context?.theme))
