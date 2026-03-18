@@ -1004,6 +1004,7 @@
     <string name="Set_PIN_successfully">Set PIN successfully</string>
     <string name="setting_auth_access">Approved: %1$s, Last Accessed: %2$s</string>
     <string name="setting_auth_search_hint">Mixin ID, Name</string>
+    <string name="Battery_Optimization">Battery Optimization</string>
     <string name="setting_battery_optimize_title">This will improve reliability for incoming notifications and Mixin calls</string>
     <string name="setting_battery_optimize_title_one_ui_above_s">This will improve reliability for incoming notifications and Mixin calls. Please select **Optimised** or **Unrestricted** in Settings > Battery.</string>
     <string name="setting_battery_optimize_title_one_ui_below_s">This will improve reliability for incoming notifications and Mixin calls. Tap Settings -> Battery and turn **Allow background activity** on.</string>

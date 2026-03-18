@@ -3,7 +3,6 @@ package one.mixin.android.ui.home
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.app.ActivityManager
 import android.app.Dialog
 import android.app.NotificationManager
 import android.content.Context
@@ -12,7 +11,6 @@ import android.content.IntentSender
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
-import android.os.PowerManager
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.getSystemService
 import androidx.fragment.app.DialogFragment
@@ -51,7 +49,6 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.APP_VERSION
 import one.mixin.android.Constants.Account
 import one.mixin.android.Constants.Account.PREF_BACKUP
-import one.mixin.android.Constants.Account.PREF_BATTERY_OPTIMIZE
 import one.mixin.android.Constants.Account.PREF_CHECK_STORAGE
 import one.mixin.android.Constants.Account.PREF_DEVICE_SDK
 import one.mixin.android.Constants.Account.PREF_LOGIN_OR_SIGN_UP
@@ -131,7 +128,6 @@ import one.mixin.android.tip.wc.WCEvent
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.common.LoginVerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.NavigationController
@@ -174,7 +170,6 @@ import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.SERVER
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.RomUtil
 import one.mixin.android.util.RootUtil
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.reportException
@@ -486,7 +481,6 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             refreshStickerAlbum()
             refreshExternalSchemes()
             cleanCache()
-            checkBatteryOptimization()
 
             if (!defaultSharedPreferences.getBoolean(PREF_SYNC_CIRCLE, false)) {
                 jobManager.addJobInBackground(RefreshCircleJob())
@@ -626,28 +620,6 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                 0
             }
         return currentVersion > MINI_VERSION && CURRENT_VERSION != currentVersion
-    }
-
-    @SuppressLint("BatteryLife")
-    private fun checkBatteryOptimization() {
-        val batteryOptimize = defaultSharedPreferences.getLong(PREF_BATTERY_OPTIMIZE, 0)
-        val cur = System.currentTimeMillis()
-        if (cur - batteryOptimize > INTERVAL_24_HOURS) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && !RomUtil.isEmui) {
-                getSystemService<ActivityManager>()?.let { am ->
-                    if (am.isBackgroundRestricted) {
-                        BatteryOptimizationDialogActivity.show(this)
-                    }
-                }
-            } else {
-                getSystemService<PowerManager>()?.let { pm ->
-                    if (!pm.isIgnoringBatteryOptimizations(packageName)) {
-                        BatteryOptimizationDialogActivity.show(this)
-                    }
-                }
-            }
-            defaultSharedPreferences.putLong(PREF_BATTERY_OPTIMIZE, cur)
-        }
     }
 
     private fun delayShowModifyMobile() =

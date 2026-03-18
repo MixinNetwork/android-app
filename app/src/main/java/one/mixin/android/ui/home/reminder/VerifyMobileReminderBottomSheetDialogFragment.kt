@@ -7,6 +7,7 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -165,7 +166,7 @@ class VerifyMobileReminderBottomSheetDialogFragment : MixinComposeBottomSheetDia
             ReminderPage(
                 R.drawable.bg_reminder_verify_mobile,
                 R.string.Verify_Mobile_Number,
-                subtitleResId,
+                stringResource(subtitleResId),
                 R.string.Verify_Now,
                 action = {
                     dismissAllowingStateLoss()

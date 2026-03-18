@@ -3,13 +3,17 @@ package one.mixin.android.ui.home.reminder
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
+import android.os.Build
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import androidx.core.app.NotificationManagerCompat
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.BuildConfig
+import one.mixin.android.Constants.Account.PREF_BATTERY_OPTIMIZE
 import one.mixin.android.Constants.INTERVAL_24_HOURS
 import one.mixin.android.Constants.INTERVAL_48_HOURS
 import one.mixin.android.Constants.INTERVAL_7_DAYS
@@ -19,7 +23,9 @@ import one.mixin.android.compose.theme.languageBasedImage
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getSafeAreaInsetsTop
+import one.mixin.android.extension.isBatteryOptimizationRestricted
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.openBatteryOptimizationSetting
 import one.mixin.android.extension.openNotificationSetting
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.screenHeight
@@ -28,6 +34,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.setting.SettingActivity
+import one.mixin.android.util.RomUtil
 import one.mixin.android.util.SystemUIManager
 
 @AndroidEntryPoint
@@ -74,6 +81,13 @@ class ReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
                 return PopupType.NotificationPermissionReminder
             }
 
+            val lastBatteryOptimizationReminderTime = sharedPreferences.getLong(PREF_BATTERY_OPTIMIZE, 0)
+            if (System.currentTimeMillis() - lastBatteryOptimizationReminderTime > INTERVAL_24_HOURS &&
+                context.isBatteryOptimizationRestricted()
+            ) {
+                return PopupType.BatteryOptimizationReminder
+            }
+
             val lastEmergencyContactReminderTime = sharedPreferences.getLong(PREF_EMERGENCY_CONTACT, 0)
             if (System.currentTimeMillis() - lastEmergencyContactReminderTime > INTERVAL_7_DAYS &&
                 totalUsd >= 100 && Session.hasPhone() &&
@@ -100,6 +114,15 @@ class ReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
             }
             return 0
         }
+
+        @StringRes
+        private fun getBatteryOptimizationContentResId(): Int {
+            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                R.string.setting_battery_optimize_title_one_ui_above_s
+            } else {
+                R.string.setting_battery_optimize_title_one_ui_below_s
+            }
+        }
     }
 
     private val popupType by lazy {
@@ -108,6 +131,7 @@ class ReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
             PopupType.NewVersionReminder::class.java.simpleName -> PopupType.NewVersionReminder
             PopupType.BackupMnemonicReminder::class.java.simpleName -> PopupType.BackupMnemonicReminder
             PopupType.NotificationPermissionReminder::class.java.simpleName -> PopupType.NotificationPermissionReminder
+            PopupType.BatteryOptimizationReminder::class.java.simpleName -> PopupType.BatteryOptimizationReminder
             PopupType.RestoreContactReminder::class.java.simpleName -> PopupType.RestoreContactReminder
             else -> throw IllegalArgumentException("Unknown PopupType")
         }
@@ -148,7 +172,7 @@ class ReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
         MixinAppTheme {
             when (popupType) {
                 is PopupType.NewVersionReminder -> {
-                    ReminderPage(R.drawable.bg_reminber_version, R.string.New_Update_Available, R.string.New_Update_Available_desc, R.string.Update_Now, action = {
+                    ReminderPage(R.drawable.bg_reminber_version, R.string.New_Update_Available, stringResource(R.string.New_Update_Available_desc), R.string.Update_Now, action = {
                         Session.getAccount()?.system?.messenger?.let { it -> (requireActivity() as? MainActivity)?.showUpdate(it.releaseUrl) }
                         dismissAllowingStateLoss()
                     }, dismiss = {
@@ -161,7 +185,7 @@ class ReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
                 }
 
                 is PopupType.BackupMnemonicReminder -> {
-                    ReminderPage(R.drawable.bg_reminber_mnemonic, R.string.Backup_Mnemonic_Phrase, R.string.Backup_Mnemonic_Phrase_desc, R.string.Backup_Now, action = {
+                    ReminderPage(R.drawable.bg_reminber_mnemonic, R.string.Backup_Mnemonic_Phrase, stringResource(R.string.Backup_Mnemonic_Phrase_desc), R.string.Backup_Now, action = {
                         SettingActivity.showMnemonicPhrase(requireContext())
                         dismissAllowingStateLoss()
                     }, dismiss = {
@@ -178,7 +202,7 @@ class ReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
                         languageBasedImage(
                             R.drawable.bg_reminder_notifaction,
                             R.drawable.bg_reminder_notifaction_cn
-                        ), R.string.Turn_On_Notifications, R.string.notification_content, R.string.Enable_Notifications, action = {
+                        ), R.string.Turn_On_Notifications, stringResource(R.string.notification_content), R.string.Enable_Notifications, action = {
                             requireContext().openNotificationSetting()
                             dismissAllowingStateLoss()
                         }, dismiss = {
@@ -190,8 +214,35 @@ class ReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
                         })
                 }
 
+                is PopupType.BatteryOptimizationReminder -> {
+                    ReminderPage(
+                        languageBasedImage(
+                            R.drawable.bg_reminder_notifaction,
+                            R.drawable.bg_reminder_notifaction_cn
+                        ),
+                        R.string.Battery_Optimization,
+                        batteryOptimizationContent(),
+                        R.string.Go_settings,
+                        action = {
+                            requireContext().defaultSharedPreferences.putLong(
+                                PREF_BATTERY_OPTIMIZE,
+                                System.currentTimeMillis(),
+                            )
+                            requireContext().openBatteryOptimizationSetting()
+                            dismissAllowingStateLoss()
+                        },
+                        dismiss = {
+                            requireContext().defaultSharedPreferences.putLong(
+                                PREF_BATTERY_OPTIMIZE,
+                                System.currentTimeMillis(),
+                            )
+                            dismissAllowingStateLoss()
+                        },
+                    )
+                }
+
                 is PopupType.RestoreContactReminder -> {
-                    ReminderPage(R.drawable.bg_reminber_recovery_contact, R.string.Emergency_Contact, R.string.setting_emergency_content, R.string.Continue, action = {
+                    ReminderPage(R.drawable.bg_reminber_recovery_contact, R.string.Emergency_Contact, stringResource(R.string.setting_emergency_content), R.string.Continue, action = {
                         SettingActivity.showEmergencyContact(requireContext())
                         dismissAllowingStateLoss()
                     }, dismiss = {
@@ -214,10 +265,18 @@ class ReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
     override fun showError(error: String) {
     }
 
+    private fun batteryOptimizationContent(): String {
+        return getString(getBatteryOptimizationContentResId())
+            .replace("<b>", "")
+            .replace("</b>", "")
+            .replace("**", "")
+    }
+
     sealed class PopupType {
         object NewVersionReminder : PopupType()
         object BackupMnemonicReminder : PopupType()
         object NotificationPermissionReminder : PopupType()
+        object BatteryOptimizationReminder : PopupType()
         object RestoreContactReminder : PopupType()
     }
 }

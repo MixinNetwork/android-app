@@ -839,6 +839,7 @@
     <string name="Set_PIN_successfully">Se ha establecido el PIN con éxito</string>
     <string name="setting_auth_access">Aprobado: %1$s, último acceso: %2$s</string>
     <string name="setting_auth_search_hint">ID de Mixin, nombre</string>
+    <string name="Battery_Optimization">Optimización de batería</string>
     <string name="setting_battery_optimize_title">Esto mejorará la confiabilidad de las notificaciones entrantes y las llamadas de Mixin.</string>
     <string name="setting_battery_optimize_title_one_ui_above_s">Esto mejorará la confiabilidad de las notificaciones entrantes y las llamadas de Mixin. Selecciona **Optimizado** o **Sin restricciones** en Configuración > Batería.</string>
     <string name="setting_battery_optimize_title_one_ui_below_s">Esto mejorará la confiabilidad de las notificaciones entrantes y las llamadas de Mixin. Pulsa Configuración -> Batería y activa **Permitir actividad en segundo plano**.</string>

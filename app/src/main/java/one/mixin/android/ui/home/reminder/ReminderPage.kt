@@ -29,11 +29,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
-
 import one.mixin.android.compose.theme.MixinAppTheme
 
 @Composable
-fun ReminderPage(@DrawableRes contentImage: Int, @StringRes title: Int, @StringRes content: Int, @StringRes actionStr: Int, action: () -> Unit, dismiss: () -> Unit) {
+fun ReminderPage(
+    @DrawableRes contentImage: Int,
+    @StringRes title: Int,
+    content: String,
+    @StringRes actionStr: Int,
+    action: () -> Unit,
+    dismiss: () -> Unit,
+) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier
             .clip(RoundedCornerShape(topEnd = 12.dp, topStart = 12.dp))
@@ -73,7 +79,7 @@ fun ReminderPage(@DrawableRes contentImage: Int, @StringRes title: Int, @StringR
             )
             Spacer(modifier = Modifier.height(10.dp))
             Text(
-                text = stringResource(content),
+                text = content,
                 color = MixinAppTheme.colors.textAssist,
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center

@@ -33,6 +33,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.PowerManager
 import android.os.VibrationEffect
 import android.os.VibrationEffect.EFFECT_CLICK
 import android.os.VibrationEffect.EFFECT_DOUBLE_CLICK
@@ -1278,40 +1279,71 @@ fun Context.getStringDeviceId(): String {
     return getStringDeviceId(contentResolver)
 }
 
-fun Context.handleIgnoreBatteryOptimization(newTask: Boolean = false) {
-    if (Build.MANUFACTURER.equalsIgnoreCase("google") || Build.MANUFACTURER.equalsIgnoreCase("samsung")) {
-        requestIgnoreBatteryOptimization(newTask)
+fun Context.isBatteryOptimizationRestricted(): Boolean {
+    return isSystemBatteryOptimizationRestricted() || hasCustomRomBackgroundRestriction()
+}
+
+private fun Context.isSystemBatteryOptimizationRestricted(): Boolean {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && !RomUtil.isEmui) {
+        getSystemService<ActivityManager>()?.isBackgroundRestricted == true
     } else {
-        openIgnoreBatteryOptimizationSetting(newTask)
+        getSystemService<PowerManager>()?.isIgnoringBatteryOptimizations(packageName) == false
     }
 }
 
-fun Context.requestIgnoreBatteryOptimization(newTask: Boolean = false) {
-    Intent().apply {
-        action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
-        data = Uri.parse("package:$packageName")
-        if (newTask) {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        }
-        try {
-            startActivity(this)
-        } catch (e: ActivityNotFoundException) {
-            Timber.w("Battery optimization activity not found")
-        }
+private fun Context.hasCustomRomBackgroundRestriction(): Boolean {
+    return when (RomPermissionUtil.getCurrentRomType()) {
+        RomPermissionUtil.RomType.MIUI,
+        RomPermissionUtil.RomType.OPPO,
+        RomPermissionUtil.RomType.VIVO,
+        RomPermissionUtil.RomType.HUAWEI,
+        RomPermissionUtil.RomType.HONOR
+        -> !RomPermissionUtil.checkBackgroundStartPermission(this)
+        else -> false
     }
 }
 
-fun Context.openIgnoreBatteryOptimizationSetting(newTask: Boolean = false) {
-    Intent().apply {
-        action = Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS
-        if (newTask) {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+@SuppressLint("BatteryLife")
+fun Context.openBatteryOptimizationSetting() {
+    val appDetailsIntent =
+        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+            data = Uri.parse("package:$packageName")
         }
-        try {
-            startActivity(this)
-        } catch (e: ActivityNotFoundException) {
-            Timber.w("Power setting activity not found")
+    val requestIntent =
+        Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+            data = Uri.parse("package:$packageName")
         }
+    val intents =
+        if (RomUtil.isOneUi) {
+            listOf(appDetailsIntent, requestIntent)
+        } else if (Build.MANUFACTURER.equals("google", ignoreCase = true) || Build.MANUFACTURER.equals("samsung", ignoreCase = true)) {
+            listOf(requestIntent, appDetailsIntent)
+        } else {
+            listOf(appDetailsIntent, requestIntent)
+        }
+
+    if (!intents.any(::tryStartActivity)) {
+        Timber.w("Battery optimization page activity not found")
+    }
+}
+
+private fun Context.tryStartActivity(intent: Intent): Boolean {
+    val launchIntent =
+        Intent(intent).apply {
+            if (this@tryStartActivity !is Activity) {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+        }
+    if (launchIntent.resolveActivity(packageManager) == null) {
+        return false
+    }
+    return try {
+        startActivity(launchIntent)
+        true
+    } catch (e: ActivityNotFoundException) {
+        false
+    } catch (e: SecurityException) {
+        false
     }
 }
 

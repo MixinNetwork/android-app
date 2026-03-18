@@ -787,6 +787,7 @@
     <string name="Set_PIN_successfully">PINコードの設定が完了しました。</string>
     <string name="setting_auth_access">許可: %1$s, 最終アクセス: %2$s</string>
     <string name="setting_auth_search_hint">Mixin ID, 名前</string>
+    <string name="Battery_Optimization">バッテリー最適化</string>
     <string name="setting_battery_optimize_title">これにより、通知の受信や Mixinの呼び出しに対する確実性が向上します</string>
     <string name="setting_battery_optimize_title_one_ui_above_s">これにより、通知の受信やMixinの呼び出しに対する確実性が向上します。「設定」→「バッテリー」をタップしてください。そして**「最適化」** もしくは **「制限なし」**を選択してください。</string>
     <string name="setting_battery_optimize_title_one_ui_below_s">これにより、通知の受信やMixinの呼び出しに対する確実性が向上します。「設定」→「バッテリー」をタップしてください。そして**「バックグラウンドでの活動を許可」**をオンにしてください。</string>
