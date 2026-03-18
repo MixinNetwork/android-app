@@ -41,10 +41,9 @@ suspend fun initializeAccountSession(
         clearJobsAndRawTransaction(context, account.identityNumber)
     }
 
-    // Only clear crypto wallet and shared preferences if switching to a different user
-    // This preserves user settings on same-account re-login
+    // Now clear any sensitive data
+    CryptoWalletHelper.clear(context)
     if (!isSameUser) {
-        CryptoWalletHelper.clear(context)
         context.defaultSharedPreferences.clear()
     }
 
