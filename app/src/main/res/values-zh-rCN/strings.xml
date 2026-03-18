@@ -2225,5 +2225,6 @@
     <string name="title">选择一个国家或地区</string>
     <string name="anonymous_number">匿名号码</string>
     <string name="Forget_Pin">忘记 PIN</string>
+    <string name="forget_pin_help_url">https://support.mixin.one/zh/article/pin-1vb2rc7/</string>
     <string name="Switch_Account">切换账号</string>
 </resources>
