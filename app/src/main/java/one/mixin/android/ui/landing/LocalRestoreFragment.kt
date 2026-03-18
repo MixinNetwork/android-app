@@ -32,6 +32,7 @@ import one.mixin.android.extension.putString
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.session.resolveCurrentUserScopeManager
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.ChooseFolderContract
 import one.mixin.android.util.backup.BackupInfo
@@ -295,10 +296,14 @@ class LocalRestoreFragment : BaseFragment(R.layout.fragment_local_restore) {
             if (viewDestroyed()) return@launch
 
             try {
+                val context = context ?: return@launch
+                withContext(Dispatchers.IO) {
+                    resolveCurrentUserScopeManager(context).exit("local restore overwrite")
+                }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    restoreApi29(requireContext(), restoreCallback)
+                    restoreApi29(context, restoreCallback)
                 } else {
-                    restore(requireContext(), restoreCallback)
+                    restore(context, restoreCallback)
                 }
             } catch (e: Exception) {
                 Timber.e(e, "Restore crashed")
@@ -311,17 +316,27 @@ class LocalRestoreFragment : BaseFragment(R.layout.fragment_local_restore) {
     private val restoreCallback: (result: Result) -> Unit = { result ->
         BackupNotification.cancel()
         if (result == Result.SUCCESS) {
-            context?.let {
-                InitializeActivity.showLoading(
-                    it,
-                    source = InitializeActivity.SOURCE_LOGIN,
-                )
+            lifecycleScope.launch {
+                try {
+                    val context = context ?: return@launch
+                    withContext(Dispatchers.IO) {
+                        resolveCurrentUserScopeManager(context).ensureScopeFromSession()
+                    }
+                    context.defaultSharedPreferences.putBoolean(
+                        Constants.Account.PREF_RESTORE,
+                        false,
+                    )
+                    InitializeActivity.showLoading(
+                        context,
+                        source = InitializeActivity.SOURCE_LOGIN,
+                    )
+                    activity?.finish()
+                } catch (e: Exception) {
+                    Timber.e(e, "Failed to re-inject restored database")
+                    hideProgress()
+                    showRestoreFailure(e)
+                }
             }
-            defaultSharedPreferences.putBoolean(
-                Constants.Account.PREF_RESTORE,
-                false,
-            )
-            activity?.finish()
         } else {
             hideProgress()
             showErrorAlert(result)
