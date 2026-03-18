@@ -55,6 +55,7 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
                 if (INSTANCE != null && currentIdentityNumber != scopedIdentity) {
                     INSTANCE?.close()
                     INSTANCE = null
+                    supportSQLiteDatabase = null
                 }
                 if (INSTANCE == null) {
                     val dbPath = File(dbDir(context, scopedIdentity), PENDING_DB_NAME).absolutePath
@@ -188,7 +189,10 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
 
     override fun close() {
         super.close()
-        INSTANCE = null
-        currentIdentityNumber = null
+        synchronized(lock) {
+            INSTANCE = null
+            currentIdentityNumber = null
+            supportSQLiteDatabase = null
+        }
     }
 }

@@ -199,7 +199,15 @@ open class Injector {
     }
 
     init {
-        injectSelf()
+        // Defer session-scoped injection until ensureSessionInjection() is called
+        // This avoids crashes when Session.getAccount() is null at construction time
+        try {
+            if (Session.getAccount() != null) {
+                injectSelf()
+            }
+        } catch (e: Exception) {
+            // Injection will happen later via ensureSessionInjection()
+        }
     }
 
     protected tailrec fun signalKeysChannel(blazeMessage: BlazeMessage): JsonElement? {

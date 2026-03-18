@@ -11,6 +11,7 @@ import one.mixin.android.db.WalletDatabase
 import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.session.CurrentUserScopeManager
+import javax.inject.Provider
 
 @InstallIn(SingletonComponent::class)
 @Module
@@ -18,15 +19,15 @@ internal object BaseDbModule {
     @Provides
     fun provideSignalDb(app: Application) = SignalDatabase.getDatabase(app)
     @Provides
-    fun provideFtsDb(scopeManager: CurrentUserScopeManager) = scopeManager.getFtsDatabase()
+    fun provideFtsDb(scopeManagerProvider: Provider<CurrentUserScopeManager>) = scopeManagerProvider.get().getFtsDatabase()
     @Provides
-    fun provideWalletDatabase(scopeManager: CurrentUserScopeManager) = scopeManager.getWalletDatabase()
+    fun provideWalletDatabase(scopeManagerProvider: Provider<CurrentUserScopeManager>) = scopeManagerProvider.get().getWalletDatabase()
     @Provides
     fun provideRatchetSenderKeyDao(db: SignalDatabase) = db.ratchetSenderKeyDao()
     @Provides
-    fun provideDb(scopeManager: CurrentUserScopeManager) = scopeManager.getMixinDatabase()
+    fun provideDb(scopeManagerProvider: Provider<CurrentUserScopeManager>) = scopeManagerProvider.get().getMixinDatabase()
     @Provides
-    fun providePendingDatabase(scopeManager: CurrentUserScopeManager): PendingDatabase = scopeManager.getPendingDatabase()
+    fun providePendingDatabase(scopeManagerProvider: Provider<CurrentUserScopeManager>): PendingDatabase = scopeManagerProvider.get().getPendingDatabase()
     @Provides
     fun provideUserDao(db: MixinDatabase) = db.userDao()
     @Provides

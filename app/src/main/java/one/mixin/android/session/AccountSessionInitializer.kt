@@ -22,19 +22,31 @@ suspend fun initializeAccountSession(
     account: Account,
     sessionKey: EdKeyPair,
 ) {
-    withContext(Dispatchers.IO) {
-        clearJobsAndRawTransaction(context, account.identityNumber)
-    }
+    // Check if we're logging into the same account to preserve user settings
+    val isSameUser = Session.getAccountId() == account.userId
 
-    CryptoWalletHelper.clear(context)
-    context.defaultSharedPreferences.clear()
-
+    // Store session data first
     val privateKey = sessionKey.privateKey
     val pinToken = decryptPinToken(account.pinToken.decodeBase64(), privateKey)
     Session.storeEd25519Seed(privateKey.base64Encode())
     Session.storePinToken(pinToken.base64Encode())
     Session.storeAccount(account)
+
+    // Enter the user scope and migrate databases BEFORE clearing anything
+    // This ensures we operate on the correct scoped database after migration
     resolveCurrentUserScopeManager(context).enter(account)
+
+    // Now clear jobs and raw transactions from the migrated scoped database
+    withContext(Dispatchers.IO) {
+        clearJobsAndRawTransaction(context, account.identityNumber)
+    }
+
+    // Only clear crypto wallet and shared preferences if switching to a different user
+    // This preserves user settings on same-account re-login
+    if (!isSameUser) {
+        CryptoWalletHelper.clear(context)
+        context.defaultSharedPreferences.clear()
+    }
 
     if (Session.hasPhone()) {
         removeValueFromEncryptedPreferences(context, Constants.Tip.MNEMONIC)
