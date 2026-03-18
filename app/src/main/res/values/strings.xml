@@ -2351,6 +2351,7 @@
     <string name="Perpetual">Perpetual</string>
     <string name="Open_Position">Open Position</string>
     <string name="Leverage">Leverage Multiplier</string>
+    <string name="Leverage_Short">Leverage</string>
     <string name="Select_Token">Select Token</string>
     <string name="Select_Leverage">Select Leverage</string>
     <string name="Position_Size">Position Scale</string>

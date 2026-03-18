@@ -155,7 +155,7 @@ private fun LeverageContent(
             .padding(20.dp)
     ) {
         Text(
-            text = stringResource(R.string.Leverage),
+            text = stringResource(R.string.Leverage_Short),
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             color = MixinAppTheme.colors.textPrimary
