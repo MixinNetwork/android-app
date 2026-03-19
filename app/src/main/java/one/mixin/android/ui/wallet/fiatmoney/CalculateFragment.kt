@@ -119,10 +119,13 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         } ?: supportCurrencies.lastOrNull()
         fiatMoneyViewModel.asset =
             fiatMoneyViewModel.findAssetsByIds(routeProfile.supportAssetIds).let { list ->
-                if (assetId == null) {
-                    requireContext().defaultSharedPreferences.putString(CURRENT_ASSET_ID, list.firstOrNull()?.assetId)
+                val defaultAssetId = routeProfile.supportAssetIds.firstOrNull()
+                if (assetId == null && defaultAssetId != null) {
+                    requireContext().defaultSharedPreferences.putString(CURRENT_ASSET_ID, defaultAssetId)
                 }
-                list.find { it.assetId == assetId } ?: list.firstOrNull()
+                list.find { it.assetId == assetId }
+                    ?: list.find { it.assetId == defaultAssetId }
+                    ?: list.firstOrNull()
             }
 
         val binding = bindingOrNull()
@@ -683,7 +686,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 val assetId =
                     requireContext().defaultSharedPreferences.getString(
                         CURRENT_ASSET_ID,
-                        USDT_ASSET_ETH_ID,
+                        null
                     ) ?: routeProfile.supportAssetIds.first()
                 val currency = getDefaultCurrency(requireContext(), routeProfile.supportCurrencies)
                 val tickerResponse =
