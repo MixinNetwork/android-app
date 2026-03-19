@@ -3,6 +3,7 @@ package one.mixin.android.ui.home.web3.trade
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -27,6 +28,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,10 +66,16 @@ import org.threeten.bp.ZoneId
 import org.threeten.bp.ZonedDateTime
 import org.threeten.bp.format.DateTimeFormatter
 import java.math.BigDecimal
+import kotlinx.coroutines.launch
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.roundToInt
 
 private const val CANDLE_REFRESH_INTERVAL_MS = 10_000L
+private const val DEFAULT_CANDLE_SCALE = 1f
+private const val MIN_CANDLE_SCALE = 0.5f
+private const val MAX_CANDLE_SCALE = 3f
 
 @Composable
 fun CandleChart(
@@ -156,16 +164,24 @@ private fun ScrollableCandleChart(
     val items = candleView.items
     if (items.isEmpty()) return
 
-    val candleWidth = 6.dp
-    val spacing = 2.dp
+    val baseCandleWidth = 6.dp
+    val baseSpacing = 2.dp
     val density = LocalDensity.current
 
     val scrollState = rememberScrollState()
+    val coroutineScope = rememberCoroutineScope()
     var touchXOnChart by remember { mutableStateOf<Float?>(null) }
     var isTouching by remember { mutableStateOf(false) }
+    var isPinching by remember { mutableStateOf(false) }
+    var candleScale by remember(items.size) { mutableStateOf(DEFAULT_CANDLE_SCALE) }
+
+    val candleWidth = baseCandleWidth * candleScale
+    val spacing = baseSpacing * candleScale
 
     val candleStepPx = with(density) { (candleWidth + spacing).toPx() }
     val candleWidthPx = with(density) { candleWidth.toPx() }
+    val baseCandleWidthPx = with(density) { baseCandleWidth.toPx() }
+    val baseSpacingPx = with(density) { baseSpacing.toPx() }
     val chartStartPaddingPx = with(density) { 8.dp.toPx() }
     val totalChartWidthPx = with(density) {
         (8.dp + (candleWidth * items.size) + (spacing * (items.size - 1).coerceAtLeast(0))).toPx()
@@ -231,7 +247,49 @@ private fun ScrollableCandleChart(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(end = axisPanelWidth)
-                    .pointerInput(items.size, scrollState.value) {
+                    .pointerInput(
+                        items.size,
+                        viewportWidthPx,
+                        chartStartPaddingPx,
+                        baseCandleWidthPx,
+                        baseSpacingPx,
+                    ) {
+                        detectTransformGestures(
+                            panZoomLock = true,
+                            onGesture = { centroid, pan, zoom, _ ->
+                                if (abs(zoom - 1f) < 0.0001f && abs(pan.x) < 0.0001f) {
+                                    return@detectTransformGestures
+                                }
+
+                                isPinching = true
+                                isTouching = false
+                                touchXOnChart = null
+
+                                val oldScale = candleScale
+                                val newScale = (oldScale * zoom).coerceIn(MIN_CANDLE_SCALE, MAX_CANDLE_SCALE)
+                                val oldStepPx = (baseCandleWidthPx + baseSpacingPx) * oldScale
+                                val newStepPx = (baseCandleWidthPx + baseSpacingPx) * newScale
+                                val contentX = scrollState.value + centroid.x - chartStartPaddingPx
+                                val stepIndex = if (oldStepPx > 0f) contentX / oldStepPx else 0f
+
+                                candleScale = newScale
+
+                                val newTotalWidthPx = chartStartPaddingPx +
+                                    (baseCandleWidthPx * newScale * items.size) +
+                                    (baseSpacingPx * newScale * (items.size - 1).coerceAtLeast(0))
+                                val maxScroll = (newTotalWidthPx - viewportWidthPx).coerceAtLeast(0f)
+                                val anchoredScroll = (stepIndex * newStepPx) - (centroid.x - chartStartPaddingPx)
+                                val targetScroll = (anchoredScroll - pan.x).roundToInt()
+                                    .coerceIn(0, maxScroll.roundToInt())
+
+                                coroutineScope.launch {
+                                    scrollState.scrollTo(targetScroll)
+                                }
+                            }
+                        )
+                    }
+                    .pointerInput(items.size, totalChartWidthPx, isPinching) {
+                        if (isPinching) return@pointerInput
                         detectDragGesturesAfterLongPress(
                             onDragStart = { offset ->
                                 isTouching = true
@@ -253,7 +311,7 @@ private fun ScrollableCandleChart(
                             }
                         )
                     }
-                    .horizontalScroll(scrollState, enabled = !isTouching)
+                    .horizontalScroll(scrollState, enabled = !isTouching && !isPinching)
                     .clipToBounds()
             ) {
                 PerpsCandleChartCanvas(
