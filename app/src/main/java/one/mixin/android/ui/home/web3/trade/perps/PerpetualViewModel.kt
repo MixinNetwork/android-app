@@ -100,12 +100,13 @@ class PerpetualViewModel @Inject constructor(
                 val data = response.data
                 if (response.isSuccess && data != null) {
                     Timber.d("Perps markets loaded: ${data.size} markets")
-                    
-                    withContext(Dispatchers.IO) {
-                        perpsMarketDao.insertAll(data)
+
+                    val orderedMarkets = withContext(Dispatchers.IO) {
+                        perpsMarketDao.replaceAll(data)
+                        perpsMarketDao.getAllMarkets()
                     }
-                    
-                    onSuccess(data)
+
+                    onSuccess(orderedMarkets)
                 } else {
                     val error = "Failed to load markets: ${response.errorDescription}"
                     Timber.e(error)
