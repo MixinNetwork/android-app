@@ -185,6 +185,7 @@ import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.web3.js.Web3Signer
+import one.mixin.android.websocket.ReconnectWorker
 import one.mixin.android.worker.SessionWorker
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
@@ -453,6 +454,11 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                 "SessionWorker",
                 ExistingPeriodicWorkPolicy.UPDATE,
                 periodicWorkRequest
+            )
+            val request = PeriodicWorkRequestBuilder<ReconnectWorker>(15, TimeUnit.MINUTES)
+                .build()
+            WorkManager.getInstance(this@MainActivity).enqueueUniquePeriodicWork(
+                "Reconnect", ExistingPeriodicWorkPolicy.KEEP, request
             )
         }
     }
