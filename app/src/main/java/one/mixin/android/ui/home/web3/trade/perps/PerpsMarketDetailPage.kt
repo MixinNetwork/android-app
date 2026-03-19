@@ -417,13 +417,13 @@ private fun MarketInfoCard(
             Spacer(modifier = Modifier.width(8.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = stringResource(R.string.How_Perps_Works),
+                    text = stringResource(R.string.how_perps_works),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
                     color = MixinAppTheme.colors.textPrimary
                 )
                 Text(
-                    text = stringResource(R.string.Learn_How_To_Trade_Perps),
+                    text = stringResource(R.string.learn_how_to_trade_perps),
                     fontSize = 12.sp,
                     color = MixinAppTheme.colors.textAssist
                 )
@@ -754,7 +754,7 @@ private fun OpenPositionCard(
             Column {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = stringResource(R.string.Position_Size),
+                        text = stringResource(R.string.position_size),
                         fontSize = 12.sp,
                         color = MixinAppTheme.colors.textAssist
                     )

@@ -37,7 +37,7 @@ class TotalPositionValueAdapter(
 
     fun submitTitle(@StringRes titleResId: Int) {
         this.titleResId = titleResId
-        this.isClosed = (titleResId == R.string.Realized_PnL)
+        this.isClosed = (titleResId == R.string.Total_Realized_PnL)
         notifyItemChanged(0)
     }
 

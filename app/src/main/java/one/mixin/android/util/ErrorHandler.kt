@@ -334,7 +334,7 @@ fun Context.getMixinErrorStringByCode(
             getString(R.string.error_perps_order_value_too_small)
         }
         ErrorHandler.PERPS_MARKET_ALREADY_HAS_ACTIVE_POSITION -> {
-            getString(R.string.error_perps_market_already_has_active_position)
+            getString(R.string.error_already_had_open_position)
         }
         ErrorHandler.UNSUPPORTED_WATCH_ADDRESS -> {
             getString(R.string.error_watch_address_not_supported)

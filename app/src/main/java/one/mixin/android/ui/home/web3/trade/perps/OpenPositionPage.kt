@@ -414,7 +414,7 @@ fun OpenPositionPage(
                             }
 
                             val displayText = when (lev) {
-                                -1 -> stringResource(R.string.slippage_custom)
+                                -1 -> stringResource(R.string.Custom)
                                 maxLeverage.takeIf { it > 1 } -> stringResource(R.string.Max)
                                 else -> "${lev}x"
                             }
@@ -491,7 +491,7 @@ fun OpenPositionPage(
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Row (verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = stringResource(R.string.Position_Size),
+                                text = stringResource(R.string.position_size),
                                 fontSize = 14.sp,
                                 color = MixinAppTheme.colors.textAssist
                             )

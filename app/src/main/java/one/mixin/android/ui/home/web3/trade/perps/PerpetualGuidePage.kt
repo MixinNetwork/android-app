@@ -85,11 +85,11 @@ fun PerpetualGuidePage(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val tabs = listOf(
-        stringResource(R.string.Perpetual_Guide_Overview),
+        stringResource(R.string.Brief_Introduction),
         stringResource(R.string.Long),
         stringResource(R.string.Short),
         stringResource(R.string.Leverage),
-        stringResource(R.string.Position_Size)
+        stringResource(R.string.position_size)
     )
     val safeInitialTab = initialTab.coerceIn(0, tabs.lastIndex)
     var selectedTab by remember(safeInitialTab) { mutableIntStateOf(safeInitialTab) }
@@ -180,7 +180,7 @@ fun PerpetualGuidePage(
 @Composable
 private fun OverviewContent() {
     GuideSection(
-        title = stringResource(R.string.Perpetual_Guide_Overview_Title),
+        title = stringResource(R.string.Overview),
         content = stringResource(R.string.perps_intro_overview)
     )
 }
@@ -407,7 +407,7 @@ private fun PositionContent() {
                 value = "${formatGuideInt(investment)} USDT"
             ),
             GuideRowData(
-                label = stringResource(R.string.Position_Size),
+                label = stringResource(R.string.position_size),
                 value = orderValueText
             )
         ),

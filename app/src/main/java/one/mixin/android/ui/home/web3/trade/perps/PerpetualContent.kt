@@ -222,7 +222,7 @@ fun PerpetualContent(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = stringResource(R.string.Open_Positions, openPositionsCount),
+                    text = stringResource(R.string.positions_count, openPositionsCount),
                     fontSize = 14.sp,
                     color = MixinAppTheme.colors.textPrimary,
                 )
@@ -247,7 +247,7 @@ fun PerpetualContent(
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = stringResource(R.string.No_Positions),
+                        text = stringResource(R.string.No_Position),
                         fontSize = 14.sp,
                         color = MixinAppTheme.colors.textAssist,
                     )
@@ -265,7 +265,7 @@ fun PerpetualContent(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = stringResource(R.string.How_Perps_Works),
+                        text = stringResource(R.string.how_perps_works),
                         fontSize = 14.sp,
                         color = MixinAppTheme.colors.accent,
                     )
@@ -312,7 +312,7 @@ fun PerpetualContent(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = stringResource(R.string.Perpetual_Markets),
+                    text = stringResource(R.string.perps_markets),
                     fontSize = 14.sp,
                     color = MixinAppTheme.colors.textPrimary,
                 )
@@ -416,7 +416,7 @@ fun PerpetualContent(
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = stringResource(R.string.No_Closed_Positions),
+                        text = stringResource(R.string.No_Activity),
                         fontSize = 14.sp,
                         color = MixinAppTheme.colors.textAssist,
                     )
@@ -454,13 +454,13 @@ fun PerpetualContent(
                 Spacer(modifier = Modifier.width(8.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = stringResource(R.string.How_Perps_Works),
+                        text = stringResource(R.string.how_perps_works),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
                         color = MixinAppTheme.colors.textPrimary
                     )
                     Text(
-                        text = stringResource(R.string.Learn_How_To_Trade_Perps),
+                        text = stringResource(R.string.learn_how_to_trade_perps),
                         fontSize = 12.sp,
                         color = MixinAppTheme.colors.textAssist
                     )

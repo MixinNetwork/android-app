@@ -122,7 +122,7 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
         binding.progressBar.isVisible = false
         openPositionAdapter.submitList(pagedList)
         val isEmpty = pagedList.isEmpty()
-        binding.emptyView.walletTransactionsEmpty.text = getString(R.string.No_Positions)
+        binding.emptyView.walletTransactionsEmpty.text = getString(R.string.No_Position)
         binding.emptyView.helpAction.isVisible = isEmpty
         binding.emptyView.root.isVisible = isEmpty
     }
@@ -131,7 +131,7 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
         binding.progressBar.isVisible = false
         closedPositionAdapter.submitList(pagedList)
         val isEmpty = pagedList.isEmpty()
-        binding.emptyView.walletTransactionsEmpty.text = getString(R.string.No_Closed_Positions)
+        binding.emptyView.walletTransactionsEmpty.text = getString(R.string.No_Activity)
         binding.emptyView.helpAction.isVisible = false
         binding.emptyView.root.isVisible = isEmpty
     }
@@ -189,7 +189,7 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
             loadOpenPositions()
         } else {
             binding.titleView.setSubTitle(getString(R.string.perps_activity), "")
-            totalValueAdapter.submitTitle(R.string.Realized_PnL)
+            totalValueAdapter.submitTitle(R.string.Total_Realized_PnL)
             binding.positionsRv.adapter = ConcatAdapter(totalValueAdapter, closedPositionAdapter)
             loadClosedPositions()
         }
