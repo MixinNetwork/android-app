@@ -79,6 +79,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         requireArguments().getString(ARGS_BUY_SOURCE) ?: AnalyticsTracker.TradeSource.WALLET_HOME
     }
     private val walletIdForCalculate by lazy { requireArguments().getString(ARGS_WALLET_ID_FOR_CALCULATE) }
+    private fun bindingOrNull(): FragmentCalculateBinding? = view?.let(FragmentCalculateBinding::bind)
 
     private suspend fun initData() {
         var currencyName = getDefaultCurrency(requireContext(), getCurrencyData(requireContext().resources))
@@ -124,13 +125,14 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 list.find { it.assetId == assetId } ?: list.firstOrNull()
             }
 
+        val binding = bindingOrNull()
         fiatMoneyViewModel.asset?.let { asset ->
-            binding.assetIv.loadImage(asset.iconUrl)
-            binding.assetName.text = asset.symbol
+            binding?.assetIv?.loadImage(asset.iconUrl)
+            binding?.assetName?.text = asset.symbol
         }
         fiatMoneyViewModel.currency?.let { currency ->
-            binding.flagIv.setImageResource(currency.flag)
-            binding.fiatName.text = currency.name
+            binding?.flagIv?.setImageResource(currency.flag)
+            binding?.fiatName?.text = currency.name
         }
 
         if (fiatMoneyViewModel.calculateState == null) {
@@ -148,6 +150,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
     private var isLoading = false
     private fun setLoading(loading: Boolean) {
         isLoading = loading
+        val binding = bindingOrNull() ?: return
         binding.fiatLoading.isVisible = isLoading
         binding.assetLoading.isVisible = isLoading
         binding.fiatExpandIv.isVisible = !loading
@@ -209,11 +212,12 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        val viewLifecycleScope = viewLifecycleOwner.lifecycleScope
         AnalyticsTracker.trackBuyStart(
             wallet = if (isWeb3) AnalyticsTracker.TradeWallet.WEB3 else AnalyticsTracker.TradeWallet.MAIN,
             source = buySource
         )
-        lifecycleScope.launch {
+        viewLifecycleScope.launch {
             binding.apply {
                 titleView.leftIb.setOnClickListener {
                     activity?.onBackPressedDispatcher?.onBackPressed()
@@ -245,7 +249,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     AssetListFixedBottomSheetDialogFragment.newInstance(
                         ArrayList(supportAssetIds),
                     ).setOnAssetClick { asset ->
-                        this@CalculateFragment.lifecycleScope.launch {
+                        viewLifecycleScope.launch {
                             AnalyticsTracker.trackBuyTokenSelect()
                             val oldAsset = fiatMoneyViewModel.asset
                             fiatMoneyViewModel.asset = asset
@@ -277,7 +281,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                         callback =
                             object : FiatListBottomSheetDialogFragment.Callback {
                                 override fun onCurrencyClick(currency: Currency) {
-                                    this@CalculateFragment.lifecycleScope.launch {
+                                    viewLifecycleScope.launch {
                                         AnalyticsTracker.trackBuyFiatSelect()
                                         val oldCurrency = fiatMoneyViewModel.currency
                                         fiatMoneyViewModel.currency = currency
@@ -361,7 +365,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     white = true,
                 )
                 continueVa.setOnClickListener {
-                    lifecycleScope.launch {
+                    viewLifecycleScope.launch {
                         AnalyticsTracker.trackBuyPreview()
                         if (VerifyMobileReminderBottomSheetDialogFragment.shouldShowForBuy(requireContext()) && isFragmentVisible()) {
                             VerifyMobileReminderBottomSheetDialogFragment.showSafely(
@@ -390,7 +394,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                         if (amount == null) {
                             toast(R.string.error_invalid_number)
                         } else {
-                            lifecycleScope.launch inner@{
+                            viewLifecycleScope.launch inner@{
                                 if (viewDestroyed()) throw IllegalStateException("View has been destroyed")
                                 try {
                                     val asset = fiatMoneyViewModel.asset ?: throw IllegalStateException("Asset is null")
@@ -405,6 +409,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                                     } else {
                                         fiatMoneyViewModel.findAndSyncDepositEntry(asset.chainId, asset.assetId)?.destination ?: throw IllegalStateException("Destination address is null")
                                     }
+                                    val binding = bindingOrNull() ?: return@inner
                                     binding.continueVa.displayedChild = 1
                                     val response = fiatMoneyViewModel.rampWebUrl(
                                         amount,
@@ -421,9 +426,9 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                                     } else {
                                         ErrorHandler.handleMixinError(response.errorCode, response.errorDescription)
                                     }
-                                    binding.continueVa.displayedChild = 0
+                                    bindingOrNull()?.continueVa?.displayedChild = 0
                                 } catch (e: Exception) {
-                                    binding.continueVa.displayedChild = 0
+                                    bindingOrNull()?.continueVa?.displayedChild = 0
                                     ErrorHandler.handleError(e)
                                 }
                             }
@@ -454,6 +459,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
     @SuppressLint("SetTextI18n")
     private fun updateUI(currency: Currency? = null, asset: TokenItem? = null) {
         if (viewDestroyed()) return
+        val binding = bindingOrNull() ?: return
         val currency = currency ?: fiatMoneyViewModel.currency ?: return
         val asset = asset ?: fiatMoneyViewModel.asset ?: return
         if (fiatMoneyViewModel.isReverse) {
@@ -476,6 +482,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
     @SuppressLint("SetTextI18n")
     private fun updateValue(currency: Currency? = null, asset: TokenItem? = null) {
         if (viewDestroyed()) return
+        val binding = bindingOrNull() ?: return
         val currency = currency ?: fiatMoneyViewModel.currency ?: return
         val asset = asset ?: fiatMoneyViewModel.asset ?: return
         val state = fiatMoneyViewModel.calculateState
@@ -548,6 +555,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
 
     private fun updatePrimarySize() {
         if (viewDestroyed()) return
+        val binding = bindingOrNull() ?: return
         binding.apply {
             val length = primaryTv.text.length
             val size =
@@ -592,7 +600,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
     }
 
     private fun checkData() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             if (viewDestroyed()) return@launch
             setLoading(true)
             flow {
