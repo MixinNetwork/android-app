@@ -25,119 +25,131 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <one.mixin.android.widget.AvatarView
-                android:id="@+id/avatar"
-                android:layout_width="@dimen/bottom_avatar_size"
-                android:layout_height="@dimen/bottom_avatar_size"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="16dp"
-                android:transitionName="@string/avatar_transition_name"
-                tools:ignore="ContentDescription" />
-
-            <TextView
-                android:id="@+id/name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:layout_marginBottom="4dp"
-                android:gravity="center_horizontal"
-                android:maxWidth="280dp"
-                android:textColor="?attr/text_primary"
-                android:textSize="18sp" />
-
-            <TextView
-                android:id="@+id/count_tv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="10dp"
-                android:textColor="?attr/text_assist"
-                android:textSize="12sp" />
-
-            <one.mixin.android.widget.ExpandableTextView
-                android:id="@+id/detail_tv"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="32dp"
-                android:layout_marginEnd="32dp"
-                android:gravity="center_horizontal"
-                android:textColor="?attr/text_primary"
-                android:maxLines="12"
-                android:scrollbars="vertical"
-                app:limitedMaxLines="6"
-                app:expandAction="@string/More"
-                app:expandActionColor="?attr/text_blue"/>
-
-            <TextView
-                android:id="@+id/member_tv"
-                android:layout_marginStart="22dp"
-                android:layout_marginEnd="22dp"
-                android:layout_marginBottom="24dp"
-                android:gravity="center"
-                android:padding="14dp"
-                android:textColor="@color/wallet_pink"
-                android:text="@string/no_longer_member"
-                android:background="@drawable/bg_round_gray_14dp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-
             <LinearLayout
-                android:id="@+id/ops_ll"
+                android:id="@+id/top_content"
                 android:layout_width="match_parent"
-                android:layout_height="70dp"
-                android:layout_marginBottom="24dp"
-                android:baselineAligned="false"
-                android:orientation="horizontal">
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-                <FrameLayout
-                    android:id="@+id/member_fl"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1">
+                <one.mixin.android.widget.AvatarView
+                    android:id="@+id/avatar"
+                    android:layout_width="@dimen/bottom_avatar_size"
+                    android:layout_height="@dimen/bottom_avatar_size"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginBottom="16dp"
+                    android:transitionName="@string/avatar_transition_name"
+                    tools:ignore="ContentDescription" />
 
-                    <ImageView
-                        android:id="@+id/member_iv"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:background="@drawable/mixin_ripple"
-                        android:contentDescription="@string/Share"
-                        android:src="@drawable/ic_group_member" />
-                </FrameLayout>
+                <TextView
+                    android:id="@+id/name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                    android:layout_marginBottom="4dp"
+                    android:gravity="center_horizontal"
+                    android:maxWidth="280dp"
+                    android:textColor="?attr/text_primary"
+                    android:textSize="18sp" />
 
-                <FrameLayout
-                    android:id="@+id/send_fl"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1">
+                <TextView
+                    android:id="@+id/count_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginBottom="10dp"
+                    android:textColor="?attr/text_assist"
+                    android:textSize="12sp" />
 
-                    <ImageView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:background="@drawable/mixin_ripple"
-                        android:contentDescription="@string/Send_Message"
-                        android:src="@drawable/ic_user_send" />
-                </FrameLayout>
+                <one.mixin.android.widget.ExpandableTextView
+                    android:id="@+id/detail_tv"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="32dp"
+                    android:layout_marginEnd="32dp"
+                    android:gravity="center_horizontal"
+                    android:maxLines="12"
+                    android:scrollbars="vertical"
+                    android:textColor="?attr/text_primary"
+                    app:expandAction="@string/More"
+                    app:expandActionColor="?attr/text_blue"
+                    app:limitedMaxLines="6" />
 
-                <FrameLayout
-                    android:id="@+id/more_fl"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1">
+                <TextView
+                    android:id="@+id/member_tv"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="22dp"
+                    android:layout_marginEnd="22dp"
+                    android:layout_marginBottom="24dp"
+                    android:background="@drawable/bg_round_gray_14dp"
+                    android:gravity="center"
+                    android:padding="14dp"
+                    android:text="@string/no_longer_member"
+                    android:textColor="@color/wallet_pink" />
 
-                    <ImageView
-                        android:id="@+id/more_iv"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:background="@drawable/mixin_ripple"
-                        android:contentDescription="@string/More"
-                        android:src="@drawable/ic_arrow_down_info" />
-                </FrameLayout>
+                <LinearLayout
+                    android:id="@+id/ops_ll"
+                    android:layout_width="match_parent"
+                    android:layout_height="70dp"
+                    android:layout_marginBottom="24dp"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal">
+
+                    <FrameLayout
+                        android:id="@+id/member_fl"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1">
+
+                        <ImageView
+                            android:id="@+id/member_iv"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:background="@drawable/mixin_ripple"
+                            android:contentDescription="@string/Share"
+                            android:src="@drawable/ic_group_member" />
+                    </FrameLayout>
+
+                    <FrameLayout
+                        android:id="@+id/send_fl"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1">
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:background="@drawable/mixin_ripple"
+                            android:contentDescription="@string/Send_Message"
+                            android:src="@drawable/ic_user_send" />
+                    </FrameLayout>
+
+                    <FrameLayout
+                        android:id="@+id/more_fl"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1">
+
+                        <ImageView
+                            android:id="@+id/more_iv"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:background="@drawable/mixin_ripple"
+                            android:contentDescription="@string/More"
+                            android:src="@drawable/ic_arrow_down_info" />
+                    </FrameLayout>
+                </LinearLayout>
             </LinearLayout>
+
+            <FrameLayout
+                android:id="@+id/menu_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 </RelativeLayout>

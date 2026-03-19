@@ -121,7 +121,7 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
         val bottomSheet = builder.create()
         menuBinding.closeIv.setOnClickListener { bottomSheet.dismiss() }
         menuBinding.forgetPinTv.setOnClickListener {
-            context?.openUrl(getString(R.string.What_is_Pin_url))
+            context?.openUrl(getString(R.string.forget_pin_help_url))
             bottomSheet.dismiss()
         }
         menuBinding.switchAccountTv.setOnClickListener {
