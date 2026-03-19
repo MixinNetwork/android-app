@@ -23,6 +23,7 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.provider.Settings
 import android.util.Base64
+import android.util.Log
 import android.view.ContextMenu
 import android.view.LayoutInflater
 import android.view.MenuItem
@@ -1701,6 +1702,9 @@ class WebFragment : BaseFragment() {
 
     private fun setStatusBarColor(content: String) {
         try {
+            if (content.isEmpty() || content == "\"\"") {
+                return
+            }
             val color = content.replace("\"", "")
             val c = color.toColorInt()
             val dark = isDarkColor(c)
