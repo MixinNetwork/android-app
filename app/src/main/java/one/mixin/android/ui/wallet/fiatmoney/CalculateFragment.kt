@@ -416,7 +416,8 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                                         WebActivity.show(
                                             requireActivity(),
                                             response.data?.url ?: "",
-                                            null
+                                            null,
+                                            fixedTitle = getString(R.string.Buy_asset, asset.symbol)
                                         )
                                     } else {
                                         ErrorHandler.handleMixinError(response.errorCode, response.errorDescription)
