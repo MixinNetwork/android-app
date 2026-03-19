@@ -100,7 +100,7 @@ fun PerpsMarketItem(
                 ) {
                     Text(
                         text = market.tokenSymbol,
-                        fontSize = 14.sp,
+                        fontSize = 16.sp,
                         color = MixinAppTheme.colors.textPrimary,
                     )
                     Spacer(modifier = Modifier.width(6.dp))

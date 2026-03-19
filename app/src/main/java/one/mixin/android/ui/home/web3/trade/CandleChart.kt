@@ -48,7 +48,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.google.protobuf.Mixin
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import one.mixin.android.Constants
 import one.mixin.android.api.response.perps.CandleItem
 import one.mixin.android.api.response.perps.CandleView
@@ -63,32 +67,45 @@ import java.math.BigDecimal
 import kotlin.math.max
 import kotlin.math.min
 
+private const val CANDLE_REFRESH_INTERVAL_MS = 30_000L
+
 @Composable
 fun CandleChart(
     marketId: String,
-    timeFrame: String
+    timeFrame: String,
+    marketPrice: String? = null,
 ) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<PerpetualViewModel>()
+    val lifecycleOwner = LocalLifecycleOwner.current
     var candles by remember { mutableStateOf<List<CandleView>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    LaunchedEffect(marketId, timeFrame) {
+    LaunchedEffect(marketId, timeFrame, lifecycleOwner) {
+        candles = emptyList()
         isLoading = true
         errorMessage = null
-        viewModel.loadCandles(
-            marketId = marketId,
-            timeFrame = timeFrame,
-            onSuccess = { data ->
-                candles = data
-                isLoading = false
-            },
-            onError = { error ->
-                errorMessage = error
-                isLoading = false
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            while (isActive) {
+                viewModel.loadCandles(
+                    marketId = marketId,
+                    timeFrame = timeFrame,
+                    onSuccess = { data ->
+                        candles = data
+                        errorMessage = null
+                        isLoading = false
+                    },
+                    onError = { error ->
+                        if (candles.isEmpty()) {
+                            errorMessage = error
+                            isLoading = false
+                        }
+                    }
+                )
+                delay(CANDLE_REFRESH_INTERVAL_MS)
             }
-        )
+        }
     }
 
     Box(
@@ -119,14 +136,22 @@ fun CandleChart(
                 )
             }
             else -> {
-                ScrollableCandleChart(candles = candles, context = context)
+                ScrollableCandleChart(
+                    candles = candles,
+                    context = context,
+                    marketPrice = marketPrice?.toBigDecimalOrNull()
+                )
             }
         }
     }
 }
 
 @Composable
-private fun ScrollableCandleChart(candles: List<CandleView>, context: android.content.Context) {
+private fun ScrollableCandleChart(
+    candles: List<CandleView>,
+    context: android.content.Context,
+    marketPrice: BigDecimal?,
+) {
     val candleView = candles.firstOrNull() ?: return
     val items = candleView.items
     if (items.isEmpty()) return
@@ -156,7 +181,7 @@ private fun ScrollableCandleChart(candles: List<CandleView>, context: android.co
         ((x - chartStartPaddingPx) / candleStepPx).toInt().coerceIn(0, items.lastIndex)
     }
     val selectedItem = selectedIndex?.let { index -> items.getOrNull(index) }
-    val latestPrice = items.lastOrNull()?.close?.toBigDecimalOrNull()
+    val latestPrice = marketPrice ?: items.lastOrNull()?.close?.toBigDecimalOrNull()
     val axisPanelWidth = 52.dp
 
     Row(modifier = Modifier.fillMaxSize()) {
@@ -185,6 +210,7 @@ private fun ScrollableCandleChart(candles: List<CandleView>, context: android.co
                 item.high.toBigDecimalOrNull()?.let { prices.add(it) }
                 item.low.toBigDecimalOrNull()?.let { prices.add(it) }
             }
+            latestPrice?.let { prices.add(it) }
             val maxPrice = prices.maxOrNull() ?: BigDecimal.ZERO
             val minPrice = prices.minOrNull() ?: BigDecimal.ZERO
             val midPrice = (maxPrice + minPrice) / BigDecimal(2)

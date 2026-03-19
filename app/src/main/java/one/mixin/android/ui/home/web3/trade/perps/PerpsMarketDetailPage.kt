@@ -47,7 +47,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.FragmentActivity
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.flow.flowOf
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -70,6 +75,7 @@ import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
 private const val CLOSED_POSITION_PREVIEW_LIMIT = 100
+private const val MARKET_REFRESH_INTERVAL_MS = 30_000L
 
 @Composable
 fun PerpsMarketDetailPage(
@@ -81,6 +87,7 @@ fun PerpsMarketDetailPage(
 ) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<PerpetualViewModel>()
+    val lifecycleOwner = LocalLifecycleOwner.current
     var market by remember { mutableStateOf<PerpsMarket?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     var selectedTimeFrame by remember { mutableIntStateOf(0) }
@@ -117,17 +124,24 @@ fun PerpsMarketDetailPage(
     val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
     val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
 
-    LaunchedEffect(marketId) {
-        viewModel.loadMarketDetail(
-            marketId = marketId,
-            onSuccess = { data ->
-                market = data
-                isLoading = false
-            },
-            onError = {
-                isLoading = false
+    LaunchedEffect(marketId, lifecycleOwner) {
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            while (isActive) {
+                viewModel.loadMarketDetail(
+                    marketId = marketId,
+                    onSuccess = { data ->
+                        market = data
+                        isLoading = false
+                    },
+                    onError = {
+                        if (market == null) {
+                            isLoading = false
+                        }
+                    }
+                )
+                delay(MARKET_REFRESH_INTERVAL_MS)
             }
-        )
+        }
     }
 
     LaunchedEffect(walletId, openPositions.size) {
@@ -563,7 +577,8 @@ private fun MarketDetailCard(
         ) {
             CandleChart(
                 marketId = marketId,
-                timeFrame = timeFrameValues[selectedTimeFrame]
+                timeFrame = timeFrameValues[selectedTimeFrame],
+                marketPrice = market.markPrice
             )
         }
 

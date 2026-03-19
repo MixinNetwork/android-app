@@ -113,7 +113,7 @@ private fun AllMarketsPage(
     }
 
     PageScaffold(
-        title = stringResource(R.string.All_Markets),
+        title = stringResource(R.string.Perpetual_Markets),
         verticalScrollable = false,
         pop = pop
     ) {
