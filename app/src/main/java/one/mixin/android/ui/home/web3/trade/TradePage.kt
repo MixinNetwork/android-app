@@ -76,8 +76,6 @@ fun TradePage(
     swapTo: SwapToken?,
     limitFrom: SwapToken?,
     limitTo: SwapToken?,
-    initialSwapToSymbol: String?,
-    initialLimitToSymbol: String?,
     inMixin: Boolean,
     orderBadge: Boolean,
     isLimitOrderTabBadgeDismissed: Boolean,
@@ -215,13 +213,6 @@ fun TradePage(
         initialPage = initialTabIndex.coerceIn(0, (tabCount - 1).coerceAtLeast(0)),
         pageCount = { tabCount },
     )
-    val currentTradeTitle = when (pagerState.currentPage) {
-        0 -> swapTo.toTradeTitleOrNull(context.getString(R.string.Trade))
-            ?: initialSwapToSymbol.toTradeTitleOrNull(context.getString(R.string.Trade))
-        1 -> limitTo.toTradeTitleOrNull(context.getString(R.string.Trade))
-            ?: initialLimitToSymbol.toTradeTitleOrNull(context.getString(R.string.Trade))
-        else -> null
-    } ?: stringResource(id = R.string.Trade)
 
     // When SwapContent requests switching to Limit tab, animate to it
     LaunchedEffect(switchToLimitRequested.value) {
@@ -263,7 +254,7 @@ fun TradePage(
         }
     ) {
     PageScaffold(
-        title = currentTradeTitle,
+        title = stringResource(id = R.string.Trade),
         subtitle = {
             val text = if (walletId == null) {
                 stringResource(id = R.string.Privacy_Wallet)
@@ -449,14 +440,4 @@ fun checkBalance(
             null
         } ?: return null
     return inputValue <= balanceValue
-}
-
-private fun SwapToken?.toTradeTitleOrNull(tradeLabel: String): String? {
-    return this?.symbol.toTradeTitleOrNull(tradeLabel)
-}
-
-private fun String?.toTradeTitleOrNull(tradeLabel: String): String? {
-    val symbol = this?.trim().orEmpty()
-    if (symbol.isEmpty()) return null
-    return "$tradeLabel $symbol"
 }
