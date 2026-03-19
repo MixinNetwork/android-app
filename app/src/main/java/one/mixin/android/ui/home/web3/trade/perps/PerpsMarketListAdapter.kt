@@ -51,6 +51,7 @@ class PerpsMarketListAdapter(
                 val fiatSymbol = Fiats.getSymbol()
                 iconIv.loadImage(market.iconUrl, R.drawable.ic_avatar_place_holder)
                 symbolTv.text = market.tokenSymbol
+                leverageTv.text = root.context.getString(R.string.Perpetual_Leverage_Format, market.leverage)
 
                 val formattedVolume = try {
                     BigDecimal(market.volume).multiply(fiatRate).numberFormatCompact()
