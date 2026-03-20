@@ -4,18 +4,16 @@ import android.content.ClipData
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.Color
 import android.graphics.RenderEffect
 import android.graphics.Shader
-import android.graphics.drawable.BitmapDrawable
 import android.media.MediaScannerConnection
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
 import androidx.core.content.FileProvider
-import androidx.core.view.WindowCompat
 import androidx.core.view.drawToBitmap
 import androidx.core.view.updateLayoutParams
+import androidx.core.graphics.drawable.toDrawable
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
@@ -91,21 +89,19 @@ class PerpsPositionShareActivity : BaseActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        skipSystemUi = true
         super.onCreate(savedInstanceState)
         binding = ActivityPerpsPositionShareBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        
+
         getScreenshot()?.let {
             supportsS({
-                binding.overlay.background = BitmapDrawable(resources, it)
+                binding.overlay.background = it.toDrawable(resources)
                 binding.overlay.setRenderEffect(RenderEffect.createBlurEffect(25f, 25f, Shader.TileMode.MIRROR))
             }, {
-                binding.container.background = BitmapDrawable(resources, it.blurBitmap(25))
+                binding.container.background = it.blurBitmap(25).toDrawable(resources)
             })
         }
-
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-        window.statusBarColor = Color.TRANSPARENT
 
         binding.content.updateLayoutParams<MarginLayoutParams> {
             topMargin = 20.dp

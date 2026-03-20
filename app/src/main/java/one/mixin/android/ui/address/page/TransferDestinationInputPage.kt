@@ -65,7 +65,6 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.ChainId
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.db.web3.vo.SafeChain
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.isExternalTransferUrl
 import one.mixin.android.extension.isLightningUrl

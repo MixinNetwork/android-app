@@ -3,6 +3,7 @@ package one.mixin.android.ui.common
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.view.View
@@ -175,7 +176,11 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                     else -> ""
                                 }
 
-                            val r = code.generateQRCode(binding.qr.measuredWidth, innerPadding = 48.dp)
+                            val r = code.generateQRCode(
+                                binding.qr.measuredWidth,
+                                innerPadding = 48.dp,
+                                foregroundColor = if (type == TYPE_MY_QR) Color.parseColor("#0A6DE1") else Color.BLACK,
+                            )
                             e.onNext(r)
                         }.subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
