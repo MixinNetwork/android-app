@@ -128,6 +128,38 @@ class PerpetualViewModel @Inject constructor(
         }
     }
 
+    fun observeMarkets(): Flow<List<PerpsMarket>> {
+        return perpsMarketDao.observeAllMarkets()
+    }
+
+    fun refreshMarkets(
+        onError: ((String) -> Unit)? = null
+    ) {
+        viewModelScope.launch {
+            try {
+                val response = withContext(Dispatchers.IO) {
+                    routeService.getPerpsMarkets(offset = 0, limit = 100)
+                }
+
+                val data = response.data
+                if (response.isSuccess && data != null) {
+                    withContext(Dispatchers.IO) {
+                        perpsMarketDao.replaceAll(data)
+                    }
+                    Timber.d("Perps markets refreshed: ${data.size} markets")
+                } else {
+                    val error = "Failed to refresh markets: ${response.errorDescription}"
+                    Timber.e(error)
+                    onError?.invoke(error)
+                }
+            } catch (e: Exception) {
+                val error = "Error refreshing markets: ${e.message}"
+                Timber.e(e, error)
+                onError?.invoke(error)
+            }
+        }
+    }
+
     fun loadMarketDetail(
         marketId: String,
         onSuccess: (PerpsMarket) -> Unit,

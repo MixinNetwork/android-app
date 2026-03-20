@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import kotlinx.coroutines.flow.Flow
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.db.BaseDao
 
@@ -24,6 +25,9 @@ interface PerpsMarketDao : BaseDao<PerpsMarket> {
 
     @Query("SELECT * FROM markets ORDER BY rowid ASC")
     suspend fun getAllMarkets(): List<PerpsMarket>
+
+    @Query("SELECT * FROM markets ORDER BY rowid ASC")
+    fun observeAllMarkets(): Flow<List<PerpsMarket>>
 
     @Query("SELECT * FROM markets WHERE market_id = :marketId")
     suspend fun getMarket(marketId: String): PerpsMarket?

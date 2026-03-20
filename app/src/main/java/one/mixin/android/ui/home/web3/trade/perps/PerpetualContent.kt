@@ -66,6 +66,7 @@ import kotlin.math.abs
 
 private const val POSITION_REFRESH_INTERVAL_MS = 3_000L
 private const val CLOSED_POSITION_PREVIEW_LIMIT = 10
+private const val MARKET_REFRESH_INTERVAL_MS = 3_000L
 
 @Composable
 fun PerpetualContent(
@@ -89,7 +90,9 @@ fun PerpetualContent(
     val viewModel = hiltViewModel<PerpetualViewModel>()
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    var markets by remember { mutableStateOf<List<PerpsMarket>>(emptyList()) }
+    val markets by remember {
+        viewModel.observeMarkets()
+    }.collectAsStateWithLifecycle(initialValue = emptyList())
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val openPositions by remember(walletId) {
@@ -115,8 +118,7 @@ fun PerpetualContent(
 
     LaunchedEffect(Unit) {
         viewModel.loadMarkets(
-            onSuccess = { data ->
-                markets = data
+            onSuccess = {
                 isLoading = false
             },
             onError = { error ->
@@ -138,6 +140,11 @@ fun PerpetualContent(
             )
             viewModel.refreshPositionHistory(walletId, limit = CLOSED_POSITION_PREVIEW_LIMIT)
             while (isActive) {
+                viewModel.refreshMarkets(
+                    onError = { error ->
+                        errorMessage = error
+                    }
+                )
                 viewModel.refreshPositions(walletId)
                 delay(POSITION_REFRESH_INTERVAL_MS)
             }
