@@ -94,9 +94,8 @@ class OpenPositionAdapter(
                 val quantityStr = position.quantity
                 quantityTv.text = "$quantityStr ${position.tokenSymbol ?: ""}"
 
-                val markPrice = (position.markPrice ?: "0").toBigDecimalOrNull() ?: BigDecimal.ZERO
-                val positionValue = (quantity ?: BigDecimal.ZERO).abs().multiply(markPrice)
-                rightTopValueTv.text = formatUsd(positionValue)
+                val margin = position.margin?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                rightTopValueTv.text = formatUsd(margin)
                 rightTopValueTv.setTextColor(resolveAttrColor(root, R.attr.text_primary))
 
                 rightBottomValueTv.isVisible = true
