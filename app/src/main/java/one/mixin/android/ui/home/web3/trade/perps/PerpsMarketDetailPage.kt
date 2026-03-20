@@ -75,7 +75,7 @@ import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
 private const val CLOSED_POSITION_PREVIEW_LIMIT = 100
-private const val MARKET_REFRESH_INTERVAL_MS = 30_000L
+private const val MARKET_REFRESH_INTERVAL_MS = 10_000L
 
 @Composable
 fun PerpsMarketDetailPage(

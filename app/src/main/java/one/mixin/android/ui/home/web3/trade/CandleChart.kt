@@ -67,7 +67,7 @@ import java.math.BigDecimal
 import kotlin.math.max
 import kotlin.math.min
 
-private const val CANDLE_REFRESH_INTERVAL_MS = 30_000L
+private const val CANDLE_REFRESH_INTERVAL_MS = 10_000L
 
 @Composable
 fun CandleChart(
