@@ -1,6 +1,5 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
-import PageScaffold
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -41,6 +40,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.home.web3.components.PageScaffold
 
 @AndroidEntryPoint
 class AllPerpsMarketsFragment : BaseFragment() {

@@ -3,6 +3,8 @@ package one.mixin.android.ui.home.web3.trade.perps
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
@@ -16,14 +18,7 @@ import java.math.BigDecimal
 class PerpsMarketListAdapter(
     private val isQuoteColorReversed: Boolean,
     private val onMarketClick: (PerpsMarket) -> Unit
-) : RecyclerView.Adapter<PerpsMarketListAdapter.MarketViewHolder>() {
-
-    private var markets = listOf<PerpsMarket>()
-
-    fun submitList(list: List<PerpsMarket>) {
-        markets = list
-        notifyDataSetChanged()
-    }
+) : ListAdapter<PerpsMarket, PerpsMarketListAdapter.MarketViewHolder>(PerpsMarketDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MarketViewHolder {
         return MarketViewHolder(
@@ -36,10 +31,8 @@ class PerpsMarketListAdapter(
     }
 
     override fun onBindViewHolder(holder: MarketViewHolder, position: Int) {
-        holder.bind(markets[position])
+        holder.bind(getItem(position))
     }
-
-    override fun getItemCount() = markets.size
 
     inner class MarketViewHolder(
         private val binding: ItemMarketListBinding
@@ -50,7 +43,7 @@ class PerpsMarketListAdapter(
                 val fiatRate = BigDecimal(Fiats.getRate())
                 val fiatSymbol = Fiats.getSymbol()
                 iconIv.loadImage(market.iconUrl, R.drawable.ic_avatar_place_holder)
-                symbolTv.text = market.tokenSymbol
+                symbolTv.text = market.displaySymbol
                 leverageTv.text = root.context.getString(R.string.Perpetual_Leverage_Format, market.leverage)
 
                 val formattedVolume = try {
@@ -83,7 +76,7 @@ class PerpsMarketListAdapter(
                     }
                 )
                 val changeText = "${if (isPositive) "+" else ""}${market.change}%"
-                
+
                 changeTv.text = changeText
                 changeTv.setTextColor(changeColor)
 
@@ -91,6 +84,16 @@ class PerpsMarketListAdapter(
                     onMarketClick(market)
                 }
             }
+        }
+    }
+
+    private class PerpsMarketDiffCallback : DiffUtil.ItemCallback<PerpsMarket>() {
+        override fun areItemsTheSame(oldItem: PerpsMarket, newItem: PerpsMarket): Boolean {
+            return oldItem.marketId == newItem.marketId
+        }
+
+        override fun areContentsTheSame(oldItem: PerpsMarket, newItem: PerpsMarket): Boolean {
+            return oldItem == newItem
         }
     }
 }

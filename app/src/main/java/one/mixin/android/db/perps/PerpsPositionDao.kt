@@ -75,7 +75,7 @@ interface PerpsPositionDao : BaseDao<PerpsPosition> {
     @Query("DELETE FROM positions WHERE wallet_id = :walletId AND (state = 'open' or state = 'opening') AND position_id NOT IN (:positionIds)")
     suspend fun deleteOpenByWalletAndNotIn(walletId: String, positionIds: List<String>)
 
-    @Query("SELECT SUM(CAST(unrealized_pnl AS REAL)) FROM positions WHERE wallet_id = :walletId AND state = (state = 'open' or state = 'opening')")
+    @Query("SELECT COALESCE(SUM(CAST(unrealized_pnl AS REAL)), 0) FROM positions WHERE wallet_id = :walletId AND (state = 'open' OR state = 'opening')")
     suspend fun getTotalUnrealizedPnl(walletId: String): Double?
 
     @Query("SELECT COALESCE(SUM(CAST(unrealized_pnl AS REAL)), 0) FROM positions WHERE wallet_id = :walletId AND (state = 'open' or state = 'opening')")
