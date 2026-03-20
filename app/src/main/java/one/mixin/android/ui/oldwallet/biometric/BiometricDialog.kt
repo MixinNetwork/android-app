@@ -41,9 +41,14 @@ class BiometricDialog(
         val biometricPromptInfo =
             BiometricPrompt.PromptInfo.Builder()
                 .setTitle(biometricInfo.title)
-                .setSubtitle(biometricInfo.subTitle)
-                .setDescription(biometricInfo.description)
-                .setNegativeButtonText(context.getString(R.string.Verify_PIN))
+                .apply {
+                    if (biometricInfo.subTitle.isNotBlank()) {
+                        setSubtitle(biometricInfo.subTitle)
+                    }
+                    if (biometricInfo.description.isNotBlank()) {
+                        setDescription(biometricInfo.description)
+                    }
+                }.setNegativeButtonText(context.getString(R.string.Verify_PIN))
                 .setConfirmationRequired(true)
                 .setAllowedAuthenticators(BIOMETRIC_STRONG)
                 .build()

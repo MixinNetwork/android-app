@@ -2,11 +2,9 @@ package one.mixin.android.tip
 
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.withContext
 import okio.Buffer
 import one.mixin.android.api.request.TipSignData
 import one.mixin.android.api.request.TipSignRequest
@@ -27,7 +25,6 @@ import one.mixin.android.tip.exception.DifferentIdentityException
 import one.mixin.android.tip.exception.NotAllSignerSuccessException
 import one.mixin.android.tip.exception.NotEnoughPartialsException
 import one.mixin.android.tip.exception.TipNodeException
-import one.mixin.android.util.SINGLE_SIGN_EXECUTOR
 import retrofit2.HttpException
 import timber.log.Timber
 import tip.Tip
@@ -259,9 +256,7 @@ class TipNode
             assignee: ByteArray?,
         ): Pair<TipSignRespData?, TipNodeError?> {
             return try {
-                val tipSignRequest = withContext(SINGLE_SIGN_EXECUTOR.asCoroutineDispatcher()) {
-                    genTipSignRequest(userSk, tipSigner, ephemeral, watcher, nonce, grace, assignee)
-                }
+                val tipSignRequest = genTipSignRequest(userSk, tipSigner, ephemeral, watcher, nonce, grace, assignee)
                 val response = tipNodeService.sign(tipSignRequest, tipNodeApi2Path(tipSigner.api))
                 val requestId = response.headers()["x-request-id"] ?: ""
                 if (response.isSuccessful.not()) {
@@ -275,20 +270,15 @@ class TipNode
                 if (resError != null) {
                     return Pair(null, resError.code.toTipNodeError(tipSigner.index, requestId, resError.description))
                 }
-                val signerPk = withContext(SINGLE_SIGN_EXECUTOR.asCoroutineDispatcher()) {
-                    Tip.pubKeyFromBase58(tipSigner.identity)
-                }
                 val msg = gson.toJson(tipSignResponse.data).toByteArray()
                 try {
-                    signerPk.verify(msg, tipSignResponse.signature.hexStringToByteArray())
+                    Tip.pointVerify(tipSigner.identity, msg, tipSignResponse.signature.hexStringToByteArray())
                 } catch (e: Exception) {
                     Timber.e("verify node response meet ${e.getStackTraceString()}")
                     return Pair(null, null)
                 }
 
-                val data = withContext(SINGLE_SIGN_EXECUTOR.asCoroutineDispatcher()) {
-                    parseNodeSigResp(userSk, tipSigner, tipSignResponse)
-                }
+                val data = parseNodeSigResp(userSk, tipSigner, tipSignResponse)
                 Pair(data, null)
             } catch (e: Exception) {
                 Timber.d(e)
@@ -324,8 +314,7 @@ class TipNode
             signer: TipSigner,
             resp: TipSignResponse,
         ): TipSignRespData {
-            val signerPk = Tip.pubKeyFromBase58(signer.identity)
-            val plain = Tip.decrypt(signerPk, Tip.privateKeyFromHex(userSk.toHex()), resp.data.cipher.hexStringToByteArray())
+            val plain = Tip.decrypt(signer.identity, userSk.toHex(), resp.data.cipher.hexStringToByteArray())
             val nonceBytes = plain.slice(0..7).toByteArray()
             var offset = 8
             val partial = plain.slice(offset..offset + 65).toByteArray()
@@ -359,7 +348,6 @@ class TipNode
             assignee: ByteArray?,
         ): TipSignRequest {
             Timber.e("genTipSignRequest start ${tipSigner.index}")
-            val signerPk = Tip.pubKeyFromBase58(tipSigner.identity)
             val userPk = Tip.publicKeyFromBytes(userSk)
             val esum = (ephemeral + tipSigner.identity.toByteArray()).sha3Sum256()
             var msg = userPk + esum + nonce.toBeByteArray() + grace.toBeByteArray()
@@ -383,7 +371,7 @@ class TipNode
                 )
             val dataJson = gson.toJson(data).toByteArray()
             Timber.e("genTipSignRequest encrypt start ${tipSigner.index}")
-            val cipher = Tip.encrypt(signerPk, Tip.privateKeyFromHex(userSk.toHex()), dataJson)
+            val cipher = Tip.encrypt(tipSigner.identity, userSk.toHex(), dataJson)
             Timber.e("genTipSignRequest end ${tipSigner.index}")
             return TipSignRequest(sig, userPkStr, cipher.base64RawURLEncode(), watcherHex)
         }

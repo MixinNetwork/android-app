@@ -54,6 +54,7 @@ import one.mixin.android.Constants.Account.PREF_BACKUP
 import one.mixin.android.Constants.Account.PREF_BATTERY_OPTIMIZE
 import one.mixin.android.Constants.Account.PREF_CHECK_STORAGE
 import one.mixin.android.Constants.Account.PREF_DEVICE_SDK
+import one.mixin.android.Constants.Account.PREF_LOGIN_OR_SIGN_UP
 import one.mixin.android.Constants.Account.PREF_LOGIN_VERIFY
 import one.mixin.android.Constants.Account.PREF_SYNC_CIRCLE
 import one.mixin.android.Constants.DEVICE_ID
@@ -187,6 +188,7 @@ import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.web3.js.Web3Signer
+import one.mixin.android.websocket.ReconnectWorker
 import one.mixin.android.worker.SessionWorker
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
@@ -273,6 +275,12 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
 
         if (Session.getAccount()?.fullName.isNullOrBlank()) {
             InitializeActivity.showSetupName(this)
+            finish()
+            return
+        }
+
+        if (Session.getAccount()?.hasPin == false) {
+            InitializeActivity.showSetupPin(this)
             finish()
             return
         }
@@ -387,23 +395,33 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         } else if (Session.getTipPub().isNullOrBlank()) {
             TipActivity.show(this, TipType.Upgrade, shouldWatch = true)
         } else {
-            if (Session.hasSafe()) {
-                jobManager.addJobInBackground(RefreshAccountJob(checkTip = true))
-                val isLoginVerified: Boolean = defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false)
-                Timber.e("isLoginVerified: $isLoginVerified")
-                if (isLoginVerified) {
-                    AnalyticsTracker.trackLoginPinVerify("pin_verify")
-                    LoginVerifyBottomSheetDialogFragment.newInstance().apply {
-                        onDismissCallback = { success ->
-                            if (success) {
-                                defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, false)
+            lifecycleScope.launch {
+                if (Session.hasSafe()) {
+                    jobManager.addJobInBackground(RefreshAccountJob(checkTip = true))
+                    val isLoginVerified: Boolean = defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false)
+                    val shouldGoWallet: Boolean = defaultSharedPreferences.getBoolean(PREF_LOGIN_OR_SIGN_UP, false)
+                    val shouldBlockNavigation: Boolean = shouldShowWalletMissingBtcAddress()
+                    Timber.e("isLoginVerified: $isLoginVerified, shouldGoWallet: $shouldGoWallet, shouldBlockNavigation: $shouldBlockNavigation")
+                    if (isLoginVerified) {
+                        AnalyticsTracker.trackLoginPinVerify("pin_verify")
+                        LoginVerifyBottomSheetDialogFragment.newInstance().apply {
+                            onDismissCallback = { success ->
+                                if (success) {
+                                    defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, false)
+                                }
                             }
-                        }
-                    }.showNow(supportFragmentManager, LoginVerifyBottomSheetDialogFragment.TAG)
+                        }.showNow(supportFragmentManager, LoginVerifyBottomSheetDialogFragment.TAG)
+                    }
+                    if (shouldGoWallet && !shouldBlockNavigation) {
+                        binding.bottomNav.selectedItemId = R.id.nav_wallet
+                        switchToDestination(NavigationController.Wallet)
+                        lastBottomNavItemId = R.id.nav_wallet
+                        defaultSharedPreferences.putBoolean(PREF_LOGIN_OR_SIGN_UP, false)
+                    }
+                } else {
+                    CheckRegisterBottomSheetDialogFragment.newInstance()
+                        .showNow(supportFragmentManager, CheckRegisterBottomSheetDialogFragment.TAG)
                 }
-            } else {
-                CheckRegisterBottomSheetDialogFragment.newInstance()
-                    .showNow(supportFragmentManager, CheckRegisterBottomSheetDialogFragment.TAG)
             }
         }
 
@@ -457,6 +475,11 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                 "SessionWorker",
                 ExistingPeriodicWorkPolicy.UPDATE,
                 periodicWorkRequest
+            )
+            val request = PeriodicWorkRequestBuilder<ReconnectWorker>(15, TimeUnit.MINUTES)
+                .build()
+            WorkManager.getInstance(this@MainActivity).enqueueUniquePeriodicWork(
+                "Reconnect", ExistingPeriodicWorkPolicy.KEEP, request
             )
         }
     }

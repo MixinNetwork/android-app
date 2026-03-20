@@ -26,7 +26,7 @@
     <string name="Add_circle">Добавить круг</string>
     <string name="Add_Contact">Добавить контакт</string>
     <string name="Add_conversations">Добавить беседы</string>
-    <string name="Add_emergency_contact">Добавить экстренный контакт</string>
+    <string name="Add_emergency_contact">Добавить контакт для восстановления</string>
     <string name="Add_group_description">Добавить описание группы</string>
     <string name="Add_memo">добавить памятку</string>
     <string name="Add_participants">Добавить участников</string>
@@ -134,26 +134,26 @@
     <string name="call_who">Позвонить %1$s</string>
     <string name="Calling">Вызов…</string>
     <string name="Camera">Камера</string>
-    <string name="can_not_recognize_qr_code">Не могу распознать QR-код</string>
+    <string name="can_not_recognize_qr_code">Не удалось распознать QR-код</string>
     <string name="Cancel">Отмена</string>
-    <string name="Cancel_Floating">Отменить всплывание</string>
+    <string name="Cancel_Floating">Закрыть плавающее окно</string>
     <string name="Canceled">Отменено</string>
     <string name="Canceled_by_caller">Отменено звонившим</string>
     <string name="Cant_receive_the_code">Не можете получить код?</string>
     <string name="cant_talk_self">Вы не можете говорить сами с собой</string>
     <string name="cant_transfer_self">Вы не можете перевести на себя</string>
     <string name="Card">Карта</string>
-    <string name="Chain">Цепь</string>
+    <string name="Chain">Сеть</string>
     <string name="Change">Изменить</string>
     <string name="Change_Amount">Изменить сумму</string>
-    <string name="Change_emergency_contact">Изменить экстренный контакт</string>
+    <string name="Change_emergency_contact">Изменить контакт для восстановления</string>
     <string name="Change_Number_Instead">Вместо этого изменить номер</string>
     <string name="Change_Phone_Number">Изменить номер телефона</string>
     <string name="Change_PIN">Изменить PIN-код</string>
-    <string name="Change_PIN_successfully">Изменить PIN-код успешно</string>
+    <string name="Change_PIN_successfully">PIN-код успешно изменен</string>
     <string name="Change_Profile_Photo_with_Camera">Изменить фото профиля с помощью камеры</string>
-    <string name="Change_Profile_Photo_with_Library">Изменить фотографию профиля с помощью библиотеки</string>
-    <string name="Changed">Измененный</string>
+    <string name="Change_Profile_Photo_with_Library">Изменить фото профиля из галереи</string>
+    <string name="Changed">Изменено</string>
     <string name="changed_disappearing_message_settings">%1$s изменил настройки исчезающих сообщений.</string>
     <string name="Changing">Изменение…</string>
     <string name="chat_audio_discard_warning">Вы уверены, что хотите остановить запись и удалить свое голосовое сообщение?</string>
@@ -183,7 +183,7 @@
     <string name="chat_import_fail_content">Не удалось импортировать сообщение! Вы хотите отправить его в виде файла?</string>
     <string name="chat_list_empty_info">Вы можете общаться с контактами, на телефоне которых установлен Mixin.</string>
     <string name="chat_not_support">Этот тип сообщений не поддерживается, пожалуйста, обновите Mixin до последней версии. %1$s.</string>
-    <string name="chat_on_mixin_content">Давайте общаться в Mixin Messenger! Простой, безопасный и простой в использовании. Он также поддерживает биткойн, эфириум и другие криптовалюты. Загрузите https://mixin.one/messenger и выполните поиск \@%1$s, чтобы добавить меня в друзья.</string>
+    <string name="chat_on_mixin_content">Давайте общаться в Mixin! Простой, безопасный и простой в использовании. Он также поддерживает биткойн, эфириум и другие криптовалюты. Загрузите https://mixin.one/messenger и выполните поиск \@%1$s, чтобы добавить меня в друзья.</string>
     <string name="chat_pin_message">%1$s закрепил %2$s</string>
     <string name="Chat_pinned">Чат закреплен</string>
     <string name="chat_recall_delete_alert">Выбранные вами сообщения будут удалены для всех в последней версии Mixin в этом чате.</string>
@@ -228,7 +228,7 @@
     </plurals>
     <string name="Contact_Developer">Связаться с разработчиком</string>
     <string name="contact_empty_tip">Mixin требуется доступ к вашим контактам, чтобы помочь вам общаться с другими людьми на Mixin.</string>
-    <string name="contact_invite_content">Привет, я использую Mixin Messenger для общения. Загрузите его здесь: https://mixin.one/messenger</string>
+    <string name="contact_invite_content">Привет, я использую Mixin для общения. Загрузите его здесь: https://mixin.one/messenger</string>
     <string name="contact_mixin_id">Идентификатор Mixin: %1$s</string>
     <string name="contact_mobile">Мобильный: %1$s</string>
     <string name="contact_mute_title">Отключить уведомления для…</string>
@@ -291,7 +291,7 @@
     <string name="Delete_Synced_Contact">Удалить синхронизированные контакты</string>
     <string name="Delete_withdraw_Address">Удалить адрес %1$s</string>
     <string name="Deposit">Депозит</string>
-    <string name="deposit_account_attention">Внимание: Пожалуйста, попробуйте небольшую сумму для первого депозита. Для успешного внесения %1$s в Mixin Messenger необходимы как памятка, так и адрес.</string>
+    <string name="deposit_account_attention">Внимание: Пожалуйста, попробуйте небольшую сумму для первого депозита. Для успешного внесения %1$s в Mixin необходимы как памятка, так и адрес.</string>
     <string name="deposit_attention">Пожалуйста, попробуйте небольшую сумму для первого депозита.</string>
     <plurals name="deposit_confirmation" tools:ignore="UnusedQuantity">
         <item quantity="one">Депозит придет %1$d подтверждение блокировки</item>
@@ -492,7 +492,7 @@
     <string name="Invite_people">Пригласить людей</string>
     <string name="Invite_to_Group_via_Link">Пригласить в группу по ссылке</string>
     <string name="Invite_to_Mixin">Пригласить в Mixin</string>
-    <string name="is_network_available">isNetworkAvailable</string>
+    <string name="is_network_available">Сеть доступна</string>
     <string name="italic">курсив</string>
     <string name="Join_group">Присоединиться к группе</string>
     <string name="Joined_in">Присоединился к %1$s</string>
@@ -567,7 +567,7 @@
     <string name="Mixin">Mixin</string>
     <string name="Mixin_ID">Mixin ID</string>
     <string name="Mixin_Locked">Миксин заблокирован</string>
-    <string name="Mixin_Messenger_Desktop">Рабочий стол Mixin Messenger</string>
+    <string name="Mixin_Messenger_Desktop">Рабочий стол Mixin</string>
     <string name="Model">Модель</string>
     <string name="Monday">Понедельник</string>
     <string name="More">Больше</string>
@@ -632,7 +632,7 @@
     <string name="Not_support">Не поддерживается</string>
     <string name="Notice">Уведомление</string>
     <string name="Notification_and_Confirmation">Уведомление и подтверждение</string>
-    <string name="notification_channel_description">Показывает, какая музыка сейчас играет в мессенджере Mixin Messenger</string>
+    <string name="notification_channel_description">Показывает, какая музыка сейчас играет в мессенджере Mixin</string>
     <string name="notification_content">Не пропустите сообщения от друзей.</string>
     <string name="Notifications">Уведомления</string>
     <string name="Now_Playing">Сейчас играет</string>

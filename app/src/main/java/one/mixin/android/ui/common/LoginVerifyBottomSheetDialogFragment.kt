@@ -3,6 +3,8 @@ package one.mixin.android.ui.common
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.DialogInterface
+import android.view.ContextThemeWrapper
+import android.view.View
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -36,7 +38,9 @@ import one.mixin.android.repository.Web3Repository
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.common.biometric.BiometricLayout
+import one.mixin.android.databinding.ViewLoginVerifyMoreBottomBinding
 import one.mixin.android.ui.logs.LogViewerBottomSheet
+import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
@@ -92,12 +96,44 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
             LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
             true
         }
+        binding.more.setOnClickListener {
+            showMoreMenu()
+        }
         binding.support.setOnClickListener {
             context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
         }
         lifecycleScope.launch {
             checkTipCounter(Session.getAccount()!!)
         }
+    }
+
+    private fun showMoreMenu() {
+        if (!isAdded) return
+        val builder = BottomSheet.Builder(requireActivity())
+        val view: View =
+            View.inflate(
+                ContextThemeWrapper(requireActivity(), R.style.Custom),
+                R.layout.view_login_verify_more_bottom,
+                null,
+            )
+        val menuBinding = ViewLoginVerifyMoreBottomBinding.bind(view)
+        builder.setCustomView(menuBinding.root)
+        val bottomSheet = builder.create()
+        menuBinding.closeIv.setOnClickListener { bottomSheet.dismiss() }
+        menuBinding.forgetPinTv.setOnClickListener {
+            context?.openUrl(getString(R.string.forget_pin_help_url))
+            bottomSheet.dismiss()
+        }
+        menuBinding.switchAccountTv.setOnClickListener {
+            bottomSheet.dismiss()
+            dismissAllowingStateLoss()
+            MixinApplication.get().closeAndClear(force = true)
+        }
+        menuBinding.logsTv.setOnClickListener {
+            bottomSheet.dismiss()
+            context?.let(SettingActivity::showPinLogs)
+        }
+        bottomSheet.show()
     }
 
     private suspend fun checkTipCounter(account: Account) {
@@ -210,8 +246,8 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
                 )
                 Pair(btcAddress, btcPrivateKey)
             } else {
-                val mnemonic: String = CryptoWalletHelper.getWeb3Mnemonic(requireContext(), spendKey, walletItem.id)
-                    ?: throw IllegalArgumentException("Missing mnemonic")
+                // Skip if no key
+                val mnemonic: String = CryptoWalletHelper.getWeb3Mnemonic(requireContext(), spendKey, walletItem.id) ?: continue
                 val derivedWallet = CryptoWalletHelper.mnemonicToBitcoinSegwitWallet(mnemonic, index = derivationIndex)
                 Pair(derivedWallet.address, Numeric.hexStringToByteArray(derivedWallet.privateKey))
             }

@@ -11,6 +11,7 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Account.PREF_LOGIN_OR_SIGN_UP
 import one.mixin.android.api.response.web3.WalletOutput
 import one.mixin.android.db.converter.AssetChangeListConverter
 import one.mixin.android.db.converter.Web3TypeConverters
@@ -31,6 +32,7 @@ import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3TokensExtra
 import one.mixin.android.db.web3.vo.Web3Transaction
 import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.moveTo
 import one.mixin.android.util.SINGLE_DB_EXECUTOR
 import one.mixin.android.util.database.dbDir
@@ -120,6 +122,10 @@ abstract class WalletDatabase : RoomDatabase() {
         }
 
         fun moveTempDatabaseFileIfNeeded(context: Context, identityNumber: String?) {
+            val shouldGoWallet: Boolean = context.defaultSharedPreferences.getBoolean(PREF_LOGIN_OR_SIGN_UP, false)
+            if (shouldGoWallet) { // Do not migrate on first entry
+                return
+            }
             if (identityNumber.isNullOrBlank()) {
                 return
             }

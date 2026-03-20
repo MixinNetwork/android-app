@@ -2,8 +2,10 @@ package one.mixin.android.web3.js
 
 import okio.Buffer
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Account.ChainAddress.BTC_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
+import one.mixin.android.Constants.ChainId.BITCOIN_CHAIN_ID
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -69,6 +71,7 @@ object Web3Signer {
         const val ADDRESS = "signer_address"
         const val EVM_ADDRESS = "signer_evm_address"
         const val SOLANA_ADDRESS = "signer_solana_address"
+        const val BTC_ADDRESS = "signer_btc_address"
         const val PATH = "signer_path"
         const val CURRENT_WALLET_CATEGORY = "signer_current_wallet_category"
         const val CLASSIC_WALLET_ID = "signer_classic_wallet_id"
@@ -81,6 +84,8 @@ object Web3Signer {
     var evmAddress: String = ""
         private set
     var solanaAddress: String = ""
+        private set
+    var btcAddress: String = ""
         private set
     var path: String = ""
         private set
@@ -105,6 +110,7 @@ object Web3Signer {
         address = sp.getString(Keys.ADDRESS, "") ?: ""
         evmAddress = sp.getString(Keys.EVM_ADDRESS, "") ?: ""
         solanaAddress = sp.getString(Keys.SOLANA_ADDRESS, "") ?: ""
+        btcAddress = sp.getString(Keys.BTC_ADDRESS, "") ?: ""
         path = sp.getString(Keys.PATH, "") ?: ""
         currentWalletId = sp.getString(Keys.SELECTED_WEB3_WALLET_ID, "") ?: ""
         currentWalletCategory = sp.getString(Keys.CURRENT_WALLET_CATEGORY, WalletCategory.CLASSIC.value)
@@ -119,6 +125,7 @@ object Web3Signer {
         sp.putString(Keys.ADDRESS, address)
         sp.putString(Keys.EVM_ADDRESS, evmAddress)
         sp.putString(Keys.SOLANA_ADDRESS, solanaAddress)
+        sp.putString(Keys.BTC_ADDRESS, btcAddress)
         sp.putString(Keys.PATH, path)
         sp.putString(Keys.SELECTED_WEB3_WALLET_ID, currentWalletId)
         sp.putString(Keys.CURRENT_WALLET_CATEGORY, currentWalletCategory)
@@ -202,10 +209,12 @@ object Web3Signer {
             solanaAddress =
                 addresses.firstOrNull { it.chainId == SOLANA_CHAIN_ID }?.destination
                     ?: ""
+            btcAddress = addresses.firstOrNull {it.chainId == BITCOIN_CHAIN_ID}?.destination ?:""
             address = evmAddress
         } else {
             evmAddress = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
             solanaAddress = PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
+            btcAddress = PropertyHelper.findValueByKey(BTC_ADDRESS, "")
             address = evmAddress
             path = ""
         }

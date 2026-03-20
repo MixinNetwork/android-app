@@ -73,6 +73,7 @@ import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
+import one.mixin.android.util.getChainName
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.WalletCategory
@@ -141,7 +142,11 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
         jobManager.addJobInBackground(RefreshPriceJob(token.assetId))
         refreshToken(token.assetId)
         binding.titleView.apply {
-            titleTv.setTextOnly(token.name)
+            val sub = getChainName(token.chainId, token.chainName, token.assetKey)
+            if (sub != null)
+                setSubTitle(token.name, sub)
+            else
+                titleTv.setTextOnly(token.name)
             leftIb.setOnClickListener {
                 requireActivity().onBackPressedDispatcher.onBackPressed()
             }

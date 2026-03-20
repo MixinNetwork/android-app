@@ -32,6 +32,7 @@ class SettingActivity : ThemeActivity() {
         const val EXTRA_AUTH = "extra_auth"
         const val ARGS_SUCCESS = "args_success"
         const val EXTRA_SHOW_DEBUG = "extra_show_debug"
+        const val EXTRA_SHOW_PIN_LOGS = "extra_show_pin_logs"
 
         fun show(
             context: Context,
@@ -92,6 +93,14 @@ class SettingActivity : ThemeActivity() {
                 },
             )
         }
+
+        fun showPinLogs(context: Context) {
+            context.startActivity(
+                Intent(context, SettingActivity::class.java).apply {
+                    putExtra(EXTRA_SHOW_PIN_LOGS, true)
+                },
+            )
+        }
     }
 
     private val binding by viewBinding(ActivityContactBinding::inflate)
@@ -127,6 +136,9 @@ class SettingActivity : ThemeActivity() {
                 replaceFragment(settingFragment, R.id.container, SettingFragment.TAG)
                 addFragment(settingFragment, aboutFragment, AboutFragment.TAG)
                 addFragment(aboutFragment, LogAndDebugFragment.newInstance(), LogAndDebugFragment.TAG)
+            }
+            intent.getBooleanExtra(EXTRA_SHOW_PIN_LOGS, false) -> {
+                replaceFragment(PinLogsFragment.newInstance(), R.id.container, PinLogsFragment.TAG)
             }
             else -> {
                 val fragment = SettingFragment.newInstance()

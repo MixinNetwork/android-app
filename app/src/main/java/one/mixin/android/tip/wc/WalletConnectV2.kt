@@ -63,7 +63,7 @@ object WalletConnectV2 : WalletConnect() {
         val serverUrl = "wss://relay.walletconnect.com?projectId=$projectId"
         val appMetaData =
             Core.Model.AppMetaData(
-                name = "Mixin Messenger",
+                name = "Mixin",
                 url = "https://messenger.mixin.one",
                 description = "An open source cryptocurrency wallet with Signal messaging.",
                 icons = emptyList(),
@@ -131,7 +131,7 @@ object WalletConnectV2 : WalletConnect() {
                     sessionProposal: Wallet.Model.SessionProposal,
                     verifyContext: Wallet.Model.VerifyContext,
                 ) {
-                    Timber.d("$TAG onSessionProposal $sessionProposal")
+                    Timber.d("$TAG onSessionProposal $sessionProposal $verifyContext")
                     val chains = supportChainList.map { c -> c.chainId }
                     val namespaces =
                         (sessionProposal.requiredNamespaces.values + sessionProposal.optionalNamespaces.values)

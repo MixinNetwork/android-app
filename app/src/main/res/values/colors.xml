@@ -254,4 +254,8 @@
     <color name="fab_orange_light">#ffb54c</color>
     <color name="fab_orange_bright">#FFC674</color>
     <color name="blue">#0000ff</color>
+
+    <color name="bg_gray">#F5F5F5</color>
+    <color name="text_black">#333333</color>
+    <color name="text_blue">#0D94FC</color>
 </resources>

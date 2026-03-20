@@ -7,10 +7,9 @@ import android.content.ClipData
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.View
+import android.view.View.MeasureSpec
 import android.view.ViewGroup
-import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
-import androidx.core.view.updateLayoutParams
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
@@ -31,14 +30,12 @@ import one.mixin.android.databinding.FragmentGroupBottomSheetBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.dayTime
-import one.mixin.android.extension.dp
-import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.localTime
-import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.showConfirmDialog
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.dp
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.info.MenuStyle
 import one.mixin.android.ui.common.info.MixinScrollableBottomSheetDialogFragment
@@ -111,6 +108,17 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
         FragmentGroupBottomSheetBinding.bind(contentView)
     }
 
+    override fun getPeekHeight(
+        contentView: View,
+        behavior: BottomSheetBehavior<*>,
+    ): Int = calculateCollapsedContentHeight()
+
+    override fun shouldApplyBottomInsetToBottomSheetContainer(): Boolean = false
+
+    override fun shouldIncludeBottomInsetInPeekHeight(): Boolean = false
+
+    override fun extraPeekOffsetWhenNavigationBarPresent(): Int = 5.dp
+
     override fun setupDialog(
         dialog: Dialog,
         style: Int,
@@ -145,31 +153,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                 if (icon == null || !File(icon).exists()) {
                     bottomViewModel.startGenerateAvatar(c.conversationId)
                 }
-                binding.name.text = c.name
-                if (c.announcement.isNullOrBlank()) {
-                    binding.detailTv.isVisible = false
-                } else {
-                    binding.detailTv.isVisible = true
-                    binding.detailTv.originalText = c.announcement
-                    binding.detailTv.heightDifferenceCallback = { heightDifference, duration ->
-                        if (behavior?.state == BottomSheetBehavior.STATE_COLLAPSED) {
-                            behavior?.peekHeight?.let { peekHeight ->
-                                ValueAnimator.ofInt(peekHeight, peekHeight + heightDifference).apply {
-                                    interpolator = FastOutSlowInInterpolator()
-                                    setDuration(duration)
-                                    addUpdateListener { value ->
-                                        behavior?.peekHeight = value.animatedValue as Int
-                                    }
-                                    start()
-                                }
-                            }
-                        } else if (behavior?.state == BottomSheetBehavior.STATE_EXPANDED) {
-                            behavior?.peekHeight?.let { peekHeight ->
-                                behavior?.peekHeight = heightDifference + peekHeight
-                            }
-                        }
-                    }
-                }
+                renderCollapsedContent(c)
                 initParticipant(changeMenu, c)
             },
         )
@@ -223,13 +207,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
             binding.memberTv.isVisible = true
         }
 
-        contentView.doOnPreDraw {
-            binding.opsLl.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                bottomMargin = requireContext().navigationBarHeight() + 24.dp
-            }
-            behavior?.peekHeight = binding.title.height + binding.scrollContent.height -
-                (menuListLayout?.height ?: 0) - if (menuListLayout != null) 38.dp else 8.dp
-        }
+        updateCollapsedPeekHeight()
     }
 
     private fun initMenu(
@@ -396,18 +374,15 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
             },
         )
 
-        menuListLayout?.removeAllViews()
-        binding.scrollContent.removeView(menuListLayout)
+        binding.menuContainer.removeAllViews()
         list.createMenuLayout(
             requireContext(),
             getString(R.string.Created, conversation.createdAt.dayTime()),
         )
             .let { layout ->
                 menuListLayout = layout
-                binding.scrollContent.addView(layout)
-                layout.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                    bottomMargin = requireContext().dpToPx(30f)
-                }
+                binding.menuContainer.addView(layout)
+                updateCollapsedPeekHeight()
                 binding.moreFl.setOnClickListener {
                     if (behavior?.state == BottomSheetBehavior.STATE_COLLAPSED) {
                         behavior?.state = BottomSheetBehavior.STATE_EXPANDED
@@ -419,6 +394,57 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                     }
                 }
             }
+    }
+
+    private fun renderCollapsedContent(conversation: Conversation) {
+        if (!isAdded) return
+
+        binding.name.text = conversation.name
+        if (conversation.announcement.isNullOrBlank()) {
+            binding.detailTv.isVisible = false
+        } else {
+            binding.detailTv.isVisible = true
+            binding.detailTv.originalText = conversation.announcement
+            binding.detailTv.heightDifferenceCallback = { heightDifference, duration ->
+                if (behavior?.state == BottomSheetBehavior.STATE_COLLAPSED) {
+                    behavior?.peekHeight?.let { peekHeight ->
+                        ValueAnimator.ofInt(peekHeight, peekHeight + heightDifference).apply {
+                            interpolator = FastOutSlowInInterpolator()
+                            setDuration(duration)
+                            addUpdateListener { value ->
+                                behavior?.peekHeight = value.animatedValue as Int
+                            }
+                            start()
+                        }
+                    }
+                } else if (behavior?.state == BottomSheetBehavior.STATE_EXPANDED) {
+                    behavior?.peekHeight?.let { peekHeight ->
+                        behavior?.peekHeight = heightDifference + peekHeight
+                    }
+                }
+            }
+        }
+        updateCollapsedPeekHeight()
+    }
+
+    private fun updateCollapsedPeekHeight() {
+        schedulePeekHeightUpdate()
+    }
+
+    private fun calculateCollapsedContentHeight(): Int {
+        val titleHeight = binding.title.height.takeIf { it > 0 } ?: measureCollapsedViewHeight(binding.title)
+        val topContentHeight = binding.topContent.height.takeIf { it > 0 } ?: measureCollapsedViewHeight(binding.topContent)
+        return titleHeight + topContentHeight
+    }
+
+    private fun measureCollapsedViewHeight(view: View): Int {
+        val width = contentView.measuredWidth.takeIf { it > 0 } ?: contentView.width
+        if (width <= 0) return 0
+
+        val widthSpec = MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY)
+        val heightSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED)
+        view.measure(widthSpec, heightSpec)
+        return view.measuredHeight
     }
 
     private fun startSearchConversation() =

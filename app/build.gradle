@@ -1,14 +1,11 @@
 plugins {
     id 'com.android.application'
-    id 'kotlin-android'
-    id 'org.jetbrains.kotlin.android'
     id 'dagger.hilt.android.plugin'
     id 'kotlin-parcelize'
     id 'de.undercouch.download'
     id "com.google.devtools.ksp"
     id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
     id 'kotlinx-serialization'
-    id "com.google.protobuf" version "0.9.1"
     id "org.jetbrains.kotlin.plugin.compose" version "${kotlinVersion}"
     id 'com.google.firebase.firebase-perf'
     id 'com.bugsnag.android.gradle'
@@ -16,9 +13,11 @@ plugins {
 }
 
 def versionMajor = 3
-def versionMinor = 9
-def versionPatch = 0
-def versionBuild = 0
+def versionMinor = 10
+def versionPatch = 3
+def versionBuild = 1
+
+def includeDebugX86_64 = project.findProperty("includeDebugX86_64")?.toString()?.toBoolean() ?: false // Enable debug package for x86_64
 
 apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
@@ -30,7 +29,7 @@ android {
     defaultConfig {
         applicationId "one.mixin.messenger"
         minSdkVersion 26
-        targetSdkVersion 35
+        targetSdkVersion 36
         versionCode versionMajor * 1000000 + versionMinor * 10000 + versionPatch * 100 + versionBuild
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
         multiDexEnabled true
@@ -53,11 +52,6 @@ android {
             resources {
                 excludes += '/META-INF/{AL2.0,LGPL2.1}'
             }
-        }
-
-        kotlinOptions {
-            jvmTarget = '17'
-            freeCompilerArgs += ['-opt-in=kotlin.contracts.ExperimentalContracts']
         }
 
         lintOptions{
@@ -175,7 +169,11 @@ android {
             signingConfig signingConfigs.debug
             jniDebuggable false
             ndk {
-                abiFilters "arm64-v8a", "x86_64"
+                if (includeDebugX86_64) {
+                    abiFilters "arm64-v8a", "x86_64"
+                } else {
+                    abiFilters "arm64-v8a"
+                }
             }
         }
 
@@ -203,8 +201,8 @@ android {
     packagingOptions {
         jniLibs {
             useLegacyPackaging true
+            excludes += ['lib/x86_64/libcurve25519.so']
         }
-        exclude 'lib/x86_64/libcurve25519.so'
     }
 
     configurations.configureEach {
@@ -378,7 +376,7 @@ dependencies {
     ksp "com.github.bumptech.glide:ksp:$glideVersion"
     implementation "jp.wasabeef:glide-transformations:${glideTransformationsVersion}"
     implementation "com.jakewharton.timber:timber:${timberVersion}"
-    implementation "com.github.tougee:country-picker-android:${countryPickerVersion}"
+    implementation 'com.github.myinnos:AlphabetIndex-Fast-Scroll-RecyclerView:1.0.95'
     implementation "com.googlecode.libphonenumber:libphonenumber:${libphonenumberVersion}"
     implementation "com.github.tougee:android-priority-jobqueue:${jobqueueVersion}"
     implementation("com.github.yalantis:ucrop:${ucropVersion}")
@@ -436,8 +434,7 @@ dependencies {
     implementation "com.google.accompanist:accompanist-pager-indicators:${accompanistVersion}"
 
     // wallet connect && web3j
-    implementation "org.web3j:core:${web3jCoreVersion}" // ⚠️ dependabot unexpected behavior update to version 5.0.0
-    implementation "org.web3j:crypto:${web3jCryptoVersion}"
+    implementation ('org.web3j:core:4.12.3-android')
     implementation platform("com.reown:android-bom:${reownBomVersion}")
     implementation "com.reown:android-core"
     testImplementation "com.reown:android-core"
@@ -563,6 +560,5 @@ task syncStrings {
         }
     }
 }
-
 
 
