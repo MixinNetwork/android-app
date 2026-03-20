@@ -61,6 +61,7 @@ import one.mixin.android.ui.home.web3.trade.ClosedPositionItem
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
+import java.math.RoundingMode
 import kotlin.math.abs
 
 private const val POSITION_REFRESH_INTERVAL_MS = 3_000L
@@ -105,18 +106,12 @@ fun PerpetualContent(
     val openPositionsPreview = openPositions.take(3)
     val marketsPreview = markets.take(3)
     val closedPositionsPreview = closedPositions.take(3)
-    val totalPositionValue = openPositions.fold(BigDecimal.ZERO) { total, position ->
-        val quantity = position.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
-        val markPrice = position.markPrice?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-        total + quantity.abs().multiply(markPrice)
+    val totalMargin = openPositions.fold(BigDecimal.ZERO) { total, position ->
+        total + (position.margin?.toBigDecimalOrNull() ?: BigDecimal.ZERO)
     }
-    val totalPositionValueFiatText = "${fiatSymbol}${totalPositionValue.multiply(fiatRate).priceFormat()}"
+    val totalPositionValueFiatText = "${fiatSymbol}${totalMargin.multiply(fiatRate).priceFormat()}"
     val totalPnlFiatText = "${if (totalPnl >= 0) "+" else "-"}$fiatSymbol${BigDecimal.valueOf(totalPnl).abs().multiply(fiatRate).priceFormat()}"
-    val totalPnlPercent = if (totalPositionValue == BigDecimal.ZERO) {
-        0.0
-    } else {
-        totalPnl / totalPositionValue.toDouble() * 100
-    }
+    val totalPnlPercent = calculatePnlPercent(totalMargin, BigDecimal.valueOf(totalPnl))
 
     LaunchedEffect(Unit) {
         viewModel.loadMarkets(
@@ -520,6 +515,19 @@ fun PerpetualContent(
             }
         }
     }
+}
+
+private fun calculatePnlPercent(
+    margin: BigDecimal,
+    pnl: BigDecimal,
+): Double {
+    if (margin <= BigDecimal.ZERO) {
+        return 0.0
+    }
+    return pnl
+        .divide(margin, 8, RoundingMode.HALF_UP)
+        .multiply(BigDecimal(100))
+        .toDouble()
 }
 
 @Composable

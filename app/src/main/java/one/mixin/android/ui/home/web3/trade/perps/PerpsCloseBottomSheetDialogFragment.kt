@@ -156,15 +156,11 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
     private val unrealizedPnl by lazy {
         requireNotNull(requireArguments().getString(ARGS_UNREALIZED_PNL)) { "unrealizedPnl is null" }
     }
-    private val roe by lazy {
-        requireNotNull(requireArguments().getString(ARGS_ROE)) { "roe is null" }
-    }
     private var step by mutableStateOf(Step.Pending)
     private var errorInfo: String? by mutableStateOf(null)
 
     private var latestMarkPrice by mutableStateOf("")
     private var latestUnrealizedPnl by mutableStateOf("")
-    private var latestRoe by mutableStateOf("")
     private var marketIconUrl by mutableStateOf("")
     private var marketSymbol by mutableStateOf("")
     private var settleAssetSymbol by mutableStateOf("USDT")
@@ -182,7 +178,6 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
         LaunchedEffect(Unit) {
             latestMarkPrice = markPrice
             latestUnrealizedPnl = unrealizedPnl
-            latestRoe = roe
         }
 
         LaunchedEffect(positionId) {
@@ -190,7 +185,6 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
             localPosition?.let { position ->
                 latestMarkPrice = position.markPrice ?: latestMarkPrice
                 latestUnrealizedPnl = position.unrealizedPnl ?: latestUnrealizedPnl
-                latestRoe = position.roe ?: latestRoe
                 marketIconUrl = position.iconUrl.orEmpty()
                 marketSymbol = position.displaySymbol ?: position.tokenSymbol.orEmpty()
                 refreshAssetAndSender(
@@ -209,7 +203,6 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                 onSuccess = { position ->
                     latestMarkPrice = position.markPrice ?: "0"
                     latestUnrealizedPnl = position.unrealizedPnl ?: "0"
-                    latestRoe = position.roe ?: "0"
 
                     lifecycleScope.launch {
                         viewModel.getMarketFromDb(position.marketId)?.let { market ->
@@ -374,9 +367,18 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                     }
 
                     val formattedRoe = try {
-                        String.format("%f", latestRoe.toDouble())
+                        val marginValue = BigDecimal(margin)
+                        if (marginValue <= BigDecimal.ZERO) {
+                            "0"
+                        } else {
+                            BigDecimal(latestUnrealizedPnl)
+                                .divide(marginValue, 8, RoundingMode.HALF_UP)
+                                .multiply(BigDecimal(100))
+                                .stripTrailingZeros()
+                                .toPlainString()
+                        }
                     } catch (e: Exception) {
-                        latestRoe
+                        "0"
                     }
                     val formattedPnlFiat = try {
                         val pnlFiat = pnl.multiply(fiatRate)

@@ -34,6 +34,7 @@ import one.mixin.android.ui.home.web3.trade.ClosedPositionAdapter
 import one.mixin.android.ui.home.web3.trade.TotalPositionValueAdapter
 import one.mixin.android.util.viewBinding
 import java.math.BigDecimal
+import java.math.RoundingMode
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -113,10 +114,10 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
     private var totalValueJob: Job? = null
     private var previousOpenPositionsCount: Int? = null
     
-    private var lastOpenTotalValue: Double = 0.0
+    private var lastOpenTotalMargin: Double = 0.0
     private var lastOpenTotalPnl: Double = 0.0
     private var lastClosedTotalPnl: Double = 0.0
-    private var lastClosedTotalEntryValue: Double = 0.0
+    private var lastClosedTotalMargin: Double = 0.0
 
     private val openPositionsObserver = Observer<PagedList<PerpsPositionItem>> { pagedList ->
         binding.progressBar.isVisible = false
@@ -176,10 +177,10 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
         closedPositionsLiveData?.removeObservers(viewLifecycleOwner)
         totalValueJob?.cancel()
         
-        lastOpenTotalValue = 0.0
+        lastOpenTotalMargin = 0.0
         lastOpenTotalPnl = 0.0
         lastClosedTotalPnl = 0.0
-        lastClosedTotalEntryValue = 0.0
+        lastClosedTotalMargin = 0.0
         previousOpenPositionsCount = null
 
         if (positionType == PositionType.OPEN) {
@@ -222,7 +223,7 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
         binding.emptyView.root.isVisible = false
         binding.emptyView.helpAction.isVisible = false
         totalValueAdapter.submitTotal(BigDecimal.ZERO)
-        totalValueAdapter.submitSubtitle(BigDecimal.ZERO, BigDecimal.ZERO)
+        totalValueAdapter.submitSubtitle(BigDecimal.ZERO, null)
 
         closedPositionsLiveData = viewModel.getClosedPositionsPaged(walletId)
         closedPositionsLiveData?.observe(viewLifecycleOwner, closedPositionsObserver)
@@ -234,16 +235,16 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
         totalValueJob = viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 combine(
-                    viewModel.observeTotalOpenPositionValue(walletId),
+                    viewModel.observeOpenPositions(walletId),
                     viewModel.observeTotalUnrealizedPnl(walletId)
-                ) { totalPositionValue, totalPnl ->
-                    totalPositionValue to totalPnl
-                }.collect { (totalPositionValue, totalPnl) ->
-                    if (lastOpenTotalValue != totalPositionValue || lastOpenTotalPnl != totalPnl) {
-                        lastOpenTotalValue = totalPositionValue
+                ) { positions, totalPnl ->
+                    calculateOpenTotalMargin(positions) to totalPnl
+                }.collect { (totalMargin, totalPnl) ->
+                    if (lastOpenTotalMargin != totalMargin || lastOpenTotalPnl != totalPnl) {
+                        lastOpenTotalMargin = totalMargin
                         lastOpenTotalPnl = totalPnl
-                        val percent = calculatePercent(totalPnl, totalPositionValue)
-                        totalValueAdapter.submitTotal(BigDecimal.valueOf(totalPositionValue))
+                        val percent = calculatePnlPercent(totalPnl, totalMargin)
+                        totalValueAdapter.submitTotal(BigDecimal.valueOf(totalMargin))
                         totalValueAdapter.submitSubtitle(BigDecimal.valueOf(totalPnl), BigDecimal.valueOf(percent))
                     }
                 }
@@ -257,17 +258,15 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 combine(
                     viewModel.observeTotalRealizedPnl(walletId),
-                    viewModel.observeTotalClosedEntryValue(walletId)
-                ) { totalPnl, totalEntryValue ->
-                    totalPnl to totalEntryValue
-                }.collect { (totalPnl, totalEntryValue) ->
-                    if (lastClosedTotalPnl != totalPnl || lastClosedTotalEntryValue != totalEntryValue) {
+                    viewModel.observeClosedPositions(walletId, CLOSED_POSITION_REFRESH_LIMIT)
+                ) { totalPnl, positions ->
+                    totalPnl to positions.size
+                }.collect { (totalPnl, closedCount) ->
+                    if (lastClosedTotalPnl != totalPnl || lastClosedTotalMargin != closedCount.toDouble()) {
                         lastClosedTotalPnl = totalPnl
-                        lastClosedTotalEntryValue = totalEntryValue
-                        val nowValue = totalEntryValue + totalPnl
-                        val percent = calculateClosedPercent(nowValue, totalEntryValue)
+                        lastClosedTotalMargin = closedCount.toDouble()
                         totalValueAdapter.submitTotal(BigDecimal.valueOf(totalPnl))
-                        totalValueAdapter.submitSubtitle(BigDecimal.valueOf(totalPnl), BigDecimal.valueOf(percent))
+                        totalValueAdapter.submitSubtitle(BigDecimal.valueOf(totalPnl), null)
                     }
                 }
             }
@@ -309,17 +308,18 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
         }
     }
 
-    private fun calculatePercent(value: Double, base: Double): Double {
-        if (base == 0.0) {
-            return 0.0
+    private fun calculateOpenTotalMargin(positions: List<PerpsPositionItem>): Double {
+        return positions.sumOf { position ->
+            position.margin?.toDoubleOrNull() ?: 0.0
         }
-        return value / base * 100
     }
-
-    private fun calculateClosedPercent(nowValue: Double, entryValue: Double): Double {
-        if (entryValue == 0.0) {
+    private fun calculatePnlPercent(pnl: Double, margin: Double): Double {
+        if (margin == 0.0) {
             return 0.0
         }
-        return (nowValue / entryValue - 1.0) * 100
+        return BigDecimal.valueOf(pnl)
+            .divide(BigDecimal.valueOf(margin), 8, RoundingMode.HALF_UP)
+            .multiply(BigDecimal(100))
+            .toDouble()
     }
 }

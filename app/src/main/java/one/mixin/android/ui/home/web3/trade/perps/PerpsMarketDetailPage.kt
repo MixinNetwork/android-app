@@ -652,9 +652,7 @@ private fun OpenPositionCard(
         }
     }.collectAsStateWithLifecycle(initialValue = null)
     val openPayAmount = position.openPayAmount?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    val openPayPrice = openPayToken?.priceUsd?.toBigDecimalOrNull()
-        ?: if (position.openPayAssetId in Constants.usdIds) BigDecimal.ONE else BigDecimal.ZERO
-    val amountValue = openPayAmount.multiply(openPayPrice).multiply(fiatRate)
+    val amountValue = openPayAmount.multiply(fiatRate)
 
     val entryPrice = position.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val liquidationPrice = calculateLiquidationPriceValue(entryPrice, position.leverage, isLong)
@@ -788,19 +786,6 @@ private fun OpenPositionCard(
                         color = MixinAppTheme.colors.textAssist
                     )
 
-//                    Spacer(modifier = Modifier.width(4.dp))
-//                    Icon(
-//                        painter = painterResource(id = R.drawable.ic_tip),
-//                        contentDescription = null,
-//                        modifier = Modifier
-//                            .size(12.dp)
-//                            .clickable {
-//                                val activity = context as? FragmentActivity ?: return@clickable
-//                                PerpetualGuideBottomSheetDialogFragment.newInstance()
-//                                    .show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
-//                            },
-//                        tint = MixinAppTheme.colors.textAssist
-//                    )
                 }
                 Text(
                     text = "${fiatSymbol}${amountValue.priceFormat()}",

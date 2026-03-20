@@ -104,7 +104,7 @@ class PerpsPositionShareActivity : BaseActivity() {
         }
 
         binding.content.updateLayoutParams<MarginLayoutParams> {
-            topMargin = 20.dp
+            topMargin = 80.dp
         }
         binding.iconFl.round(6.dp)
         binding.qr.post { binding.qr.round(4.dp) }
@@ -141,17 +141,8 @@ class PerpsPositionShareActivity : BaseActivity() {
         val open = position
         if (open != null) {
             val pnlAmount = open.unrealizedPnl.toBigDecimalSafely() ?: BigDecimal.ZERO
-            val pnlPercent = open.roe.toBigDecimalSafely()?.let { roe ->
-                if (roe.abs() <= BigDecimal.ONE) {
-                    roe.multiply(BigDecimal(100))
-                } else {
-                    roe
-                }
-            } ?: calculateLeveragedPnlPercent(
-                entryPrice = open.entryPrice,
-                currentPrice = open.markPrice ?: open.entryPrice,
-                side = open.side,
-                leverage = open.leverage,
+            val pnlPercent = calculatePnlPercent(
+                margin = open.margin.toBigDecimalSafely(),
                 pnlAmount = pnlAmount,
             )
 
@@ -159,7 +150,7 @@ class PerpsPositionShareActivity : BaseActivity() {
                 iconUrl = open.iconUrl,
                 side = open.side,
                 leverage = open.leverage,
-                pnlPercent = alignSign(pnlPercent, pnlAmount),
+                pnlPercent = pnlPercent,
                 isProfit = pnlAmount >= BigDecimal.ZERO,
                 tokenSymbol = open.tokenSymbol?:"",
                 entryPrice = open.entryPrice,
@@ -171,12 +162,11 @@ class PerpsPositionShareActivity : BaseActivity() {
 
         val closed = positionHistory ?: return false
         val pnlAmount = closed.realizedPnl.toBigDecimalSafely() ?: BigDecimal.ZERO
-        val pnlPercent = calculateLeveragedPnlPercent(
+        val pnlPercent = calculateClosedPercent(
             entryPrice = closed.entryPrice,
-            currentPrice = closed.closePrice,
+            closePrice = closed.closePrice,
             side = closed.side,
             leverage = closed.leverage,
-            pnlAmount = pnlAmount,
         )
 
         bindCard(
@@ -281,35 +271,37 @@ class PerpsPositionShareActivity : BaseActivity() {
         return name.replace("[^A-Za-z0-9._-]".toRegex(), "_")
     }
 
-    private fun calculateLeveragedPnlPercent(
-        entryPrice: String?,
-        currentPrice: String?,
-        side: String,
-        leverage: Int,
+    private fun calculatePnlPercent(
+        margin: BigDecimal?,
         pnlAmount: BigDecimal,
     ): BigDecimal {
-        val entry = entryPrice.toBigDecimalSafely()
-        val current = currentPrice.toBigDecimalSafely()
-        if (entry == null || current == null || entry <= BigDecimal.ZERO) {
+        if (margin == null || margin <= BigDecimal.ZERO) {
+            return BigDecimal.ZERO
+        }
+        return pnlAmount
+            .divide(margin, 8, RoundingMode.HALF_UP)
+            .multiply(BigDecimal(100))
+    }
+
+    private fun calculateClosedPercent(
+        entryPrice: String?,
+        closePrice: String?,
+        side: String,
+        leverage: Int,
+    ): BigDecimal {
+        val entry = entryPrice.toBigDecimalSafely() ?: return BigDecimal.ZERO
+        val close = closePrice.toBigDecimalSafely() ?: return BigDecimal.ZERO
+        if (entry <= BigDecimal.ZERO || leverage <= 0) {
             return BigDecimal.ZERO
         }
 
         val direction = if (side.equals("short", ignoreCase = true)) BigDecimal(-1) else BigDecimal.ONE
-        val changeRatio = current.subtract(entry).divide(entry, 8, RoundingMode.HALF_UP)
-        val computed = changeRatio
+        return close
+            .subtract(entry)
+            .divide(entry, 8, RoundingMode.HALF_UP)
             .multiply(BigDecimal(leverage))
             .multiply(BigDecimal(100))
             .multiply(direction)
-
-        return alignSign(computed, pnlAmount)
-    }
-
-    private fun alignSign(value: BigDecimal, pnlAmount: BigDecimal): BigDecimal {
-        return when {
-            pnlAmount > BigDecimal.ZERO && value < BigDecimal.ZERO -> value.negate()
-            pnlAmount < BigDecimal.ZERO && value > BigDecimal.ZERO -> value.negate()
-            else -> value
-        }
     }
 
     private fun formatSignedPercent(value: BigDecimal): String {
