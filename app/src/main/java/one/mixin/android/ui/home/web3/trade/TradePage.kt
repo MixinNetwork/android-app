@@ -21,10 +21,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material.ModalBottomSheetLayout
-import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Text
-import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -102,6 +99,7 @@ fun TradePage(
     onLimitOrderClick: (String) -> Unit,
     onShowTradingGuideIfNeeded: (Int) -> Unit,
     onShowTradingGuide: (Int) -> Unit,
+    onShowHelpBottomSheet: (() -> Unit, () -> Unit) -> Unit,
     onShowMarketList: (Boolean) -> Unit,
     onShowAllMarkets: () -> Unit,
     onShowAllOpenPositions: () -> Unit,
@@ -118,11 +116,6 @@ fun TradePage(
     val perpsViewModel = hiltViewModel<PerpetualViewModel>()
     var walletDisplayName by remember { mutableStateOf<String?>(null) }
     var pendingOrderCount by remember { mutableIntStateOf(0) }
-    
-    val bottomSheetState = rememberModalBottomSheetState(
-        initialValue = ModalBottomSheetValue.Hidden,
-        skipHalfExpanded = true
-    )
     val coroutineScope = rememberCoroutineScope()
 
     val currentWalletId = walletId ?: Session.getAccountId() ?: ""
@@ -234,39 +227,6 @@ fun TradePage(
         }
     }
 
-    ModalBottomSheetLayout(
-        sheetState = bottomSheetState,
-        scrimColor = Color.Black.copy(alpha = 0.6f),
-        sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-        sheetBackgroundColor = MixinAppTheme.colors.background,
-        sheetContent = {
-            val currentGuideTitle = if (perpetualTabIndex != null && pagerState.currentPage == perpetualTabIndex) {
-                stringResource(R.string.Perpetual_Futures_Guide)
-            } else {
-                stringResource(R.string.Spot_Trading_Guide)
-            }
-            HelpBottomSheetContent(
-                guideTitle = currentGuideTitle,
-                onContactSupport = {
-                    coroutineScope.launch {
-                        bottomSheetState.hide()
-                        context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
-                    }
-                },
-                onTradingGuide = {
-                    coroutineScope.launch {
-                        bottomSheetState.hide()
-                        onShowTradingGuide(pagerState.currentPage)
-                    }
-                },
-                onDismiss = {
-                    coroutineScope.launch {
-                        bottomSheetState.hide()
-                    }
-                }
-            )
-        }
-    ) {
     PageScaffold(
         title = stringResource(id = R.string.Trade),
         subtitle = {
@@ -373,9 +333,10 @@ fun TradePage(
                 }
             }
             IconButton(onClick = {
-                coroutineScope.launch {
-                    bottomSheetState.show()
-                }
+                onShowHelpBottomSheet(
+                    { context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE) },
+                    { onShowTradingGuide(pagerState.currentPage) }
+                )
             }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_support),
@@ -431,7 +392,6 @@ fun TradePage(
             tabs[page].screen()
         }
     }
-}
 }
 
 /**
