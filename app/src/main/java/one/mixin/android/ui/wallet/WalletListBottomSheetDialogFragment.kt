@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -32,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -49,6 +49,8 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 
+import one.mixin.android.compose.GetActionBarHeight
+import one.mixin.android.compose.GetStatusBarHeightValue
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.WalletItem
 import one.mixin.android.db.web3.vo.isClassic
@@ -242,8 +244,13 @@ fun WalletListScreen(
         }
     }
 
-    Column(modifier = Modifier
-        .fillMaxSize()) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(
+                LocalConfiguration.current.screenHeightDp.dp - GetActionBarHeight() - GetStatusBarHeightValue()
+            )
+    ) {
         SearchBar(
             query = query,
             onQueryChanged = {
@@ -258,7 +265,7 @@ fun WalletListScreen(
         Column(
             modifier = Modifier
                 .padding(top = 8.dp, start = 16.dp, end = 16.dp)
-                .fillMaxSize()
+                .weight(1f)
                 .verticalScroll(rememberScrollState())
         ) {
             if (hasAll || hasSafe || hasImported || hasWatch || hasCreated) {

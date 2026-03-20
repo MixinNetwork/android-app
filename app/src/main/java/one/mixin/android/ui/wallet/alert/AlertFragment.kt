@@ -141,11 +141,26 @@ class AlertFragment : BaseFragment(), MultiSelectCoinListBottomSheetDialogFragme
                         }
 
                         composable(AlertDestination.Edit.name) {
-                            AlertEditPage(selectCoin, currentAlert, onAdd = { coin->
-                                if (coins.isNotEmpty()) {
-                                    coins = coins + coin
+                            AlertEditPage(
+                                selectCoin,
+                                currentAlert,
+                                onAdd = { coin ->
+                                    if (coins.isNotEmpty()) {
+                                        coins = coins + coin
+                                    }
+                                },
+                                pop = { navigateUp(navController) },
+                                onShowTypeSelector = { selectedType, onSelected ->
+                                    AlertSelectionBottomSheetDialogFragment.newTypeInstance(selectedType).apply {
+                                        onTypeSelected = onSelected
+                                    }.show(parentFragmentManager, AlertSelectionBottomSheetDialogFragment.TAG)
+                                },
+                                onShowFrequencySelector = { selectedFrequency, onSelected ->
+                                    AlertSelectionBottomSheetDialogFragment.newFrequencyInstance(selectedFrequency).apply {
+                                        onFrequencySelected = onSelected
+                                    }.show(parentFragmentManager, AlertSelectionBottomSheetDialogFragment.TAG)
                                 }
-                            }, pop = { navigateUp(navController) })
+                            )
                         }
                     }
 

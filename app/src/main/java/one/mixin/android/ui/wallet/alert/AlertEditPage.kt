@@ -26,11 +26,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.ModalBottomSheetLayout
-import androidx.compose.material.ModalBottomSheetState
-import androidx.compose.material.ModalBottomSheetValue.Hidden
 import androidx.compose.material.Text
-import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -100,17 +96,19 @@ fun Modifier.draw9Patch(
 }
 
 @Composable
-fun AlertEditPage(coin: CoinItem?, alert: Alert?, onAdd: (CoinItem) -> Unit, pop: () -> Unit) {
+fun AlertEditPage(
+    coin: CoinItem?,
+    alert: Alert?,
+    onAdd: (CoinItem) -> Unit,
+    pop: () -> Unit,
+    onShowTypeSelector: (AlertType, (AlertType) -> Unit) -> Unit,
+    onShowFrequencySelector: (AlertFrequency, (AlertFrequency) -> Unit) -> Unit,
+) {
     MixinAppTheme {
-        val bottomSheetState: ModalBottomSheetState = rememberModalBottomSheetState(
-            Hidden,
-            skipHalfExpanded = true
-        )
         val coroutineScope = rememberCoroutineScope()
         if (coin != null) {
             val context = LocalContext.current
             val currentPrice = BigDecimal(coin.currentPrice)
-            var expandType by remember { mutableStateOf(true) }
             var alertValue by remember { mutableStateOf(alert?.rawValue ?: currentPrice.toPlainString()) }
             val maxPrice = currentPrice.multiply(BigDecimal(100))
             val minPrice = currentPrice.divide(BigDecimal(100))
@@ -121,42 +119,6 @@ fun AlertEditPage(coin: CoinItem?, alert: Alert?, onAdd: (CoinItem) -> Unit, pop
             var isLoading by remember { mutableStateOf(false) }
             var inputError by remember { mutableStateOf(if (alertValue.toBigDecimalOrNull() == currentPrice && selectedAlertType != AlertType.PRICE_REACHED) InputError.EQUALS_CURRENT_PRICE else null) }
             val viewModel = hiltViewModel<AlertViewModel>()
-            ModalBottomSheetLayout(
-                sheetState = bottomSheetState,
-                scrimColor = Color.Black.copy(alpha = 0.3f),
-                sheetBackgroundColor = Color.Transparent,
-                sheetContent = {
-                    if (expandType) {
-                        AlertTypeBottom(selectedAlertType, { newType: AlertType ->
-                            if (selectedAlertType != newType) {
-                                inputError = null
-                                alertValue = ""
-                                selectedAlertType = newType
-                            }
-                            coroutineScope.launch {
-                                bottomSheetState.hide()
-                            }
-                        }, {
-                            coroutineScope.launch {
-                                bottomSheetState.hide()
-                            }
-                        })
-                    } else {
-                        AlertFrequencyBottom(selectedAlertFrequency, { newFrequency: AlertFrequency ->
-                            if (selectedAlertFrequency != newFrequency) {
-                                selectedAlertFrequency = newFrequency
-                            }
-                            coroutineScope.launch {
-                                bottomSheetState.hide()
-                            }
-                        }, {
-                            coroutineScope.launch {
-                                bottomSheetState.hide()
-                            }
-                        })
-                    }
-                },
-            ) {
                 PageScaffold(
                     title = stringResource(id = if (alert == null) R.string.Add_Alert else R.string.Edit_Alert),
                     verticalScrollable = false,
@@ -194,8 +156,13 @@ fun AlertEditPage(coin: CoinItem?, alert: Alert?, onAdd: (CoinItem) -> Unit, pop
                             Spacer(modifier = Modifier.height(12.dp))
 
                             AlertTypeSelector(selectedType = selectedAlertType) {
-                                expandType = true
-                                coroutineScope.launch { bottomSheetState.show() }
+                                onShowTypeSelector(selectedAlertType) { newType ->
+                                    if (selectedAlertType != newType) {
+                                        inputError = null
+                                        alertValue = ""
+                                        selectedAlertType = newType
+                                    }
+                                }
                             }
                             Spacer(modifier = Modifier.height(6.dp))
 
@@ -424,9 +391,10 @@ fun AlertEditPage(coin: CoinItem?, alert: Alert?, onAdd: (CoinItem) -> Unit, pop
                             Spacer(modifier = Modifier.height(14.dp))
 
                             AlertFrequencySelector(selectedAlertFrequency) {
-                                coroutineScope.launch {
-                                    expandType = false
-                                    bottomSheetState.show()
+                                onShowFrequencySelector(selectedAlertFrequency) { newFrequency ->
+                                    if (selectedAlertFrequency != newFrequency) {
+                                        selectedAlertFrequency = newFrequency
+                                    }
                                 }
                             }
                         }
@@ -516,7 +484,6 @@ fun AlertEditPage(coin: CoinItem?, alert: Alert?, onAdd: (CoinItem) -> Unit, pop
                         Spacer(modifier = Modifier.height(20.dp))
                     }
                 }
-            }
         }
     }
 }
