@@ -1,6 +1,6 @@
 package one.mixin.android.ui.wallet.alert
 
-import PageScaffold
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import android.content.Context
 import android.graphics.Rect
 import androidx.annotation.DrawableRes

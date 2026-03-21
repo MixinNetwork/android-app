@@ -2,7 +2,6 @@
 
 package one.mixin.android.ui.home.web3.trade
 
-import PageScaffold
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -62,6 +61,7 @@ import one.mixin.android.extension.openUrl
 import one.mixin.android.session.Session
 import one.mixin.android.ui.components.TabItem
 import one.mixin.android.ui.home.web3.components.OutlinedTab
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.home.web3.trade.perps.PerpetualContent
 import one.mixin.android.ui.home.web3.trade.perps.PerpetualViewModel
 import one.mixin.android.vo.WalletCategory
