@@ -1,6 +1,6 @@
 package one.mixin.android.ui.wallet.alert
 
-import PageScaffold
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box

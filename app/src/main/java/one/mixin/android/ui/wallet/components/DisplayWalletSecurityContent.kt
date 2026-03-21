@@ -1,6 +1,6 @@
 package one.mixin.android.ui.wallet.components
 
-import PageScaffold
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import androidx.compose.runtime.Composable
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme

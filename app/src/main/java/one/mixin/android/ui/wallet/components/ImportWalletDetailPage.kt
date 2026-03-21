@@ -1,6 +1,6 @@
 package one.mixin.android.ui.wallet.components
 
-import PageScaffold
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
