@@ -82,6 +82,7 @@ import kotlin.math.abs
 
 private fun getLeveragePrefKey(marketId: String) = "pref_perps_leverage_$marketId"
 private const val MARKET_REFRESH_INTERVAL_MS = 5_000L
+private const val DEFAULT_LEVERAGE = 10
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -116,7 +117,7 @@ fun OpenPositionPage(
 
     val savedLeverage = remember(marketId) {
         context.defaultSharedPreferences
-            .getInt(getLeveragePrefKey(marketId), 1)
+            .getInt(getLeveragePrefKey(marketId), DEFAULT_LEVERAGE)
             .coerceAtLeast(1)
     }
     var leverage by remember(marketId) { mutableFloatStateOf(savedLeverage.toFloat()) }
