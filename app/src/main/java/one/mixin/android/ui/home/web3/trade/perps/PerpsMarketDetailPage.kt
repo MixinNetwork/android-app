@@ -821,19 +821,6 @@ private fun OpenPositionCard(
                         fontSize = 12.sp,
                         color = MixinAppTheme.colors.textAssist
                     )
-//                    Spacer(modifier = Modifier.width(4.dp))
-//                    Icon(
-//                        painter = painterResource(id = R.drawable.ic_tip),
-//                        contentDescription = null,
-//                        modifier = Modifier
-//                            .size(12.dp)
-//                            .clickable {
-//                                val activity = context as? FragmentActivity ?: return@clickable
-//                                PerpetualGuideBottomSheetDialogFragment.newInstance()
-//                                    .show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
-//                            },
-//                        tint = MixinAppTheme.colors.textAssist
-//                    )
                 }
                 Text(
                     text = "${fiatSymbol}${liquidationPrice.multiply(fiatRate).priceFormat()}",

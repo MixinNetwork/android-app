@@ -10,7 +10,9 @@ import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
-import one.mixin.android.extension.priceFormat
+import one.mixin.android.ui.home.web3.trade.perps.formatPerpsFiatDecimal
+import one.mixin.android.ui.home.web3.trade.perps.formatPerpsSignedFiatDecimal
+import one.mixin.android.ui.home.web3.trade.perps.formatPerpsSignedPercent
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
@@ -86,7 +88,7 @@ class TotalPositionValueAdapter(
                     } else {
                         "-"
                     }
-                }$fiatSymbol${total.abs().multiply(fiatRate).priceFormat()}"
+                }${formatPerpsFiatDecimal(total.abs().multiply(fiatRate), fiatSymbol)}"
                 val isProfit = subtitleValue >= BigDecimal.ZERO
                 valueTv.setTextColor(
                     if (isProfit) {
@@ -99,11 +101,7 @@ class TotalPositionValueAdapter(
                     subtitleTv.isGone = true
                 } else {
                     subtitleTv.isVisible = true
-                    subtitleTv.text = context.getString(
-                        R.string.Perpetual_Amount_Percent_Format,
-                        formatSignedUsd(subtitleValue),
-                        subtitlePercent.toDouble()
-                    )
+                    subtitleTv.text = "${formatSignedUsd(subtitleValue)}(${formatPerpsSignedPercent(subtitlePercent)})"
                     subtitleTv.setTextColor(
                         if (isProfit) {
                             gainColor
@@ -113,17 +111,13 @@ class TotalPositionValueAdapter(
                     )
                 }
             } else {
-                valueTv.text = "$fiatSymbol${total.abs().multiply(fiatRate).priceFormat()}"
+                valueTv.text = formatPerpsFiatDecimal(total.abs().multiply(fiatRate), fiatSymbol)
                 valueTv.setTextColor(resolveAttrColor(itemView, R.attr.text_primary))
                 if (subtitlePercent == null) {
                     subtitleTv.isGone = true
                 } else {
                     subtitleTv.isVisible = true
-                    subtitleTv.text = context.getString(
-                        R.string.Perpetual_Amount_Percent_Format,
-                        formatSignedUsd(subtitleValue),
-                        subtitlePercent.toDouble()
-                    )
+                    subtitleTv.text = "${formatSignedUsd(subtitleValue)}(${formatPerpsSignedPercent(subtitlePercent)})"
                     subtitleTv.setTextColor(
                         when {
                             subtitlePercent > BigDecimal.ZERO -> gainColor
@@ -138,12 +132,7 @@ class TotalPositionValueAdapter(
         private fun formatSignedUsd(amount: BigDecimal): String {
             val fiatRate = BigDecimal(Fiats.getRate())
             val fiatSymbol = Fiats.getSymbol()
-            val fiatAmount = amount.abs().multiply(fiatRate).priceFormat()
-            return if (amount < BigDecimal.ZERO) {
-                "-$fiatSymbol$fiatAmount"
-            } else {
-                "$fiatSymbol$fiatAmount"
-            }
+            return formatPerpsSignedFiatDecimal(amount.multiply(fiatRate), fiatSymbol)
         }
 
         private fun resolveAttrColor(view: View, @AttrRes attr: Int): Int {

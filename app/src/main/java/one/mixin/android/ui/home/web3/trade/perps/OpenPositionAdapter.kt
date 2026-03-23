@@ -12,7 +12,6 @@ import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.databinding.ItemClosedPositionListBinding
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.priceFormat
 import one.mixin.android.ui.common.recyclerview.SafePagedListAdapter
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
@@ -99,8 +98,13 @@ class OpenPositionAdapter(
                     }
                 )
 
-                val quantity = position.quantity.toBigDecimalOrNull()
-                quantityTv.text = "${quantity?.abs()} ${position.tokenSymbol ?: ""}"
+                val quantity = position.quantity
+                    .toBigDecimalOrNull()
+                    ?.abs()
+                    ?.stripTrailingZeros()
+                    ?.toPlainString()
+                    ?: position.quantity.removePrefix("-")
+                quantityTv.text = "$quantity ${position.tokenSymbol ?: ""}"
 
                 if (isOpening) {
                     rightTopValueTv.text = context.getString(R.string.Openning)
@@ -139,18 +143,13 @@ class OpenPositionAdapter(
         private fun formatUsd(amount: BigDecimal): String {
             val fiatRate = BigDecimal(Fiats.getRate())
             val fiatSymbol = Fiats.getSymbol()
-            return "$fiatSymbol${amount.multiply(fiatRate).priceFormat()}"
+            return formatPerpsFiatDecimal(amount.multiply(fiatRate), fiatSymbol)
         }
 
         private fun formatSignedUsd(amount: BigDecimal): String {
             val fiatRate = BigDecimal(Fiats.getRate())
             val fiatSymbol = Fiats.getSymbol()
-            val fiatAmount = amount.abs().multiply(fiatRate).priceFormat()
-            return when {
-                amount > BigDecimal.ZERO -> "+$fiatSymbol$fiatAmount"
-                amount < BigDecimal.ZERO -> "-$fiatSymbol$fiatAmount"
-                else -> "$fiatSymbol${BigDecimal.ZERO.multiply(fiatRate).priceFormat()}"
-            }
+            return formatPerpsSignedFiatDecimal(amount.multiply(fiatRate), fiatSymbol)
         }
 
         private fun resolveAttrColor(view: View, @AttrRes attr: Int): Int {

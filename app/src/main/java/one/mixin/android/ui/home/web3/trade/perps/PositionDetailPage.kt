@@ -39,7 +39,6 @@ import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.extension.priceFormat
 import one.mixin.android.ui.tip.wc.compose.ItemWalletContent
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.Fiats
@@ -93,26 +92,14 @@ fun PositionDetailPage(
     val pnlColor = if (pnl >= BigDecimal.ZERO) risingColor else fallingColor
     val liquidationPrice = calculateLiquidationPriceValue(entryPrice, position.leverage, isLong)
     val fiatRate = BigDecimal(Fiats.getRate())
+    val fiatSymbol = Fiats.getSymbol()
 
     fun formatFiat(value: BigDecimal): String {
-        return "${Fiats.getSymbol()}${value.multiply(fiatRate).priceFormat()}"
+        return formatPerpsFiatDecimal(value.multiply(fiatRate), fiatSymbol)
     }
 
     fun formatSignedFiat(value: BigDecimal): String {
-        return when {
-            value > BigDecimal.ZERO -> "+${formatFiat(value)}"
-            value < BigDecimal.ZERO -> "-${formatFiat(value.abs())}"
-            else -> formatFiat(BigDecimal.ZERO)
-        }
-    }
-
-    fun formatPnlAmount(value: BigDecimal): String {
-        val convertedValue = value.multiply(fiatRate)
-        return when {
-            value > BigDecimal.ZERO -> "+${convertedValue.priceFormat()}"
-            value < BigDecimal.ZERO -> convertedValue.priceFormat()
-            else -> convertedValue.priceFormat()
-        }
+        return formatPerpsSignedFiatDecimal(value.multiply(fiatRate), fiatSymbol)
     }
 
     PageScaffold(
@@ -433,24 +420,11 @@ fun PositionDetailPage(
     )
 
     fun formatFiat(value: BigDecimal): String {
-        return "$fiatSymbol${value.multiply(fiatRate).priceFormat()}"
+        return formatPerpsFiatDecimal(value.multiply(fiatRate), fiatSymbol)
     }
 
     fun formatSignedFiat(value: BigDecimal): String {
-        return when {
-            value > BigDecimal.ZERO -> "+${formatFiat(value)}"
-            value < BigDecimal.ZERO -> "-${formatFiat(value.abs())}"
-            else -> formatFiat(BigDecimal.ZERO)
-        }
-    }
-    
-    fun formatPnlAmount(value: BigDecimal): String {
-        val convertedValue = value.multiply(fiatRate)
-        return when {
-            value > BigDecimal.ZERO -> "+${convertedValue.priceFormat()}"
-            value < BigDecimal.ZERO -> convertedValue.priceFormat()
-            else -> convertedValue.priceFormat()
-        }
+        return formatPerpsSignedFiatDecimal(value.multiply(fiatRate), fiatSymbol)
     }
 
     PageScaffold(
@@ -598,9 +572,8 @@ fun PositionDetailPage(
 
                 PositionDetailItem(
                     label = stringResource(R.string.PNL).uppercase(),
-                    value = formatSignedFiat(pnl),
+                    value = "${formatSignedFiat(pnl)}(${formatSignedPercent(roe)})",
                     valueColor = pnlColor,
-                    subtitle = formatSignedPercent(roe),
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))

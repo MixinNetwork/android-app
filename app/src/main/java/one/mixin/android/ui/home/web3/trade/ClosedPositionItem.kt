@@ -29,8 +29,7 @@ import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.numberFormat8
-import one.mixin.android.ui.home.web3.trade.perps.formatPerpsDisplayDecimal
+import one.mixin.android.ui.home.web3.trade.perps.formatPerpsSignedFiatDecimal
 import one.mixin.android.ui.home.web3.trade.perps.formatPerpsSignedPercent
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
@@ -69,7 +68,12 @@ fun ClosedPositionItem(
     }
 
     val displaySymbol = position.tokenSymbol ?: "Unknown"
-    val quantity = position.quantity.toBigDecimalOrNull()?.abs()
+    val quantity = position.quantity
+        .toBigDecimalOrNull()
+        ?.abs()
+        ?.stripTrailingZeros()
+        ?.toPlainString()
+        ?: position.quantity.removePrefix("-")
     val pnlPercent = calculateClosedPercent(
         entryPrice = position.entryPrice,
         closePrice = position.closePrice,
@@ -151,9 +155,8 @@ fun ClosedPositionItem(
         Column(
             horizontalAlignment = Alignment.End
         ) {
-            val pnlFiat = pnl.abs().multiply(fiatRate)
             Text(
-                text = "${if (isProfit) "+" else "-"}$fiatSymbol${formatPerpsDisplayDecimal(pnlFiat)}",
+                text = formatPerpsSignedFiatDecimal(pnl.multiply(fiatRate), fiatSymbol),
                 fontSize = 16.sp,
                 color = pnlColor
             )

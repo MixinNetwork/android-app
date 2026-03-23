@@ -32,7 +32,6 @@ import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.fullDate
-import one.mixin.android.extension.numberFormat
 import one.mixin.android.ui.home.web3.trade.SwapViewModel
 import one.mixin.android.vo.route.Order
 import one.mixin.android.vo.route.OrderState
@@ -94,7 +93,7 @@ fun OpenOrderItem(order: Order, onClick: () -> Unit) {
 
             // Line 2: -xx symbol (red) | type
             Row(verticalAlignment = Alignment.CenterVertically) {
-                val payAmountText = order.payAmount.ifEmpty { "0" }.numberFormat()
+                val payAmountText = order.payAmount.ifEmpty { "0" }
                 Text(
                     text = "-${payAmountText} ${fromToken?.symbol ?: ""}",
                     fontSize = 14.sp,
@@ -121,7 +120,7 @@ fun OpenOrderItem(order: Order, onClick: () -> Unit) {
                     order.expectedReceiveAmount ?: order.receiveAmount
                 } else {
                     order.receiveAmount
-                } ?: "0").ifEmpty { "0" }.numberFormat()
+                } ?: "0").ifEmpty { "0" }
                 val hasReceivedAmount = !order.receiveAmount.isNullOrEmpty() && order.receiveAmount != "0"
                 
                 // Pending orders without received amount should be gray

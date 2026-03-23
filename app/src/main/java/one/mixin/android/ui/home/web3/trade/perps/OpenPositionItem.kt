@@ -28,7 +28,8 @@ import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.numberFormat8
+import one.mixin.android.ui.home.web3.trade.perps.formatPerpsFiatDecimal
+import one.mixin.android.ui.home.web3.trade.perps.formatPerpsSignedFiatDecimal
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
@@ -45,7 +46,12 @@ fun OpenPositionItem(
     val fiatSymbol = Fiats.getSymbol()
 
     val displaySymbol = position.tokenSymbol ?: stringResource(R.string.Unknown)
-    val quantity = position.quantity.toBigDecimalOrNull()
+    val quantity = position.quantity
+        .toBigDecimalOrNull()
+        ?.abs()
+        ?.stripTrailingZeros()
+        ?.toPlainString()
+        ?: position.quantity.removePrefix("-")
     val isLong = position.side.equals("long", true)
     val isOpening = position.state.equals("opening", true)
     val sideColor = if (isLong) {
@@ -131,13 +137,12 @@ fun OpenPositionItem(
             } else {
                 val marginFiat = margin.multiply(fiatRate)
                 Text(
-                    text = "${fiatSymbol}${formatPerpsDisplayDecimal(marginFiat)}",
+                    text = formatPerpsFiatDecimal(marginFiat, fiatSymbol),
                     fontSize = 16.sp,
                     color = MixinAppTheme.colors.textPrimary
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 val unrealizedPnl = position.unrealizedPnl?.toBigDecimalOrNull()?: BigDecimal.ZERO
-                val pnlFiat = unrealizedPnl.abs().multiply(fiatRate)
                 val roe = position.roe?.toBigDecimalOrNull() ?: BigDecimal.ZERO
                 val isProfit = unrealizedPnl >= BigDecimal.ZERO
                 val pnlColor = if (isProfit) {
@@ -154,7 +159,7 @@ fun OpenPositionItem(
                     }
                 }
                 Text(
-                    text = "${if (unrealizedPnl >= BigDecimal.ZERO) "+" else "-"}$fiatSymbol${formatPerpsDisplayDecimal(pnlFiat)}(${formatPerpsSignedPercent(roe)})",
+                    text = "${formatPerpsSignedFiatDecimal(unrealizedPnl.multiply(fiatRate), fiatSymbol)}(${formatPerpsSignedPercent(roe)})",
                     fontSize = 14.sp,
                     color = pnlColor
                 )

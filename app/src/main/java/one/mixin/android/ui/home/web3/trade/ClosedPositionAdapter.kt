@@ -11,9 +11,8 @@ import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.databinding.ItemClosedPositionListBinding
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.priceFormat
 import one.mixin.android.ui.common.recyclerview.SafePagedListAdapter
-import one.mixin.android.ui.home.web3.trade.perps.formatPerpsDisplayDecimal
+import one.mixin.android.ui.home.web3.trade.perps.formatPerpsSignedFiatDecimal
 import one.mixin.android.ui.home.web3.trade.perps.formatPerpsSignedPercent
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
@@ -93,8 +92,13 @@ class ClosedPositionAdapter(
                     }
                 )
 
-                val quantity = position.quantity.toBigDecimalOrNull()
-                quantityTv.text = "${quantity?.abs()} ${position.tokenSymbol ?: ""}"
+                val quantity = position.quantity
+                    .toBigDecimalOrNull()
+                    ?.abs()
+                    ?.stripTrailingZeros()
+                    ?.toPlainString()
+                    ?: position.quantity.removePrefix("-")
+                quantityTv.text = "$quantity ${position.tokenSymbol ?: ""}"
 
                 val pnl = position.realizedPnl.toBigDecimalOrNull() ?: BigDecimal.ZERO
                 val pnlPercent = calculateClosedPercent(
@@ -128,12 +132,7 @@ class ClosedPositionAdapter(
         private fun formatSignedUsd(amount: BigDecimal): String {
             val fiatRate = BigDecimal(Fiats.getRate())
             val fiatSymbol = Fiats.getSymbol()
-            val fiatAmount = amount.abs().multiply(fiatRate).priceFormat()
-            return when {
-                amount > BigDecimal.ZERO -> "+$fiatSymbol$fiatAmount"
-                amount < BigDecimal.ZERO -> "-$fiatSymbol$fiatAmount"
-                else -> "$fiatSymbol${BigDecimal.ZERO.multiply(fiatRate).priceFormat()}"
-            }
+            return formatPerpsSignedFiatDecimal(amount.multiply(fiatRate), fiatSymbol)
         }
 
         private fun calculateClosedPercent(
