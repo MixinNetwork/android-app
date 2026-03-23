@@ -204,7 +204,7 @@ fun PerpsMarketDetailPage(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(400.dp),
+                                .height(340.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             CircularProgressIndicator(
@@ -217,7 +217,7 @@ fun PerpsMarketDetailPage(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                if (currentPosition != null) {
+                if (currentPosition != null && market != null) {
                     OpenPositionCard(
                         position = currentPosition,
                         viewModel = viewModel,
@@ -240,7 +240,7 @@ fun PerpsMarketDetailPage(
                     )
                 }
 
-                if (closedPositions.isNotEmpty()) {
+                if (closedPositions.isNotEmpty() && market != null) {
                     Spacer(modifier = Modifier.height(16.dp))
                     ClosedPositionsSection(
                         positions = closedPositions,

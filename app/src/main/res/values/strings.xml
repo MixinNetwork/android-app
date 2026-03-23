@@ -2400,6 +2400,7 @@
     <string name="No_Markets">No Markets</string>
     <string name="View_More">View More</string>
     <string name="Loading">Loading...</string>
+    <string name="Openning">Openning</string>
     <string name="Vol">Vol %1$s</string>
     <string name="Entry_Close_Price">Entry: $%1$s → Close: $%2$s</string>
     <string name="Select_Market">Select Market</string>

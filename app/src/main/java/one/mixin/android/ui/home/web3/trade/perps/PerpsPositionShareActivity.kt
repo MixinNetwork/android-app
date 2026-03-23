@@ -20,6 +20,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Scheme.HTTPS_TRADE
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
@@ -36,6 +37,7 @@ import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.round
 import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.toast
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.web.getScreenshot
 import one.mixin.android.ui.web.refreshScreenshot
@@ -81,8 +83,6 @@ class PerpsPositionShareActivity : BaseActivity() {
     private val positionHistory: PerpsPositionHistoryItem? by lazy {
         intent.extras?.getParcelableCompat(ARGS_POSITION_HISTORY, PerpsPositionHistoryItem::class.java)
     }
-
-    private val shareLink: String = SHARE_QR_URL
 
     private val quoteColorReversed: Boolean by lazy {
         defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
@@ -215,8 +215,11 @@ class PerpsPositionShareActivity : BaseActivity() {
     }
 
     private fun bindFooter() {
-        val qrCode = shareLink.generateQRCode(72.dp, 8.dp).first
-        binding.qr.setImageBitmap(qrCode)
+        Session.getAccount()?.identityNumber.let {
+            val qrcodeContent = it?.let { referral -> "${SHARE_QR_URL}?ref=$referral" } ?: SHARE_QR_URL
+            val qrCode = qrcodeContent.generateQRCode(72.dp, 8.dp).first
+            binding.qr.setImageBitmap(qrCode)
+        }
     }
 
     private fun applyFadeInAnimation(view: View) {
@@ -243,7 +246,10 @@ class PerpsPositionShareActivity : BaseActivity() {
     }
 
     private val onCopy: () -> Unit = {
-        getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, shareLink))
+        val marketId = position?.marketId ?: positionHistory?.marketId
+        val marketLink = marketId?.let { "$HTTPS_TRADE?type=perps&market=$it" } ?: HTTPS_TRADE
+        val link = Session.getAccount()?.identityNumber?.let { "$marketLink&referral=$it" } ?: marketLink
+        getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, link))
         finish()
         toast(R.string.copied_to_clipboard)
     }

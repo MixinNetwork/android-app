@@ -47,12 +47,18 @@ fun OpenPositionItem(
     val displaySymbol = position.tokenSymbol ?: stringResource(R.string.Unknown)
     val quantity = position.quantity.toBigDecimalOrNull()?.let { String.format("%f", it) } ?: position.quantity
     val isLong = position.side.equals("long", true)
+    val isOpening = position.state.equals("opening", true)
     val sideColor = if (isLong) {
         if (quoteColorPref) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
     } else {
         if (quoteColorPref) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
     }
-    val leverageBackgroundColor = sideColor.copy(alpha = 0.1f)
+    val leverageTextColor = if (isOpening) MixinAppTheme.colors.textAssist else sideColor
+    val leverageBackgroundColor = if (isOpening) {
+        MixinAppTheme.colors.backgroundGrayLight
+    } else {
+        sideColor.copy(alpha = 0.1f)
+    }
 
     Row(
         modifier = Modifier
@@ -98,7 +104,7 @@ fun OpenPositionItem(
                     Text(
                         text = "${position.leverage}x",
                         fontSize = 12.sp,
-                        color = sideColor,
+                        color = leverageTextColor,
                         lineHeight = 14.sp,
                         modifier = Modifier
                             .clip(RoundedCornerShape(4.dp))
@@ -116,32 +122,40 @@ fun OpenPositionItem(
         }
 
         Column(horizontalAlignment = Alignment.End) {
-            Text(
-                text = "${fiatSymbol}${margin.multiply(fiatRate).priceFormat()}",
-                fontSize = 16.sp,
-                color = MixinAppTheme.colors.textPrimary
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            val unrealizedPnl = position.unrealizedPnl?.toBigDecimalOrNull()?: BigDecimal.ZERO
-            val isProfit = unrealizedPnl >= BigDecimal.ZERO
-            val pnlColor = if (isProfit) {
-                if (quoteColorPref) {
-                    MixinAppTheme.colors.walletRed
-                } else {
-                    MixinAppTheme.colors.walletGreen
-                }
+            if (isOpening) {
+                Text(
+                    text = stringResource(R.string.Openning),
+                    fontSize = 14.sp,
+                    color = MixinAppTheme.colors.textAssist
+                )
             } else {
-                if (quoteColorPref) {
-                    MixinAppTheme.colors.walletGreen
+                Text(
+                    text = "${fiatSymbol}${margin.multiply(fiatRate).priceFormat()}",
+                    fontSize = 16.sp,
+                    color = MixinAppTheme.colors.textPrimary
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                val unrealizedPnl = position.unrealizedPnl?.toBigDecimalOrNull()?: BigDecimal.ZERO
+                val isProfit = unrealizedPnl >= BigDecimal.ZERO
+                val pnlColor = if (isProfit) {
+                    if (quoteColorPref) {
+                        MixinAppTheme.colors.walletRed
+                    } else {
+                        MixinAppTheme.colors.walletGreen
+                    }
                 } else {
-                    MixinAppTheme.colors.walletRed
+                    if (quoteColorPref) {
+                        MixinAppTheme.colors.walletGreen
+                    } else {
+                        MixinAppTheme.colors.walletRed
+                    }
                 }
+                Text(
+                    text = "${if (unrealizedPnl >= BigDecimal.ZERO) "+" else "-"}$fiatSymbol${unrealizedPnl.abs().multiply(fiatRate).priceFormat()}",
+                    fontSize = 14.sp,
+                    color = pnlColor
+                )
             }
-            Text(
-                text = "${if (unrealizedPnl >= BigDecimal.ZERO) "+" else "-"}$fiatSymbol${unrealizedPnl.abs().multiply(fiatRate).priceFormat()}",
-                fontSize = 14.sp,
-                color = pnlColor
-            )
         }
     }
 }
