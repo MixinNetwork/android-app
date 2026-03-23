@@ -69,8 +69,6 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.home.web3.trade.InputContent
 import one.mixin.android.ui.home.web3.trade.KeyboardAwareBox
 import one.mixin.android.ui.home.web3.trade.SwapActivity
-import one.mixin.android.ui.home.inscription.component.AutoSizeConstraint
-import one.mixin.android.ui.home.inscription.component.AutoSizeText
 import one.mixin.android.ui.home.web3.components.InputAction
 import one.mixin.android.ui.wallet.AddFeeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletActivity
@@ -295,25 +293,7 @@ fun OpenPositionPage(
                             onTokenSelect()
                         },
                         onInputChanged = { usdtAmount = it },
-                        inlineEndCompose = {
-                            AutoSizeText(
-                                text = usdtAmount.ifEmpty { "0" },
-                                color = if (usdtAmount.isEmpty()) {
-                                    MixinAppTheme.colors.textRemarks
-                                } else {
-                                    MixinAppTheme.colors.textPrimary
-                                },
-                                fontSize = 28.sp,
-                                fontWeight = FontWeight.W500,
-                                textAlign = TextAlign.Start,
-                                softWrap = false,
-                                maxLines = 1,
-                                constraint = AutoSizeConstraint.Width(min = 16.sp),
-                            )
-                        },
                         tokenIconSize = 25.dp,
-                        inputFontSize = 28.sp,
-                        inputFontWeight = FontWeight.W500,
                     )
 
                     Row(
@@ -419,8 +399,8 @@ fun OpenPositionPage(
                             }.show(activity.supportFragmentManager, LeverageBottomSheetDialogFragment.TAG)
                         },
                         text = "${leverage.toInt()}x",
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.W500,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Black,
                         color = MixinAppTheme.colors.textPrimary
                     )
 
@@ -501,7 +481,7 @@ fun OpenPositionPage(
 
                     Text(
                         text = profitInfo,
-                        fontSize = 13.sp,
+                        fontSize = 14.sp,
                         color = MixinAppTheme.colors.textAssist,
                         modifier = Modifier.padding(horizontal = 4.dp)
                     )
