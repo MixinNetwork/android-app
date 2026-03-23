@@ -15,6 +15,7 @@ import one.mixin.android.extension.priceFormat
 import one.mixin.android.ui.common.recyclerview.SafePagedListAdapter
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
+import java.math.RoundingMode
 
 class ClosedPositionAdapter(
     private val isQuoteColorReversed: Boolean = false,
@@ -94,6 +95,12 @@ class ClosedPositionAdapter(
                 quantityTv.text = "$quantityStr ${position.tokenSymbol ?: ""}"
 
                 val pnl = position.realizedPnl.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                val pnlPercent = calculateClosedPercent(
+                    entryPrice = position.entryPrice,
+                    closePrice = position.closePrice,
+                    side = position.side,
+                    leverage = position.leverage,
+                )
                 rightTopValueTv.text = formatSignedUsd(pnl)
                 rightTopValueTv.setTextColor(
                     when {
@@ -110,7 +117,9 @@ class ClosedPositionAdapter(
                         }
                     }
                 )
-                rightBottomValueTv.isVisible = false
+                rightBottomValueTv.isVisible = true
+                rightBottomValueTv.text = formatSignedPercent(pnlPercent)
+                rightBottomValueTv.setTextColor(rightTopValueTv.currentTextColor)
             }
         }
 
@@ -123,6 +132,45 @@ class ClosedPositionAdapter(
                 amount < BigDecimal.ZERO -> "-$fiatSymbol$fiatAmount"
                 else -> "$fiatSymbol${BigDecimal.ZERO.multiply(fiatRate).priceFormat()}"
             }
+        }
+
+        private fun calculateClosedPercent(
+            entryPrice: String?,
+            closePrice: String?,
+            side: String,
+            leverage: Int,
+        ): BigDecimal {
+            val entry = entryPrice?.toBigDecimalOrNull() ?: return BigDecimal.ZERO
+            val close = closePrice?.toBigDecimalOrNull() ?: return BigDecimal.ZERO
+            if (entry <= BigDecimal.ZERO || leverage <= 0) {
+                return BigDecimal.ZERO
+            }
+
+            val direction = if (side.equals("short", ignoreCase = true)) BigDecimal(-1) else BigDecimal.ONE
+            return close
+                .subtract(entry)
+                .divide(entry, 8, RoundingMode.HALF_UP)
+                .multiply(BigDecimal(leverage))
+                .multiply(BigDecimal(100))
+                .multiply(direction)
+        }
+
+        private fun formatDisplayDecimal(value: BigDecimal?): String {
+            val safeValue = value ?: BigDecimal.ZERO
+            val absValue = safeValue.abs()
+            if (absValue > BigDecimal.ZERO && absValue < BigDecimal("0.01")) {
+                return "<0.01"
+            }
+            return safeValue.setScale(2, RoundingMode.HALF_UP).toPlainString()
+        }
+
+        private fun formatSignedPercent(value: BigDecimal): String {
+            val sign = when {
+                value > BigDecimal.ZERO -> "+"
+                value < BigDecimal.ZERO -> "-"
+                else -> ""
+            }
+            return "$sign${formatDisplayDecimal(value.abs())}%"
         }
 
         private fun resolveAttrColor(view: View, @AttrRes attr: Int): Int {
