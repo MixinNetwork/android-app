@@ -1143,6 +1143,7 @@
     </plurals>
     <string name="Unknown">未知</string>
     <string name="Unlock_with_fingerprint">使用指纹解锁</string>
+    <string name="app_auth_biometric_description">使用指纹解锁以开启 Mixin</string>
     <string name="unlock_with_fingerprint_desc">启用后，您需要使用指纹解锁以开启 Mixin。</string>
     <string name="Unmute">取消静音</string>
     <string name="Unnamed_location">未命名地点</string>

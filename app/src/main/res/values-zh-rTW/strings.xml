@@ -942,6 +942,7 @@
     </plurals>
     <string name="Unknown">未知</string>
     <string name="Unlock_with_fingerprint">使用指紋解鎖</string>
+    <string name="app_auth_biometric_description">使用指紋解鎖以開啟 Mixin</string>
     <string name="unlock_with_fingerprint_desc">啟用後，您需要使用指紋解鎖以開啟 Mixin。</string>
     <string name="Unmute">取消靜音</string>
     <string name="Unnamed_location">未命名地點</string>

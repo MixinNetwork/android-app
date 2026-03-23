@@ -1174,6 +1174,7 @@
     </plurals>
     <string name="Unknown">Unknown</string>
     <string name="Unlock_with_fingerprint">Unlock with fingerprint</string>
+    <string name="app_auth_biometric_description">Use fingerprint to open Mixin.</string>
     <string name="unlock_with_fingerprint_desc">When enabled, you\'ll need to use fingerprint to open Mixin.</string>
     <string name="Unmute">Unmute</string>
     <string name="Unnamed_location">Unnamed location</string>
