@@ -57,6 +57,7 @@ import one.mixin.android.db.web3.vo.isMixinSafe
 import one.mixin.android.db.web3.vo.isOwner
 import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.db.web3.vo.toWeb3Wallet
+import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.withArgs
@@ -146,7 +147,7 @@ class WalletListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
     }
 
     override fun getBottomSheetHeight(view: View): Int {
-        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+        return requireContext().screenHeight() - view.getSafeAreaInsetsTop() - requireContext().appCompatActionBarHeight()
     }
 
     fun setOnWalletClickListener(listener: (WalletItem?) -> Unit) {

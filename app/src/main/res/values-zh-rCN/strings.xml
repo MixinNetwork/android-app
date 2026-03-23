@@ -465,8 +465,8 @@
     <string name="error_inconsistent_country">错误 10610: 国家不一致</string>
     <string name="error_invalid_swap">错误 10611: 暂无报价，请稍后重试。</string>
     <string name="error_trading_pair_not_supported">错误 10615: 暂不支持该交易对，请尝试切换币种。</string>
-    <string name="error_trading_pair_not_supported_detailed">错误 10615: 暂不支持该交易对，请尝试切换币种。试试限价？不受金额和币种限制。</string>
-    <string name="error_no_quote_detailed">错误 10611: 暂无报价，请稍后重试。试试限价？不受金额和币种限制。</string>
+    <string name="error_trading_pair_not_supported_detailed">错误 10611: 暂不支持该交易对，请尝试切换币种。试试限价？不受金额和币种限制。</string>
+    <string name="error_no_quote_detailed">错误 10615: 暂无报价，请稍后重试。试试限价？不受金额和币种限制。</string>
     <string name="error_invalid_quote_amount">错误 10614: 输入金额太小或太大，请重新输入。</string>
     <string name="error_invalid_quote_amount_detailed">错误 10614: 金额超出最大下单金额 %1$s，请重新输入。试试限价？不受金额和币种限制。</string>
     <string name="error_no_available_quote">错误 10615: 暂不支持该交易对，请尝试切换币种。</string>
@@ -2226,5 +2226,6 @@
     <string name="title">选择一个国家或地区</string>
     <string name="anonymous_number">匿名号码</string>
     <string name="Forget_Pin">忘记 PIN</string>
+    <string name="forget_pin_help_url">https://support.mixin.one/zh/article/pin-1vb2rc7/</string>
     <string name="Switch_Account">切换账号</string>
 </resources>

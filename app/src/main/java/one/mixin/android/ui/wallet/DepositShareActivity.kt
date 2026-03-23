@@ -1,5 +1,6 @@
 package one.mixin.android.ui.wallet
 
+import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.Context
 import android.content.Intent
@@ -124,10 +125,11 @@ class DepositShareActivity : BaseActivity() {
     private val tokenChainName: String?
         get() = token?.chainName ?: web3Token?.chainName
 
-    private val tokenDust: String?
+    private val tokenDust: String
         get() = token?.dust ?: "0" // Web3TokenItem doesn't have dust, use default
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        skipSystemUi = true
         super.onCreate(savedInstanceState)
         binding = ActivityDepositShareBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -140,13 +142,6 @@ class DepositShareActivity : BaseActivity() {
                 binding.background.setImageBitmap(it.blurBitmap(25))
             })
         }
-
-        window.decorView.systemUiVisibility = (
-                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                )
-        window.statusBarColor = android.graphics.Color.TRANSPARENT
-
         binding.iconFl.round(6.dp)
         binding.content.updateLayoutParams<MarginLayoutParams> {
             topMargin = 20.dp
@@ -179,6 +174,7 @@ class DepositShareActivity : BaseActivity() {
         applyFadeInAnimation(binding.root)
     }
 
+    @SuppressLint("SetTextI18n")
     private fun setupUI() {
         val hasToken = token != null || web3Token != null
         if (user != null || !hasToken) {
@@ -225,7 +221,7 @@ class DepositShareActivity : BaseActivity() {
                 spannable.setSpan(boldStyle, 0, 8, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
 
                 spannable.setSpan(ForegroundColorSpan(black), addr.length - 6, addr.length, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                spannable.setSpan(StyleSpan(android.graphics.Typeface.BOLD), addr.length - 6, addr.length, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                spannable.setSpan(StyleSpan(Typeface.BOLD), addr.length - 6, addr.length, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
 
                 binding.addressText.text = spannable
             } else {
@@ -238,7 +234,7 @@ class DepositShareActivity : BaseActivity() {
                 binding.minimumDepositTitle.setText(R.string.Amount)
                 binding.minimumDepositText.text = "$amount"
             } else if (token != null) {
-                binding.minimumDepositText.text = "${tokenDust} ${tokenSymbol}"
+                binding.minimumDepositText.text = "$tokenDust $tokenSymbol"
             } else {
                 binding.minimumDepositTitle.isInvisible = true
                 binding.minimumDepositText.isInvisible = true
