@@ -94,7 +94,7 @@ class ClosedPositionAdapter(
                 )
 
                 val quantity = position.quantity.toBigDecimalOrNull()
-                quantityTv.text = "${formatPerpsDisplayDecimal(quantity?.abs())} ${position.tokenSymbol ?: ""}"
+                quantityTv.text = "${quantity?.abs()} ${position.tokenSymbol ?: ""}"
 
                 val pnl = position.realizedPnl.toBigDecimalOrNull() ?: BigDecimal.ZERO
                 val pnlPercent = calculateClosedPercent(

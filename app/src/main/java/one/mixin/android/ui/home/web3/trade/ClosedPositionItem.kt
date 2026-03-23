@@ -29,6 +29,7 @@ import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.numberFormat8
 import one.mixin.android.ui.home.web3.trade.perps.formatPerpsDisplayDecimal
 import one.mixin.android.ui.home.web3.trade.perps.formatPerpsSignedPercent
 import one.mixin.android.vo.Fiats
@@ -45,7 +46,7 @@ fun ClosedPositionItem(
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     val fiatRate = BigDecimal(Fiats.getRate())
     val fiatSymbol = Fiats.getSymbol()
-    
+
     val pnl = try {
         BigDecimal(position.realizedPnl)
     } catch (e: Exception) {
@@ -66,9 +67,9 @@ fun ClosedPositionItem(
             MixinAppTheme.colors.walletRed
         }
     }
-    
+
     val displaySymbol = position.tokenSymbol ?: "Unknown"
-    val quantity = formatPerpsDisplayDecimal(position.quantity.toBigDecimalOrNull()?.abs())
+    val quantity = position.quantity.toBigDecimalOrNull()?.abs()
     val pnlPercent = calculateClosedPercent(
         entryPrice = position.entryPrice,
         closePrice = position.closePrice,

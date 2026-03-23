@@ -28,6 +28,7 @@ import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.numberFormat8
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
@@ -44,7 +45,7 @@ fun OpenPositionItem(
     val fiatSymbol = Fiats.getSymbol()
 
     val displaySymbol = position.tokenSymbol ?: stringResource(R.string.Unknown)
-    val quantity = formatPerpsDisplayDecimal(position.quantity.toBigDecimalOrNull())
+    val quantity = position.quantity.toBigDecimalOrNull()
     val isLong = position.side.equals("long", true)
     val isOpening = position.state.equals("opening", true)
     val sideColor = if (isLong) {

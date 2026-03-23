@@ -100,7 +100,7 @@ class OpenPositionAdapter(
                 )
 
                 val quantity = position.quantity.toBigDecimalOrNull()
-                quantityTv.text = "${formatPerpsDisplayDecimal(quantity?.abs())} ${position.tokenSymbol ?: ""}"
+                quantityTv.text = "${quantity?.abs()} ${position.tokenSymbol ?: ""}"
 
                 if (isOpening) {
                     rightTopValueTv.text = context.getString(R.string.Openning)

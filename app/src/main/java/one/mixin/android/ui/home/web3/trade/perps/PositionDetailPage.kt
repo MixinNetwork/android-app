@@ -87,7 +87,6 @@ fun PositionDetailPage(
 
     val quantity = position.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val absQuantity = quantity.abs()
-    val markPrice = position.markPrice?.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val entryPrice = position.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val pnl = position.unrealizedPnl?.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val roe = position.roe?.toBigDecimalOrNull() ?: BigDecimal.ZERO

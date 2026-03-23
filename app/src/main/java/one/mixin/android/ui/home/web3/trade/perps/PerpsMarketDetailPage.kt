@@ -650,13 +650,6 @@ private fun OpenPositionCard(
     val directionColor = if (isLong) risingColor else fallingColor
 
     val quantity = position.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    val openPayToken by remember(position.openPayAssetId) {
-        if (position.openPayAssetId.isNullOrEmpty()) {
-            flowOf(null)
-        } else {
-            viewModel.observeTokenByAssetId(position.openPayAssetId)
-        }
-    }.collectAsStateWithLifecycle(initialValue = null)
     val marginAmount = position.margin?.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val amountValue = marginAmount.multiply(fiatRate)
 
