@@ -216,10 +216,7 @@ class ReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
 
                 is PopupType.BatteryOptimizationReminder -> {
                     ReminderPage(
-                        languageBasedImage(
-                            R.drawable.bg_reminder_notifaction,
-                            R.drawable.bg_reminder_notifaction_cn
-                        ),
+                        R.drawable.bg_reminder_battery_optimization,
                         R.string.Battery_Optimization,
                         batteryOptimizationContent(),
                         R.string.Go_settings,
