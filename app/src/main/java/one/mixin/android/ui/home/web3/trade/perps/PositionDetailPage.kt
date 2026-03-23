@@ -90,11 +90,10 @@ fun PositionDetailPage(
     val markPrice = position.markPrice?.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val entryPrice = position.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val pnl = position.unrealizedPnl?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val roe = position.roe?.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val pnlColor = if (pnl >= BigDecimal.ZERO) risingColor else fallingColor
     val liquidationPrice = calculateLiquidationPriceValue(entryPrice, position.leverage, isLong)
-    val orderValue = absQuantity * markPrice
     val fiatRate = BigDecimal(Fiats.getRate())
-    val currencyCode = Fiats.getAccountCurrencyAppearance()
 
     fun formatFiat(value: BigDecimal): String {
         return "${Fiats.getSymbol()}${value.multiply(fiatRate).priceFormat()}"
@@ -184,15 +183,6 @@ fun PositionDetailPage(
                 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                Text(
-                    text = formatSignedPercent(position.roe?.toBigDecimalOrNull() ?: BigDecimal.ZERO),
-                    fontSize = 14.sp,
-                    color = pnlColor,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
-                
-                Spacer(modifier = Modifier.height(10.dp))
-
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
@@ -274,6 +264,7 @@ fun PositionDetailPage(
                     label = stringResource(R.string.PNL).uppercase(),
                     value = formatSignedFiat(pnl),
                     valueColor = pnlColor,
+                    subtitle = formatSignedPercent(roe),
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -379,7 +370,7 @@ private fun PositionDetailItem(
             Text(
                 text = subtitle,
                 fontSize = 14.sp,
-                color = MixinAppTheme.colors.textAssist
+                color = valueColor
             )
         }
     }
@@ -435,7 +426,6 @@ fun PositionDetailPage(
     val absQuantity = quantity.abs()
     val fiatRate = BigDecimal(Fiats.getRate())
     val fiatSymbol = Fiats.getSymbol()
-    val currencyCode = Fiats.getAccountCurrencyAppearance()
     val roe = calculateClosedRoe(
         entryPrice = positionHistory.entryPrice,
         closePrice = positionHistory.closePrice,
@@ -529,12 +519,6 @@ fun PositionDetailPage(
                     }
                 }
 
-                Text(
-                    text = formatSignedPercent(roe),
-                    fontSize = 14.sp,
-                    color = pnlColor,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
                 Spacer(modifier = Modifier.height(10.dp))
                 Box(
                     modifier = Modifier
@@ -617,6 +601,7 @@ fun PositionDetailPage(
                     label = stringResource(R.string.PNL).uppercase(),
                     value = formatSignedFiat(pnl),
                     valueColor = pnlColor,
+                    subtitle = formatSignedPercent(roe),
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
