@@ -29,11 +29,11 @@ import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.ui.home.web3.trade.perps.calculateClosedRoe
 import one.mixin.android.ui.home.web3.trade.perps.formatPerpsSignedFiatDecimal
 import one.mixin.android.ui.home.web3.trade.perps.formatPerpsSignedPercent
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
-import java.math.RoundingMode
 
 @Composable
 fun ClosedPositionItem(
@@ -74,7 +74,7 @@ fun ClosedPositionItem(
         ?.stripTrailingZeros()
         ?.toPlainString()
         ?: position.quantity.removePrefix("-")
-    val pnlPercent = calculateClosedPercent(
+    val pnlPercent = calculateClosedRoe(
         entryPrice = position.entryPrice,
         closePrice = position.closePrice,
         side = position.side,
@@ -168,25 +168,4 @@ fun ClosedPositionItem(
             )
         }
     }
-}
-
-private fun calculateClosedPercent(
-    entryPrice: String?,
-    closePrice: String?,
-    side: String,
-    leverage: Int,
-): BigDecimal {
-    val entry = entryPrice?.toBigDecimalOrNull() ?: return BigDecimal.ZERO
-    val close = closePrice?.toBigDecimalOrNull() ?: return BigDecimal.ZERO
-    if (entry <= BigDecimal.ZERO || leverage <= 0) {
-        return BigDecimal.ZERO
-    }
-
-    val direction = if (side.equals("short", ignoreCase = true)) BigDecimal(-1) else BigDecimal.ONE
-    return close
-        .subtract(entry)
-        .divide(entry, 8, RoundingMode.HALF_UP)
-        .multiply(BigDecimal(leverage))
-        .multiply(BigDecimal(100))
-        .multiply(direction)
 }

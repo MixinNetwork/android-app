@@ -611,27 +611,6 @@ fun PositionDetailPage(
     }
 }
 
-private fun calculateClosedRoe(
-    entryPrice: String?,
-    closePrice: String?,
-    side: String,
-    leverage: Int,
-): BigDecimal {
-    val entry = entryPrice?.toBigDecimalOrNull() ?: return BigDecimal.ZERO
-    val close = closePrice?.toBigDecimalOrNull() ?: return BigDecimal.ZERO
-    if (entry <= BigDecimal.ZERO || leverage <= 0) {
-        return BigDecimal.ZERO
-    }
-
-    val direction = if (side.equals("short", ignoreCase = true)) BigDecimal(-1) else BigDecimal.ONE
-    return close
-        .subtract(entry)
-        .divide(entry, 8, RoundingMode.HALF_UP)
-        .multiply(BigDecimal(leverage))
-        .multiply(BigDecimal(100))
-        .multiply(direction)
-}
-
 private fun formatSignedPercent(value: BigDecimal): String {
     val sign = when {
         value > BigDecimal.ZERO -> "+"

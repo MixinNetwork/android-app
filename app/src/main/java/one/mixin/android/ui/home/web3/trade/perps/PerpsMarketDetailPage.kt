@@ -643,6 +643,7 @@ private fun OpenPositionCard(
     val fiatSymbol = Fiats.getSymbol()
 
     val pnl = position.unrealizedPnl?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val roe = position.roe?.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val isProfit = pnl >= BigDecimal.ZERO
     val pnlColor = if (isProfit) risingColor else fallingColor
 
@@ -708,6 +709,12 @@ private fun OpenPositionCard(
                         }
                     }${fiatSymbol}${pnl.abs().multiply(fiatRate).priceFormat()}",
                     fontSize = 14.sp,
+                    color = pnlColor
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = formatPerpsSignedPercent(roe),
+                    fontSize = 12.sp,
                     color = pnlColor
                 )
             }

@@ -18,6 +18,7 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -95,14 +96,15 @@ private fun AllMarketsPage(
     val quoteColorReversed = context.defaultSharedPreferences
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     val viewModel = hiltViewModel<PerpetualViewModel>()
-    var markets by remember { mutableStateOf<List<PerpsMarket>>(emptyList()) }
+    val localMarkets by remember {
+        viewModel.observeMarkets()
+    }.collectAsState(initial = emptyList())
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
         viewModel.loadMarkets(
             onSuccess = { data ->
-                markets = data
                 isLoading = false
             },
             onError = { error ->
@@ -118,6 +120,28 @@ private fun AllMarketsPage(
         pop = pop
     ) {
         when {
+            localMarkets.isNotEmpty() -> {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.Top
+                ) {
+                    item { Spacer(modifier = Modifier.height(8.dp)) }
+                    items(localMarkets, key = { it.marketId }) { market ->
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            PerpsMarketItem(
+                                market = market,
+                                quoteColorReversed = quoteColorReversed,
+                                onClick = { onMarketClick(market) }
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                    }
+                    item { Spacer(modifier = Modifier.height(24.dp)) }
+                }
+            }
+
             isLoading -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -140,7 +164,7 @@ private fun AllMarketsPage(
                 }
             }
 
-            markets.isEmpty() -> {
+            localMarkets.isEmpty() -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -153,27 +177,6 @@ private fun AllMarketsPage(
                 }
             }
 
-            else -> {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.Top
-                ) {
-                    item { Spacer(modifier = Modifier.height(8.dp)) }
-                    items(markets, key = { it.marketId }) { market ->
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            PerpsMarketItem(
-                                market = market,
-                                quoteColorReversed = quoteColorReversed,
-                                onClick = { onMarketClick(market) }
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                        }
-                    }
-                    item { Spacer(modifier = Modifier.height(24.dp)) }
-                }
-            }
         }
     }
 }

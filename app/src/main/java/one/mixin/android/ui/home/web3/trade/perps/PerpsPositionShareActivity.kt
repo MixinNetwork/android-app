@@ -141,10 +141,7 @@ class PerpsPositionShareActivity : BaseActivity() {
         val open = position
         if (open != null) {
             val pnlAmount = open.unrealizedPnl.toBigDecimalSafely() ?: BigDecimal.ZERO
-            val pnlPercent = calculatePnlPercent(
-                margin = open.margin.toBigDecimalSafely(),
-                pnlAmount = pnlAmount,
-            )
+            val pnlPercent = open.roe.toBigDecimalSafely() ?: BigDecimal.ZERO
 
             bindCard(
                 iconUrl = open.iconUrl,
@@ -162,7 +159,7 @@ class PerpsPositionShareActivity : BaseActivity() {
 
         val closed = positionHistory ?: return false
         val pnlAmount = closed.realizedPnl.toBigDecimalSafely() ?: BigDecimal.ZERO
-        val pnlPercent = calculateClosedPercent(
+        val pnlPercent = calculateClosedRoe(
             entryPrice = closed.entryPrice,
             closePrice = closed.closePrice,
             side = closed.side,
@@ -286,27 +283,6 @@ class PerpsPositionShareActivity : BaseActivity() {
         return pnlAmount
             .divide(margin, 8, RoundingMode.HALF_UP)
             .multiply(BigDecimal(100))
-    }
-
-    private fun calculateClosedPercent(
-        entryPrice: String?,
-        closePrice: String?,
-        side: String,
-        leverage: Int,
-    ): BigDecimal {
-        val entry = entryPrice.toBigDecimalSafely() ?: return BigDecimal.ZERO
-        val close = closePrice.toBigDecimalSafely() ?: return BigDecimal.ZERO
-        if (entry <= BigDecimal.ZERO || leverage <= 0) {
-            return BigDecimal.ZERO
-        }
-
-        val direction = if (side.equals("short", ignoreCase = true)) BigDecimal(-1) else BigDecimal.ONE
-        return close
-            .subtract(entry)
-            .divide(entry, 8, RoundingMode.HALF_UP)
-            .multiply(BigDecimal(leverage))
-            .multiply(BigDecimal(100))
-            .multiply(direction)
     }
 
     private fun formatSignedPercent(value: BigDecimal): String {

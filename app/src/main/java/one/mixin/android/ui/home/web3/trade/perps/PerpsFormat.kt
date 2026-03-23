@@ -33,6 +33,27 @@ fun formatPerpsSignedFiatDecimal(value: BigDecimal?, fiatSymbol: String): String
     }
 }
 
+fun calculateClosedRoe(
+    entryPrice: String?,
+    closePrice: String?,
+    side: String,
+    leverage: Int,
+): BigDecimal {
+    val entry = entryPrice?.toBigDecimalOrNull() ?: return BigDecimal.ZERO
+    val close = closePrice?.toBigDecimalOrNull() ?: return BigDecimal.ZERO
+    if (entry <= BigDecimal.ZERO || leverage <= 0) {
+        return BigDecimal.ZERO
+    }
+
+    val direction = if (side.equals("short", ignoreCase = true)) BigDecimal(-1) else BigDecimal.ONE
+    return close
+        .subtract(entry)
+        .divide(entry, 8, RoundingMode.HALF_UP)
+        .multiply(BigDecimal(leverage))
+        .multiply(BigDecimal(100))
+        .multiply(direction)
+}
+
 fun formatPerpsSignedPercent(value: BigDecimal): String {
     val sign = when {
         value > BigDecimal.ZERO -> "+"
@@ -49,5 +70,8 @@ fun formatPerpsSignedPercent(value: Double): String {
 private fun formatPerpsPercentDecimal(value: BigDecimal): String {
     val safeValue = value.abs()
     val scale = if (safeValue > BigDecimal.ZERO && safeValue < BigDecimal("0.01")) 3 else 2
-    return safeValue.setScale(scale, RoundingMode.HALF_UP).toPlainString()
+    return safeValue
+        .setScale(scale, RoundingMode.HALF_UP)
+        .stripTrailingZeros()
+        .toPlainString()
 }

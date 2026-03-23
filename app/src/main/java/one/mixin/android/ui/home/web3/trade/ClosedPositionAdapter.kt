@@ -12,11 +12,11 @@ import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.databinding.ItemClosedPositionListBinding
 import one.mixin.android.extension.loadImage
 import one.mixin.android.ui.common.recyclerview.SafePagedListAdapter
+import one.mixin.android.ui.home.web3.trade.perps.calculateClosedRoe
 import one.mixin.android.ui.home.web3.trade.perps.formatPerpsSignedFiatDecimal
 import one.mixin.android.ui.home.web3.trade.perps.formatPerpsSignedPercent
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
-import java.math.RoundingMode
 
 class ClosedPositionAdapter(
     private val isQuoteColorReversed: Boolean = false,
@@ -101,7 +101,7 @@ class ClosedPositionAdapter(
                 quantityTv.text = "$quantity ${position.tokenSymbol ?: ""}"
 
                 val pnl = position.realizedPnl.toBigDecimalOrNull() ?: BigDecimal.ZERO
-                val pnlPercent = calculateClosedPercent(
+                val pnlPercent = calculateClosedRoe(
                     entryPrice = position.entryPrice,
                     closePrice = position.closePrice,
                     side = position.side,
@@ -134,28 +134,6 @@ class ClosedPositionAdapter(
             val fiatSymbol = Fiats.getSymbol()
             return formatPerpsSignedFiatDecimal(amount.multiply(fiatRate), fiatSymbol)
         }
-
-        private fun calculateClosedPercent(
-            entryPrice: String?,
-            closePrice: String?,
-            side: String,
-            leverage: Int,
-        ): BigDecimal {
-            val entry = entryPrice?.toBigDecimalOrNull() ?: return BigDecimal.ZERO
-            val close = closePrice?.toBigDecimalOrNull() ?: return BigDecimal.ZERO
-            if (entry <= BigDecimal.ZERO || leverage <= 0) {
-                return BigDecimal.ZERO
-            }
-
-            val direction = if (side.equals("short", ignoreCase = true)) BigDecimal(-1) else BigDecimal.ONE
-            return close
-                .subtract(entry)
-                .divide(entry, 8, RoundingMode.HALF_UP)
-                .multiply(BigDecimal(leverage))
-                .multiply(BigDecimal(100))
-                .multiply(direction)
-        }
-
         private fun resolveAttrColor(view: View, @AttrRes attr: Int): Int {
             val typedValue = android.util.TypedValue()
             view.context.theme.resolveAttribute(attr, typedValue, true)

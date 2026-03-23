@@ -326,7 +326,24 @@ fun PerpetualContent(
             }
             Spacer(modifier = Modifier.height(12.dp))
 
-            if (isLoading) {
+            if (marketsPreview.isNotEmpty()) {
+                marketsPreview.forEach { market ->
+                    PerpsMarketItem(
+                        market = market,
+                        quoteColorReversed = quoteColorReversed,
+                        onClick = {
+                            onMarketItemClick(market)
+                        }
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+
+                if (markets.size > marketsPreview.size) {
+                    ViewAllAction(
+                        onClick = onShowAllMarkets
+                    )
+                }
+            } else if (isLoading) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -350,23 +367,6 @@ fun PerpetualContent(
                         fontSize = 14.sp,
                         color = MixinAppTheme.colors.red,
                         textAlign = TextAlign.Center
-                    )
-                }
-            } else {
-                marketsPreview.forEach { market ->
-                    PerpsMarketItem(
-                        market = market,
-                        quoteColorReversed = quoteColorReversed,
-                        onClick = {
-                            onMarketItemClick(market)
-                        }
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                }
-
-                if (markets.size > marketsPreview.size) {
-                    ViewAllAction(
-                        onClick = onShowAllMarkets
                     )
                 }
             }
