@@ -16,6 +16,7 @@ import one.mixin.android.extension.priceFormat
 import one.mixin.android.ui.common.recyclerview.SafePagedListAdapter
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
+import java.math.RoundingMode
 
 class OpenPositionAdapter(
     private val isQuoteColorReversed: Boolean = false,
@@ -77,13 +78,22 @@ class OpenPositionAdapter(
                         if (isQuoteColorReversed) R.color.wallet_green else R.color.wallet_red
                     }
                 )
+                val isOpening = position.state.equals("opening", ignoreCase = true)
                 val displaySymbol = position.tokenSymbol ?: context.getString(R.string.Unknown)
                 titleTv.text = context.getString(R.string.Perpetual_Side_Symbol_Title, sideText, displaySymbol)
                 leverageTv.isVisible = true
                 leverageTv.text = "${position.leverage}x"
-                leverageTv.setTextColor(sideColor)
+                leverageTv.setTextColor(
+                    if (isOpening) {
+                        resolveAttrColor(root, R.attr.text_assist)
+                    } else {
+                        sideColor
+                    }
+                )
                 leverageTv.setBackgroundResource(
-                    if (isLong) {
+                    if (isOpening) {
+                        R.drawable.bg_round_window_4dp
+                    } else if (isLong) {
                         if (isQuoteColorReversed) R.drawable.bg_perps_leverage_short else R.drawable.bg_perps_leverage_long
                     } else {
                         if (isQuoteColorReversed) R.drawable.bg_perps_leverage_long else R.drawable.bg_perps_leverage_short
@@ -91,31 +101,39 @@ class OpenPositionAdapter(
                 )
 
                 val quantity = position.quantity.toBigDecimalOrNull()
-                val quantityStr = position.quantity
-                quantityTv.text = "$quantityStr ${position.tokenSymbol ?: ""}"
+                quantityTv.text = "${formatDisplayDecimal(quantity?.abs())} ${position.tokenSymbol ?: ""}"
 
-                val margin = position.margin?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-                rightTopValueTv.text = formatUsd(margin)
-                rightTopValueTv.setTextColor(resolveAttrColor(root, R.attr.text_primary))
+                if (isOpening) {
+                    rightTopValueTv.text = context.getString(R.string.Openning)
+                    rightTopValueTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+                    rightTopValueTv.setTextColor(resolveAttrColor(root, R.attr.text_assist))
+                    rightBottomValueTv.isVisible = false
+                } else {
+                    val margin = position.margin?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                    rightTopValueTv.text = formatUsd(margin)
+                    rightTopValueTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
+                    rightTopValueTv.setTextColor(resolveAttrColor(root, R.attr.text_primary))
 
-                rightBottomValueTv.isVisible = true
-                val pnl = (position.unrealizedPnl ?: "0").toBigDecimalOrNull() ?: BigDecimal.ZERO
-                rightBottomValueTv.text = formatSignedUsd(pnl)
-                rightBottomValueTv.setTextColor(
-                    when {
-                        pnl > BigDecimal.ZERO -> {
-                            context.getColor(if (isQuoteColorReversed) R.color.wallet_red else R.color.wallet_green)
+                    rightBottomValueTv.isVisible = true
+                    val pnl = (position.unrealizedPnl ?: "0").toBigDecimalOrNull() ?: BigDecimal.ZERO
+                    val roe = position.roe?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                    rightBottomValueTv.text = "${formatSignedUsd(pnl)}(${formatSignedPercent(roe)})"
+                    rightBottomValueTv.setTextColor(
+                        when {
+                            pnl > BigDecimal.ZERO -> {
+                                context.getColor(if (isQuoteColorReversed) R.color.wallet_red else R.color.wallet_green)
+                            }
+
+                            pnl < BigDecimal.ZERO -> {
+                                context.getColor(if (isQuoteColorReversed) R.color.wallet_green else R.color.wallet_red)
+                            }
+
+                            else -> {
+                                resolveAttrColor(root, R.attr.text_primary)
+                            }
                         }
-
-                        pnl < BigDecimal.ZERO -> {
-                            context.getColor(if (isQuoteColorReversed) R.color.wallet_green else R.color.wallet_red)
-                        }
-
-                        else -> {
-                            resolveAttrColor(root, R.attr.text_primary)
-                        }
-                    }
-                )
+                    )
+                }
             }
         }
 
@@ -134,6 +152,24 @@ class OpenPositionAdapter(
                 amount < BigDecimal.ZERO -> "-$fiatSymbol$fiatAmount"
                 else -> "$fiatSymbol${BigDecimal.ZERO.multiply(fiatRate).priceFormat()}"
             }
+        }
+
+        private fun formatDisplayDecimal(value: BigDecimal?): String {
+            val safeValue = value ?: BigDecimal.ZERO
+            val absValue = safeValue.abs()
+            if (absValue > BigDecimal.ZERO && absValue < BigDecimal("0.01")) {
+                return "<0.01"
+            }
+            return safeValue.setScale(2, RoundingMode.HALF_UP).toPlainString()
+        }
+
+        private fun formatSignedPercent(value: BigDecimal): String {
+            val sign = when {
+                value > BigDecimal.ZERO -> "+"
+                value < BigDecimal.ZERO -> "-"
+                else -> ""
+            }
+            return "$sign${formatDisplayDecimal(value.abs())}%"
         }
 
         private fun resolveAttrColor(view: View, @AttrRes attr: Int): Int {
