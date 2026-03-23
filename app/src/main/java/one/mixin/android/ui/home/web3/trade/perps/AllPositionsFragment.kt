@@ -196,8 +196,7 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
             loadOpenPositions()
         } else {
             binding.titleView.setSubTitle(getString(R.string.perps_activity), "")
-            totalValueAdapter.submitTitle(R.string.Total_Realized_PnL)
-            binding.positionsRv.adapter = ConcatAdapter(totalValueAdapter, closedPositionAdapter)
+            binding.positionsRv.adapter = closedPositionAdapter
             loadClosedPositions()
         }
     }
@@ -228,12 +227,9 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
         binding.progressBar.isVisible = true
         binding.emptyView.root.isVisible = false
         binding.emptyView.helpAction.isVisible = false
-        totalValueAdapter.submitTotal(BigDecimal.ZERO)
-        totalValueAdapter.submitSubtitle(BigDecimal.ZERO, null)
 
         closedPositionsLiveData = viewModel.getClosedPositionsPaged(walletId)
         closedPositionsLiveData?.observe(viewLifecycleOwner, closedPositionsObserver)
-        observeClosedTotals(walletId)
     }
 
     private fun observeOpenTotals(walletId: String) {
@@ -252,27 +248,6 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
                         val percent = calculatePnlPercent(totalPnl, totalMargin)
                         totalValueAdapter.submitTotal(BigDecimal.valueOf(totalMargin))
                         totalValueAdapter.submitSubtitle(BigDecimal.valueOf(totalPnl), BigDecimal.valueOf(percent))
-                    }
-                }
-            }
-        }
-    }
-
-    private fun observeClosedTotals(walletId: String) {
-        totalValueJob?.cancel()
-        totalValueJob = viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                combine(
-                    viewModel.observeTotalRealizedPnl(walletId),
-                    viewModel.observeClosedPositions(walletId, CLOSED_POSITION_REFRESH_LIMIT)
-                ) { totalPnl, positions ->
-                    totalPnl to positions.size
-                }.collect { (totalPnl, closedCount) ->
-                    if (lastClosedTotalPnl != totalPnl || lastClosedTotalMargin != closedCount.toDouble()) {
-                        lastClosedTotalPnl = totalPnl
-                        lastClosedTotalMargin = closedCount.toDouble()
-                        totalValueAdapter.submitTotal(BigDecimal.valueOf(totalPnl))
-                        totalValueAdapter.submitSubtitle(BigDecimal.valueOf(totalPnl), null)
                     }
                 }
             }
