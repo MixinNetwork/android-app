@@ -88,8 +88,7 @@ class MarketShareActivity : BaseActivity() {
             binding.image.setImageBitmap(cropAndScaleBitmap(cover!!, 24.dp, (80 - 24 + 32).dp))
         }
         Session.getAccount()?.identityNumber.let {
-            val qrcodeContent = it?.let { referral -> "$SHARE_QR_URL?ref=$referral" } ?: SHARE_QR_URL
-            val qrCode = qrcodeContent.generateQRCode(72.dp, 8.dp).first
+            val qrCode = SHARE_QR_URL.generateQRCode(72.dp, 8.dp).first
             binding.qr.setImageBitmap(qrCode)
         }
         binding.apply {
