@@ -1280,7 +1280,7 @@ fun Context.getStringDeviceId(): String {
 }
 
 fun Context.isBatteryOptimizationRestricted(): Boolean {
-    return isSystemBatteryOptimizationRestricted() || hasCustomRomBackgroundRestriction()
+    return isSystemBatteryOptimizationRestricted()
 }
 
 private fun Context.isSystemBatteryOptimizationRestricted(): Boolean {
@@ -1288,18 +1288,6 @@ private fun Context.isSystemBatteryOptimizationRestricted(): Boolean {
         getSystemService<ActivityManager>()?.isBackgroundRestricted == true
     } else {
         getSystemService<PowerManager>()?.isIgnoringBatteryOptimizations(packageName) == false
-    }
-}
-
-private fun Context.hasCustomRomBackgroundRestriction(): Boolean {
-    return when (RomPermissionUtil.getCurrentRomType()) {
-        RomPermissionUtil.RomType.MIUI,
-        RomPermissionUtil.RomType.OPPO,
-        RomPermissionUtil.RomType.VIVO,
-        RomPermissionUtil.RomType.HUAWEI,
-        RomPermissionUtil.RomType.HONOR
-        -> !RomPermissionUtil.checkBackgroundStartPermission(this)
-        else -> false
     }
 }
 
@@ -1316,7 +1304,12 @@ fun Context.openBatteryOptimizationSetting() {
     val intents =
         if (RomUtil.isOneUi) {
             listOf(appDetailsIntent, requestIntent)
-        } else if (Build.MANUFACTURER.equals("google", ignoreCase = true) || Build.MANUFACTURER.equals("samsung", ignoreCase = true)) {
+        } else if (
+            Build.MANUFACTURER.equals("google", ignoreCase = true) ||
+            Build.MANUFACTURER.equals("samsung", ignoreCase = true) ||
+            Build.MANUFACTURER.equals("huawei", ignoreCase = true) ||
+            Build.MANUFACTURER.equals("honor", ignoreCase = true)
+        ) {
             listOf(requestIntent, appDetailsIntent)
         } else {
             listOf(appDetailsIntent, requestIntent)
