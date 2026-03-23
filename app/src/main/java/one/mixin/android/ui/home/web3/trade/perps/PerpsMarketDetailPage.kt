@@ -707,14 +707,8 @@ private fun OpenPositionCard(
                         } else {
                             "-"
                         }
-                    }${fiatSymbol}${pnl.abs().multiply(fiatRate).priceFormat()}",
+                    }${fiatSymbol}${pnl.abs().multiply(fiatRate).priceFormat()}(${formatPerpsSignedPercent(roe)})",
                     fontSize = 14.sp,
-                    color = pnlColor
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = formatPerpsSignedPercent(roe),
-                    fontSize = 12.sp,
                     color = pnlColor
                 )
             }
