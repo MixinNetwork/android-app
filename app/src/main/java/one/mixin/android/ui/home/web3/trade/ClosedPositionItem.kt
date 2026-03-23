@@ -156,14 +156,8 @@ fun ClosedPositionItem(
             horizontalAlignment = Alignment.End
         ) {
             Text(
-                text = formatPerpsSignedFiatDecimal(pnl.multiply(fiatRate), fiatSymbol),
+                text = "${formatPerpsSignedFiatDecimal(pnl.multiply(fiatRate), fiatSymbol)}(${formatPerpsSignedPercent(pnlPercent)})",
                 fontSize = 16.sp,
-                color = pnlColor
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = formatPerpsSignedPercent(pnlPercent),
-                fontSize = 12.sp,
                 color = pnlColor
             )
         }

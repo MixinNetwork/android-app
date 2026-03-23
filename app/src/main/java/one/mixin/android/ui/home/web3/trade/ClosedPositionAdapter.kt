@@ -107,7 +107,7 @@ class ClosedPositionAdapter(
                     side = position.side,
                     leverage = position.leverage,
                 )
-                rightTopValueTv.text = formatSignedUsd(pnl)
+                rightTopValueTv.text = "${formatSignedUsd(pnl)}(${formatPerpsSignedPercent(pnlPercent)})"
                 rightTopValueTv.setTextColor(
                     when {
                         pnl > BigDecimal.ZERO -> {
@@ -123,9 +123,7 @@ class ClosedPositionAdapter(
                         }
                     }
                 )
-                rightBottomValueTv.isVisible = true
-                rightBottomValueTv.text = formatPerpsSignedPercent(pnlPercent)
-                rightBottomValueTv.setTextColor(rightTopValueTv.currentTextColor)
+                rightBottomValueTv.isVisible = false
             }
         }
 

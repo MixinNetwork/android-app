@@ -701,13 +701,7 @@ private fun OpenPositionCard(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = "${
-                        if (isProfit) {
-                            "+"
-                        } else {
-                            "-"
-                        }
-                    }${fiatSymbol}${pnl.abs().multiply(fiatRate).priceFormat()}(${formatPerpsSignedPercent(roe)})",
+                    text = "${formatPerpsSignedFiatDecimal(pnl.multiply(fiatRate), fiatSymbol)}(${formatPerpsSignedPercent(roe)})",
                     fontSize = 14.sp,
                     color = pnlColor
                 )
@@ -788,7 +782,7 @@ private fun OpenPositionCard(
 
                 }
                 Text(
-                    text = "${fiatSymbol}${amountValue.priceFormat()}",
+                    text = formatPerpsFiatDecimal(amountValue, fiatSymbol),
                     fontSize = 14.sp,
                     color = MixinAppTheme.colors.textPrimary
                 )
