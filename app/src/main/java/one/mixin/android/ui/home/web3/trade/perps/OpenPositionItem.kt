@@ -154,14 +154,8 @@ fun OpenPositionItem(
                     }
                 }
                 Text(
-                    text = "${if (unrealizedPnl >= BigDecimal.ZERO) "+" else "-"}$fiatSymbol${formatDisplayDecimal(pnlFiat)}",
+                    text = "${if (unrealizedPnl >= BigDecimal.ZERO) "+" else "-"}$fiatSymbol${formatDisplayDecimal(pnlFiat)}(${formatSignedPercent(roe)})",
                     fontSize = 14.sp,
-                    color = pnlColor
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = formatSignedPercent(roe),
-                    fontSize = 12.sp,
                     color = pnlColor
                 )
             }

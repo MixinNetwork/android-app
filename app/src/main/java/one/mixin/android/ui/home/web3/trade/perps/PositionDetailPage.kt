@@ -89,13 +89,32 @@ fun PositionDetailPage(
     val absQuantity = quantity.abs()
     val markPrice = position.markPrice?.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val entryPrice = position.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val pnl = position.unrealizedPnl?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val pnlColor = if (pnl >= BigDecimal.ZERO) risingColor else fallingColor
     val liquidationPrice = calculateLiquidationPriceValue(entryPrice, position.leverage, isLong)
     val orderValue = absQuantity * markPrice
     val fiatRate = BigDecimal(Fiats.getRate())
-    val fiatSymbol = Fiats.getSymbol()
+    val currencyCode = Fiats.getAccountCurrencyAppearance()
 
     fun formatFiat(value: BigDecimal): String {
-        return "$fiatSymbol${value.multiply(fiatRate).priceFormat()}"
+        return "${Fiats.getSymbol()}${value.multiply(fiatRate).priceFormat()}"
+    }
+
+    fun formatSignedFiat(value: BigDecimal): String {
+        return when {
+            value > BigDecimal.ZERO -> "+${formatFiat(value)}"
+            value < BigDecimal.ZERO -> "-${formatFiat(value.abs())}"
+            else -> formatFiat(BigDecimal.ZERO)
+        }
+    }
+
+    fun formatPnlAmount(value: BigDecimal): String {
+        val convertedValue = value.multiply(fiatRate)
+        return when {
+            value > BigDecimal.ZERO -> "+${convertedValue.priceFormat()}"
+            value < BigDecimal.ZERO -> convertedValue.priceFormat()
+            else -> convertedValue.priceFormat()
+        }
     }
 
     PageScaffold(
@@ -139,23 +158,41 @@ fun PositionDetailPage(
                 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                Row(modifier = Modifier.align(Alignment.CenterHorizontally)) {
+                Row(
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    verticalAlignment = Alignment.Bottom,
+                ) {
                     Text(
-                        text = "$sideText ",
-                        fontSize = 24.sp,
+                        text = absQuantity.stripTrailingZeros().toPlainString(),
+                        fontSize = 34.sp,
                         fontWeight = FontWeight.W500,
+                        fontFamily = FontFamily(Font(R.font.mixin_font)),
                         color = MixinAppTheme.colors.textPrimary,
                     )
-                    Text(
-                        text = position.tokenSymbol ?: "",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.W500,
-                        color = MixinAppTheme.colors.textPrimary,
-                    )
+                    val symbol = position.tokenSymbol?.takeIf { it.isNotBlank() }
+                    if (symbol != null) {
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = symbol,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.W500,
+                            color = MixinAppTheme.colors.textPrimary,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                    }
                 }
                 
                 Spacer(modifier = Modifier.height(10.dp))
+
+                Text(
+                    text = formatSignedPercent(position.roe?.toBigDecimalOrNull() ?: BigDecimal.ZERO),
+                    fontSize = 14.sp,
+                    color = pnlColor,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
                 
+                Spacer(modifier = Modifier.height(10.dp))
+
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
@@ -234,9 +271,9 @@ fun PositionDetailPage(
                 Spacer(modifier = Modifier.height(20.dp))
                 
                 PositionDetailItem(
-                    label = stringResource(R.string.position_size).uppercase(),
-                    value = "${String.format("%f", absQuantity)} ${position.tokenSymbol ?: ""}",
-                    subtitle = formatFiat(orderValue)
+                    label = stringResource(R.string.PNL).uppercase(),
+                    value = formatSignedFiat(pnl),
+                    valueColor = pnlColor,
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -298,7 +335,8 @@ private fun PositionDetailItem(
     label: String,
     value: String,
     icon: String? = null,
-    subtitle: String? = null
+    subtitle: String? = null,
+    valueColor: Color = MixinAppTheme.colors.textPrimary,
 ) {
     Column(
         modifier = Modifier.fillMaxWidth()
@@ -324,7 +362,7 @@ private fun PositionDetailItem(
                     text = value,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Normal,
-                    color = MixinAppTheme.colors.textPrimary
+                    color = valueColor
                 )
             }
         } else {
@@ -332,7 +370,7 @@ private fun PositionDetailItem(
                 text = value,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Normal,
-                color = MixinAppTheme.colors.textPrimary
+                color = valueColor
             )
         }
 
@@ -395,11 +433,15 @@ fun PositionDetailPage(
 
     val quantity = positionHistory.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val absQuantity = quantity.abs()
-    val closePrice = positionHistory.closePrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    val orderValue = absQuantity * closePrice
     val fiatRate = BigDecimal(Fiats.getRate())
     val fiatSymbol = Fiats.getSymbol()
     val currencyCode = Fiats.getAccountCurrencyAppearance()
+    val roe = calculateClosedRoe(
+        entryPrice = positionHistory.entryPrice,
+        closePrice = positionHistory.closePrice,
+        side = positionHistory.side,
+        leverage = positionHistory.leverage,
+    )
 
     fun formatFiat(value: BigDecimal): String {
         return "$fiatSymbol${value.multiply(fiatRate).priceFormat()}"
@@ -465,27 +507,35 @@ fun PositionDetailPage(
 
                 Row(
                     modifier = Modifier.align(Alignment.CenterHorizontally),
-                    verticalAlignment = Alignment.Bottom
+                    verticalAlignment = Alignment.Bottom,
                 ) {
                     Text(
-                        text = formatPnlAmount(pnl),
+                        text = absQuantity.stripTrailingZeros().toPlainString(),
                         fontSize = 34.sp,
                         fontWeight = FontWeight.W500,
                         fontFamily = FontFamily(Font(R.font.mixin_font)),
-                        color = pnlColor
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = currencyCode,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Normal,
                         color = MixinAppTheme.colors.textPrimary,
-                        modifier = Modifier.padding(bottom = 4.dp)
                     )
+                    val symbol = positionHistory.tokenSymbol?.takeIf { it.isNotBlank() }
+                    if (symbol != null) {
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = symbol,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.W500,
+                            color = MixinAppTheme.colors.textPrimary,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                    }
                 }
 
+                Text(
+                    text = formatSignedPercent(roe),
+                    fontSize = 14.sp,
+                    color = pnlColor,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
                 Spacer(modifier = Modifier.height(10.dp))
-
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
@@ -564,9 +614,9 @@ fun PositionDetailPage(
                 Spacer(modifier = Modifier.height(20.dp))
 
                 PositionDetailItem(
-                    label = stringResource(R.string.position_size).uppercase(),
-                    value = "${String.format("%f", absQuantity)} ${positionHistory.tokenSymbol ?: ""}",
-                    subtitle = formatFiat(orderValue)
+                    label = stringResource(R.string.PNL).uppercase(),
+                    value = formatSignedFiat(pnl),
+                    valueColor = pnlColor,
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -602,4 +652,35 @@ fun PositionDetailPage(
             Spacer(modifier = Modifier.height(40.dp))
         }
     }
+}
+
+private fun calculateClosedRoe(
+    entryPrice: String?,
+    closePrice: String?,
+    side: String,
+    leverage: Int,
+): BigDecimal {
+    val entry = entryPrice?.toBigDecimalOrNull() ?: return BigDecimal.ZERO
+    val close = closePrice?.toBigDecimalOrNull() ?: return BigDecimal.ZERO
+    if (entry <= BigDecimal.ZERO || leverage <= 0) {
+        return BigDecimal.ZERO
+    }
+
+    val direction = if (side.equals("short", ignoreCase = true)) BigDecimal(-1) else BigDecimal.ONE
+    return close
+        .subtract(entry)
+        .divide(entry, 8, RoundingMode.HALF_UP)
+        .multiply(BigDecimal(leverage))
+        .multiply(BigDecimal(100))
+        .multiply(direction)
+}
+
+private fun formatSignedPercent(value: BigDecimal): String {
+    val sign = when {
+        value > BigDecimal.ZERO -> "+"
+        value < BigDecimal.ZERO -> "-"
+        else -> ""
+    }
+    val number = value.abs().setScale(2, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
+    return "$sign$number%"
 }

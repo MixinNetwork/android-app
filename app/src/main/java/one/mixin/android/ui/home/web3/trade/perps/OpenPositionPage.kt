@@ -65,6 +65,7 @@ import one.mixin.android.extension.putInt
 import one.mixin.android.session.Session
 import one.mixin.android.ui.home.web3.trade.InputContent
 import one.mixin.android.ui.home.web3.trade.SwapActivity
+import one.mixin.android.ui.home.inscription.component.AutoSizeConstraint
 import one.mixin.android.ui.home.inscription.component.AutoSizeText
 import one.mixin.android.ui.wallet.AddFeeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletActivity
@@ -295,6 +296,9 @@ fun OpenPositionPage(
                                 fontSize = 28.sp,
                                 fontWeight = FontWeight.W500,
                                 textAlign = TextAlign.Start,
+                                softWrap = false,
+                                maxLines = 1,
+                                constraint = AutoSizeConstraint.Width(min = 16.sp),
                             )
                         },
                         tokenIconSize = 25.dp,
