@@ -30,7 +30,6 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
-import java.math.RoundingMode
 
 @Composable
 fun OpenPositionItem(
@@ -45,7 +44,7 @@ fun OpenPositionItem(
     val fiatSymbol = Fiats.getSymbol()
 
     val displaySymbol = position.tokenSymbol ?: stringResource(R.string.Unknown)
-    val quantity = formatDisplayDecimal(position.quantity.toBigDecimalOrNull())
+    val quantity = formatPerpsDisplayDecimal(position.quantity.toBigDecimalOrNull())
     val isLong = position.side.equals("long", true)
     val isOpening = position.state.equals("opening", true)
     val sideColor = if (isLong) {
@@ -131,7 +130,7 @@ fun OpenPositionItem(
             } else {
                 val marginFiat = margin.multiply(fiatRate)
                 Text(
-                    text = "${fiatSymbol}${formatDisplayDecimal(marginFiat)}",
+                    text = "${fiatSymbol}${formatPerpsDisplayDecimal(marginFiat)}",
                     fontSize = 16.sp,
                     color = MixinAppTheme.colors.textPrimary
                 )
@@ -154,29 +153,11 @@ fun OpenPositionItem(
                     }
                 }
                 Text(
-                    text = "${if (unrealizedPnl >= BigDecimal.ZERO) "+" else "-"}$fiatSymbol${formatDisplayDecimal(pnlFiat)}(${formatSignedPercent(roe)})",
+                    text = "${if (unrealizedPnl >= BigDecimal.ZERO) "+" else "-"}$fiatSymbol${formatPerpsDisplayDecimal(pnlFiat)}(${formatPerpsSignedPercent(roe)})",
                     fontSize = 14.sp,
                     color = pnlColor
                 )
             }
         }
     }
-}
-
-private fun formatDisplayDecimal(value: BigDecimal?): String {
-    val safeValue = value ?: BigDecimal.ZERO
-    val absValue = safeValue.abs()
-    if (absValue > BigDecimal.ZERO && absValue < BigDecimal("0.01")) {
-        return "<0.01"
-    }
-    return safeValue.setScale(2, RoundingMode.HALF_UP).toPlainString()
-}
-
-private fun formatSignedPercent(value: BigDecimal): String {
-    val sign = when {
-        value > BigDecimal.ZERO -> "+"
-        value < BigDecimal.ZERO -> "-"
-        else -> ""
-    }
-    return "$sign${formatDisplayDecimal(value.abs())}%"
 }
