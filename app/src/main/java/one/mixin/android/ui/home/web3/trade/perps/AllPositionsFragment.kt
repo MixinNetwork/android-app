@@ -92,6 +92,12 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
         ClosedPositionAdapter(isQuoteColorReversed) { position ->
             activity?.supportFragmentManager?.let { fm ->
                 fm.beginTransaction()
+                    .setCustomAnimations(
+                        R.anim.slide_in_right,
+                        0,
+                        0,
+                        R.anim.slide_out_right
+                    )
                     .add(
                         android.R.id.content,
                         PositionDetailFragment.Companion.newInstance(position),

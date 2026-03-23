@@ -154,7 +154,7 @@ class PerpsPositionShareActivity : BaseActivity() {
                 isProfit = pnlAmount >= BigDecimal.ZERO,
                 tokenSymbol = open.tokenSymbol?:"",
                 entryPrice = open.entryPrice,
-                latestLabel = getString(R.string.Latest_Price),
+                latestLabel = getString(R.string.perps_current_price),
                 latestPrice = open.markPrice ?: open.entryPrice,
             )
             return true

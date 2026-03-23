@@ -260,6 +260,12 @@ fun PerpsMarketDetailPage(
                             val activity = context as? FragmentActivity ?: return@ClosedPositionsSection
                             activity.supportFragmentManager
                                 .beginTransaction()
+                                .setCustomAnimations(
+                                    R.anim.slide_in_right,
+                                    0,
+                                    0,
+                                    R.anim.slide_out_right
+                                )
                                 .add(
                                     android.R.id.content,
                                     PositionDetailFragment.newInstance(position),
@@ -651,8 +657,8 @@ private fun OpenPositionCard(
             viewModel.observeTokenByAssetId(position.openPayAssetId)
         }
     }.collectAsStateWithLifecycle(initialValue = null)
-    val openPayAmount = position.openPayAmount?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    val amountValue = openPayAmount.multiply(fiatRate)
+    val marginAmount = position.margin?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val amountValue = marginAmount.multiply(fiatRate)
 
     val entryPrice = position.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val liquidationPrice = calculateLiquidationPriceValue(entryPrice, position.leverage, isLong)

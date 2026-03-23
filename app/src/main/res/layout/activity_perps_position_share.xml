@@ -145,7 +145,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:gravity="end"
-                            android:text="@string/Latest_Price"
+                            android:text="@string/perps_current_price"
                             android:textColor="@color/white"
                             android:textSize="12sp" />
 

@@ -29,11 +29,9 @@ import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.priceFormat
-import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
-import kotlin.math.abs
+import java.math.RoundingMode
 
 @Composable
 fun ClosedPositionItem(
@@ -68,12 +66,13 @@ fun ClosedPositionItem(
     }
     
     val displaySymbol = position.tokenSymbol ?: "Unknown"
-    val quantity = try {
-        val qty = BigDecimal(position.quantity)
-        String.format("%f", qty)
-    } catch (e: Exception) {
-        position.quantity
-    }
+    val quantity = formatDisplayDecimal(position.quantity.toBigDecimalOrNull()?.abs())
+    val pnlPercent = calculateClosedPercent(
+        entryPrice = position.entryPrice,
+        closePrice = position.closePrice,
+        side = position.side,
+        leverage = position.leverage,
+    )
 
     val isLong = position.side.equals("long", true)
     val sideColor = if (isLong) {
@@ -139,7 +138,7 @@ fun ClosedPositionItem(
                 }
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "${(quantity.toBigDecimalOrNull()?: BigDecimal.ZERO).abs().stripTrailingZeros().toPlainString()} ${position.tokenSymbol ?: ""}",
+                    text = "$quantity ${position.tokenSymbol ?: ""}",
                     fontSize = 14.sp,
                     color = MixinAppTheme.colors.textAssist
                 )
@@ -149,11 +148,57 @@ fun ClosedPositionItem(
         Column(
             horizontalAlignment = Alignment.End
         ) {
+            val pnlFiat = pnl.abs().multiply(fiatRate)
             Text(
-                text = "${if (isProfit) "+" else "-"}$fiatSymbol${pnl.abs().multiply(fiatRate).priceFormat()}",
+                text = "${if (isProfit) "+" else "-"}$fiatSymbol${formatDisplayDecimal(pnlFiat)}",
                 fontSize = 16.sp,
+                color = pnlColor
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = formatSignedPercent(pnlPercent),
+                fontSize = 12.sp,
                 color = pnlColor
             )
         }
     }
+}
+
+private fun calculateClosedPercent(
+    entryPrice: String?,
+    closePrice: String?,
+    side: String,
+    leverage: Int,
+): BigDecimal {
+    val entry = entryPrice?.toBigDecimalOrNull() ?: return BigDecimal.ZERO
+    val close = closePrice?.toBigDecimalOrNull() ?: return BigDecimal.ZERO
+    if (entry <= BigDecimal.ZERO || leverage <= 0) {
+        return BigDecimal.ZERO
+    }
+
+    val direction = if (side.equals("short", ignoreCase = true)) BigDecimal(-1) else BigDecimal.ONE
+    return close
+        .subtract(entry)
+        .divide(entry, 8, RoundingMode.HALF_UP)
+        .multiply(BigDecimal(leverage))
+        .multiply(BigDecimal(100))
+        .multiply(direction)
+}
+
+private fun formatDisplayDecimal(value: BigDecimal?): String {
+    val safeValue = value ?: BigDecimal.ZERO
+    val absValue = safeValue.abs()
+    if (absValue > BigDecimal.ZERO && absValue < BigDecimal("0.01")) {
+        return "<0.01"
+    }
+    return safeValue.setScale(2, RoundingMode.HALF_UP).toPlainString()
+}
+
+private fun formatSignedPercent(value: BigDecimal): String {
+    val sign = when {
+        value > BigDecimal.ZERO -> "+"
+        value < BigDecimal.ZERO -> "-"
+        else -> ""
+    }
+    return "$sign${formatDisplayDecimal(value.abs())}%"
 }

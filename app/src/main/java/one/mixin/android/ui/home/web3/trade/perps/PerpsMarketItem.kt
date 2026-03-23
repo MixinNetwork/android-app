@@ -26,9 +26,9 @@ import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.numberFormatCompact
-import one.mixin.android.extension.priceFormat
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
+import java.math.RoundingMode
 
 @Composable
 fun PerpsMarketItem(
@@ -56,12 +56,12 @@ fun PerpsMarketItem(
             MixinAppTheme.colors.walletRed
         }
     }
-    val changeText = "${if (isPositive) "+" else ""}${market.change}%"
+    val changeText = formatSignedPercent(change)
     val fiatRate = BigDecimal(Fiats.getRate())
     val fiatSymbol = Fiats.getSymbol()
 
     val formattedPrice = try {
-        BigDecimal(market.markPrice).multiply(fiatRate).priceFormat()
+        formatDisplayDecimal(BigDecimal(market.markPrice).multiply(fiatRate))
     } catch (e: Exception) {
         market.markPrice
     }
@@ -140,4 +140,22 @@ fun PerpsMarketItem(
             )
         }
     }
+}
+
+private fun formatDisplayDecimal(value: BigDecimal?): String {
+    val safeValue = value ?: BigDecimal.ZERO
+    val absValue = safeValue.abs()
+    if (absValue > BigDecimal.ZERO && absValue < BigDecimal("0.01")) {
+        return "<0.01"
+    }
+    return safeValue.setScale(2, RoundingMode.HALF_UP).toPlainString()
+}
+
+private fun formatSignedPercent(value: BigDecimal): String {
+    val sign = when {
+        value > BigDecimal.ZERO -> "+"
+        value < BigDecimal.ZERO -> "-"
+        else -> ""
+    }
+    return "$sign${formatDisplayDecimal(value.abs())}%"
 }

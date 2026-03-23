@@ -54,7 +54,6 @@ import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.putStringSet
 import one.mixin.android.session.Session
 import one.mixin.android.ui.home.web3.trade.ClosedPositionItem
@@ -62,7 +61,6 @@ import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 import java.math.RoundingMode
-import kotlin.math.abs
 
 private const val POSITION_REFRESH_INTERVAL_MS = 3_000L
 private const val CLOSED_POSITION_PREVIEW_LIMIT = 10
@@ -112,9 +110,10 @@ fun PerpetualContent(
     val totalMargin = openPositions.fold(BigDecimal.ZERO) { total, position ->
         total + (position.margin?.toBigDecimalOrNull() ?: BigDecimal.ZERO)
     }
-    val totalPositionValueFiatText = "${fiatSymbol}${totalMargin.multiply(fiatRate).priceFormat()}"
-    val totalPnlFiatText = "${if (totalPnl >= 0) "+" else "-"}$fiatSymbol${BigDecimal.valueOf(totalPnl).abs().multiply(fiatRate).priceFormat()}"
-    val totalPnlPercent = calculatePnlPercent(totalMargin, BigDecimal.valueOf(totalPnl))
+    val totalPnlAmount = BigDecimal.valueOf(totalPnl)
+    val totalPositionValueFiatText = "${fiatSymbol}${formatDisplayDecimal(totalMargin.multiply(fiatRate))}"
+    val totalPnlFiatText = "${if (totalPnlAmount >= BigDecimal.ZERO) "+" else "-"}$fiatSymbol${formatDisplayDecimal(totalPnlAmount.abs().multiply(fiatRate))}"
+    val totalPnlPercent = calculatePnlPercent(totalMargin, totalPnlAmount)
 
     LaunchedEffect(Unit) {
         viewModel.loadMarkets(
@@ -198,7 +197,7 @@ fun PerpetualContent(
                     color = if (totalPnl >= 0) risingColor else fallingColor,
                 )
                 Text(
-                    text = String.format("(%s%.2f%%)", if (totalPnlPercent >= 0) "+" else "", abs(totalPnlPercent)),
+                    text = "(${formatSignedPercent(totalPnlPercent)})",
                     fontSize = 14.sp,
                     color = if (totalPnl >= 0) risingColor else fallingColor,
                 )
@@ -535,6 +534,25 @@ private fun calculatePnlPercent(
         .divide(margin, 8, RoundingMode.HALF_UP)
         .multiply(BigDecimal(100))
         .toDouble()
+}
+
+private fun formatDisplayDecimal(value: BigDecimal?): String {
+    val safeValue = value ?: BigDecimal.ZERO
+    val absValue = safeValue.abs()
+    if (absValue > BigDecimal.ZERO && absValue < BigDecimal("0.01")) {
+        return "<0.01"
+    }
+    return safeValue.setScale(2, RoundingMode.HALF_UP).toPlainString()
+}
+
+private fun formatSignedPercent(value: Double): String {
+    val decimalValue = BigDecimal.valueOf(value)
+    val sign = when {
+        decimalValue > BigDecimal.ZERO -> "+"
+        decimalValue < BigDecimal.ZERO -> "-"
+        else -> ""
+    }
+    return "$sign${formatDisplayDecimal(decimalValue.abs())}%"
 }
 
 @Composable
