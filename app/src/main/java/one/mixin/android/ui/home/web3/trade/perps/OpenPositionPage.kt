@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -41,6 +42,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -64,9 +67,11 @@ import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.putInt
 import one.mixin.android.session.Session
 import one.mixin.android.ui.home.web3.trade.InputContent
+import one.mixin.android.ui.home.web3.trade.KeyboardAwareBox
 import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.home.inscription.component.AutoSizeConstraint
 import one.mixin.android.ui.home.inscription.component.AutoSizeText
+import one.mixin.android.ui.home.web3.components.InputAction
 import one.mixin.android.ui.wallet.AddFeeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.alert.components.cardBackground
@@ -92,6 +97,8 @@ fun OpenPositionPage(
     onCurrentTokenChange: (TokenItem?) -> Unit = {},
 ) {
     val context = LocalContext.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
     val viewModel = hiltViewModel<PerpetualViewModel>()
     val marketId = market.marketId
     val acceptedPerpAssetIds = remember {
@@ -211,12 +218,15 @@ fun OpenPositionPage(
                 }
             }
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp)
-            ) {
+            KeyboardAwareBox(
+                modifier = Modifier.fillMaxHeight(),
+                content = { _ ->
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
+                            .padding(horizontal = 16.dp)
+                    ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
@@ -680,8 +690,44 @@ fun OpenPositionPage(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
-            }
+                        Spacer(modifier = Modifier.height(24.dp))
+                    }
+                },
+                floating = {
+                    fun applyBalancePercent(percent: BigDecimal) {
+                        if (tokenBalance > BigDecimal.ZERO) {
+                            usdtAmount = tokenBalance
+                                .multiply(percent)
+                                .stripTrailingZeros()
+                                .toPlainString()
+                        } else {
+                            usdtAmount = ""
+                        }
+                    }
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MixinAppTheme.colors.backgroundWindow)
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        InputAction("25%", showBorder = true) {
+                            applyBalancePercent(BigDecimal("0.25"))
+                        }
+                        InputAction("50%", showBorder = true) {
+                            applyBalancePercent(BigDecimal("0.5"))
+                        }
+                        InputAction("100%", showBorder = true) {
+                            applyBalancePercent(BigDecimal.ONE)
+                        }
+                        InputAction(stringResource(R.string.Done), showBorder = false) {
+                            keyboardController?.hide()
+                            focusManager.clearFocus()
+                        }
+                    }
+                }
+            )
         }
     }
 
