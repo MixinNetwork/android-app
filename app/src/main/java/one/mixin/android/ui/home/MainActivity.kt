@@ -144,6 +144,7 @@ import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.circle.ConversationCircleEditFragment
+import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
 import one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.MarketFragment
 import one.mixin.android.ui.landing.InitializeActivity
@@ -845,6 +846,11 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         } else if (intent.hasExtra(WALLET)) {
             binding.bottomNav.selectedItemId = R.id.nav_wallet
             if (intent.getBooleanExtra(BUY, false)) {
+                if (RecoveryReminderBottomSheetDialogFragment.showForRiskAction(supportFragmentManager)) {
+                    clearCodeAfterConsume(intent, BUY)
+                    clearCodeAfterConsume(intent, WALLET)
+                    return
+                }
                 WalletActivity.showBuy(this, false, null, null)
                 clearCodeAfterConsume(intent, BUY)
             }
@@ -852,6 +858,10 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         } else if (intent.hasExtra(TRANSFER)) {
             val userId = intent.getStringExtra(TRANSFER) ?: return
             if (Session.getAccount()?.hasPin == true) {
+                if (RecoveryReminderBottomSheetDialogFragment.showForRiskAction(supportFragmentManager)) {
+                    clearCodeAfterConsume(intent, TRANSFER)
+                    return
+                }
                 lifecycleScope.launch {
                     val user = userRepo.refreshUser(userId) ?: return@launch
                     val bottom = TokenListBottomSheetDialogFragment.newInstance(TYPE_FROM_TRANSFER)

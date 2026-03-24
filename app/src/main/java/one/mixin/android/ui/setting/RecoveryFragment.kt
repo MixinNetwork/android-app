@@ -14,7 +14,7 @@ import one.mixin.android.util.viewBinding
 @AndroidEntryPoint
 class RecoveryFragment : BaseFragment(R.layout.fragment_compose) {
     companion object {
-        const val TAG: String = "MnemonicPhraseFragment"
+        const val TAG: String = "RecoveryFragment"
 
         fun newInstance(
         ): RecoveryFragment =

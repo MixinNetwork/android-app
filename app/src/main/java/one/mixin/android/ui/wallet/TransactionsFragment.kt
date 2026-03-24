@@ -39,12 +39,12 @@ import one.mixin.android.job.CheckBalanceJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshMarketJob
 import one.mixin.android.job.RefreshPriceJob
-import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.home.market.Market
+import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.wallet.AllTransactionsFragment.Companion.ARGS_TOKEN
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_ASSET_ID
@@ -127,6 +127,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         }
         binding.apply {
             sendReceiveView.swap.setOnClickListener {
+                if (showRecoveryReminderForRiskAction()) return@setOnClickListener
                 AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.ASSET_DETAIL)
                 lifecycleScope.launch {
                     val output = if (asset.assetId == USDT_ASSET_ETH_ID) {
@@ -389,31 +390,24 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             }
             updateHeader(asset)
             sendReceiveView.send.setOnClickListener {
+                if (showRecoveryReminderForRiskAction()) return@setOnClickListener
                 navigateToTransferDestination(asset)
             }
             sendReceiveView.receive.setOnClickListener {
-                if (!Session.saltExported() && Session.isAnonymous()) {
-                    BackupMnemonicPhraseWarningBottomSheetDialogFragment.newInstance()
-                        .apply {
-                            laterCallback = {
-                                sendReceiveView.navigate(
-                                    R.id.action_transactions_to_deposit,
-                                    Bundle().apply { putParcelable(ARGS_ASSET, asset) },
-                                )
-                            }
-                        }
-                        .show(parentFragmentManager, BackupMnemonicPhraseWarningBottomSheetDialogFragment.TAG)
-                } else {
-                    sendReceiveView.navigate(
-                        R.id.action_transactions_to_deposit,
-                        Bundle().apply { putParcelable(ARGS_ASSET, asset) },
-                    )
-                }
+                if (showRecoveryReminderForRiskAction()) return@setOnClickListener
+                sendReceiveView.navigate(
+                    R.id.action_transactions_to_deposit,
+                    Bundle().apply { putParcelable(ARGS_ASSET, asset) },
+                )
             }
             marketView.setContent {
                 Market(asset.assetId)
             }
         }
+    }
+
+    private fun showRecoveryReminderForRiskAction(): Boolean {
+        return RecoveryReminderBottomSheetDialogFragment.showForRiskAction(parentFragmentManager)
     }
 
     private fun updateHeader(asset: TokenItem) {

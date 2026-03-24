@@ -1507,10 +1507,6 @@
     <string name="Transfer_confirmation_desc">Please check the payee, network and amount carefully. If you make a mistake, the asset will not be recovered!</string>
     <string name="Withdrawal_confirmation_desc">Please check the collection address, network and amount carefully. If you make a mistake, the asset will not be recovered!</string>
     <string name="Not_Now">Not Now</string>
-    <string name="Verify_Mobile_Number">Verify Mobile Number</string>
-    <string name="Verify_Mobile_Number_Security_Desc">For compliance and security reasons, we need to verify your mobile number.</string>
-    <string name="Verify_Mobile_Number_Desc">Regular SMS verification helps improve account security. If your current mobile number is no longer active, please update it as soon as possible.</string>
-    <string name="Verify_Now">Verify Now</string>
     <string name="Enable">Enable</string>
     <string name="enable_biometric_description">Once enabled, you can speed up authentication with biometrics.</string>
     <string name="return_to_merchant_description">Merchant payment is complete. You can opt to return to the merchant or stay in Mixin.</string>
@@ -1921,7 +1917,7 @@
     <string name="mnemonic_phrase_tip_2">· Do not post it online</string>
     <string name="mnemonic_phrase_take_long">This shouldn\'t take long.</string>
     <string name="Backup_Now">Start Backup</string>
-    <string name="Backup_Mnemonic_Phrase_desc">Protect your assets by backing up your mnemonic phrase now.</string>
+    <string name="recovery_reminder_desc">为了您的账户安全，请尽快备份助记词、添加手机号并且设置恢复联系人以恢复您的账号，%1$s以了解更多信息。</string>
     <string name="Backup_Mnemonic_Phrase_Warning">Please back up your mnemonic phrase immediately! This phrase is one of the key shards of the MPC wallet. If the device is lost or the app is uninstalled, and you haven\'t backed it up, you won\'t be able to log back into the current Mixin account (%1$s).</string>
     <string name="Add_Phone_desc">You can log in to your account using your mobile number. The mobile number will be associated with a key shard of your MPC wallet. The complete key exists only in the TEE security environment on the current device. Read the documentation to learn more about %1$s.</string>
     <string name="Change_Phone_desc">You can log in to your account using your mobile number. The current mobile number (%1$s) is associated with a key shard of your MPC wallet. The complete key exists only in the TEE security environment on the current device. Read the documentation to learn more about %2$s.</string>

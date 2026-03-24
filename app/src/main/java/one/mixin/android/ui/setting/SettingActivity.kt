@@ -28,6 +28,7 @@ class SettingActivity : ThemeActivity() {
         const val EXTRA_MIGRATE_RESTORE = "extra_migrate_restore"
         const val EXTRA_SHOW_PERMISSION_LIST = "extra_show_permission_list"
         const val EXTRA_SHOW_COMPOSE = "extra_show_compose"
+        const val EXTRA_SHOW_RECOVERY_KIT = "extra_show_recovery_kit"
         const val EXTRA_APP = "extra_app"
         const val EXTRA_AUTH = "extra_auth"
         const val ARGS_SUCCESS = "args_success"
@@ -65,6 +66,14 @@ class SettingActivity : ThemeActivity() {
             context.startActivity(
                 Intent(context, SettingActivity::class.java).apply {
                     putExtra(EXTRA_MNEMONIC_PHRASE, true)
+                },
+            )
+        }
+
+        fun showRecoveryKit(context: Context) {
+            context.startActivity(
+                Intent(context, SettingActivity::class.java).apply {
+                    putExtra(EXTRA_SHOW_RECOVERY_KIT, true)
                 },
             )
         }
@@ -117,6 +126,9 @@ class SettingActivity : ThemeActivity() {
             }
             intent.getBooleanExtra(EXTRA_EMERGENCY_CONTACT, false) -> {
                 replaceFragment(EmergencyContactFragment.newInstance(), R.id.container, EmergencyContactFragment.TAG)
+            }
+            intent.getBooleanExtra(EXTRA_SHOW_RECOVERY_KIT, false) -> {
+                replaceFragment(RecoveryFragment.newInstance(), R.id.container, RecoveryFragment.TAG)
             }
             intent.getBooleanExtra(EXTRA_SHOW_PERMISSION_LIST, false) -> {
                 val app = requireNotNull(intent.getParcelableExtra<App>(EXTRA_APP))

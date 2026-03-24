@@ -76,7 +76,7 @@ import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapter
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment
-import one.mixin.android.ui.home.reminder.VerifyMobileReminderBottomSheetDialogFragment
+import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
 import one.mixin.android.ui.landing.MobileFragment
 import one.mixin.android.ui.landing.VerificationFragment
 import one.mixin.android.ui.search.SearchFragment
@@ -756,19 +756,14 @@ class ConversationListFragment : LinkFragment() {
             this.circleId = circleId
         }
         lifecycleScope.launch {
-            val totalUsd = conversationListViewModel.findTotalUSDBalance()
             if (isAdded && parentFragmentManager.fragments.any {
                     it.tag in listOf(AddPhoneBeforeFragment.TAG, VerifyFragment.TAG, VerificationFragment.TAG, MobileFragment.TAG)
                 }.not()) {
-                if (parentFragmentManager.findFragmentByTag(VerifyMobileReminderBottomSheetDialogFragment.TAG) != null) return@launch
-                if (VerifyMobileReminderBottomSheetDialogFragment.shouldShow(requireContext())) {
-                    VerifyMobileReminderBottomSheetDialogFragment.showSafely(
-                        parentFragmentManager,
-                        R.string.Verify_Mobile_Number_Desc
-                    )
+                if (parentFragmentManager.findFragmentByTag(RecoveryReminderBottomSheetDialogFragment.TAG) != null) return@launch
+                if (RecoveryReminderBottomSheetDialogFragment.showForHome(parentFragmentManager)) {
                     return@launch
                 }
-                ReminderBottomSheetDialogFragment.getType(requireContext(), totalUsd)
+                ReminderBottomSheetDialogFragment.getType(requireContext())
                     .let { type ->
                         val existingDialog = parentFragmentManager.findFragmentByTag(ReminderBottomSheetDialogFragment.TAG) as? ReminderBottomSheetDialogFragment
                         if (type == null) {

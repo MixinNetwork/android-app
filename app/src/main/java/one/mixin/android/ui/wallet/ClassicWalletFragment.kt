@@ -50,7 +50,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.PendingTransactionRefreshHelper
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
-import one.mixin.android.ui.home.reminder.VerifyMobileReminderBottomSheetDialogFragment
+import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.landing.LandingActivity
@@ -179,6 +179,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                                 ).showNow(parentFragmentManager, ImportKeyBottomSheetDialogFragment.TAG)
                                 return@launch
                             }
+                            if (showRecoveryReminderForRiskAction()) return@launch
                             WalletActivity.showBuy(requireActivity(), true, null, null, walletId)
                         }
                     }
@@ -193,6 +194,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                                 ).showNow(parentFragmentManager, ImportKeyBottomSheetDialogFragment.TAG)
                                 return@launch
                             }
+                            if (showRecoveryReminderForRiskAction()) return@launch
                             Web3TokenListBottomSheetDialogFragment.newInstance(walletId = walletId, TYPE_FROM_SEND).apply {
                                 setOnClickListener { token ->
                                     this@ClassicWalletFragment.lifecycleScope.launch {
@@ -230,17 +232,8 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                                 ).showNow(parentFragmentManager, ImportKeyBottomSheetDialogFragment.TAG)
                                 return@launch
                             }
-                            if (!Session.saltExported() && Session.isAnonymous()) {
-                                BackupMnemonicPhraseWarningBottomSheetDialogFragment.newInstance()
-                                    .apply {
-                                        laterCallback = {
-                                            showReceiveAssetList()
-                                        }
-                                    }
-                                    .show(parentFragmentManager, BackupMnemonicPhraseWarningBottomSheetDialogFragment.TAG)
-                            } else {
-                                showReceiveAssetList()
-                            }
+                            if (showRecoveryReminderForRiskAction()) return@launch
+                            showReceiveAssetList()
                         }
                     }
                     sendReceiveView.swap.setOnClickListener {
@@ -254,6 +247,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                                 ).showNow(parentFragmentManager, ImportKeyBottomSheetDialogFragment.TAG)
                                 return@launch
                             }
+                            if (showRecoveryReminderForRiskAction()) return@launch
                             AnalyticsTracker.trackTradeStart(TradeWallet.WEB3, TradeSource.WALLET_HOME)
                             SwapActivity.show(requireActivity(), inMixin = false, walletId = walletId)
                         }
@@ -540,6 +534,10 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                 dismissNow()
             }
         }.show(parentFragmentManager, Web3TokenListBottomSheetDialogFragment.TAG)
+    }
+
+    private fun showRecoveryReminderForRiskAction(): Boolean {
+        return RecoveryReminderBottomSheetDialogFragment.showForRiskAction(parentFragmentManager)
     }
 
     override fun <T> onNormalItemClick(item: T) {

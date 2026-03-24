@@ -38,7 +38,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.home.reminder.VerifyMobileReminderBottomSheetDialogFragment
+import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.setting.getCurrencyData
 import one.mixin.android.ui.wallet.AssetListFixedBottomSheetDialogFragment
@@ -370,12 +370,8 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 continueVa.setOnClickListener {
                     viewLifecycleScope.launch {
                         AnalyticsTracker.trackBuyPreview()
-                        if (VerifyMobileReminderBottomSheetDialogFragment.shouldShowForBuy(requireContext()) && isFragmentVisible()) {
-                            VerifyMobileReminderBottomSheetDialogFragment.showSafely(
-                                parentFragmentManager,
-                                R.string.Verify_Mobile_Number_Security_Desc,
-                                false
-                            )
+                        if (RecoveryReminderBottomSheetDialogFragment.shouldShowOnRiskAction() && isFragmentVisible()) {
+                            RecoveryReminderBottomSheetDialogFragment.showForRiskAction(parentFragmentManager)
                             setLoading(false)
                             return@launch
                         }
