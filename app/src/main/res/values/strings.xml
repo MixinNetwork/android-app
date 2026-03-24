@@ -2369,6 +2369,7 @@
     <string name="Trade_Guide_Trading_Pair">Trading Pair</string>
     <string name="Trade_Guide_Pay_Amount">Pay Amount</string>
     <string name="Trade_Guide_Exchange_Price">Exchange Price</string>
+    <string name="Trade_Guide_Current_Price">Current Price</string>
     <string name="Trade_Guide_Trading_Strategy">Trading Strategy</string>
     <string name="Trade_Guide_Order_Price">Order Price</string>
     <string name="Trade_Guide_Market_Price">Market Price</string>

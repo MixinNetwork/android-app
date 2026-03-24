@@ -52,7 +52,6 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.priceFormat
@@ -123,7 +122,6 @@ fun SpotTradeGuidePage(
                 .fillMaxSize()
                 .padding(horizontal = 16.dp)
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -288,13 +286,13 @@ private fun SpotTradeExampleCard(
             fontWeight = FontWeight.W500,
             color = MixinAppTheme.colors.textPrimary,
         )
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(16.dp))
         if (limitStrategy != null) {
             StrategyRow(
                 strategy = strategy,
                 onStrategySelected = { strategy = it },
             )
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
         }
         ExampleValueRow(
             title = stringResource(R.string.Trade_Guide_Trading_Pair),
@@ -313,7 +311,7 @@ private fun SpotTradeExampleCard(
                 )
             },
         )
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(16.dp))
         ExampleValueRow(
             title = stringResource(R.string.Trade_Guide_Pay_Amount),
             value = {
@@ -330,20 +328,11 @@ private fun SpotTradeExampleCard(
                 )
             },
         )
-        Spacer(modifier = Modifier.height(12.dp))
-        ExampleValueRow(
-            title = stringResource(
-                if (limitStrategy == null) R.string.Trade_Guide_Exchange_Price else R.string.Trade_Guide_Order_Price
-            ),
-            value = {
-                if (limitStrategy == null) {
-                    PriceSubtitle(
-                        marketPrice = effectivePrice,
-                        isReversed = isPriceDisplayReversed,
-                        onSwitchDirection = { isPriceDisplayReversed = !isPriceDisplayReversed },
-                        onPriceExpired = { priceRefreshFlag = !priceRefreshFlag },
-                    )
-                } else {
+        if (limitStrategy != null) {
+            Spacer(modifier = Modifier.height(16.dp))
+            ExampleValueRow(
+                title = stringResource(R.string.Trade_Guide_Order_Price),
+                value = {
                     OrderPriceStepper(
                         price = effectivePrice,
                         symbol = usdtToken?.symbol ?: "USDT",
@@ -356,23 +345,33 @@ private fun SpotTradeExampleCard(
                         },
                     )
                 }
-            },
-        )
-        if (limitStrategy != null) {
-            Spacer(modifier = Modifier.height(12.dp))
-            ExampleValueRow(
-                title = stringResource(R.string.Trade_Guide_Market_Price),
-                value = {
-                    PriceSubtitle(
-                        marketPrice = marketPrice,
-                        isReversed = isPriceDisplayReversed,
-                        onSwitchDirection = { isPriceDisplayReversed = !isPriceDisplayReversed },
-                        onPriceExpired = { priceRefreshFlag = !priceRefreshFlag },
-                    )
-                },
             )
         }
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = if (limitStrategy == null) stringResource(R.string.Trade_Guide_Exchange_Price) else stringResource(R.string.Trade_Guide_Current_Price),
+            fontSize = 14.sp,
+            lineHeight = 20.sp,
+            color = MixinAppTheme.colors.textPrimary,
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+        if (limitStrategy == null) {
+            PriceSubtitle(
+                marketPrice = effectivePrice,
+                isReversed = isPriceDisplayReversed,
+                onSwitchDirection = { isPriceDisplayReversed = !isPriceDisplayReversed },
+                onPriceExpired = { priceRefreshFlag = !priceRefreshFlag },
+            )
+        } else {
+            PriceSubtitle(
+                marketPrice = marketPrice,
+                isReversed = isPriceDisplayReversed,
+                onSwitchDirection = { isPriceDisplayReversed = !isPriceDisplayReversed },
+                onPriceExpired = { priceRefreshFlag = !priceRefreshFlag },
+            )
+        }
+        Spacer(modifier = Modifier.height(16.dp))
         ExampleValueRow(
             title = stringResource(R.string.Estimated_Receive),
             value = {
@@ -380,9 +379,10 @@ private fun SpotTradeExampleCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
-                    CoilImage(
-                        model = toToken?.iconUrl,
-                        placeholder = R.drawable.ic_avatar_place_holder,
+                    Icon(
+                        painter = painterResource(id = guideTokenIconRes(toToken, if (isPairReversed) "USDT" else "BTC")),
+                        contentDescription = null,
+                        tint = Color.Unspecified,
                         modifier = Modifier
                             .size(18.dp)
                             .clip(CircleShape),
@@ -409,23 +409,27 @@ private fun StrategyRow(
     ExampleValueRow(
         title = stringResource(R.string.Trade_Guide_Trading_Strategy),
         value = {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(modifier = Modifier
+                .clip(RoundedCornerShape(6.dp))
+                .background(MixinAppTheme.colors.backgroundWindow)
+                .padding(2.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 LimitStrategy.entries.forEach { item ->
                     val selected = item == strategy
                     Box(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(20.dp))
+                            .clip(RoundedCornerShape(6.dp))
                             .background(
                                 if (selected) MixinAppTheme.colors.accent
-                                else MixinAppTheme.colors.backgroundWindow
+                                else Color.Transparent
                             )
                             .clickable { onStrategySelected(item) }
-                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                            .padding(horizontal = 8.dp, vertical = 2.dp),
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
                             text = stringResource(item.titleRes),
-                            color = if (selected) Color.White else MixinAppTheme.colors.textPrimary,
+                            color = if (selected) Color.White else MixinAppTheme.colors.textAssist,
                             fontSize = 13.sp,
                             lineHeight = 18.sp,
                         )
@@ -503,9 +507,10 @@ private fun GuideTokenBadge(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        CoilImage(
-            model = token?.iconUrl,
-            placeholder = R.drawable.ic_avatar_place_holder,
+        Icon(
+            painter = painterResource(id = guideTokenIconRes(token, fallbackSymbol)),
+            contentDescription = null,
+            tint = Color.Unspecified,
             modifier = Modifier
                 .size(20.dp)
                 .clip(CircleShape),
@@ -532,10 +537,13 @@ private fun AmountStepper(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        StepperButton(
-            text = "-",
-            enabled = amount > step,
-            onClick = onDecrease,
+        Icon(
+            painter = painterResource(id = R.drawable.ic_perps_minus),
+            contentDescription = null,
+            tint = Color.Unspecified,
+            modifier = Modifier
+                .size(16.dp)
+                .clickable(enabled = amount > step, onClick = onDecrease),
         )
         Text(
             text = "${amount.numberFormat8()} $symbol",
@@ -544,10 +552,13 @@ private fun AmountStepper(
             color = MixinAppTheme.colors.textPrimary,
             fontWeight = FontWeight.W500,
         )
-        StepperButton(
-            text = "+",
-            enabled = true,
-            onClick = onIncrease,
+        Icon(
+            painter = painterResource(id = R.drawable.ic_perps_add),
+            contentDescription = null,
+            tint = Color.Unspecified,
+            modifier = Modifier
+                .size(16.dp)
+                .clickable(onClick = onIncrease),
         )
     }
 }
@@ -563,10 +574,13 @@ private fun OrderPriceStepper(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        StepperButton(
-            text = "-",
-            enabled = price > LIMIT_PRICE_STEP,
-            onClick = onDecrease,
+        Icon(
+            painter = painterResource(id = R.drawable.ic_perps_minus),
+            contentDescription = null,
+            tint = Color.Unspecified,
+            modifier = Modifier
+                .size(16.dp)
+                .clickable(enabled = price > LIMIT_PRICE_STEP, onClick = onDecrease),
         )
         Text(
             text = "${price.setScale(0, RoundingMode.DOWN).numberFormat8()} $symbol",
@@ -575,10 +589,13 @@ private fun OrderPriceStepper(
             color = MixinAppTheme.colors.textPrimary,
             fontWeight = FontWeight.W500,
         )
-        StepperButton(
-            text = "+",
-            enabled = true,
-            onClick = onIncrease,
+        Icon(
+            painter = painterResource(id = R.drawable.ic_perps_add),
+            contentDescription = null,
+            tint = Color.Unspecified,
+            modifier = Modifier
+                .size(16.dp)
+                .clickable(onClick = onIncrease),
         )
     }
 }
@@ -628,6 +645,7 @@ private fun PriceSubtitle(
     }
 
     Row(
+        modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
@@ -648,6 +666,7 @@ private fun PriceSubtitle(
             color = MixinAppTheme.colors.textPrimary,
             backgroundColor = MixinAppTheme.colors.textAssist,
         )
+        Spacer(modifier = Modifier.weight(1f))
         Icon(
             painter = painterResource(id = R.drawable.ic_price_switch),
             contentDescription = null,
@@ -681,7 +700,7 @@ private fun TradeGuideInfoCard(
             fontWeight = FontWeight.W500,
             color = MixinAppTheme.colors.textPrimary,
         )
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = description,
             fontSize = 14.sp,
@@ -869,6 +888,17 @@ private fun convertPayAmount(
 
 private fun TokenItem?.safePrice(): BigDecimal {
     return this?.priceUsd?.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: BigDecimal.ONE
+}
+
+private fun guideTokenIconRes(
+    token: TokenItem?,
+    fallbackSymbol: String,
+): Int {
+    return when ((token?.symbol ?: fallbackSymbol).uppercase()) {
+        "USDT" -> R.drawable.ic_token_usdt
+        "BTC" -> R.drawable.ic_chain_btc
+        else -> R.drawable.ic_avatar_place_holder
+    }
 }
 
 private fun safeDivide(

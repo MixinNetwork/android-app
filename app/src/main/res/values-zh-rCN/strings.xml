@@ -2299,6 +2299,7 @@
     <string name="Trade_Guide_Trading_Pair">交易币种</string>
     <string name="Trade_Guide_Pay_Amount">支付金额</string>
     <string name="Trade_Guide_Exchange_Price">兑换价格</string>
+    <string name="Trade_Guide_Current_Price">当前价格</string>
     <string name="Trade_Guide_Trading_Strategy">交易策略</string>
     <string name="Trade_Guide_Order_Price">成交价格</string>
     <string name="Trade_Guide_Market_Price">市场价格</string>
