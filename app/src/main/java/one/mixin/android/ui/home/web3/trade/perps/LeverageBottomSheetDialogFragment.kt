@@ -21,7 +21,7 @@ import androidx.compose.material.SliderDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -45,7 +45,7 @@ import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.SystemUIManager
 import java.math.BigDecimal
-import kotlin.math.abs
+import kotlin.math.roundToInt
 
 @AndroidEntryPoint
 class LeverageBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
@@ -146,7 +146,7 @@ private fun LeverageContent(
 ) {
     val boundedMaxLeverage = maxLeverage.coerceAtLeast(1)
     var tempLeverage by remember(currentLeverage, boundedMaxLeverage) {
-        mutableFloatStateOf(currentLeverage.coerceIn(1f, boundedMaxLeverage.toFloat()))
+        mutableIntStateOf(currentLeverage.roundToInt().coerceIn(1, boundedMaxLeverage))
     }
 
     Column(
@@ -172,7 +172,7 @@ private fun LeverageContent(
         ) {
             Spacer(modifier = Modifier.height(24.dp))
             Text(
-                text = "${tempLeverage.toInt()}x",
+                text = "${tempLeverage}x",
                 fontSize = 48.sp,
                 fontWeight = FontWeight.Bold,
                 color = MixinAppTheme.colors.textPrimary,
@@ -182,8 +182,8 @@ private fun LeverageContent(
             Spacer(modifier = Modifier.height(24.dp))
 
             Slider(
-                value = tempLeverage,
-                onValueChange = { tempLeverage = it },
+                value = tempLeverage.toFloat(),
+                onValueChange = { tempLeverage = it.roundToInt().coerceIn(1, boundedMaxLeverage) },
                 valueRange = 1f..boundedMaxLeverage.toFloat(),
                 steps = (boundedMaxLeverage - 2).coerceAtLeast(0),
                 colors = SliderDefaults.colors(
@@ -260,7 +260,7 @@ private fun LeverageContent(
                     .height(48.dp)
                     .clip(RoundedCornerShape(24.dp))
                     .background(MixinAppTheme.colors.accent)
-                    .clickable { onApply(tempLeverage) },
+                    .clickable { onApply(tempLeverage.toFloat()) },
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -279,10 +279,13 @@ private fun LeverageContent(
 @Composable
 private fun ProfitLossInfo(
     amount: String,
-    leverage: Float,
+    leverage: Int,
     isLong: Boolean
 ) {
     val amountValue = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val priceChangePercent = 1
+    val profitPercent = leverage
+    val liquidationPercent = 100.0 / leverage.toDouble()
     
     if (amountValue == BigDecimal.ZERO) {
         Column(
@@ -291,13 +294,21 @@ private fun ProfitLossInfo(
                 .padding(horizontal = 4.dp)
         ) {
             Text(
-                text = stringResource(R.string.Price_Up_Profit, "1", "0.0", "$0.00"),
+                text = if (isLong) {
+                    stringResource(R.string.Price_Up_Profit, priceChangePercent.toString(), profitPercent.toString(), "$0.00")
+                } else {
+                    stringResource(R.string.Price_Down_Profit, priceChangePercent.toString(), profitPercent.toString(), "$0.00")
+                },
                 fontSize = 13.sp,
                 color = MixinAppTheme.colors.textAssist
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = stringResource(R.string.Price_Down_Loss, String.format("%.2f", 100.0 / leverage), "$0.00", ""),
+                text = if (isLong) {
+                    stringResource(R.string.Price_Down_Loss, String.format("%.2f", liquidationPercent), "$0.00", "")
+                } else {
+                    stringResource(R.string.Price_Up_Loss, String.format("%.2f", liquidationPercent), "$0.00", "")
+                },
                 fontSize = 13.sp,
                 color = MixinAppTheme.colors.textAssist
             )
@@ -305,11 +316,7 @@ private fun ProfitLossInfo(
         return
     }
 
-    val priceUpPercent = 1.0
-    val profitPercent = priceUpPercent * leverage
-    val profitAmount = amountValue * BigDecimal(profitPercent / 100)
-
-    val liquidationPercent = 100.0 / leverage
+    val profitAmount = amountValue.multiply(BigDecimal(profitPercent)).divide(BigDecimal(100))
     val lossAmount = amountValue
 
     Column(
@@ -321,15 +328,15 @@ private fun ProfitLossInfo(
             text = if (isLong) {
                 stringResource(
                     R.string.Price_Up_Profit,
-                    String.format("%.0f", abs(priceUpPercent)),
-                    String.format("%.0f", profitPercent),
+                    priceChangePercent.toString(),
+                    profitPercent.toString(),
                     String.format("$%.2f", profitAmount)
                 )
             } else {
                 stringResource(
                     R.string.Price_Down_Profit,
-                    String.format("%.0f", abs(priceUpPercent)),
-                    String.format("%.0f", profitPercent),
+                    priceChangePercent.toString(),
+                    profitPercent.toString(),
                     String.format("$%.2f", profitAmount)
                 )
             },
