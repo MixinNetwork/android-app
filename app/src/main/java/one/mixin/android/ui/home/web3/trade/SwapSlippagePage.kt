@@ -172,7 +172,7 @@ private fun Custom(
         horizontalAlignment = Alignment.Start,
     ) {
         Text(
-            text = context.getString(R.string.slippage_custom),
+            text = context.getString(R.string.Custom),
             style =
                 TextStyle(
                     fontSize = 18.sp,

@@ -1,6 +1,6 @@
 package one.mixin.android.ui.setting.ui.page
 
-import PageScaffold
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import one.mixin.android.R

@@ -1,6 +1,6 @@
 package one.mixin.android.ui.landing.components
 
-import PageScaffold
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -35,7 +35,6 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.openUrl
-import one.mixin.android.extension.toast
 import one.mixin.android.ui.landing.SetupPinViewModel
 import one.mixin.android.ui.landing.vo.SetupState
 import one.mixin.android.ui.tip.LegacyPIN
