@@ -1,6 +1,6 @@
 package one.mixin.android.ui.wallet.alert
 
-import PageScaffold
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import android.content.Context
 import android.graphics.Rect
 import androidx.annotation.DrawableRes
@@ -120,7 +120,7 @@ fun AlertEditPage(
             var inputError by remember { mutableStateOf(if (alertValue.toBigDecimalOrNull() == currentPrice && selectedAlertType != AlertType.PRICE_REACHED) InputError.EQUALS_CURRENT_PRICE else null) }
             val viewModel = hiltViewModel<AlertViewModel>()
                 PageScaffold(
-                    title = stringResource(id = if (alert == null) R.string.Add_Alert else R.string.Edit_Alert),
+                    title = stringResource(id = if (alert == null) R.string.Alert else R.string.Edit_Alert),
                     verticalScrollable = false,
                     pop = pop,
                 ) {
@@ -476,7 +476,7 @@ fun AlertEditPage(
                                 }
                                 Text(
                                     modifier = Modifier.alpha(if (isLoading) 0f else 1f),
-                                    text = stringResource(if (alert == null) R.string.Add_Alert else R.string.Save),
+                                    text = stringResource(if (alert == null) R.string.Alert else R.string.Save),
                                     color = if (enable) Color.White else MixinAppTheme.colors.textAssist,
                                 )
                             }

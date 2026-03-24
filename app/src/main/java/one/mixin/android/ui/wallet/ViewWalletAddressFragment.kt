@@ -1,6 +1,6 @@
 package one.mixin.android.ui.wallet
 
-import PageScaffold
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
