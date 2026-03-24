@@ -237,8 +237,8 @@ private fun LongContent() {
     DescriptionWithRulesCard(
         description = stringResource(R.string.perps_long_overview),
         rules = listOf(
-            stringResource(R.string.Perpetual_Price_Up) to stringResource(R.string.Perpetual_Profit),
-            stringResource(R.string.Perpetual_Price_Down) to stringResource(R.string.Perpetual_Loss)
+            stringResource(R.string.pnl_rule_price_rise_profit),
+            stringResource(R.string.pnl_rule_price_fall_loss)
         )
     )
 }
@@ -293,8 +293,8 @@ private fun ShortContent() {
     DescriptionWithRulesCard(
         description = stringResource(R.string.perps_short_overview),
         rules = listOf(
-            stringResource(R.string.Perpetual_Price_Down) to stringResource(R.string.Perpetual_Profit),
-            stringResource(R.string.Perpetual_Price_Up) to stringResource(R.string.Perpetual_Loss)
+            stringResource(R.string.pnl_rule_price_fall_profit),
+            stringResource(R.string.pnl_rule_price_rise_loss)
         )
     )
 }
@@ -967,7 +967,7 @@ private fun ScenarioData.formatPnl(currentPercent: Float): String {
 @Composable
 private fun DescriptionWithRulesCard(
     description: String,
-    rules: List<Pair<String, String>>,
+    rules: List<String>,
 ) {
     Column(
         modifier = Modifier
@@ -999,9 +999,9 @@ private fun DescriptionWithRulesCard(
             color = MixinAppTheme.colors.textPrimary
         )
         Spacer(modifier = Modifier.height(12.dp))
-        rules.forEach { (condition, result) ->
+        rules.forEach { rule ->
             DotText(
-                text = "$condition：$result",
+                text = rule,
                 modifier = Modifier.padding(vertical = 4.dp),
                 color = MixinAppTheme.colors.textPrimary,
             )

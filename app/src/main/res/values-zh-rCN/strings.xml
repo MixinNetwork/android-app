@@ -2256,8 +2256,10 @@
     <string name="PnL">盈亏</string>
     <string name="perps_long_overview">做多是指在预期价格上涨时建立仓位，价格上涨可获得盈利，价格下跌则产生亏损。</string>
     <string name="perps_short_overview">做空是指在预期价格下跌时建立仓位，价格下跌可获得盈利，价格上涨则产生亏损。</string>
-    <string name="Perpetual_Profit">产生盈利</string>
-    <string name="Perpetual_Loss">产生亏损</string>
+    <string name="pnl_rule_price_fall_loss">价格下跌：产生亏损</string>
+    <string name="pnl_rule_price_fall_profit">价格下跌：产生盈利</string>
+    <string name="pnl_rule_price_rise_loss">价格上涨：产生亏损</string>
+    <string name="pnl_rule_price_rise_profit">价格上涨：产生盈利</string>
     <string name="perps_leverage_overview">杠杆用于放大仓位规模，使交易者可以用较少的资金控制更大的合约头寸。</string>
     <string name="impact_on_pnl_1">杠杆越高，盈亏越大且越快</string>
     <string name="impact_on_pnl_2">杠杆越低，盈亏越小且越慢</string>
@@ -2292,7 +2294,7 @@
     <string name="Close_Time">平仓时间</string>
     <string name="Mixin_Futures">Mixin Futures</string>
     <string name="confirm_opening_position">确认开仓</string>
-    <string name="Position_Submitted">开仓确认中</string>
+    <string name="Position_Submitted">开仓申请已提交</string>
     <string name="confirm_closing_position">确认平仓</string>
     <string name="Position_Closed">平仓成功</string>
     <string name="Close_Position">平仓</string>
