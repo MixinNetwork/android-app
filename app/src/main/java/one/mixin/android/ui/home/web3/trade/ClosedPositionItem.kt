@@ -18,9 +18,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.Constants
@@ -41,6 +43,7 @@ fun ClosedPositionItem(
     onClick: () -> Unit = {},
 ) {
     val context = LocalContext.current
+    val isSmallScreen = context.resources.configuration.screenWidthDp <= SMALL_SCREEN_WIDTH_DP
     val quoteColorPref = context.defaultSharedPreferences
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     val fiatRate = BigDecimal(Fiats.getRate())
@@ -121,8 +124,15 @@ fun ClosedPositionItem(
                         stringResource(R.string.Short)
                     }
                     Text(
-                        text = sideText,
-                        fontSize = 16.sp,
+                        text = buildAnnotatedString {
+                            withStyle(
+                                SpanStyle(
+                                    fontSize = if (isSmallScreen) 12.sp else 14.sp
+                                )
+                            ) {
+                                append(sideText)
+                            }
+                        },
                         color = MixinAppTheme.colors.textPrimary,
                     )
                     Spacer(modifier = Modifier.width(6.dp))
@@ -157,9 +167,11 @@ fun ClosedPositionItem(
         ) {
             Text(
                 text = "${formatPerpsSignedFiatDecimal(pnl.multiply(fiatRate), fiatSymbol)}(${formatPerpsSignedPercent(pnlPercent)})",
-                fontSize = 16.sp,
+                fontSize = if (isSmallScreen) 12.sp else 14.sp,
                 color = pnlColor
             )
         }
     }
 }
+
+private const val SMALL_SCREEN_WIDTH_DP = 360

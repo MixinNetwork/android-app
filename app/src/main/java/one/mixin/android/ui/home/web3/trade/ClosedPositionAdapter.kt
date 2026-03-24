@@ -1,5 +1,9 @@
 package one.mixin.android.ui.home.web3.trade
 
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.style.AbsoluteSizeSpan
+import android.util.TypedValue
 import android.view.View
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -49,6 +53,7 @@ class ClosedPositionAdapter(
         fun bind(position: PerpsPositionHistoryItem, positionInList: Int, listSize: Int) {
             binding.apply {
                 val context = binding.root.context
+                val isSmallScreen = context.resources.configuration.screenWidthDp <= SMALL_SCREEN_WIDTH_DP
 
                 root.setBackgroundResource(
                     when {
@@ -79,7 +84,19 @@ class ClosedPositionAdapter(
                     }
                 )
                 val displaySymbol = position.tokenSymbol ?: context.getString(R.string.Unknown)
-                titleTv.text = context.getString(R.string.Perpetual_Side_Symbol_Title, sideText, displaySymbol)
+                val title = context.getString(R.string.Perpetual_Side_Symbol_Title, sideText, displaySymbol)
+                titleTv.text = if (isSmallScreen) {
+                    SpannableString(title).apply {
+                        setSpan(
+                            AbsoluteSizeSpan(12, true),
+                            0,
+                            sideText.length,
+                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                    }
+                } else {
+                    title
+                }
 
                 leverageTv.isVisible = true
                 leverageTv.text = "${position.leverage}x"
@@ -106,6 +123,10 @@ class ClosedPositionAdapter(
                     closePrice = position.closePrice,
                     side = position.side,
                     leverage = position.leverage,
+                )
+                rightTopValueTv.setTextSize(
+                    TypedValue.COMPLEX_UNIT_SP,
+                    if (isSmallScreen) 12f else 16f
                 )
                 rightTopValueTv.text = "${formatSignedUsd(pnl)}(${formatPerpsSignedPercent(pnlPercent)})"
                 rightTopValueTv.setTextColor(
@@ -159,3 +180,5 @@ class ClosedPositionAdapter(
         }
     }
 }
+
+private const val SMALL_SCREEN_WIDTH_DP = 360

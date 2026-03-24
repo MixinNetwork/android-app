@@ -2302,7 +2302,7 @@
     <string name="Perpetual_Guide_Overview_Content">Perpetual contracts allow you to trade cryptocurrency with leverage, enabling you to amplify your potential profits (and losses). You can go long (bet on price increase) or short (bet on price decrease) without owning the underlying asset.</string>
     <string name="perps_leverage_overview">Leverage allows you to control a larger position with less capital.</string>
     <string name="Perpetual_Guide_Close_Content">You can close your position at any time to realize your profit or loss. The closing price is based on the current market price. Make sure to monitor your positions to avoid liquidation.</string>
-    <string name="Brief_Introduction">Introduction</string>
+    <string name="Brief_Introduction">Intro</string>
     <string name="perps_intro_overview">Mixin Perpetual Futures are crypto-settled perpetual contracts with no expiry date that allow traders to speculate on the price of crypto assets. They can be held indefinitely and typically track the underlying spot market.</string>
     <string name="Product_Features">Features</string>
     <string name="product_features_1">No expiry date, allowing positions to be held indefinitely</string>

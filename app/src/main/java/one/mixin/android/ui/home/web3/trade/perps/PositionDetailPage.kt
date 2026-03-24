@@ -247,7 +247,7 @@ fun PositionDetailPage(
                 Spacer(modifier = Modifier.height(20.dp))
                 
                 PositionDetailItem(
-                    label = stringResource(R.string.PNL).uppercase(),
+                    label = stringResource(R.string.PnL),
                     value = formatSignedFiat(pnl),
                     valueColor = pnlColor,
                     subtitle = formatSignedPercent(roe),
@@ -571,7 +571,7 @@ fun PositionDetailPage(
                 Spacer(modifier = Modifier.height(20.dp))
 
                 PositionDetailItem(
-                    label = stringResource(R.string.PNL).uppercase(),
+                    label = stringResource(R.string.PnL),
                     value = "${formatSignedFiat(pnl)}(${formatSignedPercent(roe)})",
                     valueColor = pnlColor,
                 )

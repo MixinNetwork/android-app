@@ -63,6 +63,7 @@ data class ScenarioData(
     val basePnlPercent: Int,
     val pnlAsset: String = "USDT",
     val isProfit: Boolean,
+    val isPriceIncrease: Boolean,
     val maxPercent: Float? = null,
 )
 
@@ -220,6 +221,7 @@ private fun LongContent() {
                 basePnlAmount = 1000,
                 basePnlPercent = 100,
                 isProfit = true,
+                isPriceIncrease = true,
                 maxPercent = null
             ),
             ScenarioData(
@@ -229,6 +231,7 @@ private fun LongContent() {
                 basePnlAmount = 1000,
                 basePnlPercent = 100,
                 isProfit = false,
+                isPriceIncrease = false,
                 maxPercent = maxLossPercent,
             )
         )
@@ -276,6 +279,7 @@ private fun ShortContent() {
                 basePnlAmount = 1000,
                 basePnlPercent = 100,
                 isProfit = true,
+                isPriceIncrease = false,
                 maxPercent = null,
             ),
             ScenarioData(
@@ -285,6 +289,7 @@ private fun ShortContent() {
                 basePnlAmount = 1000,
                 basePnlPercent = 100,
                 isProfit = false,
+                isPriceIncrease = true,
                 maxPercent = maxLossPercent,
             )
         )
@@ -335,6 +340,7 @@ private fun LeverageContent() {
                 basePnlAmount = profitPnlAmount,
                 basePnlPercent = profitPnlPercent,
                 isProfit = true,
+                isPriceIncrease = true,
                 maxPercent = null
             ),
             ScenarioData(
@@ -344,6 +350,7 @@ private fun LeverageContent() {
                 basePnlAmount = 1000,
                 basePnlPercent = 100,
                 isProfit = false,
+                isPriceIncrease = false,
                 maxPercent = liquidationPercent,
             )
         ),
@@ -421,6 +428,7 @@ private fun PositionContent() {
                 basePnlAmount = profitPnlAmount,
                 basePnlPercent = profitPnlPercent,
                 isProfit = true,
+                isPriceIncrease = true,
                 maxPercent = null
             ),
             ScenarioData(
@@ -430,6 +438,7 @@ private fun PositionContent() {
                 basePnlAmount = lossPnlAmount,
                 basePnlPercent = lossPnlPercent,
                 isProfit = false,
+                isPriceIncrease = false,
                 maxPercent = maxLossPercent,
             )
         ),
@@ -610,14 +619,17 @@ private fun GuideSection(title: String, content: String) {
         Spacer(modifier = Modifier.height(8.dp))
         DotText(
             text = stringResource(R.string.perps_intro_risk_notice_1),
+            modifier = Modifier.padding(vertical = 4.dp),
             color = MixinAppTheme.colors.textPrimary
         )
         DotText(
             text = stringResource(R.string.perps_intro_risk_notice_2),
+            modifier = Modifier.padding(vertical = 4.dp),
             color = MixinAppTheme.colors.textPrimary
         )
         DotText(
             text = stringResource(R.string.perps_intro_risk_notice_3),
+            modifier = Modifier.padding(vertical = 4.dp),
             color = MixinAppTheme.colors.textPrimary
         )
     }
@@ -941,7 +953,7 @@ private fun formatPercent(percent: Float): String {
 }
 
 private fun ScenarioData.formatChangePercent(currentPercent: Float): String {
-    val sign = if (isProfit) "+" else "-"
+    val sign = if (isPriceIncrease) "+" else "-"
     return "$sign${formatPercent(currentPercent)}"
 }
 

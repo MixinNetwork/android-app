@@ -114,7 +114,7 @@ class OpenPositionAdapter(
                 } else {
                     val margin = position.margin?.toBigDecimalOrNull() ?: BigDecimal.ZERO
                     rightTopValueTv.text = formatUsd(margin)
-                    rightTopValueTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
+                    rightTopValueTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
                     rightTopValueTv.setTextColor(resolveAttrColor(root, R.attr.text_primary))
 
                     rightBottomValueTv.isVisible = true
