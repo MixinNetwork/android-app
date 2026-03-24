@@ -92,7 +92,6 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
 
     companion object {
         const val TAG = "PerpsConfirmBottomSheetDialogFragment"
-        private const val ARGS_MARKET_ID = "args_market_id"
         private const val ARGS_MARKET_SYMBOL = "args_market_symbol"
         private const val ARGS_MARKET_ICON = "args_market_icon"
         private const val ARGS_IS_LONG = "args_is_long"
@@ -329,7 +328,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                             fontSize = 14.sp,
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Row {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
                             CoilImage(
                                 model = marketIcon,
                                 placeholder = R.drawable.ic_avatar_place_holder,

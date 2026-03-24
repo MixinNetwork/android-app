@@ -2248,11 +2248,10 @@
     <string name="perps_intro_risk_notice_3">请合理控制杠杆倍数与仓位规模，谨慎交易</string>
     <string name="Example">举例说明</string>
     <string name="example_amount">金额</string>
+    <string name="example_scene1_decreasing">场景一：价格下跌</string>
     <string name="example_scene1_increasing">场景一：价格上涨</string>
     <string name="example_scene2_decreasing">场景二：价格下跌</string>
-    <string name="Perpetual_Scenario_Title_Format">场景%1$d：%2$s</string>
-    <string name="Perpetual_Price_Up">价格上涨</string>
-    <string name="Perpetual_Price_Down">价格下跌</string>
+    <string name="example_scene2_increasing">场景二：价格上涨</string>
     <string name="PnL">盈亏</string>
     <string name="perps_long_overview">做多是指在预期价格上涨时建立仓位，价格上涨可获得盈利，价格下跌则产生亏损。</string>
     <string name="perps_short_overview">做空是指在预期价格下跌时建立仓位，价格下跌可获得盈利，价格上涨则产生亏损。</string>

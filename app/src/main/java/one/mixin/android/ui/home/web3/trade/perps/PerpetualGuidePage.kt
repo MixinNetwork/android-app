@@ -214,7 +214,7 @@ private fun LongContent() {
         ),
         scenarios = listOf(
             ScenarioData(
-                scenario = stringResource(R.string.Perpetual_Price_Up),
+                scenario = stringResource(R.string.example_scene1_increasing),
                 change = stringResource(R.string.Price_Change),
                 initialPercent = maxLossPercent,
                 basePnlAmount = 1000,
@@ -223,7 +223,7 @@ private fun LongContent() {
                 maxPercent = null
             ),
             ScenarioData(
-                scenario = stringResource(R.string.Perpetual_Price_Down),
+                scenario = stringResource(R.string.example_scene2_decreasing),
                 change = stringResource(R.string.Price_Change),
                 initialPercent = maxLossPercent,
                 basePnlAmount = 1000,
@@ -270,7 +270,7 @@ private fun ShortContent() {
         ),
         scenarios = listOf(
             ScenarioData(
-                scenario = stringResource(R.string.Perpetual_Price_Down),
+                scenario = stringResource(R.string.example_scene1_decreasing),
                 change = stringResource(R.string.Price_Change),
                 initialPercent = maxLossPercent,
                 basePnlAmount = 1000,
@@ -279,7 +279,7 @@ private fun ShortContent() {
                 maxPercent = null,
             ),
             ScenarioData(
-                scenario = stringResource(R.string.Perpetual_Price_Up),
+                scenario = stringResource(R.string.example_scene2_increasing),
                 change = stringResource(R.string.Price_Change),
                 initialPercent = maxLossPercent,
                 basePnlAmount = 1000,
@@ -329,7 +329,7 @@ private fun LeverageContent() {
         ),
         scenarios = listOf(
             ScenarioData(
-                scenario = stringResource(R.string.Perpetual_Price_Up),
+                scenario = stringResource(R.string.example_scene1_increasing),
                 change = stringResource(R.string.Price_Change),
                 initialPercent = fixedProfitPercent,
                 basePnlAmount = profitPnlAmount,
@@ -338,7 +338,7 @@ private fun LeverageContent() {
                 maxPercent = null
             ),
             ScenarioData(
-                scenario = stringResource(R.string.Perpetual_Price_Down),
+                scenario = stringResource(R.string.example_scene2_decreasing),
                 change = stringResource(R.string.Price_Change),
                 initialPercent = liquidationPercent,
                 basePnlAmount = 1000,
@@ -415,7 +415,7 @@ private fun PositionContent() {
         ),
         scenarios = listOf(
             ScenarioData(
-                scenario = stringResource(R.string.Perpetual_Price_Up),
+                scenario = stringResource(R.string.example_scene1_increasing),
                 change = stringResource(R.string.Price_Change),
                 initialPercent = fixedProfitPercent,
                 basePnlAmount = profitPnlAmount,
@@ -424,7 +424,7 @@ private fun PositionContent() {
                 maxPercent = null
             ),
             ScenarioData(
-                scenario = stringResource(R.string.Perpetual_Price_Down),
+                scenario = stringResource(R.string.example_scene2_decreasing),
                 change = stringResource(R.string.Price_Change),
                 initialPercent = maxLossPercent,
                 basePnlAmount = lossPnlAmount,
@@ -747,17 +747,12 @@ private fun ExampleWithScenariosCard(
             if (index > 0) {
                 Spacer(modifier = Modifier.height(16.dp))
             }
-            val scenarioTitle = stringResource(
-                R.string.Perpetual_Scenario_Title_Format,
-                index + 1,
-                scenario.scenario,
-            )
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
             ) {
                 Text(
-                    text = scenarioTitle,
+                    text = scenario.scenario,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.W500,
                     color = MixinAppTheme.colors.textPrimary
