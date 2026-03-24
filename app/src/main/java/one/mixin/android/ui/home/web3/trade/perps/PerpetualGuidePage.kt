@@ -759,6 +759,8 @@ private fun ExampleWithScenariosCard(
             if (index > 0) {
                 Spacer(modifier = Modifier.height(16.dp))
             }
+            val priceChangeColor = if (scenario.isPriceIncrease) risingColor else fallingColor
+            val pnlColor = if (scenario.isProfit) risingColor else fallingColor
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -814,7 +816,7 @@ private fun ExampleWithScenariosCard(
                                 text = scenario.formatChangePercent(percent),
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Medium,
-                                color = if (scenario.isProfit) risingColor else fallingColor,
+                                color = priceChangeColor,
                                 modifier = Modifier.padding(horizontal = 8.dp),
                             )
                             Box(
@@ -845,7 +847,7 @@ private fun ExampleWithScenariosCard(
                                 text = scenario.formatChangePercent(percent),
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Medium,
-                                color = if (scenario.isProfit) risingColor else fallingColor,
+                                color = priceChangeColor,
                             )
                         }
                     }
@@ -862,7 +864,7 @@ private fun ExampleWithScenariosCard(
                         text = scenario.formatPnl(changePercents[index]),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (scenario.isProfit) risingColor else fallingColor
+                        color = pnlColor
                     )
                 }
             }
