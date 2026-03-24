@@ -395,7 +395,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                             .padding(horizontal = 20.dp),
                     ) {
                         Text(
-                            text = stringResource(R.string.Perpetual),
+                            text = stringResource(R.string.perps_market),
                             color = MixinAppTheme.colors.textRemarks,
                             fontSize = 14.sp,
                         )

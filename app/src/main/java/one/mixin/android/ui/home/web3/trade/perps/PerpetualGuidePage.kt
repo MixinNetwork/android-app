@@ -130,9 +130,11 @@ fun PerpetualGuidePage(
                     .padding(horizontal = 16.dp)
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
-                Row(modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState())) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState())
+                ) {
                     tabs.forEachIndexed { index, tab ->
                         OutlinedTab(
                             text = tab,
@@ -193,7 +195,7 @@ private fun LongContent() {
         title = stringResource(R.string.Example),
         rows = listOf(
             GuideRowData(
-                label = stringResource(R.string.example_perpetual),
+                label = stringResource(R.string.perps_market),
                 value = "BTC - USD",
                 iconRes = R.drawable.ic_chain_btc
             ),
@@ -212,8 +214,8 @@ private fun LongContent() {
         ),
         scenarios = listOf(
             ScenarioData(
-                scenario = stringResource(R.string.Perpetual_Price_Up),
-                change = stringResource(R.string.example_price_increased),
+                scenario = stringResource(R.string.example_scene1_increasing),
+                change = stringResource(R.string.Price_Change),
                 initialPercent = maxLossPercent,
                 basePnlAmount = 1000,
                 basePnlPercent = 100,
@@ -221,8 +223,8 @@ private fun LongContent() {
                 maxPercent = null
             ),
             ScenarioData(
-                scenario = stringResource(R.string.Perpetual_Price_Down),
-                change = stringResource(R.string.example_price_decreased),
+                scenario = stringResource(R.string.example_scene2_decreasing),
+                change = stringResource(R.string.Price_Change),
                 initialPercent = maxLossPercent,
                 basePnlAmount = 1000,
                 basePnlPercent = 100,
@@ -235,8 +237,8 @@ private fun LongContent() {
     DescriptionWithRulesCard(
         description = stringResource(R.string.perps_long_overview),
         rules = listOf(
-            stringResource(R.string.Perpetual_Price_Up) to stringResource(R.string.Perpetual_Profit),
-            stringResource(R.string.Perpetual_Price_Down) to stringResource(R.string.Perpetual_Loss)
+            stringResource(R.string.pnl_rule_price_rise_profit),
+            stringResource(R.string.pnl_rule_price_fall_loss)
         )
     )
 }
@@ -249,7 +251,7 @@ private fun ShortContent() {
         title = stringResource(R.string.Example),
         rows = listOf(
             GuideRowData(
-                label = stringResource(R.string.example_perpetual),
+                label = stringResource(R.string.perps_market),
                 value = "ETH - USD",
                 iconRes = R.drawable.ic_chain_eth
             ),
@@ -268,8 +270,8 @@ private fun ShortContent() {
         ),
         scenarios = listOf(
             ScenarioData(
-                scenario = stringResource(R.string.Perpetual_Price_Down),
-                change = stringResource(R.string.example_price_decreased),
+                scenario = stringResource(R.string.example_scene1_decreasing),
+                change = stringResource(R.string.Price_Change),
                 initialPercent = maxLossPercent,
                 basePnlAmount = 1000,
                 basePnlPercent = 100,
@@ -277,8 +279,8 @@ private fun ShortContent() {
                 maxPercent = null,
             ),
             ScenarioData(
-                scenario = stringResource(R.string.Perpetual_Price_Up),
-                change = stringResource(R.string.example_price_increased),
+                scenario = stringResource(R.string.example_scene2_increasing),
+                change = stringResource(R.string.Price_Change),
                 initialPercent = maxLossPercent,
                 basePnlAmount = 1000,
                 basePnlPercent = 100,
@@ -291,8 +293,8 @@ private fun ShortContent() {
     DescriptionWithRulesCard(
         description = stringResource(R.string.perps_short_overview),
         rules = listOf(
-            stringResource(R.string.Perpetual_Price_Down) to stringResource(R.string.Perpetual_Profit),
-            stringResource(R.string.Perpetual_Price_Up) to stringResource(R.string.Perpetual_Loss)
+            stringResource(R.string.pnl_rule_price_fall_profit),
+            stringResource(R.string.pnl_rule_price_rise_loss)
         )
     )
 }
@@ -308,7 +310,7 @@ private fun LeverageContent() {
         title = stringResource(R.string.Example),
         rows = listOf(
             GuideRowData(
-                label = stringResource(R.string.example_perpetual),
+                label = stringResource(R.string.perps_market),
                 value = "SOL - USD",
                 iconRes = R.drawable.ic_chain_sol
             ),
@@ -327,8 +329,8 @@ private fun LeverageContent() {
         ),
         scenarios = listOf(
             ScenarioData(
-                scenario = stringResource(R.string.Perpetual_Price_Up),
-                change = stringResource(R.string.example_price_increased),
+                scenario = stringResource(R.string.example_scene1_increasing),
+                change = stringResource(R.string.Price_Change),
                 initialPercent = fixedProfitPercent,
                 basePnlAmount = profitPnlAmount,
                 basePnlPercent = profitPnlPercent,
@@ -336,8 +338,8 @@ private fun LeverageContent() {
                 maxPercent = null
             ),
             ScenarioData(
-                scenario = stringResource(R.string.Perpetual_Price_Down),
-                change = stringResource(R.string.example_price_decreased),
+                scenario = stringResource(R.string.example_scene2_decreasing),
+                change = stringResource(R.string.Price_Change),
                 initialPercent = liquidationPercent,
                 basePnlAmount = 1000,
                 basePnlPercent = 100,
@@ -352,12 +354,12 @@ private fun LeverageContent() {
     Spacer(modifier = Modifier.height(16.dp))
     DescriptionWithInfoAndRiskCard(
         description = stringResource(R.string.perps_leverage_overview),
-        infoTitle = stringResource(R.string.impact_on_pnl),
+        infoTitle = stringResource(R.string.PnL),
         infoContents = listOf(
             stringResource(R.string.impact_on_pnl_1),
             stringResource(R.string.impact_on_pnl_2)
         ),
-        riskContents = listOf(stringResource(R.string.perps_leverage_risk_notice))
+        riskContents = listOf(stringResource(R.string.perps_leverage_risk_notice_1), stringResource(R.string.perps_leverage_risk_notice_2))
     )
 }
 
@@ -390,7 +392,7 @@ private fun PositionContent() {
         title = stringResource(R.string.Example),
         rows = listOf(
             GuideRowData(
-                label = stringResource(R.string.example_perpetual),
+                label = stringResource(R.string.perps_market),
                 value = "SOL - USD",
                 iconRes = R.drawable.ic_chain_sol
             ),
@@ -413,8 +415,8 @@ private fun PositionContent() {
         ),
         scenarios = listOf(
             ScenarioData(
-                scenario = stringResource(R.string.Perpetual_Price_Up),
-                change = stringResource(R.string.example_price_increased),
+                scenario = stringResource(R.string.example_scene1_increasing),
+                change = stringResource(R.string.Price_Change),
                 initialPercent = fixedProfitPercent,
                 basePnlAmount = profitPnlAmount,
                 basePnlPercent = profitPnlPercent,
@@ -422,8 +424,8 @@ private fun PositionContent() {
                 maxPercent = null
             ),
             ScenarioData(
-                scenario = stringResource(R.string.Perpetual_Price_Down),
-                change = stringResource(R.string.example_price_decreased),
+                scenario = stringResource(R.string.example_scene2_decreasing),
+                change = stringResource(R.string.Price_Change),
                 initialPercent = maxLossPercent,
                 basePnlAmount = lossPnlAmount,
                 basePnlPercent = lossPnlPercent,
@@ -442,12 +444,12 @@ private fun PositionContent() {
     Spacer(modifier = Modifier.height(16.dp))
     DescriptionWithInfoAndRiskCard(
         description = stringResource(R.string.perps_position_size_overview),
-        infoTitle = stringResource(R.string.Purpose),
+        infoTitle = stringResource(R.string.PnL),
         infoContents = listOf(
-            stringResource(R.string.perps_position_size_purpose_1),
-            stringResource(R.string.perps_position_size_purpose_2)
+            stringResource(R.string.perps_position_size_notice_1),
+            stringResource(R.string.perps_position_size_notice_2)
         ),
-        riskContents = listOf(stringResource(R.string.perps_position_size_risk_1) , stringResource(R.string.perps_position_size_risk_2))
+        riskContents = emptyList()
     )
 }
 
@@ -745,17 +747,12 @@ private fun ExampleWithScenariosCard(
             if (index > 0) {
                 Spacer(modifier = Modifier.height(16.dp))
             }
-            val scenarioTitle = stringResource(
-                R.string.Perpetual_Scenario_Title_Format,
-                index + 1,
-                scenario.scenario,
-            )
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
             ) {
                 Text(
-                    text = scenarioTitle,
+                    text = scenario.scenario,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.W500,
                     color = MixinAppTheme.colors.textPrimary
@@ -802,10 +799,10 @@ private fun ExampleWithScenariosCard(
                                 )
                             }
                             Text(
-                                text = formatPercent(percent),
+                                text = scenario.formatChangePercent(percent),
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Medium,
-                                color = MixinAppTheme.colors.textPrimary,
+                                color = if (scenario.isProfit) risingColor else fallingColor,
                                 modifier = Modifier.padding(horizontal = 8.dp),
                             )
                             Box(
@@ -833,10 +830,10 @@ private fun ExampleWithScenariosCard(
                             }
                         } else {
                             Text(
-                                text = formatPercent(percent),
+                                text = scenario.formatChangePercent(percent),
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Medium,
-                                color = MixinAppTheme.colors.textPrimary,
+                                color = if (scenario.isProfit) risingColor else fallingColor,
                             )
                         }
                     }
@@ -943,6 +940,11 @@ private fun formatPercent(percent: Float): String {
     }
 }
 
+private fun ScenarioData.formatChangePercent(currentPercent: Float): String {
+    val sign = if (isProfit) "+" else "-"
+    return "$sign${formatPercent(currentPercent)}"
+}
+
 private fun ScenarioData.formatPnl(currentPercent: Float): String {
     val safeInitialPercent = initialPercent.coerceAtLeast(0.01f)
     val safeCurrentPercent = currentPercent.coerceAtLeast(0f)
@@ -960,7 +962,7 @@ private fun ScenarioData.formatPnl(currentPercent: Float): String {
 @Composable
 private fun DescriptionWithRulesCard(
     description: String,
-    rules: List<Pair<String, String>>,
+    rules: List<String>,
 ) {
     Column(
         modifier = Modifier
@@ -986,15 +988,15 @@ private fun DescriptionWithRulesCard(
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = stringResource(R.string.PnL_Rules),
+            text = stringResource(R.string.PnL),
             fontSize = 16.sp,
             fontWeight = FontWeight.W500,
             color = MixinAppTheme.colors.textPrimary
         )
         Spacer(modifier = Modifier.height(12.dp))
-        rules.forEach { (condition, result) ->
+        rules.forEach { rule ->
             DotText(
-                text = "$condition：$result",
+                text = rule,
                 modifier = Modifier.padding(vertical = 4.dp),
                 color = MixinAppTheme.colors.textPrimary,
             )
@@ -1007,7 +1009,7 @@ private fun DescriptionWithInfoAndRiskCard(
     description: String,
     infoTitle: String,
     infoContents: List<String>,
-    riskContents:  List<String>,
+    riskContents: List<String>,
 ) {
     Column(
         modifier = Modifier
@@ -1051,25 +1053,28 @@ private fun DescriptionWithInfoAndRiskCard(
             }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        if (riskContents.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(12.dp))
 
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            Text(
-                text = stringResource(R.string.Risk_Notice),
-                fontSize = 14.sp,
-                fontWeight = FontWeight.W500,
-                color = MixinAppTheme.colors.textPrimary
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            riskContents.forEach { riskContent ->
-                DotText(
-                    text = riskContent,
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                Text(
+                    text = stringResource(R.string.Risk_Notice),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.W500,
                     color = MixinAppTheme.colors.textPrimary
                 )
+                Spacer(modifier = Modifier.height(6.dp))
+                riskContents.forEach { riskContent ->
+                    DotText(
+                        text = riskContent,
+                        color = MixinAppTheme.colors.textPrimary
+                    )
+                }
             }
         }
+
     }
 }

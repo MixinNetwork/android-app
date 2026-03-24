@@ -92,7 +92,6 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
 
     companion object {
         const val TAG = "PerpsConfirmBottomSheetDialogFragment"
-        private const val ARGS_MARKET_ID = "args_market_id"
         private const val ARGS_MARKET_SYMBOL = "args_market_symbol"
         private const val ARGS_MARKET_ICON = "args_market_icon"
         private const val ARGS_IS_LONG = "args_is_long"
@@ -277,7 +276,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                         text = stringResource(
                             id = when (step) {
                                 Step.Pending -> R.string.confirm_opening_position
-                                Step.Done -> R.string.Position_Opened
+                                Step.Done -> R.string.Position_Submitted
                                 Step.Error -> R.string.swap_failed
                                 Step.Sending -> R.string.Sending
                             }
@@ -324,12 +323,12 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                             .padding(horizontal = 20.dp),
                     ) {
                         Text(
-                            text = stringResource(R.string.Perpetual),
+                            text = stringResource(R.string.perps_market),
                             color = MixinAppTheme.colors.textRemarks,
                             fontSize = 14.sp,
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Row {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
                             CoilImage(
                                 model = marketIcon,
                                 placeholder = R.drawable.ic_avatar_place_holder,
