@@ -143,7 +143,7 @@ fun OpenPositionItem(
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 val unrealizedPnl = position.unrealizedPnl?.toBigDecimalOrNull()?: BigDecimal.ZERO
-                val roe = position.roe?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                val roe = (position.roe?.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(BigDecimal(100))
                 val isProfit = unrealizedPnl >= BigDecimal.ZERO
                 val pnlColor = if (isProfit) {
                     if (quoteColorPref) {

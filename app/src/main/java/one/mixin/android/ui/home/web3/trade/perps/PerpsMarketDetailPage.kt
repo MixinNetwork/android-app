@@ -643,7 +643,7 @@ private fun OpenPositionCard(
     val fiatSymbol = Fiats.getSymbol()
 
     val pnl = position.unrealizedPnl?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    val roe = position.roe?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val roe = (position.roe?.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(BigDecimal(100))
     val isProfit = pnl >= BigDecimal.ZERO
     val pnlColor = if (isProfit) risingColor else fallingColor
 

@@ -119,7 +119,7 @@ class OpenPositionAdapter(
 
                     rightBottomValueTv.isVisible = true
                     val pnl = (position.unrealizedPnl ?: "0").toBigDecimalOrNull() ?: BigDecimal.ZERO
-                    val roe = position.roe?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                    val roe = (position.roe?.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(BigDecimal(100))
                     rightBottomValueTv.text = "${formatSignedUsd(pnl)}(${formatPerpsSignedPercent(roe)})"
                     rightBottomValueTv.setTextColor(
                         when {

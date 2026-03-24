@@ -141,7 +141,7 @@ class PerpsPositionShareActivity : BaseActivity() {
         val open = position
         if (open != null) {
             val pnlAmount = open.unrealizedPnl.toBigDecimalSafely() ?: BigDecimal.ZERO
-            val pnlPercent = open.roe.toBigDecimalSafely() ?: BigDecimal.ZERO
+            val pnlPercent = (open.roe.toBigDecimalSafely() ?: BigDecimal.ZERO).multiply(BigDecimal(100))
 
             bindCard(
                 iconUrl = open.iconUrl,

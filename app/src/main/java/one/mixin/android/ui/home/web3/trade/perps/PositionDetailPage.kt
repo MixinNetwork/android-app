@@ -88,7 +88,7 @@ fun PositionDetailPage(
     val absQuantity = quantity.abs()
     val entryPrice = position.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val pnl = position.unrealizedPnl?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    val roe = position.roe?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val roe = (position.roe?.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(BigDecimal(100))
     val pnlColor = if (pnl >= BigDecimal.ZERO) risingColor else fallingColor
     val liquidationPrice = calculateLiquidationPriceValue(entryPrice, position.leverage, isLong)
     val fiatRate = BigDecimal(Fiats.getRate())
