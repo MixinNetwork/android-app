@@ -41,6 +41,7 @@ fun PerpsMarketItem(
     } catch (e: Exception) {
         BigDecimal.ZERO
     }
+    val changePercent = change.multiply(BigDecimal(100))
 
     val isPositive = change >= BigDecimal.ZERO
     val changeColor = if (isPositive) {
@@ -56,7 +57,7 @@ fun PerpsMarketItem(
             MixinAppTheme.colors.walletRed
         }
     }
-    val changeText = formatPerpsSignedPercent(change)
+    val changeText = formatPerpsSignedPercent(changePercent)
     val fiatRate = BigDecimal(Fiats.getRate())
     val fiatSymbol = Fiats.getSymbol()
 

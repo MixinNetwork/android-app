@@ -386,7 +386,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                             .padding(horizontal = 20.dp),
                     ) {
                         Text(
-                            text = stringResource(R.string.perps_market),
+                            text = stringResource(R.string.perps_market).uppercase(),
                             color = MixinAppTheme.colors.textRemarks,
                             fontSize = 14.sp,
                         )
@@ -411,7 +411,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                         Box(modifier = Modifier.height(20.dp))
                         settleAssetItem?.let { asset ->
                             Text(
-                                text = stringResource(R.string.Estimated_Receive),
+                                text = stringResource(R.string.Estimated_Receive).uppercase(),
                                 color = MixinAppTheme.colors.textRemarks,
                                 fontSize = 14.sp,
                             )

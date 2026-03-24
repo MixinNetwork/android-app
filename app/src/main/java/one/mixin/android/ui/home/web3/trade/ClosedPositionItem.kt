@@ -22,6 +22,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -31,6 +33,8 @@ import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.ui.home.inscription.component.AutoSizeConstraint
+import one.mixin.android.ui.home.inscription.component.AutoSizeText
 import one.mixin.android.ui.home.web3.trade.perps.calculateClosedRoe
 import one.mixin.android.ui.home.web3.trade.perps.formatPerpsSignedFiatDecimal
 import one.mixin.android.ui.home.web3.trade.perps.formatPerpsSignedPercent
@@ -163,12 +167,20 @@ fun ClosedPositionItem(
         }
 
         Column(
-            horizontalAlignment = Alignment.End
+            modifier = Modifier.weight(0.85f),
+            horizontalAlignment = Alignment.End,
+            verticalArrangement = Arrangement.Center
         ) {
-            Text(
+            AutoSizeText(
                 text = "${formatPerpsSignedFiatDecimal(pnl.multiply(fiatRate), fiatSymbol)}(${formatPerpsSignedPercent(pnlPercent)})",
-                fontSize = if (isSmallScreen) 12.sp else 14.sp,
-                color = pnlColor
+                modifier = Modifier.fillMaxWidth(),
+                fontSize = 14.sp,
+                color = pnlColor,
+                textAlign = TextAlign.End,
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Ellipsis,
+                constraint = AutoSizeConstraint.Width(min = 10.sp),
             )
         }
     }

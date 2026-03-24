@@ -235,7 +235,7 @@ fun PerpetualContent(
                 )
             }
             if (openPositionsCount == 0) {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(40.dp))
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -260,8 +260,7 @@ fun PerpetualContent(
                         .fillMaxWidth()
                         .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = {
                             onShowTradingGuide()
-                        })
-                        .padding(vertical = 8.dp),
+                        }),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -271,6 +270,7 @@ fun PerpetualContent(
                         color = MixinAppTheme.colors.accent,
                     )
                 }
+                Spacer(modifier = Modifier.height(40.dp))
             } else {
                 openPositionsPreview.forEach { position ->
                     OpenPositionItem(
