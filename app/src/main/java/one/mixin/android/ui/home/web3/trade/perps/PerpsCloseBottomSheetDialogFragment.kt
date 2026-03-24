@@ -367,26 +367,17 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                         BigDecimal.ZERO
                     }
 
-                    val formattedRoe = try {
+                    val pnlPercent = try {
                         val marginValue = BigDecimal(margin)
                         if (marginValue <= BigDecimal.ZERO) {
-                            "0"
+                            BigDecimal.ZERO
                         } else {
                             BigDecimal(latestUnrealizedPnl)
                                 .divide(marginValue, 8, RoundingMode.HALF_UP)
                                 .multiply(BigDecimal(100))
-                                .stripTrailingZeros()
-                                .toPlainString()
                         }
                     } catch (e: Exception) {
-                        "0"
-                    }
-                    val formattedPnlFiat = try {
-                        val pnlFiat = pnl.multiply(fiatRate)
-                        val sign = if (pnlFiat >= BigDecimal.ZERO) "+" else "-"
-                        "$sign$fiatSymbol${pnlFiat.abs().priceFormat()}"
-                    } catch (e: Exception) {
-                        "${fiatSymbol}0"
+                        BigDecimal.ZERO
                     }
 
                     Column(
@@ -458,7 +449,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                                 fontSize = 14.sp
                             )
                             Text(
-                                text = "${if (pnl >= BigDecimal.ZERO) "+" else ""}${latestUnrealizedPnl} $settleAssetSymbol ($formattedRoe%)",
+                                text = "${formatPerpsSignedFiatDecimal(pnl.multiply(fiatRate), fiatSymbol)}(${formatPerpsSignedPercent(pnlPercent)})",
                                 color = pnlColor,
                                 fontSize = 14.sp
                             )
