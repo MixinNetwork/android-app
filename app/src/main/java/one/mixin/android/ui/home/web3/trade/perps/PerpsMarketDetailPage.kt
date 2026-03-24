@@ -694,7 +694,7 @@ private fun OpenPositionCard(
         ) {
             Column {
                 Text(
-                    text = stringResource(R.string.PNL),
+                    text = stringResource(R.string.PnL),
                     fontSize = 12.sp,
                     color = MixinAppTheme.colors.textAssist
                 )

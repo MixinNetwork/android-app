@@ -1767,7 +1767,7 @@
     <string name="Last_Reward">Last Reward</string>
     <string name="last_reward_hint">This is the most recent reward you earned for staking. Rewards are distributed every 3 days.</string>
     <string name="No_balance_change_detected">No balance change detected</string>
-    <string name="Introduction">Introduction</string>
+    <string name="Introduction">Intro</string>
     <string name="Contract_Address">Contract Address</string>
     <string name="All_Time_Low">All Time Low</string>
     <string name="All_Time_High">All Time High</string>
@@ -2390,7 +2390,6 @@
     <string name="perps_activity">Activity</string>
     <string name="No_Position">No Position</string>
     <string name="No_Activity">No Activity</string>
-    <string name="PNL">PNL</string>
     <string name="example_direction">Direction</string>
     <string name="No_Markets">No Markets</string>
     <string name="View_More">View More</string>
