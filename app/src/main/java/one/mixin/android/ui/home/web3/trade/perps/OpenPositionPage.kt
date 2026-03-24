@@ -69,6 +69,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.home.web3.trade.InputContent
 import one.mixin.android.ui.home.web3.trade.KeyboardAwareBox
 import one.mixin.android.ui.home.web3.trade.SwapActivity
+import one.mixin.android.ui.home.web3.trade.TradeFragment
 import one.mixin.android.ui.home.web3.components.InputAction
 import one.mixin.android.ui.wallet.AddFeeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletActivity
@@ -338,6 +339,9 @@ fun OpenPositionPage(
                                         .apply {
                                             onAction = { type, addToken ->
                                                 if (type == AddFeeBottomSheetDialogFragment.ActionType.SWAP) {
+                                                    val currentWalletId = Session.getAccountId() ?: ""
+                                                    val preferenceKey = "${TradeFragment.PREF_TRADE_SELECTED_TAB_PREFIX}$currentWalletId"
+                                                    context.defaultSharedPreferences.putInt(preferenceKey, 0)
                                                     SwapActivity.show(
                                                         context = activity,
                                                         input = Constants.AssetId.USDT_ASSET_ETH_ID,
