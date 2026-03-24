@@ -235,7 +235,7 @@ fun PerpetualContent(
                 )
             }
             if (openPositionsCount == 0) {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(40.dp))
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -260,8 +260,7 @@ fun PerpetualContent(
                         .fillMaxWidth()
                         .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = {
                             onShowTradingGuide()
-                        })
-                        .padding(vertical = 8.dp),
+                        }),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -271,6 +270,7 @@ fun PerpetualContent(
                         color = MixinAppTheme.colors.accent,
                     )
                 }
+                Spacer(modifier = Modifier.height(40.dp))
             } else {
                 openPositionsPreview.forEach { position ->
                     OpenPositionItem(
@@ -490,7 +490,12 @@ fun PerpetualContent(
                     backgroundColor = risingColor,
                     contentColor = Color.White
                 ),
-                enabled = markets.isNotEmpty()
+                elevation = ButtonDefaults.elevation(
+                    pressedElevation = 0.dp,
+                    defaultElevation = 0.dp,
+                    hoveredElevation = 0.dp,
+                    focusedElevation = 0.dp,
+                ),
             ) {
                 Text(
                     text = stringResource(R.string.Long),
@@ -511,7 +516,13 @@ fun PerpetualContent(
                     backgroundColor = fallingColor,
                     contentColor = Color.White
                 ),
-                enabled = markets.isNotEmpty()
+                enabled = markets.isNotEmpty(),
+                elevation = ButtonDefaults.elevation(
+                    pressedElevation = 0.dp,
+                    defaultElevation = 0.dp,
+                    hoveredElevation = 0.dp,
+                    focusedElevation = 0.dp,
+                ),
             ) {
                 Text(
                     text = stringResource(R.string.Short),

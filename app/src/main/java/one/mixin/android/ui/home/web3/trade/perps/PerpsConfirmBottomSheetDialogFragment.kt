@@ -323,7 +323,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                             .padding(horizontal = 20.dp),
                     ) {
                         Text(
-                            text = stringResource(R.string.perps_market),
+                            text = stringResource(R.string.perps_market).uppercase(),
                             color = MixinAppTheme.colors.textRemarks,
                             fontSize = 14.sp,
                         )

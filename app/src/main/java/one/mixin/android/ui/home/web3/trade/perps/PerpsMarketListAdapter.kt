@@ -65,6 +65,7 @@ class PerpsMarketListAdapter(
                 } catch (e: Exception) {
                     BigDecimal.ZERO
                 }
+                val changePercent = change.multiply(BigDecimal(100))
 
                 val isPositive = change >= BigDecimal.ZERO
                 val changeColor = ContextCompat.getColor(
@@ -75,7 +76,7 @@ class PerpsMarketListAdapter(
                         if (isQuoteColorReversed) R.color.wallet_green else R.color.wallet_red
                     }
                 )
-                val changeText = "${if (isPositive) "+" else ""}${market.change}%"
+                val changeText = formatPerpsSignedPercent(changePercent)
 
                 changeTv.text = changeText
                 changeTv.setTextColor(changeColor)

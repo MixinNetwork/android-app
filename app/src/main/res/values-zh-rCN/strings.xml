@@ -218,6 +218,10 @@
     <string name="Checking_payment_info">请检查支付信息</string>
     <string name="Choose">选择</string>
     <string name="Choose_folder">选择文件夹</string>
+    <string name="Price_Up_Profit">价格上涨 %1$s%% → 盈利 %2$s%%（+%3$s）</string>
+    <string name="Price_Down_Profit">价格下跌 %1$s%% → 盈利 %2$s%%（+%3$s）</string>
+    <string name="Price_Down_Loss">价格下跌 %1$s%% → 亏损 -%2$s %3$s</string>
+    <string name="Price_Up_Loss">价格上涨 %1$s%% → 亏损 -%2$s %3$s</string>
     <string name="Choose_Network">选择网络</string>
     <string name="Choose_network_tip">请选择 Mixin 支持的网络进行充值，否则您的充值将不会到账。</string>
     <string name="circle_bottom">为不同对话创建圈子然后在它们之间快速切换</string>
@@ -2333,4 +2337,5 @@
     <string name="Forget_Pin">忘记 PIN</string>
     <string name="forget_pin_help_url">https://support.mixin.one/zh/article/pin-1vb2rc7/</string>
     <string name="Switch_Account">切换账号</string>
+    <string name="Perpetual_Futures_Guide">永续合约指南</string>
 </resources>

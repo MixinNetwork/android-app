@@ -45,6 +45,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -339,6 +340,9 @@ private fun ScrollableCandleChart(
                                 fontSize = 10.sp,
                                 color = MixinAppTheme.colors.textPrimary,
                                 textAlign = TextAlign.End,
+                                maxLines = 1,
+                                softWrap = false,
+                                overflow = TextOverflow.Clip,
                                 modifier = Modifier
                                     .background(
                                         color = MixinAppTheme.colors.background,
@@ -374,6 +378,9 @@ private fun ScrollableCandleChart(
                                     fontSize = 10.sp,
                                     color = MixinAppTheme.colors.textPrimary,
                                     textAlign = TextAlign.End,
+                                    maxLines = 1,
+                                    softWrap = false,
+                                    overflow = TextOverflow.Clip,
                                     modifier = Modifier
                                         .background(
                                             color = MixinAppTheme.colors.background,
@@ -608,11 +615,12 @@ private fun DrawScope.drawTouchCrosshair(
 }
 
 private fun formatPrice(price: BigDecimal): String {
-    return when {
-        price >= BigDecimal("100") -> String.format("%.0f", price)
-        price >= BigDecimal("1") -> String.format("%.2f", price)
-        else -> String.format("%.6f", price)
+    val scaledPrice = when {
+        price >= BigDecimal("100") -> price.setScale(0, java.math.RoundingMode.HALF_UP)
+        price >= BigDecimal("1") -> price.setScale(2, java.math.RoundingMode.HALF_UP)
+        else -> price.setScale(6, java.math.RoundingMode.HALF_UP)
     }
+    return scaledPrice.stripTrailingZeros().toPlainString()
 }
 
 private fun formatCandleTime(timestamp: Long, timeFrame: String): String {

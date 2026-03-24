@@ -47,13 +47,24 @@ class SwapActivity : BaseActivity(){
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
+        showTradeFragment(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        showTradeFragment(intent)
+    }
+
+    private fun showTradeFragment(intent: Intent) {
         val swapFragment = TradeFragment.newInstance<TokenItem>(
             intent.getStringExtra(ARGS_INPUT),
             intent.getStringExtra(ARGS_OUTPUT),
             intent.getStringExtra(ARGS_AMOUNT),
-            inMixin =  intent.getBooleanExtra(ARGS_IN_MIXIN, true),
+            inMixin = intent.getBooleanExtra(ARGS_IN_MIXIN, true),
             referral = intent.getStringExtra(ARGS_REFERRAL),
             walletId = intent.getStringExtra(TradeFragment.ARGS_WALLET_ID),
         )
-        replaceFragment(swapFragment, R.id.container, TradeFragment.TAG)}
+        replaceFragment(swapFragment, R.id.container, TradeFragment.TAG)
+    }
 }

@@ -20,7 +20,7 @@ fun formatPerpsFiatDecimal(value: BigDecimal?, fiatSymbol: String): String {
     return if (absValue > BigDecimal.ZERO && absValue < perpsMinDisplayValue) {
         "<${fiatSymbol}0.01"
     } else {
-        "$fiatSymbol${absValue.setScale(2, RoundingMode.HALF_UP).toPlainString()}"
+        "$fiatSymbol${absValue.setScale(2, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()}"
     }
 }
 

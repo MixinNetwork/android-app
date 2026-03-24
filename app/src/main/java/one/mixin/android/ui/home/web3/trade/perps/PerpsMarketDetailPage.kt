@@ -447,7 +447,7 @@ private fun MarketInfoCard(
             .padding(16.dp)
     ) {
         Text(
-            text = stringResource(R.string.Volume_24H),
+            text = stringResource(R.string.Volume_24H).uppercase(),
             fontSize = 12.sp,
             color = MixinAppTheme.colors.textAssist
         )
@@ -461,7 +461,7 @@ private fun MarketInfoCard(
 
         Spacer(modifier = Modifier.height(12.dp))
         Text(
-            text = stringResource(R.string.Funding_Rate),
+            text = stringResource(R.string.Funding_Rate).uppercase(),
             fontSize = 12.sp,
             color = MixinAppTheme.colors.textAssist
         )
@@ -694,7 +694,7 @@ private fun OpenPositionCard(
         ) {
             Column {
                 Text(
-                    text = stringResource(R.string.PNL),
+                    text = stringResource(R.string.PnL).uppercase(),
                     fontSize = 12.sp,
                     color = MixinAppTheme.colors.textAssist
                 )
@@ -708,7 +708,7 @@ private fun OpenPositionCard(
             }
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = stringResource(R.string.Direction),
+                    text = stringResource(R.string.Direction).uppercase(),
                     fontSize = 12.sp,
                     color = MixinAppTheme.colors.textAssist
                 )
@@ -718,7 +718,7 @@ private fun OpenPositionCard(
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
                             .background(directionColor)
-                            .padding(horizontal = 8.dp, vertical = 2.dp)
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
                         Text(
                             text = if (isLong) stringResource(R.string.Long) else stringResource(R.string.Short),
@@ -746,7 +746,7 @@ private fun OpenPositionCard(
             Column {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = stringResource(R.string.position_size),
+                        text = stringResource(R.string.position_size).uppercase(),
                         fontSize = 12.sp,
                         color = MixinAppTheme.colors.textAssist
                     )
@@ -775,7 +775,7 @@ private fun OpenPositionCard(
             Column(horizontalAlignment = Alignment.End) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = stringResource(R.string.Margin),
+                        text = stringResource(R.string.Margin).uppercase(),
                         fontSize = 12.sp,
                         color = MixinAppTheme.colors.textAssist
                     )
@@ -797,7 +797,7 @@ private fun OpenPositionCard(
         ) {
             Column {
                 Text(
-                    text = stringResource(R.string.Entry_Price),
+                    text = stringResource(R.string.Entry_Price).uppercase(),
                     fontSize = 12.sp,
                     color = MixinAppTheme.colors.textAssist
                 )
@@ -812,7 +812,7 @@ private fun OpenPositionCard(
             Column(horizontalAlignment = Alignment.End) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = stringResource(R.string.Liquidation_Price),
+                        text = stringResource(R.string.Liquidation_Price).uppercase(),
                         fontSize = 12.sp,
                         color = MixinAppTheme.colors.textAssist
                     )
