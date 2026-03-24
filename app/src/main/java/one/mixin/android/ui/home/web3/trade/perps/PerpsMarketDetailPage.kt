@@ -718,7 +718,7 @@ private fun OpenPositionCard(
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
                             .background(directionColor)
-                            .padding(horizontal = 3.dp, vertical = 1.dp)
+                            .padding(horizontal = 8.dp, vertical = 2.dp)
                     ) {
                         Text(
                             text = if (isLong) stringResource(R.string.Long) else stringResource(R.string.Short),
