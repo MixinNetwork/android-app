@@ -107,7 +107,7 @@ fun PerpetualGuidePage(
                     .padding(horizontal = 20.dp, vertical = 20.dp),
             ) {
                 Text(
-                    text = stringResource(R.string.Perpetual),
+                    text = stringResource(R.string.Perpetual_Futures_Guide),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.W500,
                     color = MixinAppTheme.colors.textPrimary,
@@ -1070,6 +1070,7 @@ private fun DescriptionWithInfoAndRiskCard(
                 riskContents.forEach { riskContent ->
                     DotText(
                         text = riskContent,
+                        modifier = Modifier.padding(vertical = 2.dp),
                         color = MixinAppTheme.colors.textPrimary
                     )
                 }

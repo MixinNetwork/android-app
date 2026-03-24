@@ -2333,4 +2333,5 @@
     <string name="Forget_Pin">忘记 PIN</string>
     <string name="forget_pin_help_url">https://support.mixin.one/zh/article/pin-1vb2rc7/</string>
     <string name="Switch_Account">切换账号</string>
+    <string name="Perpetual_Futures_Guide">永续合约指南</string>
 </resources>

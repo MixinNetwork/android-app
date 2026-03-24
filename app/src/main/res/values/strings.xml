@@ -2303,14 +2303,14 @@
     <string name="perps_leverage_overview">Leverage allows you to control a larger position with less capital.</string>
     <string name="Perpetual_Guide_Close_Content">You can close your position at any time to realize your profit or loss. The closing price is based on the current market price. Make sure to monitor your positions to avoid liquidation.</string>
     <string name="Brief_Introduction">Introduction</string>
-    <string name="perps_intro_overview">MMixin Perpetual Futures are crypto-settled perpetual contracts with no expiry date that allow traders to speculate on the price of crypto assets. They can be held indefinitely and typically track the underlying spot market.</string>
+    <string name="perps_intro_overview">Mixin Perpetual Futures are crypto-settled perpetual contracts with no expiry date that allow traders to speculate on the price of crypto assets. They can be held indefinitely and typically track the underlying spot market.</string>
     <string name="Product_Features">Features</string>
     <string name="product_features_1">No expiry date, allowing positions to be held indefinitely</string>
     <string name="product_features_2">Trade long or short</string>
     <string name="product_features_3">Up to %d× leverage</string>
     <string name="product_features_4">Isolated margin for risk management</string>
     <string name="Risk_Notice">Risk Notice</string>
-    <string name="perps_intro_risk_notice_1">Leverage amplifies both profits and lossess</string>
+    <string name="perps_intro_risk_notice_1">Leverage amplifies both profits and losses</string>
     <string name="perps_intro_risk_notice_2">Positions may be liquidated if margin requirements are not maintained</string>
     <string name="perps_intro_risk_notice_3">Manage leverage and position size carefully</string>
     <string name="Example">Example</string>
@@ -2363,8 +2363,8 @@
     <string name="Close_Time">Close Time</string>
     <string name="Mixin_Futures">Mixin Futures</string>
     <string name="Wallet_Not_Found">Wallet not found</string>
-    <string name="how_perps_works">How perps works?</string>
-    <string name="learn_how_to_trade_perps">Learn how to trade perps</string>
+    <string name="how_perps_works">How perpetual futures works?</string>
+    <string name="learn_how_to_trade_perps">Learn how to trade perpetual futures</string>
     <string name="Volume_24H">24H VOLUME</string>
     <string name="Open_Interest">Open Interest</string>
     <string name="Funding_Rate">Funding Rate</string>
@@ -2407,4 +2407,5 @@
     <string name="Forget_Pin">Forgot PIN</string>
     <string name="forget_pin_help_url">https://support.mixin.one/en/article/what-should-i-do-if-i-forget-my-pin-g12pmo/</string>
     <string name="Switch_Account">Switch Account</string>
+    <string name="Perpetual_Futures_Guide">Perpetual Futures Guide</string>
 </resources>

@@ -490,7 +490,12 @@ fun PerpetualContent(
                     backgroundColor = risingColor,
                     contentColor = Color.White
                 ),
-                enabled = markets.isNotEmpty()
+                elevation = ButtonDefaults.elevation(
+                    pressedElevation = 0.dp,
+                    defaultElevation = 0.dp,
+                    hoveredElevation = 0.dp,
+                    focusedElevation = 0.dp,
+                ),
             ) {
                 Text(
                     text = stringResource(R.string.Long),
@@ -511,7 +516,13 @@ fun PerpetualContent(
                     backgroundColor = fallingColor,
                     contentColor = Color.White
                 ),
-                enabled = markets.isNotEmpty()
+                enabled = markets.isNotEmpty(),
+                elevation = ButtonDefaults.elevation(
+                    pressedElevation = 0.dp,
+                    defaultElevation = 0.dp,
+                    hoveredElevation = 0.dp,
+                    focusedElevation = 0.dp,
+                ),
             ) {
                 Text(
                     text = stringResource(R.string.Short),
