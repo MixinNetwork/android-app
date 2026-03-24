@@ -80,6 +80,7 @@ import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
 import java.math.RoundingMode
 import kotlin.math.abs
+import kotlin.math.roundToInt
 
 private fun getLeveragePrefKey(marketId: String) = "pref_perps_leverage_$marketId"
 private const val MARKET_REFRESH_INTERVAL_MS = 5_000L
