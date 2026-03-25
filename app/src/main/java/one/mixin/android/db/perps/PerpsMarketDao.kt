@@ -23,10 +23,10 @@ interface PerpsMarketDao : BaseDao<PerpsMarket> {
         insertAll(markets)
     }
 
-    @Query("SELECT * FROM markets ORDER BY rowid ASC")
+    @Query("SELECT * FROM markets WHERE CAST(volume AS REAL) > 0 ORDER BY rowid ASC")
     suspend fun getAllMarkets(): List<PerpsMarket>
 
-    @Query("SELECT * FROM markets ORDER BY rowid ASC")
+    @Query("SELECT * FROM markets WHERE CAST(volume AS REAL) > 0 ORDER BY rowid ASC")
     fun observeAllMarkets(): Flow<List<PerpsMarket>>
 
     @Query("SELECT * FROM markets WHERE market_id = :marketId")
@@ -35,9 +35,12 @@ interface PerpsMarketDao : BaseDao<PerpsMarket> {
     @Query(
         """
         SELECT * FROM markets
-        WHERE display_symbol LIKE '%' || :query || '%'
+        WHERE CAST(volume AS REAL) > 0
+            AND (
+                display_symbol LIKE '%' || :query || '%'
             OR token_symbol LIKE '%' || :query || '%'
             OR quote_symbol LIKE '%' || :query || '%'
+            )
         ORDER BY CAST(volume AS REAL) DESC
         """
     )
