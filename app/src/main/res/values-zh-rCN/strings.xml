@@ -2235,8 +2235,8 @@
     <string name="wallet_summary_tip_safe">共管的 Safe 金库不计入统计</string>
     <string name="Trading_Guide">交易说明</string>
     <string name="Brief_Introduction">简介</string>
-    <string name="Perpetual_Guide_Previous_Tab">&lt;%1$s</string>
-    <string name="Perpetual_Guide_Next_Tab">%1$s&gt;</string>
+    <string name="Perpetual_Guide_Previous_Tab">&lt; %1$s</string>
+    <string name="Perpetual_Guide_Next_Tab">%1$s &gt;</string>
     <string name="Perpetual_Guide_Overview_Content">永续合约允许您使用杠杆交易加密货币，从而放大您的潜在利润（和损失）。您可以做多（押注价格上涨）或做空（押注价格下跌），而无需拥有标的资产。</string>
     <string name="Perpetual_Guide_Close_Content">您可以随时平仓以实现盈亏。平仓价格基于当前市场价格。请务必监控您的仓位以避免爆仓。</string>
     <string name="Overview">具体说明</string>
@@ -2316,7 +2316,6 @@
     <string name="perps_activity">历史记录</string>
     <string name="No_Position">暂无仓位</string>
     <string name="No_Activity">暂无历史记录</string>
-    <string name="PNL">盈亏</string>
     <string name="example_direction">开仓方向</string>
     <string name="No_Markets">暂无行情</string>
     <string name="View_More">查看更多</string>
@@ -2338,4 +2337,5 @@
     <string name="forget_pin_help_url">https://support.mixin.one/zh/article/pin-1vb2rc7/</string>
     <string name="Switch_Account">切换账号</string>
     <string name="Perpetual_Futures_Guide">永续合约指南</string>
+    <string name="Opening">正在处理</string>
 </resources>

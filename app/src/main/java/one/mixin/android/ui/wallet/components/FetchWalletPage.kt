@@ -222,7 +222,7 @@ fun SelectContent(
                             backgroundColor = if (selectedWalletInfos.isNotEmpty()) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,
                         ),
                     modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(20.dp),
+                    shape = RoundedCornerShape(30.dp),
                     contentPadding = PaddingValues(vertical = 12.dp),
                     enabled = selectedWalletInfos.isNotEmpty(),
                     elevation =
@@ -318,7 +318,7 @@ fun ImportErrorContent(
                         backgroundColor = MixinAppTheme.colors.accent
                     ),
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(20.dp),
+                    shape = RoundedCornerShape(30.dp),
                     contentPadding = PaddingValues(vertical = 12.dp),
                     elevation = ButtonDefaults.elevation(
                         pressedElevation = 0.dp,
@@ -351,7 +351,7 @@ fun ImportErrorContent(
                         backgroundColor = MixinAppTheme.colors.accent
                     ),
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(20.dp),
+                    shape = RoundedCornerShape(30.dp),
                     contentPadding = PaddingValues(vertical = 12.dp),
                     elevation = ButtonDefaults.elevation(
                         pressedElevation = 0.dp,

@@ -186,6 +186,7 @@ fun WCPinBoard(
                     ) {
                         Text(
                             text = stringResource(id = R.string.Done),
+                            fontSize = 16.sp,
                             color = Color.White,
                         )
                     }

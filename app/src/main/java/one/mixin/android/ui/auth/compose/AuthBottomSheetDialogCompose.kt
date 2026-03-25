@@ -307,7 +307,7 @@ fun ScopesContent(
             modifier =
                 Modifier
                     .align(CenterHorizontally),
-            shape = RoundedCornerShape(20.dp),
+            shape = RoundedCornerShape(30.dp),
             contentPadding = PaddingValues(vertical = 8.dp, horizontal = 28.dp),
             onClick = {
                 if (pagerState.currentPage < scopeGroup.keys.size - 1) {

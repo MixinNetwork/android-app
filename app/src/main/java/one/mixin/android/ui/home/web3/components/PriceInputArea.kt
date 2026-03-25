@@ -97,7 +97,7 @@ fun PriceInputArea(
             var fromP = fromMarket?.currentPrice?.toBigDecimalOrNull()
             var toP = toMarket?.currentPrice?.toBigDecimalOrNull()
             if (fromP != null && toP != null && toP > BigDecimal.ZERO) {
-                val price = fromP.divide(toP, 8, RoundingMode.HALF_UP)
+                val price = fromP.multiply(BigDecimal(0.99)).divide(toP, 8, RoundingMode.HALF_UP)
                 marketPrice = price
                 val priceString = price.stripTrailingZeros().toPlainString()
                 onStandardPriceChanged(priceString)
@@ -113,7 +113,7 @@ fun PriceInputArea(
                 fromP = fromMarket?.currentPrice?.toBigDecimalOrNull()
                 toP = toMarket?.currentPrice?.toBigDecimalOrNull()
                 if (fromP != null && toP != null && toP > BigDecimal.ZERO) {
-                    val updatedPrice = fromP.divide(toP, 8, RoundingMode.HALF_UP)
+                    val updatedPrice = fromP.multiply(BigDecimal(0.99)).divide(toP, 8, RoundingMode.HALF_UP)
                     if (price != updatedPrice) {
                         marketPrice = updatedPrice
                         val updatedPriceString = updatedPrice.stripTrailingZeros().toPlainString()

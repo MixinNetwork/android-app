@@ -657,6 +657,7 @@ fun OpenPositionPage(
                     shape = RoundedCornerShape(32.dp),
                 ) {
                     Text(
+                        fontSize = 16.sp,
                         text = if (insufficientBalance) {
                             "${currentToken?.symbol ?: ""} ${stringResource(R.string.insufficient_balance)}"
                         } else {

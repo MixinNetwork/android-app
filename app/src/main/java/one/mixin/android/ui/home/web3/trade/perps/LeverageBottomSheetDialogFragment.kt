@@ -249,7 +249,6 @@ private fun LeverageContent(
                 Text(
                     text = stringResource(R.string.Cancel),
                     fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
                     color = MixinAppTheme.colors.textPrimary
                 )
             }
@@ -266,7 +265,6 @@ private fun LeverageContent(
                 Text(
                     text = stringResource(R.string.Apply),
                     fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
                     color = Color.White
                 )
             }
