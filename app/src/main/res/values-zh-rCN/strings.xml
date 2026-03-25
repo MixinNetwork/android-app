@@ -2316,7 +2316,6 @@
     <string name="perps_activity">历史记录</string>
     <string name="No_Position">暂无仓位</string>
     <string name="No_Activity">暂无历史记录</string>
-    <string name="PNL">盈亏</string>
     <string name="example_direction">开仓方向</string>
     <string name="No_Markets">暂无行情</string>
     <string name="View_More">查看更多</string>
@@ -2338,4 +2337,5 @@
     <string name="forget_pin_help_url">https://support.mixin.one/zh/article/pin-1vb2rc7/</string>
     <string name="Switch_Account">切换账号</string>
     <string name="Perpetual_Futures_Guide">永续合约指南</string>
+    <string name="Opening">正在处理</string>
 </resources>

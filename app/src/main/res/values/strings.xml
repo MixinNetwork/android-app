@@ -2407,4 +2407,5 @@
     <string name="forget_pin_help_url">https://support.mixin.one/en/article/what-should-i-do-if-i-forget-my-pin-g12pmo/</string>
     <string name="Switch_Account">Switch Account</string>
     <string name="Perpetual_Futures_Guide">Perpetual Futures Guide</string>
+    <string name="Opening">正在处理</string>
 </resources>

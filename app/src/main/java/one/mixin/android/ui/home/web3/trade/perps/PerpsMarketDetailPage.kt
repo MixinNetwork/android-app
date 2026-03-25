@@ -293,6 +293,7 @@ fun PerpsMarketDetailPage(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(48.dp),
+                            enabled = currentPosition.state == "open",
                             onClick = {
                                 val activity = context as? FragmentActivity ?: return@MixinButton
                                 val position = currentPosition.toPosition()
@@ -301,13 +302,13 @@ fun PerpsMarketDetailPage(
                                     position = position,
                                 ).show(activity.supportFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)
                             },
-                            backgroundColor = MixinAppTheme.colors.accent,
-                            contentColor = Color.White,
+                            backgroundColor = if (currentPosition.state == "open") MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundWindow,
+                            contentColor = if (currentPosition.state == "open") Color.White else MixinAppTheme.colors.textAssist,
                             shape = RoundedCornerShape(32.dp),
                         ) {
                             Text(
                                 fontSize = 16.sp,
-                                text = stringResource(R.string.Close_Position),
+                                text = stringResource(if(currentPosition.state == "open") R.string.Close_Position else R.string.Opening),
                             )
                         }
                     } else {
