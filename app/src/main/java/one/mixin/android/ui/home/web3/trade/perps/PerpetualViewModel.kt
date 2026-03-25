@@ -102,7 +102,7 @@ class PerpetualViewModel @Inject constructor(
                     Timber.d("Perps markets loaded: ${data.size} markets")
 
                     val orderedMarkets = withContext(Dispatchers.IO) {
-                        perpsMarketDao.replaceAll(data)
+                        perpsMarketDao.upsertList(data)
                         perpsMarketDao.getAllMarkets()
                     }
 
@@ -144,7 +144,7 @@ class PerpetualViewModel @Inject constructor(
                 val data = response.data
                 if (response.isSuccess && data != null) {
                     withContext(Dispatchers.IO) {
-                        perpsMarketDao.replaceAll(data)
+                        perpsMarketDao.upsertList(data)
                     }
                     Timber.d("Perps markets refreshed: ${data.size} markets")
                 } else {
@@ -332,7 +332,7 @@ class PerpetualViewModel @Inject constructor(
                     )
                     
                     withContext(Dispatchers.IO) {
-                        perpsPositionDao.insert(position)
+                        perpsPositionDao.upsertSuspend(position)
                     }
                     
                     onSuccess(data)
@@ -390,7 +390,7 @@ class PerpetualViewModel @Inject constructor(
                     val remotePosition = response.data
                     withContext(Dispatchers.IO) {
                         if (remotePosition != null) {
-                            perpsPositionDao.insert(
+                            perpsPositionDao.upsertSuspend(
                                 remotePosition.copy(
                                     walletId = walletId ?: remotePosition.walletId
                                 )
@@ -661,7 +661,7 @@ class PerpetualViewModel @Inject constructor(
                     val positionForDb = data.copy(walletId = resolvedWalletId)
                     
                     withContext(Dispatchers.IO) {
-                        perpsPositionDao.insert(positionForDb)
+                        perpsPositionDao.upsertSuspend(positionForDb)
                     }
                     
                     onSuccess(positionForDb)

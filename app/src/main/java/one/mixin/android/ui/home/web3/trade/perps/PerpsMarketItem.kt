@@ -36,14 +36,8 @@ fun PerpsMarketItem(
     quoteColorReversed: Boolean = false,
     onClick: () -> Unit = {}
 ) {
-    val change = try {
-        BigDecimal(market.change)
-    } catch (e: Exception) {
-        BigDecimal.ZERO
-    }
-    val changePercent = change.multiply(BigDecimal(100))
-
-    val isPositive = change >= BigDecimal.ZERO
+    val changePercent = market.changePercent()
+    val isPositive = changePercent >= BigDecimal.ZERO
     val changeColor = if (isPositive) {
         if (quoteColorReversed) {
             MixinAppTheme.colors.walletRed

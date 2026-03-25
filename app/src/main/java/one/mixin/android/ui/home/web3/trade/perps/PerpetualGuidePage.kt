@@ -19,8 +19,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -51,6 +49,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.ui.home.web3.components.OutlinedTab
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.widget.components.DotText
+import one.mixin.android.widget.components.MixinButton
 import java.math.BigDecimal
 import java.math.RoundingMode
 import kotlin.math.roundToInt
@@ -541,25 +540,14 @@ private fun GuideNavigationButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
-    Button(
+    MixinButton(
         modifier = modifier.height(48.dp),
         onClick = onClick,
-        colors = ButtonDefaults.outlinedButtonColors(
-            backgroundColor = MixinAppTheme.colors.accent,
-            contentColor = Color.White,
-        ),
         shape = RoundedCornerShape(32.dp),
-        elevation = ButtonDefaults.elevation(
-            pressedElevation = 0.dp,
-            defaultElevation = 0.dp,
-            hoveredElevation = 0.dp,
-            focusedElevation = 0.dp,
-        ),
     ) {
         Text(
             text = text,
             fontSize = 16.sp,
-            fontWeight = FontWeight.Bold,
             color = Color.White,
         )
     }

@@ -342,7 +342,6 @@ fun ImportErrorContent(
                     Text(
                         text = stringResource(id = R.string.Done),
                         color = MixinAppTheme.colors.accent,
-                        fontWeight = FontWeight.Medium,
                     )
                 }
             } else {
