@@ -231,7 +231,7 @@ class ReferralBindPreviewBottomSheetDialogFragment : MixinComposeBottomSheetDial
                                 colors = androidx.compose.material.ButtonDefaults.outlinedButtonColors(
                                     backgroundColor = MixinAppTheme.colors.accent
                                 ),
-                                shape = RoundedCornerShape(20.dp),
+                                shape = RoundedCornerShape(30.dp),
                                 contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 36.dp, vertical = 11.dp)
                             ) {
                                 Text(

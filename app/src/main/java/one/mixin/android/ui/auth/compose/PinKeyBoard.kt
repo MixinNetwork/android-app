@@ -194,7 +194,7 @@ fun PinKeyBoard(
                             onResetClick?.invoke()
                         },
                         contentPadding = PaddingValues(horizontal = 20.dp),
-                        shape = RoundedCornerShape(20.dp),
+                        shape = RoundedCornerShape(30.dp),
                     ) {
                         Text(
                             fontSize = 16.sp,
