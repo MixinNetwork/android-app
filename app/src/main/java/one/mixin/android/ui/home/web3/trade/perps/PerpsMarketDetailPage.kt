@@ -20,8 +20,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
+import one.mixin.android.widget.components.MixinButton
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -290,34 +289,24 @@ fun PerpsMarketDetailPage(
                         .padding(bottom = 16.dp, top = 8.dp)
                 ) {
                     if (currentPosition != null) {
-                        Button(
+                        MixinButton(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(48.dp),
                             onClick = {
-                                val activity = context as? FragmentActivity ?: return@Button
+                                val activity = context as? FragmentActivity ?: return@MixinButton
                                 val position = currentPosition.toPosition()
 
                                 PerpsCloseBottomSheetDialogFragment.newInstance(
                                     position = position,
                                 ).show(activity.supportFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)
                             },
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                backgroundColor = MixinAppTheme.colors.accent
-                            ),
+                            backgroundColor = MixinAppTheme.colors.accent,
+                            contentColor = Color.White,
                             shape = RoundedCornerShape(32.dp),
-                            elevation = ButtonDefaults.elevation(
-                                pressedElevation = 0.dp,
-                                defaultElevation = 0.dp,
-                                hoveredElevation = 0.dp,
-                                focusedElevation = 0.dp
-                            )
                         ) {
                             Text(
                                 text = stringResource(R.string.Close_Position),
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
                             )
                         }
                     } else {
@@ -325,7 +314,7 @@ fun PerpsMarketDetailPage(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            Button(
+                            MixinButton(
                                 modifier = Modifier
                                     .weight(1f)
                                     .height(48.dp),
@@ -339,26 +328,16 @@ fun PerpsMarketDetailPage(
                                         isLong = true
                                     )
                                 },
-                                colors = ButtonDefaults.outlinedButtonColors(
-                                    backgroundColor = risingColor
-                                ),
+                                backgroundColor = risingColor,
+                                contentColor = Color.White,
                                 shape = RoundedCornerShape(32.dp),
-                                elevation = ButtonDefaults.elevation(
-                                    pressedElevation = 0.dp,
-                                    defaultElevation = 0.dp,
-                                    hoveredElevation = 0.dp,
-                                    focusedElevation = 0.dp
-                                )
                             ) {
                                 Text(
                                     text = stringResource(R.string.Long),
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White
                                 )
                             }
 
-                            Button(
+                            MixinButton(
                                 modifier = Modifier
                                     .weight(1f)
                                     .height(48.dp),
@@ -372,22 +351,12 @@ fun PerpsMarketDetailPage(
                                         isLong = false
                                     )
                                 },
-                                colors = ButtonDefaults.outlinedButtonColors(
-                                    backgroundColor = fallingColor
-                                ),
+                                backgroundColor = fallingColor,
+                                contentColor = Color.White,
                                 shape = RoundedCornerShape(32.dp),
-                                elevation = ButtonDefaults.elevation(
-                                    pressedElevation = 0.dp,
-                                    defaultElevation = 0.dp,
-                                    hoveredElevation = 0.dp,
-                                    focusedElevation = 0.dp
-                                )
                             ) {
                                 Text(
                                     text = stringResource(R.string.Short),
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White
                                 )
                             }
                         }

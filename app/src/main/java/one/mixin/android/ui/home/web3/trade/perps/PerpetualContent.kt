@@ -18,8 +18,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
+import one.mixin.android.widget.components.MixinButton
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -478,7 +477,7 @@ fun PerpetualContent(
                 .padding(horizontal = 16.dp, vertical = 24.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Button(
+            MixinButton(
                 onClick = {
                     onShowMarketList(true)
                 },
@@ -486,25 +485,15 @@ fun PerpetualContent(
                     .weight(1f)
                     .height(48.dp),
                 shape = RoundedCornerShape(24.dp),
-                colors = ButtonDefaults.buttonColors(
-                    backgroundColor = risingColor,
-                    contentColor = Color.White
-                ),
-                elevation = ButtonDefaults.elevation(
-                    pressedElevation = 0.dp,
-                    defaultElevation = 0.dp,
-                    hoveredElevation = 0.dp,
-                    focusedElevation = 0.dp,
-                ),
+                backgroundColor = risingColor,
+                contentColor = Color.White,
             ) {
                 Text(
                     text = stringResource(R.string.Long),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold
                 )
             }
 
-            Button(
+            MixinButton(
                 onClick = {
                     onShowMarketList(false)
                 },
@@ -512,22 +501,12 @@ fun PerpetualContent(
                     .weight(1f)
                     .height(48.dp),
                 shape = RoundedCornerShape(24.dp),
-                colors = ButtonDefaults.buttonColors(
-                    backgroundColor = fallingColor,
-                    contentColor = Color.White
-                ),
+                backgroundColor = fallingColor,
+                contentColor = Color.White,
                 enabled = markets.isNotEmpty(),
-                elevation = ButtonDefaults.elevation(
-                    pressedElevation = 0.dp,
-                    defaultElevation = 0.dp,
-                    hoveredElevation = 0.dp,
-                    focusedElevation = 0.dp,
-                ),
             ) {
                 Text(
                     text = stringResource(R.string.Short),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold
                 )
             }
         }
