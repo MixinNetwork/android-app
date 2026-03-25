@@ -22,8 +22,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
+import one.mixin.android.widget.components.MixinButton
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -568,40 +567,40 @@ fun OpenPositionPage(
                     Spacer(modifier = Modifier.height(8.dp))
                 }
 
-                Button(
+                MixinButton(
                     modifier = Modifier
                         .padding(horizontal = 20.dp)
                         .fillMaxWidth()
                         .height(48.dp),
                     onClick = {
-                        val token = currentToken ?: return@Button
-                        val amount = usdtAmount.toBigDecimalOrNull() ?: return@Button
+                        val token = currentToken ?: return@MixinButton
+                        val amount = usdtAmount.toBigDecimalOrNull() ?: return@MixinButton
 
-                        if (amount <= BigDecimal.ZERO) return@Button
+                        if (amount <= BigDecimal.ZERO) return@MixinButton
                         if (minimumMargin > BigDecimal.ZERO && amount < minimumMargin) {
                             errorInfo = context.getString(
                                 R.string.perps_minimum_margin,
                                 minimumMargin.stripTrailingZeros().toPlainString()
                             )
-                            return@Button
+                            return@MixinButton
                         }
                         if (maximumMargin > BigDecimal.ZERO && amount > maximumMargin) {
                             errorInfo = context.getString(
                                 R.string.perps_maximum_margin,
                                 maximumMargin.stripTrailingZeros().toPlainString()
                             )
-                            return@Button
+                            return@MixinButton
                         }
-                        if (amount > (token.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO)) return@Button
+                        if (amount > (token.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO)) return@MixinButton
 
                         val m = currentMarket
                         val walletId = Session.getAccountId() ?: "" // Privacy Wallet
-                        if (walletId.isEmpty()) return@Button
+                        if (walletId.isEmpty()) return@MixinButton
 
-                        val activity = context as? FragmentActivity ?: return@Button
+                        val activity = context as? FragmentActivity ?: return@MixinButton
 
                         val price = m.markPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
-                        if (price == BigDecimal.ZERO) return@Button
+                        if (price == BigDecimal.ZERO) return@MixinButton
 
 
                         scope.launch {
@@ -645,31 +644,23 @@ fun OpenPositionPage(
                         }
                     },
                     enabled = canReview,
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        backgroundColor = if (canReview) {
-                            MixinAppTheme.colors.accent
-                        } else {
-                            MixinAppTheme.colors.backgroundGrayLight
-                        }
-                    ),
+                    backgroundColor = if (canReview) {
+                        MixinAppTheme.colors.accent
+                    } else {
+                        MixinAppTheme.colors.backgroundGrayLight
+                    },
+                    contentColor = if (canReview) {
+                        Color.White
+                    } else {
+                        MixinAppTheme.colors.textAssist
+                    },
                     shape = RoundedCornerShape(32.dp),
-                    elevation = ButtonDefaults.elevation(
-                        pressedElevation = 0.dp,
-                        defaultElevation = 0.dp,
-                        hoveredElevation = 0.dp,
-                        focusedElevation = 0.dp
-                    )
                 ) {
                     Text(
                         text = if (insufficientBalance) {
                             "${currentToken?.symbol ?: ""} ${stringResource(R.string.insufficient_balance)}"
                         } else {
                             stringResource(R.string.Review)
-                        },
-                        color = if (canReview) {
-                            Color.White
-                        } else {
-                            MixinAppTheme.colors.textAssist
                         }
                     )
                 }
