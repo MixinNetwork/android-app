@@ -759,7 +759,7 @@ fun ActionBottom(
         ActionButton(
             text = cancelTitle,
             onClick = cancelAction,
-            backgroundColor = MixinAppTheme.colors.backgroundGray,
+            backgroundColor = MixinAppTheme.colors.backgroundWindow,
             contentColor = MixinAppTheme.colors.textPrimary
         )
         Box(modifier = Modifier.width(36.dp))
