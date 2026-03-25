@@ -69,6 +69,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.home.web3.trade.InputContent
 import one.mixin.android.ui.home.web3.trade.KeyboardAwareBox
 import one.mixin.android.ui.home.web3.trade.SwapActivity
+import one.mixin.android.ui.home.web3.trade.TradeFragment
 import one.mixin.android.ui.home.web3.components.InputAction
 import one.mixin.android.ui.wallet.AddFeeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletActivity
@@ -79,6 +80,7 @@ import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
 import java.math.RoundingMode
 import kotlin.math.abs
+import kotlin.math.roundToInt
 
 private fun getLeveragePrefKey(marketId: String) = "pref_perps_leverage_$marketId"
 private const val MARKET_REFRESH_INTERVAL_MS = 5_000L
@@ -338,6 +340,9 @@ fun OpenPositionPage(
                                         .apply {
                                             onAction = { type, addToken ->
                                                 if (type == AddFeeBottomSheetDialogFragment.ActionType.SWAP) {
+                                                    val currentWalletId = Session.getAccountId() ?: ""
+                                                    val preferenceKey = "${TradeFragment.PREF_TRADE_SELECTED_TAB_PREFIX}$currentWalletId"
+                                                    context.defaultSharedPreferences.putInt(preferenceKey, 0)
                                                     SwapActivity.show(
                                                         context = activity,
                                                         input = Constants.AssetId.USDT_ASSET_ETH_ID,
@@ -737,31 +742,32 @@ private fun calculateProfitInfo(
     fiatSymbol: String,
 ): String {
     val amountValue = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val leverageInt = leverage.roundToInt()
     if (amountValue == BigDecimal.ZERO) {
         return if (isLong) {
-            stringResource(R.string.Price_Up_Profit, "1", "0.0", "${fiatSymbol}0.00")
+            stringResource(R.string.Price_Up_Profit, "1", leverageInt.toString(), "${fiatSymbol}0.00")
         } else {
-            stringResource(R.string.Price_Down_Profit, "1", "0.0", "${fiatSymbol}0.00")
+            stringResource(R.string.Price_Down_Profit, "1", leverageInt.toString(), "${fiatSymbol}0.00")
         }
     }
 
-    val profitPercent = priceChangePercent * leverage
+    val profitPercent = leverageInt
     val profitAmount = amountValue
-        .multiply(BigDecimal(profitPercent / 100))
+        .multiply(BigDecimal(profitPercent).divide(BigDecimal(100)))
         .multiply(fiatRate)
 
     return if (isLong) {
         stringResource(
             R.string.Price_Up_Profit,
             String.format("%.0f", abs(priceChangePercent)),
-            String.format("%.1f", profitPercent),
+            profitPercent.toString(),
             "${fiatSymbol}${profitAmount.priceFormat()}"
         )
     } else {
         stringResource(
             R.string.Price_Down_Profit,
             String.format("%.0f", abs(priceChangePercent)),
-            String.format("%.1f", profitPercent),
+            profitPercent.toString(),
             "${fiatSymbol}${profitAmount.priceFormat()}"
         )
     }

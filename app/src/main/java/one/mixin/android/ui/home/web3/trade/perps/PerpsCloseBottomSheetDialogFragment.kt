@@ -23,8 +23,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -71,6 +69,7 @@ import one.mixin.android.ui.tip.wc.compose.ItemWalletContent
 import one.mixin.android.ui.wallet.ItemUserContent
 import one.mixin.android.ui.wallet.components.WalletLabel
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.widget.components.MixinButton
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
@@ -367,26 +366,17 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                         BigDecimal.ZERO
                     }
 
-                    val formattedRoe = try {
+                    val pnlPercent = try {
                         val marginValue = BigDecimal(margin)
                         if (marginValue <= BigDecimal.ZERO) {
-                            "0"
+                            BigDecimal.ZERO
                         } else {
                             BigDecimal(latestUnrealizedPnl)
                                 .divide(marginValue, 8, RoundingMode.HALF_UP)
                                 .multiply(BigDecimal(100))
-                                .stripTrailingZeros()
-                                .toPlainString()
                         }
                     } catch (e: Exception) {
-                        "0"
-                    }
-                    val formattedPnlFiat = try {
-                        val pnlFiat = pnl.multiply(fiatRate)
-                        val sign = if (pnlFiat >= BigDecimal.ZERO) "+" else "-"
-                        "$sign$fiatSymbol${pnlFiat.abs().priceFormat()}"
-                    } catch (e: Exception) {
-                        "${fiatSymbol}0"
+                        BigDecimal.ZERO
                     }
 
                     Column(
@@ -395,7 +385,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                             .padding(horizontal = 20.dp),
                     ) {
                         Text(
-                            text = stringResource(R.string.Perpetual),
+                            text = stringResource(R.string.perps_market).uppercase(),
                             color = MixinAppTheme.colors.textRemarks,
                             fontSize = 14.sp,
                         )
@@ -420,7 +410,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                         Box(modifier = Modifier.height(20.dp))
                         settleAssetItem?.let { asset ->
                             Text(
-                                text = stringResource(R.string.Estimated_Receive),
+                                text = stringResource(R.string.Estimated_Receive).uppercase(),
                                 color = MixinAppTheme.colors.textRemarks,
                                 fontSize = 14.sp,
                             )
@@ -458,7 +448,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                                 fontSize = 14.sp
                             )
                             Text(
-                                text = "${if (pnl >= BigDecimal.ZERO) "+" else ""}${latestUnrealizedPnl} $settleAssetSymbol ($formattedRoe%)",
+                                text = "${formatPerpsSignedFiatDecimal(pnl.multiply(fiatRate), fiatSymbol)}(${formatPerpsSignedPercent(pnlPercent)})",
                                 color = pnlColor,
                                 fontSize = 14.sp
                             )
@@ -484,14 +474,11 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                                     .fillMaxWidth(),
                                 horizontalArrangement = Arrangement.Center,
                             ) {
-                                Button(
+                                MixinButton(
                                     onClick = {
                                         onDoneAction?.invoke()
                                         dismiss()
                                     },
-                                    colors = ButtonDefaults.outlinedButtonColors(
-                                        backgroundColor = MixinAppTheme.colors.accent,
-                                    ),
                                     shape = RoundedCornerShape(20.dp),
                                     contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
                                 ) {

@@ -130,7 +130,7 @@ fun OpenPositionItem(
         Column(horizontalAlignment = Alignment.End) {
             if (isOpening) {
                 Text(
-                    text = stringResource(R.string.Openning),
+                    text = stringResource(R.string.Pending),
                     fontSize = 14.sp,
                     color = MixinAppTheme.colors.textAssist
                 )
@@ -138,7 +138,7 @@ fun OpenPositionItem(
                 val marginFiat = margin.multiply(fiatRate)
                 Text(
                     text = formatPerpsFiatDecimal(marginFiat, fiatSymbol),
-                    fontSize = 16.sp,
+                    fontSize = 14.sp,
                     color = MixinAppTheme.colors.textPrimary
                 )
                 Spacer(modifier = Modifier.height(2.dp))

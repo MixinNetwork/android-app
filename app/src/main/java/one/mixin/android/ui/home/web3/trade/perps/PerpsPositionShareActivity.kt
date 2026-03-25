@@ -242,9 +242,7 @@ class PerpsPositionShareActivity : BaseActivity() {
     }
 
     private val onCopy: () -> Unit = {
-        val marketId = position?.marketId ?: positionHistory?.marketId
-        val marketLink = marketId?.let { "$HTTPS_TRADE?type=perps&market=$it" } ?: HTTPS_TRADE
-        val link = Session.getAccount()?.identityNumber?.let { "$marketLink&referral=$it" } ?: marketLink
+        val link = Session.getAccount()?.identityNumber?.let { "$SHARE_QR_URL&referral=$it" } ?: SHARE_QR_URL
         getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, link))
         finish()
         toast(R.string.copied_to_clipboard)

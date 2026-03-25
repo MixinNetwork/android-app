@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home.web3.trade
 
+import android.util.TypedValue
 import android.view.View
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -49,7 +50,6 @@ class ClosedPositionAdapter(
         fun bind(position: PerpsPositionHistoryItem, positionInList: Int, listSize: Int) {
             binding.apply {
                 val context = binding.root.context
-
                 root.setBackgroundResource(
                     when {
                         listSize <= 1 -> R.drawable.bg_card
@@ -79,7 +79,8 @@ class ClosedPositionAdapter(
                     }
                 )
                 val displaySymbol = position.tokenSymbol ?: context.getString(R.string.Unknown)
-                titleTv.text = context.getString(R.string.Perpetual_Side_Symbol_Title, sideText, displaySymbol)
+                val title = context.getString(R.string.Perpetual_Side_Symbol_Title, sideText, displaySymbol)
+                titleTv.text = title
 
                 leverageTv.isVisible = true
                 leverageTv.text = "${position.leverage}x"
@@ -106,6 +107,10 @@ class ClosedPositionAdapter(
                     closePrice = position.closePrice,
                     side = position.side,
                     leverage = position.leverage,
+                )
+                rightTopValueTv.setTextSize(
+                    TypedValue.COMPLEX_UNIT_SP,
+                    14f
                 )
                 rightTopValueTv.text = "${formatSignedUsd(pnl)}(${formatPerpsSignedPercent(pnlPercent)})"
                 rightTopValueTv.setTextColor(

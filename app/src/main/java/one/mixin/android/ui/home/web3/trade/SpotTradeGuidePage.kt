@@ -176,7 +176,7 @@ private fun OverviewContent() {
         title = stringResource(R.string.Perpetual_Guide_Overview_Title),
         description = stringResource(R.string.Spot_Trade_Guide_Overview_Desc),
         sections = listOf(
-            stringResource(R.string.Perpetual_Features) to listOf(
+            stringResource(R.string.Product_Features) to listOf(
                 stringResource(R.string.Spot_Trade_Guide_Feature_1),
                 stringResource(R.string.Spot_Trade_Guide_Feature_2),
             ),

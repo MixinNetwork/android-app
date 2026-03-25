@@ -13,8 +13,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -39,6 +37,7 @@ import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 import one.mixin.android.ui.landing.components.NumberedText
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.widget.components.MixinButton
 import one.mixin.android.extension.dp as dip
 
 class LightningAddressBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
@@ -118,17 +117,13 @@ class LightningAddressBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
                             context?.openUrl(getString(R.string.Lightning_link))
                         }
                         Spacer(modifier = Modifier.height(120.dp))
-                        Button(
+                        MixinButton(
                             onClick = {
                                 context?.heavyClickVibrate()
                                 context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, address))
                                 toast(R.string.copied_to_clipboard)
                                 dismiss()
                             },
-                            colors =
-                                ButtonDefaults.outlinedButtonColors(
-                                    backgroundColor = MixinAppTheme.colors.accent,
-                                ),
                             shape = RoundedCornerShape(20.dp),
                             contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
                         ) {
