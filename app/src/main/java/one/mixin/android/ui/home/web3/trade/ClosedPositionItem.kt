@@ -47,7 +47,6 @@ fun ClosedPositionItem(
     onClick: () -> Unit = {},
 ) {
     val context = LocalContext.current
-    val isSmallScreen = context.resources.configuration.screenWidthDp <= SMALL_SCREEN_WIDTH_DP
     val quoteColorPref = context.defaultSharedPreferences
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     val fiatRate = BigDecimal(Fiats.getRate())
@@ -128,15 +127,8 @@ fun ClosedPositionItem(
                         stringResource(R.string.Short)
                     }
                     Text(
-                        text = buildAnnotatedString {
-                            withStyle(
-                                SpanStyle(
-                                    fontSize = if (isSmallScreen) 12.sp else 14.sp
-                                )
-                            ) {
-                                append(sideText)
-                            }
-                        },
+                        text = sideText,
+                        fontSize = 16.sp,
                         color = MixinAppTheme.colors.textPrimary,
                     )
                     Spacer(modifier = Modifier.width(6.dp))
