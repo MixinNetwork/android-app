@@ -480,7 +480,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                                         dismiss()
                                     },
                                     shape = RoundedCornerShape(30.dp),
-                                    contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
+                                    contentPadding = PaddingValues(horizontal = 35.dp, vertical = 10.dp),
                                 ) {
                                     Text(text = stringResource(id = R.string.Done), fontSize = 16.sp, color = Color.White)
                                 }
@@ -510,7 +510,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                         Step.Sending -> {}
                     }
                 }
-                Box(modifier = Modifier.height(36.dp))
+                Box(modifier = Modifier.height(32.dp))
             }
         }
     }

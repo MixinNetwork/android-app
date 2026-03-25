@@ -415,7 +415,7 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                         Step.Sending -> {}
                     }
                 }
-                Box(modifier = Modifier.height(36.dp))
+                Box(modifier = Modifier.height(32.dp))
             }
         }
     }

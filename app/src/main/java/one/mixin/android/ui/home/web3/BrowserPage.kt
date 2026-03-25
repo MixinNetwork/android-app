@@ -441,7 +441,7 @@ fun BrowserPage(
                         MixinButton(
                             onClick = onDismissRequest,
                             shape = RoundedCornerShape(30.dp),
-                            contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
+                            contentPadding = PaddingValues(horizontal = 35.dp, vertical = 10.dp),
                         ) {
                             Text(fontSize = 16.sp, text = stringResource(id = if (step == WalletConnectBottomSheetDialogFragment.Step.Done) R.string.Done else R.string.Got_it), color = Color.White)
                         }

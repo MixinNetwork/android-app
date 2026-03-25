@@ -269,7 +269,7 @@ class ReferralBindPreviewBottomSheetDialogFragment : MixinComposeBottomSheetDial
                         // No buttons during sending
                     }
                 }
-                Box(modifier = Modifier.height(36.dp))
+                Box(modifier = Modifier.height(32.dp))
             }
         }
     }
