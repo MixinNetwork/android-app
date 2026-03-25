@@ -83,7 +83,7 @@ fun SpotTradeGuidePage(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val tabs = listOf(
-        stringResource(R.string.Overview),
+        stringResource(R.string.Brief_Introduction),
         stringResource(R.string.Trade_Simple),
         stringResource(R.string.Trade_Advanced),
     )
@@ -173,16 +173,15 @@ fun SpotTradeGuidePage(
 @Composable
 private fun OverviewContent() {
     TradeGuideInfoCard(
-        title = stringResource(R.string.Perpetual_Guide_Overview_Title),
+        title = stringResource(R.string.Overview),
         description = stringResource(R.string.Spot_Trade_Guide_Overview_Desc),
         sections = listOf(
             stringResource(R.string.Product_Features) to listOf(
                 stringResource(R.string.Spot_Trade_Guide_Feature_1),
                 stringResource(R.string.Spot_Trade_Guide_Feature_2),
             ),
-            stringResource(R.string.Spot_Trade_Guide_Additional_Notes) to listOf(
+            stringResource(R.string.Spot_Trade_Guide_Fees) to listOf(
                 stringResource(R.string.Spot_Trade_Guide_Note_1),
-                stringResource(R.string.Spot_Trade_Guide_Note_2),
             ),
         )
     )
@@ -193,19 +192,19 @@ private fun SimpleSwapContent() {
     SpotTradeExampleCard(limitStrategy = null)
     Spacer(modifier = Modifier.height(16.dp))
     TradeGuideInfoCard(
-        title = stringResource(R.string.Brief_Introduction),
+        title = stringResource(R.string.Overview),
         description = stringResource(R.string.Spot_Trade_Guide_Swap_Desc),
         sections = listOf(
-            stringResource(R.string.Spot_Trade_Guide_Suitable_Scenarios) to listOf(
+            stringResource(R.string.Spot_Trade_Guide_Use_Cases) to listOf(
                 stringResource(R.string.Spot_Trade_Guide_Swap_Scenario_1),
                 stringResource(R.string.Spot_Trade_Guide_Swap_Scenario_2),
                 stringResource(R.string.Spot_Trade_Guide_Swap_Scenario_3),
             ),
-            stringResource(R.string.Spot_Trade_Guide_Quote_Explanation) to listOf(
+            stringResource(R.string.Spot_Trade_Guide_Pricing) to listOf(
                 stringResource(R.string.Spot_Trade_Guide_Swap_Quote_1),
                 stringResource(R.string.Spot_Trade_Guide_Swap_Quote_2),
             ),
-            stringResource(R.string.Perpetual_Risk_Warning) to listOf(
+            stringResource(R.string.Risk_Notice) to listOf(
                 stringResource(R.string.Spot_Trade_Guide_Swap_Risk),
             ),
         )
@@ -217,16 +216,15 @@ private fun LimitTradeContent() {
     SpotTradeExampleCard(limitStrategy = LimitStrategy.BuyLow)
     Spacer(modifier = Modifier.height(16.dp))
     TradeGuideInfoCard(
-        title = stringResource(R.string.Brief_Introduction),
+        title = stringResource(R.string.Overview),
         description = stringResource(R.string.Spot_Trade_Guide_Limit_Desc),
         sections = listOf(
-            stringResource(R.string.Spot_Trade_Guide_Suitable_Scenarios) to listOf(
+            stringResource(R.string.Spot_Trade_Guide_Use_Cases) to listOf(
                 stringResource(R.string.Spot_Trade_Guide_Limit_Scenario_1),
                 stringResource(R.string.Spot_Trade_Guide_Limit_Scenario_2),
                 stringResource(R.string.Spot_Trade_Guide_Limit_Scenario_3),
-                stringResource(R.string.Spot_Trade_Guide_Limit_Scenario_4),
             ),
-            stringResource(R.string.Perpetual_Risk_Warning) to listOf(
+            stringResource(R.string.Risk_Notice) to listOf(
                 stringResource(R.string.Spot_Trade_Guide_Limit_Risk),
             ),
         )
@@ -331,7 +329,7 @@ private fun SpotTradeExampleCard(
         if (limitStrategy != null) {
             Spacer(modifier = Modifier.height(16.dp))
             ExampleValueRow(
-                title = stringResource(R.string.Trade_Guide_Order_Price),
+                title = stringResource(R.string.Trade_Guide_Limit_Price),
                 value = {
                     OrderPriceStepper(
                         price = effectivePrice,
@@ -349,7 +347,7 @@ private fun SpotTradeExampleCard(
         }
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = if (limitStrategy == null) stringResource(R.string.Trade_Guide_Exchange_Price) else stringResource(R.string.Trade_Guide_Current_Price),
+            text = stringResource(R.string.Trade_Guide_Market_Price),
             fontSize = 14.sp,
             lineHeight = 20.sp,
             color = MixinAppTheme.colors.textPrimary,
@@ -373,7 +371,7 @@ private fun SpotTradeExampleCard(
         }
         Spacer(modifier = Modifier.height(16.dp))
         ExampleValueRow(
-            title = stringResource(R.string.Estimated_Receive),
+            title = stringResource(R.string.Spot_Trade_Guide_You_Receive),
             value = {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -407,7 +405,7 @@ private fun StrategyRow(
     onStrategySelected: (LimitStrategy) -> Unit,
 ) {
     ExampleValueRow(
-        title = stringResource(R.string.Trade_Guide_Trading_Strategy),
+        title = stringResource(R.string.Trade_Guide_Strategy),
         value = {
             Row(modifier = Modifier
                 .clip(RoundedCornerShape(6.dp))
@@ -711,7 +709,7 @@ private fun TradeGuideInfoCard(
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = sectionTitle,
-                fontSize = 16.sp,
+                fontSize = 14.sp,
                 fontWeight = FontWeight.W500,
                 color = MixinAppTheme.colors.textPrimary,
             )
