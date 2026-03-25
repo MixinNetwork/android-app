@@ -514,15 +514,10 @@ private fun MarketDetailCard(
     val fiatRate = BigDecimal(Fiats.getRate())
     val fiatSymbol = Fiats.getSymbol()
 
-    val change = try {
-        BigDecimal(market.change).multiply(BigDecimal(100)).stripTrailingZeros()
-    } catch (e: Exception) {
-        BigDecimal.ZERO
-    }
-
-    val isPositive = change >= BigDecimal.ZERO
+    val changePercent = market.changePercent()
+    val isPositive = changePercent >= BigDecimal.ZERO
     val changeColor = if (isPositive) risingColor else fallingColor
-    val changeText = "${if (isPositive) "+" else ""}${change}%"
+    val changeText = formatPerpsSignedPercent(changePercent)
     val displayTokenSymbol = tokenSymbol
         .takeIf { it.isNotBlank() }
         ?: market.tokenSymbol.takeIf { it.isNotBlank() }
