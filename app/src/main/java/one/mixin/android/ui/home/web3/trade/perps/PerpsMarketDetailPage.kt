@@ -421,28 +421,26 @@ private fun MarketInfoCard(
     ) {
         Text(
             text = stringResource(R.string.Volume_24H).uppercase(),
-            fontSize = 12.sp,
+            fontSize = 14.sp,
             color = MixinAppTheme.colors.textAssist
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = formatVolume(market.volume, fiatRate, fiatSymbol),
             fontSize = 16.sp,
-            fontWeight = FontWeight.Medium,
             color = MixinAppTheme.colors.textPrimary
         )
 
         Spacer(modifier = Modifier.height(12.dp))
         Text(
             text = stringResource(R.string.Funding_Rate).uppercase(),
-            fontSize = 12.sp,
+            fontSize = 14.sp,
             color = MixinAppTheme.colors.textAssist
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = formatFundingRate(market.fundingRate),
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium,
+            fontSize = 16.sp,
             color = MixinAppTheme.colors.textPrimary
         )
     }
