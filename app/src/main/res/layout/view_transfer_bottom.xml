@@ -26,9 +26,10 @@
             android:layout_gravity="center_horizontal|bottom"
             android:text="@string/Cancel"
             android:layout_marginEnd="36dp"
-            android:textSize="14sp"
+            android:textSize="16sp"
             android:gravity="center"
             android:textAllCaps="false"
+            android:textFontWeight="400"
             android:includeFontPadding="false" />
 
         <Button
@@ -79,9 +80,10 @@
             android:layout_gravity="center_horizontal|bottom"
             android:text="@string/Cancel"
             android:layout_marginEnd="36dp"
-            android:textSize="14sp"
+            android:textSize="16sp"
             android:gravity="center"
             android:textAllCaps="false"
+            android:textFontWeight="400"
             android:includeFontPadding="false" />
 
         <Button
@@ -95,7 +97,7 @@
             android:text="@string/Retry"
             android:textAllCaps="false"
             android:textFontWeight="400"
-            android:textSize="14sp" />
+            android:textSize="16sp" />
 
     </LinearLayout>
 
