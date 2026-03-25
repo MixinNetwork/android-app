@@ -499,8 +499,6 @@ fun PerpetualContent(
             ) {
                 Text(
                     text = stringResource(R.string.Long),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold
                 )
             }
 
@@ -526,8 +524,6 @@ fun PerpetualContent(
             ) {
                 Text(
                     text = stringResource(R.string.Short),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold
                 )
             }
         }

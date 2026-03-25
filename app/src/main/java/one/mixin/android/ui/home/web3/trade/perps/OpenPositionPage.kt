@@ -666,8 +666,6 @@ fun OpenPositionPage(
                         } else {
                             stringResource(R.string.Review)
                         },
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
                         color = if (canReview) {
                             Color.White
                         } else {

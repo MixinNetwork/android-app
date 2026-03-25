@@ -315,8 +315,6 @@ fun PerpsMarketDetailPage(
                         ) {
                             Text(
                                 text = stringResource(R.string.Close_Position),
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
                                 color = Color.White
                             )
                         }
@@ -352,8 +350,6 @@ fun PerpsMarketDetailPage(
                             ) {
                                 Text(
                                     text = stringResource(R.string.Long),
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Bold,
                                     color = Color.White
                                 )
                             }
@@ -385,8 +381,6 @@ fun PerpsMarketDetailPage(
                             ) {
                                 Text(
                                     text = stringResource(R.string.Short),
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Bold,
                                     color = Color.White
                                 )
                             }
