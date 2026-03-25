@@ -432,6 +432,12 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                         backgroundColor = MixinAppTheme.colors.accent,
                                     ),
                                     shape = RoundedCornerShape(20.dp),
+                                    elevation = ButtonDefaults.elevation(
+                                        pressedElevation = 0.dp,
+                                        defaultElevation = 0.dp,
+                                        hoveredElevation = 0.dp,
+                                        focusedElevation = 0.dp
+                                    ),
                                     contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
                                 ) {
                                     Text(text = stringResource(id = R.string.Done), color = Color.White)

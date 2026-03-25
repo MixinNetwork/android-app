@@ -124,6 +124,12 @@ fun LogViewerScreen(
                                     }
                                 },
                                 shape = RoundedCornerShape(32.dp),
+                                elevation = ButtonDefaults.elevation(
+                                    defaultElevation = 0.dp,
+                                    pressedElevation = 0.dp,
+                                    hoveredElevation = 0.dp,
+                                    focusedElevation = 0.dp,
+                                ),
                             ) {
                                 Text(text = stringResource(R.string.Share), color = MixinAppTheme.colors.accent)
                             }
@@ -139,6 +145,12 @@ fun LogViewerScreen(
                                     toast(R.string.copied_to_clipboard)
                                 },
                                 shape = RoundedCornerShape(32.dp),
+                                elevation = ButtonDefaults.elevation(
+                                    defaultElevation = 0.dp,
+                                    pressedElevation = 0.dp,
+                                    hoveredElevation = 0.dp,
+                                    focusedElevation = 0.dp,
+                                ),
                             ) {
                                 Text(text = stringResource(R.string.Copy), color = Color.White)
                             }
@@ -158,6 +170,12 @@ fun LogViewerScreen(
                                 shape = RoundedCornerShape(32.dp),
                                 colors = ButtonDefaults.outlinedButtonColors(
                                     backgroundColor =  MixinAppTheme.colors.accent
+                                ),
+                                elevation = ButtonDefaults.elevation(
+                                    defaultElevation = 0.dp,
+                                    pressedElevation = 0.dp,
+                                    hoveredElevation = 0.dp,
+                                    focusedElevation = 0.dp,
                                 ),
                             ) {
                                 Text(text = stringResource(R.string.Done), color = Color.White)

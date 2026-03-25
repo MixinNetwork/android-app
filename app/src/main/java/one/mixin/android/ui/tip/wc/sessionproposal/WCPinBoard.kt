@@ -188,6 +188,12 @@ fun WCPinBoard(
                             ),
                         contentPadding = PaddingValues(horizontal = 28.dp),
                         shape = RoundedCornerShape(40.dp),
+                        elevation = ButtonDefaults.elevation(
+                            defaultElevation = 0.dp,
+                            pressedElevation = 0.dp,
+                            hoveredElevation = 0.dp,
+                            focusedElevation = 0.dp,
+                        ),
                     ) {
                         Text(
                             text = stringResource(id = R.string.Done),
@@ -218,6 +224,12 @@ fun WCPinBoard(
                             ),
                         contentPadding = PaddingValues(horizontal = 28.dp, vertical = 11.dp),
                         shape = RoundedCornerShape(40.dp),
+                        elevation = ButtonDefaults.elevation(
+                            defaultElevation = 0.dp,
+                            pressedElevation = 0.dp,
+                            hoveredElevation = 0.dp,
+                            focusedElevation = 0.dp,
+                        ),
                     ) {
                         if (signUnavailable) {
                             CircularProgressIndicator(
