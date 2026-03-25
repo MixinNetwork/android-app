@@ -37,8 +37,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -78,6 +76,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment.Step
 import one.mixin.android.util.BiometricUtil
+import one.mixin.android.widget.components.MixinButton
 
 @Composable
 fun WCPinBoard(
@@ -180,20 +179,10 @@ fun WCPinBoard(
                     Box(modifier = Modifier.height(12.dp))
                     Text(text = stringResource(R.string.Success), color = MixinAppTheme.colors.textMinor)
                     Box(modifier = Modifier.height(40.dp))
-                    Button(
+                    MixinButton(
                         onClick = { onDoneClick.invoke() },
-                        colors =
-                            ButtonDefaults.outlinedButtonColors(
-                                backgroundColor = MixinAppTheme.colors.accent,
-                            ),
                         contentPadding = PaddingValues(horizontal = 28.dp),
                         shape = RoundedCornerShape(40.dp),
-                        elevation = ButtonDefaults.elevation(
-                            defaultElevation = 0.dp,
-                            pressedElevation = 0.dp,
-                            hoveredElevation = 0.dp,
-                            focusedElevation = 0.dp,
-                        ),
                     ) {
                         Text(
                             text = stringResource(id = R.string.Done),
@@ -211,25 +200,15 @@ fun WCPinBoard(
                     verticalArrangement = Arrangement.SpaceEvenly,
                 ) {
                     Box(modifier = Modifier.height(20.dp))
-                    Button(
+                    MixinButton(
                         modifier = Modifier.widthIn(min = 100.dp),
                         onClick = {
                             if (!signUnavailable) {
                                 onPositiveClick.invoke()
                             }
                         },
-                        colors =
-                            ButtonDefaults.outlinedButtonColors(
-                                backgroundColor = MixinAppTheme.colors.accent,
-                            ),
                         contentPadding = PaddingValues(horizontal = 28.dp, vertical = 11.dp),
                         shape = RoundedCornerShape(40.dp),
-                        elevation = ButtonDefaults.elevation(
-                            defaultElevation = 0.dp,
-                            pressedElevation = 0.dp,
-                            hoveredElevation = 0.dp,
-                            focusedElevation = 0.dp,
-                        ),
                     ) {
                         if (signUnavailable) {
                             CircularProgressIndicator(

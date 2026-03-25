@@ -10,6 +10,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -46,26 +47,30 @@ fun MixinButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    shape: RoundedCornerShape = RoundedCornerShape(20.dp),
+    shape: Shape = RoundedCornerShape(20.dp),
     contentPadding: PaddingValues = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
     elevation: Dp = 0.dp,
     backgroundColor: Color = MixinAppTheme.colors.accent,
     contentColor: Color = Color.White,
+    disabledBackgroundColor: Color = backgroundColor.copy(alpha = 0.4f),
+    disabledContentColor: Color = contentColor.copy(alpha = 0.6f),
     content: @Composable () -> Unit,
 ) {
     Button(
         onClick = onClick,
         modifier = modifier,
         enabled = enabled,
-        colors = ButtonDefaults.outlinedButtonColors(
+        colors = ButtonDefaults.buttonColors(
             backgroundColor = backgroundColor,
             contentColor = contentColor,
+            disabledBackgroundColor = disabledBackgroundColor,
+            disabledContentColor = disabledContentColor,
         ),
         shape = shape,
         contentPadding = contentPadding,
         elevation = ButtonDefaults.elevation(
             defaultElevation = elevation,
-            pressedElevation = 0.dp,
+            pressedElevation = elevation,
             hoveredElevation = elevation,
             focusedElevation = elevation,
         ),

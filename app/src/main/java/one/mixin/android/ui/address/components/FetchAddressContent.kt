@@ -9,8 +9,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -25,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.widget.components.MixinButton
 
 @Composable
 fun FetchAddressContent(
@@ -96,25 +95,17 @@ fun FetchAddressContent(
                 }
 
                 FetchAddressState.RETRY -> {
-                    Button(
+                    MixinButton(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 48.dp)
                             .height(48.dp),
                         onClick = onRetry,
-                        colors = ButtonDefaults.buttonColors(
-                            backgroundColor = MixinAppTheme.colors.accent,
-                            disabledBackgroundColor = MixinAppTheme.colors.backgroundGrayLight,
-                            contentColor = Color.White,
-                            disabledContentColor = Color.White
-                        ),
                         shape = RoundedCornerShape(32.dp),
-                        elevation = ButtonDefaults.elevation(
-                            pressedElevation = 0.dp,
-                            defaultElevation = 0.dp,
-                            hoveredElevation = 0.dp,
-                            focusedElevation = 0.dp,
-                        ),
+                        backgroundColor = MixinAppTheme.colors.accent,
+                        contentColor = Color.White,
+                        disabledBackgroundColor = MixinAppTheme.colors.backgroundGrayLight,
+                        disabledContentColor = Color.White,
                     ) {
                         Text(
                             text = stringResource(id = R.string.Retry),
@@ -124,25 +115,17 @@ fun FetchAddressContent(
                 }
 
                 FetchAddressState.ERROR -> {
-                    Button(
+                    MixinButton(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 48.dp)
                             .height(48.dp),
                         onClick = onRetry,
-                        colors = ButtonDefaults.buttonColors(
-                            backgroundColor = MixinAppTheme.colors.accent,
-                            disabledBackgroundColor = MixinAppTheme.colors.backgroundGrayLight,
-                            contentColor = Color.White,
-                            disabledContentColor = Color.White
-                        ),
                         shape = RoundedCornerShape(32.dp),
-                        elevation = ButtonDefaults.elevation(
-                            pressedElevation = 0.dp,
-                            defaultElevation = 0.dp,
-                            hoveredElevation = 0.dp,
-                            focusedElevation = 0.dp,
-                        ),
+                        backgroundColor = MixinAppTheme.colors.accent,
+                        contentColor = Color.White,
+                        disabledBackgroundColor = MixinAppTheme.colors.backgroundGrayLight,
+                        disabledContentColor = Color.White,
                     ) {
                         Text(
                             text = stringResource(id = R.string.Retry),

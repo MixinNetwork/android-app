@@ -18,8 +18,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -44,6 +42,7 @@ import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.landing.components.HighlightedTextWithClick
+import one.mixin.android.widget.components.MixinButton
 import one.mixin.android.util.SystemUIManager
 
 @AndroidEntryPoint
@@ -134,22 +133,15 @@ class CreateAccountConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDia
                     descriptionResId = R.string.feature_all_in_one_description,
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                Button(
+                MixinButton(
                     modifier = Modifier
                         .fillMaxWidth(),
                     onClick = {
                         onCreateAccount?.invoke()
                         dismiss()
                     },
-                    colors = ButtonDefaults.outlinedButtonColors(backgroundColor = MixinAppTheme.colors.accent),
                     shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 36.dp, vertical = 11.dp),
-                    elevation = ButtonDefaults.elevation(
-                        defaultElevation = 0.dp,
-                        pressedElevation = 0.dp,
-                        hoveredElevation = 0.dp,
-                        focusedElevation = 0.dp,
-                    ),
                 ) {
                     Text(text = stringResource(R.string.create_account_confirm_action_create), color = Color.White)
                 }

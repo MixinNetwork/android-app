@@ -25,8 +25,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -79,6 +77,7 @@ import one.mixin.android.ui.tip.wc.compose.ItemWalletContent
 import one.mixin.android.ui.wallet.ItemUserContent
 import one.mixin.android.ui.wallet.components.WalletLabel
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.widget.components.MixinButton
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
@@ -423,21 +422,12 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                     .fillMaxWidth(),
                                 horizontalArrangement = Arrangement.Center,
                             ) {
-                                Button(
+                                MixinButton(
                                     onClick = {
                                         onDoneAction?.invoke()
                                         dismiss()
                                     },
-                                    colors = ButtonDefaults.outlinedButtonColors(
-                                        backgroundColor = MixinAppTheme.colors.accent,
-                                    ),
                                     shape = RoundedCornerShape(20.dp),
-                                    elevation = ButtonDefaults.elevation(
-                                        pressedElevation = 0.dp,
-                                        defaultElevation = 0.dp,
-                                        hoveredElevation = 0.dp,
-                                        focusedElevation = 0.dp
-                                    ),
                                     contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
                                 ) {
                                     Text(text = stringResource(id = R.string.Done), color = Color.White)
