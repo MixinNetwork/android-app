@@ -17,12 +17,6 @@ interface PerpsMarketDao : BaseDao<PerpsMarket> {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(markets: List<PerpsMarket>)
 
-    @Transaction
-    suspend fun replaceAll(markets: List<PerpsMarket>) {
-        deleteAll()
-        insertAll(markets)
-    }
-
     @Query("SELECT * FROM markets WHERE CAST(volume AS REAL) > 0 ORDER BY rowid ASC")
     suspend fun getAllMarkets(): List<PerpsMarket>
 

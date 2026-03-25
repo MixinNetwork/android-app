@@ -515,7 +515,7 @@ private fun MarketDetailCard(
     val fiatSymbol = Fiats.getSymbol()
 
     val change = try {
-        BigDecimal(market.change).multiply(BigDecimal(100))
+        BigDecimal(market.change).multiply(BigDecimal(100)).stripTrailingZeros()
     } catch (e: Exception) {
         BigDecimal.ZERO
     }
