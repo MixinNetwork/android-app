@@ -400,7 +400,6 @@ fun TransferDestinationInputPage(
                                 .align(Alignment.CenterHorizontally)
                                 .alpha(if (errorInfo.isNullOrBlank()) 0f else 1f)
                         )
-                        val isDisabled = text.isBlank().not() && isLoading
                         MixinButton(
                             modifier = Modifier
                                 .fillMaxWidth()
