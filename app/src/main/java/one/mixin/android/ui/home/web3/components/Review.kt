@@ -735,7 +735,7 @@ fun ActionButton(
         Text(
             text = text,
             color = if (enabled) contentColor else disabledContentColor,
-            fontWeight = FontWeight.W500
+            fontSize = 16.sp
         )
     }
 }

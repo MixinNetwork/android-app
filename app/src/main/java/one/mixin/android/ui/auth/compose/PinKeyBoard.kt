@@ -197,6 +197,7 @@ fun PinKeyBoard(
                         shape = RoundedCornerShape(20.dp),
                     ) {
                         Text(
+                            fontSize = 16.sp,
                             text = stringResource(id = R.string.Continue),
                             color = Color.White,
                         )

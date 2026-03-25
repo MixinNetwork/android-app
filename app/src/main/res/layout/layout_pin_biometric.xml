@@ -84,7 +84,8 @@
             android:paddingEnd="@dimen/margin20"
             android:enabled="true"
             android:text="@string/Continue"
-            android:textSize="14sp" />
+            android:textFontWeight="400"
+            android:textSize="16sp" />
     </LinearLayout>
 
     <LinearLayout
@@ -112,7 +113,8 @@
             android:paddingEnd="@dimen/margin20"
             android:enabled="true"
             android:text="@string/Done"
-            android:textSize="14sp" />
+            android:textFontWeight="400"
+            android:textSize="16sp" />
 
         <TextView
             android:id="@+id/enable_biometric_tv"
@@ -124,6 +126,8 @@
             android:textColor="@color/colorBlue"
             android:text="@string/setting_enable_biometric_pay"
             android:drawablePadding="@dimen/margin10"
+            android:textSize="16sp"
+            android:textFontWeight="400"
             app:drawableStartCompat="@drawable/ic_biometric_enable" />
     </LinearLayout>
 </merge>

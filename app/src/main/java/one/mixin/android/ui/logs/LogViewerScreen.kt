@@ -144,7 +144,7 @@ fun LogViewerScreen(
                                 },
                                 shape = RoundedCornerShape(32.dp),
                             ) {
-                                Text(text = stringResource(R.string.Copy), color = Color.White)
+                                Text(text = stringResource(R.string.Copy), fontSize = 16.sp, color = Color.White)
                             }
                         }
                     } else {

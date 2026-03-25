@@ -127,7 +127,7 @@ class LightningAddressBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
                             shape = RoundedCornerShape(20.dp),
                             contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
                         ) {
-                            Text(text = stringResource(R.string.Copy_Address), color = Color.White)
+                            Text(text = stringResource(R.string.Copy_Address), fontSize = 16.sp, color = Color.White)
                         }
                         Spacer(modifier = Modifier.height(30.dp))
                     }

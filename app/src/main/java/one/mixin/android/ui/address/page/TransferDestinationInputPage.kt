@@ -422,6 +422,7 @@ fun TransferDestinationInputPage(
                                 )
                             } else {
                                 Text(
+                                    fontSize = 16.sp,
                                     text = stringResource(R.string.Send),
                                     color = if (text.isBlank()) MixinAppTheme.colors.textAssist else Color.White,
                                 )

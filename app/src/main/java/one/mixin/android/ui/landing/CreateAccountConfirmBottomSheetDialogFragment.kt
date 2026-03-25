@@ -143,7 +143,7 @@ class CreateAccountConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDia
                     shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 36.dp, vertical = 11.dp),
                 ) {
-                    Text(text = stringResource(R.string.create_account_confirm_action_create), color = Color.White)
+                    Text(text = stringResource(R.string.create_account_confirm_action_create), fontSize = 16.sp, color = Color.White)
                 }
                 Spacer(modifier = Modifier.height(10.dp))
                 val privacyPolicyText = stringResource(R.string.Privacy_Policy)

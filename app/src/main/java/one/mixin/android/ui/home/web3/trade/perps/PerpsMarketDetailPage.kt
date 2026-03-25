@@ -286,7 +286,7 @@ fun PerpsMarketDetailPage(
                         .fillMaxWidth()
                         .background(MixinAppTheme.colors.background)
                         .padding(horizontal = 16.dp)
-                        .padding(bottom = 16.dp, top = 8.dp)
+                        .padding(bottom = 20.dp, top = 20.dp)
                 ) {
                     if (currentPosition != null) {
                         MixinButton(
@@ -306,6 +306,7 @@ fun PerpsMarketDetailPage(
                             shape = RoundedCornerShape(32.dp),
                         ) {
                             Text(
+                                fontSize = 16.sp,
                                 text = stringResource(R.string.Close_Position),
                             )
                         }
@@ -333,6 +334,7 @@ fun PerpsMarketDetailPage(
                                 shape = RoundedCornerShape(32.dp),
                             ) {
                                 Text(
+                                    fontSize = 16.sp,
                                     text = stringResource(R.string.Long),
                                 )
                             }
@@ -356,6 +358,7 @@ fun PerpsMarketDetailPage(
                                 shape = RoundedCornerShape(32.dp),
                             ) {
                                 Text(
+                                    fontSize = 16.sp,
                                     text = stringResource(R.string.Short),
                                 )
                             }
@@ -393,13 +396,13 @@ private fun MarketInfoCard(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = stringResource(R.string.how_perps_works),
-                    fontSize = 14.sp,
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
                     color = MixinAppTheme.colors.textPrimary
                 )
                 Text(
                     text = stringResource(R.string.learn_how_to_trade_perps),
-                    fontSize = 12.sp,
+                    fontSize = 14.sp,
                     color = MixinAppTheme.colors.textAssist
                 )
             }
