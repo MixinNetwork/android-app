@@ -141,6 +141,7 @@ fun LimitOrderContent(
     var limitPriceText by remember { mutableStateOf("") }
     var marketPriceClickTime by remember { mutableStateOf(lastOrderTime) }
     var priceMultiplier by remember { mutableStateOf<Float?>(null) }
+    var isPriceInverted by remember { mutableStateOf(false) }
 
     var isReverse by remember { mutableStateOf(false) }
     val walletId = if (inMixin) Session.getAccountId()!! else Web3Signer.currentWalletId
@@ -375,6 +376,8 @@ fun LimitOrderContent(
                                     toToken = toToken,
                                     lastOrderTime = marketPriceClickTime,
                                     priceMultiplier = priceMultiplier,
+                                    isPriceInverted = isPriceInverted,
+                                    onPriceInvertedChange = { isPriceInverted = it },
                                     onStandardPriceChanged = { limitPriceText = it },
                                 )
                                 Spacer(modifier = Modifier.height(10.dp))
@@ -591,6 +594,7 @@ fun LimitOrderContent(
                 fromBalance = fromBalance,
                 fromToken = fromToken,
                 toToken = toToken,
+                isPriceInverted = isPriceInverted,
                 onSetPriceMultiplier = { priceMultiplier = it },
                 onSetInput = {
                     inputText = it
@@ -649,4 +653,3 @@ fun Modifier.verticalScrollbar(
         }
     }
 }
-
