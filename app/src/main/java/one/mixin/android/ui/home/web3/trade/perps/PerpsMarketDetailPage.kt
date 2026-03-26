@@ -286,13 +286,14 @@ fun PerpsMarketDetailPage(
                         .fillMaxWidth()
                         .background(MixinAppTheme.colors.background)
                         .padding(horizontal = 16.dp)
-                        .padding(bottom = 16.dp, top = 8.dp)
+                        .padding(bottom = 20.dp, top = 20.dp)
                 ) {
                     if (currentPosition != null) {
                         MixinButton(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(48.dp),
+                            enabled = currentPosition.state == "open",
                             onClick = {
                                 val activity = context as? FragmentActivity ?: return@MixinButton
                                 val position = currentPosition.toPosition()
@@ -301,12 +302,13 @@ fun PerpsMarketDetailPage(
                                     position = position,
                                 ).show(activity.supportFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)
                             },
-                            backgroundColor = MixinAppTheme.colors.accent,
-                            contentColor = Color.White,
+                            backgroundColor = if (currentPosition.state == "open") MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundWindow,
+                            contentColor = if (currentPosition.state == "open") Color.White else MixinAppTheme.colors.textAssist,
                             shape = RoundedCornerShape(32.dp),
                         ) {
                             Text(
-                                text = stringResource(R.string.Close_Position),
+                                fontSize = 16.sp,
+                                text = stringResource(if(currentPosition.state == "open") R.string.Close_Position else R.string.Opening),
                             )
                         }
                     } else {
@@ -333,6 +335,7 @@ fun PerpsMarketDetailPage(
                                 shape = RoundedCornerShape(32.dp),
                             ) {
                                 Text(
+                                    fontSize = 16.sp,
                                     text = stringResource(R.string.Long),
                                 )
                             }
@@ -356,6 +359,7 @@ fun PerpsMarketDetailPage(
                                 shape = RoundedCornerShape(32.dp),
                             ) {
                                 Text(
+                                    fontSize = 16.sp,
                                     text = stringResource(R.string.Short),
                                 )
                             }
@@ -393,13 +397,13 @@ private fun MarketInfoCard(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = stringResource(R.string.how_perps_works),
-                    fontSize = 14.sp,
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
                     color = MixinAppTheme.colors.textPrimary
                 )
                 Text(
                     text = stringResource(R.string.learn_how_to_trade_perps),
-                    fontSize = 12.sp,
+                    fontSize = 14.sp,
                     color = MixinAppTheme.colors.textAssist
                 )
             }
@@ -417,28 +421,26 @@ private fun MarketInfoCard(
     ) {
         Text(
             text = stringResource(R.string.Volume_24H).uppercase(),
-            fontSize = 12.sp,
+            fontSize = 14.sp,
             color = MixinAppTheme.colors.textAssist
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = formatVolume(market.volume, fiatRate, fiatSymbol),
             fontSize = 16.sp,
-            fontWeight = FontWeight.Medium,
             color = MixinAppTheme.colors.textPrimary
         )
 
         Spacer(modifier = Modifier.height(12.dp))
         Text(
             text = stringResource(R.string.Funding_Rate).uppercase(),
-            fontSize = 12.sp,
+            fontSize = 14.sp,
             color = MixinAppTheme.colors.textAssist
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = formatFundingRate(market.fundingRate),
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium,
+            fontSize = 16.sp,
             color = MixinAppTheme.colors.textPrimary
         )
     }
@@ -650,33 +652,36 @@ private fun OpenPositionCard(
             )
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column {
+        Column {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
                     text = stringResource(R.string.PnL).uppercase(),
                     fontSize = 12.sp,
                     color = MixinAppTheme.colors.textAssist
                 )
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Text(
-                    text = "${formatPerpsSignedFiatDecimal(pnl.multiply(fiatRate), fiatSymbol)}(${formatPerpsSignedPercent(roe)})",
-                    fontSize = 14.sp,
-                    color = pnlColor
-                )
-            }
-            Column(horizontalAlignment = Alignment.End) {
                 Text(
                     text = stringResource(R.string.Direction).uppercase(),
                     fontSize = 12.sp,
                     color = MixinAppTheme.colors.textAssist
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+            }
+            Spacer(modifier = Modifier.height(7.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "${formatPerpsSignedFiatDecimal(pnl.multiply(fiatRate), fiatSymbol)}(${formatPerpsSignedPercent(roe)})",
+                    fontSize = 14.sp,
+                    color = pnlColor
+                )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         modifier = Modifier
@@ -701,20 +706,21 @@ private fun OpenPositionCard(
             }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column {
+        Column {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = stringResource(R.string.position_size).uppercase(),
                         fontSize = 12.sp,
                         color = MixinAppTheme.colors.textAssist
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
+                    Spacer(modifier = Modifier.width(9.dp))
                     Icon(
                         painter = painterResource(id = R.drawable.ic_tip),
                         contentDescription = null,
@@ -730,21 +736,22 @@ private fun OpenPositionCard(
                     )
                 }
                 Text(
+                    text = stringResource(R.string.Margin).uppercase(),
+                    fontSize = 12.sp,
+                    color = MixinAppTheme.colors.textAssist
+                )
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
                     text = "${quantity.stripTrailingZeros().toPlainString()} ${position.tokenSymbol}",
                     fontSize = 14.sp,
                     color = MixinAppTheme.colors.textPrimary
                 )
-            }
-
-            Column(horizontalAlignment = Alignment.End) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = stringResource(R.string.Margin).uppercase(),
-                        fontSize = 12.sp,
-                        color = MixinAppTheme.colors.textAssist
-                    )
-
-                }
                 Text(
                     text = formatPerpsFiatDecimal(amountValue, fiatSymbol),
                     fontSize = 14.sp,
@@ -753,34 +760,36 @@ private fun OpenPositionCard(
             }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column {
+        Column {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
                     text = stringResource(R.string.Entry_Price).uppercase(),
                     fontSize = 12.sp,
                     color = MixinAppTheme.colors.textAssist
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = stringResource(R.string.Liquidation_Price).uppercase(),
+                    fontSize = 12.sp,
+                    color = MixinAppTheme.colors.textAssist
+                )
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
                     text = "${fiatSymbol}${entryPrice.multiply(fiatRate).priceFormat()}",
                     fontSize = 14.sp,
                     color = MixinAppTheme.colors.textPrimary
                 )
-            }
-
-            Column(horizontalAlignment = Alignment.End) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = stringResource(R.string.Liquidation_Price).uppercase(),
-                        fontSize = 12.sp,
-                        color = MixinAppTheme.colors.textAssist
-                    )
-                }
                 Text(
                     text = "${fiatSymbol}${liquidationPrice.multiply(fiatRate).priceFormat()}",
                     fontSize = 14.sp,

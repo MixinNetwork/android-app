@@ -400,7 +400,6 @@ fun TransferDestinationInputPage(
                                 .align(Alignment.CenterHorizontally)
                                 .alpha(if (errorInfo.isNullOrBlank()) 0f else 1f)
                         )
-                        val isDisabled = text.isBlank().not() && isLoading
                         MixinButton(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -422,6 +421,7 @@ fun TransferDestinationInputPage(
                                 )
                             } else {
                                 Text(
+                                    fontSize = 16.sp,
                                     text = stringResource(R.string.Send),
                                     color = if (text.isBlank()) MixinAppTheme.colors.textAssist else Color.White,
                                 )

@@ -547,7 +547,8 @@ private fun GuideNavigationButton(
     ) {
         Text(
             text = text,
-            fontSize = 16.sp,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.W500,
             color = Color.White,
         )
     }

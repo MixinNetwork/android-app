@@ -223,6 +223,7 @@ fun AddressInputPage(
                     } else {
                         Text(
                             text = stringResource(R.string.Next),
+                            fontSize = 16.sp,
                             color = if (address.isBlank()
                             ) MixinAppTheme.colors.textAssist else Color.White,
                         )

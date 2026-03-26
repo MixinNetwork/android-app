@@ -194,9 +194,10 @@ fun PinKeyBoard(
                             onResetClick?.invoke()
                         },
                         contentPadding = PaddingValues(horizontal = 20.dp),
-                        shape = RoundedCornerShape(20.dp),
+                        shape = RoundedCornerShape(30.dp),
                     ) {
                         Text(
+                            fontSize = 16.sp,
                             text = stringResource(id = R.string.Continue),
                             color = Color.White,
                         )

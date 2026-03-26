@@ -75,7 +75,7 @@ fun ImportKeyPage(
                 onClick = action,
                 shape = RoundedCornerShape(32.dp),
             ) {
-                Text(text = stringResource(id = R.string.Import), color = Color.White)
+                Text(text = stringResource(id = R.string.Import), fontSize = 16.sp, color = Color.White)
             }
             Spacer(modifier = Modifier.height(8.dp))
             TextButton(

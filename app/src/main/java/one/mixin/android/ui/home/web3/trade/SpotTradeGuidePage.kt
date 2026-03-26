@@ -242,12 +242,12 @@ private fun SpotTradeExampleCard(
     val marketPrice = remember(usdtToken?.priceUsd, btcToken?.priceUsd, priceRefreshFlag) {
         calculateMarketPrice(usdtToken, btcToken)
     }
-    var isPairReversed by remember(limitStrategy) { mutableStateOf(false) }
     var isPriceDisplayReversed by remember(limitStrategy) { mutableStateOf(false) }
     var payAmount by remember(limitStrategy) { mutableStateOf(BigDecimal("1000")) }
     var strategy by remember(limitStrategy) { mutableStateOf(limitStrategy ?: LimitStrategy.BuyLow) }
     var limitPriceOffset by remember(limitStrategy, strategy) { mutableStateOf(BigDecimal.ZERO) }
 
+    val isPairReversed = limitStrategy != null && strategy == LimitStrategy.SellHigh
     val fromToken = if (isPairReversed) btcToken else usdtToken
     val toToken = if (isPairReversed) usdtToken else btcToken
     val amountStep = remember(isPairReversed) {
@@ -295,17 +295,11 @@ private fun SpotTradeExampleCard(
         ExampleValueRow(
             title = stringResource(R.string.Trade_Guide_Trading_Pair),
             value = {
-                PairSwitcher(
+                PairDisplay(
                     fromToken = fromToken,
                     toToken = toToken,
                     fromFallbackSymbol = if (isPairReversed) "BTC" else "USDT",
                     toFallbackSymbol = if (isPairReversed) "USDT" else "BTC",
-                    onSwitch = {
-                        val currentFromPrice = if (isPairReversed) btcToken.safePrice() else usdtToken.safePrice()
-                        val newFromPrice = if (isPairReversed) usdtToken.safePrice() else btcToken.safePrice()
-                        payAmount = convertPayAmount(payAmount, currentFromPrice, newFromPrice)
-                        isPairReversed = !isPairReversed
-                    },
                 )
             },
         )
@@ -468,17 +462,15 @@ private fun ExampleValueRow(
 }
 
 @Composable
-private fun PairSwitcher(
+private fun PairDisplay(
     fromToken: TokenItem?,
     toToken: TokenItem?,
     fromFallbackSymbol: String,
     toFallbackSymbol: String,
-    onSwitch: () -> Unit,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
-        modifier = Modifier.clickable(onClick = onSwitch),
     ) {
         GuideTokenBadge(token = fromToken, fallbackSymbol = fromFallbackSymbol)
         Text(
@@ -487,12 +479,6 @@ private fun PairSwitcher(
             color = MixinAppTheme.colors.textAssist,
         )
         GuideTokenBadge(token = toToken, fallbackSymbol = toFallbackSymbol)
-        Icon(
-            painter = painterResource(id = R.drawable.ic_price_switch),
-            contentDescription = null,
-            tint = Color.Unspecified,
-            modifier = Modifier.size(18.dp),
-        )
     }
 }
 

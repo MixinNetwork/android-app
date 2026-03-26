@@ -113,7 +113,7 @@ fun PerpsMarketItem(
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = stringResource(R.string.Vol, "$fiatSymbol$formattedVolume"),
-                    fontSize = 12.sp,
+                    fontSize = 14.sp,
                     color = MixinAppTheme.colors.textAssist,
                 )
             }
@@ -124,13 +124,13 @@ fun PerpsMarketItem(
         ) {
             Text(
                 text = "$fiatSymbol$formattedPrice",
-                fontSize = 16.sp,
+                fontSize = 14.sp,
                 color = MixinAppTheme.colors.textPrimary,
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = changeText,
-                fontSize = 12.sp,
+                fontSize = 14.sp,
                 color = changeColor,
             )
         }

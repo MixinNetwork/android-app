@@ -1,7 +1,6 @@
 package one.mixin.android.ui.home.web3.components
 
 
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -17,6 +16,7 @@ import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.home.web3.trade.FocusedField
 import java.math.BigDecimal
+import java.math.RoundingMode
 
 @Composable
 fun FloatingActions(
@@ -24,6 +24,7 @@ fun FloatingActions(
     fromBalance: String?,
     fromToken: SwapToken?,
     toToken: SwapToken?,
+    isPriceInverted: Boolean,
     onSetInput: (String) -> Unit,
     onSetPriceMultiplier: (Float?) -> Unit,
     onDone: () -> Unit,
@@ -77,17 +78,27 @@ fun FloatingActions(
                     onMarketPriceClick?.invoke()
                 }
 
+                val isFromUsd = fromToken?.assetId?.let { id ->
+                    Constants.AssetId.usdtAssets.containsKey(id) || Constants.AssetId.usdcAssets.containsKey(id)
+                } == true
                 val isToUsd = toToken?.assetId?.let { id ->
                     Constants.AssetId.usdtAssets.containsKey(id) || Constants.AssetId.usdcAssets.containsKey(id)
                 } == true
 
-                if (isToUsd) {
-                    InputAction("+10%", showBorder = true) { onSetPriceMultiplier(1.1f) }
-                    InputAction("+20%", showBorder = true) { onSetPriceMultiplier(1.2f) }
+                if (isToUsd && !isFromUsd) {
+                    InputAction("+10%", showBorder = true) {
+                        onSetPriceMultiplier(displayPriceMultiplier(1.1f, isPriceInverted))
+                    }
+                    InputAction("+20%", showBorder = true) {
+                        onSetPriceMultiplier(displayPriceMultiplier(1.2f, isPriceInverted))
+                    }
                 } else {
-                    // from is USD or other cases -> -10% / -20%
-                    InputAction("-10%", showBorder = true) { onSetPriceMultiplier(0.9f) }
-                    InputAction("-20%", showBorder = true) { onSetPriceMultiplier(0.8f) }
+                    InputAction("-10%", showBorder = true) {
+                        onSetPriceMultiplier(displayPriceMultiplier(0.9f, isPriceInverted))
+                    }
+                    InputAction("-20%", showBorder = true) {
+                        onSetPriceMultiplier(displayPriceMultiplier(0.8f, isPriceInverted))
+                    }
                 }
                 InputAction(stringResource(R.string.Done), showBorder = false) { onDone() }
             }
@@ -96,3 +107,10 @@ fun FloatingActions(
     }
 }
 
+private fun displayPriceMultiplier(displayMultiplier: Float, isPriceInverted: Boolean): Float {
+    if (!isPriceInverted) return displayMultiplier
+
+    return BigDecimal.ONE
+        .divide(BigDecimal(displayMultiplier.toString()), 8, RoundingMode.HALF_UP)
+        .toFloat()
+}

@@ -387,7 +387,7 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                                     onClick = { onDoneAction?.invoke(); dismiss() },
                                     shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
                                     contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 36.dp, vertical = 11.dp),
-                                ) { Text(text = stringResource(id = R.string.Done), color = Color.White) }
+                                ) { Text(text = stringResource(id = R.string.Done), fontSize = 16.sp, color = Color.White) }
                             }
                         }
                         Step.Error -> {
@@ -415,7 +415,7 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                         Step.Sending -> {}
                     }
                 }
-                Box(modifier = Modifier.height(36.dp))
+                Box(modifier = Modifier.height(32.dp))
             }
         }
     }

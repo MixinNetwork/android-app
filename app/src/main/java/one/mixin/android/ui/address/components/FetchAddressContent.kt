@@ -108,6 +108,7 @@ fun FetchAddressContent(
                         disabledContentColor = Color.White,
                     ) {
                         Text(
+                            fontSize = 16.sp,
                             text = stringResource(id = R.string.Retry),
                             color = Color.White
                         )
@@ -128,6 +129,7 @@ fun FetchAddressContent(
                         disabledContentColor = Color.White,
                     ) {
                         Text(
+                            fontSize = 16.sp,
                             text = stringResource(id = R.string.Retry),
                             color = Color.White
                         )

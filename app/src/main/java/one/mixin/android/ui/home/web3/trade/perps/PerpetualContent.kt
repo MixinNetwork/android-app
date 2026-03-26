@@ -181,14 +181,14 @@ fun PerpetualContent(
                 fontSize = 14.sp,
                 color = MixinAppTheme.colors.textAssist,
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(6.dp))
             Text(
                 text = totalPositionValueFiatText,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.W600,
                 color = MixinAppTheme.colors.textPrimary,
             )
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(6.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = totalPnlFiatText,
@@ -283,7 +283,6 @@ fun PerpetualContent(
                             }
                         }
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
                 }
 
                 if (openPositionsCount > openPositionsPreview.size) {
@@ -455,13 +454,13 @@ fun PerpetualContent(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = stringResource(R.string.how_perps_works),
-                        fontSize = 14.sp,
+                        fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
                         color = MixinAppTheme.colors.textPrimary
                     )
                     Text(
                         text = stringResource(R.string.learn_how_to_trade_perps),
-                        fontSize = 12.sp,
+                        fontSize = 14.sp,
                         color = MixinAppTheme.colors.textAssist
                     )
                 }
@@ -474,7 +473,7 @@ fun PerpetualContent(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 24.dp),
+                .padding(horizontal = 16.dp, vertical = 20.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             MixinButton(
@@ -489,6 +488,7 @@ fun PerpetualContent(
                 contentColor = Color.White,
             ) {
                 Text(
+                    fontSize = 16.sp,
                     text = stringResource(R.string.Long),
                 )
             }
@@ -506,6 +506,7 @@ fun PerpetualContent(
                 enabled = markets.isNotEmpty(),
             ) {
                 Text(
+                    fontSize = 16.sp,
                     text = stringResource(R.string.Short),
                 )
             }
