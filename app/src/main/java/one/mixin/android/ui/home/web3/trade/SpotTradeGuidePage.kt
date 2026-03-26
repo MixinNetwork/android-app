@@ -596,30 +596,6 @@ private fun OrderPriceStepper(
 }
 
 @Composable
-private fun StepperButton(
-    text: String,
-    enabled: Boolean,
-    onClick: () -> Unit,
-) {
-    Surface(
-        color = if (enabled) Color.Transparent else MixinAppTheme.colors.backgroundWindow,
-        shape = CircleShape,
-        border = BorderStroke(1.dp, MixinAppTheme.colors.borderColor),
-        modifier = Modifier
-            .size(24.dp)
-            .clickable(enabled = enabled, onClick = onClick),
-    ) {
-        Box(contentAlignment = Alignment.Center) {
-            Text(
-                text = text,
-                fontSize = 14.sp,
-                color = if (enabled) MixinAppTheme.colors.textPrimary else MixinAppTheme.colors.textAssist,
-            )
-        }
-    }
-}
-
-@Composable
 private fun PriceSubtitle(
     marketPrice: BigDecimal,
     isReversed: Boolean,
