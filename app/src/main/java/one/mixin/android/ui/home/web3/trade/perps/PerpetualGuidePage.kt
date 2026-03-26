@@ -534,7 +534,7 @@ private fun GuideBottomNavigation(
 }
 
 @Composable
-private fun GuideNavigationButton(
+fun GuideNavigationButton(
     text: String,
     isPrevious: Boolean,
     modifier: Modifier = Modifier,

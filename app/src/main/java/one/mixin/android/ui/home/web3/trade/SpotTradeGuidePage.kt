@@ -56,6 +56,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.ui.home.web3.components.OutlinedTab
+import one.mixin.android.ui.home.web3.trade.perps.GuideNavigationButton
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.components.DotText
@@ -717,13 +718,13 @@ private fun SpotTradeGuideBottomNavigation(
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            SpotTradeGuideNavigationButton(
+            GuideNavigationButton(
                 text = tabs[previousTab],
                 isPrevious = true,
                 modifier = Modifier.weight(1f),
                 onClick = { onSelect(previousTab) },
             )
-            SpotTradeGuideNavigationButton(
+            GuideNavigationButton(
                 text = stringResource(R.string.Start),
                 isPrevious = false,
                 modifier = Modifier.weight(1f),
@@ -739,13 +740,13 @@ private fun SpotTradeGuideBottomNavigation(
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            SpotTradeGuideNavigationButton(
+            GuideNavigationButton(
                 text = tabs[previousTab],
                 isPrevious = true,
                 modifier = Modifier.weight(1f),
                 onClick = { onSelect(previousTab) },
             )
-            SpotTradeGuideNavigationButton(
+            GuideNavigationButton(
                 text = tabs[nextTab],
                 isPrevious = false,
                 modifier = Modifier.weight(1f),
@@ -761,64 +762,12 @@ private fun SpotTradeGuideBottomNavigation(
         modifier = Modifier.fillMaxWidth(),
         contentAlignment = Alignment.Center,
     ) {
-        SpotTradeGuideNavigationButton(
+        GuideNavigationButton(
             text = buttonText,
             isPrevious = isPrevious,
             modifier = Modifier.fillMaxWidth(0.5f),
             onClick = { onSelect(targetIndex) },
         )
-    }
-}
-
-@Composable
-private fun SpotTradeGuideNavigationButton(
-    text: String,
-    isPrevious: Boolean,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit,
-) {
-    Button(
-        modifier = modifier.height(48.dp),
-        onClick = onClick,
-        colors = ButtonDefaults.outlinedButtonColors(
-            backgroundColor = MixinAppTheme.colors.accent,
-            contentColor = Color.White,
-        ),
-        shape = RoundedCornerShape(32.dp),
-        elevation = ButtonDefaults.elevation(
-            pressedElevation = 0.dp,
-            defaultElevation = 0.dp,
-            hoveredElevation = 0.dp,
-            focusedElevation = 0.dp,
-        ),
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
-        ) {
-            if (isPrevious) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_guide_previous),
-                    contentDescription = null,
-                    tint = Color.Unspecified,
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-            }
-            Text(
-                text = text,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White,
-            )
-            if (!isPrevious) {
-                Spacer(modifier = Modifier.width(4.dp))
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_guide_next),
-                    contentDescription = null,
-                    tint = Color.Unspecified,
-                )
-            }
-        }
     }
 }
 
