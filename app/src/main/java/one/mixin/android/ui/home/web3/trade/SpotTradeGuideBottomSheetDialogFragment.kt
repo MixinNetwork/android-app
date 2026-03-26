@@ -11,8 +11,10 @@ import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.booleanFromAttribute
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.util.SystemUIManager
@@ -52,6 +54,10 @@ class SpotTradeGuideBottomSheetDialogFragment : MixinComposeBottomSheetDialogFra
 
     override fun onStart() {
         super.onStart()
+        requireContext().defaultSharedPreferences.putBoolean(
+            TradeFragment.PREF_TRADE_SPOT_GUIDE_SHOWN,
+            true
+        )
         dialog?.window?.let { window ->
             SystemUIManager.lightUI(
                 window,
