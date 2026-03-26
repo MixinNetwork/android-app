@@ -71,9 +71,7 @@ private fun HelpOption(
     ) {
         Text(
             text = title,
-            fontSize = 16.sp,
             color = MixinAppTheme.colors.textPrimary,
-            fontWeight = FontWeight.Medium
         )
     }
 }
