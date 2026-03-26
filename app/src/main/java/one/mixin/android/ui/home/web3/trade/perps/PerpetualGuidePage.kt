@@ -481,15 +481,14 @@ private fun GuideBottomNavigation(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             GuideNavigationButton(
-                text = stringResource(R.string.Perpetual_Guide_Previous_Tab, tabs[previousTab]),
+                text = tabs[previousTab],
+                isPrevious = true,
                 modifier = Modifier.weight(1f),
                 onClick = { onSelect(previousTab) },
             )
             GuideNavigationButton(
-                text = stringResource(
-                    R.string.Perpetual_Guide_Next_Tab,
-                    stringResource(R.string.Start)
-                ),
+                text = stringResource(R.string.Start),
+                isPrevious = false,
                 modifier = Modifier.weight(1f),
                 onClick = onClose,
             )
@@ -504,12 +503,14 @@ private fun GuideBottomNavigation(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             GuideNavigationButton(
-                text = stringResource(R.string.Perpetual_Guide_Previous_Tab, tabs[previousTab]),
+                text = tabs[previousTab],
+                isPrevious = true,
                 modifier = Modifier.weight(1f),
                 onClick = { onSelect(previousTab) },
             )
             GuideNavigationButton(
-                text = stringResource(R.string.Perpetual_Guide_Next_Tab, tabs[nextTab]),
+                text = tabs[nextTab],
+                isPrevious = false,
                 modifier = Modifier.weight(1f),
                 onClick = { onSelect(nextTab) },
             )
@@ -517,17 +518,15 @@ private fun GuideBottomNavigation(
         return
     }
     val targetIndex = previousTab ?: nextTab ?: return
-    val buttonText = if (previousTab != null) {
-        stringResource(R.string.Perpetual_Guide_Previous_Tab, tabs[targetIndex])
-    } else {
-        stringResource(R.string.Perpetual_Guide_Next_Tab, tabs[targetIndex])
-    }
+    val buttonText = tabs[targetIndex]
+    val isPrevious = previousTab != null
     Box(
         modifier = Modifier.fillMaxWidth(),
         contentAlignment = Alignment.Center,
     ) {
         GuideNavigationButton(
             text = buttonText,
+            isPrevious = isPrevious,
             modifier = Modifier.fillMaxWidth(0.5f),
             onClick = { onSelect(targetIndex) },
         )
@@ -537,6 +536,7 @@ private fun GuideBottomNavigation(
 @Composable
 private fun GuideNavigationButton(
     text: String,
+    isPrevious: Boolean,
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
@@ -545,12 +545,33 @@ private fun GuideNavigationButton(
         onClick = onClick,
         shape = RoundedCornerShape(32.dp),
     ) {
-        Text(
-            text = text,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.W500,
-            color = Color.White,
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+        ) {
+            if (isPrevious) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_guide_previous),
+                    contentDescription = null,
+                    tint = Color.Unspecified,
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+            }
+            Text(
+                text = text,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.W500,
+                color = Color.White,
+            )
+            if (!isPrevious) {
+                Spacer(modifier = Modifier.width(4.dp))
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_guide_next),
+                    contentDescription = null,
+                    tint = Color.Unspecified,
+                )
+            }
+        }
     }
 }
 

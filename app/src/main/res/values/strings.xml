@@ -2297,8 +2297,6 @@
     <string name="wallet_summary_tip_safe">Co-managed safes are excluded from the total</string>
     <string name="Trading_Guide">Spot Trading Guide</string>
     <string name="Overview">Overview</string>
-    <string name="Perpetual_Guide_Previous_Tab">&lt; %1$s</string>
-    <string name="Perpetual_Guide_Next_Tab">%1$s &gt;</string>
     <string name="Perpetual_Guide_Overview_Content">Perpetual contracts allow you to trade cryptocurrency with leverage, enabling you to amplify your potential profits (and losses). You can go long (bet on price increase) or short (bet on price decrease) without owning the underlying asset.</string>
     <string name="perps_leverage_overview">Leverage allows you to control a larger position with less capital.</string>
     <string name="Perpetual_Guide_Close_Content">You can close your position at any time to realize your profit or loss. The closing price is based on the current market price. Make sure to monitor your positions to avoid liquidation.</string>
