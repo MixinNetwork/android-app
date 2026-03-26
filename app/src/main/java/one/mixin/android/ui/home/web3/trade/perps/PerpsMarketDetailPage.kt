@@ -652,33 +652,36 @@ private fun OpenPositionCard(
             )
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column {
+        Column {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
                     text = stringResource(R.string.PnL).uppercase(),
                     fontSize = 12.sp,
                     color = MixinAppTheme.colors.textAssist
                 )
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Text(
-                    text = "${formatPerpsSignedFiatDecimal(pnl.multiply(fiatRate), fiatSymbol)}(${formatPerpsSignedPercent(roe)})",
-                    fontSize = 14.sp,
-                    color = pnlColor
-                )
-            }
-            Column(horizontalAlignment = Alignment.End) {
                 Text(
                     text = stringResource(R.string.Direction).uppercase(),
                     fontSize = 12.sp,
                     color = MixinAppTheme.colors.textAssist
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+            }
+            Spacer(modifier = Modifier.height(7.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "${formatPerpsSignedFiatDecimal(pnl.multiply(fiatRate), fiatSymbol)}(${formatPerpsSignedPercent(roe)})",
+                    fontSize = 14.sp,
+                    color = pnlColor
+                )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         modifier = Modifier
@@ -703,20 +706,21 @@ private fun OpenPositionCard(
             }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column {
+        Column {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = stringResource(R.string.position_size).uppercase(),
                         fontSize = 12.sp,
                         color = MixinAppTheme.colors.textAssist
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
+                    Spacer(modifier = Modifier.width(9.dp))
                     Icon(
                         painter = painterResource(id = R.drawable.ic_tip),
                         contentDescription = null,
@@ -732,21 +736,22 @@ private fun OpenPositionCard(
                     )
                 }
                 Text(
+                    text = stringResource(R.string.Margin).uppercase(),
+                    fontSize = 12.sp,
+                    color = MixinAppTheme.colors.textAssist
+                )
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
                     text = "${quantity.stripTrailingZeros().toPlainString()} ${position.tokenSymbol}",
                     fontSize = 14.sp,
                     color = MixinAppTheme.colors.textPrimary
                 )
-            }
-
-            Column(horizontalAlignment = Alignment.End) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = stringResource(R.string.Margin).uppercase(),
-                        fontSize = 12.sp,
-                        color = MixinAppTheme.colors.textAssist
-                    )
-
-                }
                 Text(
                     text = formatPerpsFiatDecimal(amountValue, fiatSymbol),
                     fontSize = 14.sp,
@@ -755,34 +760,36 @@ private fun OpenPositionCard(
             }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column {
+        Column {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
                     text = stringResource(R.string.Entry_Price).uppercase(),
                     fontSize = 12.sp,
                     color = MixinAppTheme.colors.textAssist
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = stringResource(R.string.Liquidation_Price).uppercase(),
+                    fontSize = 12.sp,
+                    color = MixinAppTheme.colors.textAssist
+                )
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
                     text = "${fiatSymbol}${entryPrice.multiply(fiatRate).priceFormat()}",
                     fontSize = 14.sp,
                     color = MixinAppTheme.colors.textPrimary
                 )
-            }
-
-            Column(horizontalAlignment = Alignment.End) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = stringResource(R.string.Liquidation_Price).uppercase(),
-                        fontSize = 12.sp,
-                        color = MixinAppTheme.colors.textAssist
-                    )
-                }
                 Text(
                     text = "${fiatSymbol}${liquidationPrice.multiply(fiatRate).priceFormat()}",
                     fontSize = 14.sp,
