@@ -249,7 +249,13 @@ fun TradePage(
         sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
         sheetBackgroundColor = MixinAppTheme.colors.background,
         sheetContent = {
+            val currentGuideTitle = if (perpetualTabIndex != null && pagerState.currentPage == perpetualTabIndex) {
+                stringResource(R.string.Perpetual_Futures_Guide)
+            } else {
+                stringResource(R.string.Spot_Trading_Guide)
+            }
             HelpBottomSheetContent(
+                guideTitle = currentGuideTitle,
                 onContactSupport = {
                     coroutineScope.launch {
                         bottomSheetState.hide()
