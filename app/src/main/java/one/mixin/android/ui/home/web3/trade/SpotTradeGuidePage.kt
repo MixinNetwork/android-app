@@ -243,15 +243,26 @@ private fun SpotTradeExampleCard(
         calculateMarketPrice(usdtToken, btcToken)
     }
     var isPriceDisplayReversed by remember(limitStrategy) { mutableStateOf(false) }
-    var payAmount by remember(limitStrategy) { mutableStateOf(BigDecimal("1000")) }
     var strategy by remember(limitStrategy) { mutableStateOf(limitStrategy ?: LimitStrategy.BuyLow) }
+    var payAmount by remember(limitStrategy, strategy) {
+        mutableStateOf(defaultPayAmount(limitStrategy, strategy))
+    }
     var limitPriceOffset by remember(limitStrategy, strategy) { mutableStateOf(BigDecimal.ZERO) }
 
     val isPairReversed = limitStrategy != null && strategy == LimitStrategy.SellHigh
     val fromToken = if (isPairReversed) btcToken else usdtToken
     val toToken = if (isPairReversed) usdtToken else btcToken
-    val amountStep = remember(isPairReversed) {
-        if (isPairReversed) BigDecimal("0.001") else BigDecimal("100")
+    val amountStep = remember(limitStrategy, strategy, isPairReversed) {
+        if (limitStrategy != null) {
+            when (strategy) {
+                LimitStrategy.BuyLow -> BigDecimal("100")
+                LimitStrategy.SellHigh -> BigDecimal.ONE
+            }
+        } else if (isPairReversed) {
+            BigDecimal("0.001")
+        } else {
+            BigDecimal("100")
+        }
     }
     val limitBasePrice = remember(marketPrice, strategy) {
         calculateLimitBasePrice(
@@ -863,6 +874,19 @@ private fun calculateLimitBasePrice(
         }
     }
     return basePrice.max(LIMIT_PRICE_STEP)
+}
+
+private fun defaultPayAmount(
+    limitStrategy: LimitStrategy?,
+    strategy: LimitStrategy,
+): BigDecimal {
+    if (limitStrategy == null) {
+        return BigDecimal("1000")
+    }
+    return when (strategy) {
+        LimitStrategy.BuyLow -> BigDecimal("1000")
+        LimitStrategy.SellHigh -> BigDecimal.ONE
+    }
 }
 
 private fun calculateReceiveAmount(
