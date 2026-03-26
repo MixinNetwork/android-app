@@ -85,6 +85,15 @@ private fun getLeveragePrefKey(marketId: String) = "pref_perps_leverage_$marketI
 private const val MARKET_REFRESH_INTERVAL_MS = 5_000L
 private const val DEFAULT_LEVERAGE = 10
 
+private fun readAcceptedPerpAssetIds(context: android.content.Context): List<String> {
+    return context.defaultSharedPreferences
+        .getString(Constants.Account.PREF_PERPS_ACCEPTED_ASSET_IDS_V2, null)
+        .orEmpty()
+        .split(",")
+        .map { it.trim() }
+        .filter { it.isNotBlank() }
+}
+
 private fun TokenItem.hasPositiveBalance(): Boolean =
     (balance.toBigDecimalOrNull() ?: BigDecimal.ZERO) > BigDecimal.ZERO
 
@@ -124,21 +133,8 @@ fun OpenPositionPage(
     val focusManager = LocalFocusManager.current
     val viewModel = hiltViewModel<PerpetualViewModel>()
     val marketId = market.marketId
-    val acceptedPerpAssetIds = remember {
-        context.defaultSharedPreferences
-            .getStringSet(Constants.Account.PREF_PERPS_ACCEPTED_ASSET_IDS, emptySet())
-            .orEmpty()
-            .filter { it.isNotBlank() }
-            .toSet()
-    }
-    val acceptedPerpAssetIdsOrdered = remember {
-        context.defaultSharedPreferences
-            .getString(Constants.Account.PREF_PERPS_ACCEPTED_ASSET_IDS_ORDERED, null)
-            .orEmpty()
-            .split(",")
-            .map { it.trim() }
-            .filter { it.isNotBlank() }
-    }
+    val acceptedPerpAssetIdsOrdered = remember { readAcceptedPerpAssetIds(context) }
+    val acceptedPerpAssetIds = remember(acceptedPerpAssetIdsOrdered) { acceptedPerpAssetIdsOrdered.toSet() }
 
     var currentMarket by remember(marketId) { mutableStateOf(market) }
     var currentToken by remember { mutableStateOf<TokenItem?>(selectedToken) }
