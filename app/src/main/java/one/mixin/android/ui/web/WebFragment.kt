@@ -684,7 +684,7 @@ class WebFragment : BaseFragment() {
                     icon: Bitmap?,
                 ) {
                     super.onReceivedIcon(view, icon)
-                    if (!isBot()) {
+                    if (!isBot() && fixedTitle == null) {
                         icon?.let {
                             _binding?.apply {
                                 iconIv.isVisible = true
@@ -911,8 +911,12 @@ class WebFragment : BaseFragment() {
                 }
             }
             app?.name?.let { binding.titleTv.text = it }
-            fixedTitle?.let { binding.titleTv.text = it }
-            app?.iconUrl?.let {
+            fixedTitle?.let {
+                binding.titleTv.text = it
+                binding.iconIv.isVisible = false
+                binding.webControl.hideMore()
+            }
+            if (fixedTitle == null) app?.iconUrl?.let {
                 binding.iconIv.isVisible = true
                 binding.iconIv.loadImage(it)
                 binding.titleTv.updateLayoutParams<ViewGroup.MarginLayoutParams> {

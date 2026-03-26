@@ -178,4 +178,3 @@ fun ClosedPositionItem(
     }
 }
 
-private const val SMALL_SCREEN_WIDTH_DP = 360

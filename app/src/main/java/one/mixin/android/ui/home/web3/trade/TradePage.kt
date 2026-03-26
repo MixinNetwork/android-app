@@ -98,7 +98,10 @@ fun TradePage(
     onSwitchToLimitOrder: (String, SwapToken, SwapToken) -> Unit,
     pop: () -> Unit,
     onLimitOrderClick: (String) -> Unit,
-    onShowTradingGuide: () -> Unit,
+    hasShownSpotGuide: Boolean,
+    hasShownPerpetualGuide: Boolean,
+    onShowTradingGuideIfNeeded: (Int) -> Unit,
+    onShowTradingGuide: (Int) -> Unit,
     onShowMarketList: (Boolean) -> Unit,
     onShowAllMarkets: () -> Unit,
     onShowAllOpenPositions: () -> Unit,
@@ -195,7 +198,7 @@ fun TradePage(
         perpetualTabIndex = tabs.size
         tabs += TabItem(title = stringResource(R.string.Perpetual)) {
             PerpetualContent(
-                onShowTradingGuide = onShowTradingGuide,
+                onShowTradingGuide = { onShowTradingGuide(perpetualTabIndex ?: 0) },
                 onShowMarketList = onShowMarketList,
                 onShowAllMarkets = onShowAllMarkets,
                 onShowAllOpenPositions = onShowAllOpenPositions,
@@ -214,6 +217,21 @@ fun TradePage(
         pageCount = { tabCount },
     )
 
+    LaunchedEffect(
+        pagerState.currentPage,
+        perpetualTabIndex,
+        hasShownSpotGuide,
+        hasShownPerpetualGuide,
+    ) {
+        val currentPage = pagerState.currentPage
+        val isSpotGuideTab = currentPage == 0 || currentPage == 1
+        val isPerpetualGuideTab = perpetualTabIndex != null && currentPage == perpetualTabIndex
+        when {
+            isSpotGuideTab && !hasShownSpotGuide -> onShowTradingGuideIfNeeded(currentPage)
+            isPerpetualGuideTab && !hasShownPerpetualGuide -> onShowTradingGuideIfNeeded(currentPage)
+        }
+    }
+
     // When SwapContent requests switching to Limit tab, animate to it
     LaunchedEffect(switchToLimitRequested.value) {
         if (switchToLimitRequested.value) {
@@ -231,8 +249,13 @@ fun TradePage(
         sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
         sheetBackgroundColor = MixinAppTheme.colors.background,
         sheetContent = {
+            val currentGuideTitle = if (perpetualTabIndex != null && pagerState.currentPage == perpetualTabIndex) {
+                stringResource(R.string.Perpetual_Futures_Guide)
+            } else {
+                stringResource(R.string.Spot_Trading_Guide)
+            }
             HelpBottomSheetContent(
-                hideGuide = perpetualTabIndex == null || pagerState.currentPage != perpetualTabIndex,
+                guideTitle = currentGuideTitle,
                 onContactSupport = {
                     coroutineScope.launch {
                         bottomSheetState.hide()
@@ -242,7 +265,7 @@ fun TradePage(
                 onTradingGuide = {
                     coroutineScope.launch {
                         bottomSheetState.hide()
-                        onShowTradingGuide()
+                        onShowTradingGuide(pagerState.currentPage)
                     }
                 },
                 onDismiss = {
@@ -396,7 +419,6 @@ fun TradePage(
                         }
                         if (isPerpetualTab && !isPerpetualTabBadgeDismissed) {
                             onDismissPerpetualTabBadge()
-                            onShowTradingGuide()
                         }
                         onTabChanged(index)
                     },

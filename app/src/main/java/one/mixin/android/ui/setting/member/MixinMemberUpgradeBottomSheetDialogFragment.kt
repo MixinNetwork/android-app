@@ -27,7 +27,6 @@ import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
-import one.mixin.android.ui.conversation.link.parser.NewSchemeParser
 import one.mixin.android.ui.setting.ui.page.MixinMemberUpgradePage
 import one.mixin.android.ui.viewmodel.MemberViewModel
 import one.mixin.android.ui.web.WebActivity
