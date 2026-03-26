@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <one.mixin.android.widget.BottomSheetLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
-    android:background="@drawable/bg_upper_round">
+    android:background="@drawable/bg_upper_round"
+    android:paddingBottom="16dp">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -38,440 +39,183 @@
             tools:ignore="ContentDescription"/>
     </RelativeLayout>
 
-    <androidx.core.widget.NestedScrollView
+    <RelativeLayout
+        android:id="@+id/create_new_wallet"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:fillViewport="true"
-        android:overScrollMode="ifContentScrolls">
+        android:layout_height="64dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:background="?attr/bg_market_card"
+        android:layout_marginBottom="10dp">
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <ImageView
+            android:id="@+id/create_wallet_icon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="14dp"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ic_menu_create_wallet" />
+
+        <androidx.legacy.widget.Space
+            android:id="@+id/center_place_holder_4"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:layout_centerInParent="true"/>
+
+        <TextView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingBottom="16dp">
+            android:textSize="16sp"
+            android:textColor="?attr/text_primary"
+            android:layout_above="@id/center_place_holder_4"
+            android:layout_toEndOf="@id/create_wallet_icon"
+            android:text="@string/create_new_wallet"/>
 
-            <RelativeLayout
-                android:id="@+id/create_new_wallet"
-                android:layout_width="match_parent"
-                android:layout_height="64dp"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:layout_marginBottom="10dp"
-                android:background="?attr/bg_market_card">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="13sp"
+            android:textColor="?attr/text_assist"
+            android:layout_below="@id/center_place_holder_4"
+            android:layout_toEndOf="@id/create_wallet_icon"
+            android:text="@string/add_new_multi_chain_wallet"/>
 
-                <ImageView
-                    android:id="@+id/create_wallet_icon"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_marginStart="20dp"
-                    android:layout_marginEnd="14dp"
-                    android:layout_centerVertical="true"
-                    android:src="@drawable/ic_menu_create_wallet" />
-
-                <androidx.legacy.widget.Space
-                    android:id="@+id/center_place_holder_4"
-                    android:layout_width="1dp"
-                    android:layout_height="1dp"
-                    android:layout_centerInParent="true"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_above="@id/center_place_holder_4"
-                    android:layout_toEndOf="@id/create_wallet_icon"
-                    android:text="@string/create_new_wallet"
-                    android:textColor="?attr/text_primary"
-                    android:textSize="16sp"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/center_place_holder_4"
-                    android:layout_toEndOf="@id/create_wallet_icon"
-                    android:text="@string/add_new_multi_chain_wallet"
-                    android:textColor="?attr/text_assist"
-                    android:textSize="13sp"/>
-
-            </RelativeLayout>
-
-            <RelativeLayout
-                android:id="@+id/import_mnemonic_phrase"
-                android:layout_width="match_parent"
-                android:layout_height="64dp"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:layout_marginBottom="10dp"
-                android:background="?attr/bg_market_card">
-
-                <ImageView
-                    android:id="@+id/asset_icon"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_marginStart="20dp"
-                    android:layout_marginEnd="14dp"
-                    android:layout_centerVertical="true"
-                    android:src="@drawable/ic_menu_mnemonic_phrase"/>
-
-                <androidx.legacy.widget.Space
-                    android:id="@+id/center_place_holder"
-                    android:layout_width="1dp"
-                    android:layout_height="1dp"
-                    android:layout_centerInParent="true"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_above="@id/center_place_holder"
-                    android:layout_toEndOf="@id/asset_icon"
-                    android:text="@string/import_mnemonic_phrase"
-                    android:textColor="?attr/text_primary"
-                    android:textSize="16sp"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/center_place_holder"
-                    android:layout_toEndOf="@id/asset_icon"
-                    android:text="@string/Import_wallets_from_another_wallet"
-                    android:textColor="?attr/text_assist"
-                    android:textSize="13sp"/>
-
-            </RelativeLayout>
-
-            <RelativeLayout
-                android:id="@+id/import_private_key"
-                android:layout_width="match_parent"
-                android:layout_height="64dp"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:layout_marginBottom="10dp"
-                android:background="?attr/bg_market_card">
-
-                <ImageView
-                    android:id="@+id/private_key_icon"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_marginStart="20dp"
-                    android:layout_marginEnd="14dp"
-                    android:layout_centerVertical="true"
-                    android:src="@drawable/ic_menu_private_key" />
-
-                <androidx.legacy.widget.Space
-                    android:id="@+id/center_place_holder_2"
-                    android:layout_width="1dp"
-                    android:layout_height="1dp"
-                    android:layout_centerInParent="true"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_above="@id/center_place_holder_2"
-                    android:layout_toEndOf="@id/private_key_icon"
-                    android:text="@string/import_private_key"
-                    android:textColor="?attr/text_primary"
-                    android:textSize="16sp"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/center_place_holder_2"
-                    android:layout_toEndOf="@id/private_key_icon"
-                    android:text="@string/import_private_key_description"
-                    android:textColor="?attr/text_assist"
-                    android:textSize="13sp"/>
-
-            </RelativeLayout>
-
-            <RelativeLayout
-                android:id="@+id/add_watch_address"
-                android:layout_width="match_parent"
-                android:layout_height="64dp"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:layout_marginBottom="10dp"
-                android:background="?attr/bg_market_card">
-
-                <ImageView
-                    android:id="@+id/watch_address_icon"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_marginStart="20dp"
-                    android:layout_marginEnd="14dp"
-                    android:layout_centerVertical="true"
-                    android:src="@drawable/ic_menu_watch_address" />
-
-                <androidx.legacy.widget.Space
-                    android:id="@+id/center_place_holder_3"
-                    android:layout_width="1dp"
-                    android:layout_height="1dp"
-                    android:layout_centerInParent="true"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_above="@id/center_place_holder_3"
-                    android:layout_toEndOf="@id/watch_address_icon"
-                    android:text="@string/add_watch_address"
-                    android:textColor="?attr/text_primary"
-                    android:textSize="16sp"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/center_place_holder_3"
-                    android:layout_toEndOf="@id/watch_address_icon"
-                    android:text="@string/add_watch_address_description"
-                    android:textColor="?attr/text_assist"
-                    android:textSize="13sp"/>
-
-            </RelativeLayout>
-
-            <RelativeLayout
-                android:id="@+id/free_transfer_card"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:layout_marginTop="36dp"
-                android:background="?attr/bg_market_card"
-                android:padding="16dp">
-
-                <ImageView
-                    android:id="@+id/free_transfer_close_iv"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_alignParentEnd="true"
-                    android:layout_alignParentTop="true"
-                    android:background="@drawable/mixin_ripple"
-                    android:padding="4dp"
-                    android:src="@drawable/ic_close_black"
-                    tools:ignore="ContentDescription" />
-
-                <ImageView
-                    android:id="@+id/free_transfer_icon"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginEnd="36dp"
-                    android:src="@drawable/ic_add_wallet_freee"
-                    tools:ignore="ContentDescription" />
-
-                <TextView
-                    android:id="@+id/free_transfer_title"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentStart="true"
-                    android:layout_toStartOf="@id/free_transfer_icon"
-                    android:layout_marginEnd="16dp"
-                    android:text="@string/free_transfers_between_wallets_title"
-                    android:textColor="?attr/text_primary"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/free_transfer_description"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/free_transfer_title"
-                    android:layout_alignStart="@id/free_transfer_title"
-                    android:layout_toStartOf="@id/free_transfer_icon"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginEnd="16dp"
-                    android:text="@string/free_transfers_between_wallets_description"
-                    android:textColor="?attr/text_assist"
-                    android:textSize="14sp" />
-
-                <LinearLayout
-                    android:id="@+id/free_transfer_learn_more"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/free_transfer_description"
-                    android:layout_alignStart="@id/free_transfer_title"
-                    android:layout_marginTop="16dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/Learn_More"
-                        android:textColor="?attr/text_blue"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
-
-                    <ImageView
-                        android:layout_width="8dp"
-                        android:layout_height="8dp"
-                        android:layout_marginStart="4dp"
-                        android:src="@drawable/ic_arrow_top_right_small"
-                        app:tint="?attr/text_blue"
-                        tools:ignore="ContentDescription" />
-                </LinearLayout>
-            </RelativeLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:layout_marginTop="16dp"
-                android:orientation="vertical"
-                android:padding="16dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/is_it_safe_to_import_into_mixin"
-                    android:textColor="?attr/text_assist"
-                    />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:gravity="top"
-                    android:orientation="horizontal">
-
-                    <View
-                        android:layout_width="6dp"
-                        android:layout_height="6dp"
-                        android:layout_marginTop="6dp"
-                        android:background="@drawable/ic_dot_assist" />
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:layout_weight="1"
-                        android:text="@string/mixin_import_safety_1"
-                        android:textColor="?attr/text_assist"
-                        android:textSize="14sp" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:gravity="top"
-                    android:orientation="horizontal">
-
-                    <View
-                        android:layout_width="6dp"
-                        android:layout_height="6dp"
-                        android:layout_marginTop="6dp"
-                        android:background="@drawable/ic_dot_assist" />
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:layout_weight="1"
-                        android:text="@string/mixin_import_safety_2"
-                        android:textColor="?attr/text_assist"
-                        android:textSize="14sp" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:gravity="top"
-                    android:orientation="horizontal">
-
-                    <View
-                        android:layout_width="6dp"
-                        android:layout_height="6dp"
-                        android:layout_marginTop="6dp"
-                        android:background="@drawable/ic_dot_assist" />
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:layout_weight="1"
-                        android:text="@string/mixin_import_safety_3"
-                        android:textColor="?attr/text_assist"
-                        android:textSize="14sp" />
-                </LinearLayout>
-
-                <HorizontalScrollView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp"
-                    android:fillViewport="true"
-                    android:scrollbars="none">
-
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center_horizontal"
-                            android:orientation="horizontal">
-
-                        <ImageView
-                            android:layout_width="36dp"
-                            android:layout_height="36dp"
-                            android:adjustViewBounds="true"
-                            android:src="@drawable/mixin_import_safety_preview_0"
-                            tools:ignore="ContentDescription" />
+    </RelativeLayout>
 
 
-                        <ImageView
-                            android:layout_width="36dp"
-                            android:layout_height="36dp"
-                            android:layout_marginStart="10dp"
-                            android:adjustViewBounds="true"
-                            android:src="@drawable/mixin_import_safety_preview_1"
-                            tools:ignore="ContentDescription" />
+    <RelativeLayout
+        android:id="@+id/import_mnemonic_phrase"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:background="?attr/bg_market_card"
+        android:layout_marginBottom="10dp">
 
-                        <ImageView
-                            android:layout_width="36dp"
-                            android:layout_height="36dp"
-                            android:layout_marginStart="10dp"
-                            android:adjustViewBounds="true"
-                            android:src="@drawable/mixin_import_safety_preview_2"
-                            tools:ignore="ContentDescription" />
+        <ImageView
+            android:id="@+id/asset_icon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="14dp"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ic_menu_mnemonic_phrase"/>
 
-                        <ImageView
-                            android:layout_width="36dp"
-                            android:layout_height="36dp"
-                            android:layout_marginStart="10dp"
-                            android:adjustViewBounds="true"
-                            android:src="@drawable/mixin_import_safety_preview_3"
-                            tools:ignore="ContentDescription" />
+        <androidx.legacy.widget.Space
+            android:id="@+id/center_place_holder"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:layout_centerInParent="true"/>
 
-                        <ImageView
-                            android:layout_width="36dp"
-                            android:layout_height="36dp"
-                            android:layout_marginStart="10dp"
-                            android:adjustViewBounds="true"
-                            android:src="@drawable/mixin_import_safety_preview_4"
-                            tools:ignore="ContentDescription" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:textColor="?attr/text_primary"
+            android:layout_above="@id/center_place_holder"
+            android:layout_toEndOf="@id/asset_icon"
+            android:text="@string/import_mnemonic_phrase"/>
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="13sp"
+            android:textColor="?attr/text_assist"
+            android:layout_below="@id/center_place_holder"
+            android:layout_toEndOf="@id/asset_icon"
+            android:text="@string/Import_wallets_from_another_wallet"/>
 
-                        <ImageView
-                            android:layout_width="36dp"
-                            android:layout_height="36dp"
-                            android:layout_marginStart="10dp"
-                            android:adjustViewBounds="true"
-                            android:src="@drawable/mixin_import_safety_preview_5"
-                            tools:ignore="ContentDescription" />
+    </RelativeLayout>
 
-                            <ImageView
-                                android:layout_width="36dp"
-                                android:layout_height="36dp"
-                                android:layout_marginStart="10dp"
-                                android:adjustViewBounds="true"
-                                android:src="@drawable/mixin_import_safety_preview_6"
-                                tools:ignore="ContentDescription" />
-                        </LinearLayout>
-                    </FrameLayout>
-                </HorizontalScrollView>
-            </LinearLayout>
-        </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
+    <RelativeLayout
+        android:id="@+id/import_private_key"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:background="?attr/bg_market_card"
+        android:layout_marginBottom="10dp">
+
+        <ImageView
+            android:id="@+id/private_key_icon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="14dp"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ic_menu_private_key" />
+
+        <androidx.legacy.widget.Space
+            android:id="@+id/center_place_holder_2"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:layout_centerInParent="true"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:textColor="?attr/text_primary"
+            android:layout_above="@id/center_place_holder_2"
+            android:layout_toEndOf="@id/private_key_icon"
+            android:text="@string/import_private_key"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="13sp"
+            android:textColor="?attr/text_assist"
+            android:layout_below="@id/center_place_holder_2"
+            android:layout_toEndOf="@id/private_key_icon"
+            android:text="@string/import_private_key_description"/>
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/add_watch_address"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:background="?attr/bg_market_card"
+        android:layout_marginBottom="10dp">
+
+        <ImageView
+            android:id="@+id/watch_address_icon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="14dp"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ic_menu_watch_address" />
+
+        <androidx.legacy.widget.Space
+            android:id="@+id/center_place_holder_3"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:layout_centerInParent="true"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:textColor="?attr/text_primary"
+            android:layout_above="@id/center_place_holder_3"
+            android:layout_toEndOf="@id/watch_address_icon"
+            android:text="@string/add_watch_address"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="13sp"
+            android:textColor="?attr/text_assist"
+            android:layout_below="@id/center_place_holder_3"
+            android:layout_toEndOf="@id/watch_address_icon"
+            android:text="@string/add_watch_address_description"/>
+
+    </RelativeLayout>
+    <View
+        android:layout_width="0dp"
+        android:layout_height="200dp"/>
 </one.mixin.android.widget.BottomSheetLinearLayout>
