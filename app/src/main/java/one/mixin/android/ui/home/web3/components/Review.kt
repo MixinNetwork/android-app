@@ -723,7 +723,7 @@ fun ActionButton(
             contentColor = if (enabled) contentColor else disabledContentColor,
         ),
         shape = RoundedCornerShape(30.dp),
-        contentPadding = PaddingValues(0.dp),
+        contentPadding = PaddingValues(horizontal = 35.dp, vertical = 10.dp),
         elevation = ButtonDefaults.elevation(
             pressedElevation = 0.dp,
             defaultElevation = 0.dp,

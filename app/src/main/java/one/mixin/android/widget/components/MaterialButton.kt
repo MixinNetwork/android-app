@@ -48,7 +48,7 @@ fun MixinButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     shape: Shape = RoundedCornerShape(32.dp),
-    contentPadding: PaddingValues = PaddingValues(0.dp),
+    contentPadding: PaddingValues = PaddingValues(horizontal = 35.dp, vertical = 10.dp),
     elevation: Dp = 0.dp,
     backgroundColor: Color = MixinAppTheme.colors.accent,
     contentColor: Color = Color.White,
