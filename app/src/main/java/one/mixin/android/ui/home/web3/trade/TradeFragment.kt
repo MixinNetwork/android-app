@@ -113,6 +113,7 @@ class TradeFragment : BaseFragment() {
 
         const val PREF_TRADE_SELECTED_TAB_PREFIX: String = "pref_trade_selected_tab_"
         const val PREF_TRADE_SPOT_GUIDE_SHOWN: String = "pref_trade_spot_guide_shown"
+        const val PREF_TRADE_PERPETUAL_GUIDE_SHOWN: String = "pref_trade_perpetual_guide_shown"
 
         inline fun <reified T : Swappable> newInstance(
             input: String? = null,
@@ -275,10 +276,6 @@ class TradeFragment : BaseFragment() {
                             var isPerpetualOrderBadgeDismissed by remember(currentWalletId) {
                                 mutableStateOf(defaultSharedPreferences.getBoolean(perpetualOrderBadgePrefKey, false))
                             }
-                            var hasShownSpotGuide by remember {
-                                mutableStateOf(defaultSharedPreferences.getBoolean(PREF_TRADE_SPOT_GUIDE_SHOWN, false))
-                            }
-                            val hasShownPerpetualGuide = isPerpetualTabBadgeDismissed
 
                             TradePage(
                                 walletId = walletId,
@@ -374,13 +371,11 @@ class TradeFragment : BaseFragment() {
                                     this@apply.hideKeyboard()
                                     navTo(OrderDetailFragment.newInstance(orderId), OrderDetailFragment.TAG)
                                 },
-                                hasShownSpotGuide = hasShownSpotGuide,
-                                hasShownPerpetualGuide = hasShownPerpetualGuide,
                                 onShowTradingGuideIfNeeded = { tabIndex ->
                                     this@apply.hideKeyboard()
                                     when {
                                         walletId == null && tabIndex >= SpotTradeGuideBottomSheetDialogFragment.TAB_LIMIT -> {
-                                            if (!hasShownPerpetualGuide) {
+                                            if (!defaultSharedPreferences.getBoolean(PREF_TRADE_PERPETUAL_GUIDE_SHOWN, false)) {
                                                 isPerpetualTabBadgeDismissed = true
                                                 defaultSharedPreferences.putBoolean(perpetualBadgePrefKey, true)
                                                 PerpetualGuideBottomSheetDialogFragment.newInstance()
@@ -388,9 +383,7 @@ class TradeFragment : BaseFragment() {
                                             }
                                         }
                                         tabIndex == 1 || tabIndex == 0 -> {
-                                            if (!hasShownSpotGuide) {
-                                                hasShownSpotGuide = true
-                                                defaultSharedPreferences.putBoolean(PREF_TRADE_SPOT_GUIDE_SHOWN, true)
+                                            if (!defaultSharedPreferences.getBoolean(PREF_TRADE_SPOT_GUIDE_SHOWN, false)) {
                                                 val initialGuideTab = if (tabIndex == 1) {
                                                     SpotTradeGuideBottomSheetDialogFragment.TAB_LIMIT
                                                 } else {

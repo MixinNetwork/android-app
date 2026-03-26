@@ -102,8 +102,10 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private var currentChain: String? = null
     private val acceptedPerpAssetIds: Set<String> by lazy {
         requireContext().defaultSharedPreferences
-            .getStringSet(Constants.Account.PREF_PERPS_ACCEPTED_ASSET_IDS, emptySet())
+            .getString(Constants.Account.PREF_PERPS_ACCEPTED_ASSET_IDS_V2, null)
             .orEmpty()
+            .split(",")
+            .map { it.trim() }
             .filter { it.isNotBlank() }
             .toSet()
     }

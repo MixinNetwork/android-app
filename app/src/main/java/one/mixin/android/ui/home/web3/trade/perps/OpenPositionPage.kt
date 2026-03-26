@@ -85,6 +85,38 @@ private fun getLeveragePrefKey(marketId: String) = "pref_perps_leverage_$marketI
 private const val MARKET_REFRESH_INTERVAL_MS = 5_000L
 private const val DEFAULT_LEVERAGE = 10
 
+private fun readAcceptedPerpAssetIds(context: android.content.Context): List<String> {
+    return context.defaultSharedPreferences
+        .getString(Constants.Account.PREF_PERPS_ACCEPTED_ASSET_IDS_V2, null)
+        .orEmpty()
+        .split(",")
+        .map { it.trim() }
+        .filter { it.isNotBlank() }
+}
+
+private fun TokenItem.hasPositiveBalance(): Boolean =
+    (balance.toBigDecimalOrNull() ?: BigDecimal.ZERO) > BigDecimal.ZERO
+
+private fun resolveCurrentToken(
+    selectedToken: TokenItem?,
+    availableTokens: List<TokenItem>,
+    preferredAssetIds: List<String>,
+): TokenItem? {
+    if (selectedToken == null) {
+        return availableTokens.firstOrNull { it.hasPositiveBalance() }
+            ?: preferredAssetIds.firstNotNullOfOrNull { assetId ->
+                availableTokens.firstOrNull { it.assetId == assetId }
+            }
+            ?: availableTokens.firstOrNull()
+    }
+
+    val matchedToken = availableTokens.firstOrNull { it.assetId == selectedToken.assetId }
+    return when {
+        matchedToken != null -> matchedToken
+        else -> selectedToken
+    }
+}
+
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun OpenPositionPage(
@@ -101,13 +133,8 @@ fun OpenPositionPage(
     val focusManager = LocalFocusManager.current
     val viewModel = hiltViewModel<PerpetualViewModel>()
     val marketId = market.marketId
-    val acceptedPerpAssetIds = remember {
-        context.defaultSharedPreferences
-            .getStringSet(Constants.Account.PREF_PERPS_ACCEPTED_ASSET_IDS, emptySet())
-            .orEmpty()
-            .filter { it.isNotBlank() }
-            .toSet()
-    }
+    val acceptedPerpAssetIdsOrdered = remember { readAcceptedPerpAssetIds(context) }
+    val acceptedPerpAssetIds = remember(acceptedPerpAssetIdsOrdered) { acceptedPerpAssetIdsOrdered.toSet() }
 
     var currentMarket by remember(marketId) { mutableStateOf(market) }
     var currentToken by remember { mutableStateOf<TokenItem?>(selectedToken) }
@@ -143,17 +170,28 @@ fun OpenPositionPage(
             } else {
                 tokens.filter { it.assetId in acceptedPerpAssetIds }
             }
-            availableTokens = supportedTokens
-            currentToken = selectedToken?.let { target ->
-                supportedTokens.firstOrNull { it.assetId == target.assetId }
-            } ?: supportedTokens.firstOrNull()
+            val orderedSupportedTokens = if (acceptedPerpAssetIdsOrdered.isEmpty()) {
+                supportedTokens
+            } else {
+                acceptedPerpAssetIdsOrdered.mapNotNull { assetId ->
+                    supportedTokens.firstOrNull { it.assetId == assetId }
+                }
+            }
+            availableTokens = orderedSupportedTokens
+            currentToken = resolveCurrentToken(
+                selectedToken = selectedToken,
+                availableTokens = orderedSupportedTokens,
+                preferredAssetIds = acceptedPerpAssetIdsOrdered,
+            )
         }
     }
 
     LaunchedEffect(selectedToken?.assetId, availableTokens) {
-        selectedToken?.let { target ->
-            currentToken = availableTokens.firstOrNull { it.assetId == target.assetId } ?: target
-        }
+        currentToken = resolveCurrentToken(
+            selectedToken = selectedToken,
+            availableTokens = availableTokens,
+            preferredAssetIds = acceptedPerpAssetIdsOrdered,
+        )
     }
     LaunchedEffect(currentToken) {
         onCurrentTokenChange(currentToken)
