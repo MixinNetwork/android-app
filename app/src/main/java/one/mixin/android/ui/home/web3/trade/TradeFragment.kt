@@ -113,6 +113,7 @@ class TradeFragment : BaseFragment() {
 
         const val PREF_TRADE_SELECTED_TAB_PREFIX: String = "pref_trade_selected_tab_"
         const val PREF_TRADE_SPOT_GUIDE_SHOWN: String = "pref_trade_spot_guide_shown"
+        const val PREF_TRADE_PERPETUAL_GUIDE_SHOWN: String = "pref_trade_perpetual_guide_shown"
 
         inline fun <reified T : Swappable> newInstance(
             input: String? = null,
@@ -278,7 +279,9 @@ class TradeFragment : BaseFragment() {
                             var hasShownSpotGuide by remember {
                                 mutableStateOf(defaultSharedPreferences.getBoolean(PREF_TRADE_SPOT_GUIDE_SHOWN, false))
                             }
-                            val hasShownPerpetualGuide = isPerpetualTabBadgeDismissed
+                            var hasShownPerpetualGuide by remember {
+                                mutableStateOf(defaultSharedPreferences.getBoolean(PREF_TRADE_PERPETUAL_GUIDE_SHOWN, false))
+                            }
 
                             TradePage(
                                 walletId = walletId,
@@ -381,7 +384,9 @@ class TradeFragment : BaseFragment() {
                                     when {
                                         walletId == null && tabIndex >= SpotTradeGuideBottomSheetDialogFragment.TAB_LIMIT -> {
                                             if (!hasShownPerpetualGuide) {
+                                                hasShownPerpetualGuide = true
                                                 isPerpetualTabBadgeDismissed = true
+                                                defaultSharedPreferences.putBoolean(PREF_TRADE_PERPETUAL_GUIDE_SHOWN, true)
                                                 defaultSharedPreferences.putBoolean(perpetualBadgePrefKey, true)
                                                 PerpetualGuideBottomSheetDialogFragment.newInstance()
                                                     .show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)

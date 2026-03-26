@@ -38,6 +38,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -111,6 +113,8 @@ fun TradePage(
     onClosedPositionClick: (PerpsPositionHistoryItem) -> Unit,
 ) {
     val context = LocalContext.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
 
     val viewModel = hiltViewModel<SwapViewModel>()
     val perpsViewModel = hiltViewModel<PerpetualViewModel>()
@@ -219,16 +223,11 @@ fun TradePage(
 
     LaunchedEffect(
         pagerState.currentPage,
-        perpetualTabIndex,
         hasShownSpotGuide,
-        hasShownPerpetualGuide,
     ) {
         val currentPage = pagerState.currentPage
-        val isSpotGuideTab = currentPage == 0 || currentPage == 1
-        val isPerpetualGuideTab = perpetualTabIndex != null && currentPage == perpetualTabIndex
-        when {
-            isSpotGuideTab && !hasShownSpotGuide -> onShowTradingGuideIfNeeded(currentPage)
-            isPerpetualGuideTab && !hasShownPerpetualGuide -> onShowTradingGuideIfNeeded(currentPage)
+        if ((currentPage == 0 || currentPage == 1) && !hasShownSpotGuide) {
+            onShowTradingGuideIfNeeded(currentPage)
         }
     }
 
@@ -411,6 +410,8 @@ fun TradePage(
                     selected = pagerState.currentPage == index,
                     showBadge = showAdvancedBadge || showPerpetualBadge,
                     onClick = {
+                        keyboardController?.hide()
+                        focusManager.clearFocus()
                         coroutineScope.launch {
                             pagerState.animateScrollToPage(index)
                         }
@@ -419,6 +420,9 @@ fun TradePage(
                         }
                         if (isPerpetualTab && !isPerpetualTabBadgeDismissed) {
                             onDismissPerpetualTabBadge()
+                        }
+                        if (isPerpetualTab && !hasShownPerpetualGuide) {
+                            onShowTradingGuideIfNeeded(index)
                         }
                         onTabChanged(index)
                     },
