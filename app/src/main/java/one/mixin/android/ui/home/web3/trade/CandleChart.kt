@@ -3,8 +3,9 @@ package one.mixin.android.ui.home.web3.trade
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -40,6 +41,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.input.pointer.PointerEvent
+import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -69,6 +72,7 @@ import org.threeten.bp.format.DateTimeFormatter
 import java.math.BigDecimal
 import kotlinx.coroutines.launch
 import kotlin.math.abs
+import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -77,6 +81,50 @@ private const val CANDLE_REFRESH_INTERVAL_MS = 10_000L
 private const val DEFAULT_CANDLE_SCALE = 1f
 private const val MIN_CANDLE_SCALE = 0.5f
 private const val MAX_CANDLE_SCALE = 3f
+
+private fun PointerEvent.currentPressedChanges(): List<PointerInputChange> =
+    changes.filter { it.pressed }
+
+private fun PointerEvent.compatCalculateCentroid(): Offset {
+    val pressed = currentPressedChanges()
+    if (pressed.isEmpty()) return Offset.Zero
+
+    val x = pressed.sumOf { it.position.x.toDouble() } / pressed.size
+    val y = pressed.sumOf { it.position.y.toDouble() } / pressed.size
+    return Offset(x.toFloat(), y.toFloat())
+}
+
+private fun PointerEvent.compatCalculatePan(): Offset {
+    val pressed = currentPressedChanges()
+    if (pressed.isEmpty()) return Offset.Zero
+
+    val currentCentroid = compatCalculateCentroid()
+    val previousX = pressed.sumOf { it.previousPosition.x.toDouble() } / pressed.size
+    val previousY = pressed.sumOf { it.previousPosition.y.toDouble() } / pressed.size
+    val previousCentroid = Offset(previousX.toFloat(), previousY.toFloat())
+    return currentCentroid - previousCentroid
+}
+
+private fun PointerEvent.compatCalculateZoom(): Float {
+    val pressed = currentPressedChanges()
+    if (pressed.size < 2) return 1f
+
+    val currentCentroid = compatCalculateCentroid()
+    val previousX = pressed.sumOf { it.previousPosition.x.toDouble() } / pressed.size
+    val previousY = pressed.sumOf { it.previousPosition.y.toDouble() } / pressed.size
+    val previousCentroid = Offset(previousX.toFloat(), previousY.toFloat())
+
+    val currentAverageDistance = pressed
+        .map { hypot((it.position.x - currentCentroid.x).toDouble(), (it.position.y - currentCentroid.y).toDouble()) }
+        .average()
+        .toFloat()
+    val previousAverageDistance = pressed
+        .map { hypot((it.previousPosition.x - previousCentroid.x).toDouble(), (it.previousPosition.y - previousCentroid.y).toDouble()) }
+        .average()
+        .toFloat()
+
+    return if (previousAverageDistance > 0f) currentAverageDistance / previousAverageDistance else 1f
+}
 
 @Composable
 fun CandleChart(
@@ -255,39 +303,56 @@ private fun ScrollableCandleChart(
                         baseCandleWidthPx,
                         baseSpacingPx,
                     ) {
-                        detectTransformGestures(
-                            panZoomLock = true,
-                            onGesture = { centroid, pan, zoom, _ ->
-                                if (abs(zoom - 1f) < 0.0001f && abs(pan.x) < 0.0001f) {
-                                    return@detectTransformGestures
+                        awaitEachGesture {
+                            awaitFirstDown(requireUnconsumed = false)
+                            var gestureHandled = false
+
+                            do {
+                                val event = awaitPointerEvent()
+                                val zoom = event.compatCalculateZoom()
+                                val pan = event.compatCalculatePan()
+                                val centroid = event.compatCalculateCentroid()
+                                val pressedCount = event.changes.count { it.pressed }
+
+                                if (pressedCount > 1 && (abs(zoom - 1f) >= 0.0001f || abs(pan.x) >= 0.0001f)) {
+                                    gestureHandled = true
+                                    isPinching = true
+                                    isTouching = false
+                                    touchXOnChart = null
+
+                                    val oldScale = candleScale
+                                    val newScale = (oldScale * zoom).coerceIn(MIN_CANDLE_SCALE, MAX_CANDLE_SCALE)
+                                    val oldStepPx = (baseCandleWidthPx + baseSpacingPx) * oldScale
+                                    val newStepPx = (baseCandleWidthPx + baseSpacingPx) * newScale
+                                    val contentX = scrollState.value + centroid.x - chartStartPaddingPx
+                                    val stepIndex = if (oldStepPx > 0f) contentX / oldStepPx else 0f
+
+                                    candleScale = newScale
+
+                                    val newTotalWidthPx = chartStartPaddingPx +
+                                        (baseCandleWidthPx * newScale * items.size) +
+                                        (baseSpacingPx * newScale * (items.size - 1).coerceAtLeast(0))
+                                    val maxScroll = (newTotalWidthPx - viewportWidthPx).coerceAtLeast(0f)
+                                    val anchoredScroll = (stepIndex * newStepPx) - (centroid.x - chartStartPaddingPx)
+                                    val targetScroll = (anchoredScroll - pan.x).roundToInt()
+                                        .coerceIn(0, maxScroll.roundToInt())
+
+                                    coroutineScope.launch {
+                                        scrollState.scrollTo(targetScroll)
+                                    }
+
+                                    event.changes.forEach { change ->
+                                        if (change.pressed) {
+                                            change.consume()
+                                        }
+                                    }
                                 }
+                            } while (event.changes.any { it.pressed })
 
-                                isPinching = true
-                                isTouching = false
-                                touchXOnChart = null
-
-                                val oldScale = candleScale
-                                val newScale = (oldScale * zoom).coerceIn(MIN_CANDLE_SCALE, MAX_CANDLE_SCALE)
-                                val oldStepPx = (baseCandleWidthPx + baseSpacingPx) * oldScale
-                                val newStepPx = (baseCandleWidthPx + baseSpacingPx) * newScale
-                                val contentX = scrollState.value + centroid.x - chartStartPaddingPx
-                                val stepIndex = if (oldStepPx > 0f) contentX / oldStepPx else 0f
-
-                                candleScale = newScale
-
-                                val newTotalWidthPx = chartStartPaddingPx +
-                                    (baseCandleWidthPx * newScale * items.size) +
-                                    (baseSpacingPx * newScale * (items.size - 1).coerceAtLeast(0))
-                                val maxScroll = (newTotalWidthPx - viewportWidthPx).coerceAtLeast(0f)
-                                val anchoredScroll = (stepIndex * newStepPx) - (centroid.x - chartStartPaddingPx)
-                                val targetScroll = (anchoredScroll - pan.x).roundToInt()
-                                    .coerceIn(0, maxScroll.roundToInt())
-
-                                coroutineScope.launch {
-                                    scrollState.scrollTo(targetScroll)
-                                }
+                            if (gestureHandled) {
+                                isPinching = false
                             }
-                        )
+                        }
                     }
                     .pointerInput(items.size, totalChartWidthPx, isPinching) {
                         if (isPinching) return@pointerInput

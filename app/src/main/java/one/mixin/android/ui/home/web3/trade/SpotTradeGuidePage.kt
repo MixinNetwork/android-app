@@ -856,24 +856,6 @@ private fun calculateReceiveAmount(
     }
 }
 
-private fun convertPayAmount(
-    amount: BigDecimal,
-    currentFromPrice: BigDecimal,
-    newFromPrice: BigDecimal,
-): BigDecimal {
-    if (currentFromPrice <= BigDecimal.ZERO || newFromPrice <= BigDecimal.ZERO) {
-        return amount
-    }
-    return amount
-        .multiply(currentFromPrice)
-        .divide(newFromPrice, 8, RoundingMode.HALF_UP)
-        .stripTrailingZeros()
-}
-
-private fun TokenItem?.safePrice(): BigDecimal {
-    return this?.priceUsd?.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: BigDecimal.ONE
-}
-
 private fun guideTokenIconRes(
     token: TokenItem?,
     fallbackSymbol: String,
