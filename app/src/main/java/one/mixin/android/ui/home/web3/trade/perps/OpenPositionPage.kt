@@ -85,11 +85,21 @@ private fun getLeveragePrefKey(marketId: String) = "pref_perps_leverage_$marketI
 private const val MARKET_REFRESH_INTERVAL_MS = 5_000L
 private const val DEFAULT_LEVERAGE = 10
 
+private fun TokenItem.hasPositiveBalance(): Boolean =
+    (balance.toBigDecimalOrNull() ?: BigDecimal.ZERO) > BigDecimal.ZERO
+
 private fun resolveCurrentToken(
     selectedToken: TokenItem?,
     availableTokens: List<TokenItem>,
+    preferredAssetIds: List<String>,
 ): TokenItem? {
-    if (selectedToken == null) return availableTokens.firstOrNull()
+    if (selectedToken == null) {
+        return availableTokens.firstOrNull { it.hasPositiveBalance() }
+            ?: preferredAssetIds.firstNotNullOfOrNull { assetId ->
+                availableTokens.firstOrNull { it.assetId == assetId }
+            }
+            ?: availableTokens.firstOrNull()
+    }
 
     val matchedToken = availableTokens.firstOrNull { it.assetId == selectedToken.assetId }
     return when {
@@ -120,6 +130,14 @@ fun OpenPositionPage(
             .orEmpty()
             .filter { it.isNotBlank() }
             .toSet()
+    }
+    val acceptedPerpAssetIdsOrdered = remember {
+        context.defaultSharedPreferences
+            .getString(Constants.Account.PREF_PERPS_ACCEPTED_ASSET_IDS_ORDERED, null)
+            .orEmpty()
+            .split(",")
+            .map { it.trim() }
+            .filter { it.isNotBlank() }
     }
 
     var currentMarket by remember(marketId) { mutableStateOf(market) }
@@ -160,6 +178,7 @@ fun OpenPositionPage(
             currentToken = resolveCurrentToken(
                 selectedToken = selectedToken,
                 availableTokens = supportedTokens,
+                preferredAssetIds = acceptedPerpAssetIdsOrdered,
             )
         }
     }
@@ -168,6 +187,7 @@ fun OpenPositionPage(
         currentToken = resolveCurrentToken(
             selectedToken = selectedToken,
             availableTokens = availableTokens,
+            preferredAssetIds = acceptedPerpAssetIdsOrdered,
         )
     }
     LaunchedEffect(currentToken) {
