@@ -103,7 +103,7 @@ fun SpotTradeGuidePage(
                 .padding(horizontal = 20.dp, vertical = 20.dp),
         ) {
             Text(
-                text = stringResource(R.string.Trading_Guide),
+                text = stringResource(R.string.Spot_Trading_Guide),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.W500,
                 color = MixinAppTheme.colors.textPrimary,

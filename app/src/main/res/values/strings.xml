@@ -2295,7 +2295,8 @@
     <string name="no_available_quotes_found">No available quotes found. Please try a different token or amount.</string>
     <string name="wallet_summary_tip_all">Safes, watch wallets, and hidden assets are excluded from the total</string>
     <string name="wallet_summary_tip_safe">Co-managed safes are excluded from the total</string>
-    <string name="Trading_Guide">Spot Trading Guide</string>
+    <string name="Trading_Guide">Trading Guide</string>
+    <string name="Spot_Trading_Guide">Spot Trading Guide</string>
     <string name="Overview">Overview</string>
     <string name="Perpetual_Guide_Overview_Content">Perpetual contracts allow you to trade cryptocurrency with leverage, enabling you to amplify your potential profits (and losses). You can go long (bet on price increase) or short (bet on price decrease) without owning the underlying asset.</string>
     <string name="perps_leverage_overview">Leverage allows you to control a larger position with less capital.</string>
