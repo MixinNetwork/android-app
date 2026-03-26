@@ -714,7 +714,7 @@ private fun SpotTradeGuideBottomNavigation(
     if (previousTab != null && nextTab == null) {
         Row(
             modifier = Modifier
-                .padding(horizontal = 20.dp)
+                .padding(horizontal = 18.dp)
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
@@ -736,7 +736,7 @@ private fun SpotTradeGuideBottomNavigation(
     if (previousTab != null && nextTab != null) {
         Row(
             modifier = Modifier
-                .padding(horizontal = 20.dp)
+                .padding(horizontal = 18.dp)
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {

@@ -476,7 +476,7 @@ private fun GuideBottomNavigation(
     if (previousTab != null && nextTab == null) {
         Row(
             modifier = Modifier
-                .padding(horizontal = 20.dp)
+                .padding(horizontal = 18.dp)
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
@@ -498,7 +498,7 @@ private fun GuideBottomNavigation(
     if (previousTab != null && nextTab != null) {
         Row(
             modifier = Modifier
-                .padding(horizontal = 20.dp)
+                .padding(horizontal = 18.dp)
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
