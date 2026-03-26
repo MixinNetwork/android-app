@@ -2434,8 +2434,12 @@
     <string name="Spot_Trade_Guide_Limit_Scenario_2">For precise pricing</string>
     <string name="Spot_Trade_Guide_Limit_Scenario_3">For large trades</string>
     <string name="Spot_Trade_Guide_Limit_Risk">The market price may move past your limit price, and your order may not be filled.</string>
+    <string name="import_wallet_title">Import Wallet</string>
+    <string name="import_wallet_empty_description">Import with a private key or 12/24-word recovery phrase. Supports Bitcoin, Solana, Ethereum, and other EVM networks.</string>
+    <string name="watch_wallet_empty_description">Watch addresses without private keys. View balances, transactions, and receive activity notifications with a fast native experience.</string>
+    <string name="watch_wallet_guide_url">https://support.mixin.one/en/article/how-to-add-a-watch-only-address-17ifo8w/</string>
     <string name="free_transfers_between_wallets_title">Free transfers between wallets</string>
-    <string name="free_transfers_between_wallets_description">Send crypto to friends using Mixin directly without fees.</string>
+    <string name="free_transfers_between_wallets_description">Free transfers between wallets, for a limited time.</string>
     <string name="is_it_safe_to_import_into_mixin">Is it safe to import into Mixin?</string>
     <string name="mixin_import_safety_1">Mixin is open source, reproducible, and independently audited.</string>
     <string name="mixin_import_safety_2">Your data is securely encrypted and stored locally on your device.</string>
