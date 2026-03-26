@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
@@ -385,7 +386,7 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                             ) {
                                 MixinButton(
                                     onClick = { onDoneAction?.invoke(); dismiss() },
-                                    shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
+                                    shape = RoundedCornerShape(30.dp),
                                     contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 36.dp, vertical = 11.dp),
                                 ) { Text(text = stringResource(id = R.string.Done), fontSize = 16.sp, color = Color.White) }
                             }
