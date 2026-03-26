@@ -124,7 +124,7 @@ buildscript {
         ext.billingVersion ='8.3.0'
 
         ext.lottieComposeVersion = '6.7.1'
-        ext.composeBomVersion = '2026.03.00'
+        ext.composeBomVersion = '2026.03.01'
         ext.activityComposeVersion = '1.13.0'
         ext.reownBomVersion = '1.6.7'
         ext.kotsonVersion = '2.5.0'
