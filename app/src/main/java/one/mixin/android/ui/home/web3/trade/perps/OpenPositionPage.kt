@@ -174,10 +174,17 @@ fun OpenPositionPage(
             } else {
                 tokens.filter { it.assetId in acceptedPerpAssetIds }
             }
-            availableTokens = supportedTokens
+            val orderedSupportedTokens = if (acceptedPerpAssetIdsOrdered.isEmpty()) {
+                supportedTokens
+            } else {
+                acceptedPerpAssetIdsOrdered.mapNotNull { assetId ->
+                    supportedTokens.firstOrNull { it.assetId == assetId }
+                }
+            }
+            availableTokens = orderedSupportedTokens
             currentToken = resolveCurrentToken(
                 selectedToken = selectedToken,
-                availableTokens = supportedTokens,
+                availableTokens = orderedSupportedTokens,
                 preferredAssetIds = acceptedPerpAssetIdsOrdered,
             )
         }
