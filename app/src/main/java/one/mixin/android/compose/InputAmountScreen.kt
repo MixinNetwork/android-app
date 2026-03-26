@@ -815,7 +815,7 @@ fun InputAmountPreviewScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 45.dp, vertical = 16.dp),
+                .padding(horizontal = 42.dp, vertical = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(28.dp)
         ) {
             if (invoiceUri != null) {
