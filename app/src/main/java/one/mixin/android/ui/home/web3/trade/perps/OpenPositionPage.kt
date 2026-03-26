@@ -85,6 +85,19 @@ private fun getLeveragePrefKey(marketId: String) = "pref_perps_leverage_$marketI
 private const val MARKET_REFRESH_INTERVAL_MS = 5_000L
 private const val DEFAULT_LEVERAGE = 10
 
+private fun resolveCurrentToken(
+    selectedToken: TokenItem?,
+    availableTokens: List<TokenItem>,
+): TokenItem? {
+    if (selectedToken == null) return availableTokens.firstOrNull()
+
+    val matchedToken = availableTokens.firstOrNull { it.assetId == selectedToken.assetId }
+    return when {
+        matchedToken != null -> matchedToken
+        else -> selectedToken
+    }
+}
+
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun OpenPositionPage(
@@ -144,16 +157,18 @@ fun OpenPositionPage(
                 tokens.filter { it.assetId in acceptedPerpAssetIds }
             }
             availableTokens = supportedTokens
-            currentToken = selectedToken?.let { target ->
-                supportedTokens.firstOrNull { it.assetId == target.assetId }
-            } ?: supportedTokens.firstOrNull()
+            currentToken = resolveCurrentToken(
+                selectedToken = selectedToken,
+                availableTokens = supportedTokens,
+            )
         }
     }
 
     LaunchedEffect(selectedToken?.assetId, availableTokens) {
-        selectedToken?.let { target ->
-            currentToken = availableTokens.firstOrNull { it.assetId == target.assetId } ?: target
-        }
+        currentToken = resolveCurrentToken(
+            selectedToken = selectedToken,
+            availableTokens = availableTokens,
+        )
     }
     LaunchedEffect(currentToken) {
         onCurrentTokenChange(currentToken)
