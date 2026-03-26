@@ -42,6 +42,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.PlatformTextStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.FragmentActivity
@@ -622,6 +624,7 @@ private fun OpenPositionCard(
 
     val entryPrice = position.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val liquidationPrice = calculateLiquidationPriceValue(entryPrice, position.leverage, isLong)
+    val compactTextStyle = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false))
 
     Column(
         modifier = Modifier
@@ -638,6 +641,8 @@ private fun OpenPositionCard(
             Text(
                 text = stringResource(R.string.perps_position),
                 fontSize = 16.sp,
+                lineHeight = 16.sp,
+                style = compactTextStyle,
                 fontWeight = FontWeight.Medium,
                 color = MixinAppTheme.colors.textPrimary
             )
@@ -663,11 +668,15 @@ private fun OpenPositionCard(
                 Text(
                     text = stringResource(R.string.PnL).uppercase(),
                     fontSize = 12.sp,
+                    lineHeight = 14.sp,
+                    style = compactTextStyle,
                     color = MixinAppTheme.colors.textAssist
                 )
                 Text(
                     text = stringResource(R.string.Direction).uppercase(),
                     fontSize = 12.sp,
+                    lineHeight = 14.sp,
+                    style = compactTextStyle,
                     color = MixinAppTheme.colors.textAssist
                 )
             }
@@ -680,6 +689,8 @@ private fun OpenPositionCard(
                 Text(
                     text = "${formatPerpsSignedFiatDecimal(pnl.multiply(fiatRate), fiatSymbol)}(${formatPerpsSignedPercent(roe)})",
                     fontSize = 14.sp,
+                    lineHeight = 17.sp,
+                    style = compactTextStyle,
                     color = pnlColor
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -693,6 +704,7 @@ private fun OpenPositionCard(
                             text = if (isLong) stringResource(R.string.Long) else stringResource(R.string.Short),
                             fontSize = 10.sp,
                             lineHeight = 12.sp,
+                            style = compactTextStyle,
                             color = Color.White
                         )
                     }
@@ -700,6 +712,8 @@ private fun OpenPositionCard(
                     Text(
                         text = "${position.leverage}x",
                         fontSize = 14.sp,
+                        lineHeight = 17.sp,
+                        style = compactTextStyle,
                         color = MixinAppTheme.colors.textPrimary
                     )
                 }
@@ -718,6 +732,8 @@ private fun OpenPositionCard(
                     Text(
                         text = stringResource(R.string.position_size).uppercase(),
                         fontSize = 12.sp,
+                        lineHeight = 14.sp,
+                        style = compactTextStyle,
                         color = MixinAppTheme.colors.textAssist
                     )
                     Spacer(modifier = Modifier.width(9.dp))
@@ -738,6 +754,8 @@ private fun OpenPositionCard(
                 Text(
                     text = stringResource(R.string.Margin).uppercase(),
                     fontSize = 12.sp,
+                    lineHeight = 14.sp,
+                    style = compactTextStyle,
                     color = MixinAppTheme.colors.textAssist
                 )
             }
@@ -750,11 +768,15 @@ private fun OpenPositionCard(
                 Text(
                     text = "${quantity.stripTrailingZeros().toPlainString()} ${position.tokenSymbol}",
                     fontSize = 14.sp,
+                    lineHeight = 17.sp,
+                    style = compactTextStyle,
                     color = MixinAppTheme.colors.textPrimary
                 )
                 Text(
                     text = formatPerpsFiatDecimal(amountValue, fiatSymbol),
                     fontSize = 14.sp,
+                    lineHeight = 17.sp,
+                    style = compactTextStyle,
                     color = MixinAppTheme.colors.textPrimary
                 )
             }
@@ -771,11 +793,15 @@ private fun OpenPositionCard(
                 Text(
                     text = stringResource(R.string.Entry_Price).uppercase(),
                     fontSize = 12.sp,
+                    lineHeight = 14.sp,
+                    style = compactTextStyle,
                     color = MixinAppTheme.colors.textAssist
                 )
                 Text(
                     text = stringResource(R.string.Liquidation_Price).uppercase(),
                     fontSize = 12.sp,
+                    lineHeight = 14.sp,
+                    style = compactTextStyle,
                     color = MixinAppTheme.colors.textAssist
                 )
             }
@@ -788,11 +814,15 @@ private fun OpenPositionCard(
                 Text(
                     text = "${fiatSymbol}${entryPrice.multiply(fiatRate).priceFormat()}",
                     fontSize = 14.sp,
+                    lineHeight = 17.sp,
+                    style = compactTextStyle,
                     color = MixinAppTheme.colors.textPrimary
                 )
                 Text(
                     text = "${fiatSymbol}${liquidationPrice.multiply(fiatRate).priceFormat()}",
                     fontSize = 14.sp,
+                    lineHeight = 17.sp,
+                    style = compactTextStyle,
                     color = MixinAppTheme.colors.textPrimary
                 )
             }
