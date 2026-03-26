@@ -98,6 +98,9 @@ fun TradePage(
     onSwitchToLimitOrder: (String, SwapToken, SwapToken) -> Unit,
     pop: () -> Unit,
     onLimitOrderClick: (String) -> Unit,
+    hasShownSpotGuide: Boolean,
+    hasShownPerpetualGuide: Boolean,
+    onShowTradingGuideIfNeeded: (Int) -> Unit,
     onShowTradingGuide: (Int) -> Unit,
     onShowMarketList: (Boolean) -> Unit,
     onShowAllMarkets: () -> Unit,
@@ -213,6 +216,21 @@ fun TradePage(
         initialPage = initialTabIndex.coerceIn(0, (tabCount - 1).coerceAtLeast(0)),
         pageCount = { tabCount },
     )
+
+    LaunchedEffect(
+        pagerState.currentPage,
+        perpetualTabIndex,
+        hasShownSpotGuide,
+        hasShownPerpetualGuide,
+    ) {
+        val currentPage = pagerState.currentPage
+        val isSpotGuideTab = currentPage == 0 || currentPage == 1
+        val isPerpetualGuideTab = perpetualTabIndex != null && currentPage == perpetualTabIndex
+        when {
+            isSpotGuideTab && !hasShownSpotGuide -> onShowTradingGuideIfNeeded(currentPage)
+            isPerpetualGuideTab && !hasShownPerpetualGuide -> onShowTradingGuideIfNeeded(currentPage)
+        }
+    }
 
     // When SwapContent requests switching to Limit tab, animate to it
     LaunchedEffect(switchToLimitRequested.value) {
@@ -395,7 +413,6 @@ fun TradePage(
                         }
                         if (isPerpetualTab && !isPerpetualTabBadgeDismissed) {
                             onDismissPerpetualTabBadge()
-                            onShowTradingGuide(index)
                         }
                         onTabChanged(index)
                     },
