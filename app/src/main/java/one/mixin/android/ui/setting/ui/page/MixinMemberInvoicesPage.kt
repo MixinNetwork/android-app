@@ -1,6 +1,6 @@
 package one.mixin.android.ui.setting.ui.page
 
-import PageScaffold
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource

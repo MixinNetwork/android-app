@@ -1,6 +1,6 @@
 package one.mixin.android.ui.wallet.alert
 
-import PageScaffold
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -97,7 +97,7 @@ fun AlertPage(coin: CoinItem, pop: () -> Unit, onAdd: () -> Unit, toAll: () -> U
                     ) {
                         Box(modifier = Modifier.padding(horizontal = 32.dp), contentAlignment = Alignment.Center) {
                             Text(
-                                text = stringResource(R.string.Add_Alert),
+                                text = stringResource(R.string.Alert),
                                 color = Color.White,
                             )
                         }
@@ -135,7 +135,7 @@ fun AlertPage(coin: CoinItem, pop: () -> Unit, onAdd: () -> Unit, toAll: () -> U
                 ) {
                     Box(modifier = Modifier.padding(horizontal = 32.dp), contentAlignment = Alignment.Center) {
                         Text(
-                            text = stringResource(R.string.Add_Alert),
+                            text = stringResource(R.string.Alert),
                             color = Color.White,
                         )
                     }

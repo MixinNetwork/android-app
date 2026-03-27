@@ -1,6 +1,6 @@
 package one.mixin.android.ui.address.page
 
-import PageScaffold
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -238,6 +238,7 @@ fun MemoInputPage(
                     } else {
                         Text(
                             text = stringResource(R.string.Next),
+                            fontSize = 16.sp,
                             color = if (isValidMemo) Color.White else MixinAppTheme.colors.textAssist,
                         )
                     }

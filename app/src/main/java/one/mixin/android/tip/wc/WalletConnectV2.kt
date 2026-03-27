@@ -131,7 +131,7 @@ object WalletConnectV2 : WalletConnect() {
                     sessionProposal: Wallet.Model.SessionProposal,
                     verifyContext: Wallet.Model.VerifyContext,
                 ) {
-                    Timber.d("$TAG onSessionProposal $sessionProposal")
+                    Timber.d("$TAG onSessionProposal $sessionProposal $verifyContext")
                     val chains = supportChainList.map { c -> c.chainId }
                     val namespaces =
                         (sessionProposal.requiredNamespaces.values + sessionProposal.optionalNamespaces.values)

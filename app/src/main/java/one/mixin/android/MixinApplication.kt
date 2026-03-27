@@ -48,6 +48,7 @@ import leakcanary.AppWatcher
 import leakcanary.LeakCanaryProcess
 import leakcanary.ReachabilityWatcher
 import okhttp3.OkHttpClient
+import one.mixin.android.Constants.Account.PREF_APP_AUTH
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.MixinSignalProtocolLogger
 import one.mixin.android.crypto.PrivacyPreference.clearPrivacyPreferences
@@ -62,6 +63,7 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.notificationManager
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
+import one.mixin.android.extension.remove
 import one.mixin.android.job.BlazeMessageService
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.resolveCurrentUserScopeManager
@@ -343,6 +345,7 @@ open class MixinApplication :
         CryptoWalletHelper.clear(this)
         // Clear biometric key material and prefs so a later relogin cannot reuse the old fingerprint state.
         BiometricUtil.deleteKey(this)
+        defaultSharedPreferences.remove(PREF_APP_AUTH)
         // Remove the in-memory and persisted account session, including session id and account profile.
         Session.clearAccount()
         // Remove locally cached mnemonic from encrypted storage during logout.
@@ -493,6 +496,7 @@ open class MixinApplication :
         val appAuth = defaultSharedPreferences.getInt(Constants.Account.PREF_APP_AUTH, -1)
         if (appAuth != -1) {
             if (appAuth == 0) {
+                appAuthShown = true
                 AppAuthActivity.show(activity)
                 return true
             } else {
@@ -506,6 +510,7 @@ open class MixinApplication :
                         Constants.INTERVAL_30_MINS
                     }
                 if (now - enterBackground > offset) {
+                    appAuthShown = true
                     AppAuthActivity.show(activity)
                     return true
                 }

@@ -1,6 +1,7 @@
 package one.mixin.android.ui.home.web3.trade
 
-import PageScaffold
+import android.content.ClipData
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -478,7 +479,7 @@ fun DetailItem(
                             value = order.orderId,
                             onCopy = {
                                 context.getClipboardManager().setPrimaryClip(
-                                    android.content.ClipData.newPlainText(
+                                    ClipData.newPlainText(
                                         null,
                                         order.orderId
                                     )

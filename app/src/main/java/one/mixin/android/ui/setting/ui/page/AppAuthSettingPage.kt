@@ -119,6 +119,7 @@ fun AppAuthSettingPage() {
                     context.getString(R.string.Confirm_fingerprint),
                     context.getString(R.string.Cancel),
                     authCallback,
+                    context.getString(R.string.Unlock_with_fingerprint),
                 )
             }
         }

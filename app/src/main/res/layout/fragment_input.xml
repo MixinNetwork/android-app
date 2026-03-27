@@ -53,7 +53,7 @@
                     android:gravity="center"
                     android:text="@string/Next"
                     android:textColor="@color/selector_tv_white"
-                    android:textSize="14sp" />
+                    android:textSize="16sp" />
 
                 <ProgressBar
                     style="?android:attr/progressBarStyleSmall"

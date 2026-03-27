@@ -77,7 +77,7 @@ open class BaseActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         val fragments = supportFragmentManager.fragments
-        if (fragments.size > 0) {
+        if (fragments.isNotEmpty()) {
             // Make sure there is a BaseFragment handle this event.
             fragments.indices.reversed()
                 .map { fragments[it] }

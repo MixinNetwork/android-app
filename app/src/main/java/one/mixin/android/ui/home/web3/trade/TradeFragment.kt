@@ -69,6 +69,12 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.GasCheckBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.trade.perps.AllPerpsMarketsFragment
+import one.mixin.android.ui.home.web3.trade.perps.AllPositionsFragment
+import one.mixin.android.ui.home.web3.trade.perps.PerpetualGuideBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.trade.perps.PerpsActivity
+import one.mixin.android.ui.home.web3.trade.perps.PerpsMarketListBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.trade.perps.PositionDetailFragment
 import one.mixin.android.ui.wallet.AllOrdersFragment
 import one.mixin.android.ui.wallet.DepositFragment
 import one.mixin.android.ui.wallet.LimitTransferBottomSheetDialogFragment
@@ -106,6 +112,8 @@ class TradeFragment : BaseFragment() {
         const val maxLeftAmount = 0.01
 
         const val PREF_TRADE_SELECTED_TAB_PREFIX: String = "pref_trade_selected_tab_"
+        const val PREF_TRADE_SPOT_GUIDE_SHOWN: String = "pref_trade_spot_guide_shown"
+        const val PREF_TRADE_PERPETUAL_GUIDE_SHOWN: String = "pref_trade_perpetual_guide_shown"
 
         inline fun <reified T : Swappable> newInstance(
             input: String? = null,
@@ -159,6 +167,18 @@ class TradeFragment : BaseFragment() {
     }
 
     private var orderBadge: Boolean by mutableStateOf(false)
+
+    private fun limitOrderBadgeDismissedPrefKey(walletId: String): String {
+        return "${Account.PREF_TRADE_LIMIT_ORDER_BADGE_DISMISSED}_$walletId"
+    }
+
+    private fun perpetualBadgeDismissedPrefKey(walletId: String): String {
+        return "${Account.PREF_TRADE_PERPETUAL_BADGE_DISMISSED}_$walletId"
+    }
+
+    private fun perpetualOrderBadgeDismissedPrefKey(walletId: String): String {
+        return "${Account.PREF_TRADE_PERPETUAL_ORDER_BADGE_DISMISSED}_$walletId"
+    }
 
     @FlowPreview
     override fun onCreateView(
@@ -234,18 +254,29 @@ class TradeFragment : BaseFragment() {
                             }
                             
                             val currentWalletId = walletId ?: Session.getAccountId() ?: ""
+                            val limitBadgePrefKey = remember(currentWalletId) {
+                                limitOrderBadgeDismissedPrefKey(currentWalletId)
+                            }
+                            val perpetualBadgePrefKey = remember(currentWalletId) {
+                                perpetualBadgeDismissedPrefKey(currentWalletId)
+                            }
+                            val perpetualOrderBadgePrefKey = remember(currentWalletId) {
+                                perpetualOrderBadgeDismissedPrefKey(currentWalletId)
+                            }
                             val initialTabIndex = remember(currentWalletId) {
                                 val preferenceKey = "$PREF_TRADE_SELECTED_TAB_PREFIX$currentWalletId"
                                 defaultSharedPreferences.getInt(preferenceKey, 0)
                             }
                             var isLimitOrderTabBadgeDismissed by remember(currentWalletId) {
-                                mutableStateOf(defaultSharedPreferences.getBoolean(Account.PREF_TRADE_LIMIT_ORDER_BADGE_DISMISSED, false))
+                                mutableStateOf(defaultSharedPreferences.getBoolean(limitBadgePrefKey, false))
+                            }
+                            var isPerpetualTabBadgeDismissed by remember(currentWalletId) {
+                                mutableStateOf(defaultSharedPreferences.getBoolean(perpetualBadgePrefKey, false))
+                            }
+                            var isPerpetualOrderBadgeDismissed by remember(currentWalletId) {
+                                mutableStateOf(defaultSharedPreferences.getBoolean(perpetualOrderBadgePrefKey, false))
                             }
 
-                            if (!isLimitOrderTabBadgeDismissed) {
-                                isLimitOrderTabBadgeDismissed = true
-                                defaultSharedPreferences.putBoolean(Account.PREF_TRADE_LIMIT_ORDER_BADGE_DISMISSED, true)
-                            }
                             TradePage(
                                 walletId = walletId,
                                 swapFrom = fromToken,
@@ -255,6 +286,8 @@ class TradeFragment : BaseFragment() {
                                 inMixin = inMixin(),
                                 orderBadge = orderBadge,
                                 isLimitOrderTabBadgeDismissed = isLimitOrderTabBadgeDismissed,
+                                isPerpetualTabBadgeDismissed = isPerpetualTabBadgeDismissed,
+                                isPerpetualOrderBadgeDismissed = isPerpetualOrderBadgeDismissed,
                                 initialAmount = initialAmount,
                                 lastOrderTime = lastOrderTime,
                                 reviewing = reviewing,
@@ -270,7 +303,19 @@ class TradeFragment : BaseFragment() {
                                 onDismissLimitOrderTabBadge = {
                                     if (!isLimitOrderTabBadgeDismissed) {
                                         isLimitOrderTabBadgeDismissed = true
-                                        defaultSharedPreferences.putBoolean(Account.PREF_TRADE_LIMIT_ORDER_BADGE_DISMISSED, true)
+                                        defaultSharedPreferences.putBoolean(limitBadgePrefKey, true)
+                                    }
+                                },
+                                onDismissPerpetualTabBadge = {
+                                    if (!isPerpetualTabBadgeDismissed) {
+                                        isPerpetualTabBadgeDismissed = true
+                                        defaultSharedPreferences.putBoolean(perpetualBadgePrefKey, true)
+                                    }
+                                },
+                                onDismissPerpetualOrderBadge = {
+                                    if (!isPerpetualOrderBadgeDismissed) {
+                                        isPerpetualOrderBadgeDismissed = true
+                                        defaultSharedPreferences.putBoolean(perpetualOrderBadgePrefKey, true)
                                     }
                                 },
                                 onTabChanged = { index ->
@@ -326,8 +371,84 @@ class TradeFragment : BaseFragment() {
                                     this@apply.hideKeyboard()
                                     navTo(OrderDetailFragment.newInstance(orderId), OrderDetailFragment.TAG)
                                 },
+                                onShowTradingGuideIfNeeded = { tabIndex ->
+                                    this@apply.hideKeyboard()
+                                    when {
+                                        walletId == null && tabIndex >= SpotTradeGuideBottomSheetDialogFragment.TAB_LIMIT -> {
+                                            if (!defaultSharedPreferences.getBoolean(PREF_TRADE_PERPETUAL_GUIDE_SHOWN, false)) {
+                                                isPerpetualTabBadgeDismissed = true
+                                                defaultSharedPreferences.putBoolean(perpetualBadgePrefKey, true)
+                                                PerpetualGuideBottomSheetDialogFragment.newInstance()
+                                                    .show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
+                                            }
+                                        }
+                                        tabIndex == 1 || tabIndex == 0 -> {
+                                            if (!defaultSharedPreferences.getBoolean(PREF_TRADE_SPOT_GUIDE_SHOWN, false)) {
+                                                val initialGuideTab = if (tabIndex == 1) {
+                                                    SpotTradeGuideBottomSheetDialogFragment.TAB_LIMIT
+                                                } else {
+                                                    SpotTradeGuideBottomSheetDialogFragment.TAB_SWAP
+                                                }
+                                                SpotTradeGuideBottomSheetDialogFragment.newInstance(initialGuideTab)
+                                                    .show(parentFragmentManager, SpotTradeGuideBottomSheetDialogFragment.TAG)
+                                            }
+                                        }
+                                    }
+                                },
+                                onShowTradingGuide = { tabIndex ->
+                                    this@apply.hideKeyboard()
+                                    when {
+                                        walletId == null && tabIndex >= SpotTradeGuideBottomSheetDialogFragment.TAB_LIMIT -> {
+                                            PerpetualGuideBottomSheetDialogFragment.newInstance()
+                                                .show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
+                                        }
+                                        tabIndex == 1 -> {
+                                            SpotTradeGuideBottomSheetDialogFragment.newInstance(
+                                                SpotTradeGuideBottomSheetDialogFragment.TAB_LIMIT
+                                            ).show(parentFragmentManager, SpotTradeGuideBottomSheetDialogFragment.TAG)
+                                        }
+                                        tabIndex == 0 -> {
+                                            SpotTradeGuideBottomSheetDialogFragment.newInstance(
+                                                SpotTradeGuideBottomSheetDialogFragment.TAB_SWAP
+                                            ).show(parentFragmentManager, SpotTradeGuideBottomSheetDialogFragment.TAG)
+                                        }
+                                        else -> {
+                                            SpotTradeGuideBottomSheetDialogFragment.newInstance(
+                                                SpotTradeGuideBottomSheetDialogFragment.TAB_OVERVIEW
+                                            )
+                                                .show(parentFragmentManager, SpotTradeGuideBottomSheetDialogFragment.TAG)
+                                        }
+                                    }
+                                },
                                 pop = {
                                     navigateUp(navController)
+                                },
+                                onShowMarketList = { isLong ->
+                                    PerpsMarketListBottomSheetDialogFragment.newInstance(isLong).show(parentFragmentManager, PerpsMarketListBottomSheetDialogFragment.TAG)
+                                },
+                                onShowAllMarkets = {
+                                    navTo(AllPerpsMarketsFragment.newInstance(), AllPerpsMarketsFragment.TAG)
+                                },
+                                onShowAllOpenPositions = {
+                                    navTo(AllPositionsFragment.newOpenInstance(), AllPositionsFragment.TAG)
+                                },
+                                onShowAllClosedPositions = {
+                                    navTo(AllPositionsFragment.newClosedInstance(), AllPositionsFragment.TAG)
+                                },
+                                onOpenPositionClick = { position ->
+                                    navTo(PositionDetailFragment.newInstance(position), PositionDetailFragment.TAG)
+                                },
+                                onMarketItemClick = { market ->
+                                    PerpsActivity.showDetail(
+                                        requireContext(),
+                                        market.marketId,
+                                        market.displaySymbol,
+                                        market.displaySymbol,
+                                        market.tokenSymbol
+                                    )
+                                },
+                                onClosedPositionClick = { position ->
+                                    navTo(PositionDetailFragment.newInstance(position), PositionDetailFragment.TAG)
                                 }
                             )
                         }

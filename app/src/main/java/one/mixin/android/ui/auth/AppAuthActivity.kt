@@ -129,6 +129,7 @@ class AppAuthActivity : BaseActivity() {
                 getString(R.string.Confirm_fingerprint),
                 getString(R.string.Cancel),
                 biometricCallback,
+                getString(R.string.Unlock_with_fingerprint)
             )
         }
     }

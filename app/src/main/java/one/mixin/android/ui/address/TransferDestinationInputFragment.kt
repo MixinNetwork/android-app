@@ -29,7 +29,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
-import one.mixin.android.api.ServerErrorException
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.databinding.FragmentAddressInputBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
@@ -116,7 +115,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
     private lateinit var resultRegistry: ActivityResultRegistry
 
     // testing constructor
-    @VisibleForTesting(otherwise = VisibleForTesting.Companion.NONE)
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
     constructor(
         testRegistry: ActivityResultRegistry,
     ) : this() {
@@ -646,7 +645,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
     private fun handleScanResult(data: Intent?, isAddr: Boolean = true) {
         if (data == null) return
 
-        data.getStringExtra(CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT)?.let { result ->
+        data.getStringExtra(CaptureActivity.ARGS_FOR_SCAN_RESULT)?.let { result ->
             if (token != null && (result.isLightningUrl() || result.isExternalTransferUrl())) {
                 LinkBottomSheetDialogFragment.newInstance(result).show(
                     parentFragmentManager,
@@ -680,7 +679,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                 if (granted) {
                     getScanResult.launch(
                         Pair(
-                            CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT,
+                            CaptureActivity.ARGS_FOR_SCAN_RESULT,
                             true
                         )
                     )

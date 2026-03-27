@@ -557,6 +557,8 @@ class TokenRepository
 
         fun assetItemsWithBalance() = tokenDao.assetItemsWithBalance()
 
+        fun usdAssetItemsWithBalance() = tokenDao.usdAssetItemsWithBalance(Constants.usdIds)
+
         fun allSnapshots(filterParams: FilterParams): DataSource.Factory<Int, SnapshotItem> {
             return safeSnapshotDao.getSnapshots(filterParams.buildQuery()).map {
                 if (!it.withdrawal?.receiver.isNullOrBlank()) {

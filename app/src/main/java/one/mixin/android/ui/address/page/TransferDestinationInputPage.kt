@@ -1,6 +1,6 @@
 package one.mixin.android.ui.address.page
 
-import PageScaffold
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,8 +19,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.ModalBottomSheetLayout
@@ -65,7 +63,6 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.ChainId
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.db.web3.vo.SafeChain
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.isExternalTransferUrl
 import one.mixin.android.extension.isLightningUrl
@@ -74,6 +71,7 @@ import one.mixin.android.ui.address.AddressViewModel
 import one.mixin.android.ui.address.component.DestinationMenu
 import one.mixin.android.ui.address.component.TokenInfoHeader
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.widget.components.MixinButton
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.safe.TokenItem
@@ -402,7 +400,7 @@ fun TransferDestinationInputPage(
                                 .align(Alignment.CenterHorizontally)
                                 .alpha(if (errorInfo.isNullOrBlank()) 0f else 1f)
                         )
-                        Button(
+                        MixinButton(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(48.dp),
@@ -410,16 +408,10 @@ fun TransferDestinationInputPage(
                                 onSend.invoke(text)
                             },
                             enabled = text.isBlank().not() && !isLoading,
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                backgroundColor = if (text.isBlank().not()) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,
-                            ),
                             shape = RoundedCornerShape(32.dp),
-                            elevation = ButtonDefaults.elevation(
-                                pressedElevation = 0.dp,
-                                defaultElevation = 0.dp,
-                                hoveredElevation = 0.dp,
-                                focusedElevation = 0.dp,
-                            ),
+                            backgroundColor = MixinAppTheme.colors.accent,
+                            disabledBackgroundColor = if (text.isBlank()) MixinAppTheme.colors.backgroundGrayLight else MixinAppTheme.colors.accent.copy(alpha = 0.6f),
+                            disabledContentColor = MixinAppTheme.colors.textAssist,
                         ) {
                             if (isLoading) {
                                 CircularProgressIndicator(
@@ -429,6 +421,7 @@ fun TransferDestinationInputPage(
                                 )
                             } else {
                                 Text(
+                                    fontSize = 16.sp,
                                     text = stringResource(R.string.Send),
                                     color = if (text.isBlank()) MixinAppTheme.colors.textAssist else Color.White,
                                 )
@@ -439,4 +432,3 @@ fun TransferDestinationInputPage(
             }
         }
     }
-
