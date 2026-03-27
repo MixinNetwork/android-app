@@ -310,6 +310,16 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 } else {
                     createAccount(sessionKey, edKey, r.data!!.id)
                 }
+            } else {
+                if (r != null) {
+                    if (r.errorCode == NEED_CAPTCHA) {
+                        mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Creating)
+                        initAndLoadCaptcha(sessionKey, edKey, r.errorDescription)
+                        return@launch
+                    }
+                    errorInfo = requireActivity().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
+                }
+                mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
             }
         }
     }
