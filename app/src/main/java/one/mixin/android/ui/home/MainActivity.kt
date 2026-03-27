@@ -65,9 +65,15 @@ import one.mixin.android.Constants.INTERVAL_7_DAYS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.SessionRequest
+import one.mixin.android.api.request.web3.GaslessFeeRequest
+import one.mixin.android.api.request.web3.GaslessTxRequest
+import one.mixin.android.api.request.web3.SubmitGaslessTxRequest
+import one.mixin.android.api.response.web3.EthGaslessTxPayload
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
+import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PrivacyPreference.getIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
 import one.mixin.android.databinding.ActivityMainBinding
@@ -84,6 +90,7 @@ import one.mixin.android.extension.checkStorageNotLow
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getStringDeviceId
+import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isExternalTransferUrl
@@ -134,6 +141,7 @@ import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.common.LoginVerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.NavigationController
+import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.PinCodeFragment.Companion.FROM_EMERGENCY
 import one.mixin.android.ui.common.PinCodeFragment.Companion.FROM_LOGIN
 import one.mixin.android.ui.common.PinCodeFragment.Companion.PREF_LOGIN_FROM
@@ -184,6 +192,8 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.isGroupConversation
+import one.mixin.android.web3.gasless.GaslessSigning
+import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.websocket.ReconnectWorker
 import one.mixin.android.worker.SessionWorker
@@ -334,7 +344,21 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         handlerCode(intent)
 
         updateSessionWhenOpen()
-        checkAsync()
+
+        lifecycleScope.launch {
+            runEip7702GaslessDemo(
+                Eip7702GaslessDemoArgs(
+                    from = "0x650141b4794d004Dc2a0fBd7fc6fa01ab3c28CB8",
+                    to = "0xF8932784396f4f122BbB7ff62fab2a85e400646B",
+                    assetId = "4d8c508b-91c5-375b-92b0-ee702ed2dac5",
+                    amount = "1",
+                    chainId = "43d61dcd-e413-450d-80b8-101d5e903357",
+                    feeAssetId = "4d8c508b-91c5-375b-92b0-ee702ed2dac5",
+                ),
+                "123456",
+            )
+        }
+//        checkAsync()
 
         RxBus.listen(TipEvent::class.java)
             .autoDispose(destroyScope)
@@ -950,6 +974,136 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             WalletConnect.connect(wcUrl)
         }
     }
+    private suspend fun runEip7702GaslessDemo(
+        args: Eip7702GaslessDemoArgs,
+        pin: String,
+    ) {
+        showDialog()
+        try {
+            val result = withContext(Dispatchers.IO) {
+                if (args.chainId !in Constants.Web3EvmChainIds) {
+                    throw IllegalArgumentException("EIP-7702 gasless demo only supports EVM chains")
+                }
+                val fromAddress = args.from ?: Web3Signer.evmAddress.takeIf { it.isNotBlank() }
+                    ?: throw IllegalStateException("No selected EVM address is available for the gasless demo")
+
+                val feeResponse = requireMixinData(
+                    web3Repository.gaslessFee(
+                        GaslessFeeRequest(
+                            from = fromAddress,
+                            to = args.to,
+                            assetId = args.assetId,
+                            chainId = args.chainId,
+                        ),
+                    ),
+                    "Load gasless fees",
+                )
+                val feeAssetId = args.feeAssetId ?: feeResponse.fees.firstOrNull()?.assetId
+                    ?: throw IllegalStateException("No gasless fee asset is available")
+
+                val txResponse = requireMixinData(
+                    web3Repository.gaslessTx(
+                        GaslessTxRequest(
+                            from = fromAddress,
+                            to = args.to,
+                            assetId = args.assetId,
+                            amount = args.amount,
+                            feeAssetId = feeAssetId,
+                            chainId = args.chainId,
+                        ),
+                    ),
+                    "Build gasless transaction",
+                )
+                if (!txResponse.payload.isJsonObject) {
+                    throw IllegalStateException("Gasless payload is not an EVM object payload")
+                }
+                val ethPayload = GsonHelper.customGson.fromJson(txResponse.payload, EthGaslessTxPayload::class.java)
+                    ?: throw IllegalStateException("Failed to parse EIP-7702 gasless payload")
+                val privateKey = "".hexStringToByteArray()
+                val userOpSignature = GaslessSigning.signEvmHexMessage(
+                    privateKey = privateKey,
+                    signType = ethPayload.signing.userOperation.signType,
+                    message = ethPayload.signing.userOperation.message,
+                )
+                val eip7702AuthSignature = ethPayload.signing.eip7702Auth
+                    ?.takeIf { it.required }
+                    ?.let {
+                        Web3Signer.signEthMessage(
+                            priv = privateKey,
+                            message = it.message,
+                            type = JsSignMessage.TYPE_MESSAGE,
+                        )
+                    }
+
+                requireMixinSuccess(
+                    web3Repository.submitGaslessTx(
+                        SubmitGaslessTxRequest(
+                            chainId = txResponse.chainId,
+                            payload = txResponse.payload,
+                            userOpSignature = userOpSignature,
+                            eip7702AuthSignature = eip7702AuthSignature,
+                        ),
+                    ),
+                    "Submit gasless transaction",
+                )
+
+                Eip7702GaslessDemoResult(
+                    from = fromAddress,
+                    to = args.to,
+                    assetId = args.assetId,
+                    amount = args.amount,
+                    chainId = args.chainId,
+                    feeAssetId = feeAssetId,
+                    userOpSignType = ethPayload.signing.userOperation.signType,
+                    userOpSignature = userOpSignature,
+                    eip7702Required = ethPayload.signing.eip7702Auth?.required == true,
+                    eip7702AuthSignature = eip7702AuthSignature,
+                )
+            }
+            Timber.i("EIP-7702 gasless demo submitted: ${GsonHelper.customGson.toJson(result)}")
+            MaterialAlertDialogBuilder(this)
+                .setTitle("EIP-7702 gasless demo submitted")
+                .setMessage(
+                    buildString {
+                        appendLine("from: ${result.from}")
+                        appendLine("to: ${result.to}")
+                        appendLine("asset_id: ${result.assetId}")
+                        appendLine("amount: ${result.amount}")
+                        appendLine("chain_id: ${result.chainId}")
+                        appendLine("fee_asset_id: ${result.feeAssetId}")
+                        appendLine("user_op_sign_type: ${result.userOpSignType}")
+                        appendLine("eip7702_required: ${result.eip7702Required}")
+                        append("eip7702_signature_attached: ${!result.eip7702AuthSignature.isNullOrBlank()}")
+                    },
+                )
+                .setPositiveButton(android.R.string.ok, null)
+                .show()
+        } catch (throwable: Throwable) {
+            Timber.e(throwable, "EIP-7702 gasless demo failed")
+            ErrorHandler.handleError(throwable)
+        } finally {
+            dismissDialog()
+        }
+    }
+
+    private fun <T> requireMixinData(
+        response: MixinResponse<T>,
+        action: String,
+    ): T {
+        if (!response.isSuccess) {
+            throw IllegalStateException("$action failed: ${response.errorDescription}")
+        }
+        return requireNotNull(response.data) { "$action returned empty data" }
+    }
+
+    private fun requireMixinSuccess(
+        response: MixinResponse<*>,
+        action: String,
+    ) {
+        if (!response.isSuccess) {
+            throw IllegalStateException("$action failed: ${response.errorDescription}")
+        }
+    }
 
     private fun showDialog() {
         alertDialog?.dismiss()
@@ -1267,6 +1421,28 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         binding.bottomNav.selectedItemId = R.id.nav_chat
         Timber.e("initFragmentsFromSavedState: nav_chat")
     }
+
+    private data class Eip7702GaslessDemoArgs(
+        val from: String?,
+        val to: String,
+        val assetId: String,
+        val amount: String,
+        val chainId: String,
+        val feeAssetId: String?,
+    )
+
+    private data class Eip7702GaslessDemoResult(
+        val from: String,
+        val to: String,
+        val assetId: String,
+        val amount: String,
+        val chainId: String,
+        val feeAssetId: String,
+        val userOpSignType: String,
+        val userOpSignature: String,
+        val eip7702Required: Boolean,
+        val eip7702AuthSignature: String?,
+    )
 
     companion object {
         const val URL = "url"
