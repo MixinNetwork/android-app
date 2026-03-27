@@ -61,8 +61,6 @@ import one.mixin.android.tip.wc.internal.Method
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
-import one.mixin.android.ui.home.web3.components.ActionBottom
-import one.mixin.android.ui.home.web3.components.ActionButton
 import one.mixin.android.ui.home.web3.components.MessagePreview
 import one.mixin.android.ui.home.web3.components.TransactionPreview
 import one.mixin.android.ui.home.web3.components.Warning
@@ -74,6 +72,8 @@ import one.mixin.android.widget.components.MixinButton
 import one.mixin.android.vo.priceUSD
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.web3.js.Web3Signer
+import one.mixin.android.widget.components.ActionBottom
+import one.mixin.android.widget.components.ActionButton
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import timber.log.Timber
