@@ -2,12 +2,10 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
-import one.mixin.android.api.response.perps.PerpsPosition
-import one.mixin.android.db.PerpsDatabase
-import one.mixin.android.db.perps.PerpsMarketDao
 import one.mixin.android.db.perps.PerpsPositionDao
 import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.session.Session
+import one.mixin.android.session.resolveCurrentUserScopeManager
 import timber.log.Timber
 
 class RefreshPerpsPositionsJob(
@@ -19,7 +17,11 @@ class RefreshPerpsPositionsJob(
     }
 
     override fun onRun(): Unit = runBlocking {
-        val perpsDb = PerpsDatabase.getDatabase(applicationContext)
+        val perpsDb = runCatching { resolveCurrentUserScopeManager(applicationContext).getPerpsDatabase() }
+            .getOrElse {
+                Timber.w(it, "RefreshPerpsPositionsJob: Skip because perps database scope is unavailable")
+                return@runBlocking
+            }
         val positionDao = perpsDb.perpsPositionDao()
 
         if (walletId != null) {
@@ -45,7 +47,7 @@ class RefreshPerpsPositionsJob(
                 val positions = response.data!!.map { it.copy(walletId = walletId) }
                 Timber.d("RefreshPerpsPositionsJob: Fetched ${positions.size} positions for wallet $walletId")
 
-                val perpsDb = PerpsDatabase.getDatabase(applicationContext)
+                val perpsDb = resolveCurrentUserScopeManager(applicationContext).getPerpsDatabase()
                 perpsDb.runInTransaction {
                     runBlocking {
                         if (positions.isEmpty()) {

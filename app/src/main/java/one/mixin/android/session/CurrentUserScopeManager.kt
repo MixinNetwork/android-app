@@ -7,6 +7,7 @@ import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.PerpsDatabase
 import one.mixin.android.db.WalletDatabase
 import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.db.pending.PendingDatabaseImp
@@ -35,6 +36,7 @@ class CurrentUserScopeManager
 
         private var mixinDatabase: MixinDatabase? = null
         private var walletDatabase: WalletDatabase? = null
+        private var perpsDatabase: PerpsDatabase? = null
         private var pendingDatabase: PendingDatabase? = null
         private var ftsDatabase: FtsDatabase? = null
 
@@ -76,6 +78,15 @@ class CurrentUserScopeManager
             }
         }
 
+        fun getPerpsDatabase(): PerpsDatabase {
+            synchronized(lock) {
+                val account = requireAccount("PerpsDatabase")
+                ensureScopeLocked(account)
+                return perpsDatabase
+                    ?: throw IllegalStateException("Unable to create PerpsDatabase scope")
+            }
+        }
+
         fun getPendingDatabase(): PendingDatabase {
             synchronized(lock) {
                 val account = requireAccount("PendingDatabase")
@@ -105,6 +116,7 @@ class CurrentUserScopeManager
                 currentIdentityNumber == account.identityNumber &&
                 mixinDatabase != null &&
                 walletDatabase != null &&
+                perpsDatabase != null &&
                 pendingDatabase != null &&
                 ftsDatabase != null
             if (isSameScope) {
@@ -121,6 +133,7 @@ class CurrentUserScopeManager
                     account.identityNumber,
                 )
             val scopedWalletDatabase = WalletDatabase.getDatabase(appContext, account.identityNumber)
+            val scopedPerpsDatabase = PerpsDatabase.getDatabase(appContext, account.identityNumber)
             val scopedFtsDatabase = FtsDatabase.getDatabase(appContext, account.identityNumber)
 
             currentUserId = account.userId
@@ -128,6 +141,7 @@ class CurrentUserScopeManager
             mixinDatabase = scopedMixinDatabase
             pendingDatabase = scopedPendingDatabase
             walletDatabase = scopedWalletDatabase
+            perpsDatabase = scopedPerpsDatabase
             ftsDatabase = scopedFtsDatabase
             scopeVersion++
         }
@@ -138,6 +152,8 @@ class CurrentUserScopeManager
             mixinDatabase = null
             walletDatabase?.close()
             walletDatabase = null
+            perpsDatabase?.close()
+            perpsDatabase = null
             ftsDatabase?.close()
             ftsDatabase = null
             MixinDatabase.destroy(close = true)
