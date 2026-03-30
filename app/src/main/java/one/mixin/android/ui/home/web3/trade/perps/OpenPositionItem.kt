@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -20,6 +22,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.Constants
@@ -127,7 +132,10 @@ fun OpenPositionItem(
             }
         }
 
-        Column(horizontalAlignment = Alignment.End) {
+        Column(
+            modifier = Modifier.weight(0.85f),
+            horizontalAlignment = Alignment.End
+        ) {
             if (isOpening) {
                 Text(
                     text = stringResource(R.string.Pending),
@@ -136,32 +144,51 @@ fun OpenPositionItem(
                 )
             } else {
                 val marginFiat = margin.multiply(fiatRate)
-                Text(
+                BasicText(
                     text = formatPerpsFiatDecimal(marginFiat, fiatSymbol),
-                    fontSize = 14.sp,
-                    color = MixinAppTheme.colors.textPrimary
+                    modifier = Modifier.fillMaxWidth(),
+                    style = TextStyle(
+                        fontSize = 14.sp,
+                        color = MixinAppTheme.colors.textPrimary,
+                        textAlign = TextAlign.End
+                    ),
+                    maxLines = 1,
+                    softWrap = false,
+                    overflow = TextOverflow.Ellipsis,
+                    autoSize = TextAutoSize.StepBased(
+                        minFontSize = 10.sp,
+                        maxFontSize = 14.sp,
+                        stepSize = 1.sp
+                    )
                 )
+
                 Spacer(modifier = Modifier.height(2.dp))
-                val unrealizedPnl = position.unrealizedPnl?.toBigDecimalOrNull()?: BigDecimal.ZERO
+
+                val unrealizedPnl = position.unrealizedPnl?.toBigDecimalOrNull() ?: BigDecimal.ZERO
                 val roe = (position.roe?.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(BigDecimal(100))
                 val isProfit = unrealizedPnl >= BigDecimal.ZERO
                 val pnlColor = if (isProfit) {
-                    if (quoteColorPref) {
-                        MixinAppTheme.colors.walletRed
-                    } else {
-                        MixinAppTheme.colors.walletGreen
-                    }
+                    if (quoteColorPref) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
                 } else {
-                    if (quoteColorPref) {
-                        MixinAppTheme.colors.walletGreen
-                    } else {
-                        MixinAppTheme.colors.walletRed
-                    }
+                    if (quoteColorPref) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
                 }
-                Text(
+
+                BasicText(
                     text = "${formatPerpsSignedFiatDecimal(unrealizedPnl.multiply(fiatRate), fiatSymbol)}(${formatPerpsSignedPercent(roe)})",
-                    fontSize = 14.sp,
-                    color = pnlColor
+                    modifier = Modifier.fillMaxWidth(),
+                    style = TextStyle(
+                        fontSize = 14.sp,
+                        color = pnlColor,
+                        textAlign = TextAlign.End
+                    ),
+                    maxLines = 1,
+                    softWrap = false,
+                    overflow = TextOverflow.Ellipsis,
+                    autoSize = TextAutoSize.StepBased(
+                        minFontSize = 10.sp,
+                        maxFontSize = 14.sp,
+                        stepSize = 1.sp
+                    )
                 )
             }
         }

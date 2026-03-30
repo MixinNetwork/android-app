@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -20,11 +22,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.Constants
@@ -33,8 +33,6 @@ import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.ui.home.inscription.component.AutoSizeConstraint
-import one.mixin.android.ui.home.inscription.component.AutoSizeText
 import one.mixin.android.ui.home.web3.trade.perps.calculateClosedRoe
 import one.mixin.android.ui.home.web3.trade.perps.formatPerpsSignedFiatDecimal
 import one.mixin.android.ui.home.web3.trade.perps.formatPerpsSignedPercent
@@ -163,16 +161,22 @@ fun ClosedPositionItem(
             horizontalAlignment = Alignment.End,
             verticalArrangement = Arrangement.Center
         ) {
-            AutoSizeText(
+            BasicText(
                 text = "${formatPerpsSignedFiatDecimal(pnl.multiply(fiatRate), fiatSymbol)}(${formatPerpsSignedPercent(pnlPercent)})",
                 modifier = Modifier.fillMaxWidth(),
-                fontSize = 14.sp,
-                color = pnlColor,
-                textAlign = TextAlign.End,
+                style = TextStyle(
+                    fontSize = 14.sp,
+                    color = pnlColor,
+                    textAlign = TextAlign.End
+                ),
                 maxLines = 1,
                 softWrap = false,
                 overflow = TextOverflow.Ellipsis,
-                constraint = AutoSizeConstraint.Width(min = 10.sp),
+                autoSize = TextAutoSize.StepBased(
+                    minFontSize = 10.sp,
+                    maxFontSize = 14.sp,
+                    stepSize = 1.sp
+                )
             )
         }
     }
