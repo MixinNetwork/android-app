@@ -38,6 +38,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -98,6 +100,7 @@ fun TradePage(
     onSwitchToLimitOrder: (String, SwapToken, SwapToken) -> Unit,
     pop: () -> Unit,
     onLimitOrderClick: (String) -> Unit,
+    onShowTradingGuideIfNeeded: (Int) -> Unit,
     onShowTradingGuide: (Int) -> Unit,
     onShowMarketList: (Boolean) -> Unit,
     onShowAllMarkets: () -> Unit,
@@ -108,6 +111,8 @@ fun TradePage(
     onClosedPositionClick: (PerpsPositionHistoryItem) -> Unit,
 ) {
     val context = LocalContext.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
 
     val viewModel = hiltViewModel<SwapViewModel>()
     val perpsViewModel = hiltViewModel<PerpetualViewModel>()
@@ -214,6 +219,10 @@ fun TradePage(
         pageCount = { tabCount },
     )
 
+    LaunchedEffect(Unit) {
+        onShowTradingGuideIfNeeded(pagerState.currentPage)
+    }
+
     // When SwapContent requests switching to Limit tab, animate to it
     LaunchedEffect(switchToLimitRequested.value) {
         if (switchToLimitRequested.value) {
@@ -231,7 +240,13 @@ fun TradePage(
         sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
         sheetBackgroundColor = MixinAppTheme.colors.background,
         sheetContent = {
+            val currentGuideTitle = if (perpetualTabIndex != null && pagerState.currentPage == perpetualTabIndex) {
+                stringResource(R.string.Perpetual_Futures_Guide)
+            } else {
+                stringResource(R.string.Spot_Trading_Guide)
+            }
             HelpBottomSheetContent(
+                guideTitle = currentGuideTitle,
                 onContactSupport = {
                     coroutineScope.launch {
                         bottomSheetState.hide()
@@ -387,6 +402,8 @@ fun TradePage(
                     selected = pagerState.currentPage == index,
                     showBadge = showAdvancedBadge || showPerpetualBadge,
                     onClick = {
+                        keyboardController?.hide()
+                        focusManager.clearFocus()
                         coroutineScope.launch {
                             pagerState.animateScrollToPage(index)
                         }
@@ -395,8 +412,8 @@ fun TradePage(
                         }
                         if (isPerpetualTab && !isPerpetualTabBadgeDismissed) {
                             onDismissPerpetualTabBadge()
-                            onShowTradingGuide(index)
                         }
+                        onShowTradingGuideIfNeeded(index)
                         onTabChanged(index)
                     },
                 )

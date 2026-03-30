@@ -53,7 +53,7 @@ import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.putStringSet
+import one.mixin.android.extension.putString
 import one.mixin.android.session.Session
 import one.mixin.android.ui.home.web3.trade.ClosedPositionItem
 import one.mixin.android.ui.wallet.alert.components.cardBackground
@@ -130,9 +130,9 @@ fun PerpetualContent(
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
             viewModel.loadAcceptedAssets(
                 onSuccess = { assetIds ->
-                    context.defaultSharedPreferences.putStringSet(
-                        Constants.Account.PREF_PERPS_ACCEPTED_ASSET_IDS,
-                        assetIds.toSet()
+                    context.defaultSharedPreferences.putString(
+                        Constants.Account.PREF_PERPS_ACCEPTED_ASSET_IDS_V2,
+                        assetIds.joinToString(",")
                     )
                 }
             )

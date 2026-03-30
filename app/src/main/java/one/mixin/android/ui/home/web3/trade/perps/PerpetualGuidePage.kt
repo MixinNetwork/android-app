@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -476,7 +477,7 @@ private fun GuideBottomNavigation(
     if (previousTab != null && nextTab == null) {
         Row(
             modifier = Modifier
-                .padding(horizontal = 20.dp)
+                .padding(horizontal = 18.dp)
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
@@ -498,7 +499,7 @@ private fun GuideBottomNavigation(
     if (previousTab != null && nextTab != null) {
         Row(
             modifier = Modifier
-                .padding(horizontal = 20.dp)
+                .padding(horizontal = 18.dp)
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
@@ -541,7 +542,7 @@ fun GuideNavigationButton(
     onClick: () -> Unit,
 ) {
     MixinButton(
-        modifier = modifier.height(48.dp),
+        modifier = modifier.wrapContentSize(),
         onClick = onClick,
         shape = RoundedCornerShape(32.dp),
     ) {

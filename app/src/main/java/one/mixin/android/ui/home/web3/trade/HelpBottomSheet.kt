@@ -27,6 +27,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 @Composable
 fun HelpBottomSheetContent(
     hideGuide: Boolean = false,
+    guideTitle: String = stringResource(R.string.Trading_Guide),
     onContactSupport: () -> Unit,
     onTradingGuide: () -> Unit,
     onDismiss: () -> Unit,
@@ -44,7 +45,7 @@ fun HelpBottomSheetContent(
 
         if (!hideGuide){
             HelpOption(
-                title = stringResource(R.string.Trading_Guide),
+                title = guideTitle,
                 onClick = onTradingGuide
             )
         }
@@ -70,9 +71,7 @@ private fun HelpOption(
     ) {
         Text(
             text = title,
-            fontSize = 16.sp,
             color = MixinAppTheme.colors.textPrimary,
-            fontWeight = FontWeight.Medium
         )
     }
 }

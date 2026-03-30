@@ -112,6 +112,8 @@ class TradeFragment : BaseFragment() {
         const val maxLeftAmount = 0.01
 
         const val PREF_TRADE_SELECTED_TAB_PREFIX: String = "pref_trade_selected_tab_"
+        const val PREF_TRADE_SPOT_GUIDE_SHOWN: String = "pref_trade_spot_guide_shown"
+        const val PREF_TRADE_PERPETUAL_GUIDE_SHOWN: String = "pref_trade_perpetual_guide_shown"
 
         inline fun <reified T : Swappable> newInstance(
             input: String? = null,
@@ -368,6 +370,30 @@ class TradeFragment : BaseFragment() {
                                 onLimitOrderClick = { orderId ->
                                     this@apply.hideKeyboard()
                                     navTo(OrderDetailFragment.newInstance(orderId), OrderDetailFragment.TAG)
+                                },
+                                onShowTradingGuideIfNeeded = { tabIndex ->
+                                    this@apply.hideKeyboard()
+                                    when {
+                                        walletId == null && tabIndex >= SpotTradeGuideBottomSheetDialogFragment.TAB_LIMIT -> {
+                                            if (!defaultSharedPreferences.getBoolean(PREF_TRADE_PERPETUAL_GUIDE_SHOWN, false)) {
+                                                isPerpetualTabBadgeDismissed = true
+                                                defaultSharedPreferences.putBoolean(perpetualBadgePrefKey, true)
+                                                PerpetualGuideBottomSheetDialogFragment.newInstance()
+                                                    .show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
+                                            }
+                                        }
+                                        tabIndex == 1 || tabIndex == 0 -> {
+                                            if (!defaultSharedPreferences.getBoolean(PREF_TRADE_SPOT_GUIDE_SHOWN, false)) {
+                                                val initialGuideTab = if (tabIndex == 1) {
+                                                    SpotTradeGuideBottomSheetDialogFragment.TAB_LIMIT
+                                                } else {
+                                                    SpotTradeGuideBottomSheetDialogFragment.TAB_SWAP
+                                                }
+                                                SpotTradeGuideBottomSheetDialogFragment.newInstance(initialGuideTab)
+                                                    .show(parentFragmentManager, SpotTradeGuideBottomSheetDialogFragment.TAG)
+                                            }
+                                        }
+                                    }
                                 },
                                 onShowTradingGuide = { tabIndex ->
                                     this@apply.hideKeyboard()

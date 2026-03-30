@@ -1,6 +1,5 @@
 package one.mixin.android.ui.home.web3.trade
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -20,11 +19,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
-import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -714,9 +710,9 @@ private fun SpotTradeGuideBottomNavigation(
     if (previousTab != null && nextTab == null) {
         Row(
             modifier = Modifier
-                .padding(horizontal = 20.dp)
+                .padding(horizontal = 16.dp)
                 .fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally)
         ) {
             GuideNavigationButton(
                 text = tabs[previousTab],
@@ -736,9 +732,9 @@ private fun SpotTradeGuideBottomNavigation(
     if (previousTab != null && nextTab != null) {
         Row(
             modifier = Modifier
-                .padding(horizontal = 20.dp)
+                .padding(horizontal = 16.dp)
                 .fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally)
         ) {
             GuideNavigationButton(
                 text = tabs[previousTab],
