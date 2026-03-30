@@ -226,7 +226,7 @@
 
             </RelativeLayout>
 
-            <RelativeLayout
+            <LinearLayout
                 android:id="@+id/free_transfer_card"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -234,81 +234,76 @@
                 android:layout_marginEnd="16dp"
                 android:layout_marginTop="36dp"
                 android:background="?attr/bg_market_card"
+                android:orientation="vertical"
                 android:padding="16dp">
 
-                <ImageView
-                    android:id="@+id/free_transfer_close_iv"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_alignParentEnd="true"
-                    android:layout_alignParentTop="true"
-                    android:background="@drawable/mixin_ripple"
-                    android:padding="4dp"
-                    android:src="@drawable/ic_close_black"
-                    tools:ignore="ContentDescription" />
-
-                <ImageView
-                    android:id="@+id/free_transfer_icon"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginEnd="36dp"
-                    android:src="@drawable/ic_add_wallet_freee"
-                    tools:ignore="ContentDescription" />
-
-                <TextView
-                    android:id="@+id/free_transfer_title"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentStart="true"
-                    android:layout_toStartOf="@id/free_transfer_icon"
-                    android:layout_marginEnd="16dp"
-                    android:text="@string/free_transfers_between_wallets_title"
-                    android:textColor="?attr/text_primary"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/free_transfer_description"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/free_transfer_title"
-                    android:layout_alignStart="@id/free_transfer_title"
-                    android:layout_toStartOf="@id/free_transfer_icon"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginEnd="16dp"
-                    android:text="@string/free_transfers_between_wallets_description"
-                    android:textColor="?attr/text_assist"
-                    android:textSize="14sp" />
-
                 <LinearLayout
-                    android:id="@+id/free_transfer_learn_more"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/free_transfer_description"
-                    android:layout_alignStart="@id/free_transfer_title"
-                    android:layout_marginTop="16dp"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
                     <TextView
+                        android:id="@+id/free_transfer_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/Learn_More"
-                        android:textColor="?attr/text_blue"
-                        android:textSize="14sp"
+                        android:text="@string/free_transfers_between_wallets_title"
+                        android:textColor="?attr/text_primary"
+                        android:textSize="16sp"
                         android:textStyle="bold" />
 
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="0dp"/>
+
                     <ImageView
-                        android:layout_width="8dp"
-                        android:layout_height="8dp"
-                        android:layout_marginStart="4dp"
-                        android:src="@drawable/ic_arrow_top_right_small"
-                        app:tint="?attr/text_blue"
+                        android:id="@+id/free_transfer_close_iv"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:background="@drawable/mixin_ripple"
+                        android:contentDescription="@string/Close"
+                        android:padding="4dp"
+                        android:src="@drawable/ic_close_grey" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/free_transfer_description"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/free_transfers_between_wallets_description"
+                        android:textColor="?attr/text_minor"
+                        android:lineSpacingMultiplier="1.5"
+                        android:textSize="14sp" />
+
+                    <ImageView
+                        android:id="@+id/free_transfer_icon"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginStart="8dp"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_add_wallet_freee"
                         tools:ignore="ContentDescription" />
                 </LinearLayout>
-            </RelativeLayout>
+
+                <TextView
+                    android:id="@+id/free_transfer_learn_more"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/Learn_More"
+                    android:textColor="?attr/text_blue"
+                    android:textFontWeight="500"
+                    android:textSize="14sp" />
+            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
