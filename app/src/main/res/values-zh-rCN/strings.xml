@@ -1813,7 +1813,7 @@
     <string name="error_decrease_too_high">跌幅不能超过-99.99%。</string>
     <string name="error_decrease_too_low">跌幅必须至少为-0.01%。</string>
     <string name="Alert_Not_Support">暂不支持</string>
-    <string name="All_Alert">所有价格预警</string>
+    <string name="Price_Alerts">价格预警</string>
     <string name="Trending_Dapps">热门 app</string>
     <string name="Paste">粘贴</string>
     <string name="or">或者</string>

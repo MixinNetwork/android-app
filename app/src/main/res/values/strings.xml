@@ -1859,7 +1859,7 @@
     <string name="error_decrease_too_high">The decrease percentage cannot exceed -99.99%.</string>
     <string name="error_decrease_too_low">The decrease percentage must be at least -0.01%.</string>
     <string name="Alert_Not_Support">Not Supported</string>
-    <string name="All_Alert">All Alerts</string>
+    <string name="Price_Alerts">Price Alerts</string>
     <string name="Trending_Dapps">Trending Apps</string>
     <string name="Paste">Paste</string>
     <string name="or">or</string>

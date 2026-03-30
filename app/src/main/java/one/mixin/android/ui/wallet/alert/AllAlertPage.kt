@@ -55,7 +55,7 @@ fun AllAlertPage(coins: Set<CoinItem>?, openFilter: () -> Unit, pop: () -> Unit,
     }
 
     PageScaffold(
-        title = stringResource(id = R.string.All_Alert),
+        title = stringResource(id = R.string.Price_Alerts),
         verticalScrollable = false,
         pop = pop,
     ) {

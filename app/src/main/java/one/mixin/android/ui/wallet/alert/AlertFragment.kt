@@ -53,7 +53,7 @@ class AlertFragment : BaseFragment(), MultiSelectCoinListBottomSheetDialogFragme
     }
 
     enum class AlertDestination {
-        Alert, All, Edit,
+        All, Edit,
     }
 
     private val alertViewModel by viewModels<AlertViewModel>()
@@ -69,6 +69,7 @@ class AlertFragment : BaseFragment(), MultiSelectCoinListBottomSheetDialogFragme
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        coins = setOf(coin)
         jobManager.addJobInBackground(RefreshAlertsJob())
     }
 
@@ -85,7 +86,7 @@ class AlertFragment : BaseFragment(), MultiSelectCoinListBottomSheetDialogFragme
                     val navController = rememberNavController()
                     NavHost(
                         navController = navController,
-                        startDestination = AlertDestination.Alert.name,
+                        startDestination = AlertDestination.All.name,
                         enterTransition = {
                             slideIntoContainer(
                                 AnimatedContentTransitionScope.SlideDirection.Left,
@@ -111,22 +112,6 @@ class AlertFragment : BaseFragment(), MultiSelectCoinListBottomSheetDialogFragme
                             )
                         },
                     ) {
-                        composable(AlertDestination.Alert.name) {
-                            AlertPage(coin = coin, pop = { requireActivity().onBackPressedDispatcher.onBackPressed() }, toAll = {
-                                coins = emptySet()
-                                selectCoin = null
-                                navController.navigate(AlertDestination.All.name)
-                            }, onAdd = { onAddAlert(navController, coin) }, onEdit = { alert ->
-                                lifecycleScope.launch {
-                                    val coin = alertViewModel.simpleCoinItem(alert.coinId)
-                                    if (coin != null) {
-                                        selectCoin = coin
-                                        currentAlert = alert
-                                        navController.navigate(AlertDestination.Edit.name)
-                                    }
-                                }
-                            })
-                        }
                         composable(AlertDestination.All.name) {
                             AllAlertPage(coins = coins, openFilter = { openFilter() }, pop = { requireActivity().onBackPressedDispatcher.onBackPressed() }, to = { onAddAlert(navController) }, onEdit = { alert ->
                                 lifecycleScope.launch {
