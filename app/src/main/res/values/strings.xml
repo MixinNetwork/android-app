@@ -2440,7 +2440,7 @@
     <string name="watch_wallet_empty_description">Watch addresses without private keys. View balances, transactions, and receive activity notifications with a fast native experience.</string>
     <string name="watch_wallet_guide_url">https://support.mixin.one/en/article/how-to-add-a-watch-only-address-17ifo8w/</string>
     <string name="free_transfers_between_wallets_title">Free transfers between wallets</string>
-    <string name="free_transfers_between_wallets_description">Send crypto to friends using Mixin directly without fees, for a limited time.</string>
+    <string name="free_transfers_between_wallets_description">Free transfers between wallets, for a limited time.</string>
     <string name="is_it_safe_to_import_into_mixin">Is it safe to import into Mixin?</string>
     <string name="mixin_import_safety_1">Mixin is open source, reproducible, and independently audited.</string>
     <string name="mixin_import_safety_2">Your data is securely encrypted and stored locally on your device.</string>

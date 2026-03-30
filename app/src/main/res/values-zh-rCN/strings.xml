@@ -2370,7 +2370,7 @@
     <string name="watch_wallet_empty_description">无需私钥即可添加观察地址，支持查看余额、交易记录，并接收交易通知。</string>
     <string name="watch_wallet_guide_url">https://support.mixin.one/zh/article/5aac5l2v5re75yqg6kec5af5zyw5z2a77yf-r3pitk/</string>
     <string name="free_transfers_between_wallets_title">钱包之间免费提现</string>
-    <string name="free_transfers_between_wallets_description">限时支持直接使用 Mixin 转账给朋友，无需手续费。</string>
+    <string name="free_transfers_between_wallets_description">钱包之间转账限时免费</string>
     <string name="is_it_safe_to_import_into_mixin">导入到 Mixin 安全吗？</string>
     <string name="mixin_import_safety_1">Mixin 是开源的、可复现构建的，并经过独立审计。</string>
     <string name="mixin_import_safety_2">您的数据会被安全加密，并仅存储在您的本地设备上。</string>
