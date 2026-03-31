@@ -39,13 +39,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.api.service.CircleService
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.MessageService
-import one.mixin.android.db.ExpiredMessageDao
-import one.mixin.android.db.JobDao
-import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MixinDatabase
-import one.mixin.android.db.ParticipantDao
-import one.mixin.android.db.RemoteMessageStatusDao
-import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.deleteMessageById
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.flow.MessageFlow.ANY_ID
@@ -59,11 +53,10 @@ import one.mixin.android.extension.supportsOreo
 import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.fts.deleteByMessageId
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_ACK_MESSAGE
-import one.mixin.android.job.NotificationGenerator.conversationDao
-import one.mixin.android.job.NotificationGenerator.conversationExtDao
 import one.mixin.android.messenger.Hedwig
 import one.mixin.android.messenger.HedwigImp
 import one.mixin.android.receiver.ExitBroadcastReceiver
+import one.mixin.android.session.CurrentUserScopeManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.home.MainActivity
@@ -123,34 +116,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     lateinit var networkUtil: JobNetworkUtil
 
     @Inject
-    lateinit var database: MixinDatabase
-
-    @Inject
-    lateinit var ftsDatabase: FtsDatabase
-
-    @Inject
-    lateinit var pendingDatabase: PendingDatabase
-
-    @Inject
     lateinit var webSocket: ChatWebSocket
-
-    @Inject
-    lateinit var messageDao: MessageDao
-
-    @Inject
-    lateinit var transcriptMessageDao: TranscriptMessageDao
-
-    @Inject
-    lateinit var remoteMessageStatusDao: RemoteMessageStatusDao
-
-    @Inject
-    lateinit var expiredMessageDao: ExpiredMessageDao
-
-    @Inject
-    lateinit var participantDao: ParticipantDao
-
-    @Inject
-    lateinit var jobDao: JobDao
 
     @Inject
     lateinit var jobManager: MixinJobManager
@@ -167,7 +133,31 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     @Inject
     lateinit var circleService: CircleService
 
-    private val accountId = Session.getAccountId()
+    @Inject
+    lateinit var currentUserScopeManager: CurrentUserScopeManager
+
+    private fun mixinDatabase(): MixinDatabase = currentUserScopeManager.getMixinDatabase()
+
+    private fun pendingDatabase(): PendingDatabase = currentUserScopeManager.getPendingDatabase()
+
+    private fun ftsDatabase(): FtsDatabase = currentUserScopeManager.getFtsDatabase()
+
+    private fun messageDao() = mixinDatabase().messageDao()
+
+    private fun transcriptMessageDao() = mixinDatabase().transcriptDao()
+
+    private fun remoteMessageStatusDao() = mixinDatabase().remoteMessageStatusDao()
+
+    private fun expiredMessageDao() = mixinDatabase().expiredMessageDao()
+
+    private fun participantDao() = mixinDatabase().participantDao()
+
+    private fun jobDao() = pendingDatabase().jobDao()
+
+    private fun conversationDao() = mixinDatabase().conversationDao()
+
+    private fun conversationExtDao() = mixinDatabase().conversationExtDao()
+
     private val gson = GsonHelper.customGson
 
     private val powerManager by lazy { getSystemService<PowerManager>() }
@@ -177,7 +167,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     private val destroyScope = scope(Lifecycle.Event.ON_DESTROY)
 
     private val hedwig: Hedwig by lazy {
-        HedwigImp(database, pendingDatabase, conversationService, circleService, jobManager, callState, lifecycleScope)
+        HedwigImp(currentUserScopeManager, conversationService, circleService, jobManager, callState, lifecycleScope)
     }
 
     override fun onBind(intent: Intent): IBinder? {
@@ -206,14 +196,14 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                         val expiredIn = event.expireIn
                         if (expiredIn != null) {
                             val currentTime = currentTimeSeconds()
-                            if (expiredMessageDao.markRead(event.messageId, currentTime) > 0) {
+                            if (expiredMessageDao().markRead(event.messageId, currentTime) > 0) {
                                 lifecycleScope.launch {
                                     withContext(Dispatchers.IO) {
                                         startExpiredJob(currentTime + expiredIn)
                                     }
                                 }
                             } else {
-                                expiredMessageDao.getExpiredMessageById(event.messageId)?.expireAt?.let { expiredAt ->
+                                expiredMessageDao().getExpiredMessageById(event.messageId)?.expireAt?.let { expiredAt ->
                                     startExpiredJob(expiredAt)
                                 }
                             }
@@ -344,12 +334,17 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         }
     }
 
+    private var ackObservedDatabase: PendingDatabase? = null
+
     private fun startObserveAck() {
-        pendingDatabase.addObserver(ackObserver)
+        val db = pendingDatabase()
+        ackObservedDatabase = db
+        db.addObserver(ackObserver)
     }
 
     private fun stopObserveAck() {
-        pendingDatabase.removeObserver(ackObserver)
+        ackObservedDatabase?.removeObserver(ackObserver)
+        ackObservedDatabase = null
     }
 
     private var ackJob: Job? = null
@@ -383,11 +378,11 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     private var lastAckPendingCount = 0
 
     private tailrec suspend fun processAck(): Boolean {
-        val ackMessages = jobDao.findAckJobs()
+        val ackMessages = jobDao().findAckJobs()
         if (ackMessages.isEmpty()) {
             return false
         } else if (ackMessages.size == 100) {
-            jobDao.getJobsCount().apply {
+            jobDao().getJobsCount().apply {
                 if (this >= 10000 && this - lastAckPendingCount >= 10000) {
                     lastAckPendingCount = this
                     reportException("ack job count: $this", Exception())
@@ -403,7 +398,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                     )
                 },
             )
-            jobDao.deleteList(ackMessages)
+            jobDao().deleteList(ackMessages)
         } catch (e: Exception) {
             Timber.e(e, "Send ack exception")
         }
@@ -412,7 +407,8 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     }
 
     private suspend fun syncMessageStatusToExtension(sessionId: String) {
-        val jobs = jobDao.findCreateMessageJobs()
+        val jobs = jobDao().findCreateMessageJobs()
+        val accountId = Session.getAccountId()
         if (jobs.isEmpty() || accountId == null) {
             return
         }
@@ -425,18 +421,23 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                     ),
                 )
             val encoded = plainText.toByteArray().base64Encode()
-            val bm = createParamBlazeMessage(createPlainJsonParam(participantDao.joinedConversationId(accountId) ?: generateConversationId(accountId, TEAM_MIXIN_USER_ID), accountId, encoded, sessionId))
+            val bm = createParamBlazeMessage(createPlainJsonParam(participantDao().joinedConversationId(accountId) ?: generateConversationId(accountId, TEAM_MIXIN_USER_ID), accountId, encoded, sessionId))
             jobManager.addJobInBackground(SendPlaintextJob(bm, PRIORITY_ACK_MESSAGE))
-            jobDao.deleteList(jobs)
+            jobDao().deleteList(jobs)
         }
     }
 
+    private var statusObservedDatabase: MixinDatabase? = null
+
     private fun startObserveStatus() {
-        database.invalidationTracker.addObserver(statusObserver)
+        val db = mixinDatabase()
+        statusObservedDatabase = db
+        db.invalidationTracker.addObserver(statusObserver)
     }
 
     private fun stopObserveStatus() {
-        database.invalidationTracker.removeObserver(statusObserver)
+        statusObservedDatabase?.invalidationTracker?.removeObserver(statusObserver)
+        statusObservedDatabase = null
     }
 
     private var statusJob: Job? = null
@@ -447,12 +448,17 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             }
         }
 
+    private var expiredObservedDatabase: MixinDatabase? = null
+
     private fun startObserveExpired() {
-        database.invalidationTracker.addObserver(expiredObserver)
+        val db = mixinDatabase()
+        expiredObservedDatabase = db
+        db.invalidationTracker.addObserver(expiredObserver)
     }
 
     private fun stopObserveExpired() {
-        database.invalidationTracker.removeObserver(expiredObserver)
+        expiredObservedDatabase?.invalidationTracker?.removeObserver(expiredObserver)
+        expiredObservedDatabase = null
     }
 
     private var expiredJob: Job? = null
@@ -481,7 +487,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     }
 
     private tailrec fun processStatus(): Boolean {
-        val list = remoteMessageStatusDao.findRemoteMessageStatus()
+        val list = remoteMessageStatusDao().findRemoteMessageStatus()
         if (list.isEmpty()) {
             return false
         }
@@ -491,17 +497,17 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                 BlazeAckMessage(msg.messageId, MessageStatus.READ.name),
             )
         }.apply {
-            pendingDatabase.insertJobs(this)
+            pendingDatabase().insertJobs(this)
         }
         Session.getExtensionSessionId()?.let { _ ->
             val conversationId = list.first().conversationId
             list.map { msg ->
                 createAckJob(CREATE_MESSAGE, BlazeAckMessage(msg.messageId, MessageStatus.READ.name, msg.expireAt), conversationId)
             }.let { jobs ->
-                pendingDatabase.insertJobs(jobs)
+                pendingDatabase().insertJobs(jobs)
             }
         }
-        remoteMessageStatusDao.deleteByMessageIds(list.map { it.messageId })
+        remoteMessageStatusDao().deleteByMessageIds(list.map { it.messageId })
         return if (list.size >= MARK_REMOTE_LIMIT) {
             statusJob?.ensureActive()
             processStatus()
@@ -540,9 +546,9 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
     private tailrec suspend fun processExpiredMessage() {
         val messages =
-            expiredMessageDao.getExpiredMessages(currentTimeSeconds(), DB_EXPIRED_LIMIT)
+            expiredMessageDao().getExpiredMessages(currentTimeSeconds(), DB_EXPIRED_LIMIT)
         if (messages.isEmpty()) {
-            val firstExpiredMessage = expiredMessageDao.getFirstExpiredMessage()
+            val firstExpiredMessage = expiredMessageDao().getFirstExpiredMessage()
             if (firstExpiredMessage == null) {
                 nextExpirationTime = null
             } else {
@@ -559,9 +565,9 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             }
         } else {
             val ids = messages.map { it.messageId }
-            val cIds = messageDao.findConversationsByMessages(ids)
+            val cIds = messageDao().findConversationsByMessages(ids)
             ids.forEach { messageId ->
-                val messageMedia = pendingDatabase.findMessageMediaById(messageId) ?: messageDao.findMessageMediaById(messageId)
+                val messageMedia = pendingDatabase().findMessageMediaById(messageId) ?: messageDao().findMessageMediaById(messageId)
                 Timber.e("Expired job: delete messages ${messageMedia?.type} - ${messageMedia?.messageId}")
                 messageMedia?.absolutePath(
                     MixinApplication.appContext,
@@ -573,15 +579,15 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                 if (messageMedia?.isTranscript() == true) {
                     jobManager.addJobInBackground(TranscriptDeleteJob(listOf(messageId)))
                 }
-                pendingDatabase.deletePendingMessageById(messageId)
-                database.deleteMessageById(messageId)
-                ftsDatabase.deleteByMessageId(messageId)
+                pendingDatabase().deletePendingMessageById(messageId)
+                mixinDatabase().deleteMessageById(messageId)
+                ftsDatabase().deleteByMessageId(messageId)
                 MessageFlow.delete(ANY_ID, messageId)
             }
 
             cIds.forEach { id ->
-                conversationDao.refreshLastMessageId(id)
-                conversationExtDao.refreshCountByConversationId(id)
+                conversationDao().refreshLastMessageId(id)
+                conversationExtDao().refreshCountByConversationId(id)
             }
             nextExpirationTime = null
             expiredJob?.ensureActive()

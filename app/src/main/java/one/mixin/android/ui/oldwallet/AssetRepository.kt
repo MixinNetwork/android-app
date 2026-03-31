@@ -46,9 +46,7 @@ import one.mixin.android.vo.route.Order
 import retrofit2.http.Body
 
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 class AssetRepository
     @Inject
     constructor(

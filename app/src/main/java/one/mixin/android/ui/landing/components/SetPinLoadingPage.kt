@@ -53,7 +53,6 @@ fun SetPinLoadingPage(
     val coroutineScope = rememberCoroutineScope()
     val setupState by viewModel.setupState.observeAsState(SetupState.Loading)
     val tipStep by viewModel.tipStep.observeAsState(TryConnecting)
-    val errorMessage by viewModel.errorMessage.observeAsState("")
     val context = LocalContext.current
 
     LaunchedEffect(pin) {
