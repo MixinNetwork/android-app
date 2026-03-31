@@ -49,7 +49,7 @@ class WebActivity : BaseActivity() {
             saveName: Boolean? = null,
             fixedTitle: String? = null
         ) {
-            if (url == one.mixin.android.Constants.HelpLink.CUSTOMER_SERVICE) {
+            if (url == Constants.HelpLink.CUSTOMER_SERVICE) {
                 context.openCustomerService()
                 return
             }
