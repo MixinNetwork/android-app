@@ -2372,9 +2372,9 @@
     <string name="free_transfers_between_wallets_title">钱包之间免费提现</string>
     <string name="free_transfers_between_wallets_description">钱包之间转账限时免费</string>
     <string name="is_it_safe_to_import_into_mixin">导入到 Mixin 安全吗？</string>
-    <string name="mixin_import_safety_1">Mixin 是开源的、可复现构建的，并经过独立审计。</string>
-    <string name="mixin_import_safety_2">您的数据会被安全加密，并仅存储在您的本地设备上。</string>
-    <string name="mixin_import_safety_3">Mixin 绝不会访问您的隐私信息，也不会与第三方共享。</string>
+    <string name="mixin_import_safety_1">Mixin 开源、可验证，并经过独立审计</string>
+    <string name="mixin_import_safety_2">您的数据经过安全加密，并仅存储在本地</string>
+    <string name="mixin_import_safety_3">Mixin 绝不会访问你的隐私信息，也不会与第三方共享</string>
     <string name="Spot_Trade_Guide_You_Receive">预计获得</string>
     <string name="Opening">正在处理</string>
 </resources>
