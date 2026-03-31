@@ -762,6 +762,7 @@ class TransferActivity : BaseActivity() {
             try {
                 val accountId = Session.getAccountId() ?: return@launch
                 val sessionId = Session.getExtensionSessionId() ?: return@launch
+                val identityNumber = Session.getAccount()?.identityNumber ?: return@launch
                 val plainText =
                     gson.toJson(
                         PlainJsonMessagePayload(
@@ -773,7 +774,7 @@ class TransferActivity : BaseActivity() {
                 val bm =
                     createParamBlazeMessage(
                         createPlainJsonParam(
-                            MixinDatabase.getDatabase(this@TransferActivity).participantDao()
+                            MixinDatabase.getDatabase(this@TransferActivity, identityNumber).participantDao()
                                 .joinedConversationId(accountId) ?: generateConversationId(accountId, Constants.TEAM_MIXIN_USER_ID),
                             accountId,
                             encoded,
