@@ -18,8 +18,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
+import one.mixin.android.widget.components.MixinButton
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -54,7 +53,7 @@ import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.putStringSet
+import one.mixin.android.extension.putString
 import one.mixin.android.session.Session
 import one.mixin.android.ui.home.web3.trade.ClosedPositionItem
 import one.mixin.android.ui.wallet.alert.components.cardBackground
@@ -131,9 +130,9 @@ fun PerpetualContent(
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
             viewModel.loadAcceptedAssets(
                 onSuccess = { assetIds ->
-                    context.defaultSharedPreferences.putStringSet(
-                        Constants.Account.PREF_PERPS_ACCEPTED_ASSET_IDS,
-                        assetIds.toSet()
+                    context.defaultSharedPreferences.putString(
+                        Constants.Account.PREF_PERPS_ACCEPTED_ASSET_IDS_V2,
+                        assetIds.joinToString(",")
                     )
                 }
             )
@@ -182,14 +181,14 @@ fun PerpetualContent(
                 fontSize = 14.sp,
                 color = MixinAppTheme.colors.textAssist,
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(6.dp))
             Text(
                 text = totalPositionValueFiatText,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.W600,
                 color = MixinAppTheme.colors.textPrimary,
             )
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(6.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = totalPnlFiatText,
@@ -235,7 +234,7 @@ fun PerpetualContent(
                 )
             }
             if (openPositionsCount == 0) {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(40.dp))
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -260,8 +259,7 @@ fun PerpetualContent(
                         .fillMaxWidth()
                         .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = {
                             onShowTradingGuide()
-                        })
-                        .padding(vertical = 8.dp),
+                        }),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -271,6 +269,7 @@ fun PerpetualContent(
                         color = MixinAppTheme.colors.accent,
                     )
                 }
+                Spacer(modifier = Modifier.height(40.dp))
             } else {
                 openPositionsPreview.forEach { position ->
                     OpenPositionItem(
@@ -284,7 +283,6 @@ fun PerpetualContent(
                             }
                         }
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
                 }
 
                 if (openPositionsCount > openPositionsPreview.size) {
@@ -456,13 +454,13 @@ fun PerpetualContent(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = stringResource(R.string.how_perps_works),
-                        fontSize = 14.sp,
+                        fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
                         color = MixinAppTheme.colors.textPrimary
                     )
                     Text(
                         text = stringResource(R.string.learn_how_to_trade_perps),
-                        fontSize = 12.sp,
+                        fontSize = 14.sp,
                         color = MixinAppTheme.colors.textAssist
                     )
                 }
@@ -475,10 +473,10 @@ fun PerpetualContent(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 24.dp),
+                .padding(horizontal = 16.dp, vertical = 20.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Button(
+            MixinButton(
                 onClick = {
                     onShowMarketList(true)
                 },
@@ -486,20 +484,16 @@ fun PerpetualContent(
                     .weight(1f)
                     .height(48.dp),
                 shape = RoundedCornerShape(24.dp),
-                colors = ButtonDefaults.buttonColors(
-                    backgroundColor = risingColor,
-                    contentColor = Color.White
-                ),
-                enabled = markets.isNotEmpty()
+                backgroundColor = risingColor,
+                contentColor = Color.White,
             ) {
                 Text(
-                    text = stringResource(R.string.Long),
                     fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold
+                    text = stringResource(R.string.Long),
                 )
             }
 
-            Button(
+            MixinButton(
                 onClick = {
                     onShowMarketList(false)
                 },
@@ -507,16 +501,13 @@ fun PerpetualContent(
                     .weight(1f)
                     .height(48.dp),
                 shape = RoundedCornerShape(24.dp),
-                colors = ButtonDefaults.buttonColors(
-                    backgroundColor = fallingColor,
-                    contentColor = Color.White
-                ),
-                enabled = markets.isNotEmpty()
+                backgroundColor = fallingColor,
+                contentColor = Color.White,
+                enabled = markets.isNotEmpty(),
             ) {
                 Text(
-                    text = stringResource(R.string.Short),
                     fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold
+                    text = stringResource(R.string.Short),
                 )
             }
         }

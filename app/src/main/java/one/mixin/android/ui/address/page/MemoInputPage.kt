@@ -238,6 +238,7 @@ fun MemoInputPage(
                     } else {
                         Text(
                             text = stringResource(R.string.Next),
+                            fontSize = 16.sp,
                             color = if (isValidMemo) Color.White else MixinAppTheme.colors.textAssist,
                         )
                     }

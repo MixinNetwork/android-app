@@ -119,6 +119,8 @@ object Constants {
         const val PREF_TRADE_PERPETUAL_BADGE_DISMISSED = "pref_trade_perpetual_badge_dismissed"
         const val PREF_TRADE_PERPETUAL_ORDER_BADGE_DISMISSED = "pref_trade_perpetual_order_badge_dismissed"
         const val PREF_PERPS_ACCEPTED_ASSET_IDS = "pref_perps_accepted_asset_ids"
+        const val PREF_PERPS_ACCEPTED_ASSET_IDS_ORDERED = "pref_perps_accepted_asset_ids_ordered"
+        const val PREF_PERPS_ACCEPTED_ASSET_IDS_V2 = "pref_perps_accepted_asset_ids_v2"
 
         const val PREF_USED_WALLET = "pref_used_wallet"
 
@@ -218,6 +220,7 @@ object Constants {
         const val FTS_DB_NAME = "fts.db"
         const val PENDING_DB_NAME = "pending.db"
         const val WEB3_DB_NAME = "web3.db"
+        const val PERPS_DB_NAME = "perps.db"
     }
 
     object Storage {

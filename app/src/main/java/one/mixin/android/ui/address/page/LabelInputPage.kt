@@ -233,6 +233,7 @@ fun LabelInputPage(
                 ) {
                     Text(
                         text = stringResource(R.string.Preview),
+                        fontSize = 16.sp,
                         color = if (label.isNullOrBlank()) MixinAppTheme.colors.textAssist else Color.White,
                     )
                 }

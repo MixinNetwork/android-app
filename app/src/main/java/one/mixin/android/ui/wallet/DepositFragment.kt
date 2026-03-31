@@ -341,6 +341,7 @@ class DepositFragment : BaseFragment() {
                 Constants.ChainId.Monero,
                 Constants.ChainId.Solana,
                 Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID,
+                Constants.ChainId.Avalanche,
                 Constants.ChainId.TON_CHAIN_ID -> true
 
                 else -> false

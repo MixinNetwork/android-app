@@ -3,9 +3,9 @@ package one.mixin.android.ui.wallet
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.view.Gravity
-import android.view.KeyEvent
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.WindowManager
+import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -58,6 +58,8 @@ class PinCheckDialogFragment : DialogFragment() {
         style: Int,
     ) {
         super.setupDialog(dialog, style)
+        isCancelable = false
+        dialog.setCanceledOnTouchOutside(false)
         dialog.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         dialogCallback?.invoke(true)
         dialog.setContentView(binding.root)
@@ -173,12 +175,14 @@ class PinCheckDialogFragment : DialogFragment() {
 
     override fun onResume() {
         super.onResume()
-        dialog?.setOnKeyListener { _, i, _ ->
-            if (i == KeyEvent.KEYCODE_BACK) {
-                return@setOnKeyListener true
-            }
-            return@setOnKeyListener false
-        }
+        activity?.onBackPressedDispatcher?.addCallback(
+            this,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    // block back press
+                }
+            },
+        )
     }
 
     override fun onDestroyView() {

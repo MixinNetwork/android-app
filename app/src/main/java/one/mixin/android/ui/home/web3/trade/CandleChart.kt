@@ -4,6 +4,8 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,6 +29,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,6 +41,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.input.pointer.PointerEvent
+import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -45,6 +50,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -64,10 +70,61 @@ import org.threeten.bp.ZoneId
 import org.threeten.bp.ZonedDateTime
 import org.threeten.bp.format.DateTimeFormatter
 import java.math.BigDecimal
+import kotlinx.coroutines.launch
+import kotlin.math.abs
+import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.roundToInt
 
 private const val CANDLE_REFRESH_INTERVAL_MS = 10_000L
+private const val DEFAULT_CANDLE_SCALE = 1f
+private const val MIN_CANDLE_SCALE = 0.5f
+private const val MAX_CANDLE_SCALE = 3f
+
+private fun PointerEvent.currentPressedChanges(): List<PointerInputChange> =
+    changes.filter { it.pressed }
+
+private fun PointerEvent.compatCalculateCentroid(): Offset {
+    val pressed = currentPressedChanges()
+    if (pressed.isEmpty()) return Offset.Zero
+
+    val x = pressed.sumOf { it.position.x.toDouble() } / pressed.size
+    val y = pressed.sumOf { it.position.y.toDouble() } / pressed.size
+    return Offset(x.toFloat(), y.toFloat())
+}
+
+private fun PointerEvent.compatCalculatePan(): Offset {
+    val pressed = currentPressedChanges()
+    if (pressed.isEmpty()) return Offset.Zero
+
+    val currentCentroid = compatCalculateCentroid()
+    val previousX = pressed.sumOf { it.previousPosition.x.toDouble() } / pressed.size
+    val previousY = pressed.sumOf { it.previousPosition.y.toDouble() } / pressed.size
+    val previousCentroid = Offset(previousX.toFloat(), previousY.toFloat())
+    return currentCentroid - previousCentroid
+}
+
+private fun PointerEvent.compatCalculateZoom(): Float {
+    val pressed = currentPressedChanges()
+    if (pressed.size < 2) return 1f
+
+    val currentCentroid = compatCalculateCentroid()
+    val previousX = pressed.sumOf { it.previousPosition.x.toDouble() } / pressed.size
+    val previousY = pressed.sumOf { it.previousPosition.y.toDouble() } / pressed.size
+    val previousCentroid = Offset(previousX.toFloat(), previousY.toFloat())
+
+    val currentAverageDistance = pressed
+        .map { hypot((it.position.x - currentCentroid.x).toDouble(), (it.position.y - currentCentroid.y).toDouble()) }
+        .average()
+        .toFloat()
+    val previousAverageDistance = pressed
+        .map { hypot((it.previousPosition.x - previousCentroid.x).toDouble(), (it.previousPosition.y - previousCentroid.y).toDouble()) }
+        .average()
+        .toFloat()
+
+    return if (previousAverageDistance > 0f) currentAverageDistance / previousAverageDistance else 1f
+}
 
 @Composable
 fun CandleChart(
@@ -156,16 +213,24 @@ private fun ScrollableCandleChart(
     val items = candleView.items
     if (items.isEmpty()) return
 
-    val candleWidth = 6.dp
-    val spacing = 2.dp
+    val baseCandleWidth = 6.dp
+    val baseSpacing = 2.dp
     val density = LocalDensity.current
 
     val scrollState = rememberScrollState()
+    val coroutineScope = rememberCoroutineScope()
     var touchXOnChart by remember { mutableStateOf<Float?>(null) }
     var isTouching by remember { mutableStateOf(false) }
+    var isPinching by remember { mutableStateOf(false) }
+    var candleScale by remember(items.size) { mutableStateOf(DEFAULT_CANDLE_SCALE) }
+
+    val candleWidth = baseCandleWidth * candleScale
+    val spacing = baseSpacing * candleScale
 
     val candleStepPx = with(density) { (candleWidth + spacing).toPx() }
     val candleWidthPx = with(density) { candleWidth.toPx() }
+    val baseCandleWidthPx = with(density) { baseCandleWidth.toPx() }
+    val baseSpacingPx = with(density) { baseSpacing.toPx() }
     val chartStartPaddingPx = with(density) { 8.dp.toPx() }
     val totalChartWidthPx = with(density) {
         (8.dp + (candleWidth * items.size) + (spacing * (items.size - 1).coerceAtLeast(0))).toPx()
@@ -214,13 +279,14 @@ private fun ScrollableCandleChart(
             val maxPrice = prices.maxOrNull() ?: BigDecimal.ZERO
             val minPrice = prices.minOrNull() ?: BigDecimal.ZERO
             val midPrice = (maxPrice + minPrice) / BigDecimal(2)
-            val maxPriceText = formatPrice(maxPrice)
-            val midPriceText = formatPrice(midPrice)
-            val minPriceText = formatPrice(minPrice)
+            val priceScale = resolveChartPriceScale(maxPrice, minPrice, midPrice)
+            val maxPriceText = formatPrice(maxPrice, priceScale)
+            val midPriceText = formatPrice(midPrice, priceScale)
+            val minPriceText = formatPrice(minPrice, priceScale)
 
             val selectedPrice = selectedItem?.close?.toBigDecimalOrNull()
             val showCurrentPrice = selectedPrice == null && latestPrice != null
-            val currentPriceText = latestPrice?.let { formatPrice(it) }
+            val currentPriceText = latestPrice?.let { formatPrice(it, priceScale) }
             val isCurrentPriceInRange = latestPrice?.let { it >= minPrice && it <= maxPrice } == true
             val isCurrentPriceOverlapping = currentPriceText != null &&
                 currentPriceText in setOf(maxPriceText, midPriceText, minPriceText)
@@ -231,7 +297,66 @@ private fun ScrollableCandleChart(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(end = axisPanelWidth)
-                    .pointerInput(items.size, scrollState.value) {
+                    .pointerInput(
+                        items.size,
+                        viewportWidthPx,
+                        chartStartPaddingPx,
+                        baseCandleWidthPx,
+                        baseSpacingPx,
+                    ) {
+                        awaitEachGesture {
+                            awaitFirstDown(requireUnconsumed = false)
+                            var gestureHandled = false
+
+                            do {
+                                val event = awaitPointerEvent()
+                                val zoom = event.compatCalculateZoom()
+                                val pan = event.compatCalculatePan()
+                                val centroid = event.compatCalculateCentroid()
+                                val pressedCount = event.changes.count { it.pressed }
+
+                                if (pressedCount > 1 && (abs(zoom - 1f) >= 0.0001f || abs(pan.x) >= 0.0001f)) {
+                                    gestureHandled = true
+                                    isPinching = true
+                                    isTouching = false
+                                    touchXOnChart = null
+
+                                    val oldScale = candleScale
+                                    val newScale = (oldScale * zoom).coerceIn(MIN_CANDLE_SCALE, MAX_CANDLE_SCALE)
+                                    val oldStepPx = (baseCandleWidthPx + baseSpacingPx) * oldScale
+                                    val newStepPx = (baseCandleWidthPx + baseSpacingPx) * newScale
+                                    val contentX = scrollState.value + centroid.x - chartStartPaddingPx
+                                    val stepIndex = if (oldStepPx > 0f) contentX / oldStepPx else 0f
+
+                                    candleScale = newScale
+
+                                    val newTotalWidthPx = chartStartPaddingPx +
+                                        (baseCandleWidthPx * newScale * items.size) +
+                                        (baseSpacingPx * newScale * (items.size - 1).coerceAtLeast(0))
+                                    val maxScroll = (newTotalWidthPx - viewportWidthPx).coerceAtLeast(0f)
+                                    val anchoredScroll = (stepIndex * newStepPx) - (centroid.x - chartStartPaddingPx)
+                                    val targetScroll = (anchoredScroll - pan.x).roundToInt()
+                                        .coerceIn(0, maxScroll.roundToInt())
+
+                                    coroutineScope.launch {
+                                        scrollState.scrollTo(targetScroll)
+                                    }
+
+                                    event.changes.forEach { change ->
+                                        if (change.pressed) {
+                                            change.consume()
+                                        }
+                                    }
+                                }
+                            } while (event.changes.any { it.pressed })
+
+                            if (gestureHandled) {
+                                isPinching = false
+                            }
+                        }
+                    }
+                    .pointerInput(items.size, totalChartWidthPx, isPinching) {
+                        if (isPinching) return@pointerInput
                         detectDragGesturesAfterLongPress(
                             onDragStart = { offset ->
                                 isTouching = true
@@ -253,7 +378,7 @@ private fun ScrollableCandleChart(
                             }
                         )
                     }
-                    .horizontalScroll(scrollState, enabled = !isTouching)
+                    .horizontalScroll(scrollState, enabled = !isTouching && !isPinching)
                     .clipToBounds()
             ) {
                 PerpsCandleChartCanvas(
@@ -335,10 +460,13 @@ private fun ScrollableCandleChart(
                             contentAlignment = Alignment.CenterEnd
                         ) {
                             Text(
-                                text = formatPrice(currentPrice),
+                                text = formatPrice(currentPrice, priceScale),
                                 fontSize = 10.sp,
                                 color = MixinAppTheme.colors.textPrimary,
                                 textAlign = TextAlign.End,
+                                maxLines = 1,
+                                softWrap = false,
+                                overflow = TextOverflow.Clip,
                                 modifier = Modifier
                                     .background(
                                         color = MixinAppTheme.colors.background,
@@ -370,10 +498,13 @@ private fun ScrollableCandleChart(
                                 contentAlignment = Alignment.CenterEnd
                             ) {
                                 Text(
-                                    text = formatPrice(selectedPrice),
+                                    text = formatPrice(selectedPrice, priceScale),
                                     fontSize = 10.sp,
                                     color = MixinAppTheme.colors.textPrimary,
                                     textAlign = TextAlign.End,
+                                    maxLines = 1,
+                                    softWrap = false,
+                                    overflow = TextOverflow.Clip,
                                     modifier = Modifier
                                         .background(
                                             color = MixinAppTheme.colors.background,
@@ -607,12 +738,33 @@ private fun DrawScope.drawTouchCrosshair(
     )
 }
 
-private fun formatPrice(price: BigDecimal): String {
-    return when {
-        price >= BigDecimal("100") -> String.format("%.0f", price)
-        price >= BigDecimal("1") -> String.format("%.2f", price)
-        else -> String.format("%.6f", price)
+private fun resolveChartPriceScale(
+    maxPrice: BigDecimal,
+    minPrice: BigDecimal,
+    midPrice: BigDecimal,
+): Int {
+    if (maxPrice < BigDecimal.ONE && minPrice < BigDecimal.ONE) {
+        return 6
     }
+
+    var scale = 2
+    while (scale < 4) {
+        val maxText = formatPrice(maxPrice, scale)
+        val minText = formatPrice(minPrice, scale)
+        val midText = formatPrice(midPrice, scale)
+        if (setOf(maxText, minText, midText).size == 3) {
+            break
+        }
+        scale++
+    }
+    return scale
+}
+
+private fun formatPrice(
+    price: BigDecimal,
+    scale: Int,
+): String {
+    return price.setScale(scale, java.math.RoundingMode.HALF_UP).toPlainString()
 }
 
 private fun formatCandleTime(timestamp: Long, timeFrame: String): String {

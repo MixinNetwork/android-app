@@ -1,9 +1,18 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
+import one.mixin.android.api.response.perps.PerpsMarket
 import java.math.BigDecimal
 import java.math.RoundingMode
 
 private val perpsMinDisplayValue = BigDecimal("0.01")
+
+fun PerpsMarket.changePercent(): BigDecimal {
+    return try {
+        BigDecimal(change).multiply(BigDecimal(100))
+    } catch (e: Exception) {
+        BigDecimal.ZERO
+    }
+}
 
 fun formatPerpsDisplayDecimal(value: BigDecimal?): String {
     val safeValue = value ?: BigDecimal.ZERO
@@ -20,7 +29,7 @@ fun formatPerpsFiatDecimal(value: BigDecimal?, fiatSymbol: String): String {
     return if (absValue > BigDecimal.ZERO && absValue < perpsMinDisplayValue) {
         "<${fiatSymbol}0.01"
     } else {
-        "$fiatSymbol${absValue.setScale(2, RoundingMode.HALF_UP).toPlainString()}"
+        "$fiatSymbol${absValue.setScale(2, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()}"
     }
 }
 

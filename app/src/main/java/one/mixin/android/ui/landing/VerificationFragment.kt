@@ -61,6 +61,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
+import one.mixin.android.repository.UserRepository
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.CaptchaView
@@ -68,6 +69,7 @@ import one.mixin.android.widget.CaptchaView.Companion.gtCAPTCHA
 import one.mixin.android.widget.CaptchaView.Companion.hCAPTCHA
 import timber.log.Timber
 import javax.inject.Inject
+import javax.inject.Provider
 
 @AndroidEntryPoint
 class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
@@ -95,10 +97,13 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
             }
     }
 
-    private val viewModel by viewModels<MobileViewModel>()
+    private val viewModel by viewModels<LandingViewModel>()
 
     @Inject
     lateinit var tip: Tip
+
+    @Inject
+    lateinit var userRepositoryProvider: Provider<UserRepository>
 
     private var mCountDownTimer: CountDownTimer? = null
 
@@ -173,12 +178,15 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
             FROM_CHANGE_PHONE_ACCOUNT -> {
                 handlePhoneModification()
             }
+
             FROM_DELETE_ACCOUNT -> {
                 handleDeleteAccount()
             }
+
             FROM_VERIFY_MOBILE_REMINDER -> {
                 handleVerifyMobileReminder()
             }
+
             else -> {
                 handleLogin()
             }
@@ -186,7 +194,9 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
     }
 
     override fun insertUser(u: User) {
-        viewModel.insertUser(u)
+        lifecycleScope.launch(Dispatchers.IO) {
+            userRepositoryProvider.get().insertUser(u)
+        }
     }
 
     private fun isPhoneModification() = pin != null
@@ -254,7 +264,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                     val hasPhone = Session.hasPhone()
                     withContext(Dispatchers.IO) {
                         r.data?.let { u ->
-                            viewModel.updatePhone(u.userId, u.phone)
+                            userRepositoryProvider.get().updatePhone(u.userId, u.phone)
                             removeValueFromEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC)
                             Session.storeAccount(u)
                         }
@@ -343,7 +353,8 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                         }
                     }
                     alert(
-                        getString(R.string.verification_successful))
+                        getString(R.string.verification_successful)
+                    )
                         .setPositiveButton(android.R.string.ok) { dialog, _ ->
                             dialog.dismiss()
                             activity?.finish()

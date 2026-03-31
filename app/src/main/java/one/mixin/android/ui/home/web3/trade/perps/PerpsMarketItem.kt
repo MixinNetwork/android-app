@@ -36,13 +36,8 @@ fun PerpsMarketItem(
     quoteColorReversed: Boolean = false,
     onClick: () -> Unit = {}
 ) {
-    val change = try {
-        BigDecimal(market.change)
-    } catch (e: Exception) {
-        BigDecimal.ZERO
-    }
-
-    val isPositive = change >= BigDecimal.ZERO
+    val changePercent = market.changePercent()
+    val isPositive = changePercent >= BigDecimal.ZERO
     val changeColor = if (isPositive) {
         if (quoteColorReversed) {
             MixinAppTheme.colors.walletRed
@@ -56,7 +51,7 @@ fun PerpsMarketItem(
             MixinAppTheme.colors.walletRed
         }
     }
-    val changeText = formatPerpsSignedPercent(change)
+    val changeText = formatPerpsSignedPercent(changePercent)
     val fiatRate = BigDecimal(Fiats.getRate())
     val fiatSymbol = Fiats.getSymbol()
 
@@ -118,7 +113,7 @@ fun PerpsMarketItem(
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = stringResource(R.string.Vol, "$fiatSymbol$formattedVolume"),
-                    fontSize = 12.sp,
+                    fontSize = 14.sp,
                     color = MixinAppTheme.colors.textAssist,
                 )
             }
@@ -129,13 +124,13 @@ fun PerpsMarketItem(
         ) {
             Text(
                 text = "$fiatSymbol$formattedPrice",
-                fontSize = 16.sp,
+                fontSize = 14.sp,
                 color = MixinAppTheme.colors.textPrimary,
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = changeText,
-                fontSize = 12.sp,
+                fontSize = 14.sp,
                 color = changeColor,
             )
         }

@@ -37,6 +37,6 @@
             android:text="@string/Add_stickers"
             android:background="@drawable/bg_round_blue_btn_40"
             android:textColor="@color/white"
-            android:textSize="14sp" />
+            android:textSize="16sp" />
     </FrameLayout>
 </RelativeLayout>

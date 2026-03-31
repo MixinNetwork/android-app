@@ -20,8 +20,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
+import one.mixin.android.widget.components.MixinButton
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -43,6 +42,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.PlatformTextStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.FragmentActivity
@@ -287,37 +288,29 @@ fun PerpsMarketDetailPage(
                         .fillMaxWidth()
                         .background(MixinAppTheme.colors.background)
                         .padding(horizontal = 16.dp)
-                        .padding(bottom = 16.dp, top = 8.dp)
+                        .padding(bottom = 20.dp, top = 20.dp)
                 ) {
                     if (currentPosition != null) {
-                        Button(
+                        MixinButton(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(48.dp),
+                            enabled = currentPosition.state == "open",
                             onClick = {
-                                val activity = context as? FragmentActivity ?: return@Button
+                                val activity = context as? FragmentActivity ?: return@MixinButton
                                 val position = currentPosition.toPosition()
 
                                 PerpsCloseBottomSheetDialogFragment.newInstance(
                                     position = position,
                                 ).show(activity.supportFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)
                             },
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                backgroundColor = MixinAppTheme.colors.accent
-                            ),
+                            backgroundColor = if (currentPosition.state == "open") MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundWindow,
+                            contentColor = if (currentPosition.state == "open") Color.White else MixinAppTheme.colors.textAssist,
                             shape = RoundedCornerShape(32.dp),
-                            elevation = ButtonDefaults.elevation(
-                                pressedElevation = 0.dp,
-                                defaultElevation = 0.dp,
-                                hoveredElevation = 0.dp,
-                                focusedElevation = 0.dp
-                            )
                         ) {
                             Text(
-                                text = stringResource(R.string.Close_Position),
                                 fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
+                                text = stringResource(if(currentPosition.state == "open") R.string.Close_Position else R.string.Opening),
                             )
                         }
                     } else {
@@ -325,7 +318,7 @@ fun PerpsMarketDetailPage(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            Button(
+                            MixinButton(
                                 modifier = Modifier
                                     .weight(1f)
                                     .height(48.dp),
@@ -339,26 +332,17 @@ fun PerpsMarketDetailPage(
                                         isLong = true
                                     )
                                 },
-                                colors = ButtonDefaults.outlinedButtonColors(
-                                    backgroundColor = risingColor
-                                ),
+                                backgroundColor = risingColor,
+                                contentColor = Color.White,
                                 shape = RoundedCornerShape(32.dp),
-                                elevation = ButtonDefaults.elevation(
-                                    pressedElevation = 0.dp,
-                                    defaultElevation = 0.dp,
-                                    hoveredElevation = 0.dp,
-                                    focusedElevation = 0.dp
-                                )
                             ) {
                                 Text(
-                                    text = stringResource(R.string.Long),
                                     fontSize = 16.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White
+                                    text = stringResource(R.string.Long),
                                 )
                             }
 
-                            Button(
+                            MixinButton(
                                 modifier = Modifier
                                     .weight(1f)
                                     .height(48.dp),
@@ -372,22 +356,13 @@ fun PerpsMarketDetailPage(
                                         isLong = false
                                     )
                                 },
-                                colors = ButtonDefaults.outlinedButtonColors(
-                                    backgroundColor = fallingColor
-                                ),
+                                backgroundColor = fallingColor,
+                                contentColor = Color.White,
                                 shape = RoundedCornerShape(32.dp),
-                                elevation = ButtonDefaults.elevation(
-                                    pressedElevation = 0.dp,
-                                    defaultElevation = 0.dp,
-                                    hoveredElevation = 0.dp,
-                                    focusedElevation = 0.dp
-                                )
                             ) {
                                 Text(
-                                    text = stringResource(R.string.Short),
                                     fontSize = 16.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White
+                                    text = stringResource(R.string.Short),
                                 )
                             }
                         }
@@ -424,13 +399,13 @@ private fun MarketInfoCard(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = stringResource(R.string.how_perps_works),
-                    fontSize = 14.sp,
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
                     color = MixinAppTheme.colors.textPrimary
                 )
                 Text(
                     text = stringResource(R.string.learn_how_to_trade_perps),
-                    fontSize = 12.sp,
+                    fontSize = 14.sp,
                     color = MixinAppTheme.colors.textAssist
                 )
             }
@@ -447,29 +422,27 @@ private fun MarketInfoCard(
             .padding(16.dp)
     ) {
         Text(
-            text = stringResource(R.string.Volume_24H),
-            fontSize = 12.sp,
+            text = stringResource(R.string.Volume_24H).uppercase(),
+            fontSize = 14.sp,
             color = MixinAppTheme.colors.textAssist
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = formatVolume(market.volume, fiatRate, fiatSymbol),
             fontSize = 16.sp,
-            fontWeight = FontWeight.Medium,
             color = MixinAppTheme.colors.textPrimary
         )
 
         Spacer(modifier = Modifier.height(12.dp))
         Text(
-            text = stringResource(R.string.Funding_Rate),
-            fontSize = 12.sp,
+            text = stringResource(R.string.Funding_Rate).uppercase(),
+            fontSize = 14.sp,
             color = MixinAppTheme.colors.textAssist
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = formatFundingRate(market.fundingRate),
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium,
+            fontSize = 16.sp,
             color = MixinAppTheme.colors.textPrimary
         )
     }
@@ -514,15 +487,10 @@ private fun MarketDetailCard(
     val fiatRate = BigDecimal(Fiats.getRate())
     val fiatSymbol = Fiats.getSymbol()
 
-    val change = try {
-        BigDecimal(market.change)
-    } catch (e: Exception) {
-        BigDecimal.ZERO
-    }
-
-    val isPositive = change >= BigDecimal.ZERO
+    val changePercent = market.changePercent()
+    val isPositive = changePercent >= BigDecimal.ZERO
     val changeColor = if (isPositive) risingColor else fallingColor
-    val changeText = "${if (isPositive) "+" else ""}${market.change}%"
+    val changeText = formatPerpsSignedPercent(changePercent)
     val displayTokenSymbol = tokenSymbol
         .takeIf { it.isNotBlank() }
         ?: market.tokenSymbol.takeIf { it.isNotBlank() }
@@ -656,6 +624,7 @@ private fun OpenPositionCard(
 
     val entryPrice = position.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val liquidationPrice = calculateLiquidationPriceValue(entryPrice, position.leverage, isLong)
+    val compactTextStyle = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false))
 
     Column(
         modifier = Modifier
@@ -672,6 +641,8 @@ private fun OpenPositionCard(
             Text(
                 text = stringResource(R.string.perps_position),
                 fontSize = 16.sp,
+                lineHeight = 16.sp,
+                style = compactTextStyle,
                 fontWeight = FontWeight.Medium,
                 color = MixinAppTheme.colors.textPrimary
             )
@@ -686,44 +657,54 @@ private fun OpenPositionCard(
             )
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column {
+        Column {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
-                    text = stringResource(R.string.PNL),
+                    text = stringResource(R.string.PnL).uppercase(),
                     fontSize = 12.sp,
+                    lineHeight = 14.sp,
+                    style = compactTextStyle,
                     color = MixinAppTheme.colors.textAssist
                 )
-                Spacer(modifier = Modifier.height(4.dp))
-
+                Text(
+                    text = stringResource(R.string.Direction).uppercase(),
+                    fontSize = 12.sp,
+                    lineHeight = 14.sp,
+                    style = compactTextStyle,
+                    color = MixinAppTheme.colors.textAssist
+                )
+            }
+            Spacer(modifier = Modifier.height(7.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
                     text = "${formatPerpsSignedFiatDecimal(pnl.multiply(fiatRate), fiatSymbol)}(${formatPerpsSignedPercent(roe)})",
                     fontSize = 14.sp,
+                    lineHeight = 17.sp,
+                    style = compactTextStyle,
                     color = pnlColor
                 )
-            }
-            Column(horizontalAlignment = Alignment.End) {
-                Text(
-                    text = stringResource(R.string.Direction),
-                    fontSize = 12.sp,
-                    color = MixinAppTheme.colors.textAssist
-                )
-                Spacer(modifier = Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
                             .background(directionColor)
-                            .padding(horizontal = 8.dp, vertical = 2.dp)
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
                         Text(
                             text = if (isLong) stringResource(R.string.Long) else stringResource(R.string.Short),
                             fontSize = 10.sp,
                             lineHeight = 12.sp,
+                            style = compactTextStyle,
                             color = Color.White
                         )
                     }
@@ -731,26 +712,31 @@ private fun OpenPositionCard(
                     Text(
                         text = "${position.leverage}x",
                         fontSize = 14.sp,
+                        lineHeight = 17.sp,
+                        style = compactTextStyle,
                         color = MixinAppTheme.colors.textPrimary
                     )
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column {
+        Column {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = stringResource(R.string.position_size),
+                        text = stringResource(R.string.position_size).uppercase(),
                         fontSize = 12.sp,
+                        lineHeight = 14.sp,
+                        style = compactTextStyle,
                         color = MixinAppTheme.colors.textAssist
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
+                    Spacer(modifier = Modifier.width(9.dp))
                     Icon(
                         painter = painterResource(id = R.drawable.ic_tip),
                         contentDescription = null,
@@ -766,60 +752,77 @@ private fun OpenPositionCard(
                     )
                 }
                 Text(
-                    text = "${quantity.stripTrailingZeros().toPlainString()} ${position.tokenSymbol}",
-                    fontSize = 14.sp,
-                    color = MixinAppTheme.colors.textPrimary
+                    text = stringResource(R.string.Margin).uppercase(),
+                    fontSize = 12.sp,
+                    lineHeight = 14.sp,
+                    style = compactTextStyle,
+                    color = MixinAppTheme.colors.textAssist
                 )
             }
-
-            Column(horizontalAlignment = Alignment.End) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = stringResource(R.string.Margin),
-                        fontSize = 12.sp,
-                        color = MixinAppTheme.colors.textAssist
-                    )
-
-                }
+            Spacer(modifier = Modifier.height(10.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "${quantity.stripTrailingZeros().toPlainString()} ${position.tokenSymbol}",
+                    fontSize = 14.sp,
+                    lineHeight = 17.sp,
+                    style = compactTextStyle,
+                    color = MixinAppTheme.colors.textPrimary
+                )
                 Text(
                     text = formatPerpsFiatDecimal(amountValue, fiatSymbol),
                     fontSize = 14.sp,
+                    lineHeight = 17.sp,
+                    style = compactTextStyle,
                     color = MixinAppTheme.colors.textPrimary
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column {
+        Column {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
-                    text = stringResource(R.string.Entry_Price),
+                    text = stringResource(R.string.Entry_Price).uppercase(),
                     fontSize = 12.sp,
+                    lineHeight = 14.sp,
+                    style = compactTextStyle,
                     color = MixinAppTheme.colors.textAssist
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = stringResource(R.string.Liquidation_Price).uppercase(),
+                    fontSize = 12.sp,
+                    lineHeight = 14.sp,
+                    style = compactTextStyle,
+                    color = MixinAppTheme.colors.textAssist
+                )
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
                     text = "${fiatSymbol}${entryPrice.multiply(fiatRate).priceFormat()}",
                     fontSize = 14.sp,
+                    lineHeight = 17.sp,
+                    style = compactTextStyle,
                     color = MixinAppTheme.colors.textPrimary
                 )
-            }
-
-            Column(horizontalAlignment = Alignment.End) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = stringResource(R.string.Liquidation_Price),
-                        fontSize = 12.sp,
-                        color = MixinAppTheme.colors.textAssist
-                    )
-                }
                 Text(
                     text = "${fiatSymbol}${liquidationPrice.multiply(fiatRate).priceFormat()}",
                     fontSize = 14.sp,
+                    lineHeight = 17.sp,
+                    style = compactTextStyle,
                     color = MixinAppTheme.colors.textPrimary
                 )
             }

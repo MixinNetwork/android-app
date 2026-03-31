@@ -22,8 +22,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
+import one.mixin.android.widget.components.MixinButton
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -69,6 +68,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.home.web3.trade.InputContent
 import one.mixin.android.ui.home.web3.trade.KeyboardAwareBox
 import one.mixin.android.ui.home.web3.trade.SwapActivity
+import one.mixin.android.ui.home.web3.trade.TradeFragment
 import one.mixin.android.ui.home.web3.components.InputAction
 import one.mixin.android.ui.wallet.AddFeeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletActivity
@@ -79,10 +79,43 @@ import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
 import java.math.RoundingMode
 import kotlin.math.abs
+import kotlin.math.roundToInt
 
 private fun getLeveragePrefKey(marketId: String) = "pref_perps_leverage_$marketId"
 private const val MARKET_REFRESH_INTERVAL_MS = 5_000L
 private const val DEFAULT_LEVERAGE = 10
+
+private fun readAcceptedPerpAssetIds(context: android.content.Context): List<String> {
+    return context.defaultSharedPreferences
+        .getString(Constants.Account.PREF_PERPS_ACCEPTED_ASSET_IDS_V2, null)
+        .orEmpty()
+        .split(",")
+        .map { it.trim() }
+        .filter { it.isNotBlank() }
+}
+
+private fun TokenItem.hasPositiveBalance(): Boolean =
+    (balance.toBigDecimalOrNull() ?: BigDecimal.ZERO) > BigDecimal.ZERO
+
+private fun resolveCurrentToken(
+    selectedToken: TokenItem?,
+    availableTokens: List<TokenItem>,
+    preferredAssetIds: List<String>,
+): TokenItem? {
+    if (selectedToken == null) {
+        return availableTokens.firstOrNull { it.hasPositiveBalance() }
+            ?: preferredAssetIds.firstNotNullOfOrNull { assetId ->
+                availableTokens.firstOrNull { it.assetId == assetId }
+            }
+            ?: availableTokens.firstOrNull()
+    }
+
+    val matchedToken = availableTokens.firstOrNull { it.assetId == selectedToken.assetId }
+    return when {
+        matchedToken != null -> matchedToken
+        else -> selectedToken
+    }
+}
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -100,13 +133,8 @@ fun OpenPositionPage(
     val focusManager = LocalFocusManager.current
     val viewModel = hiltViewModel<PerpetualViewModel>()
     val marketId = market.marketId
-    val acceptedPerpAssetIds = remember {
-        context.defaultSharedPreferences
-            .getStringSet(Constants.Account.PREF_PERPS_ACCEPTED_ASSET_IDS, emptySet())
-            .orEmpty()
-            .filter { it.isNotBlank() }
-            .toSet()
-    }
+    val acceptedPerpAssetIdsOrdered = remember { readAcceptedPerpAssetIds(context) }
+    val acceptedPerpAssetIds = remember(acceptedPerpAssetIdsOrdered) { acceptedPerpAssetIdsOrdered.toSet() }
 
     var currentMarket by remember(marketId) { mutableStateOf(market) }
     var currentToken by remember { mutableStateOf<TokenItem?>(selectedToken) }
@@ -142,17 +170,28 @@ fun OpenPositionPage(
             } else {
                 tokens.filter { it.assetId in acceptedPerpAssetIds }
             }
-            availableTokens = supportedTokens
-            currentToken = selectedToken?.let { target ->
-                supportedTokens.firstOrNull { it.assetId == target.assetId }
-            } ?: supportedTokens.firstOrNull()
+            val orderedSupportedTokens = if (acceptedPerpAssetIdsOrdered.isEmpty()) {
+                supportedTokens
+            } else {
+                acceptedPerpAssetIdsOrdered.mapNotNull { assetId ->
+                    supportedTokens.firstOrNull { it.assetId == assetId }
+                }
+            }
+            availableTokens = orderedSupportedTokens
+            currentToken = resolveCurrentToken(
+                selectedToken = selectedToken,
+                availableTokens = orderedSupportedTokens,
+                preferredAssetIds = acceptedPerpAssetIdsOrdered,
+            )
         }
     }
 
     LaunchedEffect(selectedToken?.assetId, availableTokens) {
-        selectedToken?.let { target ->
-            currentToken = availableTokens.firstOrNull { it.assetId == target.assetId } ?: target
-        }
+        currentToken = resolveCurrentToken(
+            selectedToken = selectedToken,
+            availableTokens = availableTokens,
+            preferredAssetIds = acceptedPerpAssetIdsOrdered,
+        )
     }
     LaunchedEffect(currentToken) {
         onCurrentTokenChange(currentToken)
@@ -338,6 +377,9 @@ fun OpenPositionPage(
                                         .apply {
                                             onAction = { type, addToken ->
                                                 if (type == AddFeeBottomSheetDialogFragment.ActionType.SWAP) {
+                                                    val currentWalletId = Session.getAccountId() ?: ""
+                                                    val preferenceKey = "${TradeFragment.PREF_TRADE_SELECTED_TAB_PREFIX}$currentWalletId"
+                                                    context.defaultSharedPreferences.putInt(preferenceKey, 0)
                                                     SwapActivity.show(
                                                         context = activity,
                                                         input = Constants.AssetId.USDT_ASSET_ETH_ID,
@@ -563,40 +605,40 @@ fun OpenPositionPage(
                     Spacer(modifier = Modifier.height(8.dp))
                 }
 
-                Button(
+                MixinButton(
                     modifier = Modifier
                         .padding(horizontal = 20.dp)
                         .fillMaxWidth()
                         .height(48.dp),
                     onClick = {
-                        val token = currentToken ?: return@Button
-                        val amount = usdtAmount.toBigDecimalOrNull() ?: return@Button
+                        val token = currentToken ?: return@MixinButton
+                        val amount = usdtAmount.toBigDecimalOrNull() ?: return@MixinButton
 
-                        if (amount <= BigDecimal.ZERO) return@Button
+                        if (amount <= BigDecimal.ZERO) return@MixinButton
                         if (minimumMargin > BigDecimal.ZERO && amount < minimumMargin) {
                             errorInfo = context.getString(
                                 R.string.perps_minimum_margin,
                                 minimumMargin.stripTrailingZeros().toPlainString()
                             )
-                            return@Button
+                            return@MixinButton
                         }
                         if (maximumMargin > BigDecimal.ZERO && amount > maximumMargin) {
                             errorInfo = context.getString(
                                 R.string.perps_maximum_margin,
                                 maximumMargin.stripTrailingZeros().toPlainString()
                             )
-                            return@Button
+                            return@MixinButton
                         }
-                        if (amount > (token.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO)) return@Button
+                        if (amount > (token.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO)) return@MixinButton
 
                         val m = currentMarket
                         val walletId = Session.getAccountId() ?: "" // Privacy Wallet
-                        if (walletId.isEmpty()) return@Button
+                        if (walletId.isEmpty()) return@MixinButton
 
-                        val activity = context as? FragmentActivity ?: return@Button
+                        val activity = context as? FragmentActivity ?: return@MixinButton
 
                         val price = m.markPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
-                        if (price == BigDecimal.ZERO) return@Button
+                        if (price == BigDecimal.ZERO) return@MixinButton
 
 
                         scope.launch {
@@ -640,33 +682,24 @@ fun OpenPositionPage(
                         }
                     },
                     enabled = canReview,
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        backgroundColor = if (canReview) {
-                            MixinAppTheme.colors.accent
-                        } else {
-                            MixinAppTheme.colors.backgroundGrayLight
-                        }
-                    ),
+                    backgroundColor = if (canReview) {
+                        MixinAppTheme.colors.accent
+                    } else {
+                        MixinAppTheme.colors.backgroundGrayLight
+                    },
+                    contentColor = if (canReview) {
+                        Color.White
+                    } else {
+                        MixinAppTheme.colors.textAssist
+                    },
                     shape = RoundedCornerShape(32.dp),
-                    elevation = ButtonDefaults.elevation(
-                        pressedElevation = 0.dp,
-                        defaultElevation = 0.dp,
-                        hoveredElevation = 0.dp,
-                        focusedElevation = 0.dp
-                    )
                 ) {
                     Text(
+                        fontSize = 16.sp,
                         text = if (insufficientBalance) {
                             "${currentToken?.symbol ?: ""} ${stringResource(R.string.insufficient_balance)}"
                         } else {
                             stringResource(R.string.Review)
-                        },
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = if (canReview) {
-                            Color.White
-                        } else {
-                            MixinAppTheme.colors.textAssist
                         }
                     )
                 }
@@ -737,31 +770,32 @@ private fun calculateProfitInfo(
     fiatSymbol: String,
 ): String {
     val amountValue = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val leverageInt = leverage.roundToInt()
     if (amountValue == BigDecimal.ZERO) {
         return if (isLong) {
-            stringResource(R.string.Price_Up_Profit, "1", "0.0", "${fiatSymbol}0.00")
+            stringResource(R.string.Price_Up_Profit, "1", leverageInt.toString(), "${fiatSymbol}0.00")
         } else {
-            stringResource(R.string.Price_Down_Profit, "1", "0.0", "${fiatSymbol}0.00")
+            stringResource(R.string.Price_Down_Profit, "1", leverageInt.toString(), "${fiatSymbol}0.00")
         }
     }
 
-    val profitPercent = priceChangePercent * leverage
+    val profitPercent = leverageInt
     val profitAmount = amountValue
-        .multiply(BigDecimal(profitPercent / 100))
+        .multiply(BigDecimal(profitPercent).divide(BigDecimal(100)))
         .multiply(fiatRate)
 
     return if (isLong) {
         stringResource(
             R.string.Price_Up_Profit,
             String.format("%.0f", abs(priceChangePercent)),
-            String.format("%.1f", profitPercent),
+            profitPercent.toString(),
             "${fiatSymbol}${profitAmount.priceFormat()}"
         )
     } else {
         stringResource(
             R.string.Price_Down_Profit,
             String.format("%.0f", abs(priceChangePercent)),
-            String.format("%.1f", profitPercent),
+            profitPercent.toString(),
             "${fiatSymbol}${profitAmount.priceFormat()}"
         )
     }

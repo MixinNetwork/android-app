@@ -16,6 +16,7 @@ import one.mixin.android.db.perps.PerpsPositionHistoryDao
 import one.mixin.android.db.perps.PerpsMarketDao
 import one.mixin.android.util.SINGLE_DB_EXECUTOR
 import one.mixin.android.util.database.dbDir
+import one.mixin.android.util.reportException
 import java.io.File
 import java.util.concurrent.Executors
 import kotlin.math.max
@@ -33,23 +34,33 @@ abstract class PerpsDatabase : RoomDatabase() {
     companion object {
         private var INSTANCE: PerpsDatabase? = null
         private val lock = Any()
+        private var currentIdentityNumber: String? = null
 
-        fun getDatabase(context: Context): PerpsDatabase {
+        fun getDatabase(
+            context: Context,
+            identityNumber: String,
+        ): PerpsDatabase {
+            val scopedIdentity = identityNumber.takeIf { it.isNotBlank() }
+                ?: throw IllegalArgumentException("identityNumber is required for PerpsDatabase")
             synchronized(lock) {
+                if (INSTANCE != null && currentIdentityNumber != scopedIdentity) {
+                    INSTANCE?.close()
+                    INSTANCE = null
+                }
                 if (INSTANCE == null) {
-                    val dir = dbDir(context)
+                    val dir = dbDir(context, scopedIdentity)
                     val builder = Room.databaseBuilder(
                         context,
                         PerpsDatabase::class.java,
-                        File(dir, "perps.db").absolutePath,
+                        File(dir, Constants.DataBase.PERPS_DB_NAME).absolutePath,
                     ).openHelperFactory(
                         MixinOpenHelperFactory(
                             FrameworkSQLiteOpenHelperFactory(),
                             listOf(
                                 object : MixinCorruptionCallback {
                                     override fun onCorruption(database: SupportSQLiteDatabase) {
-                                        val e = IllegalStateException("Perps database is corrupted")
-                                        one.mixin.android.util.reportException(e)
+                                        val e = IllegalStateException("Perps database is corrupted, current DB version: 1")
+                                        reportException(e)
                                     }
                                 },
                             ),
@@ -70,6 +81,7 @@ abstract class PerpsDatabase : RoomDatabase() {
                         )
                         .setTransactionExecutor(SINGLE_DB_EXECUTOR)
                     INSTANCE = builder.build()
+                    currentIdentityNumber = scopedIdentity
                 }
             }
             return INSTANCE as PerpsDatabase
@@ -83,5 +95,6 @@ abstract class PerpsDatabase : RoomDatabase() {
     override fun close() {
         super.close()
         INSTANCE = null
+        currentIdentityNumber = null
     }
 }

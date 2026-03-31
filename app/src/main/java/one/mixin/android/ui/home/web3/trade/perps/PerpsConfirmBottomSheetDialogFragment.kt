@@ -25,8 +25,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -79,6 +77,7 @@ import one.mixin.android.ui.tip.wc.compose.ItemWalletContent
 import one.mixin.android.ui.wallet.ItemUserContent
 import one.mixin.android.ui.wallet.components.WalletLabel
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.widget.components.MixinButton
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
@@ -92,7 +91,6 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
 
     companion object {
         const val TAG = "PerpsConfirmBottomSheetDialogFragment"
-        private const val ARGS_MARKET_ID = "args_market_id"
         private const val ARGS_MARKET_SYMBOL = "args_market_symbol"
         private const val ARGS_MARKET_ICON = "args_market_icon"
         private const val ARGS_IS_LONG = "args_is_long"
@@ -277,7 +275,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                         text = stringResource(
                             id = when (step) {
                                 Step.Pending -> R.string.confirm_opening_position
-                                Step.Done -> R.string.Position_Opened
+                                Step.Done -> R.string.Position_Submitted
                                 Step.Error -> R.string.swap_failed
                                 Step.Sending -> R.string.Sending
                             }
@@ -324,12 +322,12 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                             .padding(horizontal = 20.dp),
                     ) {
                         Text(
-                            text = stringResource(R.string.Perpetual),
+                            text = stringResource(R.string.perps_market).uppercase(),
                             color = MixinAppTheme.colors.textRemarks,
                             fontSize = 14.sp,
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Row {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
                             CoilImage(
                                 model = marketIcon,
                                 placeholder = R.drawable.ic_avatar_place_holder,
@@ -424,18 +422,15 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                     .fillMaxWidth(),
                                 horizontalArrangement = Arrangement.Center,
                             ) {
-                                Button(
+                                MixinButton(
                                     onClick = {
                                         onDoneAction?.invoke()
                                         dismiss()
                                     },
-                                    colors = ButtonDefaults.outlinedButtonColors(
-                                        backgroundColor = MixinAppTheme.colors.accent,
-                                    ),
-                                    shape = RoundedCornerShape(20.dp),
-                                    contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
+                                    shape = RoundedCornerShape(30.dp),
+                                    contentPadding = PaddingValues(horizontal = 35.dp, vertical = 10.dp),
                                 ) {
-                                    Text(text = stringResource(id = R.string.Done), color = Color.White)
+                                    Text(text = stringResource(id = R.string.Done), fontSize = 16.sp, color = Color.White)
                                 }
                             }
                         }
@@ -463,7 +458,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                         Step.Sending -> {}
                     }
                 }
-                Box(modifier = Modifier.height(36.dp))
+                Box(modifier = Modifier.height(32.dp))
             }
         }
     }

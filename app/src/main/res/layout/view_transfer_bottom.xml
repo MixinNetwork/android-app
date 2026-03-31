@@ -16,48 +16,58 @@
         android:clipChildren="false"
         android:orientation="horizontal">
 
-        <Button
-            style="@style/AppTheme.MaterialGrayButton"
+        <TextView
             android:id="@+id/cancel_button"
+            style="@style/AppTheme.MaterialGrayButton"
             android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:paddingStart="36dp"
-            android:paddingEnd="36dp"
+            android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal|bottom"
-            android:text="@string/Cancel"
-            android:layout_marginEnd="36dp"
-            android:textSize="14sp"
+            android:layout_marginEnd="35dp"
             android:gravity="center"
+            android:includeFontPadding="false"
+            android:paddingStart="35dp"
+            android:paddingEnd="35dp"
+            android:text="@string/Cancel"
             android:textAllCaps="false"
-            android:includeFontPadding="false" />
+            android:textFontWeight="400"
+            android:textSize="16sp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"/>
 
-        <Button
+        <TextView
             style="@style/AppTheme.MaterialButton"
             android:id="@+id/confirm_button"
             android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:paddingStart="36dp"
-            android:paddingEnd="36dp"
+            android:layout_height="wrap_content"
+            android:paddingStart="35dp"
+            android:paddingEnd="35dp"
             android:layout_gravity="center_horizontal|bottom"
             android:text="@string/Confirm"
             android:textAllCaps="false"
             android:gravity="center"
-            android:textSize="14sp"
-            android:includeFontPadding="false" />
+            android:textSize="16sp"
+            android:textFontWeight="400"
+            android:includeFontPadding="false"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"/>
 
     </LinearLayout>
 
-    <Button
+    <TextView
         android:id="@+id/done_btn"
         style="@style/AppTheme.MaterialButton"
         android:layout_width="wrap_content"
-        android:layout_height="40dp"
+        android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:paddingStart="36dp"
-        android:paddingEnd="36dp"
+        android:paddingStart="35dp"
+        android:paddingEnd="35dp"
         android:enabled="true"
         android:text="@string/Done"
-        android:textSize="14sp" />
+        android:textFontWeight="400"
+        android:includeFontPadding="false"
+        android:textSize="16sp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"/>
 
     <LinearLayout
         android:layout_gravity="center"
@@ -67,32 +77,39 @@
         android:clipChildren="false"
         android:orientation="horizontal">
 
-        <Button
+        <TextView
             style="@style/AppTheme.MaterialGrayButton"
             android:id="@+id/retry_cancel"
             android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:paddingStart="36dp"
-            android:paddingEnd="36dp"
+            android:layout_height="wrap_content"
+            android:paddingStart="35dp"
+            android:paddingEnd="35dp"
             android:layout_gravity="center_horizontal|bottom"
             android:text="@string/Cancel"
-            android:layout_marginEnd="36dp"
-            android:textSize="14sp"
+            android:layout_marginEnd="35dp"
+            android:textSize="16sp"
             android:gravity="center"
             android:textAllCaps="false"
-            android:includeFontPadding="false" />
+            android:textFontWeight="400"
+            android:includeFontPadding="false"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"/>
 
-        <Button
+        <TextView
             style="@style/AppTheme.MaterialButton"
             android:id="@+id/retry"
             android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:paddingStart="36dp"
-            android:paddingEnd="36dp"
+            android:layout_height="wrap_content"
+            android:paddingStart="35dp"
+            android:paddingEnd="35dp"
             android:layout_gravity="center_horizontal|bottom"
             android:text="@string/Retry"
             android:textAllCaps="false"
-            android:textSize="14sp" />
+            android:textFontWeight="400"
+            android:includeFontPadding="false"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:textSize="16sp" />
 
     </LinearLayout>
 
