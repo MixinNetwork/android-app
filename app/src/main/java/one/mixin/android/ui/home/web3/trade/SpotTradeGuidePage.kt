@@ -301,7 +301,7 @@ private fun SpotTradeExampleCard(
             Spacer(modifier = Modifier.height(16.dp))
         }
         ExampleValueRow(
-            title = stringResource(R.string.Trade_Guide_Trading_Pair),
+            title = stringResource(R.string.Spot_Trade_Guide_Trading_Pair),
             value = {
                 PairDisplay(
                     fromToken = fromToken,
@@ -313,7 +313,7 @@ private fun SpotTradeExampleCard(
         )
         Spacer(modifier = Modifier.height(16.dp))
         ExampleValueRow(
-            title = stringResource(R.string.Trade_Guide_Pay_Amount),
+            title = stringResource(R.string.Spot_Trade_Guide_Pay_Amount),
             value = {
                 AmountStepper(
                     amount = payAmount,
@@ -331,7 +331,7 @@ private fun SpotTradeExampleCard(
         if (limitStrategy != null) {
             Spacer(modifier = Modifier.height(16.dp))
             ExampleValueRow(
-                title = stringResource(R.string.Trade_Guide_Limit_Price),
+                title = stringResource(R.string.Spot_Trade_Guide_Limit_Price),
                 value = {
                     OrderPriceStepper(
                         price = effectivePrice,
@@ -349,7 +349,7 @@ private fun SpotTradeExampleCard(
         }
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = stringResource(R.string.Trade_Guide_Market_Price),
+            text = stringResource(R.string.Spot_Trade_Guide_Market_Price),
             fontSize = 14.sp,
             lineHeight = 20.sp,
             color = MixinAppTheme.colors.textPrimary,
@@ -407,7 +407,7 @@ private fun StrategyRow(
     onStrategySelected: (LimitStrategy) -> Unit,
 ) {
     ExampleValueRow(
-        title = stringResource(R.string.Trade_Guide_Strategy),
+        title = stringResource(R.string.Spot_Trade_Guide_Strategy),
         value = {
             Row(modifier = Modifier
                 .clip(RoundedCornerShape(6.dp))
