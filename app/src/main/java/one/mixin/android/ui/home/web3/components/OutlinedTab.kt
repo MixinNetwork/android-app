@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
@@ -44,7 +45,8 @@ fun OutlinedTab(
                 .background(backgroundColor)
                 .border(width = 1.dp, color = borderColor, shape = tabShape)
                 .clickable(onClick = onClick)
-                .padding(horizontal = 12.dp, vertical = 9.dp),
+                .padding(horizontal = 12.dp, vertical = 9.dp)
+                .widthIn(min = 32.dp),
             contentAlignment = Alignment.Center,
         ) {
             Text(
