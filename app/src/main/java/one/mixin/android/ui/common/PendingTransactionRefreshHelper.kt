@@ -86,7 +86,6 @@ object PendingTransactionRefreshHelper {
                     }
                     delay(5_000)
                 } else {
-                    jobManager.addJobInBackground(RefreshWeb3TransactionsJob(walletId))
                     delay(15_000)
                 }
             }

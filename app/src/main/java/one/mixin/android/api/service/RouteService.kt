@@ -282,12 +282,12 @@ interface RouteService {
         @Body request: GaslessFeeRequest,
     ): MixinResponse<GaslessFeeResponse>
 
-    @POST("web3/gasless/tx")
+    @POST("web3/gasless/prepare")
     suspend fun gaslessTx(
         @Body request: GaslessTxRequest,
     ): MixinResponse<GaslessTxResponse>
 
-    @POST("web3/gasless/tx/submit")
+    @POST("web3/gasless/submit")
     suspend fun submitGaslessTx(
         @Body request: SubmitGaslessTxRequest,
     ): MixinResponse<JsonElement>
