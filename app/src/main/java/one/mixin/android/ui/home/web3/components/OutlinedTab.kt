@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -51,6 +52,7 @@ fun OutlinedTab(
                 color = textColor,
                 style = TextStyle(
                     fontSize = 14.sp,
+                    lineHeight = 16.sp
                 ),
             )
         }
@@ -67,8 +69,8 @@ fun OutlinedTab(
 @Composable
 private fun BadgeDot(modifier: Modifier = Modifier) {
     val badgeSize: Dp = 12.dp
-    val badgeStrokeWidth: Dp = 1.5.dp
     val badgeShape: Shape = RoundedCornerShape(badgeSize)
+    val badgeStrokeWidth: Dp = 1.5.dp
     Box(
         modifier = modifier
             .size(badgeSize)
@@ -79,5 +81,4 @@ private fun BadgeDot(modifier: Modifier = Modifier) {
                 color = MixinAppTheme.colors.backgroundWindow,
                 shape = badgeShape,
             ),
-    )
-}
+    )}
