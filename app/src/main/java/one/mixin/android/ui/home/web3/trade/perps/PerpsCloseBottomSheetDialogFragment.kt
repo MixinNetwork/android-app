@@ -533,7 +533,6 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
     private fun showVerifyPinThenClose() {
         VerifyBottomSheetDialogFragment.newInstance(
             title = getString(R.string.Verify_PIN),
-            disableBiometric = true,
         ).apply {
             disableToast = true
         }.setOnPinSuccess {

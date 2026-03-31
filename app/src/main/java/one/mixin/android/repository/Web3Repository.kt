@@ -50,9 +50,7 @@ import java.math.BigDecimal
 import java.nio.ByteBuffer
 import java.util.UUID
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 class Web3Repository
 @Inject
 constructor(
