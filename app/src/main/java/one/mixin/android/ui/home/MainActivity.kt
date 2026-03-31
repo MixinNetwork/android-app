@@ -141,7 +141,6 @@ import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.common.LoginVerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.NavigationController
-import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.PinCodeFragment.Companion.FROM_EMERGENCY
 import one.mixin.android.ui.common.PinCodeFragment.Companion.FROM_LOGIN
 import one.mixin.android.ui.common.PinCodeFragment.Companion.PREF_LOGIN_FROM
@@ -192,7 +191,6 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.isGroupConversation
-import one.mixin.android.web3.gasless.GaslessSigning
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.websocket.ReconnectWorker
@@ -1020,10 +1018,10 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                 val ethPayload = GsonHelper.customGson.fromJson(txResponse.payload, EthGaslessTxPayload::class.java)
                     ?: throw IllegalStateException("Failed to parse EIP-7702 gasless payload")
                 val privateKey = "".hexStringToByteArray()
-                val userOpSignature = GaslessSigning.signEvmHexMessage(
-                    privateKey = privateKey,
-                    signType = ethPayload.signing.userOperation.signType,
+                val userOpSignature =Web3Signer.signEthMessage(
+                    priv = privateKey,
                     message = ethPayload.signing.userOperation.message,
+                    type =JsSignMessage.TYPE_MESSAGE,
                 )
                 val eip7702AuthSignature = ethPayload.signing.eip7702Auth
                     ?.takeIf { it.required }
