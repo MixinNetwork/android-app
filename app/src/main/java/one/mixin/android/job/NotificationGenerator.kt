@@ -81,6 +81,7 @@ object NotificationGenerator : Injector() {
         force: Boolean = false,
         isSilent: Boolean = false,
     ) = lifecycleScope.launch(Dispatchers.IO) {
+        ensureSessionInjection()
         ChannelManager.updateChannelSound(MixinApplication.appContext)
 
         val context = MixinApplication.appContext
