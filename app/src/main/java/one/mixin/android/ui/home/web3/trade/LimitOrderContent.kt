@@ -592,6 +592,8 @@ fun LimitOrderContent(
             FloatingActions(
                 focusedField = focusedField,
                 fromBalance = fromBalance,
+                fromToken = fromToken,
+                toToken = toToken,
                 isPriceInverted = isPriceInverted,
                 onSetPriceMultiplier = { priceMultiplier = it },
                 onSetInput = {

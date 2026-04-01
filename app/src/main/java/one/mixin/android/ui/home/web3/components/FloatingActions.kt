@@ -1,6 +1,8 @@
 package one.mixin.android.ui.home.web3.components
 
 
+import one.mixin.android.Constants
+import one.mixin.android.api.response.web3.SwapToken
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -27,6 +29,8 @@ import java.math.RoundingMode
 fun FloatingActions(
     focusedField: FocusedField,
     fromBalance: String?,
+    fromToken: SwapToken?,
+    toToken: SwapToken?,
     isPriceInverted: Boolean,
     onSetInput: (String) -> Unit,
     onSetPriceMultiplier: (Float?) -> Unit,
@@ -69,78 +73,62 @@ fun FloatingActions(
             }
         }
         FocusedField.PRICE -> {
-            BoxWithConstraints(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MixinAppTheme.colors.backgroundWindow)
-            ) {
-                val buttonSpacing = 3.dp
-                val minButtonWidth = 72.dp
-                val availableWidth = maxWidth - 16.dp
-                val calculatedButtonWidth = (availableWidth - buttonSpacing * 4) / 5
-                val buttonWidth = if (calculatedButtonWidth > minButtonWidth) calculatedButtonWidth else minButtonWidth
-
+            val priceActions = priceQuickActions(
+                fromToken = fromToken,
+                toToken = toToken,
+                isPriceInverted = isPriceInverted,
+                onSetPriceMultiplier = onSetPriceMultiplier,
+                onMarketPriceClick = onMarketPriceClick,
+            )
+            if (priceActions.size == 3) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState())
-                        .padding(horizontal = 8.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.Start,
+                        .background(MixinAppTheme.colors.backgroundWindow)
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
-                    InputAction(
-                        text = "-20%",
-                        modifier = Modifier.widthIn(min = buttonWidth),
-                        showBorder = true,
-                        horizontalPadding = 14.dp,
-                        verticalPadding = 6.dp,
-                        fontSize = 13.sp,
-                    ) {
-                        onSetPriceMultiplier(displayPriceMultiplier(0.8f, isPriceInverted))
+                    priceActions.forEach { action ->
+                        InputAction(
+                            text = action.label,
+                            showBorder = true,
+                            onAction = action.onClick,
+                        )
                     }
-                    Spacer(modifier = Modifier.width(buttonSpacing))
-                    InputAction(
-                        text = "-10%",
-                        modifier = Modifier.widthIn(min = buttonWidth),
-                        showBorder = true,
-                        horizontalPadding = 14.dp,
-                        verticalPadding = 6.dp,
-                        fontSize = 13.sp,
+                }
+            } else {
+                BoxWithConstraints(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MixinAppTheme.colors.backgroundWindow)
+                ) {
+                    val buttonSpacing = 3.dp
+                    val minButtonWidth = 72.dp
+                    val availableWidth = maxWidth - 16.dp
+                    val calculatedButtonWidth = (availableWidth - buttonSpacing * (priceActions.size - 1)) / priceActions.size
+                    val buttonWidth = if (calculatedButtonWidth > minButtonWidth) calculatedButtonWidth else minButtonWidth
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState())
+                            .padding(horizontal = 8.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.Start,
                     ) {
-                        onSetPriceMultiplier(displayPriceMultiplier(0.9f, isPriceInverted))
-                    }
-                    Spacer(modifier = Modifier.width(buttonSpacing))
-                    InputAction(
-                        text = "market",
-                        modifier = Modifier.widthIn(min = buttonWidth),
-                        showBorder = true,
-                        horizontalPadding = 14.dp,
-                        verticalPadding = 6.dp,
-                        fontSize = 13.sp,
-                    ) {
-                        onSetPriceMultiplier(1.0f)
-                        onMarketPriceClick?.invoke()
-                    }
-                    Spacer(modifier = Modifier.width(buttonSpacing))
-                    InputAction(
-                        text = "+10%",
-                        modifier = Modifier.widthIn(min = buttonWidth),
-                        showBorder = true,
-                        horizontalPadding = 14.dp,
-                        verticalPadding = 6.dp,
-                        fontSize = 13.sp,
-                    ) {
-                        onSetPriceMultiplier(displayPriceMultiplier(1.1f, isPriceInverted))
-                    }
-                    Spacer(modifier = Modifier.width(buttonSpacing))
-                    InputAction(
-                        text = "+20%",
-                        modifier = Modifier.widthIn(min = buttonWidth),
-                        showBorder = true,
-                        horizontalPadding = 14.dp,
-                        verticalPadding = 6.dp,
-                        fontSize = 13.sp,
-                    ) {
-                        onSetPriceMultiplier(displayPriceMultiplier(1.2f, isPriceInverted))
+                        priceActions.forEachIndexed { index, action ->
+                            InputAction(
+                                text = action.label,
+                                modifier = Modifier.widthIn(min = buttonWidth),
+                                showBorder = true,
+                                horizontalPadding = 14.dp,
+                                verticalPadding = 6.dp,
+                                fontSize = 13.sp,
+                                onAction = action.onClick,
+                            )
+                            if (index != priceActions.lastIndex) {
+                                Spacer(modifier = Modifier.width(buttonSpacing))
+                            }
+                        }
                     }
                 }
             }
@@ -155,4 +143,65 @@ private fun displayPriceMultiplier(displayMultiplier: Float, isPriceInverted: Bo
     return BigDecimal.ONE
         .divide(BigDecimal(displayMultiplier.toString()), 8, RoundingMode.HALF_UP)
         .toFloat()
+}
+
+private data class PriceQuickAction(
+    val label: String,
+    val onClick: () -> Unit,
+)
+
+private fun priceQuickActions(
+    fromToken: SwapToken?,
+    toToken: SwapToken?,
+    isPriceInverted: Boolean,
+    onSetPriceMultiplier: (Float?) -> Unit,
+    onMarketPriceClick: (() -> Unit)?,
+): List<PriceQuickAction> {
+    val isFromUsd = fromToken.isUsdToken()
+    val isToUsd = toToken.isUsdToken()
+    val marketAction = PriceQuickAction("market") {
+        onSetPriceMultiplier(1.0f)
+        onMarketPriceClick?.invoke()
+    }
+    val decreaseActions = listOf(
+        PriceQuickAction("-10%") {
+            onSetPriceMultiplier(displayPriceMultiplier(0.9f, isPriceInverted))
+        },
+        PriceQuickAction("-20%") {
+            onSetPriceMultiplier(displayPriceMultiplier(0.8f, isPriceInverted))
+        },
+    )
+    val increaseActions = listOf(
+        PriceQuickAction("+10%") {
+            onSetPriceMultiplier(displayPriceMultiplier(1.1f, isPriceInverted))
+        },
+        PriceQuickAction("+20%") {
+            onSetPriceMultiplier(displayPriceMultiplier(1.2f, isPriceInverted))
+        },
+    )
+
+    return if (isFromUsd == isToUsd) {
+        listOf(
+            decreaseActions[1],
+            decreaseActions[0],
+            marketAction,
+            increaseActions[0],
+            increaseActions[1],
+        )
+    } else if (isToUsd) {
+        buildList {
+            add(marketAction)
+            addAll(increaseActions)
+        }
+    } else {
+        buildList {
+            add(marketAction)
+            addAll(decreaseActions)
+        }
+    }
+}
+
+private fun SwapToken?.isUsdToken(): Boolean {
+    val assetId = this?.assetId ?: return false
+    return assetId in Constants.AssetId.usdtAssets || assetId in Constants.AssetId.usdcAssets
 }
