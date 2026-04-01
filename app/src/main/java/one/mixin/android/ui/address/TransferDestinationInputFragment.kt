@@ -487,6 +487,63 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                     } else {
                                         toast(R.string.Data_error)
                                     }
+                                },
+                                onShowAddressBook = {
+                                    val chainId = token?.chainId ?: web3Token?.chainId ?: return@TransferDestinationInputPage
+                                    AddressSearchBottomSheetDialogFragment.newInstance(chainId).apply {
+                                        onAddressClick = { address ->
+                                            requireView().hideKeyboard()
+                                            if (web3Token != null) {
+                                                val dialog =
+                                                    indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                                                        setCancelable(false)
+                                                    }
+                                                lifecycleScope.launch {
+                                                    dialog.show()
+                                                    val fromAddress = web3ViewModel.getAddressesByChainId(web3Token!!.walletId, web3Token!!.chainId)?.destination
+                                                    if (fromAddress.isNullOrBlank()) {
+                                                        toast(R.string.Alert_Not_Support)
+                                                    } else {
+                                                        (chainToken ?: web3ViewModel.web3TokenItemById(
+                                                            web3Token!!.walletId,
+                                                            web3Token!!.chainId
+                                                        ))?.let { chain ->
+                                                            navigateToInputFragmentWithBundle(Bundle().apply {
+                                                                putString(InputFragment.ARGS_FROM_ADDRESS, fromAddress)
+                                                                putString(InputFragment.ARGS_TO_ADDRESS, address.destination)
+                                                                putString(InputFragment.ARGS_TO_ADDRESS_TAG, address.tag)
+                                                                putParcelable(InputFragment.ARGS_WEB3_TOKEN, web3Token!!)
+                                                                putParcelable(InputFragment.ARGS_WEB3_CHAIN_TOKEN, chain)
+                                                                putParcelable(ARGS_WALLET, wallet)
+                                                            })
+                                                        }
+                                                    }
+                                                    dialog.dismiss()
+                                                }
+                                            } else if (token != null) {
+                                                navigateToInputFragmentWithBundle(Bundle().apply {
+                                                    putParcelable(InputFragment.ARGS_TOKEN, token)
+                                                    putString(InputFragment.ARGS_TO_ADDRESS, address.destination)
+                                                    putString(InputFragment.ARGS_TO_ADDRESS_TAG, address.tag)
+                                                })
+                                            }
+                                        }
+                                        onDeleteAddress = { address ->
+                                            if (token == null && web3Token != null) {
+                                                lifecycleScope.launch {
+                                                    val t = web3ViewModel.syncAsset(web3Token!!.assetId) ?: return@launch
+                                                    showDeleteBottomSheet(address, t)
+                                                }
+                                            } else if (token != null) {
+                                                showDeleteBottomSheet(address, token!!)
+                                            } else {
+                                                toast(R.string.Data_error)
+                                            }
+                                        }
+                                        onAddClick = {
+                                            navController.navigate(TransferDestination.Address.name)
+                                        }
+                                    }.show(parentFragmentManager, AddressSearchBottomSheetDialogFragment.TAG)
                                 }
                             )
                         }
@@ -818,4 +875,3 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
         return bottomSheet
     }
 }
-
