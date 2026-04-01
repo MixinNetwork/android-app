@@ -30,19 +30,23 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
         private const val ARGS_URL = "args_url"
         private const val ARGS_TITLE = "args_title"
+        private const val ARGS_SUBTITLE = "args_subtitle"
 
         fun newInstance(
             url: String,
             title: String,
+            subtitle: String? = null,
         ) = WebBottomSheetDialogFragment().withArgs {
             putString(ARGS_URL, url)
             putString(ARGS_TITLE, title)
+            putString(ARGS_SUBTITLE, subtitle)
         }
 
         fun show(
             manager: FragmentManager,
             url: String,
             title: String,
+            subtitle: String? = null,
         ): Boolean {
             if (manager.findFragmentByTag(TAG) != null) {
                 return true
@@ -50,7 +54,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             if (manager.isStateSaved) {
                 return false
             }
-            newInstance(url, title).show(manager, TAG)
+            newInstance(url, title, subtitle).show(manager, TAG)
             return true
         }
     }
@@ -59,6 +63,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private val url by lazy { requireArguments().getString(ARGS_URL).orEmpty() }
     private val title by lazy { requireArguments().getString(ARGS_TITLE).orEmpty() }
+    private val subtitle by lazy { requireArguments().getString(ARGS_SUBTITLE) }
 
     @SuppressLint("RestrictedApi", "SetJavaScriptEnabled")
     override fun setupDialog(
@@ -68,7 +73,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         super.setupDialog(dialog, style)
         contentView = binding.root
         binding.title.rightIv.setOnClickListener { dismiss() }
-        binding.title.titleTv.text = title
+        binding.title.setSubTitle(title, subtitle)
         binding.webView.apply {
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true

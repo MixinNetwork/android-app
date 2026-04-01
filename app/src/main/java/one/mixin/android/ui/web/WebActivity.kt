@@ -14,7 +14,7 @@ import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.blurBitmap
 import one.mixin.android.extension.isDarkColor
 import one.mixin.android.extension.isNightMode
-import one.mixin.android.extension.openCustomerService
+import one.mixin.android.extension.openCustomerServiceIfMatched
 import one.mixin.android.extension.supportsS
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
@@ -49,8 +49,7 @@ class WebActivity : BaseActivity() {
             saveName: Boolean? = null,
             fixedTitle: String? = null
         ) {
-            if (url == Constants.HelpLink.CUSTOMER_SERVICE) {
-                context.openCustomerService()
+            if (context.openCustomerServiceIfMatched(url)) {
                 return
             }
             context.startActivity(

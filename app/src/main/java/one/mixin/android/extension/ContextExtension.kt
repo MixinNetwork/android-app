@@ -859,8 +859,7 @@ fun Fragment.openGalleryFromSticker() {
 }
 
 fun Context.openUrl(url: String) {
-    if (url == Constants.HelpLink.CUSTOMER_SERVICE) {
-        openCustomerService()
+    if (openCustomerServiceIfMatched(url)) {
         return
     }
     var uri = url.toUri()
