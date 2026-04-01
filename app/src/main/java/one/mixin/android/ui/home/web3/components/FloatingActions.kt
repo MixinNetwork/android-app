@@ -79,8 +79,10 @@ fun FloatingActions(
                 isPriceInverted = isPriceInverted,
                 onSetPriceMultiplier = onSetPriceMultiplier,
                 onMarketPriceClick = onMarketPriceClick,
+                onDone = onDone,
+                doneLabel = stringResource(R.string.Done),
             )
-            if (priceActions.size == 3) {
+            if (priceActions.size == 4) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -91,7 +93,7 @@ fun FloatingActions(
                     priceActions.forEach { action ->
                         InputAction(
                             text = action.label,
-                            showBorder = true,
+                            showBorder = action.showBorder,
                             onAction = action.onClick,
                         )
                     }
@@ -119,7 +121,7 @@ fun FloatingActions(
                             InputAction(
                                 text = action.label,
                                 modifier = Modifier.widthIn(min = buttonWidth),
-                                showBorder = true,
+                                showBorder = action.showBorder,
                                 horizontalPadding = 14.dp,
                                 verticalPadding = 6.dp,
                                 fontSize = 13.sp,
@@ -147,6 +149,7 @@ private fun displayPriceMultiplier(displayMultiplier: Float, isPriceInverted: Bo
 
 private data class PriceQuickAction(
     val label: String,
+    val showBorder: Boolean = true,
     val onClick: () -> Unit,
 )
 
@@ -156,6 +159,8 @@ private fun priceQuickActions(
     isPriceInverted: Boolean,
     onSetPriceMultiplier: (Float?) -> Unit,
     onMarketPriceClick: (() -> Unit)?,
+    onDone: () -> Unit,
+    doneLabel: String,
 ): List<PriceQuickAction> {
     val isFromUsd = fromToken.isUsdToken()
     val isToUsd = toToken.isUsdToken()
@@ -192,11 +197,13 @@ private fun priceQuickActions(
         buildList {
             add(marketAction)
             addAll(increaseActions)
+            add(PriceQuickAction(doneLabel, showBorder = false, onClick = onDone))
         }
     } else {
         buildList {
             add(marketAction)
             addAll(decreaseActions)
+            add(PriceQuickAction(doneLabel, showBorder = false, onClick = onDone))
         }
     }
 }
