@@ -1781,45 +1781,37 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         val toAddress = requireNotNull(toAddress)
         val fee = requireNotNull(currentGaslessFee) { "gasless fee asset is required" }
         val amount = currentInputAmount()
-        dialog.show()
-        try {
-            val response = web3ViewModel.gaslessPrepare(
-                GaslessTxRequest(
-                    from = fromAddress,
-                    to = toAddress,
-                    assetId = token.assetId,
-                    amount = amount,
-                    feeAssetId = fee.token.assetId,
-                    chainId = token.chainId,
-                ),
-            )
-            if (!response.isSuccess || response.data == null) {
-                throw IllegalStateException(response.errorDescription)
-            }
-            val payload = response.data!!
-            val privateKey = web3ViewModel.getWeb3Priv(requireContext(), pin, token.chainId)
-            when (token.chainId) {
-                Constants.ChainId.SOLANA_CHAIN_ID -> submitSolanaGaslessTransfer(
-                    token = token,
-                    toAddress = toAddress,
-                    payload = payload.payload,
-                    privateKey = privateKey,
-                )
-                in Constants.Web3EvmChainIds -> submitEvmGaslessTransfer(
-                    chainId = payload.chainId,
-                    payload = payload.payload,
-                    privateKey = privateKey,
-                )
-                else -> throw IllegalArgumentException("Gasless is not supported for ${token.chainId}")
-            }
-            requireContext().defaultSharedPreferences.putLong(Constants.BIOMETRIC_PIN_CHECK, System.currentTimeMillis())
-            requireContext().updatePinCheck()
-            dialog.dismiss()
-            handleSuccessfulWeb3Transfer()
-        } catch (throwable: Throwable) {
-            dialog.dismiss()
-            throw throwable
+        val response = web3ViewModel.gaslessPrepare(
+            GaslessTxRequest(
+                from = fromAddress,
+                to = toAddress,
+                assetId = token.assetId,
+                amount = amount,
+                feeAssetId = fee.token.assetId,
+                chainId = token.chainId,
+            ),
+        )
+        if (!response.isSuccess || response.data == null) {
+            throw IllegalStateException(response.errorDescription)
         }
+        val payload = response.data!!
+        val privateKey = web3ViewModel.getWeb3Priv(requireContext(), pin, token.chainId)
+        when (token.chainId) {
+            Constants.ChainId.SOLANA_CHAIN_ID -> submitSolanaGaslessTransfer(
+                token = token,
+                toAddress = toAddress,
+                payload = payload.payload,
+                privateKey = privateKey,
+            )
+            in Constants.Web3EvmChainIds -> submitEvmGaslessTransfer(
+                chainId = payload.chainId,
+                payload = payload.payload,
+                privateKey = privateKey,
+            )
+            else -> throw IllegalArgumentException("Gasless is not supported for ${token.chainId}")
+        }
+        requireContext().defaultSharedPreferences.putLong(Constants.BIOMETRIC_PIN_CHECK, System.currentTimeMillis())
+        requireContext().updatePinCheck()
     }
 
     private suspend fun submitSolanaGaslessTransfer(
@@ -1858,7 +1850,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         val userOpSignature = Web3Signer.signEthMessage(
             priv = privateKey,
             message = ethPayload.signing.userOperation.message,
-            type = JsSignMessage.TYPE_MESSAGE,
+            type = JsSignMessage.TYPE_GASLESS_TRANSFER,
         )
         val eip7702AuthSignature = ethPayload.signing.eip7702Auth
             ?.takeIf { it.required }
@@ -1869,7 +1861,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 Web3Signer.signEthMessage(
                     priv = privateKey,
                     message = auth.message,
-                    type = JsSignMessage.TYPE_MESSAGE,
+                    type = JsSignMessage.TYPE_GASLESS_TRANSFER,
                 )
             }
         val response = web3ViewModel.submitGaslessTx(

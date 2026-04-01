@@ -395,12 +395,14 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                 step = Step.Loading
                 errorInfo = null
                 customPinAction?.let { action ->
-                    action(pin)
-                    step = Step.Done
-                    defaultSharedPreferences.putLong(
-                        Constants.BIOMETRIC_PIN_CHECK,
-                        System.currentTimeMillis(),
-                    )
+                    withContext(Dispatchers.Main.immediate) {
+                        action(pin)
+                        step = Step.Done
+                        defaultSharedPreferences.putLong(
+                            Constants.BIOMETRIC_PIN_CHECK,
+                            System.currentTimeMillis(),
+                        )
+                    }
                     return@launch
                 }
                 if (signMessage.type == JsSignMessage.TYPE_BTC_TRANSACTION) {

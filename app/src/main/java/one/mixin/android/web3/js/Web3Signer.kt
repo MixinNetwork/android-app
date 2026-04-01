@@ -374,11 +374,14 @@ object Web3Signer {
     ): String {
         val keyPair = ECKeyPair.create(priv)
         val signature =
-            if (type == JsSignMessage.TYPE_TYPED_MESSAGE) {
-                val encoder = StructuredDataEncoder(message)
-                Sign.signMessage(encoder.hashStructuredData(), keyPair, false)
-            } else {
-                Sign.signPrefixedMessage(Numeric.hexStringToByteArray(message), keyPair)
+            when (type) {
+                JsSignMessage.TYPE_GASLESS_TRANSFER ->
+                    Sign.signMessage(Numeric.hexStringToByteArray(message), keyPair, false)
+                JsSignMessage.TYPE_TYPED_MESSAGE -> {
+                    val encoder = StructuredDataEncoder(message)
+                    Sign.signMessage(encoder.hashStructuredData(), keyPair, false)
+                }
+                else -> Sign.signPrefixedMessage(Numeric.hexStringToByteArray(message), keyPair)
             }
         val b = ByteArray(65)
         System.arraycopy(signature.r, 0, b, 0, 32)
