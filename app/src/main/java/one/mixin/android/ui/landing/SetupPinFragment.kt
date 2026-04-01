@@ -20,6 +20,7 @@ import one.mixin.android.databinding.FragmentComposeBinding
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.components.QuizPage
+import one.mixin.android.ui.landing.components.QuizResultBottomSheetDialogFragment
 import one.mixin.android.ui.landing.components.SetPinLoadingPage
 import one.mixin.android.ui.landing.components.SetupPinPage
 import one.mixin.android.ui.logs.LogViewerBottomSheet
@@ -120,6 +121,12 @@ class SetupPinFragment : BaseFragment(R.layout.fragment_compose) {
                             pop = {
                                 Timber.e("$TAG Quiz back pressed")
                                 navController.popBackStack()
+                            },
+                            onShowResultBottomSheet = { isCorrect, onCorrect, onWrong ->
+                                QuizResultBottomSheetDialogFragment.newInstance(isCorrect).apply {
+                                    onCorrectAction = onCorrect
+                                    onWrongAction = onWrong
+                                }.show(parentFragmentManager, QuizResultBottomSheetDialogFragment.TAG)
                             }
                         )
                     }
