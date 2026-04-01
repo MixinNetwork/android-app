@@ -5,6 +5,7 @@ import android.app.Dialog
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.os.Bundle
+import android.view.ViewTreeObserver
 import android.webkit.CookieManager
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
@@ -12,7 +13,6 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.addCallback
-import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentManager
 import one.mixin.android.BuildConfig
 import one.mixin.android.R
@@ -64,6 +64,20 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private val url by lazy { requireArguments().getString(ARGS_URL).orEmpty() }
     private val title by lazy { requireArguments().getString(ARGS_TITLE).orEmpty() }
     private val subtitle by lazy { requireArguments().getString(ARGS_SUBTITLE) }
+    private var bottomSheet: BottomSheet? = null
+    private var lastVisibleHeight = 0
+    private val keyboardLayoutListener =
+        ViewTreeObserver.OnGlobalLayoutListener {
+            val visibleHeight = activity?.visibleDisplayHeight() ?: return@OnGlobalLayoutListener
+            if (visibleHeight == lastVisibleHeight) return@OnGlobalLayoutListener
+            lastVisibleHeight = visibleHeight
+            bottomSheet?.setCustomViewHeightSync(visibleHeight)
+        }
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): BottomSheet {
+        return BottomSheet.Builder(requireActivity(), needFocus = true, softInputResize = false)
+            .create()
+    }
 
     @SuppressLint("RestrictedApi", "SetJavaScriptEnabled")
     override fun setupDialog(
@@ -92,6 +106,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             setAcceptThirdPartyCookies(binding.webView, true)
         }
         (dialog as BottomSheet).apply {
+            bottomSheet = this
             onBackPressedDispatcher.addCallback(this@WebBottomSheetDialogFragment) {
                 if (binding.webView.canGoBack()) {
                     binding.webView.goBack()
@@ -100,14 +115,20 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
             }
             setCustomView(contentView)
-            setCustomViewHeight(requireActivity().visibleDisplayHeight())
+            lastVisibleHeight = requireActivity().visibleDisplayHeight()
+            setCustomViewHeight(lastVisibleHeight)
         }
+        contentView.viewTreeObserver.addOnGlobalLayoutListener(keyboardLayoutListener)
         if (binding.webView.url == null && url.isNotBlank()) {
             binding.webView.loadUrl(url)
         }
     }
 
     override fun onDestroyView() {
+        if (contentView.viewTreeObserver.isAlive) {
+            contentView.viewTreeObserver.removeOnGlobalLayoutListener(keyboardLayoutListener)
+        }
+        bottomSheet = null
         binding.webView.apply {
             stopLoading()
             webChromeClient = null
@@ -147,7 +168,6 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             favicon: android.graphics.Bitmap?,
         ) {
             super.onPageStarted(view, url, favicon)
-            binding.loadingPb.isVisible = true
         }
 
         override fun onPageFinished(
@@ -155,7 +175,6 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             url: String?,
         ) {
             super.onPageFinished(view, url)
-            binding.loadingPb.isVisible = false
         }
 
         override fun onReceivedError(
@@ -165,7 +184,6 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         ) {
             super.onReceivedError(view, request, error)
             if (request?.isForMainFrame == true) {
-                binding.loadingPb.isVisible = false
                 toast(R.string.Try_Again)
             }
         }
