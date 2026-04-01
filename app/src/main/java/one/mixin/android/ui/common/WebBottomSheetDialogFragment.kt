@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.graphics.Rect
 import android.os.Bundle
 import android.view.ViewTreeObserver
 import android.webkit.CookieManager
@@ -18,7 +19,6 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentWebBottomSheetBinding
 import one.mixin.android.extension.toast
-import one.mixin.android.extension.visibleDisplayHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
@@ -68,16 +68,12 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private var lastVisibleHeight = 0
     private val keyboardLayoutListener =
         ViewTreeObserver.OnGlobalLayoutListener {
-            val visibleHeight = activity?.visibleDisplayHeight() ?: return@OnGlobalLayoutListener
+            val visibleHeight = getDialogVisibleHeight()
+            if (visibleHeight <= 0) return@OnGlobalLayoutListener
             if (visibleHeight == lastVisibleHeight) return@OnGlobalLayoutListener
             lastVisibleHeight = visibleHeight
             bottomSheet?.setCustomViewHeightSync(visibleHeight)
         }
-
-    override fun onCreateDialog(savedInstanceState: Bundle?): BottomSheet {
-        return BottomSheet.Builder(requireActivity(), needFocus = true, softInputResize = false)
-            .create()
-    }
 
     @SuppressLint("RestrictedApi", "SetJavaScriptEnabled")
     override fun setupDialog(
@@ -115,13 +111,22 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
             }
             setCustomView(contentView)
-            lastVisibleHeight = requireActivity().visibleDisplayHeight()
+            lastVisibleHeight = getDialogVisibleHeight().takeIf { it > 0 }
+                ?: window?.decorView?.height?.takeIf { it > 0 }
+                ?: requireActivity().window.decorView.height.takeIf { it > 0 }
+                ?: resources.displayMetrics.heightPixels
             setCustomViewHeight(lastVisibleHeight)
         }
         contentView.viewTreeObserver.addOnGlobalLayoutListener(keyboardLayoutListener)
         if (binding.webView.url == null && url.isNotBlank()) {
             binding.webView.loadUrl(url)
         }
+    }
+
+    private fun getDialogVisibleHeight(): Int {
+        val rect = Rect()
+        contentView.getWindowVisibleDisplayFrame(rect)
+        return rect.height()
     }
 
     override fun onDestroyView() {
