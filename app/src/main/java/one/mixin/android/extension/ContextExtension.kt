@@ -859,6 +859,9 @@ fun Fragment.openGalleryFromSticker() {
 }
 
 fun Context.openUrl(url: String) {
+    if (openCustomerServiceIfMatched(url)) {
+        return
+    }
     var uri = url.toUri()
     if (uri.scheme.isNullOrBlank()) {
         uri = Uri.parse("http://$url")

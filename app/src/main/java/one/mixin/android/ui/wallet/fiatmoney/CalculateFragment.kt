@@ -29,7 +29,8 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
-import one.mixin.android.extension.openUrl
+import one.mixin.android.extension.openCustomerService
+import one.mixin.android.extension.openWebBottomSheet
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.shaking
 import one.mixin.android.extension.tickVibrate
@@ -44,7 +45,6 @@ import one.mixin.android.ui.wallet.AssetListFixedBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.FiatListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.LoadingProgressDialogFragment
 import one.mixin.android.ui.wallet.WalletActivity
-import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
@@ -226,7 +226,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     activity?.onBackPressedDispatcher?.onBackPressed()
                 }
                 titleView.rightIb.setOnClickListener {
-                    context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                    openCustomerService()
                 }
                 if (isWeb3) {
                     val wallet = walletIdForCalculate?.let { web3ViewModel.findWalletById(it) }
@@ -421,11 +421,9 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                                         destination
                                     )
                                     if (response.isSuccess) {
-                                        WebActivity.show(
-                                            requireActivity(),
+                                        openWebBottomSheet(
                                             response.data?.url ?: "",
-                                            null,
-                                            fixedTitle = getString(R.string.Buy_asset, asset.symbol)
+                                            getString(R.string.Buy_asset, asset.symbol)
                                         )
                                     } else {
                                         ErrorHandler.handleMixinError(response.errorCode, response.errorDescription)

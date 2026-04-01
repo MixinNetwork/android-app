@@ -35,6 +35,8 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
         const val TAG = "PerpsMarketListBottomSheetDialogFragment"
         private const val ARGS_IS_LONG = "args_is_long"
 
+        fun newInstance() = PerpsMarketListBottomSheetDialogFragment()
+
         fun newInstance(isLong: Boolean) = PerpsMarketListBottomSheetDialogFragment().withArgs {
             putBoolean(ARGS_IS_LONG, isLong)
         }
@@ -53,7 +55,9 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
     @Inject
     lateinit var perpsPositionDao: PerpsPositionDao
 
-    private val isLong by lazy { requireArguments().getBoolean(ARGS_IS_LONG, true) }
+    private val isLong by lazy {
+        arguments?.takeIf { it.containsKey(ARGS_IS_LONG) }?.getBoolean(ARGS_IS_LONG)
+    }
     private var allMarkets = listOf<PerpsMarket>()
 
     @SuppressLint("RestrictedApi")
@@ -129,7 +133,7 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
                 }
             }
 
-            if (hasOpenPosition) {
+            if (hasOpenPosition || isLong == null) {
                 PerpsActivity.showDetail(
                     context = requireContext(),
                     marketId = market.marketId,
@@ -144,7 +148,7 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
                     marketSymbol = market.displaySymbol,
                     marketDisplaySymbol = market.displaySymbol,
                     marketTokenSymbol = market.tokenSymbol,
-                    isLong = isLong
+                    isLong = requireNotNull(isLong)
                 )
             }
             dismiss()

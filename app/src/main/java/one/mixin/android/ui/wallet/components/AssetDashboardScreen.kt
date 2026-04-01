@@ -82,6 +82,13 @@ fun AssetDashboardScreen(
     val context = LocalContext.current
     val safeCreateGuidelineUrl: String = stringResource(R.string.safe_create_guideline_url)
     val safeLearnMoreUrl: String = stringResource(R.string.safe_learn_more_url)
+    val importWalletTitle = stringResource(R.string.import_wallet_title)
+    val importWalletDescription = stringResource(R.string.import_wallet_empty_description)
+    val importWalletGuideUrl = stringResource(R.string.import_mnemonic_phrase_url)
+    val watchWalletDescription = stringResource(R.string.watch_wallet_empty_description)
+    val watchWalletGuideUrl = stringResource(R.string.watch_wallet_guide_url)
+    val importWalletIconRes = R.drawable.ic_import_wallet
+    val watchWalletIconRes = R.drawable.ic_add_watch_wallet
     val prefs = remember { context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE) }
     val hidePrivacyWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_PRIVACY_WALLET_INFO, false)) }
     val hideCommonWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_COMMON_WALLET_INFO, false)) }
@@ -164,17 +171,27 @@ fun AssetDashboardScreen(
                                 .align(Alignment.TopEnd)
                                 .size(8.dp)
                                 .background(color = Color.Red, shape = CircleShape)
-                        )
+                    )
                     }
                 }
             }
-            val hasImported = wallets.any { it.isImported() }
-            val hasWatch = wallets.any { it.isWatch() }
+            val hasImportedWallets = wallets.any { it.isImported() }
+            val hasWatchWallets = wallets.any { it.isWatch() }
+            val hasSafeWallets = wallets.any { it.category == WalletCategory.MIXIN_SAFE.value }
+            val filteredWallets = remember(wallets, selectedCategory) {
+                wallets.filter { wallet ->
+                    shouldShowWallet(
+                        wallet = wallet,
+                        selectedCategory = selectedCategory,
+                    )
+                }
+            }
+            val showTotalAssetsCard = selectedCategory == null || filteredWallets.isNotEmpty()
 
             WalletCategoryFilter(
                 selectedCategory = selectedCategory,
-                hasImported = hasImported,
-                hasWatch = hasWatch,
+                hasImported = true,
+                hasWatch = true,
                 hasSafe = true,
                 showSafeBadge = !hasSeenSafeCategoryBadge.value,
                 onCategorySelected = {
@@ -199,8 +216,38 @@ fun AssetDashboardScreen(
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
             ) {
-                TotalAssetsCard(selectedCategory = selectedCategory)
-                Spacer(modifier = Modifier.height(20.dp))
+                if (showTotalAssetsCard) {
+                    TotalAssetsCard(selectedCategory = selectedCategory)
+                    Spacer(modifier = Modifier.height(20.dp))
+                }
+
+                if (selectedCategory == "import" && !hasImportedWallets) {
+                    WalletEmptyGuideCard(
+                        title = importWalletTitle,
+                        description = importWalletDescription,
+                        iconRes = importWalletIconRes,
+                        primaryActionText = stringResource(R.string.Import),
+                        onPrimaryActionClick = onAddWalletClick,
+                        onLearnMoreClick = {
+                            context.openUrl(importWalletGuideUrl)
+                        },
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
+
+                if (selectedCategory == "watch" && !hasWatchWallets) {
+                    WalletEmptyGuideCard(
+                        title = stringResource(R.string.add_watch_address),
+                        description = watchWalletDescription,
+                        iconRes = watchWalletIconRes,
+                        primaryActionText = stringResource(R.string.Add),
+                        onPrimaryActionClick = onAddWalletClick,
+                        onLearnMoreClick = {
+                            context.openUrl(watchWalletGuideUrl)
+                        },
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
 
                 // Privacy wallet - always show if no filter or "all" selected
                 if (selectedCategory == null) {
@@ -211,7 +258,7 @@ fun AssetDashboardScreen(
                     Spacer(modifier = Modifier.height(10.dp))
                 }
 
-                if (selectedCategory == WalletCategory.MIXIN_SAFE.value && wallets.any { it.category == WalletCategory.MIXIN_SAFE.value }.not()) {
+                if (selectedCategory == WalletCategory.MIXIN_SAFE.value && !hasSafeWallets) {
                     if (Session.getAccount()?.membership?.isMembership() == true) {
                         CreateSafeCard(
                             onCreateClick = {
@@ -231,18 +278,7 @@ fun AssetDashboardScreen(
                     Spacer(modifier = Modifier.height(10.dp))
                 }
 
-                wallets.forEach { wallet ->
-                    val shouldShow = when (selectedCategory) {
-                        null -> wallet.category != WalletCategory.MIXIN_SAFE.value &&  wallet.category != WalletCategory.WATCH_ADDRESS.value // Exclude safe, watching wallets when no category filter is selected
-                        WalletCategory.MIXIN_SAFE.value -> wallet.category == WalletCategory.MIXIN_SAFE.value
-                        WalletCategory.CLASSIC.value -> wallet.category == WalletCategory.CLASSIC.value
-                        "import" -> wallet.isImported()
-                        "watch" -> wallet.isWatch()
-                        else -> true
-                    }
-
-                    if (!shouldShow) return@forEach
-
+                filteredWallets.forEach { wallet ->
                     if (wallet.category == WalletCategory.MIXIN_SAFE.value) {
                         WalletCard(
                             name = wallet.name,
@@ -295,6 +331,20 @@ fun AssetDashboardScreen(
                 }
             }
         }
+    }
+}
+
+private fun shouldShowWallet(
+    wallet: one.mixin.android.db.web3.vo.WalletItem,
+    selectedCategory: String?,
+): Boolean {
+    return when (selectedCategory) {
+        null -> wallet.category != WalletCategory.MIXIN_SAFE.value && wallet.category != WalletCategory.WATCH_ADDRESS.value
+        WalletCategory.MIXIN_SAFE.value -> wallet.category == WalletCategory.MIXIN_SAFE.value
+        WalletCategory.CLASSIC.value -> wallet.category == WalletCategory.CLASSIC.value
+        "import" -> wallet.isImported()
+        "watch" -> wallet.isWatch()
+        else -> true
     }
 }
 
@@ -379,6 +429,117 @@ fun WalletInfoCard(
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun WalletEmptyGuideCard(
+    title: String,
+    description: String,
+    iconRes: Int?,
+    primaryActionText: String,
+    onPrimaryActionClick: () -> Unit,
+    onLearnMoreClick: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
+            .padding(16.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MixinAppTheme.colors.textPrimary,
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    text = description,
+                    fontSize = 14.sp,
+                    lineHeight = 17.5.sp,
+                    color = MixinAppTheme.colors.textMinor,
+                )
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            iconRes?.let { icon ->
+                Image(
+                    painter = painterResource(id = icon),
+                    contentDescription = null,
+                    modifier = Modifier.size(48.dp)
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(20.dp))
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    color = MixinAppTheme.colors.backgroundWindow,
+                    shape = RoundedCornerShape(16.dp)
+                ),
+        ) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp))
+                    .clickable { onPrimaryActionClick() }
+                    .padding(6.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = primaryActionText,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MixinAppTheme.colors.accent,
+                    modifier = Modifier
+                        .padding(6.dp)
+                        .clip(RoundedCornerShape(bottomStart = 16.dp, topStart = 16.dp))
+                )
+            }
+            Spacer(
+                modifier = Modifier
+                    .width(2.dp)
+                    .height(24.dp)
+                    .background(Color.Black.copy(alpha = 0.05f))
+                    .align(Alignment.CenterVertically)
+            )
+
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp))
+                    .clickable { onLearnMoreClick() }
+                    .padding(6.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = stringResource(R.string.Learn_More),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MixinAppTheme.colors.textPrimary,
+                    modifier = Modifier
+                        .padding(6.dp)
+                        .clip(RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp))
+                )
+
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_arrow_top_right_small),
+                    contentDescription = null,
+                    tint = MixinAppTheme.colors.backgroundDark,
+                    modifier = Modifier
+                        .size(8.dp)
+                        .align(Alignment.TopEnd)
+                )
             }
         }
     }

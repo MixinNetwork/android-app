@@ -14,6 +14,7 @@ import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.setting.delete.DeleteAccountFragment
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipType
+import one.mixin.android.ui.wallet.BackupMnemonicPhraseWarningBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
@@ -47,6 +48,19 @@ class AccountFragment : BaseFragment(R.layout.fragment_account) {
             changeRl.setOnClickListener {
                 changeNumber()
             }
+            logOutRl.setOnClickListener {
+                logOut()
+            }
+        }
+    }
+
+    private fun logOut() {
+        if (!Session.hasPhone() && !Session.saltExported()) {
+            BackupMnemonicPhraseWarningBottomSheetDialogFragment.newInstance()
+                .show(parentFragmentManager, BackupMnemonicPhraseWarningBottomSheetDialogFragment.TAG)
+        } else {
+            LogoutPinBottomSheetDialogFragment.newInstance()
+                .showNow(parentFragmentManager, LogoutPinBottomSheetDialogFragment.TAG)
         }
     }
 
