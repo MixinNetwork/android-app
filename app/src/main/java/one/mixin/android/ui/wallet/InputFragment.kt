@@ -63,7 +63,6 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.address.ReceiveSelectionBottom.OnReceiveSelectionClicker
 import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.ReceiveQrActivity
 import one.mixin.android.ui.common.UserListBottomSheetDialogFragment
 import one.mixin.android.ui.common.UtxoConsolidationBottomSheetDialogFragment
@@ -94,6 +93,7 @@ import one.mixin.android.vo.safe.TokensExtra
 import one.mixin.android.vo.safe.toWeb3TokenItem
 import one.mixin.android.vo.toUser
 import one.mixin.android.web3.Rpc
+import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.send.InsufficientBtcBalanceException
 import one.mixin.android.widget.Keyboard
@@ -595,7 +595,30 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                         binding.addTv.text = "${getString(R.string.Add)} ${currentGaslessFee?.token?.symbol ?: ""}"
                                         return@launch
                                     }
-                                    showGaslessPin()
+                                    val previewFeeToken = gaslessFeeToken ?: currentGaslessFee?.token?.toWeb3TokenItem(token.walletId)
+                                    showBrowserBottomSheetDialogFragment(
+                                        requireActivity(),
+                                        JsSignMessage(
+                                            callbackId = 0L,
+                                            type = JsSignMessage.TYPE_GASLESS_TRANSFER,
+                                        ),
+                                        amount = amount,
+                                        token = token,
+                                        chainToken = chainToken,
+                                        feeAmount = currentGaslessFee?.fee,
+                                        feeToken = previewFeeToken,
+                                        toAddress = toAddress,
+                                        toUser = user,
+                                        onCustomPinAction = { pin ->
+                                            submitGaslessTransfer(pin)
+                                        },
+                                        onDismiss = { isDone ->
+                                            if (isDone) {
+                                                handleSuccessfulWeb3Transfer()
+                                            }
+                                        },
+                                        isFeeWaived = isFeeWaived,
+                                    )
                                     return@launch
                                 }
                                 if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
@@ -949,21 +972,6 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
             }
         }
-    }
-
-    private fun showGaslessPin() {
-        PinInputBottomSheetDialogFragment.newInstance(from = 1)
-            .setOnPinComplete { pin ->
-                lifecycleScope.launch(
-                    CoroutineExceptionHandler { _, error ->
-                        ErrorHandler.handleError(error)
-                        dialog.dismiss()
-                    },
-                ) {
-                    submitGaslessTransfer(pin)
-                }
-            }
-            .showNow(parentFragmentManager, PinInputBottomSheetDialogFragment.TAG)
     }
 
     private var isFeeWaived = false
@@ -1850,7 +1858,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         val userOpSignature = Web3Signer.signEthMessage(
             priv = privateKey,
             message = ethPayload.signing.userOperation.message,
-            type = one.mixin.android.web3.js.JsSignMessage.TYPE_MESSAGE,
+            type = JsSignMessage.TYPE_MESSAGE,
         )
         val eip7702AuthSignature = ethPayload.signing.eip7702Auth
             ?.takeIf { it.required }
@@ -1861,7 +1869,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 Web3Signer.signEthMessage(
                     priv = privateKey,
                     message = auth.message,
-                    type = one.mixin.android.web3.js.JsSignMessage.TYPE_MESSAGE,
+                    type = JsSignMessage.TYPE_MESSAGE,
                 )
             }
         val response = web3ViewModel.submitGaslessTx(

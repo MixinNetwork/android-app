@@ -32,6 +32,7 @@ class JsSignMessage(
         const val TYPE_SIGN_IN = 5
 
         const val TYPE_BTC_TRANSACTION = 6
+        const val TYPE_GASLESS_TRANSFER = 7
 
         fun isSignMessage(type: Int): Boolean =
             type == TYPE_MESSAGE || type == TYPE_TYPED_MESSAGE || type == TYPE_PERSONAL_MESSAGE || type == TYPE_SIGN_IN
@@ -51,6 +52,7 @@ class JsSignMessage(
     fun isBtcMessage() = type == TYPE_BTC_TRANSACTION
     fun isSolMessage() = type == TYPE_RAW_TRANSACTION || type == TYPE_SIGN_IN
     fun isEvmMessage() = type == TYPE_TYPED_MESSAGE || type == TYPE_PERSONAL_MESSAGE || type == TYPE_TRANSACTION
+    fun isGaslessTransfer() = type == TYPE_GASLESS_TRANSFER
 
     val reviewData: String?
         get() {
