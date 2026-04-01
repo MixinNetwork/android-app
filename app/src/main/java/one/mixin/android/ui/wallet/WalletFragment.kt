@@ -21,9 +21,6 @@ import com.google.gson.GsonBuilder
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -129,7 +126,6 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     private var _binding: FragmentWalletBinding? = null
     private val binding get() = requireNotNull(_binding)
     private val walletViewModel by viewModels<WalletViewModel>()
-    private var isAssetDashboardExpanded by mutableStateOf(false)
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -248,20 +244,16 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             compose.setContent {
                 AssetDashboardScreen(
                     onWalletCardClick = ::handleWalletCardClick,
-                    onAddWalletClick = ::handleAddWalletClick,
-                    isExpanded = isAssetDashboardExpanded,
-                    onBackPressed = ::closeMenu,
-                    onUpgradePlan = {
+                    onAddWalletClick = ::handleAddWalletClick
+                ) {
                     MixinMemberUpgradeBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, MixinMemberUpgradeBottomSheetDialogFragment.TAG)
-                    }
-                )
+                }
             }
 
             titleRl.setOnClickListener {
                 badge.isVisible = false
                 defaultSharedPreferences.putBoolean(Constants.Account.PREF_HAS_USED_WALLET_LIST, false)
                 if (compose.isVisible.not()) {
-                    isAssetDashboardExpanded = true
                     compose.visibility = VISIBLE
                     val centerX = titleTv.x.toInt() + titleTv.width / 2
                     val centerY = titleTv.y.toInt() + titleTv.height / 2
@@ -503,8 +495,6 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     }
 
     private fun closeMenu() {
-        if (!binding.compose.isVisible) return
-        isAssetDashboardExpanded = false
         val centerX = binding.titleTv.x.toInt() + binding.titleTv.width / 2
         val centerY = binding.titleTv.y.toInt() + binding.titleTv.height / 2
         val endRadius = hypot(

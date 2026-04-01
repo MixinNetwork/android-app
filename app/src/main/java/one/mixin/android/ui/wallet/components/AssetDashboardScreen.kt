@@ -1,7 +1,6 @@
 package one.mixin.android.ui.wallet.components
 
 import android.content.Context
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -78,8 +77,6 @@ fun AssetDashboardScreen(
     onWalletCardClick: (destination: WalletDestination) -> Unit,
     onAddWalletClick: () -> Unit,
     onUpgradePlan: () -> Unit,
-    isExpanded: Boolean,
-    onBackPressed: () -> Unit,
 ) {
     val viewModel: AssetDistributionViewModel = hiltViewModel()
     val context = LocalContext.current
@@ -134,10 +131,6 @@ fun AssetDashboardScreen(
         isWalletInfoCardVisible = false
         withFrameNanos { }
         isWalletInfoCardVisible = true
-    }
-
-    BackHandler(enabled = isExpanded) {
-        onBackPressed()
     }
 
     MixinAppTheme {
