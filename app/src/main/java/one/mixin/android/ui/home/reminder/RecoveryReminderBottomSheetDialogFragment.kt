@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
@@ -142,7 +143,7 @@ class RecoveryReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
     @Composable
     override fun ComposeContent() {
         val enableSnooze = arguments?.getBoolean(ARGS_ENABLE_SNOOZE, true) ?: true
-        val context = androidx.compose.ui.platform.LocalContext.current
+        val context = LocalContext.current
         MixinAppTheme {
             ReminderPage(
                 contentImage = R.drawable.bg_recovery_kit,

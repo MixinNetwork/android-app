@@ -172,13 +172,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                         lifecycleScope.launch {
                             val wallet = web3ViewModel.findWalletById(walletId)
                             val chainId = web3ViewModel.getAddresses(walletId).first().chainId
-                            if (wallet?.isImported() == true && !wallet.hasLocalPrivateKey) {
-                                ImportKeyBottomSheetDialogFragment.newInstance(
-                                    if (wallet.category == WalletCategory.IMPORTED_MNEMONIC.value) ImportKeyBottomSheetDialogFragment.PopupType.ImportMnemonicPhrase else ImportKeyBottomSheetDialogFragment.PopupType.ImportPrivateKey,
-                                    walletId = walletId, chainId = chainId
-                                ).showNow(parentFragmentManager, ImportKeyBottomSheetDialogFragment.TAG)
-                                return@launch
-                            }
+                            if (showImportKeyReminderIfNeeded(wallet?.toWeb3Wallet(), chainId)) return@launch
                             if (showRecoveryReminderForRiskAction()) return@launch
                             WalletActivity.showBuy(requireActivity(), true, null, null, walletId)
                         }
@@ -187,13 +181,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                         lifecycleScope.launch {
                             val wallet = web3ViewModel.findWalletById(walletId)
                             val chainId = web3ViewModel.getAddresses(walletId).first().chainId
-                            if (wallet?.isImported() == true && !wallet.hasLocalPrivateKey) {
-                                ImportKeyBottomSheetDialogFragment.newInstance(
-                                    if (wallet.category == WalletCategory.IMPORTED_MNEMONIC.value) ImportKeyBottomSheetDialogFragment.PopupType.ImportMnemonicPhrase else ImportKeyBottomSheetDialogFragment.PopupType.ImportPrivateKey,
-                                    walletId = walletId, chainId = chainId
-                                ).showNow(parentFragmentManager, ImportKeyBottomSheetDialogFragment.TAG)
-                                return@launch
-                            }
+                            if (showImportKeyReminderIfNeeded(wallet?.toWeb3Wallet(), chainId)) return@launch
                             if (showRecoveryReminderForRiskAction()) return@launch
                             Web3TokenListBottomSheetDialogFragment.newInstance(walletId = walletId, TYPE_FROM_SEND).apply {
                                 setOnClickListener { token ->
@@ -224,14 +212,8 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     sendReceiveView.receive.setOnClickListener {
                         lifecycleScope.launch {
                             val wallet = web3ViewModel.findWalletById(walletId)
-                            if (wallet?.isImported() == true && !wallet.hasLocalPrivateKey) {
-                                val chainId = web3ViewModel.getAddresses(walletId).first().chainId
-                                ImportKeyBottomSheetDialogFragment.newInstance(
-                                    if (wallet.category == WalletCategory.IMPORTED_MNEMONIC.value) ImportKeyBottomSheetDialogFragment.PopupType.ImportMnemonicPhrase else ImportKeyBottomSheetDialogFragment.PopupType.ImportPrivateKey,
-                                    walletId = walletId, chainId
-                                ).showNow(parentFragmentManager, ImportKeyBottomSheetDialogFragment.TAG)
-                                return@launch
-                            }
+                            val chainId = web3ViewModel.getAddresses(walletId).first().chainId
+                            if (showImportKeyReminderIfNeeded(wallet?.toWeb3Wallet(), chainId)) return@launch
                             if (showRecoveryReminderForRiskAction()) return@launch
                             showReceiveAssetList()
                         }
@@ -239,14 +221,8 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     sendReceiveView.swap.setOnClickListener {
                         lifecycleScope.launch {
                             val wallet = web3ViewModel.findWalletById(walletId)
-                            if (wallet?.isImported() == true && !wallet.hasLocalPrivateKey) {
-                                val chainId = web3ViewModel.getAddresses(walletId).first().chainId
-                                ImportKeyBottomSheetDialogFragment.newInstance(
-                                    if (wallet.category == WalletCategory.IMPORTED_MNEMONIC.value) ImportKeyBottomSheetDialogFragment.PopupType.ImportMnemonicPhrase else ImportKeyBottomSheetDialogFragment.PopupType.ImportPrivateKey,
-                                    walletId = walletId, chainId = chainId
-                                ).showNow(parentFragmentManager, ImportKeyBottomSheetDialogFragment.TAG)
-                                return@launch
-                            }
+                            val chainId = web3ViewModel.getAddresses(walletId).first().chainId
+                            if (showImportKeyReminderIfNeeded(wallet?.toWeb3Wallet(), chainId)) return@launch
                             if (showRecoveryReminderForRiskAction()) return@launch
                             AnalyticsTracker.trackTradeStart(TradeWallet.WEB3, TradeSource.WALLET_HOME)
                             SwapActivity.show(requireActivity(), inMixin = false, walletId = walletId)
@@ -538,6 +514,20 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
 
     private fun showRecoveryReminderForRiskAction(): Boolean {
         return RecoveryReminderBottomSheetDialogFragment.showForRiskAction(parentFragmentManager)
+    }
+
+    private fun showImportKeyReminderIfNeeded(wallet: one.mixin.android.db.web3.vo.Web3Wallet?, chainId: String?): Boolean {
+        if (wallet?.isImported() != true || wallet.hasLocalPrivateKey) return false
+        ImportKeyBottomSheetDialogFragment.newInstance(
+            if (wallet.category == WalletCategory.IMPORTED_MNEMONIC.value) {
+                ImportKeyBottomSheetDialogFragment.PopupType.ImportMnemonicPhrase
+            } else {
+                ImportKeyBottomSheetDialogFragment.PopupType.ImportPrivateKey
+            },
+            walletId = walletId,
+            chainId = chainId,
+        ).showNow(parentFragmentManager, ImportKeyBottomSheetDialogFragment.TAG)
+        return true
     }
 
     override fun <T> onNormalItemClick(item: T) {

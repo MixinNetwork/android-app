@@ -43,7 +43,6 @@ class RecoveryFragment : BaseFragment(R.layout.fragment_compose) {
                     if (!Session.hasPhone()) {
                         VerifyMobileReminderBottomSheetDialogFragment.showSafely(
                             parentFragmentManager,
-                            enableSnooze = false,
                         )
                     } else {
                         navTo(EmergencyContactFragment.newInstance(), EmergencyContactFragment.TAG)
