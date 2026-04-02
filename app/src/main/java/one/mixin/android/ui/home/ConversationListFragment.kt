@@ -757,9 +757,10 @@ class ConversationListFragment : LinkFragment() {
             this.circleId = circleId
         }
         lifecycleScope.launch {
-            if (isAdded && parentFragmentManager.fragments.any {
-                    it.tag in listOf(AddPhoneBeforeFragment.TAG, VerifyFragment.TAG, VerificationFragment.TAG, MobileFragment.TAG)
-                }.not()) {
+            val blockedByPhoneFlow = parentFragmentManager.fragments.any {
+                it.tag in listOf(AddPhoneBeforeFragment.TAG, VerifyFragment.TAG, VerificationFragment.TAG, MobileFragment.TAG)
+            }
+            if (isAdded && blockedByPhoneFlow.not()) {
                 if (parentFragmentManager.findFragmentByTag(VerifyMobileReminderBottomSheetDialogFragment.TAG) != null) return@launch
                 if (parentFragmentManager.findFragmentByTag(RecoveryReminderBottomSheetDialogFragment.TAG) != null) return@launch
                 if (VerifyMobileReminderBottomSheetDialogFragment.shouldShow(requireContext())) {
