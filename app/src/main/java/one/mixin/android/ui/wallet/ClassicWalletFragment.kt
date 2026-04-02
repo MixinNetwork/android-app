@@ -173,7 +173,6 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                             val wallet = web3ViewModel.findWalletById(walletId)
                             val chainId = web3ViewModel.getAddresses(walletId).first().chainId
                             if (showImportKeyReminderIfNeeded(wallet?.toWeb3Wallet(), chainId)) return@launch
-                            if (showRecoveryReminderForRiskAction()) return@launch
                             WalletActivity.showBuy(requireActivity(), true, null, null, walletId)
                         }
                     }

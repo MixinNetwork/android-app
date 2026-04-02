@@ -9,7 +9,7 @@ import one.mixin.android.databinding.FragmentComposeBinding
 import one.mixin.android.extension.navTo
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.home.reminder.VerifyMobileReminderBottomSheetDialogFragment
+import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
 import one.mixin.android.ui.setting.ui.page.RecoveryKitPage
 import one.mixin.android.util.viewBinding
 
@@ -40,10 +40,8 @@ class RecoveryFragment : BaseFragment(R.layout.fragment_compose) {
                 }, {
                     navTo(MnemonicPhraseBackupFragment.newInstance(), MnemonicPhraseBackupFragment.TAG)
                 }, {
-                    if (!Session.hasPhone()) {
-                        VerifyMobileReminderBottomSheetDialogFragment.showSafely(
-                            parentFragmentManager,
-                        )
+                    if (Session.isAnonymous() && !Session.saltExported()) {
+                        RecoveryReminderBottomSheetDialogFragment.showForRiskAction(parentFragmentManager)
                     } else {
                         navTo(EmergencyContactFragment.newInstance(), EmergencyContactFragment.TAG)
                     }

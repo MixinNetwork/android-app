@@ -846,11 +846,6 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         } else if (intent.hasExtra(WALLET)) {
             binding.bottomNav.selectedItemId = R.id.nav_wallet
             if (intent.getBooleanExtra(BUY, false)) {
-                if (RecoveryReminderBottomSheetDialogFragment.showForRiskAction(supportFragmentManager)) {
-                    clearCodeAfterConsume(intent, BUY)
-                    clearCodeAfterConsume(intent, WALLET)
-                    return
-                }
                 WalletActivity.showBuy(this, false, null, null)
                 clearCodeAfterConsume(intent, BUY)
             }

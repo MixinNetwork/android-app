@@ -14,6 +14,8 @@ import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.replaceFragment
+import one.mixin.android.session.Session
+import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.App
 import one.mixin.android.widget.theme.ThemeActivity
@@ -125,7 +127,14 @@ class SettingActivity : ThemeActivity() {
                 replaceFragment(MnemonicPhraseBackupFragment.newInstance(), R.id.container, MnemonicPhraseBackupFragment.TAG)
             }
             intent.getBooleanExtra(EXTRA_EMERGENCY_CONTACT, false) -> {
-                replaceFragment(EmergencyContactFragment.newInstance(), R.id.container, EmergencyContactFragment.TAG)
+                if (Session.isAnonymous() && !Session.saltExported()) {
+                    replaceFragment(RecoveryFragment.newInstance(), R.id.container, RecoveryFragment.TAG)
+                    binding.root.post {
+                        RecoveryReminderBottomSheetDialogFragment.showForRiskAction(supportFragmentManager)
+                    }
+                } else {
+                    replaceFragment(EmergencyContactFragment.newInstance(), R.id.container, EmergencyContactFragment.TAG)
+                }
             }
             intent.getBooleanExtra(EXTRA_SHOW_RECOVERY_KIT, false) -> {
                 replaceFragment(RecoveryFragment.newInstance(), R.id.container, RecoveryFragment.TAG)
