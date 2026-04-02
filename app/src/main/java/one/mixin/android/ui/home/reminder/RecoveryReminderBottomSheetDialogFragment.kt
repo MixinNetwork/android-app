@@ -215,7 +215,7 @@ class RecoveryReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
                         fullText = stringResource(R.string.Recovery_Kit_Alert),
                         modifier = Modifier.fillMaxWidth(),
                         stringResource(R.string.More_Information),
-                        onTextClick = { context.openUrl(Constants.HelpLink.TIP) }
+                        onTextClick = { context.openUrl(stringResource(R.string.recovery_kit_help_url)) }
                     )
                 },
                 extraContent = {

@@ -1862,6 +1862,7 @@
     <string name="Recovery_Kit">账号恢复</string>
     <string name="Recovery_Kit_instruction">Mixin 的 MPC 钱包基于去中心化密钥协议 TIP 构建，您可以通过手机号、助记词或可信联系人登录恢复你的账号，钱包完整的密钥只存在当前设备的 TEE 安全环境中，阅读文档以了解%1$s。</string>
     <string name="Recovery_Kit_Attention">注意：账号恢复无法帮助您恢复 PIN</string>
+    <string name="recovery_kit_help_url">https://support.mixin.one/zh/article/6lsm5y35ogi5asn5yqf6io9-18lds0b</string>
     <string name="Mobile_Number">手机号码</string>
     <string name="Recovery_Contact">恢复联系人</string>
     <string name="Backup_Mnemonic_Phrase">备份助记词</string>

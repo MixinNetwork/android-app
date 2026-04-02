@@ -1897,6 +1897,7 @@
     <string name="Recovery_Kit">Recovery Kit</string>
     <string name="Recovery_Kit_instruction">The MPC wallet in Mixin is built on the decentralized key protocol TIP. You can recover your account through your phone number, mnemonic phrase, or a trusted contact. The complete wallet key exists only in the TEE security environment on the current device. Read the documentation to learn %1$s.</string>
     <string name="Recovery_Kit_Attention">Attention: The Recovery Kit cannot help you recover your PIN</string>
+    <string name="recovery_kit_help_url">https://support.mixin.one/en/article/what-is-the-recovery-kit-162wv1w</string>
     <string name="Mobile_Number">Mobile Number</string>
     <string name="Recovery_Contact">Recovery Contact</string>
     <string name="Set_up">Set up</string>
