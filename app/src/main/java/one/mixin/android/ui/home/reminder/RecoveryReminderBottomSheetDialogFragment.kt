@@ -95,8 +95,13 @@ class RecoveryReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
                 }
             }
             return try {
-                fragment.showNow(fragmentManager, TAG)
-                true
+                if (fragmentManager.isStateSaved) {
+                    false
+                } else {
+                    isShowing = true
+                    fragment.show(fragmentManager, TAG)
+                    true
+                }
             } catch (e: Exception) {
                 isShowing = false
                 pendingOnDismissContinueAction = null
