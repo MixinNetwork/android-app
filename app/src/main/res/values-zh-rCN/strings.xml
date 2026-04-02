@@ -1841,7 +1841,7 @@
     <string name="Set_up_pin_tip_2">很少在其他地方看到三次确认，因此请记住，如果丢失 PIN 将无法恢复钱包。</string>
     <string name="Set_up">设置</string>
     <string name="Mnemonic_Phrase_instruction">你可以通过助记词登录你的账号，当前助记词已关联到 MPC 钱包的密钥分片，完整的密钥只存在当前设备的 TEE 安全环境中，阅读文档以了解%1$s。</string>
-    <string name="recovery_reminder_desc">为了您的账户安全，请尽快备份助记词、添加手机号并且设置恢复联系人以恢复您的账号，%1$s以了解更多信息。</string>
+    <string name="recovery_reminder_desc">为了您的账户安全，请尽快设置备份助记词、添加手机号并且设置恢复联系人登录恢复你的账号，阅读文档以了解“%1$s”。</string>
     <string name="Backup_Mnemonic_Phrase_Warning">请立即备份您的助记词。该助记词为 MPC 钱包密钥分片之一，一旦设备遗失或应用被卸载，若您没有备份，将无法重新登录当前 Mixin 账号 (%1$s)。</string>
     <string name="add_recovery_contact_before_instruction_3">要添加的恢复联系人已添加当前账号（%1$s）为联系人，否则对方可能无法收到验证码。</string>
     <string name="invalid_mnemonic_phrase">助记词无效</string>

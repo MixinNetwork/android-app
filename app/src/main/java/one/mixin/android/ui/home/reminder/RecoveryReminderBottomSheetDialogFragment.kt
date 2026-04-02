@@ -181,13 +181,11 @@ class RecoveryReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
                             if (Session.saltExported()) stringResource(R.string.Backed_Up) else stringResource(R.string.Backup),
                             checked = Session.saltExported()
                         )
-                        if (Session.hasPhone()) {
-                            ReminderItem(
-                                stringResource(R.string.Recovery_Contact),
-                                if (Session.hasEmergencyContact()) stringResource(R.string.Added) else stringResource(R.string.Add),
-                                checked = Session.hasEmergencyContact()
-                            )
-                        }
+                        ReminderItem(
+                            stringResource(R.string.Recovery_Contact),
+                            if (Session.hasEmergencyContact()) stringResource(R.string.Added) else stringResource(R.string.Add),
+                            checked = Session.hasEmergencyContact()
+                        )
                     }
                 },
             )
