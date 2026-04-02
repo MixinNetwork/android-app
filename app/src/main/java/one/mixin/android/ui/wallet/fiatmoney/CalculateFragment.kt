@@ -375,7 +375,6 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                             if (VerifyMobileReminderBottomSheetDialogFragment.shouldShowForBuy(requireContext()) && isFragmentVisible()) {
                                 VerifyMobileReminderBottomSheetDialogFragment.showSafely(
                                     parentFragmentManager,
-                                    R.string.verify_mobile_reminder_desc,
                                     false,
                                 )
                                 setLoading(false)
@@ -462,6 +461,12 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
 
     private var v = "0"
 
+    private fun updateContinueEnabled(enabled: Boolean) {
+        val binding = bindingOrNull() ?: return
+        binding.continueVa.isEnabled = enabled
+        binding.continueTv.isEnabled = enabled
+    }
+
     @SuppressLint("SetTextI18n")
     private fun updateUI(currency: Currency? = null, asset: TokenItem? = null) {
         if (viewDestroyed()) return
@@ -496,6 +501,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
             // Default state
             binding.primaryTv.text = "0"
             binding.minorTv.text = "0 ${asset.symbol}"
+            updateContinueEnabled(false)
             return
         }
         val feePercent = fiatMoneyViewModel.calculateState?.feePercent ?: 0f
@@ -517,9 +523,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     minorTv.text =
                         "≈ ${getNumberFormat(String.format("%.2f", currentValue))} ${currency.name}"
                 }
-                continueVa.isEnabled =
-                    currentValue >= state.minimum
-                continueTv.isEnabled = continueVa.isEnabled
+                updateContinueEnabled(currentValue >= state.minimum)
                 info.setTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
             } else {
                 val currentValue = value.toFloat()
@@ -531,9 +535,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     minorTv.text =
                         "≈ ${BigDecimal((currentValue / state.assetPrice).toDouble()).numberFormat8()} ${asset.symbol}"
                 }
-                continueVa.isEnabled =
-                    currentValue >= state.minimum
-                continueTv.isEnabled = continueVa.isEnabled
+                updateContinueEnabled(currentValue >= state.minimum)
                 info.setTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
             }
             updatePrimarySize()

@@ -187,6 +187,7 @@ class RecoveryReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
         val continueOnDismiss = arguments?.getBoolean(ARGS_CONTINUE_ON_DISMISS, false) ?: false
         val dismissTextRes = arguments?.getInt(ARGS_DISMISS_TEXT, R.string.Not_Now) ?: R.string.Not_Now
         val context = LocalContext.current
+        val recoveryKitHelpUrl = stringResource(R.string.recovery_kit_help_url)
         MixinAppTheme {
             ReminderPage(
                 contentImage = R.drawable.bg_recovery_kit,
@@ -215,7 +216,7 @@ class RecoveryReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
                         fullText = stringResource(R.string.Recovery_Kit_Alert),
                         modifier = Modifier.fillMaxWidth(),
                         stringResource(R.string.More_Information),
-                        onTextClick = { context.openUrl(stringResource(R.string.recovery_kit_help_url)) }
+                        onTextClick = { context.openUrl(recoveryKitHelpUrl) }
                     )
                 },
                 extraContent = {

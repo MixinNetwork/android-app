@@ -37,7 +37,6 @@ class VerifyMobileReminderBottomSheetDialogFragment : MixinComposeBottomSheetDia
     companion object {
         const val TAG: String = "VerifyMobileReminderBottomSheetDialogFragment"
         private const val PREF_VERIFY_MOBILE_REMINDER_SNOOZE = "pref_verify_mobile_reminder_snooze"
-        private const val ARGS_SUBTITLE_RES_ID = "args_subtitle_res_id"
         private const val ARGS_ENABLE_SNOOZE = "args_enable_snooze"
 
         @Volatile
@@ -45,14 +44,12 @@ class VerifyMobileReminderBottomSheetDialogFragment : MixinComposeBottomSheetDia
 
         fun showSafely(
             fragmentManager: androidx.fragment.app.FragmentManager,
-            subtitleResId: Int = R.string.verify_mobile_reminder_desc,
             enableSnooze: Boolean = true,
         ): Boolean {
             if (isShowing) return false
 
             val fragment = VerifyMobileReminderBottomSheetDialogFragment().apply {
                 arguments = android.os.Bundle().apply {
-                    putInt(ARGS_SUBTITLE_RES_ID, subtitleResId)
                     putBoolean(ARGS_ENABLE_SNOOZE, enableSnooze)
                 }
             }
@@ -137,15 +134,17 @@ class VerifyMobileReminderBottomSheetDialogFragment : MixinComposeBottomSheetDia
 
     @Composable
     override fun ComposeContent() {
-        val subtitleResId = arguments?.getInt(ARGS_SUBTITLE_RES_ID, R.string.verify_mobile_reminder_desc)
-            ?: R.string.verify_mobile_reminder_desc
         val enableSnooze = arguments?.getBoolean(ARGS_ENABLE_SNOOZE, true) ?: true
         val phoneNumber = if (Session.hasPhone()) Session.getAccount()?.phone else null
+        val hasPhoneNumber = !phoneNumber.isNullOrBlank()
+        val titleResId = if (hasPhoneNumber) R.string.Verify_Mobile_Number else R.string.verify_mobile_reminder_title
+        val actionResId = if (hasPhoneNumber) R.string.Verify_Now else R.string.verify_mobile_reminder_action
+        val subtitleResId = if (hasPhoneNumber) R.string.Verify_Mobile_Number_Desc else R.string.verify_mobile_reminder_desc
         MixinAppTheme {
             ReminderPage(
                 contentImage = R.drawable.bg_reminder_verify_mobile,
-                title = R.string.verify_mobile_reminder_title,
-                actionStr = R.string.verify_mobile_reminder_action,
+                title = titleResId,
+                actionStr = actionResId,
                 action = {
                     dismissAllowingStateLoss()
                     if (phoneNumber.isNullOrBlank()) {
