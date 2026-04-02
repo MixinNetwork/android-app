@@ -17,18 +17,13 @@ import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material.ModalBottomSheetLayout
-import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.RadioButton
 import androidx.compose.material.RadioButtonDefaults
 import androidx.compose.material.Text
-import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,48 +44,15 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.openUrl
 
 @Composable
-fun QuizPage(next: () -> Unit, pop: (() -> Unit)? = null) {
+fun QuizPage(
+    next: () -> Unit,
+    pop: (() -> Unit)? = null,
+    onShowResultBottomSheet: (Boolean, () -> Unit, () -> Unit) -> Unit,
+) {
     val context = LocalContext.current
     var selectedOption by remember { mutableStateOf(-1) }
-    var showDialog by remember { mutableStateOf(false) }
     var isCorrectAnswer by remember { mutableStateOf(false) }
-    val bottomSheetState = rememberModalBottomSheetState(
-        initialValue = ModalBottomSheetValue.Hidden,
-        skipHalfExpanded = true,
-    )
-    val coroutineScope = rememberCoroutineScope()
-    
-    LaunchedEffect(showDialog) {
-        if (showDialog) {
-            bottomSheetState.show()
-        }
-    }
-    
-    ModalBottomSheetLayout(
-        sheetState = bottomSheetState,
-        scrimColor = Color.Black.copy(alpha = 0.6f),
-        sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-        sheetBackgroundColor = MixinAppTheme.colors.background,
-        sheetContent = {
-            QuizResultBottomSheetContent(
-                isCorrect = isCorrectAnswer,
-                onCorrectAction = {
-                    coroutineScope.launch {
-                        bottomSheetState.hide()
-                        showDialog = false
-                        next()
-                    }
-                },
-                onWrongAction = {
-                    coroutineScope.launch {
-                        bottomSheetState.hide()
-                        showDialog = false
-                        selectedOption = -1
-                    }
-                }
-            )
-        }
-    ) {
+
         PageScaffold(
             title = "",
             verticalScrollable = false,
@@ -129,7 +91,11 @@ fun QuizPage(next: () -> Unit, pop: (() -> Unit)? = null) {
                         onClick = {
                             if (selectedOption != -1) {
                                 isCorrectAnswer = selectedOption == 1
-                                showDialog = true
+                                onShowResultBottomSheet(
+                                    isCorrectAnswer,
+                                    { next() },
+                                    { selectedOption = -1 }
+                                )
                             }
                         },
                         enabled = selectedOption != -1,
@@ -162,7 +128,6 @@ fun QuizPage(next: () -> Unit, pop: (() -> Unit)? = null) {
                 }
             }
         }
-    }
 }
 
 @Composable
