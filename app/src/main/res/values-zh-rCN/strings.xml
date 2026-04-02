@@ -1769,6 +1769,7 @@
     <string name="red_up_green_down">红涨绿跌</string>
     <string name="green_up_red_down">绿涨红跌</string>
     <string name="Alert">价格预警</string>
+    <string name="Add_Alert">添加价格预警</string>
     <string name="Edit_Alert">编辑价格预警</string>
     <string name="NO_ALERTS">没有价格预警</string>
     <string name="Current_price">当前价格：%1$s</string>

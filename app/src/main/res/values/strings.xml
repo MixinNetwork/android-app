@@ -1815,6 +1815,7 @@
     <string name="red_up_green_down">Red Up / Green Down</string>
     <string name="green_up_red_down">Green Up / Red Down</string>
     <string name="Alert">Alert</string>
+    <string name="Add_Alert">Add Alert</string>
     <string name="Edit_Alert">Edit Alert</string>
     <string name="NO_ALERTS">NO ALERTS</string>
     <string name="Current_price">Current price: %1$s</string>
