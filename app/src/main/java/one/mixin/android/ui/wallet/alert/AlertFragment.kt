@@ -86,7 +86,7 @@ class AlertFragment : BaseFragment(), MultiSelectCoinListBottomSheetDialogFragme
                     val navController = rememberNavController()
                     NavHost(
                         navController = navController,
-                        startDestination = AlertDestination.All.name,
+                        startDestination = if (goAlert) AlertDestination.Edit.name else AlertDestination.All.name,
                         enterTransition = {
                             slideIntoContainer(
                                 AnimatedContentTransitionScope.SlideDirection.Left,
@@ -113,7 +113,7 @@ class AlertFragment : BaseFragment(), MultiSelectCoinListBottomSheetDialogFragme
                         },
                     ) {
                         composable(AlertDestination.All.name) {
-                            AllAlertPage(coins = coins, openFilter = { openFilter() }, pop = { requireActivity().onBackPressedDispatcher.onBackPressed() }, to = { onAddAlert(navController) }, onEdit = { alert ->
+                            AllAlertPage(coins = coins, openFilter = { openFilter() }, pop = { requireActivity().onBackPressedDispatcher.onBackPressed() }, to = { onAddAlert(navController, coins.singleOrNull()) }, onEdit = { alert ->
                                 lifecycleScope.launch {
                                     val coin = alertViewModel.simpleCoinItem(alert.coinId)
                                     if (coin != null) {
@@ -135,6 +135,18 @@ class AlertFragment : BaseFragment(), MultiSelectCoinListBottomSheetDialogFragme
                                     }
                                 },
                                 pop = { navigateUp(navController) },
+                                onSaved = { created ->
+                                    if (created && goAlert) {
+                                        navController.navigate(AlertDestination.All.name) {
+                                            popUpTo(AlertDestination.Edit.name) {
+                                                inclusive = true
+                                            }
+                                            launchSingleTop = true
+                                        }
+                                    } else {
+                                        navigateUp(navController)
+                                    }
+                                },
                                 onShowTypeSelector = { selectedType, onSelected ->
                                     AlertSelectionBottomSheetDialogFragment.newTypeInstance(selectedType).apply {
                                         onTypeSelected = onSelected
@@ -152,7 +164,6 @@ class AlertFragment : BaseFragment(), MultiSelectCoinListBottomSheetDialogFragme
                     LaunchedEffect(Unit) {
                         if (goAlert) {
                             selectCoin = coin
-                            navController.navigate(AlertDestination.Edit.name)
                         }
                     }
                 }
@@ -168,17 +179,15 @@ class AlertFragment : BaseFragment(), MultiSelectCoinListBottomSheetDialogFragme
             if (isTotalAlertCountExceeded) {
                 toast(getString(R.string.alert_limit_exceeded, maxTotalAlerts))
             } else if (coinItem != null) {
-                lifecycleScope.launch {
-                    val isAssetAlertCountExceeded = withContext(Dispatchers.IO) {
-                        alertViewModel.isAssetAlertCountExceeded(coinItem.coinId)
-                    }
-                    if (isAssetAlertCountExceeded) {
-                        toast(getString(R.string.alert_per_asset_limit_exceeded, maxAlertsPerAsset))
-                    } else {
-                        selectCoin = coinItem
-                        currentAlert = null
-                        navController.navigate(AlertDestination.Edit.name)
-                    }
+                val isAssetAlertCountExceeded = withContext(Dispatchers.IO) {
+                    alertViewModel.isAssetAlertCountExceeded(coinItem.coinId)
+                }
+                if (isAssetAlertCountExceeded) {
+                    toast(getString(R.string.alert_per_asset_limit_exceeded, maxAlertsPerAsset))
+                } else {
+                    selectCoin = coinItem
+                    currentAlert = null
+                    navController.navigate(AlertDestination.Edit.name)
                 }
             } else {
                 selectTokenListBottomSheetDialogFragment.setOnMultiSelectCoinListener(object : MultiSelectCoinListBottomSheetDialogFragment.OnMultiSelectCoinListener {
