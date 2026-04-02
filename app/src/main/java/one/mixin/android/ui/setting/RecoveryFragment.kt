@@ -41,7 +41,12 @@ class RecoveryFragment : BaseFragment(R.layout.fragment_compose) {
                     navTo(MnemonicPhraseBackupFragment.newInstance(), MnemonicPhraseBackupFragment.TAG)
                 }, {
                     if (Session.isAnonymous() && !Session.saltExported()) {
-                        RecoveryReminderBottomSheetDialogFragment.showForRiskAction(parentFragmentManager)
+                        val shown = RecoveryReminderBottomSheetDialogFragment.showForRiskAction(parentFragmentManager) {
+                            navTo(EmergencyContactFragment.newInstance(), EmergencyContactFragment.TAG)
+                        }
+                        if (!shown) {
+                            navTo(EmergencyContactFragment.newInstance(), EmergencyContactFragment.TAG)
+                        }
                     } else {
                         navTo(EmergencyContactFragment.newInstance(), EmergencyContactFragment.TAG)
                     }

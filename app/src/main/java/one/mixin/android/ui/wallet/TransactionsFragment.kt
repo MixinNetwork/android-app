@@ -127,7 +127,26 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         }
         binding.apply {
             sendReceiveView.swap.setOnClickListener {
-                if (showRecoveryReminderForRiskAction()) return@setOnClickListener
+                if (
+                    showRecoveryReminderForRiskAction {
+                        AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.ASSET_DETAIL)
+                        lifecycleScope.launch {
+                            val output = if (asset.assetId == USDT_ASSET_ETH_ID) {
+                                XIN_ASSET_ID
+                            } else {
+                                USDT_ASSET_ETH_ID
+                            }
+                            SwapActivity.show(
+                                requireActivity(),
+                                inMixin = true,
+                                input = asset.assetId,
+                                output = output
+                            )
+                        }
+                    }
+                ) {
+                    return@setOnClickListener
+                }
                 AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.ASSET_DETAIL)
                 lifecycleScope.launch {
                     val output = if (asset.assetId == USDT_ASSET_ETH_ID) {
@@ -390,11 +409,20 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             }
             updateHeader(asset)
             sendReceiveView.send.setOnClickListener {
-                if (showRecoveryReminderForRiskAction()) return@setOnClickListener
+                if (showRecoveryReminderForRiskAction { navigateToTransferDestination(asset) }) return@setOnClickListener
                 navigateToTransferDestination(asset)
             }
             sendReceiveView.receive.setOnClickListener {
-                if (showRecoveryReminderForRiskAction()) return@setOnClickListener
+                if (
+                    showRecoveryReminderForRiskAction {
+                        sendReceiveView.navigate(
+                            R.id.action_transactions_to_deposit,
+                            Bundle().apply { putParcelable(ARGS_ASSET, asset) },
+                        )
+                    }
+                ) {
+                    return@setOnClickListener
+                }
                 sendReceiveView.navigate(
                     R.id.action_transactions_to_deposit,
                     Bundle().apply { putParcelable(ARGS_ASSET, asset) },
@@ -406,8 +434,8 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         }
     }
 
-    private fun showRecoveryReminderForRiskAction(): Boolean {
-        return RecoveryReminderBottomSheetDialogFragment.showForRiskAction(parentFragmentManager)
+    private fun showRecoveryReminderForRiskAction(onContinue: (() -> Unit)? = null): Boolean {
+        return RecoveryReminderBottomSheetDialogFragment.showForRiskAction(parentFragmentManager, onContinue)
     }
 
     private fun updateHeader(asset: TokenItem) {

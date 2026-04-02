@@ -1917,7 +1917,7 @@
     <string name="mnemonic_phrase_tip_2">· Do not post it online</string>
     <string name="mnemonic_phrase_take_long">This shouldn\'t take long.</string>
     <string name="Backup_Now">Start Backup</string>
-    <string name="recovery_reminder_desc">For your account security, please back up your mnemonic phrase, add your mobile number, and set a recovery contact as soon as possible. Read the documentation to learn more about %1$s.</string>
+    <string name="Recovery_Kit_Alert">For your account security, please back up your recovery phrase, add a phone number, and set a recovery contact as soon as possible. See the documentation for more information.</string>
     <string name="verify_mobile_reminder_title">Add Mobile Number</string>
     <string name="verify_mobile_reminder_desc">Add your mobile number to set up a recovery contact.</string>
     <string name="verify_mobile_reminder_action">Add Now</string>
@@ -2446,4 +2446,5 @@
     <string name="mixin_import_safety_3">Mixin never accesses your private information or shares it with third parties.</string>
     <string name="Spot_Trade_Guide_You_Receive">You Receive</string>
     <string name="Opening">Opening</string>
+    <string name="Not_Added">Not Added</string>
 </resources>

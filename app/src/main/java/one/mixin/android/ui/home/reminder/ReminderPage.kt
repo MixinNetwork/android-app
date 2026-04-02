@@ -41,6 +41,7 @@ fun ReminderPage(
     @DrawableRes contentImage: Int,
     @StringRes title: Int,
     @StringRes actionStr: Int,
+    @StringRes dismissStr: Int = R.string.Not_Now,
     action: () -> Unit,
     dismiss: () -> Unit,
     contentSlot: @Composable () -> Unit,
@@ -113,7 +114,7 @@ fun ReminderPage(
                     .padding(8.dp)
                     .align(Alignment.CenterHorizontally)
                     .clickable { dismiss.invoke() },
-                text = stringResource(R.string.Not_Now),
+                text = stringResource(dismissStr),
                 color = MixinAppTheme.colors.textBlue
             )
             Spacer(modifier = Modifier.height(20.dp))
@@ -151,11 +152,12 @@ private fun ReminderPagePreview() {
             contentImage = R.drawable.bg_recovery_kit,
             title = R.string.Recovery_Kit,
             actionStr = R.string.Continue,
+            dismissStr = R.string.Not_Now,
             action = {},
             dismiss = {},
             contentSlot = {
                 HighlightedTextWithClick(
-                    fullText = stringResource(R.string.recovery_reminder_desc, stringResource(R.string.More_Information)),
+                    fullText = stringResource(R.string.Recovery_Kit_Alert),
                     modifier = Modifier.fillMaxWidth(),
                     stringResource(R.string.More_Information),
                     onTextClick = {}
@@ -165,7 +167,7 @@ private fun ReminderPagePreview() {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     ReminderItem(stringResource(R.string.Mobile_Number), stringResource(R.string.Added), checked = true)
                     ReminderItem(stringResource(R.string.Mnemonic_Phrase), stringResource(R.string.Backup), checked = false)
-                    ReminderItem(stringResource(R.string.Recovery_Contact), stringResource(R.string.Add), checked = false)
+                    ReminderItem(stringResource(R.string.Recovery_Contact), stringResource(R.string.Not_Added), checked = false)
                 }
             }
         )

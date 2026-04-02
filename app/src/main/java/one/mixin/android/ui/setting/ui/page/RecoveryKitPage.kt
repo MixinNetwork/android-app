@@ -63,7 +63,7 @@ fun RecoveryKitPage(pop:()->Unit, phoneClick: () -> Unit, mnemonicPhraseClick: (
                     ClickItem(
                         modifier = Modifier
                             .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
-                            .clickable { phoneClick.invoke() }, stringResource(R.string.Mobile_Number), if (Session.hasPhone()) stringResource(R.string.Added) else stringResource(R.string.Add)
+                            .clickable { phoneClick.invoke() }, stringResource(R.string.Mobile_Number), if (Session.hasPhone()) stringResource(R.string.Added) else stringResource(R.string.Not_Added)
                     )
                     ClickItem(
                         modifier = Modifier.clickable { mnemonicPhraseClick.invoke() }, stringResource(R.string.Mnemonic_Phrase),
@@ -73,7 +73,7 @@ fun RecoveryKitPage(pop:()->Unit, phoneClick: () -> Unit, mnemonicPhraseClick: (
                         modifier = Modifier
                             .clip(RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp))
                             .clickable { recoveryClick.invoke() },
-                        stringResource(R.string.Recovery_Contact), if (Session.hasEmergencyContact()) stringResource(R.string.Added) else stringResource(R.string.Add)
+                        stringResource(R.string.Recovery_Contact), if (Session.hasEmergencyContact()) stringResource(R.string.Added) else stringResource(R.string.Not_Added)
                     )
                 }
                 Spacer(modifier = Modifier.weight(1f))

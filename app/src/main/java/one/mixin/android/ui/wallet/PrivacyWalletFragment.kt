@@ -143,7 +143,19 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                         }
                     }
                     sendReceiveView.send.setOnClickListener {
-                        if (showRecoveryReminderForRiskAction()) return@setOnClickListener
+                        if (
+                            showRecoveryReminderForRiskAction {
+                                TokenListBottomSheetDialogFragment.newInstance(TYPE_FROM_SEND)
+                                    .setOnAssetClick {
+                                        WalletActivity.navigateToWalletActivity(this@PrivacyWalletFragment.requireActivity(), it)
+                                    }.setOnDepositClick {
+                                        // do nothing
+                                    }
+                                    .showNow(parentFragmentManager, TokenListBottomSheetDialogFragment.TAG)
+                            }
+                        ) {
+                            return@setOnClickListener
+                        }
                         TokenListBottomSheetDialogFragment.newInstance(TYPE_FROM_SEND)
                             .setOnAssetClick {
                                 WalletActivity.navigateToWalletActivity(this@PrivacyWalletFragment.requireActivity(), it)
@@ -153,11 +165,21 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                             .showNow(parentFragmentManager, TokenListBottomSheetDialogFragment.TAG)
                     }
                     sendReceiveView.receive.setOnClickListener {
-                        if (showRecoveryReminderForRiskAction()) return@setOnClickListener
+                        if (showRecoveryReminderForRiskAction { showReceiveAssetList() }) return@setOnClickListener
                         showReceiveAssetList()
                     }
                     sendReceiveView.swap.setOnClickListener {
-                        if (showRecoveryReminderForRiskAction()) return@setOnClickListener
+                        if (
+                            showRecoveryReminderForRiskAction {
+                                AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.WALLET_HOME)
+                                SwapActivity.show(requireActivity(), inMixin = true)
+                                defaultSharedPreferences.putBoolean(PREF_HAS_USED_SWAP, false)
+                                RxBus.publish(BadgeEvent(PREF_HAS_USED_SWAP))
+                                sendReceiveView.swapBadge.isVisible = false
+                            }
+                        ) {
+                            return@setOnClickListener
+                        }
                         AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.WALLET_HOME)
                         SwapActivity.show(requireActivity(), inMixin = true)
                         defaultSharedPreferences.putBoolean(PREF_HAS_USED_SWAP, false)
@@ -449,8 +471,8 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             }.showNow(parentFragmentManager, TokenListBottomSheetDialogFragment.TAG)
     }
 
-    private fun showRecoveryReminderForRiskAction(): Boolean {
-        return RecoveryReminderBottomSheetDialogFragment.showForRiskAction(parentFragmentManager)
+    private fun showRecoveryReminderForRiskAction(onContinue: (() -> Unit)? = null): Boolean {
+        return RecoveryReminderBottomSheetDialogFragment.showForRiskAction(parentFragmentManager, onContinue)
     }
 
     override fun <T> onNormalItemClick(item: T) {

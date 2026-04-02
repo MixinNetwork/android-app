@@ -338,7 +338,11 @@ class ExploreFragment : BaseFragment() {
                     )
                 }
                 INTERNAL_SWAP_ID -> {
-                    if (!RecoveryReminderBottomSheetDialogFragment.showForRiskAction(parentFragmentManager)) {
+                    val shown = RecoveryReminderBottomSheetDialogFragment.showForRiskAction(parentFragmentManager) {
+                        AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, AnalyticsTracker.TradeSource.EXPLORE)
+                        SwapActivity.show(requireActivity(), null, null, null, null)
+                    }
+                    if (!shown) {
                         AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, AnalyticsTracker.TradeSource.EXPLORE)
                         SwapActivity.show(requireActivity(), null, null, null, null)
                     }

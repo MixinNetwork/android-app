@@ -128,9 +128,15 @@ class SettingActivity : ThemeActivity() {
             }
             intent.getBooleanExtra(EXTRA_EMERGENCY_CONTACT, false) -> {
                 if (Session.isAnonymous() && !Session.saltExported()) {
-                    replaceFragment(RecoveryFragment.newInstance(), R.id.container, RecoveryFragment.TAG)
-                    binding.root.post {
-                        RecoveryReminderBottomSheetDialogFragment.showForRiskAction(supportFragmentManager)
+                    if (RecoveryReminderBottomSheetDialogFragment.shouldShowOnRiskAction()) {
+                        replaceFragment(RecoveryFragment.newInstance(), R.id.container, RecoveryFragment.TAG)
+                        binding.root.post {
+                            RecoveryReminderBottomSheetDialogFragment.showForRiskAction(supportFragmentManager) {
+                                replaceFragment(EmergencyContactFragment.newInstance(), R.id.container, EmergencyContactFragment.TAG)
+                            }
+                        }
+                    } else {
+                        replaceFragment(EmergencyContactFragment.newInstance(), R.id.container, EmergencyContactFragment.TAG)
                     }
                 } else {
                     replaceFragment(EmergencyContactFragment.newInstance(), R.id.container, EmergencyContactFragment.TAG)

@@ -219,7 +219,33 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                         val chain = web3ViewModel.web3TokenItemById(token.walletId, token.chainId)
                         val wallet = web3ViewModel.findWalletById(token.walletId)
                         if (showImportKeyReminderIfNeeded(wallet?.toWeb3Wallet())) return@launch
-                        if (showRecoveryReminderForRiskAction()) return@launch
+                        if (
+                            showRecoveryReminderForRiskAction {
+                                lifecycleScope.launch {
+                                    val chainResume = web3ViewModel.web3TokenItemById(token.walletId, token.chainId)
+                                    val walletResume = web3ViewModel.findWalletById(token.walletId)
+                                    if (showImportKeyReminderIfNeeded(walletResume?.toWeb3Wallet())) return@launch
+                                    if (chainResume == null) {
+                                        refreshToken(token.chainId)
+                                        toast(R.string.Please_wait_a_bit)
+                                    } else {
+                                        requireView().navigate(
+                                            R.id.action_web3_transactions_to_transfer_destination,
+                                            Bundle().apply {
+                                                address?.let {
+                                                    putString(TransferDestinationInputFragment.ARGS_ADDRESS, it)
+                                                }
+                                                putParcelable(TransferDestinationInputFragment.ARGS_WALLET, walletResume?.toWeb3Wallet())
+                                                putParcelable(TransferDestinationInputFragment.ARGS_WEB3_TOKEN, token)
+                                                putParcelable(TransferDestinationInputFragment.ARGS_CHAIN_TOKEN, chainResume)
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        ) {
+                            return@launch
+                        }
                         if (chain == null) {
                             refreshToken(token.chainId)
                             toast(R.string.Please_wait_a_bit)
@@ -242,7 +268,25 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                     lifecycleScope.launch {
                         val wallet = web3ViewModel.findWalletById(token.walletId)
                         if (showImportKeyReminderIfNeeded(wallet?.toWeb3Wallet())) return@launch
-                        if (showRecoveryReminderForRiskAction()) return@launch
+                        if (
+                            showRecoveryReminderForRiskAction {
+                                lifecycleScope.launch {
+                                    val walletResume = web3ViewModel.findWalletById(token.walletId)
+                                    if (showImportKeyReminderIfNeeded(walletResume?.toWeb3Wallet())) return@launch
+                                    requireView().navigate(
+                                        R.id.action_web3_transactions_to_web3_address,
+                                        Bundle().apply {
+                                            address?.let {
+                                                putString("address", it)
+                                            }
+                                            putParcelable("web3_token", token)
+                                        }
+                                    )
+                                }
+                            }
+                        ) {
+                            return@launch
+                        }
                         requireView().navigate(
                             R.id.action_web3_transactions_to_web3_address,
                             Bundle().apply {
@@ -258,7 +302,25 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                     lifecycleScope.launch {
                         val wallet = web3ViewModel.findWalletById(token.walletId)
                         if (showImportKeyReminderIfNeeded(wallet?.toWeb3Wallet())) return@launch
-                        if (showRecoveryReminderForRiskAction()) return@launch
+                        if (
+                            showRecoveryReminderForRiskAction {
+                                lifecycleScope.launch {
+                                    val walletResume = web3ViewModel.findWalletById(token.walletId)
+                                    if (showImportKeyReminderIfNeeded(walletResume?.toWeb3Wallet())) return@launch
+                                    AnalyticsTracker.trackTradeStart(TradeWallet.WEB3, TradeSource.ASSET_DETAIL)
+                                    requireView().navigate(
+                                        R.id.action_web3_transactions_to_swap,
+                                        Bundle().apply {
+                                            putString(TradeFragment.ARGS_INPUT, token.assetId)
+                                            putBoolean(TradeFragment.ARGS_IN_MIXIN, false)
+                                            putString(TradeFragment.ARGS_WALLET_ID, token.walletId)
+                                        }
+                                    )
+                                }
+                            }
+                        ) {
+                            return@launch
+                        }
                         AnalyticsTracker.trackTradeStart(TradeWallet.WEB3, TradeSource.ASSET_DETAIL)
                         requireView().navigate(
                             R.id.action_web3_transactions_to_swap,
@@ -504,8 +566,8 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
         jobManager.addJobInBackground(RefreshWeb3TokenJob(null, assetId, address))
     }
 
-    private fun showRecoveryReminderForRiskAction(): Boolean {
-        return RecoveryReminderBottomSheetDialogFragment.showForRiskAction(parentFragmentManager)
+    private fun showRecoveryReminderForRiskAction(onContinue: (() -> Unit)? = null): Boolean {
+        return RecoveryReminderBottomSheetDialogFragment.showForRiskAction(parentFragmentManager, onContinue)
     }
 
     private fun showImportKeyReminderIfNeeded(wallet: one.mixin.android.db.web3.vo.Web3Wallet?): Boolean {
