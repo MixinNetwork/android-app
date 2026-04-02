@@ -877,6 +877,38 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             currentGaslessFee != null
     }
 
+    private fun nativeWeb3FeeOption(): NetworkFee? {
+        val nativeToken = chainToken ?: return null
+        val nativeGas = gas ?: return null
+        return NetworkFee(nativeToken.toTokenItem(), nativeGas.toPlainString())
+    }
+
+    private fun web3FeeOptions(): List<NetworkFee> {
+        val options = mutableListOf<NetworkFee>()
+        nativeWeb3FeeOption()?.let(options::add)
+        options.addAll(gaslessFees.filterNot { it.token.assetId == chainToken?.assetId })
+        return options
+    }
+
+    private fun syncSelectedWeb3Fee() {
+        val options = web3FeeOptions()
+        if (options.isEmpty()) {
+            currentGaslessFee = null
+            return
+        }
+        val matchedOption = currentGaslessFee?.token?.assetId?.let { assetId ->
+            options.firstOrNull { it.token.assetId == assetId }
+        }
+        val nextSelection = when {
+            matchedOption != null -> matchedOption
+            !hasManuallySelectedWeb3Fee -> nativeWeb3FeeOption() ?: options.first()
+            else -> options.first()
+        }
+        if (currentGaslessFee != nextSelection) {
+            currentGaslessFee = nextSelection
+        }
+    }
+
     private fun shouldUseGaslessFlow(): Boolean {
         return hasGaslessFeeSelection() &&
             currentGaslessFee?.token?.assetId != chainToken?.assetId
@@ -910,21 +942,23 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     private fun updateWeb3FeeDisplay() {
         val token = web3Token ?: return
         if (binding.loadingProgressBar.isVisible) return
+        val feeOptions = web3FeeOptions()
         if (hasGaslessFeeSelection()) {
             val selectedGaslessFee = currentGaslessFee
             binding.contentTextView.text = selectedGaslessFee?.let {
                 "${it.fee.numberFormat8()} ${it.token.symbol}"
             } ?: ""
             binding.insufficientFeeBalance.text = getString(R.string.insufficient_gas, selectedGaslessFee?.token?.symbol ?: token.getChainSymbolFromName())
-            if (gaslessFees.size > 1) {
+            if (feeOptions.size > 1) {
                 binding.iconImageView.isVisible = true
                 binding.iconImageView.setImageResource(R.drawable.ic_keyboard_arrow_down)
                 binding.infoLinearLayout.setOnClickListener {
                     NetworkFeeBottomSheetDialogFragment.newInstance(
-                        gaslessFees,
+                        ArrayList(feeOptions),
                         currentGaslessFee?.token?.assetId,
                     ).apply {
                         callback = { networkFee ->
+                            hasManuallySelectedWeb3Fee = true
                             currentGaslessFee = networkFee
                             binding.insufficientFeeBalance.isVisible = false
                             dismiss()
@@ -1460,6 +1494,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             refreshGaslessFeeToken(value?.token?.assetId)
         }
     private var gaslessFeeToken: Web3TokenItem? = null
+    private var hasManuallySelectedWeb3Fee = false
 
     private fun refreshFeeTokenExtra(tokenId: String?) = lifecycleScope.launch {
         feeTokensExtra = if (tokenId == null) null
@@ -1730,6 +1765,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 updateUI()
             }
         }
+        syncSelectedWeb3Fee()
         binding.contentTextView.isVisible = true
         binding.loadingProgressBar.isVisible = false
         updateWeb3FeeDisplay()
@@ -1759,18 +1795,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         val feeItems = response.data!!.fees.mapNotNull { estimate ->
             val asset = web3ViewModel.findOrSyncAsset(estimate.assetId) ?: return@mapNotNull null
             NetworkFee(asset, estimate.amount)
-        }
+        }.filterNot { it.token.assetId == chainToken?.assetId }
         gaslessFees.clear()
         gaslessFees.addAll(feeItems)
-        if (gaslessFees.isEmpty()) {
-            currentGaslessFee = null
-            return
-        }
-        if (currentGaslessFee?.token?.assetId !in gaslessFees.map { it.token.assetId }) {
-            currentGaslessFee = gaslessFees.first()
-        } else {
-            refreshGaslessFeeToken(currentGaslessFee?.token?.assetId)
-        }
+        syncSelectedWeb3Fee()
         updateWeb3FeeDisplay()
         updateUI()
     }
