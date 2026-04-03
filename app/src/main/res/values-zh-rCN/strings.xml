@@ -1765,6 +1765,7 @@
     <string name="red_up_green_down">红涨绿跌</string>
     <string name="green_up_red_down">绿涨红跌</string>
     <string name="Alert">价格预警</string>
+    <string name="Add_Alert">添加价格预警</string>
     <string name="Edit_Alert">编辑价格预警</string>
     <string name="NO_ALERTS">没有价格预警</string>
     <string name="Current_price">当前价格：%1$s</string>
@@ -1809,7 +1810,7 @@
     <string name="error_decrease_too_high">跌幅不能超过-99.99%。</string>
     <string name="error_decrease_too_low">跌幅必须至少为-0.01%。</string>
     <string name="Alert_Not_Support">暂不支持</string>
-    <string name="All_Alert">所有价格预警</string>
+    <string name="Price_Alerts">价格预警</string>
     <string name="Trending_Dapps">热门 app</string>
     <string name="Paste">粘贴</string>
     <string name="or">或者</string>
