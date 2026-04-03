@@ -16,6 +16,7 @@ import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.session.Session
 import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
+import one.mixin.android.ui.home.reminder.VerifyMobileReminderBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.App
 import one.mixin.android.widget.theme.ThemeActivity
@@ -127,7 +128,15 @@ class SettingActivity : ThemeActivity() {
                 replaceFragment(MnemonicPhraseBackupFragment.newInstance(), R.id.container, MnemonicPhraseBackupFragment.TAG)
             }
             intent.getBooleanExtra(EXTRA_EMERGENCY_CONTACT, false) -> {
-                if (Session.isAnonymous() && !Session.saltExported()) {
+                if (!Session.hasPhone()) {
+                    replaceFragment(RecoveryFragment.newInstance(), R.id.container, RecoveryFragment.TAG)
+                    binding.root.post {
+                        VerifyMobileReminderBottomSheetDialogFragment.showSafely(
+                            supportFragmentManager,
+                            enableSnooze = false,
+                        )
+                    }
+                } else if (Session.isAnonymous() && !Session.saltExported()) {
                     if (RecoveryReminderBottomSheetDialogFragment.shouldShowOnRiskAction()) {
                         replaceFragment(RecoveryFragment.newInstance(), R.id.container, RecoveryFragment.TAG)
                         binding.root.post {

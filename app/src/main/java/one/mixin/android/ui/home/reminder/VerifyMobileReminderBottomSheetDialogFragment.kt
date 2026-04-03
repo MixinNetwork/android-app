@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.fragment.app.FragmentManager
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -21,6 +22,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navTo
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.session.Session
@@ -37,13 +39,14 @@ class VerifyMobileReminderBottomSheetDialogFragment : MixinComposeBottomSheetDia
     companion object {
         const val TAG: String = "VerifyMobileReminderBottomSheetDialogFragment"
         private const val PREF_VERIFY_MOBILE_REMINDER_SNOOZE = "pref_verify_mobile_reminder_snooze"
+        private const val PREF_VERIFY_MOBILE_REMINDER_DEBUG_ALLOW_ONCE = "pref_verify_mobile_reminder_debug_allow_once"
         private const val ARGS_ENABLE_SNOOZE = "args_enable_snooze"
 
         @Volatile
         private var isShowing = false
 
         fun showSafely(
-            fragmentManager: androidx.fragment.app.FragmentManager,
+            fragmentManager: FragmentManager,
             enableSnooze: Boolean = true,
         ): Boolean {
             if (isShowing) return false
@@ -68,7 +71,12 @@ class VerifyMobileReminderBottomSheetDialogFragment : MixinComposeBottomSheetDia
             }
         }
 
+        fun allowDebugShowOnce(context: Context) {
+            context.defaultSharedPreferences.putBoolean(PREF_VERIFY_MOBILE_REMINDER_DEBUG_ALLOW_ONCE, true)
+        }
+
         fun shouldShow(context: Context): Boolean {
+            if (consumeDebugShowOnce(context)) return true
             val account = Session.getAccount() ?: return false
             if (Session.hasPhone().not()) return false
             val lastSnoozeTimeMillis = context.defaultSharedPreferences.getLong(PREF_VERIFY_MOBILE_REMINDER_SNOOZE, 0)
@@ -90,6 +98,13 @@ class VerifyMobileReminderBottomSheetDialogFragment : MixinComposeBottomSheetDia
                 Instant.parse(phoneVerifiedAt).toEpochMilli()
             }.getOrNull() ?: return true
             return System.currentTimeMillis() - verifiedAtMillis > Constants.INTERVAL_60_DAYS
+        }
+
+        private fun consumeDebugShowOnce(context: Context): Boolean {
+            val shouldShow = context.defaultSharedPreferences.getBoolean(PREF_VERIFY_MOBILE_REMINDER_DEBUG_ALLOW_ONCE, false)
+            if (!shouldShow) return false
+            context.defaultSharedPreferences.putBoolean(PREF_VERIFY_MOBILE_REMINDER_DEBUG_ALLOW_ONCE, false)
+            return true
         }
     }
 

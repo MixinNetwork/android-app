@@ -76,7 +76,7 @@ fun ReminderPage(
             )
         }
         Column(
-            modifier = Modifier.padding(horizontal = 20.dp),
+            modifier = Modifier.padding(horizontal = 30.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(42.dp))
@@ -126,8 +126,7 @@ fun ReminderPage(
 fun ReminderItem(title: String, description: String, checked: Boolean) {
     Row(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 12.dp),
+            .fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {

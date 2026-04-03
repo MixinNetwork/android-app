@@ -7,11 +7,14 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentManager
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
@@ -23,6 +26,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.openUrl
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.session.Session
@@ -30,7 +34,6 @@ import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.util.SystemUIManager
-import timber.log.Timber
 
 @AndroidEntryPoint
 class RecoveryReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
@@ -38,6 +41,7 @@ class RecoveryReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
     companion object {
         const val TAG: String = "RecoveryReminderBottomSheetDialogFragment"
         private const val PREF_RECOVERY_REMINDER_SNOOZE = "pref_recovery_reminder_snooze"
+        private const val PREF_RECOVERY_REMINDER_DEBUG_ALLOW_ONCE = "pref_recovery_reminder_debug_allow_once"
         private const val ARGS_ENABLE_SNOOZE = "args_enable_snooze"
         private const val ARGS_CONTINUE_ON_DISMISS = "args_continue_on_dismiss"
         private const val ARGS_DISMISS_TEXT = "args_dismiss_text"
@@ -74,11 +78,20 @@ class RecoveryReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
             )
         }
 
-        fun shouldShowOnHome(): Boolean = RecoveryReminderState.shouldShowOnHome()
+        fun allowDebugShowOnce(
+            context: Context,
+            allow: Boolean = true,
+        ) {
+            context.defaultSharedPreferences.putBoolean(PREF_RECOVERY_REMINDER_DEBUG_ALLOW_ONCE, allow)
+        }
 
+        fun snoozeFromNow(context: Context) {
+            context.defaultSharedPreferences.putLong(
+                PREF_RECOVERY_REMINDER_SNOOZE,
+                System.currentTimeMillis(),
+            )
+        }
         fun shouldShowOnRiskAction(): Boolean = RecoveryReminderState.shouldShowOnRiskAction()
-
-        fun shouldShowOnLogout(): Boolean = RecoveryReminderState.shouldShowOnLogout()
 
         private fun showSafely(
             fragmentManager: FragmentManager,
@@ -124,6 +137,7 @@ class RecoveryReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
             }
 
             fun shouldShowOnHome(context: Context = MixinApplication.appContext): Boolean {
+                if (consumeDebugShowOnce(context)) return true
                 if (recoveryMethodCount() != 1) return false
                 return isSnoozeExpired(context)
             }
@@ -139,6 +153,13 @@ class RecoveryReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
             private fun isSnoozeExpired(context: Context): Boolean {
                 val lastSnoozeTimeMillis = context.defaultSharedPreferences.getLong(PREF_RECOVERY_REMINDER_SNOOZE, 0)
                 return System.currentTimeMillis() - lastSnoozeTimeMillis >= Constants.INTERVAL_7_DAYS
+            }
+
+            private fun consumeDebugShowOnce(context: Context): Boolean {
+                val shouldShow = context.defaultSharedPreferences.getBoolean(PREF_RECOVERY_REMINDER_DEBUG_ALLOW_ONCE, false)
+                if (!shouldShow) return false
+                context.defaultSharedPreferences.putBoolean(PREF_RECOVERY_REMINDER_DEBUG_ALLOW_ONCE, false)
+                return true
             }
         }
     }
@@ -233,11 +254,13 @@ class RecoveryReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
                             if (Session.hasPhone()) stringResource(R.string.Added) else stringResource(R.string.Not_Added),
                             checked = Session.hasPhone()
                         )
+                        Spacer(modifier = Modifier.height(12.dp))
                         ReminderItem(
                             stringResource(R.string.Mnemonic_Phrase),
                             if (Session.saltExported()) stringResource(R.string.Backed_Up) else stringResource(R.string.Backup),
                             checked = Session.saltExported()
                         )
+                        Spacer(modifier = Modifier.height(12.dp))
                         ReminderItem(
                             stringResource(R.string.Recovery_Contact),
                             if (Session.hasEmergencyContact()) stringResource(R.string.Added) else stringResource(R.string.Not_Added),
