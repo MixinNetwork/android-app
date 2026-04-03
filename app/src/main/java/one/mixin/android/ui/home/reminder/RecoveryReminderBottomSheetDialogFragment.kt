@@ -12,8 +12,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.fragment.app.FragmentManager
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.booleanFromAttribute
@@ -44,13 +46,13 @@ class RecoveryReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
         private var isShowing = false
         private var pendingOnDismissContinueAction: (() -> Unit)? = null
 
-        fun showForHome(fragmentManager: androidx.fragment.app.FragmentManager): Boolean {
+        fun showForHome(fragmentManager: FragmentManager): Boolean {
             if (!RecoveryReminderState.shouldShowOnHome()) return false
             return showSafely(fragmentManager, enableSnooze = true, continueOnDismiss = false)
         }
 
         fun showForRiskAction(
-            fragmentManager: androidx.fragment.app.FragmentManager,
+            fragmentManager: FragmentManager,
             onContinue: (() -> Unit)? = null,
         ): Boolean {
             if (!RecoveryReminderState.shouldShowOnRiskAction()) return false
@@ -62,7 +64,7 @@ class RecoveryReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
             )
         }
 
-        fun showForLogout(fragmentManager: androidx.fragment.app.FragmentManager): Boolean {
+        fun showForLogout(fragmentManager: FragmentManager): Boolean {
             if (!RecoveryReminderState.shouldShowOnLogout()) return false
             return showSafely(
                 fragmentManager,
@@ -79,7 +81,7 @@ class RecoveryReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
         fun shouldShowOnLogout(): Boolean = RecoveryReminderState.shouldShowOnLogout()
 
         private fun showSafely(
-            fragmentManager: androidx.fragment.app.FragmentManager,
+            fragmentManager: FragmentManager,
             enableSnooze: Boolean,
             continueOnDismiss: Boolean,
             dismissTextRes: Int = R.string.Not_Now,
@@ -121,16 +123,16 @@ class RecoveryReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
                 return count
             }
 
-            fun shouldShowOnHome(context: Context = one.mixin.android.MixinApplication.appContext): Boolean {
+            fun shouldShowOnHome(context: Context = MixinApplication.appContext): Boolean {
                 if (recoveryMethodCount() != 1) return false
                 return isSnoozeExpired(context)
             }
 
-            fun shouldShowOnRiskAction(context: Context = one.mixin.android.MixinApplication.appContext): Boolean {
+            fun shouldShowOnRiskAction(context: Context = MixinApplication.appContext): Boolean {
                 return recoveryMethodCount() == 0
             }
 
-            fun shouldShowOnLogout(context: Context = one.mixin.android.MixinApplication.appContext): Boolean {
+            fun shouldShowOnLogout(context: Context = MixinApplication.appContext): Boolean {
                 return recoveryMethodCount() == 0
             }
 

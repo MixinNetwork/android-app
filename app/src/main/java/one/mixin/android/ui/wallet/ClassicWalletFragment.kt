@@ -31,6 +31,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentPrivacyWalletBinding
 import one.mixin.android.databinding.ViewWalletFragmentHeaderBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.db.web3.vo.toWeb3Wallet
 import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.db.web3.vo.isWatch
@@ -572,7 +573,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         return RecoveryReminderBottomSheetDialogFragment.showForRiskAction(parentFragmentManager, onContinue)
     }
 
-    private fun showImportKeyReminderIfNeeded(wallet: one.mixin.android.db.web3.vo.Web3Wallet?, chainId: String?): Boolean {
+    private fun showImportKeyReminderIfNeeded(wallet: Web3Wallet?, chainId: String?): Boolean {
         if (wallet?.isImported() != true || wallet.hasLocalPrivateKey) return false
         ImportKeyBottomSheetDialogFragment.newInstance(
             if (wallet.category == WalletCategory.IMPORTED_MNEMONIC.value) {

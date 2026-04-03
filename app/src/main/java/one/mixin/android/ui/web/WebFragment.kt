@@ -150,6 +150,7 @@ import one.mixin.android.ui.home.web3.showGasCheckAndBrowserBottomSheetDialogFra
 import one.mixin.android.ui.player.MusicActivity
 import one.mixin.android.ui.player.MusicService
 import one.mixin.android.ui.player.MusicService.Companion.MUSIC_PLAYLIST
+import one.mixin.android.ui.player.collapse as collapsePlayer
 import one.mixin.android.ui.qr.QRCodeProcessor
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.setting.SettingActivity.Companion.ARGS_SUCCESS
@@ -1034,7 +1035,7 @@ class WebFragment : BaseFragment() {
 
             MusicService.playUrls(requireContext(), playlist)
             if (checkFloatingPermission()) {
-                one.mixin.android.ui.player.collapse(MUSIC_PLAYLIST)
+                collapsePlayer(MUSIC_PLAYLIST)
             } else {
                 requireActivity().showPipPermissionNotification(
                     MusicActivity::class.java,

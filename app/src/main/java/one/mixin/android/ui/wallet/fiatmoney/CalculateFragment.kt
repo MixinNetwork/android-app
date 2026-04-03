@@ -38,6 +38,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
 import one.mixin.android.ui.home.reminder.VerifyMobileReminderBottomSheetDialogFragment
 import one.mixin.android.ui.setting.Currency
@@ -73,7 +74,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
 
     private val binding by viewBinding(FragmentCalculateBinding::bind)
     private val fiatMoneyViewModel by viewModels<FiatMoneyViewModel>()
-    private val web3ViewModel by viewModels<one.mixin.android.ui.home.web3.Web3ViewModel>()
+    private val web3ViewModel by viewModels<Web3ViewModel>()
 
     private val isWeb3 by lazy { requireArguments().getBoolean(ARGS_IS_WEB3, false) }
     private val buySource by lazy {

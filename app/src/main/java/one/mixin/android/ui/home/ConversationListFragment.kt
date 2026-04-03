@@ -764,10 +764,11 @@ class ConversationListFragment : LinkFragment() {
                 if (parentFragmentManager.findFragmentByTag(VerifyMobileReminderBottomSheetDialogFragment.TAG) != null) return@launch
                 if (parentFragmentManager.findFragmentByTag(RecoveryReminderBottomSheetDialogFragment.TAG) != null) return@launch
                 if (VerifyMobileReminderBottomSheetDialogFragment.shouldShow(requireContext())) {
-                    VerifyMobileReminderBottomSheetDialogFragment.showSafely(
+                    if (VerifyMobileReminderBottomSheetDialogFragment.showSafely(
                         parentFragmentManager,
-                    )
-                    return@launch
+                    )) {
+                        return@launch
+                    }
                 }
                 if (RecoveryReminderBottomSheetDialogFragment.showForHome(parentFragmentManager)) {
                     return@launch

@@ -47,6 +47,7 @@ import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.TransactionResponse
+import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.api.response.getTransactionResult
 import one.mixin.android.api.response.signature.SignatureAction
 import one.mixin.android.api.response.web3.ParsedTx
@@ -2041,7 +2042,7 @@ class BottomSheetViewModel
 
         suspend fun getReferralCodeInfo(code: String) = userRepository.getReferralCodeInfo(code)
 
-        suspend fun getPerpsMarket(marketId: String): one.mixin.android.api.response.perps.PerpsMarket? = withContext(Dispatchers.IO) {
+        suspend fun getPerpsMarket(marketId: String): PerpsMarket? = withContext(Dispatchers.IO) {
             val response = web3Repository.routeService.getPerpsMarket(marketId)
             response.data
         }
