@@ -35,6 +35,7 @@ import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.repository.Web3Repository
+import one.mixin.android.tip.bip44.Bip44Path
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.common.biometric.BiometricLayout
@@ -263,7 +264,7 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
                     Web3AddressRequest(
                         destination = btcAddress,
                         chainId = BITCOIN_CHAIN_ID,
-                        path = one.mixin.android.tip.bip44.Bip44Path.bitcoinSegwitPathString(derivationIndex),
+                        path = Bip44Path.bitcoinSegwitPathString(derivationIndex),
                         signature = signature,
                         timestamp = now.toString(),
                     ),

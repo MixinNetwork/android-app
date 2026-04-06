@@ -7,14 +7,17 @@ import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentComposeBinding
 import one.mixin.android.extension.navTo
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
+import one.mixin.android.ui.home.reminder.VerifyMobileReminderBottomSheetDialogFragment
 import one.mixin.android.ui.setting.ui.page.RecoveryKitPage
 import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
 class RecoveryFragment : BaseFragment(R.layout.fragment_compose) {
     companion object {
-        const val TAG: String = "MnemonicPhraseFragment"
+        const val TAG: String = "RecoveryFragment"
 
         fun newInstance(
         ): RecoveryFragment =
@@ -38,7 +41,18 @@ class RecoveryFragment : BaseFragment(R.layout.fragment_compose) {
                 }, {
                     navTo(MnemonicPhraseBackupFragment.newInstance(), MnemonicPhraseBackupFragment.TAG)
                 }, {
-                    navTo(EmergencyContactFragment.newInstance(), EmergencyContactFragment.TAG)
+                    if (!Session.hasPhone()) {
+                        VerifyMobileReminderBottomSheetDialogFragment.showSafely(parentFragmentManager, enableSnooze = false)
+                    } else if (Session.isAnonymous() && !Session.saltExported()) {
+                        val shown = RecoveryReminderBottomSheetDialogFragment.showForRiskAction(parentFragmentManager) {
+                            navTo(EmergencyContactFragment.newInstance(), EmergencyContactFragment.TAG)
+                        }
+                        if (!shown) {
+                            navTo(EmergencyContactFragment.newInstance(), EmergencyContactFragment.TAG)
+                        }
+                    } else {
+                        navTo(EmergencyContactFragment.newInstance(), EmergencyContactFragment.TAG)
+                    }
                 })
         }
     }

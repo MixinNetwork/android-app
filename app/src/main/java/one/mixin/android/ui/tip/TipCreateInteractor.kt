@@ -9,6 +9,7 @@ import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.BTC_ADDRESS
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
+import one.mixin.android.Constants.DEVICE_ID
 import one.mixin.android.Constants.INTERVAL_10_MINS
 import one.mixin.android.R
 import one.mixin.android.api.request.RegisterRequest
@@ -62,7 +63,7 @@ class TipCreateInteractor @Inject internal constructor(
         onStepChanged: (TipStep) -> Unit,
         onShowMessage: (String) -> Unit,
     ): Boolean {
-        val deviceId: String = requireNotNull(context.defaultSharedPreferences.getString(one.mixin.android.Constants.DEVICE_ID, null)) { "required deviceId can not be null" }
+        val deviceId: String = requireNotNull(context.defaultSharedPreferences.getString(DEVICE_ID, null)) { "required deviceId can not be null" }
         val tipCounter = Session.getTipCounter()
         if (tipCounter >= 1) {
             onShowMessage("tip create only: tipCounter=$tipCounter")
