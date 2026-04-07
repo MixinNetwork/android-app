@@ -1507,10 +1507,6 @@
     <string name="Transfer_confirmation_desc">Please check the payee, network and amount carefully. If you make a mistake, the asset will not be recovered!</string>
     <string name="Withdrawal_confirmation_desc">Please check the collection address, network and amount carefully. If you make a mistake, the asset will not be recovered!</string>
     <string name="Not_Now">Not Now</string>
-    <string name="Verify_Mobile_Number">Verify Mobile Number</string>
-    <string name="Verify_Mobile_Number_Security_Desc">For compliance and security reasons, we need to verify your mobile number.</string>
-    <string name="Verify_Mobile_Number_Desc">Regular SMS verification helps improve account security. If your current mobile number is no longer active, please update it as soon as possible.</string>
-    <string name="Verify_Now">Verify Now</string>
     <string name="Enable">Enable</string>
     <string name="enable_biometric_description">Once enabled, you can speed up authentication with biometrics.</string>
     <string name="return_to_merchant_description">Merchant payment is complete. You can opt to return to the merchant or stay in Mixin.</string>
@@ -1815,6 +1811,7 @@
     <string name="red_up_green_down">Red Up / Green Down</string>
     <string name="green_up_red_down">Green Up / Red Down</string>
     <string name="Alert">Alert</string>
+    <string name="Add_Alert">Add Alert</string>
     <string name="Edit_Alert">Edit Alert</string>
     <string name="NO_ALERTS">NO ALERTS</string>
     <string name="Current_price">Current price: %1$s</string>
@@ -1859,7 +1856,7 @@
     <string name="error_decrease_too_high">The decrease percentage cannot exceed -99.99%.</string>
     <string name="error_decrease_too_low">The decrease percentage must be at least -0.01%.</string>
     <string name="Alert_Not_Support">Not Supported</string>
-    <string name="All_Alert">All Alerts</string>
+    <string name="Price_Alerts">Price Alerts</string>
     <string name="Trending_Dapps">Trending Apps</string>
     <string name="Paste">Paste</string>
     <string name="or">or</string>
@@ -1901,6 +1898,7 @@
     <string name="Recovery_Kit">Recovery Kit</string>
     <string name="Recovery_Kit_instruction">The MPC wallet in Mixin is built on the decentralized key protocol TIP. You can recover your account through your phone number, mnemonic phrase, or a trusted contact. The complete wallet key exists only in the TEE security environment on the current device. Read the documentation to learn %1$s.</string>
     <string name="Recovery_Kit_Attention">Attention: The Recovery Kit cannot help you recover your PIN</string>
+    <string name="recovery_kit_help_url">https://support.mixin.one/en/article/what-is-the-recovery-kit-162wv1w</string>
     <string name="Mobile_Number">Mobile Number</string>
     <string name="Recovery_Contact">Recovery Contact</string>
     <string name="Set_up">Set up</string>
@@ -1921,7 +1919,13 @@
     <string name="mnemonic_phrase_tip_2">· Do not post it online</string>
     <string name="mnemonic_phrase_take_long">This shouldn\'t take long.</string>
     <string name="Backup_Now">Start Backup</string>
-    <string name="Backup_Mnemonic_Phrase_desc">Protect your assets by backing up your mnemonic phrase now.</string>
+    <string name="Recovery_Kit_Alert">For your account security, please back up your recovery phrase, add a phone number, and set a recovery contact as soon as possible. See the documentation for more information.</string>
+    <string name="verify_mobile_reminder_title">Add Mobile Number</string>
+    <string name="verify_mobile_reminder_desc">Add your mobile number to set up a recovery contact.</string>
+    <string name="verify_mobile_reminder_action">Add Now</string>
+    <string name="Verify_Mobile_Number">Verify Mobile Number</string>
+    <string name="Verify_Mobile_Number_Desc">Regular SMS verification helps improve account security. If your current mobile number is no longer active, please update it as soon as possible.</string>
+    <string name="Verify_Now">Verify Now</string>
     <string name="Backup_Mnemonic_Phrase_Warning">Please back up your mnemonic phrase immediately! This phrase is one of the key shards of the MPC wallet. If the device is lost or the app is uninstalled, and you haven\'t backed it up, you won\'t be able to log back into the current Mixin account (%1$s).</string>
     <string name="Add_Phone_desc">You can log in to your account using your mobile number. The mobile number will be associated with a key shard of your MPC wallet. The complete key exists only in the TEE security environment on the current device. Read the documentation to learn more about %1$s.</string>
     <string name="Change_Phone_desc">You can log in to your account using your mobile number. The current mobile number (%1$s) is associated with a key shard of your MPC wallet. The complete key exists only in the TEE security environment on the current device. Read the documentation to learn more about %2$s.</string>
@@ -2034,6 +2038,10 @@
     <string name="total_balance_tip">Hidden assets are not included in the statistics.</string>
     <string name="Delete_Web3_Transactions">Delete Web3 Transaction Data</string>
     <string name="Delete_Web3_Transactions_Confirmation">Are you sure you want to delete all Web3 transaction data? This action cannot be undone. The data will be re-synchronized after deletion.</string>
+    <string name="Preview_Verify_Mobile_Reminder">Preview verify mobile reminder</string>
+    <string name="Preview_Recovery_Reminder">Preview recovery reminder</string>
+    <string name="Verify_Mobile_Reminder_Will_Show_Once">Verify mobile reminder will show once</string>
+    <string name="Recovery_Reminder_Will_Show_Once">Recovery reminder will show once</string>
     <string name="Web3_Transactions_Deleted">Web3 transaction data has been deleted and will be re-synchronized</string>
     <string name="Delete_Failed">Delete failed: %1$s</string>
     <string name="Whats_Privacy_Wallet">What\'s the Privacy Wallet?</string>
@@ -2447,4 +2455,5 @@
     <string name="mixin_import_safety_3">Mixin never accesses your private information or shares it with third parties.</string>
     <string name="Spot_Trade_Guide_You_Receive">You Receive</string>
     <string name="Opening">Opening</string>
+    <string name="Not_Added">Not Added</string>
 </resources>

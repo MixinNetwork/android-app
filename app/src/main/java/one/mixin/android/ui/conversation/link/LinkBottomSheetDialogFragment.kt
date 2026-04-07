@@ -87,6 +87,7 @@ import one.mixin.android.ui.home.web3.GasCheckBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.PREF_TRADE_SELECTED_TAB_PREFIX
 import one.mixin.android.ui.home.web3.trade.perps.PerpsActivity
+import one.mixin.android.ui.common.BottomSheetViewModel as CommonBottomSheetViewModel
 import one.mixin.android.ui.oldwallet.BottomSheetViewModel
 import one.mixin.android.ui.oldwallet.MultisigsBottomSheetDialogFragment
 import one.mixin.android.ui.oldwallet.NftBottomSheetDialogFragment
@@ -165,7 +166,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
 
     private val oldLinkViewModel by viewModels<BottomSheetViewModel>()
 
-    val linkViewModel by viewModels<one.mixin.android.ui.common.BottomSheetViewModel>()
+    val linkViewModel by viewModels<CommonBottomSheetViewModel>()
 
     private val binding by viewBinding(FragmentBottomSheetBinding::inflate)
 
@@ -885,7 +886,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                     }
                 }
             }
-        } else if (url.startsWith(Scheme.SEND, true) || url.startsWith(Scheme.MIXIN_SEND, true) || url.startsWith(one.mixin.android.Constants.Scheme.HTTPS_SEND)) {
+        } else if (url.startsWith(Scheme.SEND, true) || url.startsWith(Scheme.MIXIN_SEND, true) || url.startsWith(Scheme.HTTPS_SEND)) {
             val uri = Uri.parse(url)
             lifecycleScope.launch(errorHandler) {
                 val userId = uri.getQueryParameter("user")

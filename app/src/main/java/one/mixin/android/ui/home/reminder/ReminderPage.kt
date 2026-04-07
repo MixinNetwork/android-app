@@ -5,8 +5,10 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -15,6 +17,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -26,14 +29,24 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
-
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 
 @Composable
-fun ReminderPage(@DrawableRes contentImage: Int, @StringRes title: Int, @StringRes content: Int, @StringRes actionStr: Int, action: () -> Unit, dismiss: () -> Unit) {
+fun ReminderPage(
+    @DrawableRes contentImage: Int,
+    @StringRes title: Int,
+    @StringRes actionStr: Int,
+    @StringRes dismissStr: Int = R.string.Not_Now,
+    action: () -> Unit,
+    dismiss: () -> Unit,
+    contentSlot: @Composable () -> Unit,
+    extraContent: (@Composable () -> Unit)? = null,
+) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier
             .clip(RoundedCornerShape(topEnd = 12.dp, topStart = 12.dp))
@@ -59,12 +72,11 @@ fun ReminderPage(@DrawableRes contentImage: Int, @StringRes title: Int, @StringR
             Image(
                 painter = painterResource(id = contentImage),
                 contentDescription = null,
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
+                modifier = Modifier.align(Alignment.BottomCenter)
             )
         }
         Column(
-            modifier = Modifier.padding(horizontal = 20.dp),
+            modifier = Modifier.padding(horizontal = 30.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(42.dp))
@@ -72,48 +84,91 @@ fun ReminderPage(@DrawableRes contentImage: Int, @StringRes title: Int, @StringR
                 stringResource(title), color = MixinAppTheme.colors.textPrimary, fontSize = 22.sp, fontWeight = FontWeight.W600
             )
             Spacer(modifier = Modifier.height(10.dp))
-            Text(
-                text = stringResource(content),
-                color = MixinAppTheme.colors.textAssist,
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(50.dp))
+            contentSlot()
+            if (extraContent != null) {
+                Spacer(modifier = Modifier.height(20.dp))
+                extraContent()
+            }
+            Spacer(modifier = Modifier.height(20.dp))
             Button(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp),
                 onClick = action,
-                colors =
-                    ButtonDefaults.outlinedButtonColors(
-                        backgroundColor = MixinAppTheme.colors.accent
-                    ),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    backgroundColor = MixinAppTheme.colors.accent
+                ),
                 shape = RoundedCornerShape(32.dp),
-                elevation =
-                    ButtonDefaults.elevation(
-                        pressedElevation = 0.dp,
-                        defaultElevation = 0.dp,
-                        hoveredElevation = 0.dp,
-                        focusedElevation = 0.dp,
-                    ),
+                elevation = ButtonDefaults.elevation(
+                    pressedElevation = 0.dp,
+                    defaultElevation = 0.dp,
+                    hoveredElevation = 0.dp,
+                    focusedElevation = 0.dp,
+                ),
             ) {
-                Text(
-                    text = stringResource(actionStr),
-                    color = Color.White
-                )
+                Text(text = stringResource(actionStr), color = Color.White)
             }
             Spacer(modifier = Modifier.height(18.dp))
             Text(
                 modifier = Modifier
                     .padding(8.dp)
                     .align(Alignment.CenterHorizontally)
-                    .clickable {
-                        dismiss.invoke()
-                    },
-                text = stringResource(R.string.Not_Now),
+                    .clickable { dismiss.invoke() },
+                text = stringResource(dismissStr),
                 color = MixinAppTheme.colors.textBlue
             )
             Spacer(modifier = Modifier.height(20.dp))
         }
+    }
+}
+
+@Composable
+fun ReminderItem(title: String, description: String, checked: Boolean) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                tint = Color.Unspecified,
+                contentDescription = null,
+                painter = painterResource(if (checked) R.drawable.ic_check_circle_filled else R.drawable.ic_check_circle_empty),
+                modifier = Modifier.padding(end = 10.dp)
+            )
+            Text(title, fontSize = 16.sp, color = MixinAppTheme.colors.textMinor)
+        }
+        Text(description, fontSize = 15.sp, color = MixinAppTheme.colors.textAssist)
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ReminderPagePreview() {
+    MixinAppTheme {
+        ReminderPage(
+            contentImage = R.drawable.bg_recovery_kit,
+            title = R.string.Recovery_Kit,
+            actionStr = R.string.Continue,
+            dismissStr = R.string.Not_Now,
+            action = {},
+            dismiss = {},
+            contentSlot = {
+                HighlightedTextWithClick(
+                    fullText = stringResource(R.string.Recovery_Kit_Alert),
+                    modifier = Modifier.fillMaxWidth(),
+                    stringResource(R.string.More_Information),
+                    onTextClick = {}
+                )
+            },
+            extraContent = {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    ReminderItem(stringResource(R.string.Mobile_Number), stringResource(R.string.Added), checked = true)
+                    ReminderItem(stringResource(R.string.Mnemonic_Phrase), stringResource(R.string.Backup), checked = false)
+                    ReminderItem(stringResource(R.string.Recovery_Contact), stringResource(R.string.Not_Added), checked = false)
+                }
+            }
+        )
     }
 }
