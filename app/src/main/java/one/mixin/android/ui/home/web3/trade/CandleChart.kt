@@ -51,6 +51,7 @@ import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -531,8 +532,8 @@ private fun PerpsCandleChartCanvas(
     items: List<CandleItem>,
     timeFrame: String,
     context: android.content.Context,
-    candleWidth: androidx.compose.ui.unit.Dp,
-    spacing: androidx.compose.ui.unit.Dp,
+    candleWidth: Dp,
+    spacing: Dp,
     touchXOnChart: Float?,
     scrollOffset: Float,
     viewportWidth: Float,

@@ -21,6 +21,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -31,8 +32,8 @@ fun InputAction(
     text: String,
     modifier: Modifier = Modifier,
     showBorder: Boolean = true,
-    horizontalPadding: androidx.compose.ui.unit.Dp = 20.dp,
-    verticalPadding: androidx.compose.ui.unit.Dp = 6.dp,
+    horizontalPadding: Dp = 20.dp,
+    verticalPadding: Dp = 6.dp,
     fontSize: TextUnit = 14.sp,
     onAction: () -> Unit,
 ) {
