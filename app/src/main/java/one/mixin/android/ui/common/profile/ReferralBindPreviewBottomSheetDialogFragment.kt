@@ -40,6 +40,7 @@ import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.getSafeAreaInsetsBottom
@@ -296,7 +297,7 @@ class ReferralBindPreviewBottomSheetDialogFragment : MixinComposeBottomSheetDial
                     true
                 },
                 requestSession = {
-                    viewModel.fetchSessionsSuspend(listOf(one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID))
+                    viewModel.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID))
                 }
             )
         }

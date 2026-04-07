@@ -91,6 +91,9 @@ fun MnemonicPhraseBackupPinPage(tip: Tip, pop: () -> Unit, next: (String) -> Uni
                     )
             }.onSuccess { response ->
                 if (response.isSuccess) {
+                    response.data?.let {
+                        Session.storeAccount(it)
+                    }
                     next(pinCode)
                 } else {
                     isLoading = false

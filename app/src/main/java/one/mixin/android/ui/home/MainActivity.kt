@@ -151,6 +151,7 @@ import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.circle.ConversationCircleEditFragment
+import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
 import one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.MarketFragment
 import one.mixin.android.ui.landing.InitializeActivity
@@ -861,6 +862,24 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         } else if (intent.hasExtra(TRANSFER)) {
             val userId = intent.getStringExtra(TRANSFER) ?: return
             if (Session.getAccount()?.hasPin == true) {
+                if (
+                    RecoveryReminderBottomSheetDialogFragment.showForRiskAction(supportFragmentManager) {
+                        lifecycleScope.launch {
+                            val user = userRepo.refreshUser(userId) ?: return@launch
+                            val bottom = TokenListBottomSheetDialogFragment.newInstance(TYPE_FROM_TRANSFER)
+                                .apply {
+                                    asyncOnAsset = { selectedAsset ->
+                                        this@MainActivity.defaultSharedPreferences.putString(ASSET_PREFERENCE, selectedAsset.assetId)
+                                        WalletActivity.navigateToWalletActivity(this@MainActivity, buildTransferBiometricItem(user, selectedAsset, "", null, null, null))
+                                    }
+                                }
+                            bottom.show(supportFragmentManager, TokenListBottomSheetDialogFragment.TAG)
+                        }
+                    }
+                ) {
+                    clearCodeAfterConsume(intent, TRANSFER)
+                    return
+                }
                 lifecycleScope.launch {
                     val user = userRepo.refreshUser(userId) ?: return@launch
                     val bottom = TokenListBottomSheetDialogFragment.newInstance(TYPE_FROM_TRANSFER)

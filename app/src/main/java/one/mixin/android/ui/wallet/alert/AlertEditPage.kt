@@ -101,6 +101,7 @@ fun AlertEditPage(
     alert: Alert?,
     onAdd: (CoinItem) -> Unit,
     pop: () -> Unit,
+    onSaved: (Boolean) -> Unit,
     onShowTypeSelector: (AlertType, (AlertType) -> Unit) -> Unit,
     onShowFrequencySelector: (AlertFrequency, (AlertFrequency) -> Unit) -> Unit,
 ) {
@@ -120,7 +121,7 @@ fun AlertEditPage(
             var inputError by remember { mutableStateOf(if (alertValue.toBigDecimalOrNull() == currentPrice && selectedAlertType != AlertType.PRICE_REACHED) InputError.EQUALS_CURRENT_PRICE else null) }
             val viewModel = hiltViewModel<AlertViewModel>()
                 PageScaffold(
-                    title = stringResource(id = if (alert == null) R.string.Alert else R.string.Edit_Alert),
+                    title = stringResource(id = if (alert == null) R.string.Add_Alert else R.string.Edit_Alert),
                     verticalScrollable = false,
                     pop = pop,
                 ) {
@@ -430,7 +431,7 @@ fun AlertEditPage(
                                         )
                                         val re = viewModel.updateAlert(alert.alertId, alertRequest)
                                         if (re?.isSuccess == true) {
-                                            pop.invoke()
+                                            onSaved(false)
                                         }
                                     } else {
                                         val alertRequest = AlertRequest(
@@ -449,7 +450,7 @@ fun AlertEditPage(
                                         val re = viewModel.add(alertRequest)
                                         if (re?.isSuccess == true) {
                                             onAdd.invoke(coin)
-                                            pop.invoke()
+                                            onSaved(true)
                                         }
                                     }
                                     isLoading = false
@@ -476,7 +477,7 @@ fun AlertEditPage(
                                 }
                                 Text(
                                     modifier = Modifier.alpha(if (isLoading) 0f else 1f),
-                                    text = stringResource(if (alert == null) R.string.Alert else R.string.Save),
+                                    text = stringResource(if (alert == null) R.string.Add_Alert else R.string.Save),
                                     color = if (enable) Color.White else MixinAppTheme.colors.textAssist,
                                 )
                             }

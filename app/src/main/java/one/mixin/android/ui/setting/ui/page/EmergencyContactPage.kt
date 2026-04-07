@@ -46,6 +46,7 @@ import one.mixin.android.ui.setting.EmergencyViewModel
 import one.mixin.android.ui.setting.LocalSettingNav
 import one.mixin.android.ui.setting.PinEmergencyBottomSheetDialog
 import one.mixin.android.vo.Account
+import one.mixin.android.vo.User
 import timber.log.Timber
 
 @Composable
@@ -259,7 +260,7 @@ private fun ShowEmergencyButton() {
                     handleMixinResponse(
                         invokeNetwork = { viewModel.showEmergency(pinCode) },
                         successBlock = { response ->
-                            val user = response.data as one.mixin.android.vo.User
+                            val user = response.data as User
                             navigator.viewEmergencyContact(user)
                         },
                         exceptionBlock = {

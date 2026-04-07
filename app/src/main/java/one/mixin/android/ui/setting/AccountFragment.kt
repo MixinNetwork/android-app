@@ -11,10 +11,10 @@ import one.mixin.android.extension.navTo
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.VerifyFragment
+import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
 import one.mixin.android.ui.setting.delete.DeleteAccountFragment
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipType
-import one.mixin.android.ui.wallet.BackupMnemonicPhraseWarningBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
@@ -55,13 +55,9 @@ class AccountFragment : BaseFragment(R.layout.fragment_account) {
     }
 
     private fun logOut() {
-        if (!Session.hasPhone() && !Session.saltExported()) {
-            BackupMnemonicPhraseWarningBottomSheetDialogFragment.newInstance()
-                .show(parentFragmentManager, BackupMnemonicPhraseWarningBottomSheetDialogFragment.TAG)
-        } else {
-            LogoutPinBottomSheetDialogFragment.newInstance()
-                .showNow(parentFragmentManager, LogoutPinBottomSheetDialogFragment.TAG)
-        }
+        if (RecoveryReminderBottomSheetDialogFragment.showForLogout(parentFragmentManager)) return
+        LogoutPinBottomSheetDialogFragment.newInstance()
+            .showNow(parentFragmentManager, LogoutPinBottomSheetDialogFragment.TAG)
     }
 
     private fun changeNumber() {

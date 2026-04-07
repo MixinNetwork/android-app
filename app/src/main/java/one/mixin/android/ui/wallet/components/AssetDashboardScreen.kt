@@ -56,6 +56,7 @@ import one.mixin.android.Constants.Account.PREF_WALLET_CATEGORY_FILTER
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.db.web3.vo.WalletItem
 import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.db.web3.vo.isOwner
 import one.mixin.android.db.web3.vo.isWatch
@@ -335,7 +336,7 @@ fun AssetDashboardScreen(
 }
 
 private fun shouldShowWallet(
-    wallet: one.mixin.android.db.web3.vo.WalletItem,
+    wallet: WalletItem,
     selectedCategory: String?,
 ): Boolean {
     return when (selectedCategory) {
