@@ -76,25 +76,27 @@ fun OpenPositionItem(
             .fillMaxWidth()
             .clickable(onClick = onClick)
             .padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier.weight(1f),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            CoilImage(
-                model = position.iconUrl,
-                placeholder = R.drawable.ic_avatar_place_holder,
-                modifier = Modifier
-                    .size(42.dp)
-                    .clip(CircleShape)
-            )
+        CoilImage(
+            model = position.iconUrl,
+            placeholder = R.drawable.ic_avatar_place_holder,
+            modifier = Modifier
+                .size(42.dp)
+                .clip(CircleShape)
+        )
 
-            Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(12.dp))
 
-            Column {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+        Column(modifier = Modifier.weight(1f)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    modifier = Modifier.weight(1f),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     val sideText = if (isLong) {
                         stringResource(R.string.Long)
                     } else {
@@ -123,73 +125,80 @@ fun OpenPositionItem(
                             .padding(horizontal = 3.dp, vertical = 2.dp)
                     )
                 }
-                Spacer(modifier = Modifier.height(4.dp))
+
+                if (isOpening) {
+                    Text(
+                        text = stringResource(R.string.Pending),
+                        fontSize = 14.sp,
+                        color = MixinAppTheme.colors.textAssist,
+                        textAlign = TextAlign.End,
+                        modifier = Modifier.weight(0.85f)
+                    )
+                } else {
+                    val marginFiat = margin.multiply(fiatRate)
+                    BasicText(
+                        text = formatPerpsFiatDecimal(marginFiat, fiatSymbol),
+                        modifier = Modifier.weight(0.85f),
+                        style = TextStyle(
+                            fontSize = 14.sp,
+                            color = MixinAppTheme.colors.textPrimary,
+                            textAlign = TextAlign.End
+                        ),
+                        maxLines = 1,
+                        softWrap = false,
+                        overflow = TextOverflow.Ellipsis,
+                        autoSize = TextAutoSize.StepBased(
+                            minFontSize = 8.sp,
+                            maxFontSize = 14.sp,
+                            stepSize = 0.5.sp
+                        )
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
                     text = "$quantity ${position.tokenSymbol ?: ""}",
                     fontSize = 14.sp,
-                    color = MixinAppTheme.colors.textAssist
-                )
-            }
-        }
-
-        Column(
-            modifier = Modifier.weight(0.85f),
-            horizontalAlignment = Alignment.End
-        ) {
-            if (isOpening) {
-                Text(
-                    text = stringResource(R.string.Pending),
-                    fontSize = 14.sp,
-                    color = MixinAppTheme.colors.textAssist
-                )
-            } else {
-                val marginFiat = margin.multiply(fiatRate)
-                BasicText(
-                    text = formatPerpsFiatDecimal(marginFiat, fiatSymbol),
-                    modifier = Modifier.fillMaxWidth(),
-                    style = TextStyle(
-                        fontSize = 14.sp,
-                        color = MixinAppTheme.colors.textPrimary,
-                        textAlign = TextAlign.End
-                    ),
-                    maxLines = 1,
-                    softWrap = false,
-                    overflow = TextOverflow.Ellipsis,
-                    autoSize = TextAutoSize.StepBased(
-                        minFontSize = 10.sp,
-                        maxFontSize = 14.sp,
-                        stepSize = 1.sp
-                    )
+                    color = MixinAppTheme.colors.textAssist,
+                    modifier = Modifier.weight(1f)
                 )
 
-                Spacer(modifier = Modifier.height(2.dp))
-
-                val unrealizedPnl = position.unrealizedPnl?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-                val roe = (position.roe?.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(BigDecimal(100))
-                val isProfit = unrealizedPnl >= BigDecimal.ZERO
-                val pnlColor = if (isProfit) {
-                    if (quoteColorPref) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+                if (isOpening) {
+                    Spacer(modifier = Modifier.weight(0.85f))
                 } else {
-                    if (quoteColorPref) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
-                }
+                    val unrealizedPnl = position.unrealizedPnl?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                    val roe = (position.roe?.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(BigDecimal(100))
+                    val isProfit = unrealizedPnl >= BigDecimal.ZERO
+                    val pnlColor = if (isProfit) {
+                        if (quoteColorPref) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+                    } else {
+                        if (quoteColorPref) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+                    }
 
-                BasicText(
-                    text = "${formatPerpsSignedFiatDecimal(unrealizedPnl.multiply(fiatRate), fiatSymbol)}(${formatPerpsSignedPercent(roe)})",
-                    modifier = Modifier.fillMaxWidth(),
-                    style = TextStyle(
-                        fontSize = 14.sp,
-                        color = pnlColor,
-                        textAlign = TextAlign.End
-                    ),
-                    maxLines = 1,
-                    softWrap = false,
-                    overflow = TextOverflow.Ellipsis,
-                    autoSize = TextAutoSize.StepBased(
-                        minFontSize = 10.sp,
-                        maxFontSize = 14.sp,
-                        stepSize = 1.sp
+                    BasicText(
+                        text = "${formatPerpsSignedFiatDecimal(unrealizedPnl.multiply(fiatRate), fiatSymbol)}(${formatPerpsSignedPercent(roe)})",
+                        modifier = Modifier.weight(0.85f),
+                        style = TextStyle(
+                            fontSize = 14.sp,
+                            color = pnlColor,
+                            textAlign = TextAlign.End
+                        ),
+                        maxLines = 1,
+                        softWrap = false,
+                        overflow = TextOverflow.Ellipsis,
+                        autoSize = TextAutoSize.StepBased(
+                            minFontSize = 8.sp,
+                            maxFontSize = 14.sp,
+                            stepSize = 0.5.sp
+                        )
                     )
-                )
+                }
             }
         }
     }
