@@ -141,6 +141,7 @@ fun ClosedPositionItem(
                         fontSize = 12.sp,
                         color = sideColor,
                         lineHeight = 14.sp,
+                        maxLines = 1,
                         modifier = Modifier
                             .clip(RoundedCornerShape(4.dp))
                             .background(leverageBackgroundColor)
