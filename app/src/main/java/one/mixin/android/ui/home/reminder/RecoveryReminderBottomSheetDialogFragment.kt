@@ -69,7 +69,7 @@ class RecoveryReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
             return showSafely(
                 fragmentManager,
                 enableSnooze = false,
-                continueOnDismiss = false,
+                continueOnDismiss = onContinue != null,
                 dismissTextRes = R.string.Skip,
                 onContinue = onContinue,
             )
