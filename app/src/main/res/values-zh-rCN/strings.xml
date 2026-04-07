@@ -1845,6 +1845,7 @@
     <string name="Recovery_Kit_Alert">为了您的账户安全，请尽快备份助记词、添加手机号并且设置恢复联系人，阅读文档以了解更多信息。</string>
     <string name="verify_mobile_reminder_title">添加手机号码</string>
     <string name="verify_mobile_reminder_desc">添加手机号以设置恢复联系人。</string>
+    <string name="verify_mobile_reminder_desc_recovery_contact">设置恢复联系人之前，需要先添加手机号码。</string>
     <string name="verify_mobile_reminder_action">立即添加</string>
     <string name="Verify_Mobile_Number">验证手机号</string>
     <string name="Verify_Mobile_Number_Desc">定期进行短信验证有助于提升账号安全，如果当前手机号已失效请尽快更换手机号。</string>

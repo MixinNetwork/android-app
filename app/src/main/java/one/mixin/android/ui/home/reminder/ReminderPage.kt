@@ -106,7 +106,7 @@ fun ReminderPage(
                     focusedElevation = 0.dp,
                 ),
             ) {
-                Text(text = stringResource(actionStr), color = Color.White)
+                Text(text = stringResource(actionStr), color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.W400)
             }
             Spacer(modifier = Modifier.height(18.dp))
             Text(
@@ -115,7 +115,9 @@ fun ReminderPage(
                     .align(Alignment.CenterHorizontally)
                     .clickable { dismiss.invoke() },
                 text = stringResource(dismissStr),
-                color = MixinAppTheme.colors.textBlue
+                color = MixinAppTheme.colors.accent,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.W400
             )
             Spacer(modifier = Modifier.height(20.dp))
         }

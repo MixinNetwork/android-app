@@ -77,7 +77,7 @@ fun RecoveryKitPage(pop:()->Unit, phoneClick: () -> Unit, mnemonicPhraseClick: (
                     )
                 }
                 Spacer(modifier = Modifier.weight(1f))
-                Text(stringResource(R.string.Recovery_Kit_Attention), color = MixinAppTheme.colors.red, textAlign = TextAlign.Center)
+                Text(stringResource(R.string.Recovery_Kit_Attention), color = MixinAppTheme.colors.red, textAlign = TextAlign.Center, fontSize = 14.sp)
                 Spacer(modifier = Modifier.height(20.dp))
             }
         }

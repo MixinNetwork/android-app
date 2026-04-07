@@ -376,7 +376,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                             if (VerifyMobileReminderBottomSheetDialogFragment.shouldShowForBuy(requireContext()) && isFragmentVisible()) {
                                 VerifyMobileReminderBottomSheetDialogFragment.showSafely(
                                     parentFragmentManager,
-                                    false,
+                                    enableSnooze = false,
                                 )
                                 setLoading(false)
                                 return@launch

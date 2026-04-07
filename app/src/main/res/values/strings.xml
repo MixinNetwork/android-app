@@ -1922,6 +1922,7 @@
     <string name="Recovery_Kit_Alert">For your account security, please back up your recovery phrase, add a phone number, and set a recovery contact as soon as possible. See the documentation for more information.</string>
     <string name="verify_mobile_reminder_title">Add Mobile Number</string>
     <string name="verify_mobile_reminder_desc">Add your mobile number to set up a recovery contact.</string>
+    <string name="verify_mobile_reminder_desc_recovery_contact">Add your mobile number to set up a recovery contact.</string>
     <string name="verify_mobile_reminder_action">Add Now</string>
     <string name="Verify_Mobile_Number">Verify Mobile Number</string>
     <string name="Verify_Mobile_Number_Desc">Regular SMS verification helps improve account security. If your current mobile number is no longer active, please update it as soon as possible.</string>

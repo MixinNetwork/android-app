@@ -3,6 +3,7 @@ package one.mixin.android.ui.home.reminder
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
+import android.os.Bundle
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -103,7 +104,7 @@ class RecoveryReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
             if (isShowing) return false
             pendingOnDismissContinueAction = if (continueOnDismiss) onContinue else null
             val fragment = RecoveryReminderBottomSheetDialogFragment().apply {
-                arguments = android.os.Bundle().apply {
+                arguments = Bundle().apply {
                     putBoolean(ARGS_ENABLE_SNOOZE, enableSnooze)
                     putBoolean(ARGS_CONTINUE_ON_DISMISS, continueOnDismiss)
                     putInt(ARGS_DISMISS_TEXT, dismissTextRes)
