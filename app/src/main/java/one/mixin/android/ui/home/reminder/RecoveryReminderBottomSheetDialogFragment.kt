@@ -53,7 +53,12 @@ class RecoveryReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
 
         fun showForHome(fragmentManager: FragmentManager): Boolean {
             if (!RecoveryReminderState.shouldShowOnHome()) return false
-            return showSafely(fragmentManager, enableSnooze = true, continueOnDismiss = false)
+            return showSafely(
+                fragmentManager,
+                enableSnooze = true,
+                continueOnDismiss = false,
+                dismissTextRes = R.string.Skip,
+            )
         }
 
         fun showForRiskAction(
@@ -65,6 +70,7 @@ class RecoveryReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
                 fragmentManager,
                 enableSnooze = false,
                 continueOnDismiss = false,
+                dismissTextRes = R.string.Skip,
                 onContinue = onContinue,
             )
         }
@@ -214,14 +220,14 @@ class RecoveryReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
     override fun ComposeContent() {
         val enableSnooze = arguments?.getBoolean(ARGS_ENABLE_SNOOZE, true) ?: true
         val continueOnDismiss = arguments?.getBoolean(ARGS_CONTINUE_ON_DISMISS, false) ?: false
-        val dismissTextRes = arguments?.getInt(ARGS_DISMISS_TEXT, R.string.Not_Now) ?: R.string.Not_Now
+        val dismissTextRes = arguments?.getInt(ARGS_DISMISS_TEXT, R.string.Skip) ?: R.string.Skip
         val context = LocalContext.current
         val recoveryKitHelpUrl = stringResource(R.string.recovery_kit_help_url)
         MixinAppTheme {
             ReminderPage(
                 contentImage = R.drawable.bg_recovery_kit,
                 title = R.string.Recovery_Kit,
-                actionStr = R.string.Continue,
+                actionStr = R.string.Set_Up_Now,
                 dismissStr = dismissTextRes,
                 action = {
                     pendingOnDismissContinueAction = null

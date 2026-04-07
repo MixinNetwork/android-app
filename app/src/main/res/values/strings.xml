@@ -1902,6 +1902,7 @@
     <string name="Mobile_Number">Mobile Number</string>
     <string name="Recovery_Contact">Recovery Contact</string>
     <string name="Set_up">Set up</string>
+    <string name="Set_Up_Now">Set Up Now</string>
     <string name="Mnemonic_Phrase_instruction">You can log in to your account using the mnemonic phrase. The current mnemonic phrase is linked to a key shard of the MPC wallet, with the complete key existing only in the TEE security environment on the current device. Read the documentation to learn %1$s.</string>
     <string name="Backup_Mnemonic_Phrase">Backup Mnemonic Phrase</string>
     <string name="Before_you_proceed">Before you proceed</string>
