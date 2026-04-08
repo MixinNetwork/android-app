@@ -84,13 +84,14 @@ fun PerpsMarketDetailPage(
     marketSymbol: String,
     displaySymbol: String,
     tokenSymbol: String,
+    initialMarket: PerpsMarket? = null,
     onBack: () -> Unit,
 ) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<PerpetualViewModel>()
     val lifecycleOwner = LocalLifecycleOwner.current
-    var market by remember { mutableStateOf<PerpsMarket?>(null) }
-    var isLoading by remember { mutableStateOf(true) }
+    var market by remember(marketId, initialMarket) { mutableStateOf(initialMarket) }
+    var isLoading by remember(marketId, initialMarket) { mutableStateOf(initialMarket == null) }
     var selectedTimeFrame by remember { mutableIntStateOf(0) }
     val walletId = Session.getAccountId().orEmpty()
     val openPositions by remember(walletId) {
@@ -135,9 +136,7 @@ fun PerpsMarketDetailPage(
                         isLoading = false
                     },
                     onError = {
-                        if (market == null) {
-                            isLoading = false
-                        }
+                        isLoading = false
                     }
                 )
                 delay(MARKET_REFRESH_INTERVAL_MS)

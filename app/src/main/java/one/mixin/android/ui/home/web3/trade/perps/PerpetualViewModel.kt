@@ -10,6 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.MixinApplication
 import one.mixin.android.Constants
 import one.mixin.android.api.request.perps.CloseOrderRequest
 import one.mixin.android.api.request.perps.OpenOrderRequest
@@ -28,6 +29,7 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshPerpsPositionsJob
 import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.safe.TokenItem
 import timber.log.Timber
 import java.math.BigDecimal
@@ -207,12 +209,17 @@ class PerpetualViewModel @Inject constructor(
                 } else {
                     val error = "Failed to load candles: ${response.errorDescription}"
                     Timber.e(error)
-                    onError(error)
+                    onError(
+                        MixinApplication.appContext.getMixinErrorStringByCode(
+                            response.errorCode,
+                            response.errorDescription
+                        )
+                    )
                 }
             } catch (e: Exception) {
                 val error = "Error loading candles: ${e.message}"
                 Timber.e(e, error)
-                onError(error)
+                onError(ErrorHandler.getErrorMessage(e))
             }
         }
     }
