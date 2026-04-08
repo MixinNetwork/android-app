@@ -48,7 +48,7 @@ import one.mixin.android.extension.screenHeight
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.common.compose.MaterialInputField
-import one.mixin.android.ui.home.web3.components.ActionButton
+import one.mixin.android.widget.components.ActionButton
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
 import one.mixin.android.util.SystemUIManager

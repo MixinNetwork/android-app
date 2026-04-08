@@ -21,7 +21,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
+import one.mixin.android.widget.components.MixinButton
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
@@ -69,6 +69,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.priceUSD
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.web3.js.SolanaTxSource
+import one.mixin.android.widget.components.ActionBottom
 import java.math.BigDecimal
 
 private val gradientColors = listOf(Cyan, Color(0xFF0066FF), Color(0xFF800080))
@@ -701,75 +702,6 @@ private fun WarningPreview() {
         }
 
         Warning(modifier = Modifier.align(Alignment.BottomCenter))
-    }
-}
-
-@Composable
-fun ActionButton(
-    text: String,
-    onClick: () -> Unit,
-    backgroundColor: Color,
-    contentColor: Color,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    disabledBackgroundColor: Color = backgroundColor.copy(alpha = 0.4f),
-    disabledContentColor: Color = contentColor.copy(alpha = 0.6f),
-) {
-    Button(
-        onClick = onClick,
-        enabled = enabled,
-        colors = ButtonDefaults.outlinedButtonColors(
-            backgroundColor = if (enabled) backgroundColor else disabledBackgroundColor,
-            contentColor = if (enabled) contentColor else disabledContentColor,
-        ),
-        shape = RoundedCornerShape(30.dp),
-        contentPadding = PaddingValues(horizontal = 35.dp, vertical = 10.dp),
-        elevation = ButtonDefaults.elevation(
-            pressedElevation = 0.dp,
-            defaultElevation = 0.dp,
-            hoveredElevation = 0.dp,
-            focusedElevation = 0.dp,
-        ),
-        modifier = modifier
-    ) {
-        Text(
-            text = text,
-            color = if (enabled) contentColor else disabledContentColor,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.W400
-        )
-    }
-}
-
-@Composable
-fun ActionBottom(
-    modifier: Modifier,
-    cancelTitle: String,
-    confirmTitle: String,
-    cancelAction: () -> Unit,
-    confirmAction: () -> Unit,
-) {
-    Row(
-        modifier =
-        modifier
-            .background(MixinAppTheme.colors.background)
-            .padding(8.dp)
-            .fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center,
-    ) {
-        ActionButton(
-            text = cancelTitle,
-            onClick = cancelAction,
-            backgroundColor = MixinAppTheme.colors.backgroundWindow,
-            contentColor = MixinAppTheme.colors.textPrimary
-        )
-        Box(modifier = Modifier.width(36.dp))
-        ActionButton(
-            text = confirmTitle,
-            onClick = confirmAction,
-            backgroundColor = MixinAppTheme.colors.accent,
-            contentColor = Color.White
-        )
     }
 }
 

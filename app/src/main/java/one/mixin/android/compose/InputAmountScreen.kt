@@ -57,7 +57,7 @@ import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.session.Session
-import one.mixin.android.ui.home.web3.components.ActionButton
+import one.mixin.android.widget.components.ActionButton
 import one.mixin.android.util.getChainName
 import one.mixin.android.vo.safe.TokenItem
 import androidx.hilt.navigation.compose.hiltViewModel
