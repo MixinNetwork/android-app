@@ -10,11 +10,14 @@ import kotlinx.coroutines.flow.Flow
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.request.AddressSearchRequest
+import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.web3.GaslessFeeRequest
 import one.mixin.android.api.request.web3.GaslessTxRequest
 import one.mixin.android.api.request.web3.SubmitGaslessTxRequest
 import one.mixin.android.api.request.web3.WalletRequest
+import one.mixin.android.api.response.web3.GaslessSponsorTransactionResponse
+import one.mixin.android.api.response.web3.SubmitGaslessTxResponse
 import one.mixin.android.api.service.RouteService
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.db.property.Web3PropertyHelper
@@ -76,7 +79,11 @@ constructor(
 
     suspend fun gaslessTx(request: GaslessTxRequest) = routeService.gaslessTx(request)
 
-    suspend fun submitGaslessTx(request: SubmitGaslessTxRequest) = routeService.submitGaslessTx(request)
+    suspend fun submitGaslessTx(request: SubmitGaslessTxRequest): MixinResponse<SubmitGaslessTxResponse> =
+        routeService.submitGaslessTx(request)
+
+    suspend fun gaslessTransaction(id: String): MixinResponse<GaslessSponsorTransactionResponse> =
+        routeService.gaslessTransaction(id)
 
     suspend fun refreshBitcoinTokenAmount(walletId: String, address: String) {
         if (walletId.isBlank() || address.isBlank()) return

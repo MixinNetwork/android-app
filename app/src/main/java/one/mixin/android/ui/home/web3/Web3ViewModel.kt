@@ -29,8 +29,10 @@ import one.mixin.android.api.request.web3.SubmitGaslessTxRequest
 import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.web3.GaslessFeeResponse
+import one.mixin.android.api.response.web3.GaslessSponsorTransactionResponse
 import one.mixin.android.api.response.web3.GaslessTxResponse
 import one.mixin.android.api.response.web3.StakeAccount
+import one.mixin.android.api.response.web3.SubmitGaslessTxResponse
 import one.mixin.android.api.response.web3.WalletOutput
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.db.web3.vo.Web3Address
@@ -241,9 +243,14 @@ class Web3ViewModel @Inject constructor(
             web3Repository.gaslessTx(request)
         }
 
-    suspend fun submitGaslessTx(request: SubmitGaslessTxRequest) =
+    suspend fun submitGaslessTx(request: SubmitGaslessTxRequest): MixinResponse<SubmitGaslessTxResponse> =
         withContext(Dispatchers.IO) {
             web3Repository.submitGaslessTx(request)
+        }
+
+    suspend fun gaslessTransaction(id: String): MixinResponse<GaslessSponsorTransactionResponse> =
+        withContext(Dispatchers.IO) {
+            web3Repository.gaslessTransaction(id)
         }
 
     suspend fun postRawTx(
@@ -256,6 +263,21 @@ class Web3ViewModel @Inject constructor(
         rate: BigDecimal? = null,
     ) = withContext(Dispatchers.IO) {
         tokenRepository.postRawTx(Web3RawTransactionRequest(web3ChainId, rawTx, account, to, feeType), assetId, rate)
+    }
+
+    suspend fun insertGaslessPendingTransaction(
+        sponsorTxId: String,
+        chainId: String,
+        account: String,
+        assetId: String,
+        amount: String,
+        fee: String,
+        to: String,
+        nonce: String,
+        createdAt: String,
+        updatedAt: String,
+    ) = withContext(Dispatchers.IO) {
+        tokenRepository.insertGaslessPendingTransaction(sponsorTxId, chainId, account, assetId, amount, fee, to, nonce, createdAt, updatedAt)
     }
 
     fun collectibles(sortOrder: SortOrder): LiveData<List<SafeCollectible>> =
@@ -536,6 +558,26 @@ class Web3ViewModel @Inject constructor(
     fun getPendingTransactionCount(walletId: String): LiveData<Int> = tokenRepository.getPendingTransactionCount(walletId)
 
     suspend fun transaction(hash: String, chainId: String) = tokenRepository.transaction(hash, chainId)
+
+    suspend fun replaceGaslessPendingTransactionHash(
+        walletId: String,
+        sponsorTxId: String,
+        broadcastTxHash: String,
+        chainId: String,
+        updatedAt: String,
+    ) = withContext(Dispatchers.IO) {
+        tokenRepository.replaceGaslessPendingTransactionHash(walletId, sponsorTxId, broadcastTxHash, chainId, updatedAt)
+    }
+
+    suspend fun updateGaslessPendingTransactionStatus(
+        walletId: String,
+        hash: String,
+        chainId: String,
+        status: String,
+        updatedAt: String,
+    ) = withContext(Dispatchers.IO) {
+        tokenRepository.updateGaslessPendingTransactionStatus(walletId, hash, chainId, status, updatedAt)
+    }
 
     suspend fun insertRawTransactionAndUpdateTransactionStatus(
         raw: Web3RawTransaction,

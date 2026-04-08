@@ -24,6 +24,7 @@ import one.mixin.android.db.web3.vo.Web3RawTransaction
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.db.web3.vo.isGaslessPending
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.forEachWithIndex
@@ -419,6 +420,12 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                     return@apply
                 }
                 val notNullPendingRawTx: Web3RawTransaction = pendingRawTx
+                if (notNullPendingRawTx.isGaslessPending()) {
+                    actions.isVisible = false
+                    actions.speedUp.setOnClickListener(null)
+                    actions.cancelTx.setOnClickListener(null)
+                    return@apply
+                }
                 if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
                     val hasSignedChange: Boolean = web3ViewModel.hasBitcoinSignedOutputsByTransactionHash(transaction.transactionHash)
                     if (hasSignedChange) {

@@ -1,6 +1,5 @@
 package one.mixin.android.api.service
 
-import com.google.gson.JsonElement
 import one.mixin.android.BuildConfig
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AddressSearchRequest
@@ -29,9 +28,11 @@ import one.mixin.android.api.response.UserAddressView
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.GaslessFeeResponse
+import one.mixin.android.api.response.web3.GaslessSponsorTransactionResponse
 import one.mixin.android.api.response.web3.StakeAccount
 import one.mixin.android.api.response.web3.StakeAccountActivation
 import one.mixin.android.api.response.web3.StakeResponse
+import one.mixin.android.api.response.web3.SubmitGaslessTxResponse
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Tx
@@ -290,7 +291,12 @@ interface RouteService {
     @POST("web3/gasless/submit")
     suspend fun submitGaslessTx(
         @Body request: SubmitGaslessTxRequest,
-    ): MixinResponse<JsonElement>
+    ): MixinResponse<SubmitGaslessTxResponse>
+
+    @GET("web3/gasless/transactions/{id}")
+    suspend fun gaslessTransaction(
+        @Path("id") id: String,
+    ): MixinResponse<GaslessSponsorTransactionResponse>
 
     @POST("web3/rpc")
     suspend fun rpc(

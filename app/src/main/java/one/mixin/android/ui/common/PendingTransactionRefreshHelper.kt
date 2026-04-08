@@ -7,12 +7,14 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.db.web3.vo.TransactionStatus
+import one.mixin.android.db.web3.vo.isGaslessSponsorPending
 import one.mixin.android.db.web3.vo.isTerminalTransactionStatus
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshWeb3BitCoinJob
 import one.mixin.android.job.RefreshWeb3TransactionsJob
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.web3.js.Web3Signer
+import one.mixin.android.api.response.web3.toPendingStatusOrNull
 import timber.log.Timber
 
 object PendingTransactionRefreshHelper {
@@ -51,6 +53,36 @@ object PendingTransactionRefreshHelper {
                 val pendingRawTransaction = web3ViewModel.getPendingRawTransactions(walletId)
                 if (pendingRawTransaction.isEmpty().not()) {
                     pendingRawTransaction.forEach { transition ->
+                        if (transition.isGaslessSponsorPending()) {
+                            val sponsorTransactionResponse = web3ViewModel.gaslessTransaction(transition.hash)
+                            val sponsorTransaction = sponsorTransactionResponse.data
+                            if (!sponsorTransactionResponse.isSuccess || sponsorTransaction == null) {
+                                return@forEach
+                            }
+                            val broadcastTxHash = sponsorTransaction.broadcastTxHash?.takeIf { it.isNotBlank() }
+                            if (broadcastTxHash != null) {
+                                web3ViewModel.replaceGaslessPendingTransactionHash(
+                                    walletId = walletId,
+                                    sponsorTxId = transition.hash,
+                                    broadcastTxHash = broadcastTxHash,
+                                    chainId = transition.chainId,
+                                    updatedAt = sponsorTransaction.updatedAt,
+                                )
+                                return@forEach
+                            }
+                            val gaslessStatus = sponsorTransaction.toPendingStatusOrNull()
+                            if (gaslessStatus != null && gaslessStatus != TransactionStatus.PENDING.value) {
+                                web3ViewModel.updateGaslessPendingTransactionStatus(
+                                    walletId = walletId,
+                                    hash = transition.hash,
+                                    chainId = transition.chainId,
+                                    status = gaslessStatus,
+                                    updatedAt = sponsorTransaction.updatedAt,
+                                )
+                                onTransactionStatusUpdated?.invoke(transition.hash, gaslessStatus)
+                            }
+                            return@forEach
+                        }
                         val r = web3ViewModel.transaction(transition.hash, transition.chainId)
                         if (r.isSuccess && r.data?.state.isTerminalTransactionStatus()) {
                             val rawTransaction = r.data ?: return@forEach

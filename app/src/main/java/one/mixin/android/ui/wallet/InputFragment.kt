@@ -32,6 +32,7 @@ import one.mixin.android.api.request.web3.GaslessTxRequest
 import one.mixin.android.api.request.web3.SubmitGaslessTxRequest
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.web3.EthGaslessTxPayload
+import one.mixin.android.api.response.web3.GaslessSponsorTransactionResponse
 import one.mixin.android.databinding.FragmentInputBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.buildTransaction
@@ -1858,6 +1859,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 privateKey = privateKey,
             )
             in Constants.Web3EvmChainIds -> submitEvmGaslessTransfer(
+                token = token,
+                fromAddress = fromAddress,
+                toAddress = toAddress,
+                amount = amount,
                 chainId = payload.chainId,
                 payload = payload.payload,
                 privateKey = privateKey,
@@ -1892,6 +1897,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     }
 
     private suspend fun submitEvmGaslessTransfer(
+        token: Web3TokenItem,
+        fromAddress: String,
+        toAddress: String,
+        amount: String,
         chainId: String,
         payload: JsonElement,
         privateKey: ByteArray,
@@ -1929,6 +1938,34 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         if (!response.isSuccess) {
             throw IllegalStateException(response.errorDescription)
         }
+        val sponsorTxId = response.data?.sponsorTxId ?: throw IllegalStateException("Missing sponsor tx id")
+        val gaslessTransaction = queryGaslessTransactionOrThrow(sponsorTxId)
+        web3ViewModel.insertGaslessPendingTransaction(
+            sponsorTxId = sponsorTxId,
+            chainId = gaslessTransaction.chainId,
+            account = gaslessTransaction.account,
+            assetId = token.assetId,
+            amount = amount,
+            fee = requireNotNull(currentGaslessFee).fee,
+            to = toAddress,
+            nonce = ethPayload.userOperation.nonce,
+            createdAt = gaslessTransaction.createdAt,
+            updatedAt = gaslessTransaction.updatedAt,
+        )
+    }
+
+    private suspend fun queryGaslessTransactionOrThrow(sponsorTxId: String): GaslessSponsorTransactionResponse {
+        repeat(3) { attempt ->
+            val response = web3ViewModel.gaslessTransaction(sponsorTxId)
+            val data = response.data
+            if (response.isSuccess && data != null) {
+                return data
+            }
+            if (attempt < 2) {
+                delay(300)
+            }
+        }
+        throw IllegalStateException("Failed to query gasless transaction")
     }
 
     private val dialog by lazy {

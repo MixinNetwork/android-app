@@ -87,6 +87,8 @@ import one.mixin.android.db.web3.vo.TransactionType
 import one.mixin.android.db.web3.vo.Web3RawTransaction
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3Transaction
+import one.mixin.android.db.web3.vo.buildGaslessBroadcastPendingRawMarker
+import one.mixin.android.db.web3.vo.buildGaslessSponsorPendingRawMarker
 import one.mixin.android.extension.hexString
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.isUUID
@@ -1482,6 +1484,123 @@ class TokenRepository
         walletId)
 
     suspend fun getPendingTransactions(walletId: String) = web3TransactionDao.getPendingTransactions(walletId)
+
+    suspend fun insertGaslessPendingTransaction(
+        sponsorTxId: String,
+        chainId: String,
+        account: String,
+        assetId: String,
+        amount: String,
+        fee: String,
+        to: String,
+        nonce: String,
+        createdAt: String,
+        updatedAt: String,
+    ) {
+        val normalizedAmount = amount.removePrefix("-")
+        appDatabase.withTransaction {
+            web3RawTransactionDao.insertSuspend(
+                Web3RawTransaction(
+                    hash = sponsorTxId,
+                    chainId = chainId,
+                    account = account,
+                    nonce = nonce,
+                    raw = buildGaslessSponsorPendingRawMarker(sponsorTxId),
+                    state = TransactionStatus.PENDING.value,
+                    createdAt = createdAt,
+                    updatedAt = updatedAt,
+                ),
+            )
+            web3TransactionDao.deletePending(sponsorTxId, chainId)
+            web3TransactionDao.insert(
+                Web3Transaction(
+                    transactionHash = sponsorTxId,
+                    chainId = chainId,
+                    address = account,
+                    transactionType = TransactionType.TRANSFER_OUT.value,
+                    status = TransactionStatus.PENDING.value,
+                    blockNumber = 0,
+                    fee = fee,
+                    senders = listOf(
+                        AssetChange(
+                            assetId = assetId,
+                            amount = "-$normalizedAmount",
+                            from = account,
+                            to = to,
+                        ),
+                    ),
+                    receivers = listOf(
+                        AssetChange(
+                            assetId = assetId,
+                            amount = normalizedAmount,
+                            from = account,
+                            to = to,
+                        ),
+                    ),
+                    approvals = null,
+                    sendAssetId = assetId,
+                    receiveAssetId = assetId,
+                    transactionAt = updatedAt,
+                    createdAt = createdAt,
+                    updatedAt = updatedAt,
+                    level = Constants.AssetLevel.GOOD,
+                ),
+            )
+        }
+    }
+
+    suspend fun replaceGaslessPendingTransactionHash(
+        walletId: String,
+        sponsorTxId: String,
+        broadcastTxHash: String,
+        chainId: String,
+        updatedAt: String,
+    ) {
+        appDatabase.withTransaction {
+            val pendingRaw = web3RawTransactionDao.getRawTransactionByHashAndChain(walletId, sponsorTxId, chainId)
+                ?: return@withTransaction
+            val pendingTransaction = web3TransactionDao.getLatestTransaction(sponsorTxId, chainId)
+
+            web3RawTransactionDao.insertSuspend(
+                pendingRaw.copy(
+                    hash = broadcastTxHash,
+                    raw = buildGaslessBroadcastPendingRawMarker(broadcastTxHash),
+                    updatedAt = updatedAt,
+                ),
+            )
+            if (pendingTransaction != null) {
+                web3TransactionDao.insert(
+                    pendingTransaction.copy(
+                        transactionHash = broadcastTxHash,
+                        transactionAt = updatedAt,
+                        updatedAt = updatedAt,
+                    ),
+                )
+            }
+            web3RawTransactionDao.deleteByHashAndChain(sponsorTxId, chainId)
+            web3TransactionDao.deletePending(sponsorTxId, chainId)
+        }
+    }
+
+    suspend fun updateGaslessPendingTransactionStatus(
+        walletId: String,
+        hash: String,
+        chainId: String,
+        status: String,
+        updatedAt: String,
+    ) {
+        appDatabase.withTransaction {
+            val pendingRaw = web3RawTransactionDao.getRawTransactionByHashAndChain(walletId, hash, chainId)
+                ?: return@withTransaction
+            web3RawTransactionDao.insertSuspend(
+                pendingRaw.copy(
+                    state = status,
+                    updatedAt = updatedAt,
+                ),
+            )
+            web3TransactionDao.updateTransaction(hash, status, chainId)
+        }
+    }
 
     suspend fun insertRawTransactionAndUpdateTransactionStatus(
         raw: Web3RawTransaction,
