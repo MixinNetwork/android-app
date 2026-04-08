@@ -24,6 +24,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.request.web3.GaslessFeeRequest
@@ -842,7 +843,11 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private fun supportsGaslessTransfer(): Boolean {
         val token = web3Token ?: return false
-        return token.chainId == Constants.ChainId.SOLANA_CHAIN_ID || token.chainId in Constants.Web3EvmChainIds
+        return token.chainId == Constants.ChainId.SOLANA_CHAIN_ID || token.chainId in Constants.GaslessWeb3EvmChainIds
+    }
+
+    private fun shouldOfferLegacyWeb3FeeOption(): Boolean {
+        return BuildConfig.DEBUG && supportsGaslessTransfer()
     }
 
     private fun hasNativeGasIssue(amount: String): Boolean {
@@ -877,16 +882,26 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             currentGaslessFee != null
     }
 
+    private fun isLegacyWeb3FeeSelection(): Boolean {
+        return currentGaslessFee?.source == NetworkFee.Source.LEGACY_WEB3
+    }
+
     private fun nativeWeb3FeeOption(): NetworkFee? {
         val nativeToken = chainToken ?: return null
         val nativeGas = gas ?: return null
-        return NetworkFee(nativeToken.toTokenItem(), nativeGas.toPlainString())
+        return NetworkFee(
+            token = nativeToken.toTokenItem(),
+            fee = nativeGas.toPlainString(),
+            source = NetworkFee.Source.LEGACY_WEB3,
+        )
     }
 
     private fun web3FeeOptions(): List<NetworkFee> {
         val options = mutableListOf<NetworkFee>()
-        nativeWeb3FeeOption()?.let(options::add)
-        options.addAll(gaslessFees.filterNot { it.token.assetId == chainToken?.assetId })
+        if (shouldOfferLegacyWeb3FeeOption()) {
+            nativeWeb3FeeOption()?.let(options::add)
+        }
+        options.addAll(gaslessFees)
         return options
     }
 
@@ -896,12 +911,13 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             currentGaslessFee = null
             return
         }
-        val matchedOption = currentGaslessFee?.token?.assetId?.let { assetId ->
-            options.firstOrNull { it.token.assetId == assetId }
+        val matchedOption = currentGaslessFee?.selectionKey?.let { selectionKey ->
+            options.firstOrNull { it.selectionKey == selectionKey }
         }
         val nextSelection = when {
             matchedOption != null -> matchedOption
-            !hasManuallySelectedWeb3Fee -> nativeWeb3FeeOption() ?: options.first()
+            !hasManuallySelectedWeb3Fee && shouldOfferLegacyWeb3FeeOption() -> nativeWeb3FeeOption() ?: options.first()
+            !hasManuallySelectedWeb3Fee -> options.first()
             else -> options.first()
         }
         if (currentGaslessFee != nextSelection) {
@@ -911,7 +927,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private fun shouldUseGaslessFlow(): Boolean {
         return hasGaslessFeeSelection() &&
-            currentGaslessFee?.token?.assetId != chainToken?.assetId
+            !isLegacyWeb3FeeSelection()
     }
 
     private fun updateWeb3AvailableBalance() {
@@ -955,7 +971,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 binding.infoLinearLayout.setOnClickListener {
                     NetworkFeeBottomSheetDialogFragment.newInstance(
                         ArrayList(feeOptions),
-                        currentGaslessFee?.token?.assetId,
+                        currentGaslessFee?.selectionKey,
                     ).apply {
                         callback = { networkFee ->
                             hasManuallySelectedWeb3Fee = true
@@ -1451,8 +1467,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 refreshFee(token!!)
             }
             transferType == TransferType.WEB3 -> {
-                refreshGas(web3Token!!)
-                refreshGaslessFees(web3Token!!)
+                refreshWeb3Fees(web3Token!!)
             }
             transferType == TransferType.BIOMETRIC_ITEM && assetBiometricItem is WithdrawBiometricItem -> {
                 refreshFee(token!!)
@@ -1520,10 +1535,14 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     private var lastBtcFeeAmount: String? = null
     private var isAdjustingBtcAmount: Boolean = false
 
+    private fun setFeeLoading(isLoading: Boolean) {
+        binding.loadingProgressBar.isVisible = isLoading
+        binding.contentTextView.isVisible = !isLoading
+    }
+
     private suspend fun refreshFee(t: TokenItem) {
         val toAddress = toAddress?: return
-        binding.loadingProgressBar.isVisible = true
-        binding.contentTextView.isVisible = false
+        setFeeLoading(true)
         val feeResponse = runCatching { web3ViewModel.getFees(t.assetId, toAddress) }.getOrNull()
         if (feeResponse == null) {
             delay(3000)
@@ -1572,8 +1591,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 dialog.dismiss()
             }
         }
-        binding.contentTextView.isVisible = true
-        binding.loadingProgressBar.isVisible = false
+        setFeeLoading(false)
     }
 
     private fun prepareCheck(item: BiometricItem) {
@@ -1689,10 +1707,22 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             }.show(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
         }
 
+    private suspend fun refreshWeb3Fees(t: Web3TokenItem) {
+        setFeeLoading(true)
+        try {
+            refreshGas(t)
+            refreshGaslessFees(t)
+            syncSelectedWeb3Fee()
+        } finally {
+            setFeeLoading(false)
+            updateWeb3FeeDisplay()
+            applyFeeUi()
+            updateUI()
+        }
+    }
+
     private suspend fun refreshGas(t: Web3TokenItem) {
         val toAddress = toAddress?: return
-        binding.loadingProgressBar.isVisible = true
-        binding.contentTextView.isVisible = false
         val fromAddress = fromAddress ?: return
         if (t.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
             jobManager.addJobInBackground(RefreshWeb3BitCoinJob(t.walletId))
@@ -1765,11 +1795,6 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 updateUI()
             }
         }
-        syncSelectedWeb3Fee()
-        binding.contentTextView.isVisible = true
-        binding.loadingProgressBar.isVisible = false
-        updateWeb3FeeDisplay()
-        applyFeeUi()
     }
 
     private suspend fun refreshGaslessFees(t: Web3TokenItem) {
@@ -1794,13 +1819,14 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
         val feeItems = response.data!!.fees.mapNotNull { estimate ->
             val asset = web3ViewModel.findOrSyncAsset(estimate.assetId) ?: return@mapNotNull null
-            NetworkFee(asset, estimate.amount)
-        }.filterNot { it.token.assetId == chainToken?.assetId }
+            NetworkFee(
+                token = asset,
+                fee = estimate.amount,
+                source = NetworkFee.Source.GASLESS,
+            )
+        }
         gaslessFees.clear()
         gaslessFees.addAll(feeItems)
-        syncSelectedWeb3Fee()
-        updateWeb3FeeDisplay()
-        updateUI()
     }
 
     private suspend fun submitGaslessTransfer(pin: String) {

@@ -55,9 +55,9 @@ class NetworkFeeBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         binding.apply {
             rightIv.setOnClickListener { dismiss() }
             val currentFee = requireArguments().getString(ARGS_CURRENT_FEE)
-            val feeAdapter = FeeAdapter(currentFee ?: fees.first().token.assetId)
+            val feeAdapter = FeeAdapter(currentFee ?: fees.first().selectionKey)
             feeAdapter.callback = { networkFee ->
-                feeAdapter.currentFee = networkFee.token.assetId
+                feeAdapter.currentFee = networkFee.selectionKey
                 this@NetworkFeeBottomSheetDialogFragment.callback?.invoke(networkFee)
             }
             feeRv.adapter = feeAdapter
@@ -112,9 +112,9 @@ class NetworkFeeBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     bg.loadImage(networkFee.token.iconUrl, R.drawable.ic_avatar_place_holder)
                     badge.loadImage(networkFee.token.chainIconUrl, R.drawable.ic_avatar_place_holder)
                 }
-                checkIv.isVisible = currentFee == networkFee.token.assetId
+                checkIv.isVisible = currentFee == networkFee.selectionKey
                 root.setOnClickListener {
-                    if (currentFee == networkFee.token.assetId) return@setOnClickListener
+                    if (currentFee == networkFee.selectionKey) return@setOnClickListener
 
                     callback?.invoke(networkFee)
                 }
@@ -127,7 +127,17 @@ class NetworkFeeBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 data class NetworkFee(
     val token: TokenItem,
     val fee: String,
+    val source: Source = Source.DEFAULT,
 ) : Parcelable {
+    val selectionKey: String
+        get() = "${source.name}:${token.assetId}"
+
+    enum class Source {
+        DEFAULT,
+        LEGACY_WEB3,
+        GASLESS,
+    }
+
     companion object {
         val DIFF_CALLBACK =
             object : DiffUtil.ItemCallback<NetworkFee>() {
@@ -135,7 +145,7 @@ data class NetworkFee(
                     oldItem: NetworkFee,
                     newItem: NetworkFee,
                 ) =
-                    oldItem.token.assetId == newItem.token.assetId
+                    oldItem.selectionKey == newItem.selectionKey
 
                 override fun areContentsTheSame(
                     oldItem: NetworkFee,
