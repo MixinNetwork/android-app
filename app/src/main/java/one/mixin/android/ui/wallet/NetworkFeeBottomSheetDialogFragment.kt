@@ -16,6 +16,7 @@ import one.mixin.android.databinding.FragmentNetworkFeeBottomSheetBinding
 import one.mixin.android.databinding.ItemNetworkFeeBinding
 import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
@@ -107,7 +108,7 @@ class NetworkFeeBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         ) {
             binding.apply {
                 nameTv.text = networkFee.token.name
-                feeTv.text = "${networkFee.fee} ${networkFee.token.symbol}"
+                feeTv.text = "${networkFee.fee.numberFormat8()} ${networkFee.token.symbol}"
                 assetIcon.apply {
                     bg.loadImage(networkFee.token.iconUrl, R.drawable.ic_avatar_place_holder)
                     badge.loadImage(networkFee.token.chainIconUrl, R.drawable.ic_avatar_place_holder)
