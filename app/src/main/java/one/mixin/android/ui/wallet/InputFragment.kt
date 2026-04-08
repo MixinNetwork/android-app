@@ -32,7 +32,6 @@ import one.mixin.android.api.request.web3.GaslessTxRequest
 import one.mixin.android.api.request.web3.SubmitGaslessTxRequest
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.web3.EthGaslessTxPayload
-import one.mixin.android.api.response.web3.GaslessSponsorTransactionResponse
 import one.mixin.android.databinding.FragmentInputBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.buildTransaction
@@ -1939,33 +1938,19 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             throw IllegalStateException(response.errorDescription)
         }
         val sponsorTxId = response.data?.sponsorTxId ?: throw IllegalStateException("Missing sponsor tx id")
-        val gaslessTransaction = queryGaslessTransactionOrThrow(sponsorTxId)
+        val now = nowInUtc()
         web3ViewModel.insertGaslessPendingTransaction(
             sponsorTxId = sponsorTxId,
-            chainId = gaslessTransaction.chainId,
-            account = gaslessTransaction.account,
+            chainId = chainId,
+            account = fromAddress,
             assetId = token.assetId,
             amount = amount,
             fee = requireNotNull(currentGaslessFee).fee,
             to = toAddress,
             nonce = ethPayload.userOperation.nonce,
-            createdAt = gaslessTransaction.createdAt,
-            updatedAt = gaslessTransaction.updatedAt,
+            createdAt = now,
+            updatedAt = now,
         )
-    }
-
-    private suspend fun queryGaslessTransactionOrThrow(sponsorTxId: String): GaslessSponsorTransactionResponse {
-        repeat(3) { attempt ->
-            val response = web3ViewModel.gaslessTransaction(sponsorTxId)
-            val data = response.data
-            if (response.isSuccess && data != null) {
-                return data
-            }
-            if (attempt < 2) {
-                delay(300)
-            }
-        }
-        throw IllegalStateException("Failed to query gasless transaction")
     }
 
     private val dialog by lazy {
