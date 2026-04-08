@@ -239,9 +239,9 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             } else {
                                 defaultSharedPreferences.addToList(key, it.assetId)
                                 onAsset?.invoke(it)
+                                dismiss()
                             }
                         }
-                        dismiss()
                     }
                 }
             searchEt.setHint(getString(R.string.search_placeholder_asset))
@@ -406,9 +406,12 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
                     setCancelable(false)
                 }
-            asyncOnAsset?.invoke(token)
-            dialog.dismiss()
-            dismiss()
+            try {
+                asyncOnAsset?.invoke(token)
+            } finally {
+                dialog.dismiss()
+                dismiss()
+            }
         }
     }
 

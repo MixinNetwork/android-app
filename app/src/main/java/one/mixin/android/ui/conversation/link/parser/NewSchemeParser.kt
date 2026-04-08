@@ -239,32 +239,35 @@ class NewSchemeParser(
                     val bottom = TokenListBottomSheetDialogFragment.newInstance(TYPE_FROM_TRANSFER)
                         .apply {
                             asyncOnAsset = { selectedAsset ->
-                                Timber.d("$TAG asset picker selected assetId=${selectedAsset.assetId} symbol=${selectedAsset.symbol} payType=$payType amount=$amount traceId=$traceId")
-                                bottomSheet.requireContext().defaultSharedPreferences.putString(ASSET_PREFERENCE, selectedAsset.assetId)
-                                val biometricItem = try {
-                                    createBiometricItem(selectedAsset, payType, urlQueryParser, amount, traceId, from)
-                                } catch (e: Exception) {
-                                    Timber.e(e, "$TAG createBiometricItem failed after asset selection assetId=${selectedAsset.assetId} traceId=$traceId")
-                                    throw e
-                                }
-                                if (biometricItem != null) {
-                                    Timber.d("$TAG navigating after asset selection ${describeBiometricItem(biometricItem)}")
-                                    WalletActivity.navigateToWalletActivity(this.requireActivity(), biometricItem)
-                                } else {
-                                    Timber.w("$TAG createBiometricItem returned null after asset selection assetId=${selectedAsset.assetId} payType=$payType lastPath=${urlQueryParser.lastPath} traceId=$traceId")
+                                try {
+                                    this@apply.requireContext().defaultSharedPreferences.putString(ASSET_PREFERENCE, selectedAsset.assetId)
+                                    val biometricItem = createBiometricItem(selectedAsset, payType, urlQueryParser, amount, traceId, from)
+                                    if (biometricItem != null) {
+                                        val hostActivity = this@apply.activity ?: bottomSheet.activity
+                                        if (hostActivity != null) {
+                                            WalletActivity.navigateToWalletActivity(hostActivity, biometricItem)
+                                        }
+                                    }
+                                } catch (_: Exception) {
                                 }
                             }
                         }
                     Timber.d("$TAG showing token picker for pay link payType=$payType amount=$amount traceId=$traceId")
-                    bottom.show(bottomSheet.parentFragmentManager, TokenListBottomSheetDialogFragment.TAG)
+                    try {
+                        bottom.show(bottomSheet.parentFragmentManager, TokenListBottomSheetDialogFragment.TAG)
+                    } catch (_: Exception) {
+                        return Result.failure(ParserError(FAILURE))
+                    }
                 } else {
                     val biometricItem = createBiometricItem(token, payType, urlQueryParser, amount, traceId, from)
                     if (biometricItem == null) {
-                        Timber.w("$TAG createBiometricItem returned null for resolved asset assetId=${token.assetId} payType=$payType traceId=$traceId")
                         return Result.failure(ParserError(FAILURE))
                     }
-                    Timber.d("$TAG navigating with resolved asset ${describeBiometricItem(biometricItem)}")
-                    WalletActivity.navigateToWalletActivity(bottomSheet.requireActivity(), biometricItem)
+                    val hostActivity = bottomSheet.activity
+                    if (hostActivity == null) {
+                        return Result.failure(ParserError(FAILURE))
+                    }
+                    WalletActivity.navigateToWalletActivity(hostActivity, biometricItem)
                 }
             }
             Timber.d("$TAG parse finished successfully traceId=$traceId payType=$payType")
