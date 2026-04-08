@@ -7,12 +7,15 @@ import android.os.Bundle
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentManager
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
@@ -192,12 +195,14 @@ class VerifyMobileReminderBottomSheetDialogFragment : MixinComposeBottomSheetDia
                     dismissAllowingStateLoss()
                 },
                 contentSlot = {
-                    Text(
-                        text = stringResource(subtitleResId),
-                        color = MixinAppTheme.colors.textAssist,
-                        modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.Center,
-                    )
+                    Box(modifier = Modifier.padding(bottom = 44.dp)) {
+                        Text(
+                            text = stringResource(subtitleResId),
+                            color = MixinAppTheme.colors.textAssist,
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Center,
+                        )
+                    }
                 },
             )
         }
