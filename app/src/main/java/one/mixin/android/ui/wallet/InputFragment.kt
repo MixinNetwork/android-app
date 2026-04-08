@@ -52,6 +52,7 @@ import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putLong
+import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.toast
@@ -98,7 +99,9 @@ import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.send.InsufficientBtcBalanceException
 import one.mixin.android.widget.Keyboard
+import org.sol4k.Base58
 import org.sol4k.PublicKey
+import org.sol4k.Constants.SIGNATURE_LENGTH
 import org.sol4kt.VersionedTransactionCompat
 import timber.log.Timber
 import java.math.BigDecimal
@@ -1853,6 +1856,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         when (token.chainId) {
             Constants.ChainId.SOLANA_CHAIN_ID -> submitSolanaGaslessTransfer(
                 token = token,
+                amount = amount,
+                fromAddress = fromAddress,
                 toAddress = toAddress,
                 payload = payload.payload,
                 privateKey = privateKey,
@@ -1874,6 +1879,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private suspend fun submitSolanaGaslessTransfer(
         token: Web3TokenItem,
+        amount: String,
+        fromAddress: String,
         toAddress: String,
         payload: JsonElement,
         privateKey: ByteArray,
@@ -1888,8 +1895,23 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             throw IllegalStateException("Gasless Solana transaction is not fully signed")
         }
         val rawTx = signedTx.serialize().base64Encode()
-        val submitFrom = signedTx.message.accounts.firstOrNull()?.toBase58() ?: Web3Signer.solanaAddress
-        val response = web3ViewModel.postRawTx(rawTx, Constants.ChainId.Solana, submitFrom, toAddress, token.assetId)
+        val txHash = signedTx.signatures.firstOrNull { signature ->
+            signature != Base58.encode(ByteArray(SIGNATURE_LENGTH))
+        } ?: throw IllegalStateException("Gasless Solana transaction signature is missing")
+        val now = nowInUtc()
+        web3ViewModel.insertSignedPendingTransaction(
+            hash = txHash,
+            chainId = Constants.ChainId.Solana,
+            account = fromAddress,
+            assetId = token.assetId,
+            amount = amount,
+            fee = requireNotNull(currentGaslessFee).fee.stripAmountZero(),
+            to = toAddress,
+            raw = rawTx,
+            createdAt = now,
+            updatedAt = now,
+        )
+        val response = web3ViewModel.postRawTx(rawTx, Constants.ChainId.Solana, fromAddress, toAddress, token.assetId)
         if (!response.isSuccess) {
             throw IllegalStateException(response.errorDescription)
         }
@@ -1945,7 +1967,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             account = fromAddress,
             assetId = token.assetId,
             amount = amount,
-            fee = requireNotNull(currentGaslessFee).fee,
+            fee = requireNotNull(currentGaslessFee).fee.stripAmountZero(),
             to = toAddress,
             nonce = ethPayload.userOperation.nonce,
             createdAt = now,

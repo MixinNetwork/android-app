@@ -1091,121 +1091,162 @@ class TokenRepository
             val r = routeService.postWeb3Tx(rawTxRequest)
             if (r.isSuccess) {
                 val raw = r.data!!
-                if (rate == null) {
-                    web3RawTransactionDao.insertSuspend(raw)
-                } else {
-                    web3RawTransactionDao.insertSuspend(
-                        raw.copy(
-                            nonce = rate.toPlainString()
-                        )
-                    )
-                }
+                val existingPendingTransaction = web3TransactionDao.getLatestTransaction(raw.hash, raw.chainId)
+                val gaslessPendingTransaction = existingPendingTransaction?.takeIf { it.fee.isNotBlank() }
+                web3RawTransactionDao.insertSuspend(
+                    buildRawTransactionForInsert(raw, gaslessPendingTransaction, rate)
+                )
                 web3TransactionDao.deletePending(raw.hash, raw.chainId)
-
-                val senders = mutableListOf<AssetChange>()
-                val receivers = mutableListOf<AssetChange>()
-                val approvals = mutableListOf<AssetChange>()
-
-                raw.simulateTx?.balanceChanges?.forEach { bc ->
-                    val amt = bc.amount.toBigDecimalOrNull()
-                    if (amt != null) {
-                        receivers.add(
-                            AssetChange(
-                                assetId = bc.assetId,
-                                amount = amt.abs().toPlainString(),
-                                from = bc.from,
-                                to = bc.to
-                            )
-                        )
-                        senders.add(
-                            AssetChange(
-                                assetId = bc.assetId,
-                                amount = amt.toPlainString(),
-                                from = bc.from,
-                                to = bc.to,
-                            )
-                        )
-                    }
-                }
-
-                raw.simulateTx?.approves?.forEach { approve ->
-                    approvals.add(
-                        AssetChange(
-                            assetId = assetId ?: "",
-                            amount = approve.amount,
-                            from = raw.account,
-                            to = approve.spender
-                        )
-                    )
-                }
-
-                var sendAssetId: String? = null
-                var receiveAssetId: String? = null
-
-                val txType = when {
-                    assetId == Constants.ChainId.BITCOIN_CHAIN_ID -> TransactionType.TRANSFER_OUT.value
-                    raw.simulateTx?.approves?.isNotEmpty() == true -> TransactionType.APPROVAL.value
-                    (raw.simulateTx?.balanceChanges?.size ?: 0) > 1 -> TransactionType.SWAP.value
-                    raw.simulateTx?.balanceChanges?.size == 1 -> TransactionType.TRANSFER_OUT.value
-                    else -> TransactionType.UNKNOWN.value
-                }
-
-                when (txType) {
-                    TransactionType.SWAP.value -> {
-                        raw.simulateTx?.balanceChanges?.forEach { bc ->
-                            val amt = bc.amount.toBigDecimalOrNull()
-                            if (amt != null) {
-                                if (amt < BigDecimal.ZERO) {
-                                    sendAssetId = bc.assetId
-                                } else if (amt > BigDecimal.ZERO) {
-                                    receiveAssetId = bc.assetId
-                                }
-                            }
-                        }
-                    }
-                    TransactionType.TRANSFER_OUT.value -> {
-                        raw.simulateTx?.balanceChanges?.firstOrNull {
-                            it.amount.toBigDecimalOrNull()?.let { amt -> amt < BigDecimal.ZERO } == true
-                        }?.let {
-                            sendAssetId = it.assetId
-                            receiveAssetId = it.assetId
-                        }
-                    }
-                    else -> {
-                        sendAssetId = assetId
-                        receiveAssetId = assetId
-                    }
-                }
-
-                if (assetId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-                    sendAssetId = Constants.ChainId.BITCOIN_CHAIN_ID
-                    receiveAssetId = Constants.ChainId.BITCOIN_CHAIN_ID
-                }
-                if (raw.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-                    Timber.e("bitcoin tx,hash=%s, rate=%s", raw.hash, rate ?: "null")
-                }
                 web3TransactionDao.insert(
-                    Web3Transaction(
-                        transactionHash = raw.hash,
-                        chainId = raw.chainId,
-                        address = raw.account,
-                        transactionType = txType,
-                        status = TransactionStatus.PENDING.value,
-                        blockNumber = 0,
-                        fee = "",
-                        senders = senders,
-                        receivers = receivers,
-                        approvals = approvals.ifEmpty { null },
-                        sendAssetId = sendAssetId,
-                        receiveAssetId = receiveAssetId,
-                        transactionAt = raw.updatedAt,
-                        createdAt = raw.createdAt,
-                        updatedAt = raw.updatedAt,
-                        level = Constants.AssetLevel.GOOD,
-                    )
+                    buildPendingTransactionForInsert(raw, assetId, existingPendingTransaction, gaslessPendingTransaction, rate)
                 )
             }
             return r
+        }
+
+        private fun buildRawTransactionForInsert(
+            raw: Web3RawTransaction,
+            gaslessPendingTransaction: Web3Transaction?,
+            rate: BigDecimal?,
+        ): Web3RawTransaction {
+            val resolvedAddress = gaslessPendingTransaction?.address ?: raw.account
+            return when {
+                rate != null -> raw.copy(
+                    account = resolvedAddress,
+                    nonce = rate.toPlainString(),
+                )
+                resolvedAddress != raw.account -> raw.copy(account = resolvedAddress)
+                else -> raw
+            }
+        }
+
+        private fun buildPendingTransactionForInsert(
+            raw: Web3RawTransaction,
+            assetId: String?,
+            existingPendingTransaction: Web3Transaction?,
+            gaslessPendingTransaction: Web3Transaction?,
+            rate: BigDecimal?,
+        ): Web3Transaction {
+            val resolvedAddress = gaslessPendingTransaction?.address ?: raw.account
+            val senders = mutableListOf<AssetChange>()
+            val receivers = mutableListOf<AssetChange>()
+            val approvals = mutableListOf<AssetChange>()
+
+            raw.simulateTx?.balanceChanges?.forEach { bc ->
+                val amt = bc.amount.toBigDecimalOrNull()
+                if (amt != null) {
+                    receivers.add(
+                        AssetChange(
+                            assetId = bc.assetId,
+                            amount = amt.abs().toPlainString(),
+                            from = bc.from,
+                            to = bc.to
+                        )
+                    )
+                    senders.add(
+                        AssetChange(
+                            assetId = bc.assetId,
+                            amount = amt.toPlainString(),
+                            from = bc.from,
+                            to = bc.to,
+                        )
+                    )
+                }
+            }
+
+            raw.simulateTx?.approves?.forEach { approve ->
+                approvals.add(
+                    AssetChange(
+                        assetId = assetId ?: "",
+                        amount = approve.amount,
+                        from = resolvedAddress,
+                        to = approve.spender
+                    )
+                )
+            }
+
+            var sendAssetId: String? = null
+            var receiveAssetId: String? = null
+
+            val txType = when {
+                assetId == Constants.ChainId.BITCOIN_CHAIN_ID -> TransactionType.TRANSFER_OUT.value
+                raw.simulateTx?.approves?.isNotEmpty() == true -> TransactionType.APPROVAL.value
+                (raw.simulateTx?.balanceChanges?.size ?: 0) > 1 -> TransactionType.SWAP.value
+                raw.simulateTx?.balanceChanges?.size == 1 -> TransactionType.TRANSFER_OUT.value
+                else -> TransactionType.UNKNOWN.value
+            }
+
+            when (txType) {
+                TransactionType.SWAP.value -> {
+                    raw.simulateTx?.balanceChanges?.forEach { bc ->
+                        val amt = bc.amount.toBigDecimalOrNull()
+                        if (amt != null) {
+                            if (amt < BigDecimal.ZERO) {
+                                sendAssetId = bc.assetId
+                            } else if (amt > BigDecimal.ZERO) {
+                                receiveAssetId = bc.assetId
+                            }
+                        }
+                    }
+                }
+                TransactionType.TRANSFER_OUT.value -> {
+                    raw.simulateTx?.balanceChanges?.firstOrNull {
+                        it.amount.toBigDecimalOrNull()?.let { amt -> amt < BigDecimal.ZERO } == true
+                    }?.let {
+                        sendAssetId = it.assetId
+                        receiveAssetId = it.assetId
+                    }
+                }
+                else -> {
+                    sendAssetId = assetId
+                    receiveAssetId = assetId
+                }
+            }
+
+            if (assetId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                sendAssetId = Constants.ChainId.BITCOIN_CHAIN_ID
+                receiveAssetId = Constants.ChainId.BITCOIN_CHAIN_ID
+            }
+            if (raw.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                Timber.e("bitcoin tx,hash=%s, rate=%s", raw.hash, rate ?: "null")
+            }
+
+            val shouldFallbackToGaslessPending = sendAssetId == null && receiveAssetId == null && gaslessPendingTransaction != null
+
+            return Web3Transaction(
+                transactionHash = raw.hash,
+                chainId = raw.chainId,
+                address = resolvedAddress,
+                transactionType = if (shouldFallbackToGaslessPending) {
+                    gaslessPendingTransaction.transactionType
+                } else {
+                    txType
+                },
+                status = TransactionStatus.PENDING.value,
+                blockNumber = 0,
+                fee = existingPendingTransaction?.fee.orEmpty(),
+                senders = if (shouldFallbackToGaslessPending && gaslessPendingTransaction.senders != null) {
+                    gaslessPendingTransaction.senders
+                } else {
+                    senders
+                },
+                receivers = if (shouldFallbackToGaslessPending && gaslessPendingTransaction.receivers != null) {
+                    gaslessPendingTransaction.receivers
+                } else {
+                    receivers
+                },
+                approvals = if (approvals.isEmpty() && gaslessPendingTransaction?.approvals != null) {
+                    gaslessPendingTransaction.approvals
+                } else {
+                    approvals.ifEmpty { null }
+                },
+                sendAssetId = sendAssetId ?: gaslessPendingTransaction?.sendAssetId,
+                receiveAssetId = receiveAssetId ?: gaslessPendingTransaction?.receiveAssetId,
+                transactionAt = raw.updatedAt,
+                createdAt = raw.createdAt,
+                updatedAt = raw.updatedAt,
+                level = Constants.AssetLevel.GOOD,
+            )
         }
 
 
@@ -1497,30 +1538,86 @@ class TokenRepository
         createdAt: String,
         updatedAt: String,
     ) {
+        insertPendingTransaction(
+            hash = sponsorTxId,
+            chainId = chainId,
+            account = account,
+            assetId = assetId,
+            amount = amount,
+            fee = fee,
+            to = to,
+            raw = buildGaslessSponsorPendingRawMarker(sponsorTxId),
+            nonce = nonce,
+            createdAt = createdAt,
+            updatedAt = updatedAt,
+        )
+    }
+
+    suspend fun insertSignedPendingTransaction(
+        hash: String,
+        chainId: String,
+        account: String,
+        assetId: String,
+        amount: String,
+        fee: String,
+        to: String,
+        raw: String,
+        createdAt: String,
+        updatedAt: String,
+    ) {
+        insertPendingTransaction(
+            hash = hash,
+            chainId = chainId,
+            account = account,
+            assetId = assetId,
+            amount = amount,
+            fee = fee,
+            to = to,
+            raw = raw,
+            nonce = "",
+            createdAt = createdAt,
+            updatedAt = updatedAt,
+        )
+    }
+
+    private suspend fun insertPendingTransaction(
+        hash: String,
+        chainId: String,
+        account: String,
+        assetId: String,
+        amount: String,
+        fee: String,
+        to: String,
+        raw: String,
+        nonce: String,
+        createdAt: String,
+        updatedAt: String,
+    ) {
         val normalizedAmount = amount.removePrefix("-")
+        val normalizedFee = fee.toBigDecimalOrNull()?.stripTrailingZeros()?.toPlainString() ?: fee
         appDatabase.withTransaction {
             web3RawTransactionDao.insertSuspend(
                 Web3RawTransaction(
-                    hash = sponsorTxId,
+                    hash = hash,
                     chainId = chainId,
                     account = account,
                     nonce = nonce,
-                    raw = buildGaslessSponsorPendingRawMarker(sponsorTxId),
+                    raw = raw,
                     state = TransactionStatus.PENDING.value,
                     createdAt = createdAt,
                     updatedAt = updatedAt,
                 ),
             )
-            web3TransactionDao.deletePending(sponsorTxId, chainId)
+            web3TransactionDao.deletePending(hash, chainId)
             web3TransactionDao.insert(
                 Web3Transaction(
-                    transactionHash = sponsorTxId,
+                    transactionHash = hash,
                     chainId = chainId,
                     address = account,
                     transactionType = TransactionType.TRANSFER_OUT.value,
                     status = TransactionStatus.PENDING.value,
                     blockNumber = 0,
-                    fee = fee,
+                    fee = normalizedFee,
                     senders = listOf(
                         AssetChange(
                             assetId = assetId,

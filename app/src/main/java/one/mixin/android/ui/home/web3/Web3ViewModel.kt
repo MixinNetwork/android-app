@@ -280,6 +280,21 @@ class Web3ViewModel @Inject constructor(
         tokenRepository.insertGaslessPendingTransaction(sponsorTxId, chainId, account, assetId, amount, fee, to, nonce, createdAt, updatedAt)
     }
 
+    suspend fun insertSignedPendingTransaction(
+        hash: String,
+        chainId: String,
+        account: String,
+        assetId: String,
+        amount: String,
+        fee: String,
+        to: String,
+        raw: String,
+        createdAt: String,
+        updatedAt: String,
+    ) = withContext(Dispatchers.IO) {
+        tokenRepository.insertSignedPendingTransaction(hash, chainId, account, assetId, amount, fee, to, raw, createdAt, updatedAt)
+    }
+
     fun collectibles(sortOrder: SortOrder): LiveData<List<SafeCollectible>> =
         tokenRepository.collectibles(sortOrder)
 
