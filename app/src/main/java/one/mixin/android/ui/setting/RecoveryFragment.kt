@@ -34,6 +34,15 @@ class RecoveryFragment : BaseFragment(R.layout.fragment_compose) {
     ) {
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.isVisible = false
+        renderPage()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        renderPage()
+    }
+
+    private fun renderPage() {
         binding.compose.setContent {
             RecoveryKitPage({ activity?.onBackPressedDispatcher?.onBackPressed() },
                 {
