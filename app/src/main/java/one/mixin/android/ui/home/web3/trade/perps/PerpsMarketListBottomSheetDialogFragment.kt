@@ -6,16 +6,21 @@ import android.text.Editable
 import android.view.ViewGroup
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.updateLayoutParams
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.databinding.FragmentMarketListBottomSheetBinding
-import one.mixin.android.db.perps.PerpsMarketDao
 import one.mixin.android.db.perps.PerpsPositionDao
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.defaultSharedPreferences
@@ -27,6 +32,8 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SearchView
 import javax.inject.Inject
+
+private const val MARKET_REFRESH_INTERVAL_MS = 3_000L
 
 @AndroidEntryPoint
 class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
@@ -49,9 +56,8 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
     private val adapter by lazy {
         PerpsMarketListAdapter(isQuoteColorReversed) { market -> onMarketClick(market) }
     }
+    private val viewModel by viewModels<PerpetualViewModel>()
 
-    @Inject
-    lateinit var perpsMarketDao: PerpsMarketDao
     @Inject
     lateinit var perpsPositionDao: PerpsPositionDao
 
@@ -59,6 +65,7 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
         arguments?.takeIf { it.containsKey(ARGS_IS_LONG) }?.getBoolean(ARGS_IS_LONG)
     }
     private var allMarkets = listOf<PerpsMarket>()
+    private var currentQuery = ""
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
@@ -85,22 +92,33 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
 
             searchEt.listener = object : SearchView.OnSearchViewListener {
                 override fun afterTextChanged(s: Editable?) {
-                    filterMarkets(s?.toString() ?: "")
+                    currentQuery = s?.toString().orEmpty()
+                    filterMarkets(currentQuery)
                 }
 
                 override fun onSearch() {}
             }
         }
 
-        loadLocalMarkets()
+        observeMarkets()
     }
 
-    private fun loadLocalMarkets() {
+    private fun observeMarkets() {
         lifecycleScope.launch {
-            allMarkets = withContext(Dispatchers.IO) {
-                perpsMarketDao.getAllMarkets()
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                launch {
+                    viewModel.observeMarkets().collect { markets ->
+                        allMarkets = markets
+                        filterMarkets(currentQuery)
+                    }
+                }
+                launch {
+                    while (isActive) {
+                        viewModel.refreshMarkets()
+                        delay(MARKET_REFRESH_INTERVAL_MS)
+                    }
+                }
             }
-            updateList(allMarkets)
         }
     }
 
