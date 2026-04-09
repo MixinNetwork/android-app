@@ -158,6 +158,7 @@ class PerpsActivity : BaseActivity() {
                         marketSymbol = marketSymbol,
                         displaySymbol = displaySymbol,
                         tokenSymbol = tokenSymbol,
+                        initialMarket = market,
                         onBack = { finish() }
                     )
                 }

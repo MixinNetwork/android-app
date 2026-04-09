@@ -176,7 +176,7 @@ class RecoveryReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
 
             fun shouldShowOnHome(context: Context = MixinApplication.appContext): Boolean {
                 if (consumeDebugShowOnce(context)) return true
-                if (recoveryMethodCount() <= 1) return false
+                if (recoveryMethodCount() > 1) return false
                 return isSnoozeExpired(context)
             }
 

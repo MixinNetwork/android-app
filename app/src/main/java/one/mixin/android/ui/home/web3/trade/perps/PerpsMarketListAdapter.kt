@@ -54,9 +54,9 @@ class PerpsMarketListAdapter(
                 volumeTv.text = root.context.getString(R.string.Vol, "$fiatSymbol$formattedVolume")
 
                 val formattedPrice = try {
-                    BigDecimal(market.markPrice).multiply(fiatRate).priceFormat()
+                    BigDecimal(market.last).multiply(fiatRate).priceFormat()
                 } catch (e: Exception) {
-                    market.markPrice
+                    market.last
                 }
                 priceTv.text = "$fiatSymbol$formattedPrice"
 
