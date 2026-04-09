@@ -496,10 +496,10 @@ private fun MarketDetailCard(
         ?: displaySymbol
 
     val formattedPrice = try {
-        val price = BigDecimal(market.markPrice).multiply(fiatRate)
+        val price = BigDecimal(market.last).multiply(fiatRate)
         price.marketPriceFormat()
     } catch (e: Exception) {
-        market.markPrice
+        market.last
     }
 
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -551,7 +551,7 @@ private fun MarketDetailCard(
             CandleChart(
                 marketId = marketId,
                 timeFrame = timeFrameValues[selectedTimeFrame],
-                marketPrice = market.markPrice
+                marketPrice = market.last
             )
         }
 
