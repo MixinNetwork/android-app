@@ -844,13 +844,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         }
     }
 
-    private fun supportsGaslessTransfer(): Boolean {
-        val token = web3Token ?: return false
-        return token.chainId == Constants.ChainId.SOLANA_CHAIN_ID || token.chainId in Constants.GaslessWeb3EvmChainIds
-    }
-
     private fun shouldOfferLegacyWeb3FeeOption(): Boolean {
-        return BuildConfig.DEBUG && supportsGaslessTransfer()
+        return BuildConfig.DEBUG
     }
 
     private fun hasNativeGasIssue(amount: String): Boolean {
@@ -881,7 +876,6 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private fun hasGaslessFeeSelection(): Boolean {
         return transferType == TransferType.WEB3 &&
-            supportsGaslessTransfer() &&
             currentGaslessFee != null
     }
 
@@ -1801,11 +1795,6 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     }
 
     private suspend fun refreshGaslessFees(t: Web3TokenItem) {
-        if (!supportsGaslessTransfer()) {
-            gaslessFees.clear()
-            currentGaslessFee = null
-            return
-        }
         val fromAddress = fromAddress ?: return
         val toAddress = toAddress ?: return
         val response = runCatching {

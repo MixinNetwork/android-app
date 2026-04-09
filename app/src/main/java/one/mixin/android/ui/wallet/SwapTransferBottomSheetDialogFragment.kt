@@ -277,10 +277,6 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         BigDecimal(requireNotNull(requireArguments().getString(ARGS_OUT_AMOUNT)))
     }
 
-    private val self by lazy {
-        requireNotNull(Session.getAccount()).toUser()
-    }
-
     private val link by lazy {
         requireNotNull(requireArguments().getString(ARGS_LINK)).toUri()
     }
