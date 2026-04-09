@@ -163,7 +163,7 @@ class RecoveryReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
         }
 
         object RecoveryReminderState {
-            fun recoveryMethodCount(): Int {
+            private fun recoveryMethodCount(): Int {
                 val hasPhone = Session.hasPhone()
                 val hasMnemonic = Session.saltExported()
                 val hasRecoveryContact = hasPhone && Session.hasEmergencyContact()
@@ -176,7 +176,7 @@ class RecoveryReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
 
             fun shouldShowOnHome(context: Context = MixinApplication.appContext): Boolean {
                 if (consumeDebugShowOnce(context)) return true
-                if (recoveryMethodCount() != 1) return false
+                if (recoveryMethodCount() <= 1) return false
                 return isSnoozeExpired(context)
             }
 
