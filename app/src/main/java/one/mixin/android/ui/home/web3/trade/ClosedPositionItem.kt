@@ -112,9 +112,9 @@ fun ClosedPositionItem(
                     .size(42.dp)
                     .clip(CircleShape)
             )
-            
+
             Spacer(modifier = Modifier.width(12.dp))
-            
+
             Column {
                 Row(
                     verticalAlignment = Alignment.CenterVertically
@@ -141,6 +141,7 @@ fun ClosedPositionItem(
                         fontSize = 12.sp,
                         color = sideColor,
                         lineHeight = 14.sp,
+                        maxLines = 1,
                         modifier = Modifier
                             .clip(RoundedCornerShape(4.dp))
                             .background(leverageBackgroundColor)
@@ -156,29 +157,22 @@ fun ClosedPositionItem(
             }
         }
 
-        Column(
+        BasicText(
+            text = "${formatPerpsSignedFiatDecimal(pnl.multiply(fiatRate), fiatSymbol)}(${formatPerpsSignedPercent(pnlPercent)})",
             modifier = Modifier.weight(0.85f),
-            horizontalAlignment = Alignment.End,
-            verticalArrangement = Arrangement.Center
-        ) {
-            BasicText(
-                text = "${formatPerpsSignedFiatDecimal(pnl.multiply(fiatRate), fiatSymbol)}(${formatPerpsSignedPercent(pnlPercent)})",
-                modifier = Modifier.fillMaxWidth(),
-                style = TextStyle(
-                    fontSize = 14.sp,
-                    color = pnlColor,
-                    textAlign = TextAlign.End
-                ),
-                maxLines = 1,
-                softWrap = false,
-                overflow = TextOverflow.Ellipsis,
-                autoSize = TextAutoSize.StepBased(
-                    minFontSize = 10.sp,
-                    maxFontSize = 14.sp,
-                    stepSize = 1.sp
-                )
+            style = TextStyle(
+                fontSize = 14.sp,
+                color = pnlColor,
+                textAlign = TextAlign.End
+            ),
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Ellipsis,
+            autoSize = TextAutoSize.StepBased(
+                minFontSize = 8.sp,
+                maxFontSize = 14.sp,
+                stepSize = 0.5.sp
             )
-        }
+        )
     }
 }
-
