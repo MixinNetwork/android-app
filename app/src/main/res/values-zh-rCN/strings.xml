@@ -1851,7 +1851,6 @@
     <string name="Verify_Mobile_Number">验证手机号</string>
     <string name="Verify_Mobile_Number_Desc">定期进行短信验证有助于提升账号安全，如果当前手机号已失效请尽快更换手机号。</string>
     <string name="Verify_Now">立即验证</string>
-    <string name="Backup_Mnemonic_Phrase_Warning">请立即备份您的助记词。该助记词为 MPC 钱包密钥分片之一，一旦设备遗失或应用被卸载，若您没有备份，将无法重新登录当前 Mixin 账号 (%1$s)。</string>
     <string name="add_recovery_contact_before_instruction_3">要添加的恢复联系人已添加当前账号（%1$s）为联系人，否则对方可能无法收到验证码。</string>
     <string name="invalid_mnemonic_phrase">助记词无效</string>
     <string name="Set_up_pin_warning">在验证碎片密钥并同步到 TIP 网络时，请将应用程序保留在前台；在设置过程中不要强制退出应用程序。</string>

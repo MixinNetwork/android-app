@@ -1928,7 +1928,6 @@
     <string name="Verify_Mobile_Number">Verify Mobile Number</string>
     <string name="Verify_Mobile_Number_Desc">Regular SMS verification helps improve account security. If your current mobile number is no longer active, please update it as soon as possible.</string>
     <string name="Verify_Now">Verify Now</string>
-    <string name="Backup_Mnemonic_Phrase_Warning">Please back up your mnemonic phrase immediately! This phrase is one of the key shards of the MPC wallet. If the device is lost or the app is uninstalled, and you haven\'t backed it up, you won\'t be able to log back into the current Mixin account (%1$s).</string>
     <string name="Add_Phone_desc">You can log in to your account using your mobile number. The mobile number will be associated with a key shard of your MPC wallet. The complete key exists only in the TEE security environment on the current device. Read the documentation to learn more about %1$s.</string>
     <string name="Change_Phone_desc">You can log in to your account using your mobile number. The current mobile number (%1$s) is associated with a key shard of your MPC wallet. The complete key exists only in the TEE security environment on the current device. Read the documentation to learn more about %2$s.</string>
     <string name="Add_Mobile_Number">Add Mobile Number</string>

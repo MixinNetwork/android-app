@@ -41,9 +41,9 @@ fun ReminderPage(
     @DrawableRes contentImage: Int,
     @StringRes title: Int,
     @StringRes actionStr: Int,
-    @StringRes dismissStr: Int = R.string.Not_Now,
+    @StringRes dismissStr: Int? = R.string.Not_Now,
     action: () -> Unit,
-    dismiss: () -> Unit,
+    dismiss: (() -> Unit)?,
     contentSlot: @Composable () -> Unit,
     extraContent: (@Composable () -> Unit)? = null,
 ) {
@@ -108,18 +108,22 @@ fun ReminderPage(
             ) {
                 Text(text = stringResource(actionStr), color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.W400)
             }
-            Spacer(modifier = Modifier.height(18.dp))
-            Text(
-                modifier = Modifier
-                    .padding(8.dp)
-                    .align(Alignment.CenterHorizontally)
-                    .clickable { dismiss.invoke() },
-                text = stringResource(dismissStr),
-                color = MixinAppTheme.colors.accent,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.W400
-            )
-            Spacer(modifier = Modifier.height(20.dp))
+            if (dismissStr != null && dismiss != null) {
+                Spacer(modifier = Modifier.height(18.dp))
+                Text(
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .align(Alignment.CenterHorizontally)
+                        .clickable { dismiss.invoke() },
+                    text = stringResource(dismissStr),
+                    color = MixinAppTheme.colors.accent,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.W400
+                )
+                Spacer(modifier = Modifier.height(20.dp))
+            } else {
+                Spacer(modifier = Modifier.height(20.dp))
+            }
         }
     }
 }
