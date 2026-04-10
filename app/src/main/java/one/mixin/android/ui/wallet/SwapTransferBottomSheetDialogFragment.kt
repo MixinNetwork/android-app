@@ -68,6 +68,7 @@ import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.ResponseError
 import one.mixin.android.api.request.web3.EstimateFeeRequest
+import one.mixin.android.api.request.web3.GaslessFeeRequest
 import one.mixin.android.api.request.web3.GaslessTxRequest
 import one.mixin.android.api.request.web3.SubmitGaslessTxRequest
 import one.mixin.android.api.request.web3.Web3RawTransactionRequest
@@ -1026,6 +1027,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         toAddress: String,
         amount: String,
     ): GaslessTxResponse? {
+        val feeAmount = resolveGaslessFeeAmount(token, fromAddress, toAddress) ?: return null
         return runCatching {
             web3ViewModel.gaslessPrepare(
                 GaslessTxRequest(
@@ -1034,6 +1036,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                     assetId = token.assetId,
                     amount = amount,
                     feeAssetId = token.assetId,
+                    feeAmount = feeAmount,
                     chainId = token.chainId,
                 ),
             )
@@ -1047,6 +1050,9 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         amount: String,
     ): GaslessTxResponse {
         gaslessPrepareResponse?.let { return it }
+        val feeAmount = requireNotNull(resolveGaslessFeeAmount(token, fromAddress, toAddress)) {
+            "gasless fee amount is required"
+        }
         val response = web3ViewModel.gaslessPrepare(
             GaslessTxRequest(
                 from = fromAddress,
@@ -1054,6 +1060,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                 assetId = token.assetId,
                 amount = amount,
                 feeAssetId = token.assetId,
+                feeAmount = feeAmount,
                 chainId = token.chainId,
             ),
         )
@@ -1061,6 +1068,27 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
             throw IllegalStateException(response.errorDescription)
         }
         return response.data!!
+    }
+
+    private suspend fun resolveGaslessFeeAmount(
+        token: Web3TokenItem,
+        fromAddress: String,
+        toAddress: String,
+    ): String? {
+        val response = runCatching {
+            web3ViewModel.gaslessFee(
+                GaslessFeeRequest(
+                    from = fromAddress,
+                    to = toAddress,
+                    assetId = token.assetId,
+                    chainId = token.chainId,
+                ),
+            )
+        }.getOrNull() ?: return null
+        if (!response.isSuccess || response.data == null) return null
+
+        val sameAssetFee = response.data!!.fees.firstOrNull { it.assetId == token.assetId }
+        return (sameAssetFee ?: response.data!!.fees.firstOrNull())?.amount
     }
 
     private suspend fun submitGaslessTransfer(pin: String) {

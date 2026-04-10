@@ -1834,6 +1834,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 assetId = token.assetId,
                 amount = amount,
                 feeAssetId = fee.token.assetId,
+                feeAmount = fee.fee.stripAmountZero(),
                 chainId = token.chainId,
             ),
         )
