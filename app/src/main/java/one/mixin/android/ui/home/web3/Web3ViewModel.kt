@@ -295,6 +295,8 @@ class Web3ViewModel @Inject constructor(
         tokenRepository.insertSignedPendingTransaction(hash, chainId, account, assetId, amount, fee, to, raw, createdAt, updatedAt)
     }
 
+    suspend fun ticker(assetId: String, offset: String?) = tokenRepository.ticker(assetId, offset)
+
     fun collectibles(sortOrder: SortOrder): LiveData<List<SafeCollectible>> =
         tokenRepository.collectibles(sortOrder)
 

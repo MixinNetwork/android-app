@@ -686,7 +686,7 @@ private fun OpenPositionCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "${formatPerpsSignedFiatDecimal(pnl.multiply(fiatRate), fiatSymbol)}(${formatPerpsSignedPercent(roe)})",
+                    text = "${formatPerpsSignedFiatDecimal(pnl.multiply(fiatRate), fiatSymbol)} (${formatPerpsSignedPercent(roe)})",
                     fontSize = 14.sp,
                     lineHeight = 17.sp,
                     style = compactTextStyle,
