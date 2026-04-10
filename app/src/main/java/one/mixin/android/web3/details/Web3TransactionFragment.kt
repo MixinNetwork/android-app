@@ -335,7 +335,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             avatar.badge.isVisible = false
 
             dateTv.text = transaction.transactionAt.fullDate()
-            feeLl.isVisible = transaction.transactionType != TransactionType.TRANSFER_IN.value && transaction.fee.isNotEmpty()
+            feeLl.isVisible = shouldShowFee(transaction.status)
             feeTv.text = "${transaction.fee} ${transaction.chainSymbol ?: ""}"
             statusLl.isVisible = false
             
@@ -380,10 +380,12 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             } else {
                 assetChangesLl.visibility = View.GONE
             }
-            if (transaction.status == TransactionStatus.PENDING.value
-                && transaction.chainId != Constants.ChainId.SOLANA_CHAIN_ID) {
+            if (transaction.status == TransactionStatus.PENDING.value) {
                 lifecycleScope.launch {
-                    updateActions()
+                    updateFeeVisibility(transaction.status)
+                    if (transaction.chainId != Constants.ChainId.SOLANA_CHAIN_ID) {
+                        updateActions()
+                    }
                 }
             }
         }
@@ -407,9 +409,37 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         return !isOnlyOutputToSelf
     }
 
-    private fun updateActions() {
+    private fun shouldShowFee(
+        status: String,
+        pendingRawTx: Web3RawTransaction? = null,
+    ): Boolean {
+        if (transaction.transactionType == TransactionType.TRANSFER_IN.value || transaction.fee.isEmpty()) {
+            return false
+        }
+        if (status != TransactionStatus.PENDING.value) {
+            return true
+        }
+        return pendingRawTx?.isGaslessPending() == false
+    }
+
+    private suspend fun updateFeeVisibility(status: String = transaction.status) {
+        val pendingRawTx: Web3RawTransaction? = if (status == TransactionStatus.PENDING.value) {
+            web3ViewModel.getRawTransactionByHashAndChain(wallet.id, transaction.transactionHash, transaction.chainId)
+        } else {
+            null
+        }
+        binding.feeLl.isVisible = shouldShowFee(status, pendingRawTx)
+    }
+
+    private fun updateActions(status: String = transaction.status) {
         lifecycleScope.launch {
             binding.apply {
+                if (status != TransactionStatus.PENDING.value) {
+                    actions.isVisible = false
+                    actions.speedUp.setOnClickListener(null)
+                    actions.cancelTx.setOnClickListener(null)
+                    return@apply
+                }
                 val pendingRawTx = web3ViewModel.getRawTransactionByHashAndChain(wallet.id, transaction.transactionHash, transaction.chainId)
                 val shouldShowActions = pendingRawTx != null
 
@@ -530,7 +560,11 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 }
             }
         }
-        updateActions()
+        binding.feeLl.isVisible = shouldShowFee(newStatus)
+        lifecycleScope.launch {
+            updateFeeVisibility(newStatus)
+        }
+        updateActions(newStatus)
     }
 
     private fun handleSpeedUp(rawTransaction: Web3RawTransaction) {

@@ -1430,6 +1430,7 @@ fun AssetChanges(
                 text = outAsset.chain.name,
                 color = MixinAppTheme.colors.textAssist,
                 fontSize = 14.sp,
+                textAlign = TextAlign.End
             )
         }
     }

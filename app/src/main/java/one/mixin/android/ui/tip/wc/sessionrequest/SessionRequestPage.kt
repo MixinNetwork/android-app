@@ -538,9 +538,8 @@ fun FeeInfo(
         ) {
             if (isLoading) {
                 CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
+                    modifier = Modifier.size(24.dp),
                     color = MixinAppTheme.colors.accent,
-                    strokeWidth = 2.dp,
                 )
             } else {
                 Column {
