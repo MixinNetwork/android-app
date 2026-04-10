@@ -205,6 +205,8 @@ class Web3ViewModel @Inject constructor(
 
     suspend fun findAssetItemById(assetId: String) = tokenRepository.findAssetItemById(assetId)
 
+    suspend fun ticker(assetId: String, offset: String?) = tokenRepository.ticker(assetId, offset)
+
     fun collectibles(sortOrder: SortOrder): LiveData<List<SafeCollectible>> =
         tokenRepository.collectibles(sortOrder)
 
