@@ -278,7 +278,6 @@
     <string name="delete_account_hint_2">ローカルメッセージとiCloudにバックアップされた内容は自動的に削除されません</string>
     <string name="delete_account_hint_3">トランザクション履歴を削除することはできません</string>
     <string name="Delete_address">アドレスを削除</string>
-    <string name="Delete_emergency_contact">緊急連絡先を削除</string>
     <string name="Delete_for_everyone">全員のチャットから削除</string>
     <string name="Delete_for_me">あなたのチャットから削除</string>
     <string name="Delete_Group">グループを削除</string>
@@ -653,16 +652,13 @@
     <string name="Phone_Contact">連絡帳</string>
     <string name="Phone_Contacts">連絡帳</string>
     <string name="Phone_Number">電話番号を変更する</string>
-    <string name="Phone_number_change">電話番号変更</string>
     <string name="phone_number_privacy">あなたを電話番号検索で追加できるユーザー</string>
     <string name="Photo">写真</string>
     <string name="Photos">写真</string>
     <string name="PIN">PINコード</string>
-    <string name="PIN_change">PINコード変更</string>
     <string name="pin_check_tip">安全のため、定期的にPINコードを確認します。</string>
     <string name="pin_confirm_again_hint">もう一度PINコードを確認してください</string>
     <string name="pin_confirm_hint">PINコードを確実に記憶してください。ウォレットを失った場合、復元することはできません</string>
-    <string name="pin_creation">PINコードの生成</string>
     <string name="PIN_incorrect">PINコードが違います</string>
     <string name="pin_lost_hint">PINコードを忘れた場合、ウォレットを復元することは一切できません</string>
     <string name="pin_title">ピン留め</string>
@@ -840,10 +836,6 @@
     <string name="Show">表示</string>
     <string name="Show_in_chat">チャット内で表示</string>
     <string name="Shown">表示ずみ</string>
-    <string name="Sign_in">ログイン</string>
-    <string name="Sign_in_desktop_app">デスクトップにログイン</string>
-    <string name="Sign_with_emergency_contact">緊急連絡先でログイン</string>
-    <string name="Sign_with_mobile_number">電話番号でログイン</string>
     <string name="Silence_Notification">サイレント通知</string>
     <string name="Size">サイズ</string>
     <string name="Skip">スキップ</string>
@@ -955,7 +947,6 @@
     <string name="User_not_found">ユーザーが見つかりませんでした</string>
     <string name="value_now">現在価格 %1$s</string>
     <string name="value_then">当時の価格 %1$s</string>
-    <string name="Verify">認証</string>
     <string name="Verify_by_Biometric">生体認証で認証</string>
     <string name="Verify_PIN">PINコードを認証</string>
     <string name="Verifying">認証中…</string>
@@ -1026,6 +1017,5 @@
     <string name="You">自分</string>
     <string name="You_deleted_this_message">このメッセージを削除しました。</string>
     <string name="You_have_left_the_group">グループから退会しました</string>
-    <string name="your_pin_has_been_created">PINコードが生成されました</string>
     <string name="Receivers">受取人</string>
 </resources>
