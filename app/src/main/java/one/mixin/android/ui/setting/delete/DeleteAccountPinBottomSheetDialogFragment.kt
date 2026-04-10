@@ -41,7 +41,6 @@ class DeleteAccountPinBottomSheetDialogFragment : BiometricBottomSheetDialogFrag
         style: Int,
     ) {
         super.setupDialog(dialog, style)
-        skip = true
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
         setBiometricLayout()

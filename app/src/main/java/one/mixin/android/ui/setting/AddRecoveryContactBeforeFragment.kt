@@ -36,7 +36,6 @@ class AddRecoveryContactBeforeFragment : BaseFragment(R.layout.fragment_compose)
         binding.compose.setContent {
             AddRecoveryContactBeforePage ({
                 parentFragmentManager.apply {
-                    toast(R.string.Successful)
                     requireActivity().finish()
                 }
             }, {
