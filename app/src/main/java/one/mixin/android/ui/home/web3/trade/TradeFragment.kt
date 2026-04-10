@@ -772,12 +772,16 @@ class TradeFragment : BaseFragment() {
     ): Boolean {
         if (inMixin()) return true
         val walletId = Web3Signer.currentWalletId
-        val token = swapViewModel.getTokenByWalletAndAssetId(walletId, from.assetId) ?: return true
-        val toAddress = destination ?: return true
+        val token = swapViewModel.getTokenByWalletAndAssetId(walletId, from.assetId)
+        if (token == null) return true
+        val toAddress = destination
+        if (toAddress == null) return true
         val fromAddress = when (token.chainId) {
             Constants.ChainId.SOLANA_CHAIN_ID -> Web3Signer.solanaAddress
             Constants.ChainId.BITCOIN_CHAIN_ID -> {
-                swapViewModel.getAddressesByChainId(walletId, Constants.ChainId.BITCOIN_CHAIN_ID)?.destination ?: return true
+                val btcAddress = swapViewModel.getAddressesByChainId(walletId, Constants.ChainId.BITCOIN_CHAIN_ID)?.destination
+                if (btcAddress == null) return true
+                btcAddress
             }
             else -> Web3Signer.evmAddress
         }
@@ -800,11 +804,27 @@ class TradeFragment : BaseFragment() {
             }
         }
 
-        val fee = estimateWeb3Fee(token, fromAddress, toAddress, amount) ?: return true
-        val chainToken = swapViewModel.web3TokenItemById(walletId, token.chainId) ?: return true
-        val chainBalance = chainToken.balance.toBigDecimalOrNull() ?: return true
+        val chainToken = swapViewModel.web3TokenItemById(walletId, token.chainId)
+        if (chainToken == null) return true
+        val chainBalance = chainToken.balance.toBigDecimalOrNull()
+        if (chainBalance == null) return true
         val transferAmount = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
         val sameAssetFee = token.assetId == chainToken.assetId && token.chainId == chainToken.chainId
+        val fee = estimateWeb3Fee(token, fromAddress, toAddress, amount)
+        if (fee == null) {
+            val insufficientByFullBalanceFallback = sameAssetFee && transferAmount >= chainBalance
+            if (!insufficientByFullBalanceFallback) {
+                return true
+            }
+            TransferWeb3BalanceErrorBottomSheetDialogFragment.newInstance(
+                Web3TokenFeeItem(
+                    token = chainToken,
+                    amount = transferAmount,
+                    fee = BigDecimal.ZERO,
+                )
+            ).showNow(parentFragmentManager, TransferWeb3BalanceErrorBottomSheetDialogFragment.TAG)
+            return false
+        }
         val requiredBalance = if (sameAssetFee) transferAmount + fee else fee
 
         if (requiredBalance <= chainBalance) {
