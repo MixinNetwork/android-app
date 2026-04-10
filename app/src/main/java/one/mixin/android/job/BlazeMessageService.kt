@@ -95,6 +95,10 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             ctx: Context,
             action: String? = null,
         ) {
+            if (!Session.checkToken()) {
+                Timber.i("Skip BlazeMessageService start without an active session, action=%s", action)
+                return
+            }
             val intent =
                 Intent(ctx, BlazeMessageService::class.java).apply {
                     this.action = action
@@ -178,6 +182,12 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     @SuppressLint("AutoDispose")
     override fun onCreate() {
         super.onCreate()
+        if (!Session.checkToken()) {
+            Timber.i("Stop BlazeMessageService onCreate without an active session")
+            stopSelf()
+            return
+        }
+        currentUserScopeManager.ensureScopeFromSession()
         webSocket.setWebSocketObserver(this)
         webSocket.connect()
         lifecycleScope.launch(Dispatchers.IO) {
@@ -225,6 +235,11 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         startId: Int,
     ): Int {
         super.onStartCommand(intent, flags, startId)
+        if (!Session.checkToken()) {
+            Timber.i("Stop BlazeMessageService onStartCommand without an active session")
+            stopSelf()
+            return START_NOT_STICKY
+        }
         updateIgnoringBatteryOptimizations()
 
         if (intent == null) return START_STICKY
