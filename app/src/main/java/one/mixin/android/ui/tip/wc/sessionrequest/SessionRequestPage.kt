@@ -516,6 +516,7 @@ fun FeeInfo(
     fee: BigDecimal,
     gasPrice: String? = null,
     isFree: Boolean = false,
+    isLoading: Boolean = false,
     onFreeClick: (() -> Unit)? = null,
 ) {
     Column(
@@ -535,43 +536,51 @@ fun FeeInfo(
                 Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Column {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = amount,
-                        color = MixinAppTheme.colors.textPrimary,
-                        fontSize = 14.sp,
-                        style = TextStyle(textDecoration = if (isFree) TextDecoration.LineThrough else TextDecoration.None),
-                    )
-                    if (gasPrice != null) {
-                        Box(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "($gasPrice Gwei)",
-                            color = MixinAppTheme.colors.textAssist,
-                            fontSize = 12.sp,
-                        )
-                    }
-                    if (isFree) {
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = stringResource(id = R.string.FREE),
-                            color = Color.White,
-                            fontSize = 10.sp,
-                            lineHeight = 10.sp,
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(MixinAppTheme.colors.accent)
-                                .padding(horizontal = 3.dp, vertical = 1.dp)
-                                .let { m -> if (onFreeClick != null) m.clickable { onFreeClick.invoke() } else m }
-                        )
-                    }
-                }
-                Box(modifier = Modifier.height(4.dp))
-                Text(
-                    text = fee.currencyFormat(),
-                    color = MixinAppTheme.colors.textAssist,
-                    fontSize = 14.sp,
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    color = MixinAppTheme.colors.accent,
+                    strokeWidth = 2.dp,
                 )
+            } else {
+                Column {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = amount,
+                            color = MixinAppTheme.colors.textPrimary,
+                            fontSize = 14.sp,
+                            style = TextStyle(textDecoration = if (isFree) TextDecoration.LineThrough else TextDecoration.None),
+                        )
+                        if (gasPrice != null) {
+                            Box(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "($gasPrice Gwei)",
+                                color = MixinAppTheme.colors.textAssist,
+                                fontSize = 12.sp,
+                            )
+                        }
+                        if (isFree) {
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = stringResource(id = R.string.FREE),
+                                color = Color.White,
+                                fontSize = 10.sp,
+                                lineHeight = 10.sp,
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(MixinAppTheme.colors.accent)
+                                    .padding(horizontal = 3.dp, vertical = 1.dp)
+                                    .let { m -> if (onFreeClick != null) m.clickable { onFreeClick.invoke() } else m }
+                            )
+                        }
+                    }
+                    Box(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = fee.currencyFormat(),
+                        color = MixinAppTheme.colors.textAssist,
+                        fontSize = 14.sp,
+                    )
+                }
             }
             Box(modifier = Modifier)
         }

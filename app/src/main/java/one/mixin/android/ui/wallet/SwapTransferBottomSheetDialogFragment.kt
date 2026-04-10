@@ -306,6 +306,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
 
     private var web3Transaction: JsSignMessage? by mutableStateOf(null)
     private var gaslessPrepareResponse: GaslessTxResponse? by mutableStateOf(null)
+    private var isGaslessLoading by mutableStateOf(false)
     private var tipGas: TipGas? by mutableStateOf(null)
     private var solanaFee: BigDecimal? by mutableStateOf(null)
     private var btcFee: BigDecimal? by mutableStateOf(null)
@@ -482,6 +483,17 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                     ItemPriceContent(title = stringResource(id = R.string.Price).uppercase(), inAmount = inAmount, inAsset = inAsset, outAmount = outAmount, outAsset = outAsset)
                     Box(modifier = Modifier.height(20.dp))
                     if (source == "web3") {
+                        val chainId = token?.chainId ?: inAsset.chain.chainId
+                        val isGaslessPrepared = web3Transaction?.type == JsSignMessage.TYPE_GASLESS_TRANSFER && gaslessPrepareResponse != null
+                        val shouldShowFeeLoading =
+                            !isGaslessPrepared && (
+                                isGaslessLoading ||
+                                    (chainId == Constants.ChainId.SOLANA_CHAIN_ID && solanaFee == null) ||
+                                    (chainId == Constants.ChainId.BITCOIN_CHAIN_ID && btcFee == null) ||
+                                    (chainId != Constants.ChainId.SOLANA_CHAIN_ID &&
+                                        chainId != Constants.ChainId.BITCOIN_CHAIN_ID &&
+                                        tipGas == null)
+                            )
                         if (tipGas != null || solanaFee != null || btcFee != null) {
                             val transaction = web3Transaction?.wcEthereumTransaction
                             val fee = btcFee?.stripTrailingZeros() ?: solanaFee?.stripTrailingZeros() ?: tipGas?.displayValue(transaction?.maxFeePerGas) ?: BigDecimal.ZERO
@@ -498,7 +510,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                 )
                             }
                         } else {
-                            FeeInfo("0", BigDecimal("0"))
+                            FeeInfo("0", BigDecimal("0"), isLoading = shouldShowFeeLoading)
                         }
                     } else {
                         FeeInfo("0", BigDecimal("0"))
@@ -847,12 +859,17 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                             }
                             val inputAmount: String = requireArguments().getString(ARGS_IN_AMOUNT)!!
                             if (token.chainId != Constants.ChainId.BITCOIN_CHAIN_ID) {
-                                val gaslessPayload = probeGaslessAvailability(
-                                    token = token,
-                                    fromAddress = fromAddress,
-                                    toAddress = depositDestination,
-                                    amount = inputAmount,
-                                )
+                                isGaslessLoading = true
+                                val gaslessPayload = try {
+                                    probeGaslessAvailability(
+                                        token = token,
+                                        fromAddress = fromAddress,
+                                        toAddress = depositDestination,
+                                        amount = inputAmount,
+                                    )
+                                } finally {
+                                    isGaslessLoading = false
+                                }
                                 if (gaslessPayload != null) {
                                     gaslessPrepareResponse = gaslessPayload
                                     web3Transaction = JsSignMessage(
