@@ -101,10 +101,43 @@
                         android:textColor="?attr/text_primary"/>
 
                     <TextView
-                        android:id="@+id/status"
+                        android:id="@+id/value_as_tv"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_below="@+id/value_tv"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="@dimen/margin10"
+                        android:textColor="?attr/text_assist"
+                        android:visibility="gone" />
+
+                    <ViewAnimator
+                        android:id="@+id/that_va"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/value_as_tv"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="6dp"
+                        android:visibility="gone">
+
+                        <ProgressBar
+                            style="?android:attr/progressBarStyleSmall"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:theme="@style/AppTheme.BlueAccent" />
+
+                        <TextView
+                            android:id="@+id/that_tv"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="?attr/text_assist" />
+                    </ViewAnimator>
+
+                    <TextView
+                        android:id="@+id/status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/that_va"
                         android:layout_centerHorizontal="true"
                         android:layout_marginTop="@dimen/margin10"
                         android:layout_marginBottom="24dp"
