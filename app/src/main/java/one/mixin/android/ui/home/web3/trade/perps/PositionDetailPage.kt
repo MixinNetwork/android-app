@@ -613,5 +613,5 @@ fun PositionDetailPage(
 
 private fun formatSignedPercent(value: BigDecimal): String {
     val number = value.abs().setScale(2, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
-    return "$$number%"
+    return "$number%"
 }
