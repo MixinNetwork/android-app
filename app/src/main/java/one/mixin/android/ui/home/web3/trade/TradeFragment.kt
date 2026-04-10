@@ -40,6 +40,7 @@ import one.mixin.android.Constants.AssetId.XIN_ASSET_ID
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.api.request.web3.GaslessFeeRequest
 import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.request.web3.GaslessTxRequest
 import one.mixin.android.api.response.CreateLimitOrderResponse
@@ -787,18 +788,22 @@ class TradeFragment : BaseFragment() {
         }
 
         if (allowGasless && token.chainId != Constants.ChainId.BITCOIN_CHAIN_ID) {
-            val gaslessPrepared = runCatching {
-                web3ViewModel.gaslessPrepare(
-                    GaslessTxRequest(
-                        from = fromAddress,
-                        to = toAddress,
-                        assetId = token.assetId,
-                        amount = amount,
-                        feeAssetId = token.assetId,
-                        chainId = token.chainId,
+            val feeAmount = resolveGaslessFeeAmount(token, fromAddress, toAddress)
+            val gaslessPrepared = feeAmount?.let { resolvedFeeAmount ->
+                runCatching {
+                    web3ViewModel.gaslessPrepare(
+                        GaslessTxRequest(
+                            from = fromAddress,
+                            to = toAddress,
+                            assetId = token.assetId,
+                            amount = amount,
+                            feeAssetId = token.assetId,
+                            feeAmount = resolvedFeeAmount,
+                            chainId = token.chainId,
+                        )
                     )
-                )
-            }.getOrNull()?.data
+                }.getOrNull()?.data
+            }
             if (gaslessPrepared != null) {
                 return true
             }
@@ -839,6 +844,27 @@ class TradeFragment : BaseFragment() {
             )
         ).showNow(parentFragmentManager, TransferWeb3BalanceErrorBottomSheetDialogFragment.TAG)
         return false
+    }
+
+    private suspend fun resolveGaslessFeeAmount(
+        token: Web3TokenItem,
+        fromAddress: String,
+        toAddress: String,
+    ): String? {
+        val response = runCatching {
+            web3ViewModel.gaslessFee(
+                GaslessFeeRequest(
+                    from = fromAddress,
+                    to = toAddress,
+                    assetId = token.assetId,
+                    chainId = token.chainId,
+                ),
+            )
+        }.getOrNull() ?: return null
+        if (!response.isSuccess || response.data == null) return null
+
+        val sameAssetFee = response.data!!.fees.firstOrNull { it.assetId == token.assetId }
+        return (sameAssetFee ?: response.data!!.fees.firstOrNull())?.amount
     }
 
     private suspend fun estimateWeb3Fee(
