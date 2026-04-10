@@ -101,7 +101,7 @@ class TotalPositionValueAdapter(
                     subtitleTv.isGone = true
                 } else {
                     subtitleTv.isVisible = true
-                    subtitleTv.text = "${formatSignedUsd(subtitleValue)}(${formatPerpsSignedPercent(subtitlePercent)})"
+                    subtitleTv.text = "${formatSignedUsd(subtitleValue)} (${formatPerpsSignedPercent(subtitlePercent)})"
                     subtitleTv.setTextColor(
                         if (isProfit) {
                             gainColor
@@ -117,7 +117,7 @@ class TotalPositionValueAdapter(
                     subtitleTv.isGone = true
                 } else {
                     subtitleTv.isVisible = true
-                    subtitleTv.text = "${formatSignedUsd(subtitleValue)}(${formatPerpsSignedPercent(subtitlePercent)})"
+                    subtitleTv.text = "${formatSignedUsd(subtitleValue)} (${formatPerpsSignedPercent(subtitlePercent)})"
                     subtitleTv.setTextColor(
                         when {
                             subtitlePercent > BigDecimal.ZERO -> gainColor
