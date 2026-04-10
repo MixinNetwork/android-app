@@ -697,32 +697,17 @@ class TradeFragment : BaseFragment() {
     }
 
     private fun openSwapTransfer(swapResult: SwapResponse, from: SwapToken, to: SwapToken) {
-        if (from.chain.chainId == Constants.ChainId.Solana || from.chain.chainId == Constants.ChainId.BITCOIN_CHAIN_ID || inMixin()) {
-            AnalyticsTracker.trackTradePreview()
-            SwapTransferBottomSheetDialogFragment.newInstance(swapResult, from, to).apply {
-                setOnDone {
-                    initialAmount = null
-                    lastOrderTime = System.currentTimeMillis()
-                }
-                setOnDestroy {
-                    reviewing = false
-                }
-            }.showNow(parentFragmentManager, SwapTransferBottomSheetDialogFragment.TAG)
-            reviewing = true
-        } else {
-            GasCheckBottomSheetDialogFragment.newInstance(swapResult, from, to).apply {
-                setOnDone {
-                    initialAmount = null
-                    lastOrderTime = System.currentTimeMillis()
-                }
-                setOnDestroy {
-                    reviewing = false
-                }
-            }.showNow(
-                parentFragmentManager,
-                GasCheckBottomSheetDialogFragment.TAG
-            )
-        }
+        AnalyticsTracker.trackTradePreview()
+        SwapTransferBottomSheetDialogFragment.newInstance(swapResult, from, to).apply {
+            setOnDone {
+                initialAmount = null
+                lastOrderTime = System.currentTimeMillis()
+            }
+            setOnDestroy {
+                reviewing = false
+            }
+        }.showNow(parentFragmentManager, SwapTransferBottomSheetDialogFragment.TAG)
+        reviewing = true
     }
 
     private suspend fun openLimitTransfer(from: SwapToken, to: SwapToken, order: CreateLimitOrderResponse) {
