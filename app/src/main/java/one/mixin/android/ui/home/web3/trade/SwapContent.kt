@@ -301,6 +301,7 @@ fun SwapContent(
                     quoteResult = quoteResult,
                     quoteError = quoteError,
                     isLoading = isLoading,
+                    reviewing = reviewing,
                     isButtonEnabled = isButtonEnabled,
                     onButtonEnabledChange = { isButtonEnabled = it },
                     onReview = { onReview(it, fromToken!!, toToken!!, inputText) },
@@ -359,6 +360,7 @@ fun ReviewButton(
     quoteResult: QuoteResult?,
     quoteError: Throwable?,
     isLoading: Boolean,
+    reviewing: Boolean,
     isButtonEnabled: Boolean,
     onButtonEnabledChange: (Boolean) -> Unit,
     onReview: (QuoteResult) -> Unit,
@@ -367,7 +369,7 @@ fun ReviewButton(
     scope: CoroutineScope
 ) {
     val checkBalance = checkBalance(inputText, fromBalance)
-    
+    val isBusy = isLoading || reviewing
     val hasError = quoteError != null
     Button(
         modifier = Modifier
@@ -386,7 +388,7 @@ fun ReviewButton(
                 }
             }
         },
-        enabled = quoteResult != null && !hasError && !isLoading && checkBalance == true,
+        enabled = quoteResult != null && !hasError && !isBusy && checkBalance == true,
         colors = ButtonDefaults.outlinedButtonColors(
             backgroundColor = if (quoteResult != null && !hasError && checkBalance == true) {
                 MixinAppTheme.colors.accent
@@ -402,7 +404,7 @@ fun ReviewButton(
             focusedElevation = 0.dp,
         ),
     ) {
-        if (isLoading) {
+        if (isBusy) {
             CircularProgressIndicator(
                 modifier = Modifier.size(18.dp),
                 color = if (quoteResult != null && !hasError && checkBalance == true) {

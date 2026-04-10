@@ -1,8 +1,10 @@
 package one.mixin.android.web3.details
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -26,6 +28,8 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.AssetChange
 import one.mixin.android.db.web3.vo.TransactionStatus
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.extension.numberFormat2
+import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
 @Composable
@@ -34,6 +38,7 @@ fun AssetChangeItem(
     amount: String,
     symbol: String,
     iconUrl: String?,
+    fiatValue: String? = null,
     isReceive: Boolean = false,
     isUnlimited: Boolean = false,
     isApproval: Boolean = false
@@ -56,27 +61,41 @@ fun AssetChangeItem(
         else if (isReceive) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
 
     Row(
+        modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        CoilImage(
-            model = iconUrl,
-            placeholder = R.drawable.ic_avatar_place_holder,
-            modifier = Modifier.size(18.dp),
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            CoilImage(
+                model = iconUrl,
+                placeholder = R.drawable.ic_avatar_place_holder,
+                modifier = Modifier.size(18.dp),
+            )
 
-        Spacer(modifier = Modifier.width(4.dp))
+            Spacer(modifier = Modifier.width(4.dp))
 
-        Text(
-            text = if (isUnlimited) amountValue else "$prefix$amountValue ",
-            fontSize = 14.sp,
-            color = textColor
-        )
-        Spacer(modifier = Modifier.width(2.dp))
-        Text(
-            text = symbol,
-            fontSize = 14.sp,
-            color = MixinAppTheme.colors.textPrimary
-        )
+            Text(
+                text = if (isUnlimited) amountValue else "$prefix$amountValue ",
+                fontSize = 14.sp,
+                color = textColor
+            )
+            Spacer(modifier = Modifier.width(2.dp))
+            Text(
+                text = symbol,
+                fontSize = 14.sp,
+                color = MixinAppTheme.colors.textPrimary
+            )
+        }
+
+        if (!fiatValue.isNullOrBlank()) {
+            Text(
+                text = fiatValue,
+                fontSize = 12.sp,
+                color = MixinAppTheme.colors.textAssist
+            )
+        }
     }
 }
 
@@ -118,6 +137,7 @@ fun AssetChangesList(
                     amount = approval.amount,
                     symbol = token?.symbol ?: "",
                     iconUrl = token?.iconUrl,
+                    fiatValue = approval.amount.toFiatValue(token, approval.type == "unlimited"),
                     isReceive = false,
                     isUnlimited = approval.type == "unlimited",
                     isApproval = approvals.isEmpty().not()
@@ -138,6 +158,7 @@ fun AssetChangesList(
                     amount = receiver.amount,
                     symbol = token?.symbol ?: "",
                     iconUrl = token?.iconUrl,
+                    fiatValue = receiver.amount.toFiatValue(token),
                     isReceive = true
                 )
                 if (index < receivers.size - 1) {
@@ -156,6 +177,7 @@ fun AssetChangesList(
                     amount = sender.amount,
                     symbol = token?.symbol ?: "",
                     iconUrl = token?.iconUrl,
+                    fiatValue = sender.amount.toFiatValue(token),
                     isReceive = false
                 )
                 if (index < senders.size - 1) {
@@ -164,4 +186,14 @@ fun AssetChangesList(
             }
         }
     }
+}
+
+private fun String.toFiatValue(
+    token: Web3TokenItem?,
+    isUnlimited: Boolean = false,
+): String? {
+    if (token == null || isUnlimited) return null
+    val amountValue = toBigDecimalOrNull() ?: return null
+    val fiatValue = amountValue.abs().multiply(token.priceFiat())
+    return "≈ ${Fiats.getSymbol()}${fiatValue.numberFormat2()}"
 }

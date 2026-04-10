@@ -189,7 +189,6 @@
     <string name="Declined">Ditolak</string>
     <string name="default_time">00:00</string>
     <string name="Delete_address">Hapus alamat</string>
-    <string name="Delete_emergency_contact">Hapus kontak darurat</string>
     <string name="Delete_for_everyone">Hapus untuk Semua Orang</string>
     <string name="Delete_for_me">Hapus untuk saya</string>
     <string name="Delete_Group">Hapus Grup</string>
@@ -465,12 +464,10 @@
     <string name="Phone_Contact">Kontak Telepon</string>
     <string name="Phone_Contacts">Kontak Telepon</string>
     <string name="Phone_Number">Nomor Telepon</string>
-    <string name="Phone_number_change">Perubahan nomor telepon</string>
     <string name="phone_number_privacy">Siapa yang dapat menemukan saya menurut nomor saya</string>
     <string name="Photo">Foto</string>
     <string name="Photos">Foto</string>
     <string name="PIN">PIN</string>
-    <string name="PIN_change">Perubahan PIN</string>
     <string name="pin_check_tip">Anda akan ditanya secara berkala untuk membantu Anda mengingatnya.</string>
     <string name="PIN_incorrect">PIN salah</string>
     <string name="Please_wait_a_bit">Mohon tunggu sebentar…</string>
@@ -591,10 +588,6 @@
     <string name="Shared_Media">Media Bersama</string>
     <string name="Show">Tampilkan</string>
     <string name="Shown">Ditampilkan</string>
-    <string name="Sign_in">Masuk</string>
-    <string name="Sign_in_desktop_app">Masuk aplikasi desktop</string>
-    <string name="Sign_with_emergency_contact">Masuk dengan kontak darurat</string>
-    <string name="Sign_with_mobile_number">Masuk dengan nomor telepon</string>
     <string name="Skip">LEWATI</string>
     <string name="Slide_to_cancel">Geser untuk Membatalkan</string>
     <string name="Sort">Urutkan</string>
@@ -654,7 +647,6 @@
     <string name="Upgrading">Meningkatkan</string>
     <string name="Upload_timeout">Batas waktu unggah</string>
     <string name="User_not_found">Pengguna tidak ditemukan</string>
-    <string name="Verify">Verifikasikan</string>
     <string name="Verify_by_Biometric">Verifikasi dengan Biometrik</string>
     <string name="Verify_PIN">Verifikasikan PIN</string>
     <string name="Verifying">Memverifikasi…</string>

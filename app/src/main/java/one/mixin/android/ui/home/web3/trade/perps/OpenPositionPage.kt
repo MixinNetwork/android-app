@@ -287,7 +287,7 @@ fun OpenPositionPage(
                         Text(
                             text = stringResource(
                                 R.string.Current_price,
-                                formatFiatPrice(currentMarket.markPrice, fiatRate, fiatSymbol)
+                                formatFiatPrice(currentMarket.last, fiatRate, fiatSymbol)
                             ),
                             fontSize = 13.sp,
                             color = MixinAppTheme.colors.textAssist
@@ -561,7 +561,7 @@ fun OpenPositionPage(
                             )
                         }
                         Text(
-                            text = "${calculateOrderValue(usdtAmount, leverage, currentMarket.markPrice)} ${currentMarket.tokenSymbol}",
+                            text = "${calculateOrderValue(usdtAmount, leverage, currentMarket.last)} ${currentMarket.tokenSymbol}",
                             fontSize = 14.sp,
                             color = MixinAppTheme.colors.textAssist
                         )
@@ -577,7 +577,7 @@ fun OpenPositionPage(
                         }
                         Text(
                             text = calculateLiquidationPrice(
-                                currentMarket.markPrice,
+                                currentMarket.last,
                                 leverage,
                                 isLong,
                                 fiatRate,
@@ -637,7 +637,7 @@ fun OpenPositionPage(
 
                         val activity = context as? FragmentActivity ?: return@MixinButton
 
-                        val price = m.markPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                        val price = m.last.toBigDecimalOrNull() ?: BigDecimal.ZERO
                         if (price == BigDecimal.ZERO) return@MixinButton
 
 
@@ -656,7 +656,7 @@ fun OpenPositionPage(
                                 amount = amount.stripTrailingZeros().toPlainString(),
                                 leverage = leverage.toInt(),
                                 walletId = walletId,
-                                entryPrice = m.markPrice,
+                                entryPrice = m.last,
                                 onSuccess = { response ->
                                     PerpsConfirmBottomSheetDialogFragment.newInstance(
                                         marketSymbol = m.displaySymbol,
@@ -664,7 +664,7 @@ fun OpenPositionPage(
                                         isLong = isLong,
                                         amount = response.payAmount ?: "",
                                         leverage = leverage.toInt(),
-                                        entryPrice = m.markPrice,
+                                        entryPrice = m.last,
                                         tokenSymbol = token.symbol,
                                         payUrl = response.paymentUrl
                                     ).setOnDone {

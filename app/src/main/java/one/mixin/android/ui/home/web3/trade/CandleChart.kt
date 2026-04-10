@@ -61,6 +61,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import one.mixin.android.Constants
+import one.mixin.android.R
 import one.mixin.android.api.response.perps.CandleItem
 import one.mixin.android.api.response.perps.CandleView
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -181,14 +182,14 @@ fun CandleChart(
             }
             errorMessage != null -> {
                 Text(
-                    text = errorMessage ?: "Error loading chart",
+                    text = errorMessage ?: context.getString(R.string.Data_error),
                     fontSize = 14.sp,
-                    color = MixinAppTheme.colors.red
+                    color = MixinAppTheme.colors.textAssist
                 )
             }
             candles.isEmpty() -> {
                 Text(
-                    text = "No data available",
+                    text = context.getString(R.string.Data_error),
                     fontSize = 14.sp,
                     color = MixinAppTheme.colors.textAssist
                 )

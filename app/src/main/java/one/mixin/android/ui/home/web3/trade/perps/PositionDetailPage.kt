@@ -572,7 +572,7 @@ fun PositionDetailPage(
 
                 PositionDetailItem(
                     label = stringResource(R.string.PnL),
-                    value = "${formatSignedFiat(pnl)}(${formatSignedPercent(roe)})",
+                    value = "${formatSignedFiat(pnl)} (${formatSignedPercent(roe)})",
                     valueColor = pnlColor,
                 )
 
@@ -612,11 +612,6 @@ fun PositionDetailPage(
 }
 
 private fun formatSignedPercent(value: BigDecimal): String {
-    val sign = when {
-        value > BigDecimal.ZERO -> "+"
-        value < BigDecimal.ZERO -> "-"
-        else -> ""
-    }
     val number = value.abs().setScale(2, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
-    return "$sign$number%"
+    return "$number%"
 }
