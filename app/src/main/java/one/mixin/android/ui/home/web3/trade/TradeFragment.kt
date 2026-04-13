@@ -706,7 +706,15 @@ class TradeFragment : BaseFragment() {
                         quote.payload,
                         getSource(),
                         if (inMixin()) null else {
-                            if (to.chain.chainId == Constants.ChainId.SOLANA_CHAIN_ID) Web3Signer.solanaAddress else Web3Signer.evmAddress
+                            if (to.chain.chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
+                                Web3Signer.solanaAddress
+                            } else if (to.chain.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                                Web3Signer.btcAddress
+                            } else if (to.chain.chainId in Constants.Web3EvmChainIds) {
+                                Web3Signer.evmAddress
+                            } else {
+                                null
+                            }
                         },
                         getReferral(),
                         walletId,
