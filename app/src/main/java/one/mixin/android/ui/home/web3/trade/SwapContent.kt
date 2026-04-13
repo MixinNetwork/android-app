@@ -139,13 +139,18 @@ fun SwapContent(
             .collectLatest { text ->
                 fromToken?.let { from ->
                     toToken?.let { to ->
-                        if (text.isNotBlank() && runCatching { BigDecimal(text) }.getOrDefault(BigDecimal.ZERO) > BigDecimal.ZERO && !reviewing) {
+                        val amount = runCatching { BigDecimal(text) }.getOrDefault(BigDecimal.ZERO)
+                        if (reviewing) {
+                            isLoading = false
+                            return@collectLatest
+                        }
+                        if (text.isNotBlank() && amount > BigDecimal.ZERO) {
                             isLoading = true
                             quoteError = null
                             quoteMin = null
                             quoteMax = null
-                            val amount = if (source == "") from.toLongAmount(text).toString() else text
-                            viewModel.quote(context, from.symbol, from.assetId, to.assetId, amount, source)
+                            val quoteAmount = if (source == "") from.toLongAmount(text).toString() else text
+                            viewModel.quote(context, from.symbol, from.assetId, to.assetId, quoteAmount, source)
                                 .onSuccess { value ->
                                     quoteResult = value
                                     isLoading = false
