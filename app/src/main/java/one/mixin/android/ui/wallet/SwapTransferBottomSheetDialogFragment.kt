@@ -947,11 +947,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
             }
 
             else -> {
-                val uri = if (swapLink != null) {
-                    Uri.parse(swapLink)
-                } else {
-                    link
-                }
+                val uri = swapLink?.toUri() ?: link
 
                 val assetId = requireNotNull(uri.getQueryParameter("asset"))
                 val amount = requireNotNull(uri.getQueryParameter("amount"))
