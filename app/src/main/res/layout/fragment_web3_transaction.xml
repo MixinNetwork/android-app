@@ -101,6 +101,16 @@
                         android:textColor="?attr/text_primary"/>
 
                     <TextView
+                        android:id="@+id/status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/that_va"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="@dimen/margin10"
+                        android:layout_marginBottom="24dp"
+                        android:textColor="?attr/text_assist" />
+
+                    <TextView
                         android:id="@+id/value_as_tv"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -132,16 +142,6 @@
                             android:layout_height="wrap_content"
                             android:textColor="?attr/text_assist" />
                     </ViewAnimator>
-
-                    <TextView
-                        android:id="@+id/status"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_below="@+id/that_va"
-                        android:layout_centerHorizontal="true"
-                        android:layout_marginTop="@dimen/margin10"
-                        android:layout_marginBottom="24dp"
-                        android:textColor="?attr/text_assist" />
 
                     <one.mixin.android.widget.TransactionActionsView
                         android:id="@+id/actions"
