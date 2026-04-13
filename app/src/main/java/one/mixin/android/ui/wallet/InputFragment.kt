@@ -253,6 +253,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                             value: String,
                         ) {
                             context?.tickVibrate()
+                            pendingWeb3ShortcutPercentage = null
                             if (position == 11) {
                                 v =
                                     if (v == "0") {
@@ -286,6 +287,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                             value: String,
                         ) {
                             if (position == 11) {
+                                pendingWeb3ShortcutPercentage = null
                                 v = "0"
                                 updateUI()
                             }
@@ -695,6 +697,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     }
                 }
                 switchIv.setOnClickListener {
+                    pendingWeb3ShortcutPercentage = null
                     isReverse = !isReverse
                     v =
                         if (isReverse) {
@@ -832,6 +835,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         val normalizedText: String = rawText.trim().replace(",", "")
         val pastedValue: String = normalizedText.filter { it.isDigit() || it == '.' }
         if (pastedValue.isBlank()) return
+        pendingWeb3ShortcutPercentage = null
         v = pastedValue
         updateUI()
     }
@@ -1075,6 +1079,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     }
 
     private var v = "0"
+    private var pendingWeb3ShortcutPercentage: BigDecimal? = null
 
     @SuppressLint("SetTextI18n")
     private fun updateUI() {
@@ -1411,6 +1416,13 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     }
 
     private fun valueClick(percentageOfBalance: BigDecimal) {
+        val isWeb3Max = transferType == TransferType.WEB3 && percentageOfBalance.compareTo(BigDecimal.ONE) == 0
+        pendingWeb3ShortcutPercentage =
+            if (isWeb3Max && binding.loadingProgressBar.isVisible) {
+                percentageOfBalance
+            } else {
+                null
+            }
         val baseValue = when {
             shouldUseGaslessFlow() && web3Token?.assetId == currentGaslessFee?.token?.assetId -> {
                 BigDecimal(tokenBalance).subtract(currentGaslessFee?.fee?.toBigDecimalOrNull() ?: BigDecimal.ZERO)
@@ -1438,12 +1450,19 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         } else {
             baseValue.toPlainString()
         }
-        v = BigDecimal(v)
-            .multiply(percentageOfBalance)
-            .max(BigDecimal.ZERO)
-            .setScale(8, RoundingMode.DOWN)
-            .stripTrailingZeros()
-            .toPlainString()
+        val targetValue =
+            BigDecimal(v)
+                .multiply(percentageOfBalance)
+                .max(BigDecimal.ZERO)
+        v =
+            if (!isReverse && isWeb3Max) {
+                targetValue.stripTrailingZeros().toPlainString()
+            } else {
+                targetValue
+                    .setScale(8, RoundingMode.DOWN)
+                    .stripTrailingZeros()
+                    .toPlainString()
+            }
         updateUI()
     }
 
@@ -1712,6 +1731,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             syncSelectedWeb3Fee()
         } finally {
             setFeeLoading(false)
+            pendingWeb3ShortcutPercentage?.let { pendingPercentage ->
+                pendingWeb3ShortcutPercentage = null
+                valueClick(pendingPercentage)
+            }
             updateWeb3FeeDisplay()
             applyFeeUi()
             updateUI()
