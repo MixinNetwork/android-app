@@ -238,6 +238,11 @@ class Web3ViewModel @Inject constructor(
             web3Repository.gaslessFee(request)
         }
 
+    suspend fun estimateFee(request: EstimateFeeRequest): MixinResponse<EstimateFeeResponse> =
+        withContext(Dispatchers.IO) {
+            web3Repository.estimateFee(request)
+        }
+
     suspend fun gaslessPrepare(request: GaslessTxRequest): MixinResponse<GaslessTxResponse> =
         withContext(Dispatchers.IO) {
             web3Repository.gaslessTx(request)

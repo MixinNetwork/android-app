@@ -173,8 +173,14 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         private const val ARGS_OUT_ASSET = "args_out_asset"
         private const val ARGS_SOURCE = "args_source"
         private const val ARGS_DISPLAY_USER_ID = "args_display_user_id"
+        private const val ARGS_PREVIEW_DATA = "args_preview_data"
 
-        fun newInstance(swapResult: SwapResponse, inAsset: SwapToken, outAssetItem: SwapToken): SwapTransferBottomSheetDialogFragment {
+        fun newInstance(
+            swapResult: SwapResponse,
+            inAsset: SwapToken,
+            outAssetItem: SwapToken,
+            previewData: SwapTransferPreviewData? = null,
+        ): SwapTransferBottomSheetDialogFragment {
             return SwapTransferBottomSheetDialogFragment()
                 .withArgs {
                     putString(ARGS_LINK, swapResult.tx)
@@ -185,6 +191,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                     putString(ARGS_OUT_AMOUNT, swapResult.quote.outAmount)
                     putString(ARGS_SOURCE, swapResult.source)
                     putString(ARGS_DISPLAY_USER_ID, swapResult.displayUserId)
+                    putParcelable(ARGS_PREVIEW_DATA, previewData)
                 }
         }
     }
@@ -291,6 +298,10 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
 
     private val link by lazy {
         requireNotNull(requireArguments().getString(ARGS_LINK)).toUri()
+    }
+
+    private val previewData by lazy {
+        requireArguments().getParcelableCompat(ARGS_PREVIEW_DATA, SwapTransferPreviewData::class.java)
     }
 
     private var step by mutableStateOf(Step.Pending)
@@ -486,6 +497,8 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                     if (source == "web3") {
                         val chainId = token?.chainId ?: inAsset.chain.chainId
                         val isGaslessPrepared = web3Transaction?.type == JsSignMessage.TYPE_GASLESS_TRANSFER && gaslessPrepareResponse != null
+                        val previewFeeAmount = previewData?.feeAmount?.toBigDecimalOrNull()
+                        val previewFeeUsd = previewData?.feeUsd?.toBigDecimalOrNull() ?: BigDecimal.ZERO
                         val shouldShowFeeLoading =
                             !isGaslessPrepared && (
                                 isGaslessLoading ||
@@ -495,18 +508,28 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                         chainId != Constants.ChainId.BITCOIN_CHAIN_ID &&
                                         tipGas == null)
                             )
-                        if (tipGas != null || solanaFee != null || btcFee != null) {
+                        if (tipGas != null || solanaFee != null || btcFee != null || (isGaslessPrepared && previewFeeAmount != null)) {
                             val transaction = web3Transaction?.wcEthereumTransaction
-                            val fee = btcFee?.stripTrailingZeros() ?: solanaFee?.stripTrailingZeros() ?: tipGas?.displayValue(transaction?.maxFeePerGas) ?: BigDecimal.ZERO
+                            val fee = btcFee?.stripTrailingZeros()
+                                ?: solanaFee?.stripTrailingZeros()
+                                ?: tipGas?.displayValue(transaction?.maxFeePerGas)
+                                ?: previewFeeAmount
+                                ?: BigDecimal.ZERO
+                            val feeSymbol = previewData?.feeSymbol ?: asset?.symbol.orEmpty()
+                            val feeUsd = if (previewFeeUsd > BigDecimal.ZERO && tipGas == null && solanaFee == null && btcFee == null) {
+                                previewFeeUsd
+                            } else {
+                                fee.multiply(asset?.priceUsd?.toBigDecimal() ?: BigDecimal.ZERO)
+                            }
                             if (fee == BigDecimal.ZERO) {
                                 FeeInfo(
                                     amount = "$fee",
-                                    fee = fee.multiply(asset?.priceUsd?.toBigDecimal() ?: BigDecimal.ZERO),
+                                    fee = feeUsd,
                                 )
                             } else {
                                 FeeInfo(
-                                    amount = "$fee ${asset?.symbol ?: ""}",
-                                    fee = fee.multiply(asset?.priceUsd?.toBigDecimal() ?: BigDecimal.ZERO),
+                                    amount = "$fee $feeSymbol",
+                                    fee = feeUsd,
                                     gasPrice = tipGas?.displayGas(transaction?.maxFeePerGas)?.toPlainString(),
                                 )
                             }
@@ -843,75 +866,74 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                     val token = bottomViewModel.web3TokenItemById(Web3Signer.currentWalletId, inAsset.assetId)
                     if (token != null) {
                         try {
-                            val fromAddress: String = if (token.chainId == Constants.ChainId.Solana) {
-                                Web3Signer.solanaAddress
-                            } else if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-                                val btcAddress = web3ViewModel.getAddressesByChainId(Web3Signer.currentWalletId, Constants.ChainId.BITCOIN_CHAIN_ID)
-                                requireNotNull(btcAddress?.destination) { "btc address not found" }
-                            } else {
-                                Web3Signer.evmAddress
-                            }
+                            val fromAddress = resolveSenderAddress(token)
                             senderAddress = fromAddress
                             this@SwapTransferBottomSheetDialogFragment.token = token
-                            val localUtxos: List<WalletOutput>? = if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-                                web3ViewModel.outputsByAddress(fromAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
+                            chainToken = bottomViewModel.web3TokenItemById(Web3Signer.currentWalletId, token.chainId)
+                            asset = chainToken?.toTokenItem()
+                            if (previewData != null) {
+                                applyPreviewData(previewData!!, token)
                             } else {
-                                null
-                            }
-                            val inputAmount: String = requireArguments().getString(ARGS_IN_AMOUNT)!!
-                            if (token.chainId != Constants.ChainId.BITCOIN_CHAIN_ID) {
-                                isGaslessLoading = true
-                                val gaslessPayload = try {
-                                    probeGaslessAvailability(
-                                        token = token,
+                                val localUtxos: List<WalletOutput>? = if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                                    web3ViewModel.outputsByAddress(fromAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
+                                } else {
+                                    null
+                                }
+                                val inputAmount: String = requireArguments().getString(ARGS_IN_AMOUNT)!!
+                                if (token.chainId != Constants.ChainId.BITCOIN_CHAIN_ID) {
+                                    isGaslessLoading = true
+                                    val gaslessPayload = try {
+                                        probeGaslessAvailability(
+                                            token = token,
+                                            fromAddress = fromAddress,
+                                            toAddress = depositDestination,
+                                            amount = inputAmount,
+                                        )
+                                    } finally {
+                                        isGaslessLoading = false
+                                    }
+                                    if (gaslessPayload != null) {
+                                        gaslessPrepareResponse = gaslessPayload
+                                        web3Transaction = JsSignMessage(
+                                            callbackId = 0L,
+                                            type = JsSignMessage.TYPE_GASLESS_TRANSFER,
+                                        )
+                                        return@let
+                                    }
+                                }
+                                val transaction: JsSignMessage = if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                                    val zeroFeeTx: JsSignMessage = token.buildTransaction(
+                                        rpc = rpc,
                                         fromAddress = fromAddress,
                                         toAddress = depositDestination,
-                                        amount = inputAmount,
+                                        v = inputAmount,
+                                        localUtxos = localUtxos,
+                                        rate = BigDecimal.ONE,
                                     )
-                                } finally {
-                                    isGaslessLoading = false
-                                }
-                                if (gaslessPayload != null) {
-                                    gaslessPrepareResponse = gaslessPayload
-                                    web3Transaction = JsSignMessage(
-                                        callbackId = 0L,
-                                        type = JsSignMessage.TYPE_GASLESS_TRANSFER,
+                                    val estimatedFee = web3ViewModel.calcFee(token, zeroFeeTx, fromAddress)
+                                    btcFee = estimatedFee.fee ?: BigDecimal.ZERO
+                                    token.buildTransaction(
+                                        rpc = rpc,
+                                        fromAddress = fromAddress,
+                                        toAddress = depositDestination,
+                                        v = inputAmount,
+                                        localUtxos = localUtxos,
+                                        rate = estimatedFee.rate,
+                                        minFee = estimatedFee.minFee,
                                     )
-                                    return@let
+                                } else {
+                                    token.buildTransaction(
+                                        rpc,
+                                        fromAddress,
+                                        depositDestination,
+                                        inputAmount,
+                                    )
                                 }
-                            }
-                            val transaction: JsSignMessage = if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-                                val zeroFeeTx: JsSignMessage = token.buildTransaction(
-                                    rpc = rpc,
-                                    fromAddress = fromAddress,
-                                    toAddress = depositDestination,
-                                    v = inputAmount,
-                                    localUtxos = localUtxos,
-                                    rate = BigDecimal.ONE,
-                                )
-                                val estimatedFee = web3ViewModel.calcFee(token, zeroFeeTx, fromAddress)
-                                btcFee = estimatedFee.fee ?: BigDecimal.ZERO
-                                token.buildTransaction(
-                                    rpc = rpc,
-                                    fromAddress = fromAddress,
-                                    toAddress = depositDestination,
-                                    v = inputAmount,
-                                    localUtxos = localUtxos,
-                                    rate = estimatedFee.rate,
-                                    minFee = estimatedFee.minFee,
-                                )
-                            } else {
-                                token.buildTransaction(
-                                    rpc,
-                                    fromAddress,
-                                    depositDestination,
-                                    inputAmount,
-                                )
-                            }
-                            web3Transaction = transaction
+                                web3Transaction = transaction
 
-                            val chain = token.getChainFromName()
-                            refreshEstimatedGasAndAsset(chain)
+                                val chain = token.getChainFromName()
+                                refreshEstimatedGasAndAsset(chain)
+                            }
                         } catch (e: Exception) {
                             Timber.e(e, "Failed to build transaction")
                             errorInfo = if (e is EmptyUtxoException) getString(R.string.no_available_utxo) else e.message
@@ -1019,6 +1041,55 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                 }
                 asset = bottomViewModel.refreshAsset(Constants.ChainId.SOLANA_CHAIN_ID)
             }.launchIn(lifecycleScope)
+    }
+
+    private suspend fun resolveSenderAddress(token: Web3TokenItem): String {
+        return if (token.chainId == Constants.ChainId.Solana) {
+            Web3Signer.solanaAddress
+        } else if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+            val btcAddress = web3ViewModel.getAddressesByChainId(Web3Signer.currentWalletId, Constants.ChainId.BITCOIN_CHAIN_ID)
+            requireNotNull(btcAddress?.destination) { "btc address not found" }
+        } else {
+            Web3Signer.evmAddress
+        }
+    }
+
+    private fun applyPreviewData(
+        previewData: SwapTransferPreviewData,
+        token: Web3TokenItem,
+    ) {
+        senderAddress = previewData.senderAddress
+        receiver = previewData.receiver ?: receiver
+        web3Transaction = previewData.web3Transaction
+        gaslessPrepareResponse = previewData.gaslessPrepareResponseJson?.let {
+            GsonHelper.customGson.fromJson(it, GaslessTxResponse::class.java)
+        }
+
+        val previewFee = previewData.feeAmount.toBigDecimalOrNull()
+        when (token.chainId) {
+            Constants.ChainId.BITCOIN_CHAIN_ID -> btcFee = previewFee
+            Constants.ChainId.SOLANA_CHAIN_ID -> {
+                solanaFee = previewFee
+                previewData.web3Transaction.data?.let {
+                    solanaTx = VersionedTransactionCompat.from(it)
+                }
+            }
+            else -> {
+                tipGas = previewData.toTipGas(token.chainId)
+            }
+        }
+    }
+
+    private fun SwapTransferPreviewData.toTipGas(chainId: String): TipGas? {
+        val gasLimit = tipGasLimit?.toBigIntegerOrNull() ?: return null
+        val maxFeePerGas = tipGasMaxFeePerGas?.toBigIntegerOrNull() ?: return null
+        val maxPriorityFeePerGas = tipGasMaxPriorityFeePerGas?.toBigIntegerOrNull() ?: return null
+        return TipGas(
+            assetId = chainId,
+            gasLimit = gasLimit,
+            maxFeePerGas = maxFeePerGas,
+            maxPriorityFeePerGas = maxPriorityFeePerGas,
+        )
     }
 
     private suspend fun probeGaslessAvailability(
