@@ -2400,9 +2400,9 @@
     <string name="pin_log_title_export_mnemonic_phrase">导出助记词</string>
     <string name="pin_log_title_change_mobile_number">修改手机号</string>
     <string name="pin_log_subtitle_signed_in_on_desktop">✅ 桌面端已登录</string>
-    <string name="pin_log_subtitle_signed_in_via_mobile_number">✅ 通过手机号登录了客户端</string>
-    <string name="pin_log_subtitle_signed_in_via_mnemonic_phrase">✅ 通过助记词登录了客户端</string>
-    <string name="pin_log_subtitle_signed_in_via_recovery_contact">✅ 通过恢复联系人登录了客户端</string>
+    <string name="pin_log_subtitle_signed_in_via_mobile_number">✅ 通过手机号登录</string>
+    <string name="pin_log_subtitle_signed_in_via_mnemonic_phrase">✅ 通过助记词登录</string>
+    <string name="pin_log_subtitle_signed_in_via_recovery_contact">✅ 通过恢复联系人登录</string>
     <string name="pin_log_subtitle_signed_out_on_mobile">✅ 客户端已退出登录</string>
     <string name="pin_log_subtitle_signed_out_on_desktop">✅ 桌面端已退出登录</string>
     <string name="pin_log_subtitle_account_upgraded">✅ 账号已升级</string>
