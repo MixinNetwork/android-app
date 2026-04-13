@@ -207,7 +207,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         val utxoMap: Map<String, WalletOutput> = localUtxos.associateBy { utxo -> "${utxo.transactionHash}:${utxo.outputIndex}" }
         val scriptCode: Script = ScriptBuilder.createP2PKHOutputScript(signingKey)
         val consumedOutputIds: MutableList<String> = mutableListOf()
-        transaction.inputs.forEachIndexed { inputIndex: Int, input: TransactionInput ->
+        transaction.inputs.toList().forEachIndexed { inputIndex: Int, input: TransactionInput ->
             val prevHash: String = input.outpoint.hash().toString()
             val prevIndex: Long = input.outpoint.index()
             val utxoKey = "$prevHash:$prevIndex"
