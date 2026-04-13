@@ -147,7 +147,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
     }
 
     private fun shouldShowValueDetails(): Boolean {
-        if (transaction.status == TransactionStatus.FAILED.value) return false
+        if (transaction.status != TransactionStatus.SUCCESS.value) return false
         if (transaction.transactionType != TransactionType.TRANSFER_IN.value &&
             transaction.transactionType != TransactionType.TRANSFER_OUT.value) {
             return false

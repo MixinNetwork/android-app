@@ -195,6 +195,8 @@ class PinLogsFragment : BaseFragment(R.layout.fragment_pin_logs) {
                 logDesc.text = result.second
                 logCreated.text = pin.createdAt.formatToLocalTime()
                 logAddress.text = pin.ipAddress
+                ipLocation.isVisible = pin.ipLocation.isNotBlank()
+                ipLocation.text = pin.ipLocation
             }
         }
     }

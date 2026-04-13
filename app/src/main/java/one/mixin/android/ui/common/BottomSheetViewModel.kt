@@ -950,7 +950,6 @@ class BottomSheetViewModel
                     ghostKeyResponse.data!!
                 } else {
                     throw IllegalArgumentException("Transfer has no recipient")
-                    null
                 } ?: throw IllegalArgumentException("Transfer has no recipient")
                 Timber.e("Kernel Invoice Transaction UtxoWrapper: $amount $assetId $asset")
                 val utxoWrapper = UtxoWrapper(packUtxo(asset, amount, null))
@@ -1847,21 +1846,21 @@ class BottomSheetViewModel
             val walletName: String = context.getString(R.string.Common_Wallet)
             val classicIndex = 0
             val btcAddress: String = privateKeyToAddress(spendKey, Constants.ChainId.BITCOIN_CHAIN_ID, classicIndex)
-            val evmAddress: String = privateKeyToAddress(spendKey, Constants.ChainId.ETHEREUM_CHAIN_ID, classicIndex)
-            val solAddress: String = privateKeyToAddress(spendKey, Constants.ChainId.SOLANA_CHAIN_ID, classicIndex)
+            val evmAddress: String = privateKeyToAddress(spendKey, ETHEREUM_CHAIN_ID, classicIndex)
+            val solAddress: String = privateKeyToAddress(spendKey, SOLANA_CHAIN_ID, classicIndex)
             val addresses: List<Web3AddressRequest> = listOf(
                 createSignedWeb3AddressRequest(
                     destination = evmAddress,
                     chainId = Constants.ChainId.ETHEREUM_CHAIN_ID,
                     path = Bip44Path.ethereumPathString(classicIndex),
-                    privateKey = tipPrivToPrivateKey(spendKey, Constants.ChainId.ETHEREUM_CHAIN_ID, classicIndex),
+                    privateKey = tipPrivToPrivateKey(spendKey, ETHEREUM_CHAIN_ID, classicIndex),
                     category = WalletCategory.CLASSIC.value
                 ),
                 createSignedWeb3AddressRequest(
                     destination = solAddress,
                     chainId = Constants.ChainId.SOLANA_CHAIN_ID,
                     path = Bip44Path.solanaPathString(classicIndex),
-                    privateKey = tipPrivToPrivateKey(spendKey, Constants.ChainId.SOLANA_CHAIN_ID, classicIndex),
+                    privateKey = tipPrivToPrivateKey(spendKey, SOLANA_CHAIN_ID, classicIndex),
                     category = WalletCategory.CLASSIC.value
                 ),
                 createSignedWeb3AddressRequest(
