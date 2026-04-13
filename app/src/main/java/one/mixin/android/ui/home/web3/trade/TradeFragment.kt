@@ -41,7 +41,6 @@ import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.request.web3.EstimateFeeRequest
-import one.mixin.android.api.request.web3.GaslessFeeRequest
 import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.request.web3.GaslessTxRequest
 import one.mixin.android.api.response.CreateLimitOrderResponse
@@ -808,15 +807,12 @@ class TradeFragment : BaseFragment() {
     ): FeeCheckResult {
         if (inMixin()) return FeeCheckResult(true)
         val walletId = Web3Signer.currentWalletId
-        val token = swapViewModel.getTokenByWalletAndAssetId(walletId, from.assetId)
-        if (token == null) return FeeCheckResult(true)
-        val toAddress = destination
-        if (toAddress == null) return FeeCheckResult(true)
+        val token = swapViewModel.getTokenByWalletAndAssetId(walletId, from.assetId) ?: return FeeCheckResult(true)
+        val toAddress = destination ?: return FeeCheckResult(true)
         val fromAddress = when (token.chainId) {
             Constants.ChainId.SOLANA_CHAIN_ID -> Web3Signer.solanaAddress
             Constants.ChainId.BITCOIN_CHAIN_ID -> {
-                val btcAddress = swapViewModel.getAddressesByChainId(walletId, Constants.ChainId.BITCOIN_CHAIN_ID)?.destination
-                if (btcAddress == null) return FeeCheckResult(true)
+                val btcAddress = swapViewModel.getAddressesByChainId(walletId, Constants.ChainId.BITCOIN_CHAIN_ID)?.destination ?: return FeeCheckResult(true)
                 btcAddress
             }
             else -> Web3Signer.evmAddress
@@ -829,28 +825,25 @@ class TradeFragment : BaseFragment() {
         val sameAssetFee = token.assetId == chainToken.assetId && token.chainId == chainToken.chainId
 
         if (allowGasless && token.chainId != Constants.ChainId.BITCOIN_CHAIN_ID) {
-            val feeAmount = resolveGaslessFeeAmount(token, fromAddress, toAddress)
-            val gaslessPrepared = feeAmount?.let { resolvedFeeAmount ->
-                runCatching {
-                    web3ViewModel.gaslessPrepare(
-                        GaslessTxRequest(
-                            from = fromAddress,
-                            to = toAddress,
-                            assetId = token.assetId,
-                            amount = amount,
-                            feeAssetId = token.assetId,
-                            feeAmount = resolvedFeeAmount,
-                            chainId = token.chainId,
-                        )
+            val gaslessPrepared = runCatching {
+                web3ViewModel.gaslessPrepare(
+                    GaslessTxRequest(
+                        from = fromAddress,
+                        to = toAddress,
+                        assetId = token.assetId,
+                        amount = amount,
+                        feeAssetId = token.assetId,
+                        feeAmount = BigDecimal.ZERO.toPlainString(),
+                        chainId = token.chainId,
                     )
-                }.getOrNull()?.data
-            }
+                )
+            }.getOrNull()?.data
             if (gaslessPrepared != null) {
                 val previewData = if (includeSwapPreviewData) {
                     buildGaslessSwapPreviewData(
                         senderAddress = fromAddress,
                         token = token,
-                        feeAmount = feeAmount,
+                        feeAmount = BigDecimal.ZERO.toPlainString(),
                         gaslessPrepared = gaslessPrepared,
                     )
                 } else {
@@ -1055,27 +1048,6 @@ class TradeFragment : BaseFragment() {
     ): String {
         val price = feeToken.priceUsd.toBigDecimalOrNull() ?: BigDecimal.ZERO
         return fee.multiply(price).stripTrailingZeros().toPlainString()
-    }
-
-    private suspend fun resolveGaslessFeeAmount(
-        token: Web3TokenItem,
-        fromAddress: String,
-        toAddress: String,
-    ): String? {
-        val response = runCatching {
-            web3ViewModel.gaslessFee(
-                GaslessFeeRequest(
-                    from = fromAddress,
-                    to = toAddress,
-                    assetId = token.assetId,
-                    chainId = token.chainId,
-                ),
-            )
-        }.getOrNull() ?: return null
-        if (!response.isSuccess || response.data == null) return null
-
-        val sameAssetFee = response.data!!.fees.firstOrNull { it.assetId == token.assetId }
-        return (sameAssetFee ?: response.data!!.fees.firstOrNull())?.amount
     }
 
     private suspend fun estimateWeb3Fee(
