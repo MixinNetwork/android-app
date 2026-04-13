@@ -11,8 +11,11 @@ import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.RouteTokenRequest
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.web3.EstimateFeeResponse
+import one.mixin.android.api.request.web3.GaslessFeeRequest
+import one.mixin.android.api.request.web3.GaslessTxRequest
 import one.mixin.android.api.request.web3.RpcRequest
 import one.mixin.android.api.request.web3.StakeRequest
+import one.mixin.android.api.request.web3.SubmitGaslessTxRequest
 import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.request.web3.Web3RawTransactionRequest
@@ -24,12 +27,16 @@ import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.api.response.UserAddressView
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.api.response.web3.QuoteResult
+import one.mixin.android.api.response.web3.GaslessFeeResponse
+import one.mixin.android.api.response.web3.GaslessSponsorTransactionResponse
 import one.mixin.android.api.response.web3.StakeAccount
 import one.mixin.android.api.response.web3.StakeAccountActivation
 import one.mixin.android.api.response.web3.StakeResponse
+import one.mixin.android.api.response.web3.SubmitGaslessTxResponse
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Tx
+import one.mixin.android.api.response.web3.GaslessTxResponse
 import one.mixin.android.api.response.web3.Validator
 import one.mixin.android.api.response.web3.WalletOutput
 import one.mixin.android.db.web3.vo.Web3Address
@@ -270,6 +277,26 @@ interface RouteService {
     suspend fun estimateFee(
         @Body request: EstimateFeeRequest,
     ): MixinResponse<EstimateFeeResponse>
+
+    @POST("web3/gasless/fees")
+    suspend fun gaslessFee(
+        @Body request: GaslessFeeRequest,
+    ): MixinResponse<GaslessFeeResponse>
+
+    @POST("web3/gasless/prepare")
+    suspend fun gaslessTx(
+        @Body request: GaslessTxRequest,
+    ): MixinResponse<GaslessTxResponse>
+
+    @POST("web3/gasless/submit")
+    suspend fun submitGaslessTx(
+        @Body request: SubmitGaslessTxRequest,
+    ): MixinResponse<SubmitGaslessTxResponse>
+
+    @GET("web3/gasless/transactions/{id}")
+    suspend fun gaslessTransaction(
+        @Path("id") id: String,
+    ): MixinResponse<GaslessSponsorTransactionResponse>
 
     @POST("web3/rpc")
     suspend fun rpc(

@@ -64,12 +64,7 @@ fun calculateClosedRoe(
 }
 
 fun formatPerpsSignedPercent(value: BigDecimal): String {
-    val sign = when {
-        value > BigDecimal.ZERO -> "+"
-        value < BigDecimal.ZERO -> "-"
-        else -> ""
-    }
-    return "$sign${formatPerpsPercentDecimal(value.abs())}%"
+    return "${formatPerpsPercentDecimal(value.abs())}%"
 }
 
 fun formatPerpsSignedPercent(value: Double): String {

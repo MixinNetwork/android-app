@@ -36,53 +36,74 @@ class PinLogsFragment : BaseFragment(R.layout.fragment_pin_logs) {
             context: Context,
             code: String,
         ): Pair<String, String> {
+            fun description(
+                titleRes: Int,
+                subtitleRes: Int,
+            ) = Pair(context.getString(titleRes), context.getString(subtitleRes))
+
             when (code) {
                 "VERIFICATION" ->
-                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Verify))
+                    return description(R.string.pin_log_title_verify_pin, R.string.pin_log_subtitle_pin_incorrect)
                 "RAW_TRANSFER" ->
-                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Raw_Transfer))
+                    return description(R.string.pin_log_title_transfer, R.string.pin_log_subtitle_pin_incorrect)
                 "USER_TRANSFER" ->
-                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Transfer))
+                    return description(R.string.pin_log_title_transfer, R.string.pin_log_subtitle_pin_incorrect)
                 "WITHDRAWAL" ->
-                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Withdrawal))
+                    return description(R.string.pin_log_title_withdrawal, R.string.pin_log_subtitle_pin_incorrect)
                 "ADD_ADDRESS" ->
-                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Add_address))
+                    return description(R.string.pin_log_title_add_address, R.string.pin_log_subtitle_pin_incorrect)
                 "DELETE_ADDRESS" ->
-                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Delete_address))
+                    return description(R.string.pin_log_title_delete_address, R.string.pin_log_subtitle_pin_incorrect)
                 "ADD_EMERGENCY" ->
-                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Add_emergency_contact))
+                    return description(R.string.pin_log_title_add_recovery_contact, R.string.pin_log_subtitle_pin_incorrect)
                 "DELETE_EMERGENCY" ->
-                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Delete_emergency_contact))
+                    return description(R.string.pin_log_title_delete_recovery_contact, R.string.pin_log_subtitle_pin_incorrect)
                 "READ_EMERGENCY" ->
-                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.View_emergency_contact))
+                    return description(R.string.pin_log_title_view_recovery_contact, R.string.pin_log_subtitle_pin_incorrect)
                 "UPDATE_PHONE" ->
-                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Change_Phone_Number))
+                    return description(R.string.pin_log_title_update_mobile_number, R.string.pin_log_subtitle_pin_incorrect)
                 "UPDATE_PIN" ->
-                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.PIN_change))
+                    return description(R.string.pin_log_title_change_pin, R.string.pin_log_subtitle_pin_incorrect)
                 "MULTISIG_SIGN" ->
-                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Multisig_Transaction))
+                    return description(R.string.pin_log_title_sign_multisig_transaction, R.string.pin_log_subtitle_pin_incorrect)
                 "MULTISIG_UNLOCK" ->
-                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Revoke_multisig_transaction))
+                    return description(R.string.pin_log_title_revoke_multisig_transaction, R.string.pin_log_subtitle_pin_incorrect)
+                "LOGIN_FROM_DESKTOP" ->
+                    return description(R.string.pin_log_title_sign_in_on_desktop, R.string.pin_log_subtitle_pin_incorrect)
+                "COLLECTIBLE_SIGN" ->
+                    return description(R.string.pin_log_title_inscribe_collectible, R.string.pin_log_subtitle_pin_incorrect)
+                "COLLECTIBLE_UNLOCK" ->
+                    return description(R.string.pin_log_title_release_collectible, R.string.pin_log_subtitle_pin_incorrect)
+                "DO_AUTHORIZATION" ->
+                    return description(R.string.pin_log_title_authorize_bot, R.string.pin_log_subtitle_pin_incorrect)
+                "APP_OWNERSHIP_TRANSFER" ->
+                    return description(R.string.pin_log_title_transfer_bot_ownership, R.string.pin_log_subtitle_pin_incorrect)
+                "DELETE_ACCOUNT" ->
+                    return description(R.string.pin_log_title_delete_account, R.string.pin_log_subtitle_pin_incorrect)
                 "ACTIVITY_PIN_CREATION" ->
-                    return Pair(context.getString(R.string.pin_creation), context.getString(R.string.your_pin_has_been_created))
+                    return description(R.string.pin_log_title_set_pin, R.string.pin_log_subtitle_pin_set)
                 "ACTIVITY_PIN_MODIFICATION" ->
-                    return Pair(context.getString(R.string.PIN_change), context.getString(R.string.PIN_change))
+                    return description(R.string.pin_log_title_change_pin, R.string.pin_log_subtitle_pin_changed)
                 "ACTIVITY_EMERGENCY_CONTACT_MODIFICATION" ->
-                    return Pair(context.getString(R.string.Emergency_Contact), context.getString(R.string.Change_emergency_contact))
+                    return description(R.string.pin_log_title_change_recovery_contact, R.string.pin_log_subtitle_recovery_contact_changed)
                 "ACTIVITY_PHONE_MODIFICATION" ->
-                    return Pair(context.getString(R.string.Phone_number_change), context.getString(R.string.Phone_number_change))
+                    return description(R.string.pin_log_title_change_mobile_number, R.string.pin_log_subtitle_mobile_number_changed)
                 "ACTIVITY_LOGIN_BY_PHONE" ->
-                    return Pair(context.getString(R.string.Sign_in), context.getString(R.string.Sign_with_mobile_number))
+                    return description(R.string.pin_log_title_sign_in_on_mobile, R.string.pin_log_subtitle_signed_in_via_mobile_number)
                 "ACTIVITY_LOGIN_BY_EMERGENCY_CONTACT" ->
-                    return Pair(context.getString(R.string.Sign_in), context.getString(R.string.Sign_with_emergency_contact))
+                    return description(R.string.pin_log_title_sign_in_on_mobile, R.string.pin_log_subtitle_signed_in_via_recovery_contact)
                 "ACTIVITY_LOGIN_BY_MNEMONIC" ->
-                    return Pair(context.getString(R.string.Sign_in), context.getString(R.string.Sign_in_with_Mnemonic_Phrase))
+                    return description(R.string.pin_log_title_sign_in_on_mobile, R.string.pin_log_subtitle_signed_in_via_mnemonic_phrase)
                 "ACTIVITY_LOGIN_FROM_DESKTOP" ->
-                    return Pair(context.getString(R.string.Sign_in), context.getString(R.string.Sign_in_desktop_app))
+                    return description(R.string.pin_log_title_sign_in_on_desktop, R.string.pin_log_subtitle_signed_in_on_desktop)
+                "ACTIVITY_LOGOUT_PHONE" ->
+                    return description(R.string.pin_log_title_sign_out_on_mobile, R.string.pin_log_subtitle_signed_out_on_mobile)
+                "ACTIVITY_LOGOUT_DESKTOP" ->
+                    return description(R.string.pin_log_title_sign_out_on_desktop, R.string.pin_log_subtitle_signed_out_on_desktop)
                 "USER_EXPORT_PRIVATE" ->
-                    return Pair(context.getString(R.string.Export), context.getString(R.string.Export_mnemonic_phrase))
+                    return description(R.string.pin_log_title_export_mnemonic_phrase, R.string.pin_log_subtitle_mnemonic_phrase_exported)
                 "UPGRADE_SAFE" ->
-                    return Pair(context.getString(R.string.Upgrade), context.getString(R.string.Upgrade_safe))
+                    return description(R.string.pin_log_title_upgrade_safe, R.string.pin_log_subtitle_account_upgraded)
                 else ->
                     return Pair(code, code)
             }

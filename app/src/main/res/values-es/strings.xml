@@ -299,7 +299,6 @@
     <string name="delete_account_hint_2">Los mensajes locales y las copias de seguridad no se eliminarán automáticamente</string>
     <string name="delete_account_hint_3">Las transacciones NO se pueden eliminar</string>
     <string name="Delete_address">Eliminar dirección</string>
-    <string name="Delete_emergency_contact">Eliminar contacto de emergencia</string>
     <string name="Delete_for_everyone">Eliminar para todos</string>
     <string name="Delete_for_me">Eliminar para mí</string>
     <string name="Delete_Group">Eliminar grupo</string>
@@ -686,16 +685,13 @@
     <string name="Phone_Contact">Contactos del teléfono</string>
     <string name="Phone_Contacts">Contactos del teléfono</string>
     <string name="Phone_Number">Número de teléfono</string>
-    <string name="Phone_number_change">Cambio de número de teléfono</string>
     <string name="phone_number_privacy">Quién me puede encontrar por mi número</string>
     <string name="Photo">Foto</string>
     <string name="Photos">Fotos</string>
     <string name="PIN">PIN</string>
-    <string name="PIN_change">Cambio de PIN</string>
     <string name="pin_check_tip">Se te pedirá periódicamente para ayudarte a recordarlo.</string>
     <string name="pin_confirm_again_hint">Confirma tu PIN de 6 dígitos nuevamente</string>
     <string name="pin_confirm_hint">Por favor, confirma el PIN de 6 dígitos y recuérdalo.</string>
-    <string name="pin_creation">Creación de PIN</string>
     <string name="PIN_incorrect">PIN incorrecto</string>
     <string name="pin_lost_hint">Si se pierde, no hay forma de recuperar tu cartera.</string>
     <string name="PIN_not_same_as_last_time">El PIN no coincide con lo que se ha configurado la última vez que se canceló inesperadamente</string>
@@ -726,7 +722,6 @@
     <string name="quote">citar</string>
     <string name="Random_keyboard">Teclado aleatorio</string>
     <string name="Raw">Sin procesar</string>
-    <string name="Raw_Transfer">Transferencia sin procesar</string>
     <string name="Read_Assets">Leer activos</string>
     <string name="Read_Bots">Leer Bots</string>
     <string name="Read_Circles">Leer círculos</string>
@@ -892,10 +887,6 @@
     <string name="Show">Espectáculo</string>
     <string name="Show_in_chat">Mostrar en el chat</string>
     <string name="Shown">Mostrado</string>
-    <string name="Sign_in">Iniciar sesión</string>
-    <string name="Sign_in_desktop_app">Iniciar sesión en la aplicación de escritorio</string>
-    <string name="Sign_with_emergency_contact">Iniciar sesión con contacto de emergencia</string>
-    <string name="Sign_with_mobile_number">Iniciar sesión con número de teléfono</string>
     <string name="Silence_Notification">Notificación de silencio</string>
     <string name="Size">Tamaño</string>
     <string name="Skip">Saltar</string>
@@ -1019,7 +1010,6 @@
     <string name="User_not_found">Usuario no encontrado</string>
     <string name="value_now">valor ahora %1$s</string>
     <string name="value_then">valor entonces %1$s</string>
-    <string name="Verify">Verificar</string>
     <string name="Verify_by_Biometric">Verificar por biométrico</string>
     <string name="Verify_PIN">Verificar PIN</string>
     <string name="Verifying">Verificando…</string>
@@ -1090,6 +1080,5 @@
     <string name="You_deleted_this_message">Has borrado este mensaje</string>
     <string name="You_have_left_the_group">Te has ido del grupo</string>
     <string name="Your_emergency_contact_has_been_changed">Tu contacto de emergencia se ha cambiado</string>
-    <string name="your_pin_has_been_created">Tu PIN se ha creado</string>
     <string name="Receivers">receivers</string>
 </resources>
