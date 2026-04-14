@@ -12,6 +12,7 @@ class SearchExploreDataPackage(
     var dappList: List<Dapp>? = null,
     var botList: List<SearchBot>? = null,
     var url: String? = null,
+    private val marketLimit: Boolean = true,
 ) {
     companion object {
         const val LIMIT_COUNT = 3
@@ -20,7 +21,6 @@ class SearchExploreDataPackage(
     var showTip = false
 
     private var assetLimit = true
-    private var marketLimit = false
     private var botLimit = true
     private var dappLimit = true
 
