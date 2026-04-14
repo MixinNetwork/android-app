@@ -2468,12 +2468,12 @@
     <string name="pin_log_title_change_recovery_contact">Change Recovery Contact</string>
     <string name="pin_log_title_export_mnemonic_phrase">Export Mnemonic Phrase</string>
     <string name="pin_log_title_change_mobile_number">Change Mobile Number</string>
-    <string name="pin_log_subtitle_signed_in_on_desktop">✅ Signed in on desktop</string>
+    <string name="pin_log_subtitle_signed_in_on_desktop">✅ Signed in</string>
     <string name="pin_log_subtitle_signed_in_via_mobile_number">✅ Signed in via mobile number</string>
     <string name="pin_log_subtitle_signed_in_via_mnemonic_phrase">✅ Signed in via mnemonic phrase</string>
     <string name="pin_log_subtitle_signed_in_via_recovery_contact">✅ Signed in via recovery contact</string>
-    <string name="pin_log_subtitle_signed_out_on_mobile">✅ Signed out on mobile</string>
-    <string name="pin_log_subtitle_signed_out_on_desktop">✅ Signed out on desktop</string>
+    <string name="pin_log_subtitle_signed_out_on_mobile">✅ Signed out</string>
+    <string name="pin_log_subtitle_signed_out_on_desktop">✅ Signed out</string>
     <string name="pin_log_subtitle_account_upgraded">✅ Account upgraded</string>
     <string name="pin_log_subtitle_pin_incorrect">❌ PIN incorrect</string>
     <string name="pin_log_subtitle_pin_set">✅ PIN set</string>
