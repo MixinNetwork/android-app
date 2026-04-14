@@ -22,6 +22,7 @@ import one.mixin.android.Constants.Account.PREF_WALLET_RECEIVE
 import one.mixin.android.Constants.Account.PREF_WALLET_SEND
 import one.mixin.android.Constants.ChainId.Arbitrum
 import one.mixin.android.Constants.ChainId.Avalanche
+import one.mixin.android.Constants.ChainId.BITCOIN_CHAIN_ID
 import one.mixin.android.Constants.ChainId.Base
 import one.mixin.android.Constants.ChainId.BinanceSmartChain
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
@@ -102,6 +103,7 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             radioAll.isChecked = true
             radio.scrollToCenterCheckedRadio(radioGroup)
             radioAll.isVisible = true
+            radioBtc.isVisible = true
             radioEth.isVisible = true
             radioTron.isVisible = false
             radioToncoin.isVisible = false
@@ -113,6 +115,10 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 currentChain = when (id) {
                     R.id.radio_eth -> {
                         ETHEREUM_CHAIN_ID
+                    }
+
+                    R.id.radio_btc -> {
+                        BITCOIN_CHAIN_ID
                     }
 
                     R.id.radio_solana -> {
