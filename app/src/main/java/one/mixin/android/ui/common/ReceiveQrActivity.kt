@@ -33,12 +33,12 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.home.MainActivity.Companion.SCAN
+import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_SHOW_SCAN
+import one.mixin.android.ui.wallet.DepositShareActivity
 import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
-import one.mixin.android.ui.wallet.BackupMnemonicPhraseWarningBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.DepositShareActivity
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.toUser
@@ -124,13 +124,9 @@ class ReceiveQrActivity : BaseActivity() {
                 }
                 amount.setOnClickListener {
                     if (!Session.saltExported() && Session.isAnonymous()) {
-                        BackupMnemonicPhraseWarningBottomSheetDialogFragment.newInstance()
-                            .apply {
-                                laterCallback = {
-                                    showReceiveAssetList()
-                                }
-                            }
-                            .show(supportFragmentManager, BackupMnemonicPhraseWarningBottomSheetDialogFragment.TAG)
+                        RecoveryReminderBottomSheetDialogFragment.showForRiskAction(supportFragmentManager) {
+                            showReceiveAssetList()
+                        }
                     } else {
                         showReceiveAssetList()
                     }

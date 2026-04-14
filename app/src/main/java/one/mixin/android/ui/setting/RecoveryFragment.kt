@@ -34,6 +34,15 @@ class RecoveryFragment : BaseFragment(R.layout.fragment_compose) {
     ) {
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.isVisible = false
+        renderPage()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        renderPage()
+    }
+
+    private fun renderPage() {
         binding.compose.setContent {
             RecoveryKitPage({ activity?.onBackPressedDispatcher?.onBackPressed() },
                 {
@@ -42,7 +51,11 @@ class RecoveryFragment : BaseFragment(R.layout.fragment_compose) {
                     navTo(MnemonicPhraseBackupFragment.newInstance(), MnemonicPhraseBackupFragment.TAG)
                 }, {
                     if (!Session.hasPhone()) {
-                        VerifyMobileReminderBottomSheetDialogFragment.showSafely(parentFragmentManager, enableSnooze = false)
+                        VerifyMobileReminderBottomSheetDialogFragment.showSafely(
+                            parentFragmentManager,
+                            subtitleResId = R.string.verify_mobile_reminder_desc_recovery_contact,
+                            enableSnooze = false,
+                        )
                     } else if (Session.isAnonymous() && !Session.saltExported()) {
                         val shown = RecoveryReminderBottomSheetDialogFragment.showForRiskAction(parentFragmentManager) {
                             navTo(EmergencyContactFragment.newInstance(), EmergencyContactFragment.TAG)
