@@ -492,33 +492,40 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                     val chainId = token?.chainId ?: web3Token?.chainId ?: return@TransferDestinationInputPage
                                     AddressSearchBottomSheetDialogFragment.newInstance(chainId).apply {
                                         onAddressClick = { address ->
-                                            requireView().hideKeyboard()
+                                            this@TransferDestinationInputFragment.requireView().hideKeyboard()
                                             if (web3Token != null) {
+                                                val selectedWeb3Token = web3Token!!
                                                 val dialog =
                                                     indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
                                                         setCancelable(false)
                                                     }
-                                                lifecycleScope.launch {
+                                                this@TransferDestinationInputFragment.lifecycleScope.launch {
                                                     dialog.show()
-                                                    val fromAddress = web3ViewModel.getAddressesByChainId(web3Token!!.walletId, web3Token!!.chainId)?.destination
-                                                    if (fromAddress.isNullOrBlank()) {
-                                                        toast(R.string.Alert_Not_Support)
-                                                    } else {
-                                                        (chainToken ?: web3ViewModel.web3TokenItemById(
-                                                            web3Token!!.walletId,
-                                                            web3Token!!.chainId
-                                                        ))?.let { chain ->
-                                                            navigateToInputFragmentWithBundle(Bundle().apply {
-                                                                putString(InputFragment.ARGS_FROM_ADDRESS, fromAddress)
-                                                                putString(InputFragment.ARGS_TO_ADDRESS, address.destination)
-                                                                putString(InputFragment.ARGS_TO_ADDRESS_TAG, address.tag)
-                                                                putParcelable(InputFragment.ARGS_WEB3_TOKEN, web3Token!!)
-                                                                putParcelable(InputFragment.ARGS_WEB3_CHAIN_TOKEN, chain)
-                                                                putParcelable(ARGS_WALLET, wallet)
-                                                            })
+                                                    try {
+                                                        val fromAddress = web3ViewModel.getAddressesByChainId(
+                                                            selectedWeb3Token.walletId,
+                                                            selectedWeb3Token.chainId
+                                                        )?.destination
+                                                        if (fromAddress.isNullOrBlank()) {
+                                                            toast(R.string.Alert_Not_Support)
+                                                        } else {
+                                                            (chainToken ?: web3ViewModel.web3TokenItemById(
+                                                                selectedWeb3Token.walletId,
+                                                                selectedWeb3Token.chainId
+                                                            ))?.let { chain ->
+                                                                navigateToInputFragmentWithBundle(Bundle().apply {
+                                                                    putString(InputFragment.ARGS_FROM_ADDRESS, fromAddress)
+                                                                    putString(InputFragment.ARGS_TO_ADDRESS, address.destination)
+                                                                    putString(InputFragment.ARGS_TO_ADDRESS_TAG, address.tag)
+                                                                    putParcelable(InputFragment.ARGS_WEB3_TOKEN, selectedWeb3Token)
+                                                                    putParcelable(InputFragment.ARGS_WEB3_CHAIN_TOKEN, chain)
+                                                                    putParcelable(ARGS_WALLET, wallet)
+                                                                })
+                                                            }
                                                         }
+                                                    } finally {
+                                                        dialog.dismiss()
                                                     }
-                                                    dialog.dismiss()
                                                 }
                                             } else if (token != null) {
                                                 navigateToInputFragmentWithBundle(Bundle().apply {
@@ -665,7 +672,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 onComplete = { label ->
                                     errorInfo = null
                                     if (token == null && web3Token != null) {
-                                        lifecycleScope.launch {
+                                        this@TransferDestinationInputFragment.lifecycleScope.launch {
                                             val t = web3ViewModel.syncAsset(web3Token!!.assetId) ?: return@launch
                                             handleLabelComplete(t, address, memo, label, navController)
                                         }
