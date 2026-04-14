@@ -23,6 +23,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.ChainId.Arbitrum
 import one.mixin.android.Constants.ChainId.Avalanche
+import one.mixin.android.Constants.ChainId.BITCOIN_CHAIN_ID
 import one.mixin.android.Constants.ChainId.Base
 import one.mixin.android.Constants.ChainId.BinanceSmartChain
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
@@ -136,6 +137,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         binding.apply {
             radioTron.isVisible = inMixin()
             radioToncoin.isVisible = inMixin()
+            radioBtc.isVisible = !inMixin()
             radioStock.isVisible = stocks.isNotEmpty()
             radioAll.isChecked = true
             radio.scrollToCenterCheckedRadio(radioGroup)
@@ -150,6 +152,10 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                         currentChain = when (id) {
                             R.id.radio_eth -> {
                                 ETHEREUM_CHAIN_ID
+                            }
+
+                            R.id.radio_btc -> {
+                                BITCOIN_CHAIN_ID
                             }
 
                             R.id.radio_solana -> {
