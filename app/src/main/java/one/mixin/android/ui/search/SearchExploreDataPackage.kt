@@ -20,7 +20,7 @@ class SearchExploreDataPackage(
     var showTip = false
 
     private var assetLimit = true
-    private var marketLimit = true
+    private var marketLimit = false
     private var botLimit = true
     private var dappLimit = true
 
