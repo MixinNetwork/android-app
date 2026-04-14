@@ -31,6 +31,8 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
@@ -1487,13 +1489,24 @@ fun AssetChanges(
                 placeholder = R.drawable.ic_avatar_place_holder,
             )
             Box(modifier = Modifier.width(12.dp))
-            Text(
+            BasicText(
+                modifier = Modifier.weight(1f),
                 text = "-${inAmount.toPlainString()} ${inAsset.symbol}",
-                color = MixinAppTheme.colors.textPrimary,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.W600
+                style = TextStyle(
+                    color = MixinAppTheme.colors.textPrimary,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.W600,
+                ),
+                maxLines = 1,
+                softWrap = false,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                autoSize = TextAutoSize.StepBased(
+                    minFontSize = 8.sp,
+                    maxFontSize = 16.sp,
+                    stepSize = 0.5.sp,
+                ),
             )
-            Box(modifier = Modifier.weight(1f))
+            Box(modifier = Modifier.width(8.dp))
             Text(
                 text = inAsset.chain.name,
                 color = MixinAppTheme.colors.textAssist,
@@ -1514,13 +1527,24 @@ fun AssetChanges(
                 placeholder = R.drawable.ic_avatar_place_holder,
             )
             Box(modifier = Modifier.width(12.dp))
-            Text(
+            BasicText(
+                modifier = Modifier.weight(1f),
                 text = "+${outAmount.toPlainString()} ${outAsset.symbol}",
-                color = MixinAppTheme.colors.green,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.W600
+                style = TextStyle(
+                    color = MixinAppTheme.colors.green,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.W600,
+                ),
+                maxLines = 1,
+                softWrap = false,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                autoSize = TextAutoSize.StepBased(
+                    minFontSize = 8.sp,
+                    maxFontSize = 16.sp,
+                    stepSize = 0.5.sp,
+                ),
             )
-            Box(modifier = Modifier.weight(1f))
+            Box(modifier = Modifier.width(8.dp))
             Text(
                 text = outAsset.chain.name,
                 color = MixinAppTheme.colors.textAssist,
