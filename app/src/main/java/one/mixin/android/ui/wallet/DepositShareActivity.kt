@@ -13,8 +13,10 @@ import android.media.MediaScannerConnection
 import android.os.Bundle
 import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
+import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
+import android.widget.FrameLayout
 import androidx.core.content.FileProvider
 import androidx.core.view.drawToBitmap
 import androidx.core.view.isInvisible
@@ -61,6 +63,7 @@ class DepositShareActivity : BaseActivity() {
         private const val ARGS_AMOUNT_URL = "amount_url"
         private const val ARGS_USER = "user"
         private const val SHARE_QR_URL = "https://mixin.one/mm"
+        private const val MAX_CONTENT_WIDTH_DP = 380
 
         fun show(context: Context, token: TokenItem?, address: String? = null, amountUrl: String? = null, amount: String? = null, user: User? = null) {
             refreshScreenshot(context, 0x33000000)
@@ -144,8 +147,24 @@ class DepositShareActivity : BaseActivity() {
         }
         binding.iconFl.round(6.dp)
         binding.qr.post { binding.qr.round(4.dp) }
-        binding.content.updateLayoutParams<MarginLayoutParams> {
+        binding.content.updateLayoutParams<FrameLayout.LayoutParams> {
+            val horizontalMargin = 40.dp
+            val maxContentWidth = MAX_CONTENT_WIDTH_DP.dp
+            val availableWidth = resources.displayMetrics.widthPixels - (horizontalMargin * 2)
+
             topMargin = 20.dp
+
+            if (availableWidth > maxContentWidth) {
+                width = maxContentWidth
+                marginStart = 0
+                marginEnd = 0
+            } else {
+                width = MarginLayoutParams.MATCH_PARENT
+                marginStart = horizontalMargin
+                marginEnd = horizontalMargin
+            }
+
+            gravity = Gravity.CENTER
         }
 
         setupUI()
