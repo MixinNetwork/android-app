@@ -31,6 +31,7 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -79,6 +80,7 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.stripAmountZero
@@ -103,6 +105,7 @@ import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.tip.wc.compose.ItemContent
 import one.mixin.android.ui.tip.wc.compose.ItemWalletContent
 import one.mixin.android.ui.url.UrlInterpreterActivity
+import one.mixin.android.ui.wallet.components.WalletLabel
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SystemUIManager
@@ -233,6 +236,8 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     private var insufficientGas by mutableStateOf(false)
     private var walletName by mutableStateOf<String?>(null)
     private var isWeb3 by mutableStateOf(false)
+    private var senderAddress: String? by mutableStateOf(null)
+    private var walletDisplayInfo by mutableStateOf<Triple<String?, Int, Boolean?>?>(null)
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val view = super.onCreateView(inflater, container, savedInstanceState)
@@ -251,7 +256,7 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                         .fillMaxHeight()
                         .background(MixinAppTheme.colors.background),
             ) {
-                // No wallet label for mixin internal transfer
+                WalletLabel(walletName = walletName, isWeb3 = isWeb3)
                 Column(
                     modifier =
                         Modifier
@@ -376,15 +381,30 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     val expiryLabel = remember(expiredAt) { mapExpiryToLabel(expiredAt) }
                     ItemContent(title = stringResource(id = R.string.expiry).uppercase(), subTitle = stringResource(id = expiryLabel))
                     Box(modifier = Modifier.height(20.dp))
-                    ItemUserContent(title = stringResource(id = R.string.Receiver).uppercase(), user = receiver, address = null)
+                    if (isWeb3) {
+                        val account = senderAddress ?: ""
+                        LaunchedEffect(account) {
+                            if (account.isBlank()) {
+                                walletDisplayInfo = null
+                            } else {
+                                walletDisplayInfo = try {
+                                    web3ViewModel.checkAddressAndGetDisplayName(account, null, inAsset.chain.chainId)
+                                } catch (e: Exception) {
+                                    null
+                                }
+                            }
+                        }
+                        walletDisplayInfo.notNullWithElse({ walletDisplayInfo ->
+                            val (displayName, _, _) = walletDisplayInfo
+                            ItemContent(title = stringResource(id = R.string.Sender).uppercase(), subTitle = account, displayName)
+                        }, {
+                            ItemContent(title = stringResource(id = R.string.Sender).uppercase(), subTitle = account)
+                        })
+                    } else {
+                        ItemWalletContent(title = stringResource(id = R.string.Sender).uppercase(), fontSize = 16.sp)
+                    }
                     Box(modifier = Modifier.height(20.dp))
-                    val isPrivacyWallet = senderWalletId == Session.getAccountId()
-                    ItemWalletContent(
-                        title = stringResource(id = R.string.Sender).uppercase(),
-                        fontSize = 16.sp,
-                        walletId = if (isPrivacyWallet) null else senderWalletId,
-                        walletName = if (isPrivacyWallet) null else walletName
-                    )
+                    ItemUserContent(title = stringResource(id = R.string.Receiver).uppercase(), user = receiver, address = null)
                     if (parsedLink?.memo.isNullOrBlank().not()) {
                         Box(modifier = Modifier.height(20.dp))
                         ItemContent(title = stringResource(id = R.string.Memo).uppercase(), subTitle = parsedLink?.memo ?: stringResource(id = R.string.None))
@@ -642,9 +662,10 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     ) {
                         applyPreviewData(previewData!!, token)
                     } else {
+                        senderAddress = resolveSenderAddress(token)
                         val transaction = token.buildTransaction(
                             rpc,
-                            if (token.chainId == Constants.ChainId.Solana) Web3Signer.solanaAddress else Web3Signer.evmAddress,
+                            senderAddress!!,
                             depositDestination!!,
                             inAmount.toPlainString()
                         )
@@ -736,6 +757,7 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         previewData: SwapTransferPreviewData,
         token: Web3TokenItem,
     ) {
+        senderAddress = previewData.senderAddress
         web3Transaction = previewData.web3Transaction
         gaslessPrepareResponse = previewData.gaslessPrepareResponseJson?.let {
             GsonHelper.customGson.fromJson(it, GaslessTxResponse::class.java)
@@ -752,6 +774,17 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             else -> {
                 tipGas = previewData.toTipGas(token.chainId)
             }
+        }
+    }
+
+    private suspend fun resolveSenderAddress(token: Web3TokenItem): String {
+        return if (token.chainId == Constants.ChainId.Solana) {
+            Web3Signer.solanaAddress
+        } else if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+            val btcAddress = web3ViewModel.getAddressesByChainId(Web3Signer.currentWalletId, Constants.ChainId.BITCOIN_CHAIN_ID)
+            requireNotNull(btcAddress?.destination) { "btc address not found" }
+        } else {
+            Web3Signer.evmAddress
         }
     }
 
