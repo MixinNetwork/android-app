@@ -37,6 +37,15 @@ import one.mixin.android.ui.home.web3.trade.SwapViewModel
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import java.math.BigDecimal
 
+private fun displayBalance(balance: String?, isWeb3: Boolean): String {
+    if (balance.isNullOrBlank()) return "0"
+    return if (isWeb3) {
+        balance.toBigDecimalOrNull()?.stripTrailingZeros()?.toPlainString() ?: balance
+    } else {
+        balance.numberFormat8()
+    }
+}
+
 @Composable
 fun InputArea(
     modifier: Modifier = Modifier,
@@ -95,11 +104,7 @@ fun InputArea(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = if (token.isWeb3) {
-                            balance?.numberFormat8() ?: "0"
-                        } else {
-                            balance?.numberFormat8() ?: "0"
-                        },
+                        text = displayBalance(balance = balance, isWeb3 = token.isWeb3),
                         style = TextStyle(
                             fontSize = 12.sp,
                             color = MixinAppTheme.colors.textAssist,
