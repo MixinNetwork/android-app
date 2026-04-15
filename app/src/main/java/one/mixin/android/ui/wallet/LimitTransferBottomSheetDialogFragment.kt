@@ -104,6 +104,7 @@ import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.tip.wc.compose.ItemContent
 import one.mixin.android.ui.tip.wc.compose.ItemWalletContent
+import one.mixin.android.ui.tip.wc.sessionrequest.FeeInfo
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.components.WalletLabel
 import one.mixin.android.util.ErrorHandler
@@ -115,6 +116,7 @@ import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.vo.User
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toUser
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.JsSignMessage
@@ -231,6 +233,7 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     private var tipGas: TipGas? by mutableStateOf(null)
     private var solanaFee: BigDecimal? by mutableStateOf(null)
     private var solanaTx: VersionedTransactionCompat? by mutableStateOf(null)
+    private var asset: TokenItem? by mutableStateOf(null)
     private var chainToken: Web3TokenItem? by mutableStateOf(null)
     private var token: Web3TokenItem? by mutableStateOf(null)
     private var insufficientGas by mutableStateOf(false)
@@ -381,6 +384,45 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     val expiryLabel = remember(expiredAt) { mapExpiryToLabel(expiredAt) }
                     ItemContent(title = stringResource(id = R.string.expiry).uppercase(), subTitle = stringResource(id = expiryLabel))
                     Box(modifier = Modifier.height(20.dp))
+                    if (isWeb3) {
+                        val chainId = token?.chainId ?: inAsset.chain.chainId
+                        val isGaslessPrepared = web3Transaction?.type == JsSignMessage.TYPE_GASLESS_TRANSFER && gaslessPrepareResponse != null
+                        val previewFeeAmount = previewData?.feeAmount?.toBigDecimalOrNull()
+                        val previewFeeUsd = previewData?.feeUsd?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                        val shouldShowFeeLoading =
+                            !isGaslessPrepared && (
+                                (chainId == Constants.ChainId.SOLANA_CHAIN_ID && solanaFee == null) ||
+                                    (chainId != Constants.ChainId.SOLANA_CHAIN_ID && tipGas == null)
+                                )
+                        if (tipGas != null || solanaFee != null || (isGaslessPrepared && previewFeeAmount != null)) {
+                            val transaction = web3Transaction?.wcEthereumTransaction
+                            val fee = solanaFee?.stripTrailingZeros()
+                                ?: tipGas?.displayValue(transaction?.maxFeePerGas)
+                                ?: previewFeeAmount
+                                ?: BigDecimal.ZERO
+                            val feeSymbol = previewData?.feeSymbol ?: asset?.symbol.orEmpty()
+                            val feeUsd = if (previewFeeUsd > BigDecimal.ZERO && tipGas == null && solanaFee == null) {
+                                previewFeeUsd
+                            } else {
+                                fee.multiply(asset?.priceUsd?.toBigDecimal() ?: BigDecimal.ZERO)
+                            }
+                            if (fee == BigDecimal.ZERO) {
+                                FeeInfo(
+                                    amount = "$fee",
+                                    fee = feeUsd,
+                                )
+                            } else {
+                                FeeInfo(
+                                    amount = "$fee $feeSymbol",
+                                    fee = feeUsd,
+                                    gasPrice = previewData?.gasPrice ?: tipGas?.displayGas(transaction?.maxFeePerGas)?.toPlainString(),
+                                )
+                            }
+                        } else {
+                            FeeInfo("0", BigDecimal.ZERO, isLoading = shouldShowFeeLoading)
+                        }
+                        Box(modifier = Modifier.height(20.dp))
+                    }
                     if (isWeb3) {
                         val account = senderAddress ?: ""
                         LaunchedEffect(account) {
@@ -656,10 +698,9 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             if (token != null) {
                 try {
                     this@LimitTransferBottomSheetDialogFragment.token = token
-                    if (previewData != null &&
-                        previewData?.web3Transaction?.type == JsSignMessage.TYPE_GASLESS_TRANSFER &&
-                        !previewData?.gaslessPrepareResponseJson.isNullOrBlank()
-                    ) {
+                    chainToken = bottomViewModel.web3TokenItemById(Web3Signer.currentWalletId, token.chainId)
+                    asset = chainToken?.toTokenItem()
+                    if (previewData != null) {
                         applyPreviewData(previewData!!, token)
                     } else {
                         senderAddress = resolveSenderAddress(token)
@@ -670,10 +711,7 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                             inAmount.toPlainString()
                         )
                         web3Transaction = transaction
-                    }
-
-                    val chain = token.getChainFromName()
-                    if (web3Transaction?.type != JsSignMessage.TYPE_GASLESS_TRANSFER) {
+                        val chain = token.getChainFromName()
                         refreshEstimatedGasAndAsset(chain)
                     }
                 } catch (e: Exception) {
@@ -697,6 +735,7 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         tickerFlow(15.seconds)
             .onEach {
                 try {
+                    asset = bottomViewModel.refreshAsset(assetId)
                     tipGas = withContext(Dispatchers.IO) {
                         val r = bottomViewModel.estimateFee(
                             EstimateFeeRequest(
@@ -747,6 +786,7 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                         }
                         solanaFee = solanaTx?.calcFee(tx.message.accounts[0].toBase58())
                     }
+                    asset = bottomViewModel.refreshAsset(Constants.ChainId.Solana)
                 } catch (e: Exception) {
                     handleException(e)
                 }
