@@ -453,6 +453,13 @@ class TradeFragment : BaseFragment() {
                                         }
                                     }
                                 },
+                                onShowHelpBottomSheet = { onContactSupport, onTradingGuide ->
+                                    this@apply.hideKeyboard()
+                                    TradeHelpBottomSheetDialogFragment.newInstance().apply {
+                                        this.onContactSupport = onContactSupport
+                                        this.onTradingGuide = onTradingGuide
+                                    }.show(parentFragmentManager, TradeHelpBottomSheetDialogFragment.TAG)
+                                },
                                 pop = {
                                     navigateUp(navController)
                                 },

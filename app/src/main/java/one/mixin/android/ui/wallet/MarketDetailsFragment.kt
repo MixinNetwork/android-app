@@ -36,7 +36,7 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshMarketJob
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.market.Market
-import one.mixin.android.ui.home.web3.market.ChooseTokensBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.market.DepositTokensBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.ARGS_INPUT
 import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.ARGS_OUTPUT
 import one.mixin.android.ui.wallet.alert.AlertFragment.Companion.ARGS_COIN
@@ -138,7 +138,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                                 putString(ARGS_OUTPUT, nowTokens.first().assetId)
                             })
                     } else {
-                        ChooseTokensBottomSheetDialogFragment.newInstance(ArrayList<TokenItem>().apply { addAll(nowTokens) }).apply {
+                        DepositTokensBottomSheetDialogFragment.newInstance(ArrayList<TokenItem>().apply { addAll(nowTokens) }).apply {
                             callback = { token ->
                                 val output = if (token.assetId == USDT_ASSET_ETH_ID) {
                                     XIN_ASSET_ID
@@ -153,7 +153,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                                         putString(ARGS_OUTPUT, output)
                                     })
                             }
-                        }.show(parentFragmentManager, ChooseTokensBottomSheetDialogFragment.TAG)
+                        }.show(parentFragmentManager, DepositTokensBottomSheetDialogFragment.TAG)
                     }
                 }
             }
@@ -463,7 +463,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                                     WalletActivity.showWithToken(requireActivity(), nowTokens.first(), WalletActivity.Destination.Transactions, true)
                                 }
                             } else {
-                                ChooseTokensBottomSheetDialogFragment.newInstance(ArrayList<TokenItem>().apply { addAll(nowTokens) })
+                                DepositTokensBottomSheetDialogFragment.newInstance(ArrayList<TokenItem>().apply { addAll(nowTokens) })
                                     .apply {
                                         callback = { token ->
                                             if (assetId == token.assetId) {
@@ -473,7 +473,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                                             }
                                         }
                                     }
-                                    .show(parentFragmentManager, ChooseTokensBottomSheetDialogFragment.TAG)
+                                    .show(parentFragmentManager, DepositTokensBottomSheetDialogFragment.TAG)
                             }
                         }
                     }
