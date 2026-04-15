@@ -849,7 +849,7 @@ class TradeFragment : BaseFragment() {
                         assetId = token.assetId,
                         amount = amount,
                         feeAssetId = token.assetId,
-                        feeAmount = BigDecimal.ZERO.toPlainString(),
+                        feeAmount = null,
                         chainId = token.chainId,
                     )
                 )
