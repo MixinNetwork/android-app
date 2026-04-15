@@ -138,6 +138,7 @@ fun LimitOrderContent(
     inMixin: Boolean,
     initialAmount: String?,
     lastOrderTime: Long?,
+    reviewing: Boolean,
     onSelectToken: (Boolean, SelectTokenType) -> Unit,
     onLimitReview: (SwapToken, SwapToken, CreateLimitOrderResponse) -> Unit,
     onDeposit: (SwapToken) -> Unit,
@@ -414,6 +415,7 @@ fun LimitOrderContent(
                         val isPriceValid = limitPriceText.toBigDecimalOrNull()?.let { it > BigDecimal.ZERO } == true
                         val isOutputValid = outputText.toBigDecimalOrNull()?.let { it > BigDecimal.ZERO } == true
                         val isEnabled = isInputValid && isPriceValid && isOutputValid && checkBalance == true && toToken != null
+                        val isBusy = isSubmitting || reviewing
                         Button(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -421,7 +423,7 @@ fun LimitOrderContent(
                             onClick = {
                                 keyboardController?.hide()
                                 focusManager.clearFocus()
-                                if (isButtonEnabled && toToken != null) {
+                                if (isButtonEnabled && !isBusy && toToken != null) {
                                     isButtonEnabled = false
                                     isSubmitting = true
                                     keyboardController?.hide()
@@ -465,7 +467,7 @@ fun LimitOrderContent(
                                     }
                                 }
                             },
-                            enabled = isEnabled,
+                            enabled = isEnabled && !isBusy,
                             colors = ButtonDefaults.outlinedButtonColors(
                                 backgroundColor = if (isEnabled) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,
                             ),
@@ -483,7 +485,7 @@ fun LimitOrderContent(
                                     .height(24.dp),
                                 contentAlignment = Alignment.Center
                             ) {
-                                if (isSubmitting) {
+                                if (isBusy) {
                                     CircularProgressIndicator(
                                         modifier = Modifier
                                             .width(18.dp)

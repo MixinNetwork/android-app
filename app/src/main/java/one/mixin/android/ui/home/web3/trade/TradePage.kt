@@ -180,6 +180,7 @@ fun TradePage(
             inMixin,
             initialAmount,
             lastOrderTime,
+            reviewing,
             { isReverse, type -> onSelectToken(isReverse, type, true) },
             onLimitReview,
             onDeposit,
