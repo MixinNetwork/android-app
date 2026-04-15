@@ -123,6 +123,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
 
     private fun anonymousRequest(words: List<String>? = null) {
         lifecycleScope.launch {
+            errorInfo = null
             landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Creating)
             val sessionKey = generateEd25519KeyPair()
             val edKey = if (!words.isNullOrEmpty()) {
@@ -183,12 +184,14 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 },
 
                 failureBlock = { r ->
-                        if (r.errorCode == NEED_CAPTCHA) {
-                            if (words.isNullOrEmpty()) {
-                                AnalyticsTracker.trackSignUpCaptcha()
-                            } else {
-                                AnalyticsTracker.trackLoginCaptcha("mnemonic_phrase")
-                            }
+                    if (r.errorCode == NEED_CAPTCHA) {
+                        errorInfo = null
+                        landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Creating)
+                        if (words.isNullOrEmpty()) {
+                            AnalyticsTracker.trackSignUpCaptcha()
+                        } else {
+                            AnalyticsTracker.trackLoginCaptcha("mnemonic_phrase")
+                        }
                         initAndLoadCaptcha(sessionKey, edKey, r.errorDescription)
                     } else {
                         errorInfo = requireContext().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
@@ -216,6 +219,8 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
     private var captchaView: CaptchaView? = null
     private fun initAndLoadCaptcha(sessionKey: EdKeyPair, edKey: EdKeyPair, errorDescription: String) =
         lifecycleScope.launch {
+            errorInfo = null
+            landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Creating)
             if (captchaView == null) {
                 captchaView =
                     CaptchaView(
@@ -258,6 +263,8 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
 
     private fun reSend(sessionKey: EdKeyPair, edKey: EdKeyPair, hCaptchaResponse: String? = null, gRecaptchaResponse: String? = null, gtRecaptchaResponse: String? = null) {
         lifecycleScope.launch {
+            errorInfo = null
+            landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Creating)
             val (messageHex, signatureHex) = buildAnonymousRequestPayload(edKey)
             val r = handleMixinResponse(
                 invokeNetwork = {
@@ -277,6 +284,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
 
                 failureBlock = { r ->
                     if (r.errorCode == NEED_CAPTCHA) {
+                        errorInfo = null
                         landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Creating)
                         initAndLoadCaptcha(sessionKey, edKey, r.errorDescription)
                     } else {
