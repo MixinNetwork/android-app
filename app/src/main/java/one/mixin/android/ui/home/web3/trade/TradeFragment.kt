@@ -792,17 +792,18 @@ class TradeFragment : BaseFragment() {
                 return
             }
         }
-        if (!ensureWeb3FeeSufficient(
+        val feeCheckResult = ensureWeb3FeeSufficient(
                 from = from,
                 destination = order.depositDestination,
                 amount = order.order.payAmount,
-                allowGasless = false,
-            ).isSufficient
-        ) {
+                allowGasless = true,
+                includeSwapPreviewData = true,
+            )
+        if (!feeCheckResult.isSufficient) {
             reviewing = false
             return
         }
-        LimitTransferBottomSheetDialogFragment.newInstance(order, from, to, senderWalletId).apply {
+        LimitTransferBottomSheetDialogFragment.newInstance(order, from, to, senderWalletId, feeCheckResult.swapPreviewData).apply {
             setOnDone {
                 initialAmount = null
                 lastOrderTime = System.currentTimeMillis()
@@ -848,7 +849,7 @@ class TradeFragment : BaseFragment() {
                         assetId = token.assetId,
                         amount = amount,
                         feeAssetId = token.assetId,
-                        feeAmount = BigDecimal.ZERO.toPlainString(),
+                        feeAmount = null,
                         chainId = token.chainId,
                     )
                 )

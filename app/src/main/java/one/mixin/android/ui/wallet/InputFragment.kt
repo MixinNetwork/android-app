@@ -520,7 +520,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                 }
                             lifecycleScope.launch(
                                 CoroutineExceptionHandler { _, error ->
-                                    ErrorHandler.Companion.handleError(error)
+                                    ErrorHandler.handleError(error)
                                     alertDialog.dismiss()
                                 },
                             ) {
@@ -751,16 +751,18 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 }
                 TransferType.BIOMETRIC_ITEM -> {
                     assetBiometricItem?.let { item ->
-                        when {
-                            item is WithdrawBiometricItem -> {
+                        when (item) {
+                            is WithdrawBiometricItem -> {
                                 // isFeeWaived todo check is my wallet
                                 titleView.setLabel(getString(R.string.Send_To_Title), addressLabel, "")
                             }
-                            item is AddressTransferBiometricItem -> {
+
+                            is AddressTransferBiometricItem -> {
                                 titleView.setLabel(getString(R.string.Send_To_Title), null, (if (toAddress == null) item.address else "$toAddress${addressTag?.let { ":$it" } ?: ""}").formatPublicKey(16))
                                 renderTitle(toAddress ?: item.address, addressTag)
                             }
-                            item is TransferBiometricItem -> {
+
+                            is TransferBiometricItem -> {
                                 titleView.setSubTitle(getString(R.string.Send_To_Title), item.users) {
                                     showUserList(item.users)
                                 }
@@ -1062,7 +1064,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 if (isAdded) {
                     currentNote = note
                     binding.contentTextView.text =
-                        if (note.isNotEmpty()) note else getString(R.string.add_a_note)
+                        note.ifEmpty { getString(R.string.add_a_note) }
                 }
             }
         }
@@ -1478,14 +1480,14 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     }
 
     private suspend fun refreshFee() {
-        when  {
-            transferType == TransferType.ADDRESS -> {
+        when (transferType) {
+            TransferType.ADDRESS -> {
                 refreshFee(token!!)
             }
-            transferType == TransferType.WEB3 -> {
+            TransferType.WEB3 -> {
                 refreshWeb3Fees(web3Token!!)
             }
-            transferType == TransferType.BIOMETRIC_ITEM && assetBiometricItem is WithdrawBiometricItem -> {
+            TransferType.BIOMETRIC_ITEM if assetBiometricItem is WithdrawBiometricItem -> {
                 refreshFee(token!!)
             }
             else -> {

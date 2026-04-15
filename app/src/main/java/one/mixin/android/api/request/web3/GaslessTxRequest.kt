@@ -11,7 +11,7 @@ data class GaslessTxRequest(
     @SerializedName("fee_asset_id")
     val feeAssetId: String,
     @SerializedName("fee_amount")
-    val feeAmount: String,
+    val feeAmount: String?,
     @SerializedName("chain_id")
     val chainId: String,
 )
