@@ -649,6 +649,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     }
 
     private fun showPin() {
+        errorInfo = null
         PinInputBottomSheetDialogFragment.newInstance(biometricInfo = getBiometricInfo(), from = 1).setOnPinComplete { pin ->
             lifecycleScope.launch(
                 CoroutineExceptionHandler { _, error ->
