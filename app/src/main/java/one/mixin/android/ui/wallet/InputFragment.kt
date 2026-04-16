@@ -217,6 +217,18 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         binding.root.hideKeyboard()
     }
 
+    override fun onDestroyView() {
+        btcFeeRecalculateJob?.cancel()
+        btcFeeRecalculateJob = null
+        if (dialog.isShowing) {
+            dialog.dismiss()
+        }
+        if (alertDialog.isShowing) {
+            alertDialog.dismiss()
+        }
+        super.onDestroyView()
+    }
+
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(
         view: View,
@@ -224,7 +236,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     ) {
         super.onViewCreated(view, savedInstanceState)
         jobManager.addJobInBackground(SyncOutputJob())
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             binding.apply {
                 if (requireActivity() !is WalletActivity){
                     root.fitsSystemWindows = false
@@ -518,7 +530,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                 } else {
                                     v
                                 }
-                            lifecycleScope.launch(
+                            viewLifecycleOwner.lifecycleScope.launch(
                                 CoroutineExceptionHandler { _, error ->
                                     ErrorHandler.handleError(error)
                                     alertDialog.dismiss()
@@ -586,7 +598,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                             val fromAddress = requireNotNull(fromAddress)
                             val toAddress = requireNotNull(toAddress)
                             val amount = currentInputAmount()
-                            lifecycleScope.launch(
+                            viewLifecycleOwner.lifecycleScope.launch(
                                 CoroutineExceptionHandler { _, error ->
                                     Timber.e("Error: ${error.message}")
                                     ErrorHandler.handleError(error)
@@ -1030,7 +1042,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     private var isFeeWaived = false
 
     private fun renderTitle(toAddress: String, tag: String? = null) {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             val (label, index, _) = web3ViewModel.checkAddressAndGetDisplayName(requireNotNull(toAddress), tag, requireNotNull(token?.chainId ?: web3Token?.chainId)) ?: Triple(null, 0, null)
             isFeeWaived = index == 1 || index == 2 || index == 4  // Privacy(1), Safe(2), Fee-free(4)
             binding.titleView.setLabel(
@@ -1218,7 +1230,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         if (lastBtcFeeAmount == amount) return
         lastBtcFeeAmount = amount
         btcFeeRecalculateJob?.cancel()
-        btcFeeRecalculateJob = lifecycleScope.launch {
+        btcFeeRecalculateJob = viewLifecycleOwner.lifecycleScope.launch {
             delay(300L)
             val currentAmount: String = lastBtcFeeAmount ?: return@launch
             refreshBtcFeeForAmount(currentAmount)
@@ -1432,7 +1444,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             web3Token != null && web3Token?.assetId == chainToken?.assetId -> {
                 if (gas == null) {
                     if (!dialog.isShowing) {
-                        lifecycleScope.launch {
+                        viewLifecycleOwner.lifecycleScope.launch {
                             dialog.show()
                             refreshFee()
                         }
@@ -1529,13 +1541,13 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     private var gaslessFeeToken: Web3TokenItem? = null
     private var hasManuallySelectedWeb3Fee = false
 
-    private fun refreshFeeTokenExtra(tokenId: String?) = lifecycleScope.launch {
+    private fun refreshFeeTokenExtra(tokenId: String?) = viewLifecycleOwner.lifecycleScope.launch {
         feeTokensExtra = if (tokenId == null) null
         else web3ViewModel.findTokensExtra(tokenId)
         updateUI()
     }
 
-    private fun refreshGaslessFeeToken(tokenId: String?) = lifecycleScope.launch {
+    private fun refreshGaslessFeeToken(tokenId: String?) = viewLifecycleOwner.lifecycleScope.launch {
         gaslessFeeToken = if (tokenId == null || web3Token == null) {
             null
         } else {
@@ -1613,7 +1625,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     }
 
     private fun prepareCheck(item: BiometricItem) {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             val amount = item.amount
             val rawTransaction = web3ViewModel.firstUnspentTransaction()
             if (rawTransaction != null) {
@@ -1629,7 +1641,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private fun checkUtxo(amount: String, callback: () -> Unit) {
         val token = token ?: return
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             val consolidationAmount = web3ViewModel.checkUtxoSufficiency(token.assetId, amount)
             if (consolidationAmount != null) {
                 UtxoConsolidationBottomSheetDialogFragment.newInstance(buildTransferBiometricItem(Session.getAccount()!!.toUser(), token, consolidationAmount, UUID.randomUUID().toString(), null, null))
@@ -1641,7 +1653,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     }
 
     private fun prepareTransferBottom(amount: String, item: BiometricItem) =
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             val t = item
             if (t !is TransferBiometricItem && t !is AddressTransferBiometricItem && t !is WithdrawBiometricItem) {
                 return@launch

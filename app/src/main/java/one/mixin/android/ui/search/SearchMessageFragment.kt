@@ -15,6 +15,7 @@ import com.jakewharton.rxbinding3.widget.textChanges
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.R
@@ -23,6 +24,7 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.showKeyboard
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationActivity
@@ -67,8 +69,19 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
     private val binding by viewBinding(FragmentSearchMessageBinding::bind)
 
     private var searchJob: Job? = null
+    private var textChangesDisposable: Disposable? = null
 
     private var cancellationSignal: CancellationSignal? = null
+    private val initialSearchRunnable =
+        Runnable {
+            if (viewDestroyed()) return@Runnable
+            searchJob = onTextChanged(query)
+        }
+    private val showKeyboardRunnable =
+        Runnable {
+            if (viewDestroyed()) return@Runnable
+            binding.searchEt.showKeyboard()
+        }
 
     override fun onViewCreated(
         view: View,
@@ -97,10 +110,13 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
         adapter.callback =
             object : SearchMessageAdapter.SearchMessageCallback {
                 override fun onItemClick(item: SearchMessageDetailItem) {
+                    val keyword = binding.searchEt.text.toString()
                     searchViewModel.findConversationById(searchMessageItem.conversationId)
                         .autoDispose(stopScope)
                         .subscribe {
-                            binding.searchEt.hideKeyboard()
+                            if (!viewDestroyed()) {
+                                binding.searchEt.hideKeyboard()
+                            }
                             val activity = requireActivity()
                             val conversationFragment = activity.supportFragmentManager.findFragmentByTag(ConversationFragment.TAG) as? ConversationFragment
                             if (activity is ConversationActivity && conversationFragment != null) {
@@ -111,14 +127,14 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
                                         hide(this@SearchMessageFragment)
                                         addToBackStack(null)
                                     }
-                                    conversationFragment.updateConversationInfo(item.messageId, binding.searchEt.text.toString())
+                                    conversationFragment.updateConversationInfo(item.messageId, keyword)
                                 }
                             } else {
                                 ConversationActivity.show(
                                     requireContext(),
                                     conversationId = searchMessageItem.conversationId,
                                     messageId = item.messageId,
-                                    keyword = binding.searchEt.text.toString(),
+                                    keyword = keyword,
                                 )
                                 if (isConversationSearch()) {
                                     parentFragmentManager.popBackStack()
@@ -131,31 +147,36 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
 
         binding.clearIb.setOnClickListener { binding.searchEt.setText("") }
         binding.searchEt.setText(query)
-        binding.searchEt.textChanges().debounce(SEARCH_DEBOUNCE, TimeUnit.MILLISECONDS)
-            .observeOn(AndroidSchedulers.mainThread())
-            .autoDispose(destroyScope)
-            .subscribe(
+        textChangesDisposable =
+            binding.searchEt.textChanges().debounce(SEARCH_DEBOUNCE, TimeUnit.MILLISECONDS)
+                .observeOn(AndroidSchedulers.mainThread())
+                .autoDispose(destroyScope)
+                .subscribe(
                 {
+                    if (viewDestroyed()) return@subscribe
                     binding.clearIb.isVisible = it.isNotEmpty()
                     searchJob?.cancel()
                     searchJob = onTextChanged(it.toString())
                 },
                 {},
             )
-        binding.searchEt.postDelayed(
-            {
-                searchJob = onTextChanged(query)
-            },
-            50,
-        )
+        binding.searchEt.postDelayed(initialSearchRunnable, 50)
         if (isConversationSearch()) {
-            binding.searchEt.postDelayed(
-                {
-                    binding.searchEt.showKeyboard()
-                },
-                500,
-            )
+            binding.searchEt.postDelayed(showKeyboardRunnable, 500)
         }
+    }
+
+    override fun onDestroyView() {
+        binding.searchEt.removeCallbacks(initialSearchRunnable)
+        binding.searchEt.removeCallbacks(showKeyboardRunnable)
+        textChangesDisposable?.dispose()
+        textChangesDisposable = null
+        searchJob?.cancel()
+        searchJob = null
+        removeObserverAndCancel()
+        observer = null
+        curLiveData = null
+        super.onDestroyView()
     }
 
     override fun onDestroy() {
@@ -179,7 +200,8 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
     private fun isConversationSearch() = searchMessageItem.messageCount == 0
 
     private fun onTextChanged(s: String) =
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
+            if (viewDestroyed()) return@launch
             if (s == adapter.query) {
                 return@launch
             }
@@ -202,6 +224,7 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
         }
 
     private fun bindAndSearch(s: String) {
+        if (viewDestroyed()) return
         binding.progress.isVisible = true
 
         removeObserverAndCancel()
@@ -209,6 +232,7 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
         curLiveData = searchViewModel.observeFuzzySearchMessageDetail(s, searchMessageItem.conversationId, cancellationSignal!!)
         observer =
             Observer {
+                if (viewDestroyed()) return@Observer
                 if (s != binding.searchEt.text.toString()) return@Observer
                 binding.progress.isVisible = false
 
