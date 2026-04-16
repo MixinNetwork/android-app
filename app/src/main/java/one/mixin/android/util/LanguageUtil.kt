@@ -17,9 +17,9 @@ fun getLocaleString(): String = AppCompatDelegate.getApplicationLocales().get(0)
 fun isCurrChinese(): Boolean = (getLanguage() ?: Locale.getDefault().language) == Locale.SIMPLIFIED_CHINESE.language
 
 fun isSimplifiedChineseLocale(): Boolean {
-    val language = getLanguage() ?: Locale.getDefault().language
-    return language == Locale.SIMPLIFIED_CHINESE.language &&
-        getLocaleString() !in Constants.Locale.TraditionalChinese.localeStrings
+    val locale = AppCompatDelegate.getApplicationLocales().get(0) ?: Locale.getDefault()
+    return locale.language == Locale.SIMPLIFIED_CHINESE.language &&
+        locale.toString() !in Constants.Locale.TraditionalChinese.localeStrings
 }
 
 fun isFollowSystem(): Boolean = AppCompatDelegate.getApplicationLocales().isEmpty

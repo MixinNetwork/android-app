@@ -14,6 +14,8 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.Account.PREF_LOGIN_OR_SIGN_UP
 import one.mixin.android.Constants.Account.PREF_LOGIN_VERIFY
 import one.mixin.android.Constants.Account.PREF_TRIED_UPDATE_KEY
+import one.mixin.android.Constants.DEFAULT_BOTS
+import one.mixin.android.Constants.DEFAULT_CN_BOTS
 import one.mixin.android.Constants.DEVICE_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -52,26 +54,6 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
     companion object {
         const val TAG: String = "LoadingFragment"
         private const val ARGS_SOURCE = "args_source"
-
-        private val DEFAULT_BOTS_ZH_CN =
-            listOf(
-                "7000",
-                "7000105155",
-                "7000105347",
-                "7000105346",
-                "7000101302",
-                "7000105403",
-            )
-
-        private val DEFAULT_BOTS_EN =
-            listOf(
-                "7000",
-                "7000105155",
-                "7000105347",
-                "7000105411",
-                "7000101302",
-                "7000105403",
-            )
 
         fun newInstance(source: String? = null) = LoadingFragment().apply {
             arguments = Bundle().apply {
@@ -157,7 +139,7 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
             return
         }
 
-        val bots = if (isSimplifiedChineseLocale()) DEFAULT_BOTS_ZH_CN else DEFAULT_BOTS_EN
+        val bots = if (isSimplifiedChineseLocale()) DEFAULT_CN_BOTS else DEFAULT_BOTS
         bots.forEach { botId ->
             jobManager.addJobInBackground(InitializeJob(botId))
         }
