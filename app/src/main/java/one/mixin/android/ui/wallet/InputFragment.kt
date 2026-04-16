@@ -1617,7 +1617,9 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     private var currentGaslessFee: NetworkFee? = null
         set(value) {
             field = value
-            refreshGaslessFeeToken(value?.token?.assetId)
+            if (view != null) {
+                refreshGaslessFeeToken(value?.token?.assetId)
+            }
         }
     private var gaslessFeeToken: Web3TokenItem? = null
     private var hasManuallySelectedWeb3Fee = false
