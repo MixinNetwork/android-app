@@ -57,6 +57,7 @@ fun InputArea(
     onInputChanged: ((String) -> Unit)? = null,
     onDeposit: ((SwapToken) -> Unit)? = null,
     onMax: (() -> Unit)? = null,
+    displayBalanceOverride: String? = null,
     bottomCompose: (@Composable () -> Unit)? = null,
     inlineEndCompose: (@Composable () -> Unit)? = null,
 ) {
@@ -66,6 +67,7 @@ fun InputArea(
     } else {
         viewModel.tokenExtraFlow(token).collectAsStateWithLifecycle(token.balance).value
     }
+    val displayedBalance = displayBalanceOverride ?: balance
     Column(
         modifier =
             modifier
@@ -104,7 +106,7 @@ fun InputArea(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = displayBalance(balance = balance, isWeb3 = token.isWeb3),
+                        text = displayBalance(balance = displayedBalance, isWeb3 = token.isWeb3),
                         style = TextStyle(
                             fontSize = 12.sp,
                             color = MixinAppTheme.colors.textAssist,

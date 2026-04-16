@@ -85,6 +85,8 @@ import one.mixin.android.util.ErrorHandler.Companion.handleMixinError
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.route.Order
 import one.mixin.android.vo.route.OrderState
+import one.mixin.android.web3.isNativeSolAsset
+import one.mixin.android.web3.nativeSolSpendableBalance
 import one.mixin.android.web3.js.Web3Signer
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -225,6 +227,13 @@ fun LimitOrderContent(
     fromToken?.let {
         val fromBalance = viewModel.tokenExtraFlow(it).collectAsStateWithLifecycle(it.balance).value
         val toBalance = toToken?.let { viewModel.tokenExtraFlow(it).collectAsStateWithLifecycle(it.balance).value }
+        val rawFromBalanceValue = fromBalance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+        val availableFromBalanceValue = if (it.isNativeSolAsset()) {
+            nativeSolSpendableBalance(rawFromBalanceValue)
+        } else {
+            rawFromBalanceValue
+        }
+        val availableFromBalance = availableFromBalanceValue.stripTrailingZeros().toPlainString()
         KeyboardAwareBox(modifier = Modifier.fillMaxHeight(), content = { availableHeight ->
             Column(
                 modifier = if (availableHeight != null) {
@@ -316,8 +325,8 @@ fun LimitOrderContent(
                                         outputText = ""
                                     }
                                 }
-                            }, onDeposit = onDeposit, onMax = {
-                                inputText = formatBalanceInput(fromBalance, fromToken?.isWeb3 == true)
+                            }, onDeposit = onDeposit, displayBalanceOverride = if (it.isNativeSolAsset()) fromBalance else null, onMax = {
+                                inputText = formatBalanceInput(availableFromBalance, fromToken?.isWeb3 == true)
                                 if (inputText.isNotBlank()) {
                                     val fromAmount = inputText.toBigDecimalOrNull()
                                     val standardPrice = limitPriceText.toBigDecimalOrNull()
@@ -410,7 +419,7 @@ fun LimitOrderContent(
                         if (availableHeight == null) {
                             Spacer(modifier = Modifier.weight(1f))
                         }
-                        val checkBalance = checkBalance(inputText, fromBalance)
+                        val checkBalance = checkBalance(inputText, availableFromBalance)
                         val isInputValid = inputText.toBigDecimalOrNull()?.let { it > BigDecimal.ZERO } == true
                         val isPriceValid = limitPriceText.toBigDecimalOrNull()?.let { it > BigDecimal.ZERO } == true
                         val isOutputValid = outputText.toBigDecimalOrNull()?.let { it > BigDecimal.ZERO } == true
@@ -602,7 +611,7 @@ fun LimitOrderContent(
         }, floating = {
             FloatingActions(
                 focusedField = focusedField,
-                fromBalance = fromBalance,
+                fromBalance = availableFromBalance,
                 fromToken = fromToken,
                 toToken = toToken,
                 isPriceInverted = isPriceInverted,
