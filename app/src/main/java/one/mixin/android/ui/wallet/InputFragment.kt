@@ -360,6 +360,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                             val address =
                                                 when (web3Token?.chainId) {
                                                     Constants.ChainId.SOLANA_CHAIN_ID -> Web3Signer.solanaAddress
+                                                    Constants.ChainId.BITCOIN_CHAIN_ID -> Web3Signer.btcAddress
                                                     in Constants.Web3EvmChainIds -> Web3Signer.evmAddress
                                                     else -> null
                                                 }
@@ -423,6 +424,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                         val address =
                                             when (web3Token?.chainId) {
                                                 Constants.ChainId.SOLANA_CHAIN_ID -> Web3Signer.solanaAddress
+                                                Constants.ChainId.BITCOIN_CHAIN_ID -> Web3Signer.btcAddress
                                                 in Constants.Web3EvmChainIds -> Web3Signer.evmAddress
                                                 else -> null
                                             }
@@ -457,6 +459,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                         val address =
                                             when (web3Token?.chainId) {
                                                 Constants.ChainId.SOLANA_CHAIN_ID -> Web3Signer.solanaAddress
+                                                Constants.ChainId.BITCOIN_CHAIN_ID -> Web3Signer.btcAddress
                                                 in Constants.Web3EvmChainIds -> Web3Signer.evmAddress
                                                 else -> null
                                             }
@@ -1438,7 +1441,12 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 }
 
                 transferType == TransferType.WEB3 -> {
-                    val address = if (web3Token?.chainId == Constants.ChainId.SOLANA_CHAIN_ID) Web3Signer.solanaAddress else Web3Signer.evmAddress
+                    val address =
+                        when (web3Token?.chainId) {
+                            Constants.ChainId.SOLANA_CHAIN_ID -> Web3Signer.solanaAddress
+                            Constants.ChainId.BITCOIN_CHAIN_ID -> Web3Signer.btcAddress
+                            else -> Web3Signer.evmAddress
+                        }
                     view?.navigate(
                         R.id.action_input_fragment_to_web3_address_fragment,
                         Bundle().apply {

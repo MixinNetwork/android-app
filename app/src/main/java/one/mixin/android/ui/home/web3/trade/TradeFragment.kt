@@ -550,7 +550,12 @@ class TradeFragment : BaseFragment() {
                                 } else {
                                     Constants.ChainId.ETHEREUM_CHAIN_ID
                                 }) ?: return@launch
-                            val address = if (t.isSolanaChain()) { Web3Signer.solanaAddress } else { Web3Signer.evmAddress }
+                            val address =
+                                when (t.chainId) {
+                                    Constants.ChainId.SOLANA_CHAIN_ID -> Web3Signer.solanaAddress
+                                    Constants.ChainId.BITCOIN_CHAIN_ID -> Web3Signer.btcAddress
+                                    else -> Web3Signer.evmAddress
+                                }
                             navTo(Web3AddressFragment.newInstance(t, address), Web3AddressFragment.TAG)
                             dismissNow()
                         }
