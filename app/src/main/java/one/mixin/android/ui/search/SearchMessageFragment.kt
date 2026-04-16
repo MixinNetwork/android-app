@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.os.CancellationSignal
 import android.view.View
 import android.view.View.VISIBLE
+import android.widget.EditText
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
@@ -70,6 +71,7 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
 
     private var searchJob: Job? = null
     private var textChangesDisposable: Disposable? = null
+    private var searchEditText: EditText? = null
 
     private var cancellationSignal: CancellationSignal? = null
     private val initialSearchRunnable =
@@ -80,7 +82,7 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
     private val showKeyboardRunnable =
         Runnable {
             if (viewDestroyed()) return@Runnable
-            binding.searchEt.showKeyboard()
+            searchEditText?.showKeyboard()
         }
 
     override fun onViewCreated(
@@ -88,6 +90,7 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        searchEditText = binding.searchEt
         binding.titleView.leftIb.setOnClickListener {
             binding.searchRv.hideKeyboard()
             requireActivity().onBackPressed()
@@ -160,15 +163,16 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
                 },
                 {},
             )
-        binding.searchEt.postDelayed(initialSearchRunnable, 50)
+        searchEditText?.postDelayed(initialSearchRunnable, 50)
         if (isConversationSearch()) {
-            binding.searchEt.postDelayed(showKeyboardRunnable, 500)
+            searchEditText?.postDelayed(showKeyboardRunnable, 500)
         }
     }
 
     override fun onDestroyView() {
-        binding.searchEt.removeCallbacks(initialSearchRunnable)
-        binding.searchEt.removeCallbacks(showKeyboardRunnable)
+        searchEditText?.removeCallbacks(initialSearchRunnable)
+        searchEditText?.removeCallbacks(showKeyboardRunnable)
+        searchEditText = null
         textChangesDisposable?.dispose()
         textChangesDisposable = null
         searchJob?.cancel()

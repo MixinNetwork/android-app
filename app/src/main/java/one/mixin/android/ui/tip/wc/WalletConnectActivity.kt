@@ -1,7 +1,9 @@
 package one.mixin.android.ui.tip.wc
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.view.WindowManager
 import dagger.hilt.android.AndroidEntryPoint
@@ -14,6 +16,7 @@ import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnect.RequestType
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
+import one.mixin.android.util.SystemUIManager
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -27,7 +30,9 @@ class WalletConnectActivity : BaseActivity() {
     override fun getNightThemeId(): Int = R.style.AppTheme_Night_Transparent
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        skipSystemUi = true
         super.onCreate(savedInstanceState)
+        SystemUIManager.setSafePadding(window, Color.TRANSPARENT)
         window.setFlags(
             WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
             WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
@@ -145,6 +150,7 @@ class WalletConnectActivity : BaseActivity() {
                     putExtra(ARGS_WC_EVENT, event)
                 },
             )
+            (context as? Activity)?.overridePendingTransition(R.anim.slide_in_bottom, R.anim.stay)
         }
 
         fun show(
@@ -156,6 +162,7 @@ class WalletConnectActivity : BaseActivity() {
                     putExtra(ARGS_WC_ERROR, error)
                 },
             )
+            (context as? Activity)?.overridePendingTransition(R.anim.slide_in_bottom, R.anim.stay)
         }
     }
 }

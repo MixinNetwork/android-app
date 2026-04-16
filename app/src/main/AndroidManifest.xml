@@ -375,7 +375,7 @@
             android:name=".ui.tip.wc.WalletConnectActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:launchMode="singleTop"
-            android:theme="@style/AppTheme.Music" />
+            android:theme="@style/AppTheme.Transparent" />
 
         <activity
             android:name=".ui.home.inscription.InscriptionActivity"

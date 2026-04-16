@@ -214,7 +214,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     override fun onResume() {
         super.onResume()
-        binding.root.hideKeyboard()
+        bindingOrNull()?.root?.hideKeyboard()
     }
 
     override fun onDestroyView() {
@@ -731,6 +731,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     }
 
     private fun applyFeeUi() {
+        val binding = bindingOrNull() ?: return
         val hasFeeText: Boolean = binding.contentTextView.text.toString().isNotEmpty()
         val showFee: Boolean = isFeeWaived && hasFeeText
         binding.contentTextView.paintFlags =
@@ -946,6 +947,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     }
 
     private fun updateWeb3AvailableBalance() {
+        val binding = bindingOrNull() ?: return
         val transferToken = web3Token ?: return
         val displayBalance =
             when {
@@ -971,6 +973,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     }
 
     private fun updateWeb3FeeDisplay() {
+        val binding = bindingOrNull() ?: return
         val token = web3Token ?: return
         if (binding.loadingProgressBar.isVisible) return
         val feeOptions = web3FeeOptions()
@@ -1287,6 +1290,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     }
 
     private fun updateAvailableBalanceForBtcFee() {
+        val binding = bindingOrNull() ?: return
         val token: Web3TokenItem = web3Token ?: return
         if (token.chainId != Constants.ChainId.BITCOIN_CHAIN_ID) return
         val reservedFee: BigDecimal = gas ?: return
@@ -1320,6 +1324,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     }
 
     private fun updateAddText() {
+        val binding = bindingOrNull() ?: return
         if (transferType == TransferType.WEB3 && shouldUseGaslessFlow()) {
             if (!isGaslessFeeEnough(currentInputAmount())) {
                 binding.addTv.text = "${getString(R.string.Add)} ${currentGaslessFee?.token?.symbol ?: ""}"
@@ -1513,22 +1518,25 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         get() = field
         set(value) {
             field = value
+            val binding = bindingOrNull()
             if (value != null) {
-                if (value.token.assetId == token?.assetId || value.token.assetId == web3Token?.assetId) {
+                if (binding != null && (value.token.assetId == token?.assetId || value.token.assetId == web3Token?.assetId)) {
 
                     val balance = runCatching {
                         tokenBalance.toBigDecimalOrNull()?.subtract(value.fee.toBigDecimalOrNull() ?: BigDecimal.ZERO)?.max(BigDecimal.ZERO)?.let {
                             if (web3Token == null) { it.numberFormat8() } else { it.numberFormat12() } }
                     }.getOrDefault("0")
                     binding.balanceTv.text = getString(R.string.available_balance, "$balance $tokenSymbol")
-                } else {
+                } else if (binding != null) {
                     binding.balanceTv.text = getString(R.string.available_balance, "${tokenBalance.let {
                         if (web3Token == null) { it.numberFormat8() } else { it.numberFormat12() } }
                     } $tokenSymbol")
                 }
-                binding.insufficientFeeBalance.text = getString(R.string.insufficient_gas, value.token.symbol)
+                binding?.insufficientFeeBalance?.text = getString(R.string.insufficient_gas, value.token.symbol)
             }
-            refreshFeeTokenExtra(value?.token?.assetId)
+            if (binding != null) {
+                refreshFeeTokenExtra(value?.token?.assetId)
+            }
         }
     private var feeTokensExtra: TokensExtra? = null
 
@@ -1566,11 +1574,13 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     private var isAdjustingBtcAmount: Boolean = false
 
     private fun setFeeLoading(isLoading: Boolean) {
+        val binding = bindingOrNull() ?: return
         binding.loadingProgressBar.isVisible = isLoading
         binding.contentTextView.isVisible = !isLoading
     }
 
     private suspend fun refreshFee(t: TokenItem) {
+        val binding = bindingOrNull() ?: return
         val toAddress = toAddress?: return
         setFeeLoading(true)
         val feeResponse = runCatching { web3ViewModel.getFees(t.assetId, toAddress) }.getOrNull()
@@ -1756,6 +1766,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     }
 
     private suspend fun refreshGas(t: Web3TokenItem) {
+        val binding = bindingOrNull() ?: return
         val toAddress = toAddress?: return
         val fromAddress = fromAddress ?: return
         if (t.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
@@ -1828,6 +1839,14 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     }
                 updateUI()
             }
+        }
+    }
+
+    private fun bindingOrNull(): FragmentInputBinding? {
+        return if (view == null) {
+            null
+        } else {
+            binding
         }
     }
 
