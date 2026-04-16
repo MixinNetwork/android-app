@@ -30,6 +30,7 @@ import one.mixin.android.R
 import one.mixin.android.api.request.web3.GaslessFeeRequest
 import one.mixin.android.api.request.web3.GaslessTxRequest
 import one.mixin.android.api.request.web3.SubmitGaslessTxRequest
+import one.mixin.android.api.request.web3.WEB3_FEE_TYPE_FREE
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.web3.EthGaslessTxPayload
 import one.mixin.android.databinding.FragmentInputBinding
@@ -1957,7 +1958,14 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             createdAt = now,
             updatedAt = now,
         )
-        val response = web3ViewModel.postRawTx(rawTx, Constants.ChainId.Solana, fromAddress, toAddress, token.assetId)
+        val response = web3ViewModel.postRawTx(
+            rawTx = rawTx,
+            web3ChainId = Constants.ChainId.Solana,
+            account = fromAddress,
+            to = toAddress,
+            assetId = token.assetId,
+            feeType = WEB3_FEE_TYPE_FREE,
+        )
         if (!response.isSuccess) {
             throw IllegalStateException(response.errorDescription)
         }
