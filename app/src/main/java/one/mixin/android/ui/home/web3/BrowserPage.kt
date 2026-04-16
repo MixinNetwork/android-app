@@ -17,8 +17,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -68,6 +66,7 @@ import one.mixin.android.ui.tip.wc.sessionrequest.FeeInfo
 import one.mixin.android.ui.tip.wc.sessionrequest.SessionRequestViewModel
 import one.mixin.android.ui.wallet.components.WalletLabel
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.widget.components.MixinButton
 import one.mixin.android.vo.User
 import one.mixin.android.vo.priceUSD
 import one.mixin.android.vo.safe.Token
@@ -85,6 +84,8 @@ fun BrowserPage(
     chain: Chain,
     amount: String?,
     token: Web3TokenItem?,
+    feeAmount: String?,
+    feeToken: Web3TokenItem?,
     toAddress: String?,
     toUser: User?,
     type: Int,
@@ -165,7 +166,7 @@ fun BrowserPage(
                     .weight(weight = 1f, fill = true),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Box(modifier = Modifier.height(50.dp))
+                Box(modifier = Modifier.height(32.dp))
                 when (step) {
                     WalletConnectBottomSheetDialogFragment.Step.Loading -> {
                         CircularProgressIndicator(
@@ -305,6 +306,9 @@ fun BrowserPage(
                         onPreviewMessage.invoke(it)
                     }
                     Box(modifier = Modifier.height(10.dp))
+                } else if (type == JsSignMessage.TYPE_GASLESS_TRANSFER && token != null && amount != null) {
+                    TokenTransactionPreview(amount = amount, token = token)
+                    Box(modifier = Modifier.height(10.dp))
                 } else if (chain == Chain.Solana) {
                     ParsedTxPreview(parsedTx = parsedTx, asset = asset, solanaTxSource = solanaTxSource)
                     Box(modifier = Modifier.height(10.dp))
@@ -326,18 +330,20 @@ fun BrowserPage(
                     )
                     Box(modifier = Modifier.height(10.dp))
                 }
-                val fee = tipGas?.displayValue(transaction?.maxFeePerGas) ?: solanaFee?.stripTrailingZeros()?: btcFee?.stripTrailingZeros() ?: BigDecimal.ZERO
+                val customFeeValue = feeAmount?.toBigDecimalOrNull()
+                val feePrice = feeToken?.priceUsd?.toBigDecimalOrNull() ?: asset.priceUSD()
+                val fee = customFeeValue ?: tipGas?.displayValue(transaction?.maxFeePerGas) ?: solanaFee?.stripTrailingZeros()?: btcFee?.stripTrailingZeros() ?: BigDecimal.ZERO
                 if (fee == BigDecimal.ZERO) {
                     FeeInfo(
                         amount = "$fee",
-                        fee = fee.multiply(asset.priceUSD()),
+                        fee = fee.multiply(feePrice),
                         isFree = isFeeWaived,
                         onFreeClick = onFreeClick,
                     )
                 } else {
                     FeeInfo(
-                        amount = "$fee ${asset?.symbol ?: ""}",
-                        fee = fee.multiply(asset.priceUSD()),
+                        amount = "$fee ${feeToken?.symbol ?: asset?.symbol ?: ""}",
+                        fee = fee.multiply(feePrice),
                         gasPrice = tipGas?.displayGas(transaction?.maxFeePerGas)?.toPlainString(),
                         isFree = isFeeWaived,
                         onFreeClick = onFreeClick,
@@ -413,7 +419,11 @@ fun BrowserPage(
                 Box(modifier = Modifier.height(20.dp))
             }
             Box(modifier = Modifier.fillMaxWidth()) {
-                if (tipGas == null && data == null && step != WalletConnectBottomSheetDialogFragment.Step.Error) {
+                if (type != JsSignMessage.TYPE_GASLESS_TRANSFER &&
+                    tipGas == null &&
+                    data == null &&
+                    step != WalletConnectBottomSheetDialogFragment.Step.Error
+                ) {
                     Column(modifier = Modifier.align(Alignment.BottomCenter)) {
                         Box(modifier = Modifier.height(20.dp))
                         CircularProgressIndicator(
@@ -439,16 +449,12 @@ fun BrowserPage(
                             .fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center,
                     ) {
-                        Button(
+                        MixinButton(
                             onClick = onDismissRequest,
-                            colors =
-                                ButtonDefaults.outlinedButtonColors(
-                                    backgroundColor = MixinAppTheme.colors.accent,
-                                ),
-                            shape = RoundedCornerShape(20.dp),
-                            contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
+                            shape = RoundedCornerShape(30.dp),
+                            contentPadding = PaddingValues(horizontal = 35.dp, vertical = 10.dp),
                         ) {
-                            Text(text = stringResource(id = if (step == WalletConnectBottomSheetDialogFragment.Step.Done) R.string.Done else R.string.Got_it), color = Color.White)
+                            Text(fontSize = 16.sp, text = stringResource(id = if (step == WalletConnectBottomSheetDialogFragment.Step.Done) R.string.Done else R.string.Got_it), color = Color.White)
                         }
                     }
                 } else {

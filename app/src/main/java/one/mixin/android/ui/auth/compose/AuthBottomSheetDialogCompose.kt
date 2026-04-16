@@ -41,8 +41,6 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -74,6 +72,7 @@ import one.mixin.android.vo.Scope
 import one.mixin.android.vo.getScopeGroupIcon
 import one.mixin.android.vo.getScopeGroupName
 import one.mixin.android.vo.groupScope
+import one.mixin.android.widget.components.MixinButton
 import kotlin.math.abs
 
 @Composable
@@ -304,18 +303,11 @@ fun ScopesContent(
             )
             Spacer(modifier = Modifier.height(16.dp))
         }
-        Button(
+        MixinButton(
             modifier =
                 Modifier
                     .align(CenterHorizontally),
-            shape = RoundedCornerShape(20.dp),
-            colors = ButtonDefaults.buttonColors(backgroundColor = MixinAppTheme.colors.accent),
-            elevation = ButtonDefaults.elevation(
-                pressedElevation = 0.dp,
-                defaultElevation = 0.dp,
-                hoveredElevation = 0.dp,
-                focusedElevation = 0.dp,
-            ),
+            shape = RoundedCornerShape(30.dp),
             contentPadding = PaddingValues(vertical = 8.dp, horizontal = 28.dp),
             onClick = {
                 if (pagerState.currentPage < scopeGroup.keys.size - 1) {

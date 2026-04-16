@@ -282,7 +282,9 @@ fun LineChart(dataPointsData: List<Float>, timePointsData: List<Long>? = null, t
 
                     // Adjust positions
                     val minXPositionAdjusted = if (canvasSize.width > minTextWidth) {
-                        (minXPosition - minTextWidth / 2).coerceIn(0f, canvasSize.width - minTextWidth)
+                        val minBound = 0f
+                        val maxBound = (canvasSize.width - minTextWidth).coerceAtLeast(minBound)
+                        (minXPosition - minTextWidth / 2).coerceIn(minBound, maxBound)
                     } else {
                         0f
                     }
@@ -295,7 +297,9 @@ fun LineChart(dataPointsData: List<Float>, timePointsData: List<Long>? = null, t
                     }
 
                     val maxXPositionAdjusted = if (canvasSize.width > maxTextWidth) {
-                        (maxXPosition - maxTextWidth / 2).coerceIn(0f, canvasSize.width - maxTextWidth)
+                        val minBound = 0f
+                        val maxBound = (canvasSize.width - maxTextWidth).coerceAtLeast(minBound)
+                        (maxXPosition - maxTextWidth / 2).coerceIn(minBound, maxBound)
                     } else {
                         0f
                     }
@@ -350,7 +354,13 @@ fun LineChart(dataPointsData: List<Float>, timePointsData: List<Long>? = null, t
                     val textWidth = textPlaceable.maxByOrNull { it.width }?.width?.toFloat() ?: 0f
 
                     // Adjust x position to ensure the Text is within bounds
-                    val xPositionAdjusted = (xPosition - textWidth / 2).coerceIn(horizontalPadding, canvasSize.width - textWidth - horizontalPadding)
+                    val xPositionAdjusted = if (canvasSize.width > textWidth + horizontalPadding * 2) {
+                        val minBound = horizontalPadding
+                        val maxBound = (canvasSize.width - textWidth - horizontalPadding).coerceAtLeast(minBound)
+                        (xPosition - textWidth / 2).coerceIn(minBound, maxBound)
+                    } else {
+                        horizontalPadding
+                    }
 
                     layout(constraints.maxWidth, constraints.maxHeight) {
                         textPlaceable.forEach { placeable ->

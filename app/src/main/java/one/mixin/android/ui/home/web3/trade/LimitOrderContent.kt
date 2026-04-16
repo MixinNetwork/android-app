@@ -95,6 +95,25 @@ enum class FocusedField { NONE, IN_AMOUNT, OUT_AMOUNT, PRICE }
 
 private const val MAX_DISPLAY_ORDER_COUNT: Int = 10
 
+private fun formatBalanceInput(balance: String?, isWeb3: Boolean): String {
+    val amount = balance?.toBigDecimalOrNull() ?: return ""
+    if (amount <= BigDecimal.ZERO) return ""
+    return if (isWeb3) {
+        amount.stripTrailingZeros().toPlainString()
+    } else {
+        amount.setScale(8, RoundingMode.DOWN).stripTrailingZeros().toPlainString()
+    }
+}
+
+private fun formatLimitOrderAmount(value: String, isWeb3: Boolean): String {
+    val amount = value.toBigDecimalOrNull() ?: return value
+    return if (isWeb3) {
+        amount.stripTrailingZeros().toPlainString()
+    } else {
+        amount.setScale(8, RoundingMode.DOWN).stripTrailingZeros().toPlainString()
+    }
+}
+
 enum class ExpiryOption(@get:StringRes val labelRes: Int) {
     NEVER(R.string.expiry_never), MIN_10(R.string.expiry_10_min), HOUR_1(R.string.expiry_1_hour), DAY_1(R.string.expiry_1_day), DAY_3(R.string.expiry_3_days), WEEK_1(R.string.expiry_1_week), MONTH_1(R.string.expiry_1_month), YEAR_1(R.string.expiry_1_year);
 
@@ -119,6 +138,7 @@ fun LimitOrderContent(
     inMixin: Boolean,
     initialAmount: String?,
     lastOrderTime: Long?,
+    reviewing: Boolean,
     onSelectToken: (Boolean, SelectTokenType) -> Unit,
     onLimitReview: (SwapToken, SwapToken, CreateLimitOrderResponse) -> Unit,
     onDeposit: (SwapToken) -> Unit,
@@ -141,6 +161,7 @@ fun LimitOrderContent(
     var limitPriceText by remember { mutableStateOf("") }
     var marketPriceClickTime by remember { mutableStateOf(lastOrderTime) }
     var priceMultiplier by remember { mutableStateOf<Float?>(null) }
+    var isPriceInverted by remember { mutableStateOf(false) }
 
     var isReverse by remember { mutableStateOf(false) }
     val walletId = if (inMixin) Session.getAccountId()!! else Web3Signer.currentWalletId
@@ -296,12 +317,7 @@ fun LimitOrderContent(
                                     }
                                 }
                             }, onDeposit = onDeposit, onMax = {
-                                val balance = fromBalance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-                                if (balance > BigDecimal.ZERO) {
-                                    inputText = balance.setScale(8, RoundingMode.DOWN).stripTrailingZeros().toPlainString()
-                                } else {
-                                    inputText = ""
-                                }
+                                inputText = formatBalanceInput(fromBalance, fromToken?.isWeb3 == true)
                                 if (inputText.isNotBlank()) {
                                     val fromAmount = inputText.toBigDecimalOrNull()
                                     val standardPrice = limitPriceText.toBigDecimalOrNull()
@@ -346,12 +362,7 @@ fun LimitOrderContent(
                                 },
                                 onDeposit = null,
                                 onMax = {
-                                    val balance = toBalance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-                                    if (balance > BigDecimal.ZERO) {
-                                        outputText = balance.setScale(8, RoundingMode.DOWN).stripTrailingZeros().toPlainString()
-                                    } else {
-                                        outputText = ""
-                                    }
+                                    outputText = formatBalanceInput(toBalance, toToken?.isWeb3 == true)
                                     if (outputText.isNotBlank()) {
                                         val toAmount = outputText.toBigDecimalOrNull()
                                         val standardPrice = limitPriceText.toBigDecimalOrNull()
@@ -375,6 +386,8 @@ fun LimitOrderContent(
                                     toToken = toToken,
                                     lastOrderTime = marketPriceClickTime,
                                     priceMultiplier = priceMultiplier,
+                                    isPriceInverted = isPriceInverted,
+                                    onPriceInvertedChange = { isPriceInverted = it },
                                     onStandardPriceChanged = { limitPriceText = it },
                                 )
                                 Spacer(modifier = Modifier.height(10.dp))
@@ -402,6 +415,7 @@ fun LimitOrderContent(
                         val isPriceValid = limitPriceText.toBigDecimalOrNull()?.let { it > BigDecimal.ZERO } == true
                         val isOutputValid = outputText.toBigDecimalOrNull()?.let { it > BigDecimal.ZERO } == true
                         val isEnabled = isInputValid && isPriceValid && isOutputValid && checkBalance == true && toToken != null
+                        val isBusy = isSubmitting || reviewing
                         Button(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -409,7 +423,7 @@ fun LimitOrderContent(
                             onClick = {
                                 keyboardController?.hide()
                                 focusManager.clearFocus()
-                                if (isButtonEnabled && toToken != null) {
+                                if (isButtonEnabled && !isBusy && toToken != null) {
                                     isButtonEnabled = false
                                     isSubmitting = true
                                     keyboardController?.hide()
@@ -426,8 +440,8 @@ fun LimitOrderContent(
                                                 viewModel.getAddressesByChainId(Web3Signer.currentWalletId, toTokenValue.chain.chainId)?.destination
                                             } else null
 
-                                            val scaledAmount = inputText.toBigDecimalOrNull()?.setScale(8, RoundingMode.DOWN)?.stripTrailingZeros()?.toPlainString() ?: inputText
-                                            val scaledExpected = outputText.toBigDecimalOrNull()?.setScale(8, RoundingMode.DOWN)?.stripTrailingZeros()?.toPlainString() ?: outputText
+                                            val scaledAmount = formatLimitOrderAmount(inputText, fromTokenValue.isWeb3)
+                                            val scaledExpected = formatLimitOrderAmount(outputText, toTokenValue.isWeb3)
                                             val request = LimitOrderRequest(
                                                 walletId = walletId,
                                                 assetId = fromTokenValue.assetId,
@@ -453,7 +467,7 @@ fun LimitOrderContent(
                                     }
                                 }
                             },
-                            enabled = isEnabled,
+                            enabled = isEnabled && !isBusy,
                             colors = ButtonDefaults.outlinedButtonColors(
                                 backgroundColor = if (isEnabled) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,
                             ),
@@ -471,7 +485,7 @@ fun LimitOrderContent(
                                     .height(24.dp),
                                 contentAlignment = Alignment.Center
                             ) {
-                                if (isSubmitting) {
+                                if (isBusy) {
                                     CircularProgressIndicator(
                                         modifier = Modifier
                                             .width(18.dp)
@@ -591,6 +605,7 @@ fun LimitOrderContent(
                 fromBalance = fromBalance,
                 fromToken = fromToken,
                 toToken = toToken,
+                isPriceInverted = isPriceInverted,
                 onSetPriceMultiplier = { priceMultiplier = it },
                 onSetInput = {
                     inputText = it
@@ -649,4 +664,3 @@ fun Modifier.verticalScrollbar(
         }
     }
 }
-

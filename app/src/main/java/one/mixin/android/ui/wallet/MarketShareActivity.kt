@@ -6,7 +6,6 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.RenderEffect
 import android.graphics.Shader
-import android.graphics.drawable.BitmapDrawable
 import android.media.MediaScannerConnection
 import android.os.Bundle
 import android.view.View
@@ -34,15 +33,17 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.web.getScreenshot
 import one.mixin.android.ui.web.refreshScreenshot
-import one.mixin.android.util.SystemUIManager
 import java.io.File
 import java.io.FileOutputStream
+import androidx.core.graphics.drawable.toDrawable
+import androidx.core.graphics.scale
 
 @AndroidEntryPoint
 class MarketShareActivity : BaseActivity() {
     companion object {
         private const val ARGS_NAME = "name"
         private const val ARGS_COIN = "coin"
+        private const val SHARE_QR_URL = "https://mixin.one/mm"
         private var cover: Bitmap? = null
         fun show(context: Context, cover: Bitmap, name: String, coinId: String) {
             refreshScreenshot(context, 0x33000000)
@@ -67,32 +68,27 @@ class MarketShareActivity : BaseActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        skipSystemUi = true
         super.onCreate(savedInstanceState)
         binding = ActivityMarketShareBinding.inflate(layoutInflater)
         setContentView(binding.root)
         getScreenshot()?.let {
             supportsS({
-                binding.background.background = BitmapDrawable(resources, it)
+                binding.background.background = it.toDrawable(resources)
                 binding.background.setRenderEffect(RenderEffect.createBlurEffect(25f, 25f, Shader.TileMode.MIRROR))
             }, {
-                binding.container.background = BitmapDrawable(resources, it.blurBitmap(25))
+                binding.container.background = it.blurBitmap(25).toDrawable(resources)
             })
         }
-        window.decorView.systemUiVisibility = (
-            View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-            )
-        SystemUIManager.setSafePadding(window, android.graphics.Color.TRANSPARENT)
-        binding.test.round(8.dp)
+        binding.llMarketShare.round(8.dp)
         binding.content.updateLayoutParams<MarginLayoutParams> {
             topMargin = 20.dp
         }
         if (cover != null) {
-            binding.image.setImageBitmap(cropAndScaleBitmap(cover!!, 8.dp, (80 - 24 + 32).dp))
+            binding.image.setImageBitmap(cropAndScaleBitmap(cover!!, 24.dp, (80 - 24 + 32).dp))
         }
         Session.getAccount()?.identityNumber.let {
-            val qrcodeContent = "$HTTPS_MARKET/$coinId?ref=$it"
-            val qrCode = qrcodeContent.generateQRCode(72.dp, 8.dp).first
+            val qrCode = SHARE_QR_URL.generateQRCode(72.dp, 8.dp).first
             binding.qr.setImageBitmap(qrCode)
         }
         binding.apply {
@@ -132,14 +128,14 @@ class MarketShareActivity : BaseActivity() {
         val targetWidth = croppedBitmap.width - y
         val scale = targetWidth.toFloat() / croppedBitmap.width.toFloat()
         val targetHeight = (croppedBitmap.height * scale).toInt()
-        val scaledBitmap = Bitmap.createScaledBitmap(croppedBitmap, targetWidth, targetHeight, true)
+        val scaledBitmap = croppedBitmap.scale(targetWidth, targetHeight)
 
         return scaledBitmap
     }
 
     private val onShare: () -> Unit = {
         lifecycleScope.launch {
-            val bitmap = binding.test.drawToBitmap()
+            val bitmap = binding.llMarketShare.drawToBitmap()
             val file = File(cacheDir, "$name.png")
             saveBitmapToFile(file, bitmap)
             val uri = FileProvider.getUriForFile(this@MarketShareActivity, BuildConfig.APPLICATION_ID + ".provider", file)
@@ -153,18 +149,17 @@ class MarketShareActivity : BaseActivity() {
     }
 
     private val onCopy: () -> Unit = {
-        Session.getAccount()?.identityNumber.let {
-            val link = "$HTTPS_MARKET/$coinId?ref=$it"
-            getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, link))
-            finish()
-            toast(R.string.copied_to_clipboard)
-        }
+        val marketLink = "$HTTPS_MARKET/$coinId"
+        val link = Session.getAccount()?.identityNumber?.let { "$marketLink?ref=$it" } ?: marketLink
+        getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, link))
+        finish()
+        toast(R.string.copied_to_clipboard)
     }
 
     private val onSave: () -> Unit = {
         lifecycleScope.launch {
             delay(100)
-            val bitmap = binding.test.drawToBitmap()
+            val bitmap = binding.llMarketShare.drawToBitmap()
             val dir = getPublicDownloadPath()
             dir.mkdirs()
             val file = File(dir, "$name.png")

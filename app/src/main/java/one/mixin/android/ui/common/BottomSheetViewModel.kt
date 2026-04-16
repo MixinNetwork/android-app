@@ -47,6 +47,7 @@ import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.TransactionResponse
+import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.api.response.getTransactionResult
 import one.mixin.android.api.response.signature.SignatureAction
 import one.mixin.android.api.response.web3.ParsedTx
@@ -215,6 +216,13 @@ class BottomSheetViewModel
 
 
         fun assetItemsWithBalance(): LiveData<List<TokenItem>> = tokenRepository.assetItemsWithBalance()
+
+        suspend fun findAssetItemsWithBalance(): List<TokenItem> =
+            withContext(Dispatchers.IO) {
+                tokenRepository.findAssetItemsWithBalance()
+            }
+
+        fun usdAssetItemsWithBalance(): LiveData<List<TokenItem>> = tokenRepository.usdAssetItemsWithBalance()
 
         fun assetItemsNotHidden(): LiveData<List<TokenItem>> = tokenRepository.assetItemsNotHidden()
 
@@ -942,7 +950,6 @@ class BottomSheetViewModel
                     ghostKeyResponse.data!!
                 } else {
                     throw IllegalArgumentException("Transfer has no recipient")
-                    null
                 } ?: throw IllegalArgumentException("Transfer has no recipient")
                 Timber.e("Kernel Invoice Transaction UtxoWrapper: $amount $assetId $asset")
                 val utxoWrapper = UtxoWrapper(packUtxo(asset, amount, null))
@@ -1839,21 +1846,21 @@ class BottomSheetViewModel
             val walletName: String = context.getString(R.string.Common_Wallet)
             val classicIndex = 0
             val btcAddress: String = privateKeyToAddress(spendKey, Constants.ChainId.BITCOIN_CHAIN_ID, classicIndex)
-            val evmAddress: String = privateKeyToAddress(spendKey, Constants.ChainId.ETHEREUM_CHAIN_ID, classicIndex)
-            val solAddress: String = privateKeyToAddress(spendKey, Constants.ChainId.SOLANA_CHAIN_ID, classicIndex)
+            val evmAddress: String = privateKeyToAddress(spendKey, ETHEREUM_CHAIN_ID, classicIndex)
+            val solAddress: String = privateKeyToAddress(spendKey, SOLANA_CHAIN_ID, classicIndex)
             val addresses: List<Web3AddressRequest> = listOf(
                 createSignedWeb3AddressRequest(
                     destination = evmAddress,
                     chainId = Constants.ChainId.ETHEREUM_CHAIN_ID,
                     path = Bip44Path.ethereumPathString(classicIndex),
-                    privateKey = tipPrivToPrivateKey(spendKey, Constants.ChainId.ETHEREUM_CHAIN_ID, classicIndex),
+                    privateKey = tipPrivToPrivateKey(spendKey, ETHEREUM_CHAIN_ID, classicIndex),
                     category = WalletCategory.CLASSIC.value
                 ),
                 createSignedWeb3AddressRequest(
                     destination = solAddress,
                     chainId = Constants.ChainId.SOLANA_CHAIN_ID,
                     path = Bip44Path.solanaPathString(classicIndex),
-                    privateKey = tipPrivToPrivateKey(spendKey, Constants.ChainId.SOLANA_CHAIN_ID, classicIndex),
+                    privateKey = tipPrivToPrivateKey(spendKey, SOLANA_CHAIN_ID, classicIndex),
                     category = WalletCategory.CLASSIC.value
                 ),
                 createSignedWeb3AddressRequest(
@@ -2033,4 +2040,9 @@ class BottomSheetViewModel
         suspend fun fetchSessionsSuspend(ids: List<String>) = userRepository.fetchSessionsSuspend(ids)
 
         suspend fun getReferralCodeInfo(code: String) = userRepository.getReferralCodeInfo(code)
+
+        suspend fun getPerpsMarket(marketId: String): PerpsMarket? = withContext(Dispatchers.IO) {
+            val response = web3Repository.routeService.getPerpsMarket(marketId)
+            response.data
+        }
 }

@@ -40,8 +40,11 @@ import one.mixin.android.Constants.AssetId.XIN_ASSET_ID
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.web3.SwapRequest
+import one.mixin.android.api.request.web3.GaslessTxRequest
 import one.mixin.android.api.response.CreateLimitOrderResponse
+import one.mixin.android.api.response.web3.GaslessTxResponse
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
@@ -49,6 +52,8 @@ import one.mixin.android.api.response.web3.Swappable
 import one.mixin.android.api.response.web3.sortByKeywordAndBalance
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.Web3TokenFeeItem
+import one.mixin.android.db.web3.vo.buildTransaction
 import one.mixin.android.event.BadgeEvent
 import one.mixin.android.extension.addToList
 import one.mixin.android.extension.alertDialogBuilder
@@ -68,11 +73,18 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.home.web3.GasCheckBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.Web3ViewModel
+import one.mixin.android.ui.home.web3.trade.perps.AllPositionsFragment
+import one.mixin.android.ui.home.web3.trade.perps.PerpetualGuideBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.trade.perps.PerpsActivity
+import one.mixin.android.ui.home.web3.trade.perps.PerpsMarketListBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.trade.perps.PositionDetailFragment
 import one.mixin.android.ui.wallet.AllOrdersFragment
 import one.mixin.android.ui.wallet.DepositFragment
 import one.mixin.android.ui.wallet.LimitTransferBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.SwapTransferBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.SwapTransferPreviewData
+import one.mixin.android.ui.wallet.transfer.TransferWeb3BalanceErrorBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
@@ -80,13 +92,27 @@ import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.Web3Signer
+import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.web3.swap.SwapTokenListBottomSheetDialogFragment
+import one.mixin.android.tip.wc.internal.TipGas
+import one.mixin.android.tip.wc.internal.buildTipGas
 import timber.log.Timber
+import java.math.BigDecimal
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class TradeFragment : BaseFragment() {
+    private data class FeeCheckResult(
+        val isSufficient: Boolean,
+        val swapPreviewData: SwapTransferPreviewData? = null,
+    )
+
+    private data class OnChainPreviewEstimate(
+        val fee: BigDecimal?,
+        val swapPreviewData: SwapTransferPreviewData? = null,
+    )
+
     companion object {
         const val TAG = "SwapFragment"
         const val ARGS_WEB3_TOKENS = "args_web3_tokens"
@@ -106,6 +132,8 @@ class TradeFragment : BaseFragment() {
         const val maxLeftAmount = 0.01
 
         const val PREF_TRADE_SELECTED_TAB_PREFIX: String = "pref_trade_selected_tab_"
+        const val PREF_TRADE_SPOT_GUIDE_SHOWN: String = "pref_trade_spot_guide_shown"
+        const val PREF_TRADE_PERPETUAL_GUIDE_SHOWN: String = "pref_trade_perpetual_guide_shown"
 
         inline fun <reified T : Swappable> newInstance(
             input: String? = null,
@@ -152,6 +180,7 @@ class TradeFragment : BaseFragment() {
     lateinit var jobManager: MixinJobManager
 
     private val swapViewModel by viewModels<SwapViewModel>()
+    private val web3ViewModel by viewModels<Web3ViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -159,6 +188,18 @@ class TradeFragment : BaseFragment() {
     }
 
     private var orderBadge: Boolean by mutableStateOf(false)
+
+    private fun limitOrderBadgeDismissedPrefKey(walletId: String): String {
+        return "${Account.PREF_TRADE_LIMIT_ORDER_BADGE_DISMISSED}_$walletId"
+    }
+
+    private fun perpetualBadgeDismissedPrefKey(walletId: String): String {
+        return "${Account.PREF_TRADE_PERPETUAL_BADGE_DISMISSED}_$walletId"
+    }
+
+    private fun perpetualOrderBadgeDismissedPrefKey(walletId: String): String {
+        return "${Account.PREF_TRADE_PERPETUAL_ORDER_BADGE_DISMISSED}_$walletId"
+    }
 
     @FlowPreview
     override fun onCreateView(
@@ -234,18 +275,29 @@ class TradeFragment : BaseFragment() {
                             }
                             
                             val currentWalletId = walletId ?: Session.getAccountId() ?: ""
+                            val limitBadgePrefKey = remember(currentWalletId) {
+                                limitOrderBadgeDismissedPrefKey(currentWalletId)
+                            }
+                            val perpetualBadgePrefKey = remember(currentWalletId) {
+                                perpetualBadgeDismissedPrefKey(currentWalletId)
+                            }
+                            val perpetualOrderBadgePrefKey = remember(currentWalletId) {
+                                perpetualOrderBadgeDismissedPrefKey(currentWalletId)
+                            }
                             val initialTabIndex = remember(currentWalletId) {
                                 val preferenceKey = "$PREF_TRADE_SELECTED_TAB_PREFIX$currentWalletId"
                                 defaultSharedPreferences.getInt(preferenceKey, 0)
                             }
                             var isLimitOrderTabBadgeDismissed by remember(currentWalletId) {
-                                mutableStateOf(defaultSharedPreferences.getBoolean(Account.PREF_TRADE_LIMIT_ORDER_BADGE_DISMISSED, false))
+                                mutableStateOf(defaultSharedPreferences.getBoolean(limitBadgePrefKey, false))
+                            }
+                            var isPerpetualTabBadgeDismissed by remember(currentWalletId) {
+                                mutableStateOf(defaultSharedPreferences.getBoolean(perpetualBadgePrefKey, false))
+                            }
+                            var isPerpetualOrderBadgeDismissed by remember(currentWalletId) {
+                                mutableStateOf(defaultSharedPreferences.getBoolean(perpetualOrderBadgePrefKey, false))
                             }
 
-                            if (!isLimitOrderTabBadgeDismissed) {
-                                isLimitOrderTabBadgeDismissed = true
-                                defaultSharedPreferences.putBoolean(Account.PREF_TRADE_LIMIT_ORDER_BADGE_DISMISSED, true)
-                            }
                             TradePage(
                                 walletId = walletId,
                                 swapFrom = fromToken,
@@ -255,6 +307,8 @@ class TradeFragment : BaseFragment() {
                                 inMixin = inMixin(),
                                 orderBadge = orderBadge,
                                 isLimitOrderTabBadgeDismissed = isLimitOrderTabBadgeDismissed,
+                                isPerpetualTabBadgeDismissed = isPerpetualTabBadgeDismissed,
+                                isPerpetualOrderBadgeDismissed = isPerpetualOrderBadgeDismissed,
                                 initialAmount = initialAmount,
                                 lastOrderTime = lastOrderTime,
                                 reviewing = reviewing,
@@ -270,7 +324,19 @@ class TradeFragment : BaseFragment() {
                                 onDismissLimitOrderTabBadge = {
                                     if (!isLimitOrderTabBadgeDismissed) {
                                         isLimitOrderTabBadgeDismissed = true
-                                        defaultSharedPreferences.putBoolean(Account.PREF_TRADE_LIMIT_ORDER_BADGE_DISMISSED, true)
+                                        defaultSharedPreferences.putBoolean(limitBadgePrefKey, true)
+                                    }
+                                },
+                                onDismissPerpetualTabBadge = {
+                                    if (!isPerpetualTabBadgeDismissed) {
+                                        isPerpetualTabBadgeDismissed = true
+                                        defaultSharedPreferences.putBoolean(perpetualBadgePrefKey, true)
+                                    }
+                                },
+                                onDismissPerpetualOrderBadge = {
+                                    if (!isPerpetualOrderBadgeDismissed) {
+                                        isPerpetualOrderBadgeDismissed = true
+                                        defaultSharedPreferences.putBoolean(perpetualOrderBadgePrefKey, true)
                                     }
                                 },
                                 onTabChanged = { index ->
@@ -285,15 +351,27 @@ class TradeFragment : BaseFragment() {
                                 onReview = { quote, from, to, amount ->
                                     AnalyticsTracker.trackTradePreview()
                                     this@apply.hideKeyboard()
+                                    reviewing = true
                                     lifecycleScope.launch {
-                                        handleReview(quote, from, to, amount, navController)
+                                        runCatching {
+                                            handleReview(quote, from, to, amount, navController)
+                                        }.onFailure {
+                                            reviewing = false
+                                            toast(ErrorHandler.getErrorMessage(it))
+                                        }
                                     }
                                 },
                                 onLimitReview = { from, to, order ->
                                     AnalyticsTracker.trackTradePreview()
                                     this@apply.hideKeyboard()
+                                    reviewing = true
                                     lifecycleScope.launch {
-                                        openLimitTransfer(from, to, order)
+                                        runCatching {
+                                            openLimitTransfer(from, to, order)
+                                        }.onFailure {
+                                            reviewing = false
+                                            toast(ErrorHandler.getErrorMessage(it))
+                                        }
                                     }
                                 },
                                 onDeposit = { token ->
@@ -326,8 +404,91 @@ class TradeFragment : BaseFragment() {
                                     this@apply.hideKeyboard()
                                     navTo(OrderDetailFragment.newInstance(orderId), OrderDetailFragment.TAG)
                                 },
+                                onShowTradingGuideIfNeeded = { tabIndex ->
+                                    this@apply.hideKeyboard()
+                                    when {
+                                        walletId == null && tabIndex >= SpotTradeGuideBottomSheetDialogFragment.TAB_LIMIT -> {
+                                            if (!defaultSharedPreferences.getBoolean(PREF_TRADE_PERPETUAL_GUIDE_SHOWN, false)) {
+                                                isPerpetualTabBadgeDismissed = true
+                                                defaultSharedPreferences.putBoolean(perpetualBadgePrefKey, true)
+                                                PerpetualGuideBottomSheetDialogFragment.newInstance()
+                                                    .show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
+                                            }
+                                        }
+                                        tabIndex == 1 || tabIndex == 0 -> {
+                                            if (!defaultSharedPreferences.getBoolean(PREF_TRADE_SPOT_GUIDE_SHOWN, false)) {
+                                                val initialGuideTab = if (tabIndex == 1) {
+                                                    SpotTradeGuideBottomSheetDialogFragment.TAB_LIMIT
+                                                } else {
+                                                    SpotTradeGuideBottomSheetDialogFragment.TAB_SWAP
+                                                }
+                                                SpotTradeGuideBottomSheetDialogFragment.newInstance(initialGuideTab)
+                                                    .show(parentFragmentManager, SpotTradeGuideBottomSheetDialogFragment.TAG)
+                                            }
+                                        }
+                                    }
+                                },
+                                onShowTradingGuide = { tabIndex ->
+                                    this@apply.hideKeyboard()
+                                    when {
+                                        walletId == null && tabIndex >= SpotTradeGuideBottomSheetDialogFragment.TAB_LIMIT -> {
+                                            PerpetualGuideBottomSheetDialogFragment.newInstance()
+                                                .show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
+                                        }
+                                        tabIndex == 1 -> {
+                                            SpotTradeGuideBottomSheetDialogFragment.newInstance(
+                                                SpotTradeGuideBottomSheetDialogFragment.TAB_LIMIT
+                                            ).show(parentFragmentManager, SpotTradeGuideBottomSheetDialogFragment.TAG)
+                                        }
+                                        tabIndex == 0 -> {
+                                            SpotTradeGuideBottomSheetDialogFragment.newInstance(
+                                                SpotTradeGuideBottomSheetDialogFragment.TAB_SWAP
+                                            ).show(parentFragmentManager, SpotTradeGuideBottomSheetDialogFragment.TAG)
+                                        }
+                                        else -> {
+                                            SpotTradeGuideBottomSheetDialogFragment.newInstance(
+                                                SpotTradeGuideBottomSheetDialogFragment.TAB_OVERVIEW
+                                            )
+                                                .show(parentFragmentManager, SpotTradeGuideBottomSheetDialogFragment.TAG)
+                                        }
+                                    }
+                                },
+                                onShowHelpBottomSheet = { onContactSupport, onTradingGuide ->
+                                    this@apply.hideKeyboard()
+                                    TradeHelpBottomSheetDialogFragment.newInstance().apply {
+                                        this.onContactSupport = onContactSupport
+                                        this.onTradingGuide = onTradingGuide
+                                    }.show(parentFragmentManager, TradeHelpBottomSheetDialogFragment.TAG)
+                                },
                                 pop = {
                                     navigateUp(navController)
+                                },
+                                onShowMarketList = { isLong ->
+                                    PerpsMarketListBottomSheetDialogFragment.newInstance(isLong).show(parentFragmentManager, PerpsMarketListBottomSheetDialogFragment.TAG)
+                                },
+                                onShowAllMarkets = {
+                                    PerpsMarketListBottomSheetDialogFragment.newInstance().show(parentFragmentManager, PerpsMarketListBottomSheetDialogFragment.TAG)
+                                },
+                                onShowAllOpenPositions = {
+                                    navTo(AllPositionsFragment.newOpenInstance(), AllPositionsFragment.TAG)
+                                },
+                                onShowAllClosedPositions = {
+                                    navTo(AllPositionsFragment.newClosedInstance(), AllPositionsFragment.TAG)
+                                },
+                                onOpenPositionClick = { position ->
+                                    navTo(PositionDetailFragment.newInstance(position), PositionDetailFragment.TAG)
+                                },
+                                onMarketItemClick = { market ->
+                                    PerpsActivity.showDetail(
+                                        requireContext(),
+                                        market.marketId,
+                                        market.displaySymbol,
+                                        market.displaySymbol,
+                                        market.tokenSymbol
+                                    )
+                                },
+                                onClosedPositionClick = { position ->
+                                    navTo(PositionDetailFragment.newInstance(position), PositionDetailFragment.TAG)
                                 }
                             )
                         }
@@ -530,11 +691,13 @@ class TradeFragment : BaseFragment() {
         if (!inMixin()) {
             val address = swapViewModel.getAddressesByChainId(Web3Signer.currentWalletId, to.chain.chainId)
             if (address == null){
+                reviewing = false
                 toast(R.string.Alert_Not_Support)
                 return
             }
             val fromAddress = swapViewModel.getAddressesByChainId(Web3Signer.currentWalletId, from.chain.chainId)
             if (fromAddress == null){
+                reviewing = false
                 toast(R.string.Alert_Not_Support)
                 return
             }
@@ -550,7 +713,15 @@ class TradeFragment : BaseFragment() {
                         quote.payload,
                         getSource(),
                         if (inMixin()) null else {
-                            if (to.chain.chainId == Constants.ChainId.SOLANA_CHAIN_ID) Web3Signer.solanaAddress else Web3Signer.evmAddress
+                            if (to.chain.chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
+                                Web3Signer.solanaAddress
+                            } else if (to.chain.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                                Web3Signer.btcAddress
+                            } else if (to.chain.chainId in Constants.Web3EvmChainIds) {
+                                Web3Signer.evmAddress
+                            } else {
+                                null
+                            }
                         },
                         getReferral(),
                         walletId,
@@ -568,41 +739,40 @@ class TradeFragment : BaseFragment() {
                 false
             }
         )
-        if (resp == null) return
-        if (inMixin()) {
-            openSwapTransfer(resp, from, to)
-        } else {
-            openSwapTransfer(resp, from, to)
+        if (resp == null) {
+            reviewing = false
+            return
         }
+        val feeCheckResult = ensureWeb3FeeSufficient(
+            from = from,
+            destination = resp.depositDestination,
+            amount = quote.inAmount,
+            allowGasless = true,
+            includeSwapPreviewData = true,
+        )
+        if (!feeCheckResult.isSufficient) {
+            reviewing = false
+            return
+        }
+        openSwapTransfer(resp, from, to, feeCheckResult.swapPreviewData)
     }
 
-    private fun openSwapTransfer(swapResult: SwapResponse, from: SwapToken, to: SwapToken) {
-        if (from.chain.chainId == Constants.ChainId.Solana || from.chain.chainId == Constants.ChainId.BITCOIN_CHAIN_ID || inMixin()) {
-            AnalyticsTracker.trackTradePreview()
-            SwapTransferBottomSheetDialogFragment.newInstance(swapResult, from, to).apply {
-                setOnDone {
-                    initialAmount = null
-                    lastOrderTime = System.currentTimeMillis()
-                }
-                setOnDestroy {
-                    reviewing = false
-                }
-            }.showNow(parentFragmentManager, SwapTransferBottomSheetDialogFragment.TAG)
-            reviewing = true
-        } else {
-            GasCheckBottomSheetDialogFragment.newInstance(swapResult, from, to).apply {
-                setOnDone {
-                    initialAmount = null
-                    lastOrderTime = System.currentTimeMillis()
-                }
-                setOnDestroy {
-                    reviewing = false
-                }
-            }.showNow(
-                parentFragmentManager,
-                GasCheckBottomSheetDialogFragment.TAG
-            )
-        }
+    private fun openSwapTransfer(
+        swapResult: SwapResponse,
+        from: SwapToken,
+        to: SwapToken,
+        previewData: SwapTransferPreviewData?,
+    ) {
+        AnalyticsTracker.trackTradePreview()
+        SwapTransferBottomSheetDialogFragment.newInstance(swapResult, from, to, previewData).apply {
+            setOnDone {
+                initialAmount = null
+                lastOrderTime = System.currentTimeMillis()
+            }
+            setOnDestroy {
+                reviewing = false
+            }
+        }.showNow(parentFragmentManager, SwapTransferBottomSheetDialogFragment.TAG)
     }
 
     private suspend fun openLimitTransfer(from: SwapToken, to: SwapToken, order: CreateLimitOrderResponse) {
@@ -611,16 +781,29 @@ class TradeFragment : BaseFragment() {
         if (!inMixin()) {
             val address = swapViewModel.getAddressesByChainId(Web3Signer.currentWalletId, to.chain.chainId)
             if (address == null){
+                reviewing = false
                 toast(R.string.Alert_Not_Support)
                 return
             }
             val fromAddress = swapViewModel.getAddressesByChainId(Web3Signer.currentWalletId, from.chain.chainId)
             if (fromAddress == null){
+                reviewing = false
                 toast(R.string.Alert_Not_Support)
                 return
             }
         }
-        LimitTransferBottomSheetDialogFragment.newInstance(order, from, to, senderWalletId).apply {
+        val feeCheckResult = ensureWeb3FeeSufficient(
+                from = from,
+                destination = order.depositDestination,
+                amount = order.order.payAmount,
+                allowGasless = true,
+                includeSwapPreviewData = true,
+            )
+        if (!feeCheckResult.isSufficient) {
+            reviewing = false
+            return
+        }
+        LimitTransferBottomSheetDialogFragment.newInstance(order, from, to, senderWalletId, feeCheckResult.swapPreviewData).apply {
             setOnDone {
                 initialAmount = null
                 lastOrderTime = System.currentTimeMillis()
@@ -629,7 +812,286 @@ class TradeFragment : BaseFragment() {
                 reviewing = false
             }
         }.showNow(parentFragmentManager, LimitTransferBottomSheetDialogFragment.TAG)
-        reviewing = true
+    }
+
+    private suspend fun ensureWeb3FeeSufficient(
+        from: SwapToken,
+        destination: String?,
+        amount: String,
+        allowGasless: Boolean,
+        includeSwapPreviewData: Boolean = false,
+    ): FeeCheckResult {
+        if (inMixin()) return FeeCheckResult(true)
+        val walletId = Web3Signer.currentWalletId
+        val token = swapViewModel.getTokenByWalletAndAssetId(walletId, from.assetId) ?: return FeeCheckResult(true)
+        val toAddress = destination ?: return FeeCheckResult(true)
+        val fromAddress = when (token.chainId) {
+            Constants.ChainId.SOLANA_CHAIN_ID -> Web3Signer.solanaAddress
+            Constants.ChainId.BITCOIN_CHAIN_ID -> {
+                val btcAddress = swapViewModel.getAddressesByChainId(walletId, Constants.ChainId.BITCOIN_CHAIN_ID)?.destination ?: return FeeCheckResult(true)
+                btcAddress
+            }
+            else -> Web3Signer.evmAddress
+        }
+        val chainToken = swapViewModel.web3TokenItemById(walletId, token.chainId)
+            ?: return FeeCheckResult(true)
+        val chainBalance = chainToken.balance.toBigDecimalOrNull()
+            ?: return FeeCheckResult(true)
+        val transferAmount = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
+        val sameAssetFee = token.assetId == chainToken.assetId && token.chainId == chainToken.chainId
+
+        if (allowGasless && token.chainId != Constants.ChainId.BITCOIN_CHAIN_ID) {
+            val gaslessPrepared = runCatching {
+                web3ViewModel.gaslessPrepare(
+                    GaslessTxRequest(
+                        from = fromAddress,
+                        to = toAddress,
+                        assetId = token.assetId,
+                        amount = amount,
+                        feeAssetId = token.assetId,
+                        feeAmount = null,
+                        chainId = token.chainId,
+                    )
+                )
+            }.getOrNull()?.data
+            if (gaslessPrepared != null) {
+                val previewData = if (includeSwapPreviewData) {
+                    buildGaslessSwapPreviewData(
+                        senderAddress = fromAddress,
+                        token = token,
+                        feeAmount = BigDecimal.ZERO.toPlainString(),
+                        gaslessPrepared = gaslessPrepared,
+                    )
+                } else {
+                    null
+                }
+                return FeeCheckResult(true, previewData)
+            }
+        }
+
+        val estimate = estimateOnChainPreview(
+            token = token,
+            chainToken = chainToken,
+            fromAddress = fromAddress,
+            toAddress = toAddress,
+            amount = amount,
+            includeSwapPreviewData = includeSwapPreviewData,
+        )
+        val fee = estimate.fee
+        if (fee == null) {
+            val insufficientByFullBalanceFallback = sameAssetFee && transferAmount >= chainBalance
+            if (!insufficientByFullBalanceFallback) {
+                return FeeCheckResult(true)
+            }
+            TransferWeb3BalanceErrorBottomSheetDialogFragment.newInstance(
+                Web3TokenFeeItem(
+                    token = chainToken,
+                    amount = transferAmount,
+                    fee = BigDecimal.ZERO,
+                )
+            ).showNow(parentFragmentManager, TransferWeb3BalanceErrorBottomSheetDialogFragment.TAG)
+            return FeeCheckResult(false)
+        }
+        val requiredBalance = if (sameAssetFee) transferAmount + fee else fee
+
+        if (requiredBalance <= chainBalance) {
+            return FeeCheckResult(true, estimate.swapPreviewData)
+        }
+
+        TransferWeb3BalanceErrorBottomSheetDialogFragment.newInstance(
+            Web3TokenFeeItem(
+                token = chainToken,
+                amount = if (sameAssetFee) transferAmount else BigDecimal.ZERO,
+                fee = fee,
+            )
+        ).showNow(parentFragmentManager, TransferWeb3BalanceErrorBottomSheetDialogFragment.TAG)
+        return FeeCheckResult(false)
+    }
+
+    private suspend fun estimateOnChainPreview(
+        token: Web3TokenItem,
+        chainToken: Web3TokenItem,
+        fromAddress: String,
+        toAddress: String,
+        amount: String,
+        includeSwapPreviewData: Boolean,
+    ): OnChainPreviewEstimate {
+        if (!includeSwapPreviewData) {
+            return OnChainPreviewEstimate(
+                fee = estimateWeb3Fee(token, fromAddress, toAddress, amount),
+            )
+        }
+
+        return when (token.chainId) {
+            Constants.ChainId.BITCOIN_CHAIN_ID -> {
+                val localUtxos = web3ViewModel.outputsByAddress(fromAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
+                val zeroFeeTx = token.buildTransaction(
+                    rpc = rpc,
+                    fromAddress = fromAddress,
+                    toAddress = toAddress,
+                    v = amount,
+                    localUtxos = localUtxos,
+                    rate = BigDecimal.ONE,
+                )
+                val estimatedFee = web3ViewModel.calcFee(token, zeroFeeTx, fromAddress)
+                val fee = estimatedFee.fee
+                val transaction = if (fee == null) {
+                    null
+                } else {
+                    token.buildTransaction(
+                        rpc = rpc,
+                        fromAddress = fromAddress,
+                        toAddress = toAddress,
+                        v = amount,
+                        localUtxos = localUtxos,
+                        rate = estimatedFee.rate,
+                        minFee = estimatedFee.minFee,
+                    )
+                }
+                OnChainPreviewEstimate(
+                    fee = fee,
+                    swapPreviewData = transaction?.let {
+                        buildSwapPreviewData(
+                            senderAddress = fromAddress,
+                            web3Transaction = it,
+                            fee = fee,
+                            feeToken = chainToken,
+                        )
+                    },
+                )
+            }
+            Constants.ChainId.SOLANA_CHAIN_ID -> {
+                val transaction = token.buildTransaction(
+                    rpc = rpc,
+                    fromAddress = fromAddress,
+                    toAddress = toAddress,
+                    v = amount,
+                )
+                val fee = web3ViewModel.calcFee(token, transaction, fromAddress).fee
+                OnChainPreviewEstimate(
+                    fee = fee,
+                    swapPreviewData = buildSwapPreviewData(
+                        senderAddress = fromAddress,
+                        web3Transaction = transaction,
+                        fee = fee,
+                        feeToken = chainToken,
+                    ),
+                )
+            }
+            else -> {
+                val transaction = token.buildTransaction(
+                    rpc = rpc,
+                    fromAddress = fromAddress,
+                    toAddress = toAddress,
+                    v = amount,
+                )
+                val estimateResponse = runCatching {
+                    web3ViewModel.estimateFee(
+                        EstimateFeeRequest(
+                            chainId = token.chainId,
+                            rawTransaction = null,
+                            data = transaction.data ?: transaction.wcEthereumTransaction?.data,
+                            from = fromAddress,
+                            to = transaction.wcEthereumTransaction?.to,
+                            value = transaction.wcEthereumTransaction?.value,
+                        )
+                    )
+                }.getOrNull()
+                val tipGas = if (estimateResponse?.isSuccess == true && estimateResponse.data != null) {
+                    buildTipGas(token.chainId, estimateResponse.data!!)
+                } else {
+                    null
+                }
+                val fee = tipGas?.displayValue(transaction.wcEthereumTransaction?.maxFeePerGas)
+                OnChainPreviewEstimate(
+                    fee = fee,
+                    swapPreviewData = buildSwapPreviewData(
+                        senderAddress = fromAddress,
+                        web3Transaction = transaction,
+                        fee = fee,
+                        feeToken = chainToken,
+                        tipGas = tipGas,
+                    ),
+                )
+            }
+        }
+    }
+
+    private fun buildGaslessSwapPreviewData(
+        senderAddress: String,
+        token: Web3TokenItem,
+        feeAmount: String?,
+        gaslessPrepared: GaslessTxResponse,
+    ): SwapTransferPreviewData {
+        val fee = feeAmount?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+        return SwapTransferPreviewData(
+            senderAddress = senderAddress,
+            web3Transaction = JsSignMessage(
+                callbackId = 0L,
+                type = JsSignMessage.TYPE_GASLESS_TRANSFER,
+            ),
+            gaslessPrepareResponseJson = GsonHelper.customGson.toJson(gaslessPrepared),
+            feeAmount = fee.stripTrailingZeros().toPlainString(),
+            feeSymbol = token.symbol,
+            feeUsd = formatFeeUsd(fee, token),
+        )
+    }
+
+    private fun buildSwapPreviewData(
+        senderAddress: String,
+        web3Transaction: JsSignMessage,
+        fee: BigDecimal?,
+        feeToken: Web3TokenItem,
+        tipGas: TipGas? = null,
+    ): SwapTransferPreviewData {
+        val feeValue = fee ?: BigDecimal.ZERO
+        return SwapTransferPreviewData(
+            senderAddress = senderAddress,
+            web3Transaction = web3Transaction,
+            feeAmount = feeValue.stripTrailingZeros().toPlainString(),
+            feeSymbol = feeToken.symbol,
+            feeUsd = formatFeeUsd(feeValue, feeToken),
+            gasPrice = tipGas?.displayGas(web3Transaction.wcEthereumTransaction?.maxFeePerGas)?.toPlainString(),
+            tipGasLimit = tipGas?.gasLimit?.toString(),
+            tipGasMaxFeePerGas = tipGas?.maxFeePerGas?.toString(),
+            tipGasMaxPriorityFeePerGas = tipGas?.maxPriorityFeePerGas?.toString(),
+        )
+    }
+
+    private fun formatFeeUsd(
+        fee: BigDecimal,
+        feeToken: Web3TokenItem,
+    ): String {
+        val price = feeToken.priceUsd.toBigDecimalOrNull() ?: BigDecimal.ZERO
+        return fee.multiply(price).stripTrailingZeros().toPlainString()
+    }
+
+    private suspend fun estimateWeb3Fee(
+        token: Web3TokenItem,
+        fromAddress: String,
+        toAddress: String,
+        amount: String,
+    ): BigDecimal? {
+        return if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+            val localUtxos = web3ViewModel.outputsByAddress(fromAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
+            val zeroFeeTx = token.buildTransaction(
+                rpc = rpc,
+                fromAddress = fromAddress,
+                toAddress = toAddress,
+                v = amount,
+                localUtxos = localUtxos,
+                rate = BigDecimal.ONE,
+            )
+            web3ViewModel.calcFee(token, zeroFeeTx, fromAddress).fee
+        } else {
+            val transaction = token.buildTransaction(
+                rpc = rpc,
+                fromAddress = fromAddress,
+                toAddress = toAddress,
+                v = amount,
+            )
+            web3ViewModel.calcFee(token, transaction, fromAddress).fee
+        }
     }
 
     private suspend fun initFromTo() {

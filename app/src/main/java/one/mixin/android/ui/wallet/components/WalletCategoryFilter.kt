@@ -28,9 +28,6 @@ fun WalletCategoryFilter(
     if (hasAll) {
         tabs.add(WalletCategoryTab(category = null, textResId = R.string.All, showBadge = false))
     }
-    if (hasSafe) {
-        tabs.add(WalletCategoryTab(category = WalletCategory.MIXIN_SAFE.value, textResId = R.string.Wallet_Safe, showBadge = showSafeBadge))
-    }
     if (hasCreated) {
         tabs.add(WalletCategoryTab(category = WalletCategory.CLASSIC.value, textResId = R.string.Wallet_Created, showBadge = false))
     }
@@ -39,6 +36,9 @@ fun WalletCategoryFilter(
     }
     if (hasWatch) {
         tabs.add(WalletCategoryTab(category = "watch", textResId = R.string.Wallet_Watching, showBadge = false))
+    }
+    if (hasSafe) {
+        tabs.add(WalletCategoryTab(category = WalletCategory.MIXIN_SAFE.value, textResId = R.string.Wallet_Safe, showBadge = showSafeBadge))
     }
     val selectedIndex: Int = tabs.indexOfFirst { tab: WalletCategoryTab -> tab.category == selectedCategory }.let { index: Int ->
         if (index >= 0) index else 0

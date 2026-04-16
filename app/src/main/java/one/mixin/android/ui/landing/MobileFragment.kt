@@ -38,6 +38,7 @@ import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.navTo
+import one.mixin.android.extension.openCustomerService
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.viewDestroyed
@@ -45,7 +46,6 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
 import one.mixin.android.ui.logs.LogViewerBottomSheet
-import one.mixin.android.ui.web.WebFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
 import one.mixin.android.util.analytics.AnalyticsTracker
@@ -94,7 +94,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             }
     }
 
-    private val mobileViewModel by viewModels<MobileViewModel>()
+    private val landingViewModel by viewModels<LandingViewModel>()
     private val binding by viewBinding(FragmentMobileBinding::bind)
 
     private lateinit var countryPicker: CountryPicker
@@ -133,6 +133,9 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             applySafeTopPadding(view)
         }
         Timber.e("MobileFragment onViewCreated")
+        if (from == FROM_LANDING) {
+            AnalyticsTracker.trackLoginStart()
+        }
         binding.apply {
             pin = requireArguments().getString(ARGS_PIN)
             if (pin != null) {
@@ -144,11 +147,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             }
             binding.titleView.leftIb.setOnClickListener { requireActivity().onBackPressedDispatcher.onBackPressed() }
             binding.titleView.rightIb.setOnClickListener {
-                val bundle = Bundle().apply {
-                    putString(WebFragment.URL, Constants.HelpLink.CUSTOMER_SERVICE)
-                    putBoolean(WebFragment.ARGS_INJECTABLE, false)
-                }
-                navTo(WebFragment.newInstance(bundle), WebFragment.TAG)
+                openCustomerService()
             }
             val policy: String = requireContext().getString(R.string.Privacy_Policy)
             val termsService: String = requireContext().getString(R.string.Terms_of_Service)
@@ -209,7 +208,6 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             keyboard.initPinKeys()
             keyboard.setOnClickKeyboardListener(mKeyboardListener)
             mnemonicPhrase.setOnClickListener {
-                AnalyticsTracker.trackLoginMnemonicPhrase()
                 activity?.addFragment(
                     this@MobileFragment,
                     LandingMnemonicPhraseFragment.newInstance(),
@@ -306,6 +304,9 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             )
             .setNegativeButton(R.string.Change) { dialog, _ -> dialog.dismiss() }
             .setPositiveButton(R.string.Confirm) { dialog, _ ->
+                if (from == FROM_LANDING) {
+                    AnalyticsTracker.trackLoginSmsSendConfirmed()
+                }
                 requestSend()
                 dialog.dismiss()
             }
@@ -362,7 +363,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             }
         }
         binding.continueBn.displayedChild = 1
-        mobileViewModel.loginVerification(verificationRequest)
+        landingViewModel.loginVerification(verificationRequest)
             .autoDispose(stopScope).subscribe(
                 { r: MixinResponse<VerificationResponse> ->
                     if (!r.isSuccess) {
@@ -438,7 +439,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                 (view as ViewGroup).addView(captchaView?.webView, MATCH_PARENT, MATCH_PARENT)
             }
             if (from == FROM_LANDING_CREATE) {
-                AnalyticsTracker.trackSignUpCaptcha("phone_number")
+                AnalyticsTracker.trackSignUpCaptcha()
             } else if (from == FROM_LANDING) {
                 AnalyticsTracker.trackLoginCaptcha("phone_number")
             }

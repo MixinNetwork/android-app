@@ -268,7 +268,7 @@ class Web3AddressFragment : BaseFragment() {
                 } else {
                     it.setTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
                     it.chipBackgroundColor = ColorStateList.valueOf(Color.TRANSPARENT)
-                    it.chipStrokeColor = ColorStateList.valueOf(requireContext().colorFromAttribute(R.attr.bg_window))
+                    it.chipStrokeColor = ColorStateList.valueOf(requireContext().colorFromAttribute(R.attr.bg_gray))
                     it.chipStrokeWidth = 1.dp.toFloat()
                 }
             }

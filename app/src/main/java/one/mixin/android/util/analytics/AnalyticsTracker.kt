@@ -12,18 +12,13 @@ import java.math.BigDecimal
 object AnalyticsTracker {
     private val firebaseAnalytics by lazy { FirebaseAnalytics.getInstance(MixinApplication.get()) }
 
-    fun trackSignUpStart(type: String) {
-        val params = Bundle().apply {
-            putString("type", type)
-        }
-        firebaseAnalytics.logEvent("sign_up_start", params)
+    fun trackSignUpStart() {
+        firebaseAnalytics.logEvent("sign_up_start", null)
     }
 
-    fun trackSignUpCaptcha(type: String) {
-        val params = Bundle().apply {
-            putString("type", type)
-        }
-        firebaseAnalytics.logEvent("sign_up_captcha", params)
+
+    fun trackSignUpCaptcha() {
+        firebaseAnalytics.logEvent("sign_up_captcha", null)
     }
 
     fun trackSignUpSmsVerify() {
@@ -34,12 +29,16 @@ object AnalyticsTracker {
         firebaseAnalytics.logEvent("sign_up_fullname", null)
     }
 
-    fun trackSignalInit() {
-        firebaseAnalytics.logEvent("signal_init", null)
+    fun trackSignUpSignalInit() {
+        firebaseAnalytics.logEvent("sign_up_signal_init", null)
     }
 
     fun trackSignUpPinSet() {
         firebaseAnalytics.logEvent("sign_up_pin_set", null)
+    }
+
+    fun trackSignUpPinQuiz() {
+        firebaseAnalytics.logEvent("sign_up_pin_quiz", null)
     }
 
     fun trackSignUpEnd() {
@@ -48,6 +47,10 @@ object AnalyticsTracker {
 
     fun trackLoginStart() {
         firebaseAnalytics.logEvent("login_start", null)
+    }
+
+    fun trackLoginSmsSendConfirmed() {
+        firebaseAnalytics.logEvent("login_sms_send_confirmed", null)
     }
 
     fun trackLoginMnemonicPhrase() {
@@ -63,6 +66,10 @@ object AnalyticsTracker {
 
     fun trackLoginSmsVerify() {
         firebaseAnalytics.logEvent("login_sms_verify", null)
+    }
+
+    fun trackLoginSignalInit() {
+        firebaseAnalytics.logEvent("login_signal_init", null)
     }
 
     fun trackLoginRestore(type: String) {
@@ -213,5 +220,25 @@ object AnalyticsTracker {
 
     fun trackTradeDetail() {
         firebaseAnalytics.logEvent("trade_detail", null)
+    }
+
+    fun trackBuyStart(wallet: String, source: String) {
+        val params = Bundle().apply {
+            putString("wallet", wallet)
+            putString("source", source)
+        }
+        firebaseAnalytics.logEvent("buy_start", params)
+    }
+
+    fun trackBuyTokenSelect() {
+        firebaseAnalytics.logEvent("buy_token_select", null)
+    }
+
+    fun trackBuyFiatSelect() {
+        firebaseAnalytics.logEvent("buy_fiat_select", null)
+    }
+
+    fun trackBuyPreview() {
+        firebaseAnalytics.logEvent("buy_preview", null)
     }
 }

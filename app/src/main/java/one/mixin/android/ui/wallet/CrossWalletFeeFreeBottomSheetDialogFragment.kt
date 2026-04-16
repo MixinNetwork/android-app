@@ -14,8 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,6 +39,7 @@ import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 import one.mixin.android.ui.landing.components.NumberedText
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.widget.components.MixinButton
 import one.mixin.android.extension.dp as dip
 
 class CrossWalletFeeFreeBottomSheetDialogFragment : BottomSheetDialogFragment() {
@@ -114,15 +113,12 @@ class CrossWalletFeeFreeBottomSheetDialogFragment : BottomSheetDialogFragment() 
                             context.openUrl(requireContext().getString(R.string.url_cross_wallet_transaction_free))
                         }
                         Spacer(modifier = Modifier.height(24.dp))
-                        Button(
+                        MixinButton(
                             onClick = { dismiss() },
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                backgroundColor = MixinAppTheme.colors.accent,
-                            ),
-                            shape = RoundedCornerShape(20.dp),
-                            contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
+                            shape = RoundedCornerShape(30.dp),
+                            contentPadding = PaddingValues(horizontal = 35.dp, vertical = 10.dp),
                         ) {
-                            Text(text = stringResource(R.string.Got_it), color = Color.White)
+                            Text(text = stringResource(R.string.Got_it), fontSize = 16.sp, color = Color.White)
                         }
                         Spacer(modifier = Modifier.height(16.dp))
                     }

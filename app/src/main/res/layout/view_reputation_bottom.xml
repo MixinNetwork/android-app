@@ -161,7 +161,8 @@
             android:paddingEnd="36dp"
             android:text="@string/Apply"
             android:textAllCaps="false"
-            android:textSize="14sp" />
+            android:textFontWeight="400"
+            android:textSize="16sp" />
 
     </RelativeLayout>
 </LinearLayout>

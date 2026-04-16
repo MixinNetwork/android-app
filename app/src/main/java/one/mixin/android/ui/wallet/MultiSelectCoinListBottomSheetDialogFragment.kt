@@ -81,6 +81,7 @@ class MultiSelectCoinListBottomSheetDialogFragment : MixinBottomSheetDialogFragm
             selectedCoinItems.clear()
             selectedCoinItems.addAll(provider.getCurrentCoins())
         }
+        groupAdapter.checkedCoinItems = selectedCoinItems
         contentView = binding.root
         binding.ph.doOnPreDraw {
             binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {

@@ -44,9 +44,7 @@ import one.mixin.android.vo.UserItem
 import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.generateConversationId
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 class UserRepository
     @Inject
     constructor(

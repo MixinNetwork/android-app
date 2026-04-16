@@ -38,6 +38,8 @@ import javax.inject.Inject
 class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
     private val mobileViewModel by viewModels<MobileViewModel>()
     private val binding by viewBinding(FragmentSetupNameBinding::bind)
+    private var isSubmitting = false
+    private var showRetry = false
 
     @Inject
     lateinit var jobManager: MixinJobManager
@@ -55,23 +57,25 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
         AnalyticsTracker.trackSignUpFullName()
         MixinApplication.get().isOnline.set(true)
         binding.apply {
-            continueBtn.isEnabled = false
-            continueBtn.alpha = 0.5f
-            
+            updateContinueButton()
+
             debug.setOnLongClickListener {
                 LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
                 true
             }
-            
+
             continueBtn.setOnClickListener {
-                if (!nameEt.text.isNullOrBlank()) {
-                    performNameUpdate()
+                if (isSubmitting) return@setOnClickListener
+
+                val name = nameEt.text?.toString()?.trim().orEmpty()
+                if (name.isNotBlank()) {
+                    performNameUpdate(name)
                 }
             }
-            
+
             nameEt.addTextChangedListener(mWatcher)
-            nameEt.setOnEditorActionListener {  _, _, _ ->
-                if (nameEt.text.isNotBlank()) {
+            nameEt.setOnEditorActionListener { _, _, _ ->
+                if (!isSubmitting && nameEt.text.isNotBlank()) {
                     continueBtn.performClick()
                 }
                 true
@@ -86,21 +90,20 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
         setupSimpleKeyboardListener()
     }
 
-    private fun performNameUpdate() {
+    private fun performNameUpdate(name: String) {
         binding.apply {
-            continueBtn.isEnabled = false
-            nameCover.visibility = VISIBLE
-            
-            val accountUpdateRequest = AccountUpdateRequest(nameEt.text.toString())
+            setSubmitting(true)
+
+            val accountUpdateRequest = AccountUpdateRequest(name)
             mobileViewModel.update(accountUpdateRequest)
                 .autoDispose(stopScope).subscribe(
                     { r: MixinResponse<Account> ->
-                        continueBtn.isEnabled = true
-                        nameCover.visibility = INVISIBLE
                         if (!r.isSuccess) {
+                            setSubmitting(false, canRetry = true)
                             ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
                             return@subscribe
                         }
+                        setSubmitting(false)
                         r.data?.let { data ->
                             Session.storeAccount(data)
                             mobileViewModel.insertUser(data.toUser())
@@ -112,15 +115,14 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
                         if (!PrivacyPreference.getIsLoaded(requireContext(), false) ||
                             !PrivacyPreference.getIsSyncSession(context, false)
                         ) {
-                            InitializeActivity.showLoading(context, false)
+                            InitializeActivity.showLoading(context, false, source = InitializeActivity.SOURCE_SIGN_UP)
                         } else {
                             startActivity(Intent(context, MainActivity::class.java))
                         }
                         activity?.finish()
                     },
                     { t: Throwable ->
-                        continueBtn.isEnabled = true
-                        nameCover.visibility = INVISIBLE
+                        setSubmitting(false, canRetry = true)
                         ErrorHandler.handleError(t)
                         reportException("SetupNameFragment update", t)
                     },
@@ -153,16 +155,31 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
     private fun initializeBots() {
     }
 
+    private fun setSubmitting(
+        submitting: Boolean,
+        canRetry: Boolean = false,
+    ) {
+        isSubmitting = submitting
+        showRetry = canRetry
+        binding.nameCover.visibility = if (submitting) VISIBLE else INVISIBLE
+        updateContinueButton()
+    }
+
+    private fun updateContinueButton() {
+        val hasName = binding.nameEt.text?.toString()?.trim()?.isNotBlank() == true
+        binding.continueBtn.displayedChild = if (isSubmitting) 1 else 0
+        binding.continueBtn.isEnabled = !isSubmitting && hasName
+        binding.continueBtn.alpha = if (!isSubmitting && hasName) 1f else 0.5f
+        binding.continueTv.text = getString(if (showRetry) R.string.Retry else R.string.Continue)
+    }
+
     private fun handleEditView(str: String) {
         binding.apply {
             nameEt.setSelection(nameEt.text.toString().length)
-            if (str.isNotBlank()) {
-                continueBtn.isEnabled = true
-                continueBtn.alpha = 1.0f
-            } else {
-                continueBtn.isEnabled = false
-                continueBtn.alpha = 0.5f
+            if (showRetry) {
+                showRetry = false
             }
+            updateContinueButton()
         }
     }
 

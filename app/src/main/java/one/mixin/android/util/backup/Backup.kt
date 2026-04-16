@@ -23,6 +23,9 @@ import one.mixin.android.extension.getDisplayPath
 import one.mixin.android.extension.getLegacyBackupPath
 import one.mixin.android.extension.getMediaPath
 import one.mixin.android.extension.getOldBackupPath
+import one.mixin.android.session.Session
+import one.mixin.android.util.database.databaseFile
+import one.mixin.android.util.database.legacyDatabaseFile
 import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
@@ -36,8 +39,8 @@ suspend fun backup(
     context: Context,
     callback: (Result) -> Unit,
 ) = coroutineScope {
-    val dbFile = context.getDatabasePath(DB_NAME)
-    if (dbFile == null) {
+    val dbFile = resolveBackupDatabaseFile(context)
+    if (!dbFile.exists() || dbFile.length() <= 0) {
         withContext(Dispatchers.Main) {
             Timber.e("No database files found")
             callback(Result.NOT_FOUND)
@@ -195,8 +198,8 @@ suspend fun backupApi29(
             }
             return@withContext
         }
-        val dbFile = context.getDatabasePath(DB_NAME)
-        if (dbFile == null) {
+        val dbFile = resolveBackupDatabaseFile(context)
+        if (!dbFile.exists() || dbFile.length() <= 0) {
             Timber.e("No database files found")
             withContext(Dispatchers.Main) {
                 callback(Result.NOT_FOUND)
@@ -263,13 +266,15 @@ suspend fun restore(
     val target =
         internalFindBackup(context, coroutineContext)
             ?: return@withContext callback(Result.NOT_FOUND)
-    val file = context.getDatabasePath(DB_NAME)
+    val file = resolveRestoreDatabaseFile(context)
     try {
+        file.parentFile?.mkdirs()
         if (file.exists()) {
             file.delete()
         }
         File("${file.absolutePath}-wal").delete()
         File("${file.absolutePath}-shm").delete()
+        File("${file.absolutePath}-journal").delete()
         target.copyTo(file)
 
         // Reset BACKUP_LAST_TIME so that the user who restores the backup does not need to backup after login
@@ -313,7 +318,7 @@ suspend fun restoreApi29(
         }
         return@withContext
     }
-    val file = context.getDatabasePath(DB_NAME)
+    val file = resolveRestoreDatabaseFile(context)
     try {
         val inputStream = context.contentResolver.openInputStream(backupDb.uri)
         if (inputStream == null) {
@@ -322,11 +327,13 @@ suspend fun restoreApi29(
             }
             return@withContext
         }
+        file.parentFile?.mkdirs()
         if (file.exists()) {
             file.delete()
         }
         File("${file.absolutePath}-wal").delete()
         File("${file.absolutePath}-shm").delete()
+        File("${file.absolutePath}-journal").delete()
         file.outputStream().use { output ->
             inputStream.copyTo(output)
         }
@@ -507,6 +514,24 @@ private fun internalCheckAccessBackupDirectory(
     val backupDirectory = DocumentFile.fromTreeUri(context, uri)
     return backupDirectory != null && backupDirectory.canRead() && backupDirectory.canWrite()
 }
+
+private fun resolveBackupDatabaseFile(context: Context): File {
+    val legacyDbFile = legacyDatabaseFile(context)
+    val scopedDbFile =
+        Session.getAccount()?.identityNumber?.let { identityNumber ->
+            databaseFile(context, identityNumber)
+        }
+    return when {
+        scopedDbFile == null -> legacyDbFile
+        scopedDbFile.exists() || !legacyDbFile.exists() -> scopedDbFile
+        else -> legacyDbFile
+    }
+}
+
+private fun resolveRestoreDatabaseFile(context: Context): File =
+    Session.getAccount()?.identityNumber?.let { identityNumber ->
+        databaseFile(context, identityNumber)
+    } ?: legacyDatabaseFile(context)
 
 private fun copyFileToDirectory(
     file: File,

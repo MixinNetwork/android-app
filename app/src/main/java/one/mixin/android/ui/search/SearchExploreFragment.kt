@@ -57,10 +57,6 @@ import kotlinx.coroutines.withContext
 class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
     private val searchViewModel by viewModels<SearchViewModel>()
 
-    private val searchAdapter: SearchExploreAdapter by lazy {
-        SearchExploreAdapter()
-    }
-
     companion object {
         const val TAG = "SearchExploreFragment"
         const val SEARCH_DEBOUNCE = 300L
@@ -77,6 +73,10 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
 
     private val hideRecent: Boolean by lazy {
         arguments?.getBoolean(ARG_HIDE_RECENT, false) ?: false
+    }
+
+    private val searchAdapter: SearchExploreAdapter by lazy {
+        SearchExploreAdapter(marketLimit = !hideRecent)
     }
 
     private var keyword: String? = null

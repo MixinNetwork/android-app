@@ -76,6 +76,7 @@ import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapter
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment
+import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
 import one.mixin.android.ui.home.reminder.VerifyMobileReminderBottomSheetDialogFragment
 import one.mixin.android.ui.landing.MobileFragment
 import one.mixin.android.ui.landing.VerificationFragment
@@ -756,30 +757,44 @@ class ConversationListFragment : LinkFragment() {
             this.circleId = circleId
         }
         lifecycleScope.launch {
-            val totalUsd = conversationListViewModel.findTotalUSDBalance()
-            if (isAdded && parentFragmentManager.fragments.any {
-                    it.tag in listOf(AddPhoneBeforeFragment.TAG, VerifyFragment.TAG, VerificationFragment.TAG, MobileFragment.TAG)
-                }.not()) {
+            val blockedByPhoneFlow = parentFragmentManager.fragments.any {
+                it.tag in listOf(AddPhoneBeforeFragment.TAG, VerifyFragment.TAG, VerificationFragment.TAG, MobileFragment.TAG)
+            }
+            if (isAdded && blockedByPhoneFlow.not()) {
                 if (parentFragmentManager.findFragmentByTag(VerifyMobileReminderBottomSheetDialogFragment.TAG) != null) return@launch
+                if (parentFragmentManager.findFragmentByTag(RecoveryReminderBottomSheetDialogFragment.TAG) != null) return@launch
                 if (VerifyMobileReminderBottomSheetDialogFragment.shouldShow(requireContext())) {
-                    VerifyMobileReminderBottomSheetDialogFragment.showSafely(
+                    if (VerifyMobileReminderBottomSheetDialogFragment.showSafely(
                         parentFragmentManager,
-                        R.string.Verify_Mobile_Number_Desc
-                    )
+                    )) {
+                        return@launch
+                    }
+                }
+                if (RecoveryReminderBottomSheetDialogFragment.showForHome(parentFragmentManager)) {
                     return@launch
                 }
-                ReminderBottomSheetDialogFragment.getType(requireContext(), totalUsd)
+                ReminderBottomSheetDialogFragment.getType(requireContext())
                     .let { type ->
                         val existingDialog = parentFragmentManager.findFragmentByTag(ReminderBottomSheetDialogFragment.TAG) as? ReminderBottomSheetDialogFragment
-                        existingDialog?.dismiss()
+                        if (type == null) {
+                            existingDialog?.dismissAllowingStateLoss()
+                            return@launch
+                        }
 
-                        if (type != null) {
-                            if (parentFragmentManager.findFragmentByTag(ReminderBottomSheetDialogFragment.TAG) == null) {
-                                try {
-                                    ReminderBottomSheetDialogFragment.newInstance(type).show(parentFragmentManager, ReminderBottomSheetDialogFragment.TAG)
-                                } catch (e: IllegalStateException) {
-                                    // Fragment state already saved, skip showing dialog
-                                }
+                        if (existingDialog?.isForType(type) == true) {
+                            return@launch
+                        }
+
+                        if (existingDialog != null) {
+                            existingDialog.dismissAllowingStateLoss()
+                            parentFragmentManager.executePendingTransactions()
+                        }
+
+                        if (parentFragmentManager.findFragmentByTag(ReminderBottomSheetDialogFragment.TAG) == null) {
+                            try {
+                                ReminderBottomSheetDialogFragment.newInstance(type).show(parentFragmentManager, ReminderBottomSheetDialogFragment.TAG)
+                            } catch (e: IllegalStateException) {
+                                // Fragment state already saved, skip showing dialog
                             }
                         }
                     }

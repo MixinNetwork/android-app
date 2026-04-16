@@ -29,7 +29,6 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.RxBus
-import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PrivacyPreference.getPrefPinInterval
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.databinding.FragmentWalletBinding
@@ -55,6 +54,7 @@ import one.mixin.android.ui.common.LoginVerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
 import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.components.AssetDashboardScreen
 import one.mixin.android.ui.wallet.components.WalletDestination
@@ -422,15 +422,13 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         }
 
         if (!Session.saltExported() && Session.isAnonymous()) {
-            BackupMnemonicPhraseWarningBottomSheetDialogFragment.newInstance().apply {
-                laterCallback = {
-                    if (this@WalletFragment.isAdded) {
-                        val dialog = AddWalletBottomSheetDialogFragment.newInstance()
-                        dialog.callback = callback
-                        dialog.show(this@WalletFragment.parentFragmentManager, AddWalletBottomSheetDialogFragment.TAG)
-                    }
+            RecoveryReminderBottomSheetDialogFragment.showForRiskAction(parentFragmentManager) {
+                if (this@WalletFragment.isAdded) {
+                    val dialog = AddWalletBottomSheetDialogFragment.newInstance()
+                    dialog.callback = callback
+                    dialog.show(this@WalletFragment.parentFragmentManager, AddWalletBottomSheetDialogFragment.TAG)
                 }
-            }.show(parentFragmentManager, BackupMnemonicPhraseWarningBottomSheetDialogFragment.TAG)
+            }
         } else {
             val dialog = AddWalletBottomSheetDialogFragment.newInstance()
             dialog.callback = callback
@@ -453,7 +451,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             }
             lifecycleScope.launch(Dispatchers.IO) {
                 val wallet = walletViewModel.findWalletById(walletId)
-                if (wallet != null && (wallet.category == WalletCategory.CLASSIC.value || CryptoWalletHelper.hasPrivateKey(requireActivity(), walletId))) {
+                if (wallet != null) {
                     Web3Signer.setWallet(walletId, wallet.category) { queryWalletId ->
                         runBlocking { walletViewModel.getAddresses(queryWalletId) }
                     }

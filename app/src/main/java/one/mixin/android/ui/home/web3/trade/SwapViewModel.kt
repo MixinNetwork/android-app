@@ -254,21 +254,30 @@ class SwapViewModel
     }
 
     suspend fun refreshPendingOrders(): Boolean = withContext(Dispatchers.IO) {
-        val orderDao = walletDatabase.orderDao()
-        val pending = orderDao.getPendingOrders()
-        if (pending.isEmpty()) return@withContext false
-        val ids = pending.map { it.orderId }
-        val resp = assetRepository.getLimitOrders(ids)
-        if (resp.isSuccess && resp.data != null) {
-            orderDao.insertListSuspend(resp.data!!)
+        try {
+            val orderDao = walletDatabase.orderDao()
+            val pending = orderDao.getPendingOrders()
+            if (pending.isEmpty()) return@withContext false
+            val ids = pending.map { it.orderId }
+            val resp = assetRepository.getLimitOrders(ids)
+            if (resp.isSuccess && resp.data != null) {
+                orderDao.insertListSuspend(resp.data!!)
+            }
+            return@withContext true
+        } catch (t: Throwable) {
+            Timber.w(t, "refreshPendingOrders failed")
         }
-        return@withContext true
+        return@withContext false
     }
 
     suspend fun refreshOrders(walletId: String) = withContext(Dispatchers.IO) {
-        val offsetKey = "order_offset_$walletId"
-        val offset = Web3PropertyHelper.findValueByKey(offsetKey, "")
-        refreshOrdersInternal(walletId, offset.ifEmpty { null }, offsetKey)
+        try {
+            val offsetKey = "order_offset_$walletId"
+            val offset = Web3PropertyHelper.findValueByKey(offsetKey, "")
+            refreshOrdersInternal(walletId, offset.ifEmpty { null }, offsetKey)
+        } catch (t: Throwable) {
+            Timber.w(t, "refreshOrders failed for walletId=%s", walletId)
+        }
     }
 
     private suspend fun refreshOrdersInternal(walletId: String, offset: String?, offsetKey: String, previousLastCreatedAt: String? = null) {

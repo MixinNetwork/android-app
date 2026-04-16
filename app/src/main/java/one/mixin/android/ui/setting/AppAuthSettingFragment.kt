@@ -57,6 +57,8 @@ class AppAuthSettingFragment : BaseFragment(R.layout.fragment_app_auth_setting) 
                         getString(R.string.Confirm_fingerprint),
                         getString(R.string.Cancel),
                         authCallback,
+                        getString(R.string.Unlock_with_fingerprint),
+                        getString(R.string.app_auth_biometric_description),
                     )
                 }
             }

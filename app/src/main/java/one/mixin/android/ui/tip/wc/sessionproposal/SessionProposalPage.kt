@@ -13,8 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -51,6 +49,7 @@ import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.compose.ItemContent
 import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.ui.wallet.components.WalletLabel
+import one.mixin.android.widget.components.MixinButton
 import one.mixin.android.web3.js.Web3Signer
 
 @Composable
@@ -219,16 +218,12 @@ fun SessionProposalPage(
                             .fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center,
                 ) {
-                    Button(
+                    MixinButton(
                         onClick = onDismissRequest,
-                        colors =
-                            ButtonDefaults.outlinedButtonColors(
-                                backgroundColor = MixinAppTheme.colors.accent,
-                            ),
-                        shape = RoundedCornerShape(20.dp),
-                        contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
+                        shape = RoundedCornerShape(30.dp),
+                        contentPadding = PaddingValues(horizontal = 35.dp, vertical = 10.dp),
                     ) {
-                        Text(text = stringResource(id = R.string.Done), color = Color.White)
+                        Text(text = stringResource(id = R.string.Done), fontSize = 16.sp, color = Color.White)
                     }
                 }
             } else if (step != WalletConnectBottomSheetDialogFragment.Step.Loading) {

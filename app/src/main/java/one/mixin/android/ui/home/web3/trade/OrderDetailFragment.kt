@@ -184,9 +184,9 @@ class OrderDetailFragment : BaseFragment() {
                 // Fallback: share plain URL when token not found
                 val isLimit = type.equals("limit", true)
                 val url = if (isLimit) {
-                    "${Constants.Scheme.MIXIN_TRADE}?type=limit&input=$payId&output=$receiveId"
+                    "${Constants.Scheme.HTTPS_TRADE}?type=limit&input=$payId&output=$receiveId"
                 } else {
-                    "${Constants.Scheme.MIXIN_SWAP}?input=$payId&output=$receiveId"
+                    "${Constants.Scheme.HTTPS_SWAP}?input=$payId&output=$receiveId"
                 }
                 ForwardMessage(ShareCategory.Text, url)
             }

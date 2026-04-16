@@ -565,7 +565,7 @@ fun Fragment.openImage(output: Uri) {
     galleryIntent.type = "image/*"
     galleryIntent.action = Intent.ACTION_PICK
 
-    val chooserIntent = Intent.createChooser(galleryIntent, "Select Picture")
+    val chooserIntent = Intent.createChooser(galleryIntent, getString(R.string.select_picture))
     chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, cameraIntents.toTypedArray())
     try {
         this.startActivityForResult(chooserIntent, REQUEST_IMAGE)
@@ -859,6 +859,9 @@ fun Fragment.openGalleryFromSticker() {
 }
 
 fun Context.openUrl(url: String) {
+    if (openCustomerServiceIfMatched(url)) {
+        return
+    }
     var uri = url.toUri()
     if (uri.scheme.isNullOrBlank()) {
         uri = Uri.parse("http://$url")
@@ -1091,6 +1094,7 @@ fun Fragment.getTipsByAsset(asset: TokenItem) =
         Constants.ChainId.Optimism,
         Constants.ChainId.Polygon,
         Constants.ChainId.BitShares,
+        Constants.ChainId.Avalanche
             -> getString(R.string.deposit_tip_chain, asset.symbol, asset.chainName ?: getChainName(asset.chainId, asset.chainName, asset.assetKey ?: ""))
         else -> getString(R.string.deposit_tip_common, asset.symbol)
     }

@@ -8,18 +8,25 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.doOnPreDraw
+import androidx.core.view.updatePadding
 import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.google.android.material.internal.ViewUtils.doOnApplyWindowInsets
 import com.uber.autodispose.android.lifecycle.scope
 import one.mixin.android.Constants.Colors.LINK_COLOR
 import one.mixin.android.R
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.openAsUrlOrWeb
+import one.mixin.android.extension.screenHeight
 import one.mixin.android.ui.common.BottomSheetViewModel
+import one.mixin.android.ui.common.resolveBottomSheetPeekHeight
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.widget.MixinBottomSheetDialog
@@ -29,6 +36,7 @@ import timber.log.Timber
 
 abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragment() {
     protected lateinit var contentView: View
+    private var bottomSheetView: View? = null
 
     protected val stopScope = scope(Lifecycle.Event.ON_STOP)
 
@@ -41,7 +49,11 @@ abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragm
     protected var behavior: BottomSheetBehavior<*>? = null
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        return MixinBottomSheetDialog(requireContext(), theme).apply {
+        return MixinBottomSheetDialog(
+            requireContext(),
+            theme,
+            applyBottomInsetToSheet = shouldApplyBottomInsetToBottomSheetContainer(),
+        ).apply {
             dismissWithAnimation = true
         }
     }
@@ -54,27 +66,14 @@ abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragm
         super.setupDialog(dialog, style)
         contentView = View.inflate(context, getLayoutId(), null)
         dialog.setContentView(contentView)
-        val params = (contentView.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
-        behavior = params?.behavior as? BottomSheetBehavior<*>
-        if (behavior != null && behavior is BottomSheetBehavior<*>) {
-            val defaultPeekHeight = getPeekHeight(contentView, behavior!!)
-            behavior?.peekHeight =
-                if (defaultPeekHeight == 0) {
-                    val scrollContent = contentView.findViewById<View>(R.id.scroll_content)
-                    val titleView = contentView.findViewById<View>(R.id.title)
-                    scrollContent.measure(
-                        View.MeasureSpec.makeMeasureSpec(contentView.width, View.MeasureSpec.EXACTLY),
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
-                    )
-                    titleView.measure(
-                        View.MeasureSpec.makeMeasureSpec(contentView.width, View.MeasureSpec.EXACTLY),
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
-                    )
-                    scrollContent.measuredHeight + titleView.measuredHeight
-                } else {
-                    defaultPeekHeight
-                }
-            behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
+        bottomSheetView = contentView.parent as? View
+        applyScrollableContentInsetsIfNeeded()
+        val params = bottomSheetView?.layoutParams as? CoordinatorLayout.LayoutParams
+        val bottomSheetBehavior = params?.behavior as? BottomSheetBehavior<*>
+        behavior = bottomSheetBehavior
+        if (bottomSheetBehavior != null) {
+            bottomSheetBehavior.addBottomSheetCallback(bottomSheetBehaviorCallback)
+            schedulePeekHeightUpdate()
             dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
             dialog.window?.setGravity(Gravity.BOTTOM)
         }
@@ -159,6 +158,80 @@ abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragm
         bottomSheet: View,
         slideOffset: Float,
     ) {}
+
+    protected open fun shouldApplyBottomInsetToBottomSheetContainer(): Boolean = true
+
+    protected open fun shouldIncludeBottomInsetInPeekHeight(): Boolean = true
+
+    protected open fun extraPeekOffsetWhenNavigationBarPresent(): Int = 0
+
+    protected fun schedulePeekHeightUpdate() {
+        val bottomSheetBehavior = behavior ?: return
+        val bottomSheetView = bottomSheetView ?: return
+
+        bottomSheetView.doOnPreDraw {
+            if (!isAdded) return@doOnPreDraw
+
+            val defaultPeekHeight = getPeekHeight(contentView, bottomSheetBehavior)
+            val contentHeight =
+                if (defaultPeekHeight == 0) {
+                    calculateMeasuredContentHeight(contentView)
+                } else {
+                    defaultPeekHeight
+                }
+            if (contentHeight <= 0) return@doOnPreDraw
+
+            val peekHeight =
+                (
+                    requireContext().resolveBottomSheetPeekHeight(
+                        contentView,
+                        contentHeight,
+                        includeBottomInset = shouldIncludeBottomInsetInPeekHeight(),
+                    ) + navigationBarAwareExtraPeekOffset()
+                ).coerceAtMost(requireContext().screenHeight())
+            if (bottomSheetBehavior.peekHeight != peekHeight) {
+                bottomSheetBehavior.peekHeight = peekHeight
+            }
+            bottomSheetBehavior.isGestureInsetBottomIgnored = true
+        }
+    }
+
+    private fun navigationBarAwareExtraPeekOffset(): Int {
+        val navigationBarBottom =
+            ViewCompat.getRootWindowInsets(contentView)
+                ?.getInsets(WindowInsetsCompat.Type.navigationBars())
+                ?.bottom
+                ?: 0
+        return if (navigationBarBottom > 0) extraPeekOffsetWhenNavigationBarPresent() else 0
+    }
+
+    private fun applyScrollableContentInsetsIfNeeded() {
+        if (shouldApplyBottomInsetToBottomSheetContainer()) return
+
+        val scrollContent = contentView.findViewById<View>(R.id.scroll_content) ?: return
+        doOnApplyWindowInsets(scrollContent) { insetView, windowInsets, initialPadding ->
+            val navBarBottom = windowInsets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
+            insetView.updatePadding(bottom = initialPadding.bottom + navBarBottom)
+            windowInsets
+        }
+    }
+
+    private fun calculateMeasuredContentHeight(contentView: View): Int {
+        val scrollContent = contentView.findViewById<View>(R.id.scroll_content)
+        val titleView = contentView.findViewById<View>(R.id.title)
+        val width = contentView.measuredWidth.takeIf { it > 0 } ?: contentView.width
+        val widthSpec = View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY)
+
+        scrollContent.measure(
+            widthSpec,
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+        )
+        titleView.measure(
+            widthSpec,
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+        )
+        return scrollContent.measuredHeight + titleView.measuredHeight
+    }
 
     private val bottomSheetBehaviorCallback =
         object : BottomSheetBehavior.BottomSheetCallback() {

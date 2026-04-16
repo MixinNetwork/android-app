@@ -17,8 +17,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -72,6 +70,7 @@ import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.compose.ItemContent
 import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.ui.wallet.components.WalletLabel
+import one.mixin.android.widget.components.MixinButton
 import one.mixin.android.vo.priceUSD
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.web3.js.Web3Signer
@@ -379,16 +378,12 @@ fun SessionRequestPage(
                             .fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center,
                     ) {
-                        Button(
+                        MixinButton(
                             onClick = onDismissRequest,
-                            colors =
-                                ButtonDefaults.outlinedButtonColors(
-                                    backgroundColor = MixinAppTheme.colors.accent,
-                                ),
-                            shape = RoundedCornerShape(20.dp),
-                            contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
+                            shape = RoundedCornerShape(30.dp),
+                            contentPadding = PaddingValues(horizontal = 35.dp, vertical = 10.dp),
                         ) {
-                            Text(text = stringResource(id = R.string.Done), color = Color.White)
+                            Text(text = stringResource(id = R.string.Done), fontSize = 16.sp, color = Color.White)
                         }
                     }
                 } else if (step == WalletConnectBottomSheetDialogFragment.Step.Sign) {
@@ -521,6 +516,7 @@ fun FeeInfo(
     fee: BigDecimal,
     gasPrice: String? = null,
     isFree: Boolean = false,
+    isLoading: Boolean = false,
     onFreeClick: (() -> Unit)? = null,
 ) {
     Column(
@@ -540,43 +536,50 @@ fun FeeInfo(
                 Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Column {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = amount,
-                        color = MixinAppTheme.colors.textPrimary,
-                        fontSize = 14.sp,
-                        style = TextStyle(textDecoration = if (isFree) TextDecoration.LineThrough else TextDecoration.None),
-                    )
-                    if (gasPrice != null) {
-                        Box(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "($gasPrice Gwei)",
-                            color = MixinAppTheme.colors.textAssist,
-                            fontSize = 12.sp,
-                        )
-                    }
-                    if (isFree) {
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = stringResource(id = R.string.FREE),
-                            color = Color.White,
-                            fontSize = 10.sp,
-                            lineHeight = 10.sp,
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(MixinAppTheme.colors.accent)
-                                .padding(horizontal = 3.dp, vertical = 1.dp)
-                                .let { m -> if (onFreeClick != null) m.clickable { onFreeClick.invoke() } else m }
-                        )
-                    }
-                }
-                Box(modifier = Modifier.height(4.dp))
-                Text(
-                    text = fee.currencyFormat(),
-                    color = MixinAppTheme.colors.textAssist,
-                    fontSize = 14.sp,
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = MixinAppTheme.colors.accent,
                 )
+            } else {
+                Column {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = amount,
+                            color = MixinAppTheme.colors.textPrimary,
+                            fontSize = 14.sp,
+                            style = TextStyle(textDecoration = if (isFree) TextDecoration.LineThrough else TextDecoration.None),
+                        )
+                        if (gasPrice != null) {
+                            Box(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "($gasPrice Gwei)",
+                                color = MixinAppTheme.colors.textAssist,
+                                fontSize = 12.sp,
+                            )
+                        }
+                        if (isFree) {
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = stringResource(id = R.string.FREE),
+                                color = Color.White,
+                                fontSize = 10.sp,
+                                lineHeight = 10.sp,
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(MixinAppTheme.colors.accent)
+                                    .padding(horizontal = 3.dp, vertical = 1.dp)
+                                    .let { m -> if (onFreeClick != null) m.clickable { onFreeClick.invoke() } else m }
+                            )
+                        }
+                    }
+                    Box(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = fee.currencyFormat(),
+                        color = MixinAppTheme.colors.textAssist,
+                        fontSize = 14.sp,
+                    )
+                }
             }
             Box(modifier = Modifier)
         }

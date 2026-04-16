@@ -58,6 +58,7 @@ import one.mixin.android.ui.home.bot.InternalLinkDesktop
 import one.mixin.android.ui.home.bot.InternalLinkDesktopLogged
 import one.mixin.android.ui.home.bot.InternalReferral
 import one.mixin.android.ui.home.inscription.CollectiblesFragment
+import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.search.SearchExploreFragment
 import one.mixin.android.ui.search.SearchInscriptionFragment
@@ -328,11 +329,23 @@ class ExploreFragment : BaseFragment() {
                     DeviceFragment.newInstance().showNow(parentFragmentManager, DeviceFragment.TAG)
                 }
                 INTERNAL_BUY_ID -> {
-                    WalletActivity.showBuy(requireActivity(), false, null, null)
+                    WalletActivity.showBuy(
+                        requireActivity(),
+                        false,
+                        null,
+                        null,
+                        source = AnalyticsTracker.TradeSource.EXPLORE
+                    )
                 }
                 INTERNAL_SWAP_ID -> {
-                    AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, AnalyticsTracker.TradeSource.EXPLORE)
-                    SwapActivity.show(requireActivity(), null, null, null, null)
+                    val shown = RecoveryReminderBottomSheetDialogFragment.showForRiskAction(parentFragmentManager) {
+                        AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, AnalyticsTracker.TradeSource.EXPLORE)
+                        SwapActivity.show(requireActivity(), null, null, null, null)
+                    }
+                    if (!shown) {
+                        AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, AnalyticsTracker.TradeSource.EXPLORE)
+                        SwapActivity.show(requireActivity(), null, null, null, null)
+                    }
                 }
                 INTERNAL_MEMBER_ID -> {
                     if (Session.getAccount()?.membership != null && Session.getAccount()?.membership?.plan != Plan.None) {
