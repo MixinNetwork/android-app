@@ -26,7 +26,6 @@ import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.db.web3.vo.isImported
-import one.mixin.android.db.web3.vo.isNativeSolToken
 import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.db.web3.vo.solLamportToAmount
 import one.mixin.android.db.web3.vo.toWeb3Wallet
@@ -80,6 +79,7 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.market.MarketItem
+import one.mixin.android.web3.isNativeSolAsset
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.DebugClickListener
 import java.math.BigDecimal
@@ -133,7 +133,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
             val wallet = web3ViewModel.findWalletById(token.walletId)
             binding.sendReceiveView.isVisible = wallet?.isWatch() != true
             binding.empty.isVisible = wallet?.isWatch() == true
-            if (token.isNativeSolToken() && wallet != null && (wallet.category == WalletCategory.CLASSIC.value || (wallet.isImported() && wallet.hasLocalPrivateKey))) {
+            if (token.isNativeSolAsset() && wallet != null && (wallet.category == WalletCategory.CLASSIC.value || (wallet.isImported() && wallet.hasLocalPrivateKey))) {
                 binding.stake.root.visibility = View.VISIBLE
                 address?.let { address -> getStakeAccounts(address)}
             } else{
@@ -187,7 +187,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                         )
                     }
                 }
-                if (token.isNativeSolToken()) {
+                if (token.isNativeSolAsset()) {
                     stake.root.visibility = View.VISIBLE
                     lifecycleScope.launch {
                         address?.let { address ->
@@ -420,7 +420,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                 context?.openUrl(url)
                 bottomSheet.dismiss()
             }
-            stakeSolTv.isVisible = token.isNativeSolToken() && binding.stake.root.isVisible
+            stakeSolTv.isVisible = token.isNativeSolAsset() && binding.stake.root.isVisible
             stakeSolTv.setOnClickListener {
                 this@Web3TransactionsFragment.navTo(
                     ValidatorsFragment.newInstance().apply {
