@@ -81,6 +81,8 @@ import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.getMixinErrorStringByCode
+import one.mixin.android.web3.isNativeSolAsset
+import one.mixin.android.web3.nativeSolSpendableBalance
 import java.math.BigDecimal
 
 @Composable
@@ -182,6 +184,13 @@ fun SwapContent(
 
     fromToken?.let { from ->
         val fromBalance = viewModel.tokenExtraFlow(from).collectAsStateWithLifecycle(from.balance).value
+        val rawFromBalanceValue = fromBalance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+        val availableFromBalanceValue = if (from.isNativeSolAsset()) {
+            nativeSolSpendableBalance(rawFromBalanceValue)
+        } else {
+            rawFromBalanceValue
+        }
+        val availableFromBalance = availableFromBalanceValue.stripTrailingZeros().toPlainString()
         KeyboardAwareBox(modifier = Modifier.fillMaxHeight(), content = { availableHeight ->
             Column(
                 modifier = if (availableHeight != null) {
@@ -256,8 +265,9 @@ fun SwapContent(
                                 selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.To else SelectTokenType.From) },
                                 onInputChanged = { inputText = it },
                                 onDeposit = onDeposit,
+                                displayBalanceOverride = if (from.isNativeSolAsset()) fromBalance else null,
                                 onMax = {
-                                    val balance = fromBalance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                                    val balance = availableFromBalanceValue
                                     if (balance > BigDecimal.ZERO) {
                                         inputText = balance.stripTrailingZeros().toPlainString()
                                     } else {
@@ -301,7 +311,7 @@ fun SwapContent(
                 Spacer(modifier = Modifier.height(if (availableHeight == null) 14.dp else 8.dp))
                 ReviewButton(
                     inputText = inputText,
-                    fromBalance = fromBalance,
+                    fromBalance = availableFromBalance,
                     fromToken = fromToken!!,
                     quoteResult = quoteResult,
                     quoteError = quoteError,
@@ -323,7 +333,7 @@ fun SwapContent(
                     .background(MixinAppTheme.colors.backgroundWindow)
                     .padding(horizontal = 12.dp, vertical = 8.dp), horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                val balance = fromBalance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                val balance = availableFromBalanceValue
 
                 InputAction("25%", showBorder = true) {
                     if (balance > BigDecimal.ZERO) {
