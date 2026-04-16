@@ -5,6 +5,7 @@ import android.os.Build
 import android.os.LocaleList
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatDelegate
+import one.mixin.android.Constants
 import java.util.Locale
 
 fun getLanguage(): String? = AppCompatDelegate.getApplicationLocales().get(0)?.language
@@ -14,6 +15,12 @@ fun getCountry(): String? = AppCompatDelegate.getApplicationLocales().get(0)?.co
 fun getLocaleString(): String = AppCompatDelegate.getApplicationLocales().get(0).toString()
 
 fun isCurrChinese(): Boolean = (getLanguage() ?: Locale.getDefault().language) == Locale.SIMPLIFIED_CHINESE.language
+
+fun isSimplifiedChineseLocale(): Boolean {
+    val language = getLanguage() ?: Locale.getDefault().language
+    return language == Locale.SIMPLIFIED_CHINESE.language &&
+        getLocaleString() !in Constants.Locale.TraditionalChinese.localeStrings
+}
 
 fun isFollowSystem(): Boolean = AppCompatDelegate.getApplicationLocales().isEmpty
 

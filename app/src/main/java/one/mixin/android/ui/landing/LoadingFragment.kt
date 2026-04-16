@@ -10,12 +10,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.Account.PREF_LOGIN_OR_SIGN_UP
 import one.mixin.android.Constants.Account.PREF_LOGIN_VERIFY
 import one.mixin.android.Constants.Account.PREF_TRIED_UPDATE_KEY
 import one.mixin.android.Constants.DEVICE_ID
-import one.mixin.android.Constants.TEAM_MIXIN_USER_ID
-import one.mixin.android.Constants.TEAM_MIXIN_USER_NAME
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.request.SessionSecretRequest
@@ -42,6 +41,7 @@ import one.mixin.android.ui.tip.TipType
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.isSimplifiedChineseLocale
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import timber.log.Timber
@@ -52,6 +52,26 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
     companion object {
         const val TAG: String = "LoadingFragment"
         private const val ARGS_SOURCE = "args_source"
+
+        private val DEFAULT_BOTS_ZH_CN =
+            listOf(
+                "7000",
+                "7000105155",
+                "7000105347",
+                "7000105346",
+                "7000101302",
+                "7000105403",
+            )
+
+        private val DEFAULT_BOTS_EN =
+            listOf(
+                "7000",
+                "7000105155",
+                "7000105347",
+                "7000105411",
+                "7000101302",
+                "7000105403",
+            )
 
         fun newInstance(source: String? = null) = LoadingFragment().apply {
             arguments = Bundle().apply {
@@ -126,9 +146,22 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
                     TipActivity.show(requireActivity(), tipType, shouldWatch = true)
                 }
             }
-            jobManager.addJobInBackground(InitializeJob(TEAM_MIXIN_USER_ID, TEAM_MIXIN_USER_NAME))
+            initializeBots()
             activity?.finish()
         }
+
+    private fun initializeBots() {
+        val phone = Session.getAccount()?.phone.orEmpty()
+        val testAccountPrefix = BuildConfig.TEST_ACCOUNT_PREFIX
+        if (testAccountPrefix.isNotBlank() && phone.startsWith(testAccountPrefix)) {
+            return
+        }
+
+        val bots = if (isSimplifiedChineseLocale()) DEFAULT_BOTS_ZH_CN else DEFAULT_BOTS_EN
+        bots.forEach { botId ->
+            jobManager.addJobInBackground(InitializeJob(botId))
+        }
+    }
 
     private suspend fun updateRsa2EdDsa() {
         val sessionKey = generateEd25519KeyPair()
