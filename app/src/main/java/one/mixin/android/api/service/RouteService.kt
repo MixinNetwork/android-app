@@ -382,10 +382,7 @@ interface RouteService {
 
     // Perps API
     @GET("perps/markets")
-    suspend fun getPerpsMarkets(
-        @Query("offset") offset: Int = 0,
-        @Query("limit") limit: Int = 20
-    ): MixinResponse<List<PerpsMarket>>
+    suspend fun getPerpsMarkets(): MixinResponse<List<PerpsMarket>>
 
     @GET("perps/markets/{market_id}")
     suspend fun getPerpsMarket(
