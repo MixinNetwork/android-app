@@ -34,8 +34,6 @@ import one.mixin.android.extension.setQuoteTextWithBackgroud
 import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshMarketJob
-import one.mixin.android.api.service.ReferralService
-import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.market.Market
 import one.mixin.android.ui.home.web3.market.DepositTokensBottomSheetDialogFragment
@@ -43,7 +41,6 @@ import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.ARGS_INPUT
 import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.ARGS_OUTPUT
 import one.mixin.android.ui.wallet.alert.AlertFragment.Companion.ARGS_COIN
 import one.mixin.android.ui.wallet.alert.AlertFragment.Companion.ARGS_GO_ALERT
-import one.mixin.android.ui.wallet.fiatmoney.fetchDefaultReferralShareInfoOrNull
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
@@ -67,12 +64,6 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
 
     @Inject
     lateinit var jobManager: MixinJobManager
-
-    @Inject
-    lateinit var referralService: ReferralService
-
-    @Inject
-    lateinit var userRepository: UserRepository
 
     private val walletViewModel by viewModels<WalletViewModel>()
 
@@ -106,29 +97,12 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                 }
                 rightIb.setOnClickListener {
                     if (!isLoading || marketItem.coinId.isBlank()) {
-                        viewLifecycleOwner.lifecycleScope.launch {
-                            val dialog =
-                                indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
-                                    setCancelable(false)
-                                }
-                            dialog.show()
-                            try {
-                                val referralShareInfo = fetchDefaultReferralShareInfoOrNull(
-                                    referralService = referralService,
-                                    userRepository = userRepository,
-                                    logLabel = "market share",
-                                )
-                                MarketShareActivity.show(
-                                    requireContext(),
-                                    captureMarketShareBitmap(),
-                                    marketItem.symbol,
-                                    marketItem.coinId,
-                                    referralShareInfo,
-                                )
-                            } finally {
-                                dialog.dismiss()
-                            }
-                        }
+                        MarketShareActivity.show(
+                            requireContext(),
+                            captureMarketShareBitmap(),
+                            marketItem.symbol,
+                            marketItem.coinId,
+                        )
                     } else toast(R.string.Please_wait_a_bit)
                 }
             }
@@ -547,10 +521,23 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
     private fun captureMarketShareBitmap() = with(binding.swapAlert) {
         val originalVisibility = visibility
         visibility = View.GONE
+        relayoutForBitmapCapture(binding.marketLl)
         try {
             binding.marketLl.drawToBitmap()
         } finally {
             visibility = originalVisibility
+            relayoutForBitmapCapture(binding.marketLl)
         }
+    }
+
+    private fun relayoutForBitmapCapture(view: View) {
+        val width = view.width.takeIf { it > 0 } ?: view.measuredWidth
+        if (width <= 0) return
+
+        view.measure(
+            View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+        )
+        view.layout(view.left, view.top, view.left + view.measuredWidth, view.top + view.measuredHeight)
     }
 }
