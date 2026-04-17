@@ -16,6 +16,7 @@ import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
+import androidx.core.view.isVisible
 import androidx.core.content.FileProvider
 import androidx.core.view.drawToBitmap
 import androidx.core.view.updateLayoutParams
@@ -125,6 +126,7 @@ class MarketShareActivity : BaseActivity() {
                 onBackPressed()
             }
         }
+        syncActionContainerVisibility()
 
         applyFadeInAnimation(binding.root)
     }
@@ -142,6 +144,14 @@ class MarketShareActivity : BaseActivity() {
     }
 
     private fun currentQrUrl(): String = referralCode?.let(::buildReferralShareUrl) ?: SHARE_QR_URL
+
+    private fun syncActionContainerVisibility() {
+        val hasVisibleAction = binding.share.isVisible || binding.copy.isVisible || binding.save.isVisible
+        binding.bottom.isVisible = hasVisibleAction
+        binding.bottom.updateLayoutParams<MarginLayoutParams> {
+            topMargin = if (hasVisibleAction) 10.dp else 0
+        }
+    }
 
     private fun buildReferralDescription(rebatePercent: String): SpannableString {
         val text = getString(R.string.referral_share_desc, rebatePercent)
