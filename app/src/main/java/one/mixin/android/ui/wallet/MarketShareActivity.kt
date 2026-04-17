@@ -125,7 +125,7 @@ class MarketShareActivity : BaseActivity() {
             val preparedCover = withContext(Dispatchers.Default) {
                 cover?.let {
                     val trimmedCover = trimTransparentPadding(it)
-                    cropAndScaleBitmap(trimmedCover, 24.dp, (80 - 24 + 32).dp)
+                    cropAndScaleBitmap(trimmedCover, 18.dp, (80 - 24 + 32).dp)
                 }
             }
             val qrCode = withContext(Dispatchers.Default) {
@@ -205,9 +205,7 @@ class MarketShareActivity : BaseActivity() {
         val targetWidth = croppedBitmap.width - y
         val scale = targetWidth.toFloat() / croppedBitmap.width.toFloat()
         val targetHeight = (croppedBitmap.height * scale).toInt()
-        val scaledBitmap = croppedBitmap.scale(targetWidth, targetHeight)
-
-        return scaledBitmap
+        return croppedBitmap.scale(targetWidth, targetHeight)
     }
 
     private fun trimTransparentPadding(bitmap: Bitmap): Bitmap {
