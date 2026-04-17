@@ -5,7 +5,6 @@ import android.graphics.Typeface
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.View
-import android.widget.RelativeLayout
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
@@ -161,12 +160,6 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         return transaction.getMainAmount().toBigDecimalOrNull()?.compareTo(BigDecimal.ZERO) != 0
     }
 
-    private fun setStatusAnchor(showValueDetails: Boolean) {
-        val layoutParams = binding.status.layoutParams as RelativeLayout.LayoutParams
-        layoutParams.addRule(RelativeLayout.BELOW, if (showValueDetails) R.id.that_va else R.id.value_tv)
-        binding.status.layoutParams = layoutParams
-    }
-
     private fun getMainAssetSymbol(): String {
         return when (transaction.transactionType) {
             TransactionType.TRANSFER_OUT.value -> transaction.sendAssetSymbol
@@ -179,7 +172,6 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         binding.valueAsTv.isVisible = false
         binding.thatVa.isVisible = false
         binding.thatTv.setOnClickListener(null)
-        setStatusAnchor(false)
     }
 
     private fun bindCurrentValue(
@@ -296,7 +288,6 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         }
         val assetId = transaction.getMainAssetId()
         val symbol = getMainAssetSymbol()
-        setStatusAnchor(true)
         binding.thatVa.isVisible = true
         binding.thatVa.displayedChild = 0
         lifecycleScope.launch {
