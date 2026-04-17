@@ -1,0 +1,45 @@
+<!--
+  ~ Copyright (C) 2026 The Android Open Source Project
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="20dp"
+    android:height="20dp"
+    android:viewportWidth="20"
+    android:viewportHeight="20">
+  <path
+      android:pathData="M10,0.5L10,0.5A9.5,9.5 0,0 1,19.5 10L19.5,10A9.5,9.5 0,0 1,10 19.5L10,19.5A9.5,9.5 0,0 1,0.5 10L0.5,10A9.5,9.5 0,0 1,10 0.5z">
+    <aapt:attr name="android:fillColor">
+      <gradient
+          android:startX="0.527"
+          android:startY="20"
+          android:endX="20"
+          android:endY="-0"
+          android:type="linear">
+        <item android:offset="0" android:color="#FF2A5BF6"/>
+        <item android:offset="1" android:color="#FF529FF9"/>
+      </gradient>
+    </aapt:attr>
+  </path>
+  <path
+      android:strokeWidth="1"
+      android:pathData="M10,0.5L10,0.5A9.5,9.5 0,0 1,19.5 10L19.5,10A9.5,9.5 0,0 1,10 19.5L10,19.5A9.5,9.5 0,0 1,0.5 10L0.5,10A9.5,9.5 0,0 1,10 0.5z"
+      android:fillColor="#00000000"
+      android:strokeColor="#ffffff"/>
+  <path
+      android:pathData="M14.912,6.133C14.991,6.133 15.054,6.195 15.057,6.273L15.057,6.278V13.761C15.057,13.783 15.052,13.804 15.043,13.824C15.009,13.894 14.925,13.925 14.854,13.894L14.85,13.892L12.993,13.01C12.907,12.969 12.851,12.883 12.849,12.787L12.849,12.781V7.13C12.849,7.029 12.909,6.938 13.001,6.898L13.007,6.896L14.858,6.143C14.875,6.136 14.893,6.133 14.912,6.133ZM5.067,6.133C5.085,6.133 5.104,6.136 5.121,6.143L6.972,6.896C7.067,6.934 7.13,7.027 7.13,7.13V12.781C7.13,12.879 7.074,12.968 6.985,13.01L5.129,13.892C5.057,13.927 4.97,13.896 4.936,13.824C4.927,13.804 4.922,13.783 4.922,13.761V6.278C4.922,6.198 4.987,6.133 5.067,6.133ZM10.152,7.767L11.864,8.756C11.965,8.814 12.027,8.922 12.027,9.038V11.015C12.027,11.131 11.965,11.239 11.864,11.297L10.152,12.285C10.052,12.344 9.927,12.344 9.826,12.285L8.115,11.297C8.014,11.239 7.952,11.131 7.952,11.015V9.038C7.952,8.922 8.014,8.814 8.115,8.756L9.826,7.767C9.927,7.709 10.052,7.709 10.152,7.767Z"
+      android:fillColor="#ffffff"
+      android:fillType="evenOdd"/>
+</vector>

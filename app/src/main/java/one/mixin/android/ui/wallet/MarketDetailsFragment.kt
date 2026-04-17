@@ -120,7 +120,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                                 )
                                 MarketShareActivity.show(
                                     requireContext(),
-                                    marketLl.drawToBitmap(),
+                                    captureMarketShareBitmap(),
                                     marketItem.symbol,
                                     marketItem.coinId,
                                     referralShareInfo,
@@ -543,4 +543,14 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
 
     private var currentPrice: String? = null
     private var currentRise: String? = null
+
+    private fun captureMarketShareBitmap() = with(binding.swapAlert) {
+        val originalVisibility = visibility
+        visibility = View.GONE
+        try {
+            binding.marketLl.drawToBitmap()
+        } finally {
+            visibility = originalVisibility
+        }
+    }
 }

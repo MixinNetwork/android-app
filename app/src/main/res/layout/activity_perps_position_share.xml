@@ -22,6 +22,7 @@
         android:id="@+id/content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
         android:layout_marginStart="40dp"
         android:layout_marginTop="80dp"
         android:layout_marginEnd="40dp"
@@ -44,7 +45,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="center_horizontal"
                     android:orientation="vertical"
-                    android:paddingTop="48dp">
+                    android:paddingTop="66dp">
 
                     <LinearLayout
                         android:layout_width="wrap_content"
@@ -240,14 +241,46 @@
                 </RelativeLayout>
             </LinearLayout>
 
-            <ImageView
-                android:id="@+id/close"
-                android:layout_width="wrap_content"
+            <RelativeLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="end|top"
-                android:layout_marginTop="16dp"
-                android:layout_marginEnd="12dp"
-                android:src="@drawable/ic_float_close" />
+                android:layout_gravity="top"
+                android:paddingStart="20dp"
+                android:paddingTop="16dp"
+                android:paddingEnd="20dp"
+                android:paddingBottom="12dp">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:id="@+id/logo"
+                        android:layout_width="18dp"
+                        android:layout_height="14dp"
+                        android:src="@drawable/ic_mixin_white"
+                        android:contentDescription="@string/mixin_messenger" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:text="@string/mixin_messenger"
+                        android:textColor="@color/white"
+                        android:textSize="14sp"
+                        android:textFontWeight="600" />
+                </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/close"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:src="@drawable/ic_float_close"
+                    android:contentDescription="@null" />
+            </RelativeLayout>
         </FrameLayout>
 
         <LinearLayout

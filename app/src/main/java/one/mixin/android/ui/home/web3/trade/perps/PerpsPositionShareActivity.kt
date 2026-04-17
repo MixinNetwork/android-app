@@ -16,6 +16,7 @@ import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
+import android.widget.FrameLayout
 import androidx.core.content.FileProvider
 import androidx.core.view.drawToBitmap
 import androidx.core.view.updateLayoutParams
@@ -54,6 +55,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.math.BigDecimal
 import java.math.RoundingMode
+import kotlin.math.min
 
 @AndroidEntryPoint
 class PerpsPositionShareActivity : BaseActivity() {
@@ -123,7 +125,8 @@ class PerpsPositionShareActivity : BaseActivity() {
             })
         }
 
-        binding.content.updateLayoutParams<MarginLayoutParams> {
+        binding.content.updateLayoutParams<FrameLayout.LayoutParams> {
+            width = min(380.dp, (resources.displayMetrics.widthPixels - 80.dp).coerceAtLeast(0))
             topMargin = 80.dp
         }
         binding.iconFl.round(6.dp)
