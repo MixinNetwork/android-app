@@ -46,7 +46,6 @@
                         android:layout_width="18dp"
                         android:layout_height="14dp"
                         android:src="@drawable/ic_mixin_blue"
-                        android:tint="?attr/text_primary"
                         android:contentDescription="@string/mixin_messenger" />
 
                     <TextView
