@@ -76,6 +76,7 @@ import one.mixin.android.api.request.web3.SubmitGaslessTxRequest
 import one.mixin.android.api.request.web3.WEB3_FEE_TYPE_FREE
 import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 import one.mixin.android.api.response.web3.EthGaslessTxPayload
+import one.mixin.android.api.response.web3.shouldSign
 import one.mixin.android.api.response.web3.GaslessTxResponse
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
@@ -1258,14 +1259,15 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
             type = JsSignMessage.TYPE_GASLESS_TRANSFER,
         )
         val eip7702AuthSignature = ethPayload.signing.eip7702Auth
-            ?.takeIf { it.required }
+            ?.takeIf { it.shouldSign }
             ?.let { auth ->
+                val message = requireNotNull(auth.message) { "Missing EIP-7702 auth message" }
                 if (!auth.address.equals(GASLESS_EIP7702_AUTHORIZED_ADDRESS, ignoreCase = true)) {
                     throw IllegalArgumentException("Unsupported EIP-7702 auth target")
                 }
                 Web3Signer.signEthMessage(
                     priv = privateKey,
-                    message = auth.message,
+                    message = message,
                     type = JsSignMessage.TYPE_GASLESS_TRANSFER,
                 )
             }
