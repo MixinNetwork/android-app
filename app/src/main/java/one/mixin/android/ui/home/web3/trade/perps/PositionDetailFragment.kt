@@ -9,22 +9,30 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.api.response.perps.toPosition
+import one.mixin.android.api.service.ReferralService
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.openUrl
+import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.wallet.fiatmoney.fetchDefaultReferralShareInfoOrNull
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class PositionDetailFragment : BaseFragment() {
@@ -52,6 +60,12 @@ class PositionDetailFragment : BaseFragment() {
     }
 
     private val viewModel by viewModels<PerpetualViewModel>()
+
+    @Inject
+    lateinit var referralService: ReferralService
+
+    @Inject
+    lateinit var userRepository: UserRepository
 
     private val quoteColorReversed: Boolean by lazy {
         requireContext().defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
@@ -107,7 +121,7 @@ class PositionDetailFragment : BaseFragment() {
                                 showCloseDialog(currentPosition)
                             },
                             onShare = {
-                                PerpsPositionShareActivity.show(requireContext(), currentPosition)
+                                sharePosition(currentPosition)
                             },
                             onSupport = {
                                 context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
@@ -124,7 +138,7 @@ class PositionDetailFragment : BaseFragment() {
                                 openTradeAgain(positionHistory)
                             },
                             onShare = {
-                                PerpsPositionShareActivity.show(requireContext(), positionHistory)
+                                sharePosition(positionHistory)
                             },
                             onSupport = {
                                 context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
@@ -159,5 +173,43 @@ class PositionDetailFragment : BaseFragment() {
             marketDisplaySymbol = positionHistory.displaySymbol.orEmpty(),
             marketTokenSymbol = positionHistory.tokenSymbol.orEmpty()
         )
+    }
+
+    private fun sharePosition(position: PerpsPositionItem) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            val dialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                setCancelable(false)
+            }
+            dialog.show()
+            try {
+                val referralShareInfo = fetchDefaultReferralShareInfoOrNull(
+                    referralService = referralService,
+                    userRepository = userRepository,
+                    logLabel = "perps position share",
+                )
+                PerpsPositionShareActivity.show(requireContext(), position, referralShareInfo)
+            } finally {
+                dialog.dismiss()
+            }
+        }
+    }
+
+    private fun sharePosition(positionHistory: PerpsPositionHistoryItem) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            val dialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                setCancelable(false)
+            }
+            dialog.show()
+            try {
+                val referralShareInfo = fetchDefaultReferralShareInfoOrNull(
+                    referralService = referralService,
+                    userRepository = userRepository,
+                    logLabel = "perps position history share",
+                )
+                PerpsPositionShareActivity.show(requireContext(), positionHistory, referralShareInfo)
+            } finally {
+                dialog.dismiss()
+            }
+        }
     }
 }

@@ -18,15 +18,20 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
+import one.mixin.android.api.response.perps.PerpsPositionItem
+import one.mixin.android.api.service.ReferralService
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.perps.PerpsMarketDao
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshPerpsPositionsJob
+import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletActivity
+import one.mixin.android.ui.wallet.fiatmoney.fetchDefaultReferralShareInfoOrNull
 import one.mixin.android.vo.safe.TokenItem
 import javax.inject.Inject
 
@@ -37,6 +42,10 @@ class PerpsActivity : BaseActivity() {
     lateinit var jobManager: MixinJobManager
     @Inject
     lateinit var perpsMarketDao: PerpsMarketDao
+    @Inject
+    lateinit var referralService: ReferralService
+    @Inject
+    lateinit var userRepository: UserRepository
 
     private var selectedToken by mutableStateOf<TokenItem?>(null)
     private var renderJob: Job? = null
@@ -159,7 +168,8 @@ class PerpsActivity : BaseActivity() {
                         displaySymbol = displaySymbol,
                         tokenSymbol = tokenSymbol,
                         initialMarket = market,
-                        onBack = { finish() }
+                        onBack = { finish() },
+                        onSharePosition = ::showSharePosition,
                     )
                 }
             }
@@ -200,6 +210,25 @@ class PerpsActivity : BaseActivity() {
                     refreshPositions()
                     delay(POSITION_REFRESH_INTERVAL_MS)
                 }
+            }
+        }
+    }
+
+    private fun showSharePosition(position: PerpsPositionItem) {
+        lifecycleScope.launch {
+            val dialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                setCancelable(false)
+            }
+            dialog.show()
+            try {
+                val referralShareInfo = fetchDefaultReferralShareInfoOrNull(
+                    referralService = referralService,
+                    userRepository = userRepository,
+                    logLabel = "perps market share",
+                )
+                PerpsPositionShareActivity.show(this@PerpsActivity, position, referralShareInfo)
+            } finally {
+                dialog.dismiss()
             }
         }
     }

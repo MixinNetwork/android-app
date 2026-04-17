@@ -4,10 +4,16 @@ import android.content.ClipData
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Color
+import android.graphics.Typeface
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.media.MediaScannerConnection
 import android.os.Bundle
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.style.ForegroundColorSpan
+import android.text.style.StyleSpan
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
 import androidx.core.content.FileProvider
@@ -39,6 +45,8 @@ import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.wallet.fiatmoney.buildReferralShareUrl
+import one.mixin.android.ui.wallet.fiatmoney.ReferralShareInfo
 import one.mixin.android.ui.web.getScreenshot
 import one.mixin.android.ui.web.refreshScreenshot
 import one.mixin.android.vo.Fiats
@@ -52,20 +60,24 @@ class PerpsPositionShareActivity : BaseActivity() {
     companion object {
         private const val ARGS_POSITION = "args_position"
         private const val ARGS_POSITION_HISTORY = "args_position_history"
+        private const val ARGS_REFERRAL_SHARE_INFO = "args_referral_share_info"
         private const val SHARE_QR_URL = "https://mixin.one/mm"
+        private const val REFERRAL_REBATE_COLOR = "#FFEE70"
         private val MIN_DISPLAY_PNL_PERCENT = BigDecimal("-100")
 
-        fun show(context: Context, position: PerpsPositionItem) {
+        fun show(context: Context, position: PerpsPositionItem, referralShareInfo: ReferralShareInfo? = null) {
             refreshScreenshot(context, 0x33000000)
             context.startActivity(Intent(context, PerpsPositionShareActivity::class.java).apply {
                 putExtra(ARGS_POSITION, position)
+                putExtra(ARGS_REFERRAL_SHARE_INFO, referralShareInfo)
             })
         }
 
-        fun show(context: Context, positionHistory: PerpsPositionHistoryItem) {
+        fun show(context: Context, positionHistory: PerpsPositionHistoryItem, referralShareInfo: ReferralShareInfo? = null) {
             refreshScreenshot(context, 0x33000000)
             context.startActivity(Intent(context, PerpsPositionShareActivity::class.java).apply {
                 putExtra(ARGS_POSITION_HISTORY, positionHistory)
+                putExtra(ARGS_REFERRAL_SHARE_INFO, referralShareInfo)
             })
         }
     }
@@ -86,6 +98,14 @@ class PerpsPositionShareActivity : BaseActivity() {
 
     private val quoteColorReversed: Boolean by lazy {
         defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
+    }
+
+    private val referralShareInfo by lazy {
+        intent.getSerializableExtra(ARGS_REFERRAL_SHARE_INFO) as? ReferralShareInfo
+    }
+
+    private val referralCode: String? by lazy {
+        referralShareInfo?.code?.takeIf { it.isNotBlank() }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -212,9 +232,37 @@ class PerpsPositionShareActivity : BaseActivity() {
     }
 
     private fun bindFooter() {
-        Session.getAccount()?.identityNumber.let {
-            val qrCode = SHARE_QR_URL.generateQRCode(72.dp, 8.dp).first
-            binding.qr.setImageBitmap(qrCode)
+        if (referralShareInfo != null) {
+            binding.title.text = referralShareInfo?.code
+            binding.shareDescTv.text = buildReferralDescription(referralShareInfo!!.rebatePercent)
+        } else {
+            binding.title.text = getString(R.string.mixin_messenger)
+            binding.shareDescTv.text = getString(R.string.share_desc)
+        }
+        val qrCode = currentQrUrl().generateQRCode(72.dp, 8.dp).first
+        binding.qr.setImageBitmap(qrCode)
+    }
+
+    private fun currentQrUrl(): String = referralCode?.let(::buildReferralShareUrl) ?: SHARE_QR_URL
+
+    private fun buildReferralDescription(rebatePercent: String): SpannableString {
+        val text = getString(R.string.referral_share_desc, rebatePercent)
+        val start = text.indexOf(rebatePercent)
+        return SpannableString(text).apply {
+            if (start >= 0) {
+                setSpan(
+                    ForegroundColorSpan(Color.parseColor(REFERRAL_REBATE_COLOR)),
+                    start,
+                    start + rebatePercent.length,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+                )
+                setSpan(
+                    StyleSpan(Typeface.BOLD),
+                    start,
+                    start + rebatePercent.length,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+                )
+            }
         }
     }
 
@@ -242,7 +290,8 @@ class PerpsPositionShareActivity : BaseActivity() {
     }
 
     private val onCopy: () -> Unit = {
-        val link = Session.getAccount()?.identityNumber?.let { "$SHARE_QR_URL&referral=$it" } ?: SHARE_QR_URL
+        val link = referralCode?.let(::buildReferralShareUrl)
+            ?: (Session.getAccount()?.identityNumber?.let { "$SHARE_QR_URL&referral=$it" } ?: SHARE_QR_URL)
         getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, link))
         finish()
         toast(R.string.copied_to_clipboard)

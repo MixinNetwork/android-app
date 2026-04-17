@@ -4,10 +4,16 @@ import android.content.ClipData
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Color
+import android.graphics.Typeface
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.media.MediaScannerConnection
 import android.os.Bundle
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.style.ForegroundColorSpan
+import android.text.style.StyleSpan
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
 import androidx.core.content.FileProvider
@@ -31,6 +37,8 @@ import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.wallet.fiatmoney.buildReferralShareUrl
+import one.mixin.android.ui.wallet.fiatmoney.ReferralShareInfo
 import one.mixin.android.ui.web.getScreenshot
 import one.mixin.android.ui.web.refreshScreenshot
 import java.io.File
@@ -43,14 +51,23 @@ class MarketShareActivity : BaseActivity() {
     companion object {
         private const val ARGS_NAME = "name"
         private const val ARGS_COIN = "coin"
+        private const val ARGS_REFERRAL_SHARE_INFO = "referral_share_info"
         private const val SHARE_QR_URL = "https://mixin.one/mm"
+        private const val REFERRAL_REBATE_COLOR = "#FFEE70"
         private var cover: Bitmap? = null
-        fun show(context: Context, cover: Bitmap, name: String, coinId: String) {
+        fun show(
+            context: Context,
+            cover: Bitmap,
+            name: String,
+            coinId: String,
+            referralShareInfo: ReferralShareInfo? = null,
+        ) {
             refreshScreenshot(context, 0x33000000)
             this.cover = cover
             context.startActivity(Intent(context, MarketShareActivity::class.java).apply {
                 putExtra(ARGS_NAME, name)
                 putExtra(ARGS_COIN, coinId)
+                putExtra(ARGS_REFERRAL_SHARE_INFO, referralShareInfo)
             })
         }
     }
@@ -65,6 +82,12 @@ class MarketShareActivity : BaseActivity() {
     }
     private val coinId by lazy {
         intent.getStringExtra(ARGS_COIN)
+    }
+    private val referralShareInfo by lazy {
+        intent.getSerializableExtra(ARGS_REFERRAL_SHARE_INFO) as? ReferralShareInfo
+    }
+    private val referralCode by lazy {
+        referralShareInfo?.code?.takeIf { it.isNotBlank() }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -87,10 +110,7 @@ class MarketShareActivity : BaseActivity() {
         if (cover != null) {
             binding.image.setImageBitmap(cropAndScaleBitmap(cover!!, 24.dp, (80 - 24 + 32).dp))
         }
-        Session.getAccount()?.identityNumber.let {
-            val qrCode = SHARE_QR_URL.generateQRCode(72.dp, 8.dp).first
-            binding.qr.setImageBitmap(qrCode)
-        }
+        bindFooter()
         binding.apply {
             share.setOnClickListener {
                 onShare()
@@ -107,6 +127,41 @@ class MarketShareActivity : BaseActivity() {
         }
 
         applyFadeInAnimation(binding.root)
+    }
+
+    private fun bindFooter() {
+        if (referralShareInfo != null) {
+            binding.title.text = referralShareInfo?.code
+            binding.shareDesc.text = buildReferralDescription(referralShareInfo!!.rebatePercent)
+        } else {
+            binding.title.text = getString(R.string.mixin_messenger)
+            binding.shareDesc.text = getString(R.string.share_desc)
+        }
+        val qrCode = currentQrUrl().generateQRCode(72.dp, 8.dp).first
+        binding.qr.setImageBitmap(qrCode)
+    }
+
+    private fun currentQrUrl(): String = referralCode?.let(::buildReferralShareUrl) ?: SHARE_QR_URL
+
+    private fun buildReferralDescription(rebatePercent: String): SpannableString {
+        val text = getString(R.string.referral_share_desc, rebatePercent)
+        val start = text.indexOf(rebatePercent)
+        return SpannableString(text).apply {
+            if (start >= 0) {
+                setSpan(
+                    ForegroundColorSpan(Color.parseColor(REFERRAL_REBATE_COLOR)),
+                    start,
+                    start + rebatePercent.length,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+                )
+                setSpan(
+                    StyleSpan(Typeface.BOLD),
+                    start,
+                    start + rebatePercent.length,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+                )
+            }
+        }
     }
 
     private fun applyFadeInAnimation(view: View) {
@@ -149,8 +204,10 @@ class MarketShareActivity : BaseActivity() {
     }
 
     private val onCopy: () -> Unit = {
-        val marketLink = "$HTTPS_MARKET/$coinId"
-        val link = Session.getAccount()?.identityNumber?.let { "$marketLink?ref=$it" } ?: marketLink
+        val link = referralCode?.let(::buildReferralShareUrl) ?: run {
+            val marketLink = "$HTTPS_MARKET/$coinId"
+            Session.getAccount()?.identityNumber?.let { "$marketLink?ref=$it" } ?: marketLink
+        }
         getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, link))
         finish()
         toast(R.string.copied_to_clipboard)
