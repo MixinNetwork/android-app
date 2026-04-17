@@ -268,7 +268,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="6dp"
                         android:text="@string/mixin_messenger"
-                        android:textColor="@color/white"
+                        android:textColor="#CCFFFFFF"
                         android:textSize="14sp"
                         android:textFontWeight="600" />
                 </LinearLayout>
