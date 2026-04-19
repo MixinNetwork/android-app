@@ -126,7 +126,6 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
                                 lifecycleScope.launch {
                                     activity.supportFragmentManager.inTransaction {
                                         setCustomAnimations(R.anim.slide_in_right, 0, 0, R.anim.slide_out_right)
-                                        show(conversationFragment)
                                         hide(this@SearchMessageFragment)
                                         addToBackStack(null)
                                     }
