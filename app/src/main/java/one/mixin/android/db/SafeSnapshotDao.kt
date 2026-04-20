@@ -99,7 +99,7 @@ interface SafeSnapshotDao : BaseDao<SafeSnapshot> {
     suspend fun findSnapshotByTraceId(traceId: String): SnapshotItem?
 
     @RawQuery(observedEntities = [SafeSnapshot::class, User::class, Token::class, InscriptionItem::class, InscriptionCollection::class])
-    fun getSnapshots(query: SupportSQLiteQuery): DataSource.Factory<Int, SnapshotItem>
+    fun getSnapshots(query: SupportSQLiteQuery): PagingSource<Int, SnapshotItem>
 
     @Query("$SNAPSHOT_ITEM_PREFIX ORDER BY abs(s.amount * t.price_usd) DESC")
     fun allSnapshotsOrderByAmount(): DataSource.Factory<Int, SnapshotItem>

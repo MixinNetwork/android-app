@@ -13,10 +13,9 @@ import androidx.core.content.ContextCompat
 import androidx.core.util.Pair
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
-import androidx.paging.PagedList
+import androidx.paging.LoadState
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.datepicker.CalendarConstraints
@@ -25,6 +24,7 @@ import com.google.android.material.datepicker.MaterialDatePicker
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAllTransactionsBinding
@@ -50,7 +50,7 @@ import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
 
 @AndroidEntryPoint
-class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3TransactionItem>>(R.layout.fragment_all_transactions) {
+class AllWeb3TransactionsFragment : BaseTransactionsFragment(R.layout.fragment_all_transactions) {
     companion object {
         const val TAG = "AllTransactionsFragment"
         const val ARGS_TOKEN = "args_token"
@@ -122,15 +122,14 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
                 },
             )
         }
-        dataObserver =
-            Observer { pagedList ->
-                if (pagedList.isNotEmpty()) {
-                    showEmpty(false)
-                } else {
-                    showEmpty(true)
-                }
-                adapter.submitList(pagedList)
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            adapter.loadStateFlow.collectLatest { loadStates ->
+                val isEmpty = loadStates.refresh is LoadState.NotLoading && adapter.itemCount == 0
+                showEmpty(isEmpty)
             }
+        }
+
         bindLiveData()
         binding.apply {
             filterType.setOnClickListener {
@@ -238,7 +237,7 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
     }
 
     private fun bindLiveData() {
-        bindLiveData(walletViewModel.allWeb3Transaction(initialLoadKey = initialLoadKey, filterParams))
+        bindPagingData(adapter, walletViewModel.allWeb3Transaction(filterParams))
     }
 
     private fun showEmpty(show: Boolean) {
@@ -404,4 +403,3 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
             })
     }
 }
-

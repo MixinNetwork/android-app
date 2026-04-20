@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package one.mixin.android.ui.wallet
 
 import android.content.SharedPreferences
@@ -7,17 +5,17 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.ExperimentalPagingApi
-import androidx.paging.LivePagedListBuilder
-import androidx.paging.PagedList
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import androidx.paging.map
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
@@ -162,30 +160,32 @@ internal constructor(
     fun addresses(id: String) = tokenRepository.addresses(id)
 
     fun allSnapshots(
-        initialLoadKey: Int? = 0,
         filterParams: FilterParams,
-    ): LiveData<PagedList<SnapshotItem>> =
-        LivePagedListBuilder(
-            tokenRepository.allSnapshots(filterParams),
-            PagedList.Config.Builder()
-                .setPrefetchDistance(PAGE_SIZE * 2)
-                .setPageSize(PAGE_SIZE)
-                .setEnablePlaceholders(true)
-                .build(),
-        ).setInitialLoadKey(initialLoadKey).build()
+    ): Flow<PagingData<SnapshotItem>> =
+        Pager(
+            config = PagingConfig(
+                pageSize = PAGE_SIZE,
+                prefetchDistance = PAGE_SIZE * 2,
+                enablePlaceholders = true,
+            ),
+            pagingSourceFactory = { tokenRepository.snapshotsPagingSource(filterParams) }
+        ).flow.map { pagingData ->
+            pagingData.map { tokenRepository.mapSnapshotItem(it) }
+        }.cachedIn(viewModelScope)
 
     fun allWeb3Transaction(
-        initialLoadKey: Int? = 0,
         filterParams: Web3FilterParams,
-    ): LiveData<PagedList<Web3TransactionItem>> =
-        LivePagedListBuilder(
-            web3Repository.allWeb3Transaction(filterParams),
-            PagedList.Config.Builder()
-                .setPrefetchDistance(PAGE_SIZE * 2)
-                .setPageSize(PAGE_SIZE)
-                .setEnablePlaceholders(true)
-                .build(),
-        ).setInitialLoadKey(initialLoadKey).build()
+    ): Flow<PagingData<Web3TransactionItem>> =
+        Pager(
+            config = PagingConfig(
+                pageSize = PAGE_SIZE,
+                prefetchDistance = PAGE_SIZE * 2,
+                enablePlaceholders = true,
+            ),
+            pagingSourceFactory = { web3Repository.web3TransactionPagingSource(filterParams) }
+        ).flow.map { pagingData ->
+            pagingData.map { web3Repository.mapWeb3Transaction(it, filterParams.walletId) }
+        }.cachedIn(viewModelScope)
 
     suspend fun allPendingDeposit() = tokenRepository.allPendingDeposit()
 
