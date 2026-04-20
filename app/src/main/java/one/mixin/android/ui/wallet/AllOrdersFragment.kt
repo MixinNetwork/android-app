@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.view.Gravity
 import android.view.View
 import android.view.View.VISIBLE
+import androidx.core.view.isGone
+import androidx.core.view.isVisible
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.TextView
@@ -238,11 +240,11 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
     private fun showEmpty(show: Boolean) {
         binding.apply {
             if (show) {
-                if (empty.root.visibility == View.GONE) empty.root.visibility = View.VISIBLE
-                if (transactionsRv.visibility == View.VISIBLE) transactionsRv.visibility = View.GONE
+                if (empty.root.isGone) empty.root.isVisible = true
+                if (transactionsRv.isVisible) transactionsRv.isGone = true
             } else {
-                if (empty.root.visibility == View.VISIBLE) empty.root.visibility = View.GONE
-                if (transactionsRv.visibility == View.GONE) transactionsRv.visibility = View.VISIBLE
+                if (empty.root.isVisible) empty.root.isGone = true
+                if (transactionsRv.isGone) transactionsRv.isVisible = true
             }
         }
     }
