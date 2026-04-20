@@ -35,7 +35,6 @@ import one.mixin.android.db.web3.vo.WalletItem
 import one.mixin.android.db.web3.vo.Web3Chain
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
-import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.event.WalletOperationType
 import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.escapeSql
