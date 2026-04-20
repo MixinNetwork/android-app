@@ -71,7 +71,7 @@ class PositionDetailFragment : BaseFragment() {
                     darkTheme = context.isNightMode(),
                 ) {
                     if (position != null) {
-                        val lifecycleOwner = LocalLifecycleOwner.current
+                        val lifecycleOwner = viewLifecycleOwner
                         val positionFlow = remember(position.positionId) {
                             viewModel.observePosition(position.positionId)
                         }

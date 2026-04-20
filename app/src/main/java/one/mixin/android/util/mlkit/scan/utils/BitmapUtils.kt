@@ -8,7 +8,7 @@ import android.graphics.ImageFormat
 import android.graphics.Matrix
 import android.graphics.Rect
 import android.graphics.YuvImage
-import android.media.ExifInterface
+import androidx.exifinterface.media.ExifInterface
 import android.media.Image.Plane
 import android.net.Uri
 import android.os.Build
