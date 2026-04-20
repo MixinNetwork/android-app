@@ -170,7 +170,7 @@ internal constructor(
             pagingSourceFactory = { tokenRepository.snapshotsPagingSource(filterParams) }
         ).flow.map { pagingData ->
             pagingData.map { tokenRepository.mapSnapshotItem(it) }
-        }.cachedIn(viewModelScope)
+        }
 
     fun allWeb3Transaction(
         filterParams: Web3FilterParams,
@@ -184,7 +184,7 @@ internal constructor(
             pagingSourceFactory = { web3Repository.web3TransactionPagingSource(filterParams) }
         ).flow.map { pagingData ->
             pagingData.map { web3Repository.mapWeb3Transaction(it, filterParams.walletId) }
-        }.cachedIn(viewModelScope)
+        }
 
     suspend fun allPendingDeposit() = tokenRepository.allPendingDeposit()
 

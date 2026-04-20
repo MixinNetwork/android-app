@@ -151,7 +151,6 @@ class AllTransactionsFragment : BaseTransactionsFragment(R.layout.fragment_all_t
             }
         }
 
-        bindLiveData()
         binding.apply {
             filterType.setOnClickListener {
                 filterType.open()

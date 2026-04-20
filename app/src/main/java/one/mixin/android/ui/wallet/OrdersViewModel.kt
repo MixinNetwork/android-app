@@ -1,11 +1,9 @@
 package one.mixin.android.ui.wallet
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -31,7 +29,7 @@ class OrdersViewModel @Inject constructor(
                 enablePlaceholders = true,
             ),
             pagingSourceFactory = { LimitOrderDataProvider.allOrders(database, filterParams) }
-        ).flow.cachedIn(viewModelScope)
+        ).flow
     }
 
     suspend fun refreshPendingOrders(): Boolean = withContext(Dispatchers.IO) {

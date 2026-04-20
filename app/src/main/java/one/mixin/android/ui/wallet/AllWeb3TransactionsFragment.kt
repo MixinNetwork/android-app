@@ -130,7 +130,6 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment(R.layout.fragment_a
             }
         }
 
-        bindLiveData()
         binding.apply {
             filterType.setOnClickListener {
                 filterType.open()
