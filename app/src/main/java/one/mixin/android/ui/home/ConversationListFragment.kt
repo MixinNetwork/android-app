@@ -757,6 +757,7 @@ class ConversationListFragment : LinkFragment() {
             this.circleId = circleId
         }
         lifecycleScope.launch {
+            if (!isAdded || parentFragmentManager.isStateSaved) return@launch
             val blockedByPhoneFlow = parentFragmentManager.fragments.any {
                 it.tag in listOf(AddPhoneBeforeFragment.TAG, VerifyFragment.TAG, VerificationFragment.TAG, MobileFragment.TAG)
             }
