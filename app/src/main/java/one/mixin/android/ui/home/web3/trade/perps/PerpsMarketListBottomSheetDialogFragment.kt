@@ -127,9 +127,7 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
             updateList(allMarkets)
         } else {
             val filtered = allMarkets.filter { market ->
-                market.displaySymbol.contains(query, ignoreCase = true) ||
-                market.tokenSymbol.contains(query, ignoreCase = true) ||
-                market.quoteSymbol.contains(query, ignoreCase = true)
+                market.tokenSymbol.contains(query, ignoreCase = true)
             }
             updateList(filtered)
         }
