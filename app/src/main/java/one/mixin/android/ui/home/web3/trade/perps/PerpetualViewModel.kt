@@ -96,7 +96,7 @@ class PerpetualViewModel @Inject constructor(
                 }
                 
                 val response = withContext(Dispatchers.IO) {
-                    routeService.getPerpsMarkets(offset = 0, limit = 100)
+                    routeService.getPerpsMarkets()
                 }
                 
                 val data = response.data
@@ -140,7 +140,7 @@ class PerpetualViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val response = withContext(Dispatchers.IO) {
-                    routeService.getPerpsMarkets(offset = 0, limit = 100)
+                    routeService.getPerpsMarkets()
                 }
 
                 val data = response.data

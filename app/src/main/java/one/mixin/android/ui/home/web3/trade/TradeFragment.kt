@@ -91,6 +91,9 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.Rpc
+import one.mixin.android.web3.SOLANA_RENT_EXEMPTION
+import one.mixin.android.web3.isNativeSolAsset
+import one.mixin.android.web3.requiredSolBalance
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.receive.Web3AddressFragment
@@ -209,7 +212,7 @@ class TradeFragment : BaseFragment() {
     ): View {
         initAmount()
         lifecycleScope.launch {
-            val chainIds = walletId?.let {
+            val chainIds = walletId?.let { it ->
                 swapViewModel.getAddresses(it).map {
                     it.chainId
                 }
@@ -547,7 +550,12 @@ class TradeFragment : BaseFragment() {
                                 } else {
                                     Constants.ChainId.ETHEREUM_CHAIN_ID
                                 }) ?: return@launch
-                            val address = if (t.isSolanaChain()) { Web3Signer.solanaAddress } else { Web3Signer.evmAddress }
+                            val address =
+                                when (t.chainId) {
+                                    Constants.ChainId.SOLANA_CHAIN_ID -> Web3Signer.solanaAddress
+                                    Constants.ChainId.BITCOIN_CHAIN_ID -> Web3Signer.btcAddress
+                                    else -> Web3Signer.evmAddress
+                                }
                             navTo(Web3AddressFragment.newInstance(t, address), Web3AddressFragment.TAG)
                             dismissNow()
                         }
@@ -713,14 +721,19 @@ class TradeFragment : BaseFragment() {
                         quote.payload,
                         getSource(),
                         if (inMixin()) null else {
-                            if (to.chain.chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
-                                Web3Signer.solanaAddress
-                            } else if (to.chain.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-                                Web3Signer.btcAddress
-                            } else if (to.chain.chainId in Constants.Web3EvmChainIds) {
-                                Web3Signer.evmAddress
-                            } else {
-                                null
+                            when (to.chain.chainId) {
+                                Constants.ChainId.SOLANA_CHAIN_ID -> {
+                                    Web3Signer.solanaAddress
+                                }
+                                Constants.ChainId.BITCOIN_CHAIN_ID -> {
+                                    Web3Signer.btcAddress
+                                }
+                                in Constants.Web3EvmChainIds -> {
+                                    Web3Signer.evmAddress
+                                }
+                                else -> {
+                                    null
+                                }
                             }
                         },
                         getReferral(),
@@ -839,6 +852,7 @@ class TradeFragment : BaseFragment() {
             ?: return FeeCheckResult(true)
         val transferAmount = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
         val sameAssetFee = token.assetId == chainToken.assetId && token.chainId == chainToken.chainId
+        val usesSolRentRule = chainToken.isNativeSolAsset()
 
         if (allowGasless && token.chainId != Constants.ChainId.BITCOIN_CHAIN_ID) {
             val gaslessPrepared = runCatching {
@@ -879,20 +893,48 @@ class TradeFragment : BaseFragment() {
         )
         val fee = estimate.fee
         if (fee == null) {
-            val insufficientByFullBalanceFallback = sameAssetFee && transferAmount >= chainBalance
+            val fallbackRequiredBalance = if (usesSolRentRule) {
+                requiredSolBalance(
+                    transferAmount = transferAmount,
+                    solFee = BigDecimal.ZERO,
+                    sendingNativeSol = token.isNativeSolAsset(),
+                )
+            } else if (sameAssetFee) {
+                transferAmount
+            } else {
+                BigDecimal.ZERO
+            }
+            val insufficientByFullBalanceFallback =
+                if (usesSolRentRule) {
+                    fallbackRequiredBalance >= chainBalance
+                } else {
+                    sameAssetFee && fallbackRequiredBalance >= chainBalance
+                }
             if (!insufficientByFullBalanceFallback) {
                 return FeeCheckResult(true)
             }
+            val effectiveFee = if (usesSolRentRule) SOLANA_RENT_EXEMPTION else BigDecimal.ZERO
             TransferWeb3BalanceErrorBottomSheetDialogFragment.newInstance(
                 Web3TokenFeeItem(
                     token = chainToken,
-                    amount = transferAmount,
-                    fee = BigDecimal.ZERO,
+                    amount = if (token.isNativeSolAsset()) transferAmount else BigDecimal.ZERO,
+                    fee = effectiveFee,
                 )
             ).showNow(parentFragmentManager, TransferWeb3BalanceErrorBottomSheetDialogFragment.TAG)
             return FeeCheckResult(false)
         }
-        val requiredBalance = if (sameAssetFee) transferAmount + fee else fee
+        val effectiveFee = if (usesSolRentRule) fee + SOLANA_RENT_EXEMPTION else fee
+        val requiredBalance = if (usesSolRentRule) {
+            requiredSolBalance(
+                transferAmount = transferAmount,
+                solFee = fee,
+                sendingNativeSol = token.isNativeSolAsset(),
+            )
+        } else if (sameAssetFee) {
+            transferAmount + fee
+        } else {
+            fee
+        }
 
         if (requiredBalance <= chainBalance) {
             return FeeCheckResult(true, estimate.swapPreviewData)
@@ -901,8 +943,8 @@ class TradeFragment : BaseFragment() {
         TransferWeb3BalanceErrorBottomSheetDialogFragment.newInstance(
             Web3TokenFeeItem(
                 token = chainToken,
-                amount = if (sameAssetFee) transferAmount else BigDecimal.ZERO,
-                fee = fee,
+                amount = if (token.isNativeSolAsset()) transferAmount else BigDecimal.ZERO,
+                fee = effectiveFee,
             )
         ).showNow(parentFragmentManager, TransferWeb3BalanceErrorBottomSheetDialogFragment.TAG)
         return FeeCheckResult(false)
