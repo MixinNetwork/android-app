@@ -3,9 +3,11 @@ package one.mixin.android.ui.wallet.fiatmoney
 import one.mixin.android.Constants.RouteConfig.REFERRAL_BOT_USER_ID
 import one.mixin.android.Constants.Scheme.HTTPS_REFERRALS
 import one.mixin.android.api.response.referral.ReferralCode
+import one.mixin.android.api.response.referral.ReferralResponse
 import one.mixin.android.api.service.ReferralService
 import one.mixin.android.repository.UserRepository
 import java.io.Serializable
+import java.math.BigDecimal
 import timber.log.Timber
 
 data class ReferralShareInfo(
@@ -29,10 +31,12 @@ suspend fun fetchDefaultReferralShareInfoOrNull(
     return requestReferralMixinAPI(
         invokeNetwork = { referralService.referral() },
         successBlock = { response ->
-            response.data?.codes
-                ?.firstOrNull { it.isDefault }
-                ?.toReferralShareInfo()
-                ?: response.data?.codes?.firstOrNull()?.toReferralShareInfo()
+            response.data?.let { referralResponse ->
+                referralResponse.codes
+                    .firstOrNull { it.isDefault }
+                    ?.toReferralShareInfo(referralResponse)
+                    ?: referralResponse.codes.firstOrNull()?.toReferralShareInfo(referralResponse)
+            }
         },
         failureBlock = { response ->
             Timber.d(
@@ -51,20 +55,31 @@ suspend fun fetchDefaultReferralShareInfoOrNull(
     )
 }
 
-private fun ReferralCode.toReferralShareInfo(): ReferralShareInfo {
+private fun ReferralCode.toReferralShareInfo(referralResponse: ReferralResponse): ReferralShareInfo {
     return ReferralShareInfo(
         code = code,
-        rebatePercent = inviterPercent.toRebatePercent(),
+        rebatePercent = calculateRebatePercent(
+            tradingCommissionRatio = referralResponse.tradingCommissionRatio,
+            inviterPercent = inviterPercent,
+        ),
     )
 }
 
-private fun String?.toRebatePercent(): String {
-    val normalized = this?.trim().orEmpty()
-    return when {
-        normalized.isEmpty() -> DEFAULT_REBATE_PERCENT
-        normalized.endsWith("%") -> normalized
-        else -> "$normalized%"
-    }
+private fun calculateRebatePercent(
+    tradingCommissionRatio: String?,
+    inviterPercent: String?,
+): String {
+    val tradingRatio = tradingCommissionRatio?.trim()?.toBigDecimalOrNull()
+    val inviterRatio = inviterPercent?.trim()?.toBigDecimalOrNull()
+    if (tradingRatio == null || inviterRatio == null) return DEFAULT_REBATE_PERCENT
+
+    val percent = tradingRatio
+        .multiply((BigDecimal.ONE - inviterRatio).coerceAtLeast(BigDecimal.ZERO))
+        .multiply(HUNDRED)
+        .stripTrailingZeros()
+        .toPlainString()
+    return "$percent%"
 }
 
 private const val DEFAULT_REBATE_PERCENT = "20%"
+private val HUNDRED = BigDecimal("100")

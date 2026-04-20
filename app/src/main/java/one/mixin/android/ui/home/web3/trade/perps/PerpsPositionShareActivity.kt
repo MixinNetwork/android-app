@@ -237,8 +237,11 @@ class PerpsPositionShareActivity : BaseActivity() {
     private fun bindFooter() {
         if (referralShareInfo != null) {
             binding.title.text = referralShareInfo?.code
-            binding.shareDescTv.text = buildReferralDescription(referralShareInfo!!.rebatePercent)
+            val rebatePercent = referralShareInfo!!.rebatePercent
+            binding.shareDescTv.minLines = if (rebatePercent.isZeroPercent()) 2 else 1
+            binding.shareDescTv.text = buildReferralDescription(rebatePercent)
         } else {
+            binding.shareDescTv.minLines = 1
             binding.title.text = getString(R.string.mixin_messenger)
             binding.shareDescTv.text = getString(R.string.share_desc)
         }
@@ -248,7 +251,10 @@ class PerpsPositionShareActivity : BaseActivity() {
 
     private fun currentQrUrl(): String = referralCode?.let(::buildReferralShareUrl) ?: SHARE_QR_URL
 
-    private fun buildReferralDescription(rebatePercent: String): SpannableString {
+    private fun buildReferralDescription(rebatePercent: String): CharSequence {
+        if (rebatePercent.isZeroPercent()) {
+            return getString(R.string.referral_share_desc_zero)
+        }
         val text = getString(R.string.referral_share_desc, rebatePercent)
         val start = text.indexOf(rebatePercent)
         return SpannableString(text).apply {
@@ -267,6 +273,11 @@ class PerpsPositionShareActivity : BaseActivity() {
                 )
             }
         }
+    }
+
+    private fun String.isZeroPercent(): Boolean {
+        val normalized = removeSuffix("%").trim()
+        return normalized.toBigDecimalOrNull()?.compareTo(BigDecimal.ZERO) == 0
     }
 
     private fun applyFadeInAnimation(view: View) {

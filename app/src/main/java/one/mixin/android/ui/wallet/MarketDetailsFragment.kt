@@ -32,8 +32,10 @@ import one.mixin.android.extension.priceFormat2
 import one.mixin.android.extension.setQuoteText
 import one.mixin.android.extension.setQuoteTextWithBackgroud
 import one.mixin.android.extension.toast
+import one.mixin.android.api.service.ReferralService
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshMarketJob
+import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.market.Market
 import one.mixin.android.ui.home.web3.market.DepositTokensBottomSheetDialogFragment
@@ -41,6 +43,7 @@ import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.ARGS_INPUT
 import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.ARGS_OUTPUT
 import one.mixin.android.ui.wallet.alert.AlertFragment.Companion.ARGS_COIN
 import one.mixin.android.ui.wallet.alert.AlertFragment.Companion.ARGS_GO_ALERT
+import one.mixin.android.ui.wallet.fiatmoney.fetchDefaultReferralShareInfoOrNull
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
@@ -64,6 +67,12 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
 
     @Inject
     lateinit var jobManager: MixinJobManager
+
+    @Inject
+    lateinit var referralService: ReferralService
+
+    @Inject
+    lateinit var userRepository: UserRepository
 
     private val walletViewModel by viewModels<WalletViewModel>()
 
@@ -97,12 +106,28 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                 }
                 rightIb.setOnClickListener {
                     if (!isLoading || marketItem.coinId.isBlank()) {
-                        MarketShareActivity.show(
-                            requireContext(),
-                            captureMarketShareBitmap(),
-                            marketItem.symbol,
-                            marketItem.coinId,
-                        )
+                        viewLifecycleOwner.lifecycleScope.launch {
+                            val dialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                                setCancelable(false)
+                            }
+                            dialog.show()
+                            try {
+                                val referralShareInfo = fetchDefaultReferralShareInfoOrNull(
+                                    referralService = referralService,
+                                    userRepository = userRepository,
+                                    logLabel = "market share",
+                                )
+                                MarketShareActivity.show(
+                                    requireContext(),
+                                    captureMarketShareBitmap(),
+                                    marketItem.symbol,
+                                    marketItem.coinId,
+                                    referralShareInfo,
+                                )
+                            } finally {
+                                dialog.dismiss()
+                            }
+                        }
                     } else toast(R.string.Please_wait_a_bit)
                 }
             }
