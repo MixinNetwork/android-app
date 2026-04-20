@@ -71,7 +71,8 @@ import one.mixin.android.extension.tickVibrate
 fun SetupPinPage(
     next: (String) -> Unit,
     errorMessage: String = "",
-    onRetry: (() -> Unit)? = null
+    onRetry: (() -> Unit)? = null,
+    onTopBarLongClick: (() -> Unit)? = null,
 ) {
     val context = LocalContext.current
     var size by remember { mutableStateOf(IntSize.Zero) }
@@ -119,6 +120,7 @@ fun SetupPinPage(
     PageScaffold(
         title = "",
         verticalScrollable = false,
+        onTopBarLongClick = onTopBarLongClick,
         actions = {
             IconButton(onClick = {
                 context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)

@@ -48,6 +48,7 @@ fun QuizPage(
     next: () -> Unit,
     pop: (() -> Unit)? = null,
     onShowResultBottomSheet: (Boolean, () -> Unit, () -> Unit) -> Unit,
+    onTopBarLongClick: (() -> Unit)? = null,
 ) {
     val context = LocalContext.current
     var selectedOption by remember { mutableStateOf(-1) }
@@ -56,6 +57,7 @@ fun QuizPage(
         PageScaffold(
             title = "",
             verticalScrollable = false,
+            onTopBarLongClick = onTopBarLongClick,
             actions = {
                 IconButton(onClick = {
                     context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
