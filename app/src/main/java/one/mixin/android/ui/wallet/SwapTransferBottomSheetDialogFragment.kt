@@ -1288,7 +1288,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
             account = fromAddress,
             assetId = token.assetId,
             amount = amount.stripAmountZero(),
-            fee = "0",
+            fee = "",
             to = toAddress,
             nonce = ethPayload.userOperation.nonce,
             createdAt = now,
