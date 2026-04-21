@@ -6,13 +6,13 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.annotation.AttrRes
 import androidx.core.view.isVisible
+import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.databinding.ItemClosedPositionListBinding
 import one.mixin.android.extension.loadImage
-import one.mixin.android.ui.common.recyclerview.SafePagedListAdapter
 import one.mixin.android.ui.home.web3.trade.perps.calculateClosedRoe
 import one.mixin.android.ui.home.web3.trade.perps.formatPerpsSignedFiatDecimal
 import one.mixin.android.ui.home.web3.trade.perps.formatPerpsSignedPercent
@@ -22,7 +22,7 @@ import java.math.BigDecimal
 class ClosedPositionAdapter(
     private val isQuoteColorReversed: Boolean = false,
     private val onItemClick: ((PerpsPositionHistoryItem) -> Unit)? = null
-) : SafePagedListAdapter<PerpsPositionHistoryItem, ClosedPositionAdapter.ViewHolder>(DiffCallback()) {
+) : PagingDataAdapter<PerpsPositionHistoryItem, ClosedPositionAdapter.ViewHolder>(DiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(

@@ -118,7 +118,6 @@ import kotlin.math.max
 class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionClicker {
     companion object {
         const val TAG = "InputFragment"
-        private const val GASLESS_EIP7702_AUTHORIZED_ADDRESS = "0xe6cae83bde06e4c305530e199d7217f42808555b"
         const val ARGS_TO_ADDRESS = "args_to_address"
         const val ARGS_FROM_ADDRESS = "args_from_address"
         const val ARGS_TO_ADDRESS_TAG = "args_to_address_tag"
@@ -2060,7 +2059,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             account = fromAddress,
             assetId = token.assetId,
             amount = amount,
-            fee = requireNotNull(currentGaslessFee).fee.stripAmountZero(),
+            fee = "",
             to = toAddress,
             raw = rawTx,
             createdAt = now,
@@ -2098,18 +2097,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             message = ethPayload.signing.userOperation.message,
             type = JsSignMessage.TYPE_GASLESS_TRANSFER,
         )
-        val eip7702AuthSignature = ethPayload.signing.eip7702Auth
-            ?.takeIf { it.required }
-            ?.let { auth ->
-                if (!auth.address.equals(GASLESS_EIP7702_AUTHORIZED_ADDRESS, ignoreCase = true)) {
-                    throw IllegalArgumentException("Unsupported EIP-7702 auth target")
-                }
-                Web3Signer.signEthMessage(
-                    priv = privateKey,
-                    message = auth.message,
-                    type = JsSignMessage.TYPE_GASLESS_TRANSFER,
-                )
-            }
+        val eip7702AuthSignature = Web3Signer.signEip7702Auth(privateKey, ethPayload.signing.eip7702Auth)
         val response = web3ViewModel.submitGaslessTx(
             SubmitGaslessTxRequest(
                 chainId = chainId,
@@ -2129,7 +2117,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             account = fromAddress,
             assetId = token.assetId,
             amount = amount,
-            fee = requireNotNull(currentGaslessFee).fee.stripAmountZero(),
+            fee = "",
             to = toAddress,
             nonce = ethPayload.userOperation.nonce,
             createdAt = now,

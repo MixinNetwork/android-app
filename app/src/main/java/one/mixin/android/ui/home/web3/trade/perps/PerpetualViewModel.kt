@@ -1,10 +1,11 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.LivePagedListBuilder
-import androidx.paging.PagedList
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -517,29 +518,28 @@ class PerpetualViewModel @Inject constructor(
         return perpsPositionHistoryDao.observeTotalClosedEntryValue()
     }
 
-    fun getOpenPositionsPaged(walletId: String, initialLoadKey: Int? = 0): LiveData<PagedList<PerpsPositionItem>> {
-        val config = PagedList.Config.Builder()
-            .setPrefetchDistance(Constants.PAGE_SIZE * 2)
-            .setPageSize(Constants.PAGE_SIZE)
-            .setEnablePlaceholders(false)
-            .build()
-        return LivePagedListBuilder(perpsPositionDao.getOpenPositionsPaged(walletId), config)
-            .setInitialLoadKey(initialLoadKey)
-            .build()
+    fun getOpenPositionsPaged(walletId: String): Flow<PagingData<PerpsPositionItem>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = Constants.PAGE_SIZE,
+                prefetchDistance = Constants.PAGE_SIZE * 2,
+                enablePlaceholders = false,
+            ),
+        ) {
+            perpsPositionDao.getOpenPositionsPaged(walletId)
+        }.flow.cachedIn(viewModelScope)
     }
 
-    fun getClosedPositionsPaged(
-        walletId: String,
-        initialLoadKey: Int? = 0
-    ): LiveData<PagedList<PerpsPositionHistoryItem>> {
-        val config = PagedList.Config.Builder()
-            .setPrefetchDistance(Constants.PAGE_SIZE * 2)
-            .setPageSize(Constants.PAGE_SIZE)
-            .setEnablePlaceholders(false)
-            .build()
-        return LivePagedListBuilder(perpsPositionHistoryDao.getHistoriesPaged(), config)
-            .setInitialLoadKey(initialLoadKey)
-            .build()
+    fun getClosedPositionsPaged(walletId: String): Flow<PagingData<PerpsPositionHistoryItem>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = Constants.PAGE_SIZE,
+                prefetchDistance = Constants.PAGE_SIZE * 2,
+                enablePlaceholders = false,
+            ),
+        ) {
+            perpsPositionHistoryDao.getHistoriesPaged()
+        }.flow.cachedIn(viewModelScope)
     }
 
     fun loadOpenPositions(walletId: String, onSuccess: (List<PerpsPositionItem>) -> Unit) {
