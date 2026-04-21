@@ -6,6 +6,8 @@ import one.mixin.android.Constants.ChainId.BITCOIN_CHAIN_ID
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.api.response.web3.EIP7702SignRequest
+import one.mixin.android.api.response.web3.shouldSign
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.db.web3.vo.WalletItem
 import one.mixin.android.db.web3.vo.Web3Address
@@ -59,6 +61,7 @@ object Web3Signer {
     }
 
     private const val TAG = "Web3Signer"
+    private const val GASLESS_EIP7702_AUTHORIZED_ADDRESS = "0xe6cae83bde06e4c305530e199d7217f42808555b"
 
     private val sp by lazy {
         MixinApplication.appContext.defaultSharedPreferences
@@ -470,6 +473,25 @@ object Web3Signer {
                 signature = sig.encodeToBase58String(),
             )
         return GsonHelper.customGson.toJson(signInOutput).toHex()
+    }
+
+    fun signEip7702Auth(
+        priv: ByteArray,
+        eip7702Auth: EIP7702SignRequest?,
+    ): String? {
+        return eip7702Auth
+            ?.takeIf { it.shouldSign }
+            ?.let { auth ->
+                val message = requireNotNull(auth.message) { "Missing EIP-7702 auth message" }
+                if (!auth.address.equals(GASLESS_EIP7702_AUTHORIZED_ADDRESS, ignoreCase = true)) {
+                    throw IllegalArgumentException("Unsupported EIP-7702 auth target")
+                }
+                signEthMessage(
+                    priv = priv,
+                    message = message,
+                    type = JsSignMessage.TYPE_GASLESS_TRANSFER,
+                )
+            }
     }
 
     private fun throwError(

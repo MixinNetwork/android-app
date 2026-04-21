@@ -141,7 +141,6 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
 
     companion object {
         const val TAG = "LimitTransferBottomSheetDialogFragment"
-        private const val GASLESS_EIP7702_AUTHORIZED_ADDRESS = "0xe6cae83bde06e4c305530e199d7217f42808555b"
         private const val ARGS_LINK = "args_link"
         private const val ARGS_IN_AMOUNT = "args_in_amount"
         private const val ARGS_IN_ASSET = "args_in_asset"
@@ -937,18 +936,7 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             message = ethPayload.signing.userOperation.message,
             type = JsSignMessage.TYPE_GASLESS_TRANSFER,
         )
-        val eip7702AuthSignature = ethPayload.signing.eip7702Auth
-            ?.takeIf { it.required }
-            ?.let { auth ->
-                if (!auth.address.equals(GASLESS_EIP7702_AUTHORIZED_ADDRESS, ignoreCase = true)) {
-                    throw IllegalArgumentException("Unsupported EIP-7702 auth target")
-                }
-                Web3Signer.signEthMessage(
-                    priv = privateKey,
-                    message = auth.message,
-                    type = JsSignMessage.TYPE_GASLESS_TRANSFER,
-                )
-            }
+        val eip7702AuthSignature = Web3Signer.signEip7702Auth(privateKey, ethPayload.signing.eip7702Auth)
         val response = web3ViewModel.submitGaslessTx(
             SubmitGaslessTxRequest(
                 chainId = chainId,
