@@ -2,9 +2,6 @@ package one.mixin.android.web3.js
 
 import okio.Buffer
 import one.mixin.android.Constants
-import one.mixin.android.Constants.Account.ChainAddress.BTC_ADDRESS
-import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
-import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.Constants.ChainId.BITCOIN_CHAIN_ID
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.MixinApplication
@@ -199,7 +196,7 @@ object Web3Signer {
         persist()
     }
 
-    private suspend fun updateAddressesAndPaths(
+    private fun updateAddressesAndPaths(
         walletId: String,
         queryAddress: (String) -> List<Web3Address>,
     ) {
@@ -215,10 +212,10 @@ object Web3Signer {
             btcAddress = addresses.firstOrNull {it.chainId == BITCOIN_CHAIN_ID}?.destination ?:""
             address = evmAddress
         } else {
-            evmAddress = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
-            solanaAddress = PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
-            btcAddress = PropertyHelper.findValueByKey(BTC_ADDRESS, "")
-            address = evmAddress
+            evmAddress = ""
+            solanaAddress = ""
+            btcAddress = ""
+            address = ""
             path = ""
         }
 

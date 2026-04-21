@@ -154,7 +154,11 @@ fun SetPinLoadingPage(
                             .height(48.dp),
                         onClick = {
                             coroutineScope.launch {
-                                viewModel.executeCreatePin(context, pin)
+                                viewModel.executeCreatePin(
+                                    context = context,
+                                    pin = pin,
+                                    preserveRetryRegisterStep = tipStep is RetryRegister,
+                                )
                             }
                         },
                         colors = ButtonDefaults.outlinedButtonColors(

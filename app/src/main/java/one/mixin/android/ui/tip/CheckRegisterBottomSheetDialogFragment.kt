@@ -8,8 +8,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
-import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.R
@@ -21,7 +19,6 @@ import one.mixin.android.api.service.AccountService
 import one.mixin.android.crypto.initFromSeedAndSign
 import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.databinding.FragmentCheckRegisterBottomSheetBinding
-import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.event.TipEvent
 import one.mixin.android.extension.hexString
 import one.mixin.android.extension.toHex
@@ -204,18 +201,15 @@ class CheckRegisterBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
                         ),
                 )
             if (resp.isSuccess) {
+                val account = requireNotNull(resp.data) { "required account can not be null" }
+                Session.storeAccount(account)
                 val solAddress = bottomViewModel.getTipAddress(requireContext(), pin, SOLANA_CHAIN_ID)
-                PropertyHelper.updateKeyValue(SOLANA_ADDRESS, solAddress)
                 Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Solana.name, solAddress)
                 val evmAddress = bottomViewModel.getTipAddress(requireContext(), pin, ETHEREUM_CHAIN_ID)
-                PropertyHelper.updateKeyValue(EVM_ADDRESS, evmAddress)
                 Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Ethereum.name, evmAddress)
-                resp.data?.let { account ->
-                    Session.storeAccount(account)
-                    dismiss()
-                    AnalyticsTracker.trackLoginEnd()
-                    toast(R.string.Successful)
-                }
+                dismiss()
+                AnalyticsTracker.trackLoginEnd()
+                toast(R.string.Successful)
             } else {
                 val error = requireNotNull(resp.error)
                 val errorCode = error.code

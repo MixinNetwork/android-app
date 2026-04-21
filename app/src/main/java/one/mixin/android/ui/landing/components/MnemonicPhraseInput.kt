@@ -139,6 +139,10 @@ fun MnemonicPhraseInput(
     val focusManager = LocalFocusManager.current
     var currentText by remember { mutableStateOf("") }
     var focusIndex by remember { mutableIntStateOf(-1) }
+    fun hideInputMethod() {
+        focusManager.clearFocus(force = true)
+        keyboardController?.hide()
+    }
     MixinAppTheme {
         KeyboardAwareBox(
             modifier = Modifier.fillMaxSize(),
@@ -463,7 +467,10 @@ fun MnemonicPhraseInput(
                                                             return@KeyboardActions
                                                         }
                                                         when (state) {
-                                                            MnemonicState.Input -> onComplete.invoke(words)
+                                                            MnemonicState.Input -> {
+                                                                hideInputMethod()
+                                                                onComplete.invoke(words)
+                                                            }
                                                             MnemonicState.Import -> {
                                                                 val valid = (!legacy && words.size == 12 && isMnemonicValid(words)) ||
                                                                         (legacy && words.size == 24 && isMnemonicValid(words))
@@ -722,7 +729,10 @@ fun MnemonicPhraseInput(
                                         return@Button
                                     }
                                     when (state) {
-                                        MnemonicState.Input -> onComplete.invoke(words)
+                                        MnemonicState.Input -> {
+                                            hideInputMethod()
+                                            onComplete.invoke(words)
+                                        }
                                         MnemonicState.Import -> {
                                             val valid = (!legacy && words.size == 12 && isMnemonicValid(words)) ||
                                                     (legacy && words.size == 24 && isMnemonicValid(words))
