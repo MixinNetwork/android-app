@@ -2,7 +2,6 @@ package one.mixin.android.repository
 
 import android.os.CancellationSignal
 import androidx.lifecycle.LiveData
-import androidx.paging.DataSource
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
@@ -561,21 +560,23 @@ class TokenRepository
 
         fun usdAssetItemsWithBalance() = tokenDao.usdAssetItemsWithBalance(Constants.usdIds)
 
-        fun allSnapshots(filterParams: FilterParams): DataSource.Factory<Int, SnapshotItem> {
-            return safeSnapshotDao.getSnapshots(filterParams.buildQuery()).map {
-                if (!it.withdrawal?.receiver.isNullOrBlank()) {
-                    val receiver = it.withdrawal.receiver
-                    val index: Int = receiver.indexOf(":")
-                    if (index == -1) {
-                        it.label = addressDao.findAddressByDestination(receiver, "")
-                    } else {
-                        val destination: String = receiver.substring(0, index)
-                        val tag: String = receiver.substring(index + 1)
-                        it.label = addressDao.findAddressByDestination(destination, tag)
-                    }
+        fun snapshotsPagingSource(filterParams: FilterParams): PagingSource<Int, SnapshotItem> {
+            return safeSnapshotDao.getSnapshots(filterParams.buildQuery())
+        }
+
+        suspend fun mapSnapshotItem(item: SnapshotItem): SnapshotItem = withContext(Dispatchers.IO) {
+            if (!item.withdrawal?.receiver.isNullOrBlank()) {
+                val receiver = item.withdrawal.receiver
+                val index: Int = receiver.indexOf(":")
+                if (index == -1) {
+                    item.label = addressDao.findAddressByDestination(receiver, "")
+                } else {
+                    val destination: String = receiver.substring(0, index)
+                    val tag: String = receiver.substring(index + 1)
+                    item.label = addressDao.findAddressByDestination(destination, tag)
                 }
-                it
             }
+            item
         }
 
         suspend fun deleteAllWeb3Transactions() {

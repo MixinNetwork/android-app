@@ -5,24 +5,21 @@ import android.view.View
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.paging.PagedList
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.databinding.FragmentAllClosedPositionsBinding
 import one.mixin.android.db.perps.PerpsMarketDao
@@ -115,33 +112,14 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
     }
 
     private var positionType: PositionType = PositionType.CLOSED
-    private var openPositionsLiveData: LiveData<PagedList<PerpsPositionItem>>? = null
-    private var closedPositionsLiveData: LiveData<PagedList<PerpsPositionHistoryItem>>? = null
+    private var pagingJob: Job? = null
     private var totalValueJob: Job? = null
     private var previousOpenPositionsCount: Int? = null
-    
+
     private var lastOpenTotalMargin: Double = 0.0
     private var lastOpenTotalPnl: Double = 0.0
     private var lastClosedTotalPnl: Double = 0.0
     private var lastClosedTotalMargin: Double = 0.0
-
-    private val openPositionsObserver = Observer<PagedList<PerpsPositionItem>> { pagedList ->
-        binding.progressBar.isVisible = false
-        openPositionAdapter.submitList(pagedList)
-        val isEmpty = pagedList.isEmpty()
-        binding.emptyView.walletTransactionsEmpty.text = getString(R.string.No_Position)
-        binding.emptyView.helpAction.isVisible = isEmpty
-        binding.emptyView.root.isVisible = isEmpty
-    }
-
-    private val closedPositionsObserver = Observer<PagedList<PerpsPositionHistoryItem>> { pagedList ->
-        binding.progressBar.isVisible = false
-        closedPositionAdapter.submitList(pagedList)
-        val isEmpty = pagedList.isEmpty()
-        binding.emptyView.walletTransactionsEmpty.text = getString(R.string.No_Activity)
-        binding.emptyView.helpAction.isVisible = false
-        binding.emptyView.root.isVisible = isEmpty
-    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -179,10 +157,9 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
     }
 
     private fun loadPositions() {
-        openPositionsLiveData?.removeObservers(viewLifecycleOwner)
-        closedPositionsLiveData?.removeObservers(viewLifecycleOwner)
+        pagingJob?.cancel()
         totalValueJob?.cancel()
-        
+
         lastOpenTotalMargin = 0.0
         lastOpenTotalPnl = 0.0
         lastClosedTotalPnl = 0.0
@@ -213,8 +190,20 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
         totalValueAdapter.submitTotal(BigDecimal.ZERO)
         totalValueAdapter.submitSubtitle(BigDecimal.ZERO, BigDecimal.ZERO)
 
-        openPositionsLiveData = viewModel.getOpenPositionsPaged(walletId)
-        openPositionsLiveData?.observe(viewLifecycleOwner, openPositionsObserver)
+        pagingJob = viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.getOpenPositionsPaged(walletId).collectLatest { pagingData ->
+                binding.progressBar.isVisible = false
+                openPositionAdapter.submitData(pagingData)
+            }
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            openPositionAdapter.loadStateFlow.collectLatest { loadStates ->
+                val isEmpty = loadStates.refresh is androidx.paging.LoadState.NotLoading && openPositionAdapter.itemCount == 0
+                binding.emptyView.walletTransactionsEmpty.text = getString(R.string.No_Position)
+                binding.emptyView.helpAction.isVisible = isEmpty
+                binding.emptyView.root.isVisible = isEmpty
+            }
+        }
         observeOpenTotals(walletId)
     }
 
@@ -228,8 +217,20 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
         binding.emptyView.root.isVisible = false
         binding.emptyView.helpAction.isVisible = false
 
-        closedPositionsLiveData = viewModel.getClosedPositionsPaged(walletId)
-        closedPositionsLiveData?.observe(viewLifecycleOwner, closedPositionsObserver)
+        pagingJob = viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.getClosedPositionsPaged(walletId).collectLatest { pagingData ->
+                binding.progressBar.isVisible = false
+                closedPositionAdapter.submitData(pagingData)
+            }
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            closedPositionAdapter.loadStateFlow.collectLatest { loadStates ->
+                val isEmpty = loadStates.refresh is androidx.paging.LoadState.NotLoading && closedPositionAdapter.itemCount == 0
+                binding.emptyView.walletTransactionsEmpty.text = getString(R.string.No_Activity)
+                binding.emptyView.helpAction.isVisible = false
+                binding.emptyView.root.isVisible = isEmpty
+            }
+        }
     }
 
     private fun observeOpenTotals(walletId: String) {

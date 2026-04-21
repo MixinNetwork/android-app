@@ -121,6 +121,18 @@ class TipFlowInteractor @Inject internal constructor(
         onShowMessage: (String) -> Unit,
     ): Boolean {
         val pin: String = requireNotNull(tipBundle.pin) { "required pin can not be null" }
+        val retryRegister = tipBundle.tipStep as? RetryRegister
+        if (retryRegister != null) {
+            return handleProcessSuccess(
+                context = context,
+                tipBundle = tipBundle,
+                pin = pin,
+                tipPriv = retryRegister.tipPriv,
+                shouldOpenMainActivity = shouldOpenMainActivity,
+                onStepChanged = onStepChanged,
+                onShowMessage = onShowMessage,
+            )
+        }
         val oldPin: String? = tipBundle.oldPin
         val tipCounter = Session.getTipCounter()
         val deviceId = tipBundle.deviceId
@@ -309,11 +321,12 @@ class TipFlowInteractor @Inject internal constructor(
         )
         val registerResp = utxoService.registerPublicKey(registerRequest)
         if (registerResp.isSuccess) {
+            val account = requireNotNull(registerResp.data) { "required account can not be null" }
+            Session.storeAccount(account)
             val solAddress: String = getTipAddress(context, pin, SOLANA_CHAIN_ID)
             val evmAddress: String = getTipAddress(context, pin, ETHEREUM_CHAIN_ID)
             Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Solana.name, solAddress)
             Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Ethereum.name, evmAddress)
-            Session.storeAccount(requireNotNull(registerResp.data) { "required account can not be null" })
             createWallet(context, spendSeed)
             if (Session.hasPhone()) {
                 removeValueFromEncryptedPreferences(context, Constants.Tip.MNEMONIC)

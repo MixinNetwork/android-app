@@ -3,10 +3,12 @@ package one.mixin.android.repository
 import android.content.Context
 import androidx.lifecycle.liveData
 import androidx.lifecycle.switchMap
-import androidx.paging.DataSource
+import androidx.paging.PagingSource
 import androidx.room.RoomRawQuery
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.request.AddressSearchRequest
@@ -211,22 +213,24 @@ constructor(
             }
         }
 
-    fun allWeb3Transaction(filterParams: Web3FilterParams): DataSource.Factory<Int, Web3TransactionItem> {
-        return web3TransactionDao.allTransactions(filterParams.buildQuery()).map { transaction ->
-            val assetIds = transaction.senders.map { it.assetId } + transaction.receivers.map { it.assetId } + (transaction.approvals?.map { it.assetId } ?: emptyList())
-            val tokens = web3TokenDao.findWeb3TokenItemsByIdsSync(filterParams.walletId, assetIds.distinct()).associateBy { it.assetId }
-            transaction.copy(
-                senders = transaction.senders.map {
-                    it.copy(symbol = tokens[it.assetId]?.symbol)
-                },
-                receivers = transaction.receivers.map {
-                    it.copy(symbol = tokens[it.assetId]?.symbol)
-                },
-                approvals = transaction.approvals?.map {
-                    it.copy(symbol = tokens[it.assetId]?.symbol)
-                }
-            )
-        }
+    fun web3TransactionPagingSource(filterParams: Web3FilterParams): PagingSource<Int, Web3TransactionItem> {
+        return web3TransactionDao.allTransactions(filterParams.buildQuery())
+    }
+
+    suspend fun mapWeb3Transaction(transaction: Web3TransactionItem, walletId: String): Web3TransactionItem = withContext(Dispatchers.IO) {
+        val assetIds = transaction.senders.map { it.assetId } + transaction.receivers.map { it.assetId } + (transaction.approvals?.map { it.assetId } ?: emptyList())
+        val tokens = web3TokenDao.findWeb3TokenItemsByIdsSync(walletId, assetIds.distinct()).associateBy { it.assetId }
+        transaction.copy(
+            senders = transaction.senders.map {
+                it.copy(symbol = tokens[it.assetId]?.symbol)
+            },
+            receivers = transaction.receivers.map {
+                it.copy(symbol = tokens[it.assetId]?.symbol)
+            },
+            approvals = transaction.approvals?.map {
+                it.copy(symbol = tokens[it.assetId]?.symbol)
+            }
+        )
     }
 
     fun observeOutputsByAddress(address: String, assetId: String): Flow<List<WalletOutput>> {

@@ -201,16 +201,15 @@ class CheckRegisterBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
                         ),
                 )
             if (resp.isSuccess) {
+                val account = requireNotNull(resp.data) { "required account can not be null" }
+                Session.storeAccount(account)
                 val solAddress = bottomViewModel.getTipAddress(requireContext(), pin, SOLANA_CHAIN_ID)
                 Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Solana.name, solAddress)
                 val evmAddress = bottomViewModel.getTipAddress(requireContext(), pin, ETHEREUM_CHAIN_ID)
                 Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Ethereum.name, evmAddress)
-                resp.data?.let { account ->
-                    Session.storeAccount(account)
-                    dismiss()
-                    AnalyticsTracker.trackLoginEnd()
-                    toast(R.string.Successful)
-                }
+                dismiss()
+                AnalyticsTracker.trackLoginEnd()
+                toast(R.string.Successful)
             } else {
                 val error = requireNotNull(resp.error)
                 val errorCode = error.code

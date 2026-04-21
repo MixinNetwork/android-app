@@ -13,9 +13,8 @@ import androidx.appcompat.widget.ListPopupWindow
 import androidx.core.content.ContextCompat
 import androidx.core.util.Pair
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
-import androidx.paging.PagedList
+import androidx.paging.LoadState
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.DateValidatorPointBackward
@@ -24,6 +23,7 @@ import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAllOrdersBinding
@@ -44,7 +44,7 @@ import one.mixin.android.vo.route.OrderItem
 import one.mixin.android.widget.SpacesItemDecoration
 
 @AndroidEntryPoint
-class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layout.fragment_all_orders) {
+class AllOrdersFragment : BaseTransactionsFragment(R.layout.fragment_all_orders) {
 
     companion object {
         const val TAG: String = "AllOrdersFragment"
@@ -158,9 +158,11 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
             }
         }
 
-        dataObserver = Observer { pagedList ->
-            if (pagedList.isNotEmpty()) showEmpty(false) else showEmpty(true)
-            adapter.submitList(pagedList)
+        viewLifecycleOwner.lifecycleScope.launch {
+            adapter.loadStateFlow.collectLatest { loadStates ->
+                val isEmpty = loadStates.refresh is LoadState.NotLoading && adapter.itemCount == 0
+                showEmpty(isEmpty)
+            }
         }
 
         loadFilter()
@@ -230,7 +232,7 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
     }
 
     private fun bindLiveData() {
-        bindLiveData(ordersViewModel.allLimitOrders(initialLoadKey = initialLoadKey, filterParams))
+        bindPagingData(adapter, ordersViewModel.allLimitOrders(filterParams))
     }
 
     override fun onApplyClick() {
