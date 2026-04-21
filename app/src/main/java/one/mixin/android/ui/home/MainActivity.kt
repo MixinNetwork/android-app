@@ -573,7 +573,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             val hasClassicWallet: Boolean = web3Repository.hasClassicWallet()
             // Only show login verify when it has not been verified and there is no classic wallet.
             Timber.e("isLoginVerified: $isLoginVerified, hasClassicWallet: $hasClassicWallet")
-            if (!isLoginVerified && !hasClassicWallet) {
+            if (!isLoginVerified && !hasClassicWallet && Session.getAccount()?.hasSafe == true) {
                 lifecycleScope.launch {
                     withContext(Dispatchers.Main) {
                         try {
