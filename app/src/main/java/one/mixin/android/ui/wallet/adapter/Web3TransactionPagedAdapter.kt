@@ -2,19 +2,19 @@ package one.mixin.android.ui.wallet.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.paging.PagingDataAdapter
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemWeb3TransactionsBinding
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.inflate
-import one.mixin.android.ui.common.recyclerview.SafePagedListAdapter
 import one.mixin.android.web3.details.Web3TransactionHolder
 import timber.log.Timber
 import kotlin.math.abs
 
 class Web3TransactionPagedAdapter :
-    SafePagedListAdapter<Web3TransactionItem, Web3TransactionHolder>(Web3TransactionItem.DIFF_CALLBACK),
+    PagingDataAdapter<Web3TransactionItem, Web3TransactionHolder>(Web3TransactionItem.DIFF_CALLBACK),
     StickyRecyclerHeadersAdapter<SnapshotHeaderViewHolder> {
 
     interface OnItemClickListener {

@@ -2,19 +2,19 @@ package one.mixin.android.ui.wallet.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemLimitOrderBinding
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.inflate
-import one.mixin.android.ui.common.recyclerview.SafePagedListAdapter
 import one.mixin.android.ui.wallet.holder.OrderHolder
 import one.mixin.android.vo.route.OrderItem
 import kotlin.math.abs
 
 class OrderPagedAdapter :
-    SafePagedListAdapter<OrderItem, OrderHolder>(DIFF),
+    PagingDataAdapter<OrderItem, OrderHolder>(DIFF),
     StickyRecyclerHeadersAdapter<SnapshotHeaderViewHolder> {
 
     var onItemClick: ((OrderItem) -> Unit)? = null

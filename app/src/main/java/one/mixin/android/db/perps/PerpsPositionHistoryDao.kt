@@ -4,7 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.paging.DataSource
+import androidx.paging.PagingSource
 import kotlinx.coroutines.flow.Flow
 import one.mixin.android.api.response.perps.PerpsPositionHistory
 import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
@@ -46,7 +46,7 @@ interface PerpsPositionHistoryDao : BaseDao<PerpsPositionHistory> {
         LEFT JOIN markets m ON m.market_id = h.market_id
         ORDER BY h.closed_at DESC
     """)
-    fun getHistoriesPaged(): DataSource.Factory<Int, PerpsPositionHistoryItem>
+    fun getHistoriesPaged(): PagingSource<Int, PerpsPositionHistoryItem>
 
     @Query("""
         SELECT h.*, m.display_symbol, m.icon_url, m.token_symbol
