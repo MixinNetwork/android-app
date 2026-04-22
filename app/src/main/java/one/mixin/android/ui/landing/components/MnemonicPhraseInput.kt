@@ -18,10 +18,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -66,10 +64,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.checkout.threedsobfuscation.le
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants
-import one.mixin.android.MixinApp
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.response.ExportRequest
@@ -83,13 +78,9 @@ import one.mixin.android.extension.toHex
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
-import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.trade.KeyboardAwareBox
-import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.Account
-import one.mixin.android.vo.safe.TokenItem
-import one.mixin.android.widget.DotTextLayout
 import org.bitcoinj.crypto.MnemonicCode
 
 @Composable
