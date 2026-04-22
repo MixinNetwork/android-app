@@ -165,309 +165,306 @@ fun PerpetualContent(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp)
         ) {
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        Column(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-                    .clip(RoundedCornerShape(8.dp))
-                    .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
-                    .padding(16.dp),
-        ) {
-            Text(
-                text = stringResource(R.string.Total_Position_Value),
-                fontSize = 14.sp,
-                color = MixinAppTheme.colors.textAssist,
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            Text(
-                text = totalPositionValueFiatText,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.W600,
-                color = MixinAppTheme.colors.textPrimary,
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = totalPnlFiatText,
-                    fontSize = 14.sp,
-                    color = if (totalPnl >= 0) risingColor else fallingColor,
-                )
-                Text(
-                    text = "(${formatPerpsSignedPercent(totalPnlPercent)})",
-                    fontSize = 14.sp,
-                    color = if (totalPnl >= 0) risingColor else fallingColor,
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Column(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-                    .clip(RoundedCornerShape(8.dp))
-                    .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
-                    .padding(16.dp),
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(onClick = onShowAllOpenPositions),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+            Column(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .clip(RoundedCornerShape(8.dp))
+                        .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
+                        .padding(16.dp),
             ) {
                 Text(
-                    text = stringResource(R.string.positions_count, openPositionsCount),
+                    text = stringResource(R.string.Total_Position_Value),
                     fontSize = 14.sp,
+                    color = MixinAppTheme.colors.textAssist,
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = totalPositionValueFiatText,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.W600,
                     color = MixinAppTheme.colors.textPrimary,
                 )
-                Icon(
-                    painter = painterResource(R.drawable.ic_arrow_right),
-                    contentDescription = null,
-                    tint = MixinAppTheme.colors.textAssist,
-                    modifier = Modifier.size(16.dp)
-                )
-            }
-            if (openPositionsCount == 0) {
-                Spacer(modifier = Modifier.height(40.dp))
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_empty_transaction),
-                        contentDescription = null,
-                        tint = MixinAppTheme.colors.backgroundGrayLight,
-                        modifier = Modifier.size(78.dp)
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(6.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = stringResource(R.string.No_Position),
+                        text = totalPnlFiatText,
                         fontSize = 14.sp,
-                        color = MixinAppTheme.colors.textAssist,
+                        color = if (totalPnl >= 0) risingColor else fallingColor,
+                    )
+                    Text(
+                        text = "(${formatPerpsSignedPercent(totalPnlPercent)})",
+                        fontSize = 14.sp,
+                        color = if (totalPnl >= 0) risingColor else fallingColor,
                     )
                 }
-                Spacer(modifier = Modifier.height(10.dp))
+            }
 
+            if (openPositionsCount == 0) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
+                        .clickable { onShowTradingGuide() }
+                        .padding(16.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(painter = painterResource(id = R.drawable.ic_perps_help), contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = stringResource(R.string.how_perps_works),
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = MixinAppTheme.colors.textPrimary
+                            )
+                            Text(
+                                text = stringResource(R.string.learn_how_to_trade_perps),
+                                fontSize = 14.sp,
+                                color = MixinAppTheme.colors.textAssist
+                            )
+                        }
+                    }
+                }
+            } else {
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Column(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                            .clip(RoundedCornerShape(8.dp))
+                            .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
+                            .padding(16.dp),
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(onClick = onShowAllOpenPositions),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = stringResource(R.string.positions_count, openPositionsCount),
+                            fontSize = 14.sp,
+                            color = MixinAppTheme.colors.textPrimary,
+                        )
+                        Icon(
+                            painter = painterResource(R.drawable.ic_arrow_right),
+                            contentDescription = null,
+                            tint = MixinAppTheme.colors.textAssist,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                    openPositionsPreview.forEach { position ->
+                        OpenPositionItem(
+                            position = position,
+                            onClick = {
+                                val targetMarket = markets.firstOrNull { it.marketId == position.marketId }
+                                if (targetMarket != null) {
+                                    onMarketItemClick(targetMarket)
+                                } else {
+                                    onOpenPositionClick(position)
+                                }
+                            }
+                        )
+                    }
+
+                    if (openPositionsCount > openPositionsPreview.size) {
+                        ViewAllAction(onClick = onShowAllOpenPositions)
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .clip(RoundedCornerShape(8.dp))
+                    .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
+                    .padding(16.dp)
+            ) {
+                // Markets Section
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = {
-                            onShowTradingGuide()
-                        }),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
+                        .clickable { onShowAllMarkets() },
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = stringResource(R.string.how_perps_works),
+                        text = stringResource(R.string.perps_markets),
                         fontSize = 14.sp,
-                        color = MixinAppTheme.colors.accent,
+                        color = MixinAppTheme.colors.textPrimary,
                     )
-                }
-                Spacer(modifier = Modifier.height(40.dp))
-            } else {
-                openPositionsPreview.forEach { position ->
-                    OpenPositionItem(
-                        position = position,
-                        onClick = {
-                            val targetMarket = markets.firstOrNull { it.marketId == position.marketId }
-                            if (targetMarket != null) {
-                                onMarketItemClick(targetMarket)
-                            } else {
-                                onOpenPositionClick(position)
-                            }
-                        }
-                    )
-                }
-
-                if (openPositionsCount > openPositionsPreview.size) {
-                    ViewAllAction(onClick = onShowAllOpenPositions)
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Column(
-            Modifier
-                .fillMaxWidth()
-                .wrapContentHeight()
-                .clip(RoundedCornerShape(8.dp))
-                .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
-                .padding(16.dp)
-        ) {
-
-            // Markets Section
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onShowAllMarkets() },
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = stringResource(R.string.perps_markets),
-                    fontSize = 14.sp,
-                    color = MixinAppTheme.colors.textPrimary,
-                )
-                Icon(
-                    painter = painterResource(R.drawable.ic_arrow_right),
-                    contentDescription = null,
-                    tint = MixinAppTheme.colors.textAssist,
-                    modifier = Modifier.size(16.dp)
-                )
-            }
-            Spacer(modifier = Modifier.height(12.dp))
-
-            if (marketsPreview.isNotEmpty()) {
-                marketsPreview.forEach { market ->
-                    PerpsMarketItem(
-                        market = market,
-                        quoteColorReversed = quoteColorReversed,
-                        onClick = {
-                            onMarketItemClick(market)
-                        }
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                }
-
-                if (markets.size > marketsPreview.size) {
-                    ViewAllAction(
-                        onClick = onShowAllMarkets
-                    )
-                }
-            } else if (isLoading) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(
-                        color = MixinAppTheme.colors.accent,
-                        modifier = Modifier.size(32.dp)
-                    )
-                }
-            } else if (errorMessage != null) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = errorMessage ?: "Error loading markets",
-                        fontSize = 14.sp,
-                        color = MixinAppTheme.colors.red,
-                        textAlign = TextAlign.Center
-                    )
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-        // Closed position Section
-        Column(
-            Modifier
-                .fillMaxWidth()
-                .wrapContentHeight()
-                .clip(RoundedCornerShape(8.dp))
-                .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
-                .padding(16.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(onClick = onShowAllClosedPositions),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = stringResource(R.string.perps_activity),
-                    fontSize = 14.sp,
-                    color = MixinAppTheme.colors.textPrimary,
-                )
-                Icon(
-                    painter = painterResource(R.drawable.ic_arrow_right),
-                    contentDescription = null,
-                    tint = MixinAppTheme.colors.textAssist,
-                    modifier = Modifier.size(16.dp)
-                )
-            }
-            Spacer(modifier = Modifier.height(12.dp))
-
-            if (closedPositions.isEmpty()) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.ic_empty_transaction),
+                        painter = painterResource(R.drawable.ic_arrow_right),
                         contentDescription = null,
-                        tint = MixinAppTheme.colors.backgroundGrayLight,
-                        modifier = Modifier.size(78.dp)
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text(
-                        text = stringResource(R.string.No_Activity),
-                        fontSize = 14.sp,
-                        color = MixinAppTheme.colors.textAssist,
+                        tint = MixinAppTheme.colors.textAssist,
+                        modifier = Modifier.size(16.dp)
                     )
                 }
-            } else {
-                closedPositionsPreview.forEach { position ->
-                    ClosedPositionItem(
-                        position = position,
-                        onClick = { onClosedPositionClick(position) })
-                    Spacer(modifier = Modifier.height(12.dp))
-                }
+                Spacer(modifier = Modifier.height(12.dp))
 
-                if (closedPositions.size > closedPositionsPreview.size) {
-                    ViewAllAction(onClick = onShowAllClosedPositions)
+                if (marketsPreview.isNotEmpty()) {
+                    marketsPreview.forEach { market ->
+                        PerpsMarketItem(
+                            market = market,
+                            quoteColorReversed = quoteColorReversed,
+                            onClick = {
+                                onMarketItemClick(market)
+                            }
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
+
+                    if (markets.size > marketsPreview.size) {
+                        ViewAllAction(
+                            onClick = onShowAllMarkets
+                        )
+                    }
+                } else if (isLoading) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            color = MixinAppTheme.colors.accent,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+                } else if (errorMessage != null) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = errorMessage ?: "Error loading markets",
+                            fontSize = 14.sp,
+                            color = MixinAppTheme.colors.red,
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
             }
-        }
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(8.dp))
-                .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
-                .clickable { onShowTradingGuide() }
-                .padding(16.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+            // Closed position Section
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .clip(RoundedCornerShape(8.dp))
+                    .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
+                    .padding(16.dp)
             ) {
-                Image(painter = painterResource(id = R.drawable.ic_perps_help), contentDescription = null)
-                Spacer(modifier = Modifier.width(8.dp))
-                Column(modifier = Modifier.weight(1f)) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable(onClick = onShowAllClosedPositions),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
                     Text(
-                        text = stringResource(R.string.how_perps_works),
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = MixinAppTheme.colors.textPrimary
-                    )
-                    Text(
-                        text = stringResource(R.string.learn_how_to_trade_perps),
+                        text = stringResource(R.string.perps_activity),
                         fontSize = 14.sp,
-                        color = MixinAppTheme.colors.textAssist
+                        color = MixinAppTheme.colors.textPrimary,
+                    )
+                    Icon(
+                        painter = painterResource(R.drawable.ic_arrow_right),
+                        contentDescription = null,
+                        tint = MixinAppTheme.colors.textAssist,
+                        modifier = Modifier.size(16.dp)
                     )
                 }
-            }
-        }
+                Spacer(modifier = Modifier.height(12.dp))
 
-        Spacer(modifier = Modifier.height(24.dp))
+                if (closedPositions.isEmpty()) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_empty_transaction),
+                            contentDescription = null,
+                            tint = MixinAppTheme.colors.backgroundGrayLight,
+                            modifier = Modifier.size(78.dp)
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = stringResource(R.string.No_Activity),
+                            fontSize = 14.sp,
+                            color = MixinAppTheme.colors.textAssist,
+                        )
+                    }
+                } else {
+                    closedPositionsPreview.forEach { position ->
+                        ClosedPositionItem(
+                            position = position,
+                            onClick = { onClosedPositionClick(position) })
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
+
+                    if (closedPositions.size > closedPositionsPreview.size) {
+                        ViewAllAction(onClick = onShowAllClosedPositions)
+                    }
+                }
+            }
+
+            if (openPositionsCount > 0) {
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
+                        .clickable { onShowTradingGuide() }
+                        .padding(16.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(painter = painterResource(id = R.drawable.ic_perps_help), contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = stringResource(R.string.how_perps_works),
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = MixinAppTheme.colors.textPrimary
+                            )
+                            Text(
+                                text = stringResource(R.string.learn_how_to_trade_perps),
+                                fontSize = 14.sp,
+                                color = MixinAppTheme.colors.textAssist
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
         }
 
         Row(
