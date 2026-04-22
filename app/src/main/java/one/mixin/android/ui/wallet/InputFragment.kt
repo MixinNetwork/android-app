@@ -887,7 +887,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     val feeAmount = currentGaslessFee?.fee?.toBigDecimalOrNull() ?: BigDecimal.ZERO
                     val feeToken = when (currentGaslessFee?.token?.assetId) {
                         transferToken.assetId -> transferToken
-                        else -> gaslessFeeToken
+                        else -> gaslessFeeToken ?: currentGaslessFee?.token?.toWeb3TokenItem(transferToken.walletId)
                     }
                     solanaTransferAmountRange(
                         token = transferToken,
@@ -914,6 +914,25 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     )
                 }
             }
+
+    private fun currentSolanaMinimumAmount(): BigDecimal {
+        return currentSolanaTransferRange()?.minAmount ?: BigDecimal.ZERO
+    }
+
+    private fun isBelowCurrentSolanaMinimum(amount: String): Boolean {
+        val inputAmount = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
+        val minimumAmount = currentSolanaMinimumAmount()
+        return minimumAmount > BigDecimal.ZERO && inputAmount < minimumAmount
+    }
+
+    private fun updateSolanaMinimumAmountHint() {
+        val minimumAmount = currentSolanaMinimumAmount().takeIf { it > BigDecimal.ZERO } ?: SOLANA_RENT_EXEMPTION
+        binding.insufficientFunds.text =
+            getString(
+                R.string.send_sol_for_rent,
+                minimumAmount.stripTrailingZeros().toPlainString(),
+            )
+    }
 
     private fun web3SpendableBalance(): BigDecimal {
         val transferToken = web3Token ?: return BigDecimal.ZERO
@@ -1209,6 +1228,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     @SuppressLint("SetTextI18n")
     private fun updateUI() {
         if (viewDestroyed()) return
+        updateSolanaMinimumAmountHint()
         binding.apply {
             val value =
                 if (v.endsWith(".")) {
@@ -1287,6 +1307,13 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     continueVa.isEnabled = false
                     addTv.text = "${getString(R.string.Add)} ${currentFee?.token?.symbol ?: ""}"
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
+                } else if (isBelowCurrentSolanaMinimum(v)) {
+                    insufficientFeeBalance.isVisible = false
+                    insufficientBalance.isVisible = false
+                    insufficientFunds.isVisible = true
+                    continueVa.isEnabled = false
+                    addTv.text = ""
+                    continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                 } else if (web3Token != null && shouldUseGaslessFlow()) {
                     val gaslessEnough = isGaslessFeeEnough(v)
                     insufficientFeeBalance.isVisible = !gaslessEnough
@@ -1305,15 +1332,6 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     insufficientBalance.isVisible = false
                     insufficientFunds.isVisible = false
                     continueVa.isEnabled = false
-                    continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
-                } else if ((currentSolanaTransferRange()?.minAmount ?: BigDecimal.ZERO) > BigDecimal.ZERO &&
-                    BigDecimal(v) < (currentSolanaTransferRange()?.minAmount ?: BigDecimal.ZERO)
-                ) {
-                    insufficientFeeBalance.isVisible = false
-                    insufficientBalance.isVisible = false
-                    insufficientFunds.isVisible = true
-                    continueTv.isEnabled = false
-                    addTv.text = ""
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                 } else {
                     insufficientBalance.isVisible = false
@@ -1435,6 +1453,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private fun updateAddText() {
         val binding = bindingOrNull() ?: return
+        if (isBelowCurrentSolanaMinimum(currentInputAmount())) {
+            binding.addTv.text = ""
+            return
+        }
         if (transferType == TransferType.WEB3 && shouldUseGaslessFlow()) {
             if (!isGaslessFeeEnough(currentInputAmount())) {
                 binding.addTv.text = "${getString(R.string.Add)} ${currentGaslessFee?.token?.symbol ?: ""}"

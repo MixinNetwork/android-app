@@ -99,12 +99,31 @@ fun solanaTransferAmountRange(
     }
     val maxAmount = when {
         token.isNativeSolAsset() -> {
+            val feeTokenEnough = when {
+                feeToken == null -> false
+                feeToken.assetId == token.assetId -> true
+                feeToken.isNativeSolAsset() -> {
+                    hasSolBalanceAfterFeeAndRent(
+                        balance = feeTokenBalance,
+                        solFee = feeAmount,
+                        extraReserved = ataReserve,
+                        allowZeroBalance = allowZeroBalance,
+                    )
+                }
+                else -> {
+                    feeTokenBalance >= feeAmount
+                }
+            }
+            if (!feeTokenEnough) {
+                BigDecimal.ZERO
+            } else {
             val solFee = if (feeToken?.assetId == token.assetId) feeAmount else BigDecimal.ZERO
             nativeSolSpendableBalance(
                 balance = tokenBalance,
                 solFee = solFee,
                 allowZeroBalance = allowZeroBalance,
             )
+            }
         }
         feeToken == null -> {
             BigDecimal.ZERO

@@ -102,6 +102,34 @@ class SolanaTokenHelperTest {
         assertEquals(BigDecimal("0.98910912"), range.maxAmount)
     }
 
+    @Test
+    fun solanaTransferAmountRangeSupportsNativeSolWithSufficientSplFeeToken() {
+        val range = solanaTransferAmountRange(
+            token = solanaNativeToken(balance = "1"),
+            feeToken = solanaSplToken(balance = "10"),
+            feeAmount = BigDecimal("1"),
+            recipientAccountState = SolanaRecipientAccountState.NEEDS_SYSTEM_ACCOUNT,
+            allowZeroBalance = true,
+        )
+
+        assertEquals(SOLANA_RENT_EXEMPTION, range.minAmount)
+        assertEquals(BigDecimal("1"), range.maxAmount)
+    }
+
+    @Test
+    fun solanaTransferAmountRangeRejectsNativeSolWhenSplFeeTokenIsInsufficient() {
+        val range = solanaTransferAmountRange(
+            token = solanaNativeToken(balance = "1"),
+            feeToken = solanaSplToken(balance = "0.5"),
+            feeAmount = BigDecimal("1"),
+            recipientAccountState = SolanaRecipientAccountState.NEEDS_SYSTEM_ACCOUNT,
+            allowZeroBalance = true,
+        )
+
+        assertEquals(SOLANA_RENT_EXEMPTION, range.minAmount)
+        assertEquals(BigDecimal.ZERO, range.maxAmount)
+    }
+
     private fun solanaNativeToken(balance: String) = Web3TokenItem(
         walletId = "wallet",
         assetId = Constants.ChainId.SOLANA_CHAIN_ID,
