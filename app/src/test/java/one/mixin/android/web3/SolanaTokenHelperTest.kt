@@ -66,7 +66,7 @@ class SolanaTokenHelperTest {
     fun solanaTransferAmountRangeAddsTokenAccountReserveForNativeFee() {
         val range = solanaTransferAmountRange(
             token = solanaSplToken(balance = "10"),
-            feeToken = solanaNativeToken(balance = "0.01"),
+            feeToken = solanaNativeToken(balance = "0.003"),
             feeAmount = BigDecimal("0.001"),
             recipientAccountState = SolanaRecipientAccountState.NEEDS_TOKEN_ACCOUNT,
             includeAtaCreationReserve = true,
