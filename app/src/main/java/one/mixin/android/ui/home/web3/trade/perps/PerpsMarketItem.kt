@@ -2,7 +2,6 @@ package one.mixin.android.ui.home.web3.trade.perps
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -71,26 +70,26 @@ fun PerpsMarketItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.weight(1f)
-        ) {
-            CoilImage(
-                model = market.iconUrl,
-                placeholder = R.drawable.ic_avatar_place_holder,
-                modifier = Modifier
-                    .size(42.dp)
-                    .clip(CircleShape)
-            )
+        CoilImage(
+            model = market.iconUrl,
+            placeholder = R.drawable.ic_avatar_place_holder,
+            modifier = Modifier
+                .size(42.dp)
+                .clip(CircleShape)
+        )
 
-            Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(12.dp))
 
-            Column {
+        Column(modifier = Modifier.weight(1f)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Row(
+                    modifier = Modifier.weight(1f),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
@@ -110,29 +109,28 @@ fun PerpsMarketItem(
                             .padding(horizontal = 3.dp, vertical = 2.dp)
                     )
                 }
-                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "$fiatSymbol$formattedPrice",
+                    fontSize = 14.sp,
+                    color = MixinAppTheme.colors.textPrimary,
+                )
+            }
+            Spacer(modifier = Modifier.height(2.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 Text(
                     text = stringResource(R.string.Vol, "$fiatSymbol$formattedVolume"),
                     fontSize = 14.sp,
                     color = MixinAppTheme.colors.textAssist,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    text = changeText,
+                    fontSize = 14.sp,
+                    color = changeColor,
                 )
             }
-        }
-
-        Column(
-            horizontalAlignment = Alignment.End
-        ) {
-            Text(
-                text = "$fiatSymbol$formattedPrice",
-                fontSize = 14.sp,
-                color = MixinAppTheme.colors.textPrimary,
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = changeText,
-                fontSize = 14.sp,
-                color = changeColor,
-            )
         }
     }
 }

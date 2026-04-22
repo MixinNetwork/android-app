@@ -245,12 +245,13 @@ fun PerpetualContent(
                             .wrapContentHeight()
                             .clip(RoundedCornerShape(8.dp))
                             .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
-                            .padding(16.dp),
+                            .padding(vertical = 16.dp),
                 ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable(onClick = onShowAllOpenPositions),
+                            .clickable(onClick = onShowAllOpenPositions)
+                            .padding(horizontal = 16.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
@@ -294,13 +295,14 @@ fun PerpetualContent(
                     .wrapContentHeight()
                     .clip(RoundedCornerShape(8.dp))
                     .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
-                    .padding(16.dp)
+                    .padding(vertical = 16.dp)
             ) {
                 // Markets Section
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { onShowAllMarkets() },
+                        .clickable { onShowAllMarkets() }
+                        .padding(horizontal = 16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
@@ -373,12 +375,13 @@ fun PerpetualContent(
                     .wrapContentHeight()
                     .clip(RoundedCornerShape(8.dp))
                     .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
-                    .padding(16.dp)
+                    .padding(vertical = 16.dp)
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable(onClick = onShowAllClosedPositions),
+                        .clickable(onClick = onShowAllClosedPositions)
+                        .padding(horizontal = 16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
@@ -399,7 +402,7 @@ fun PerpetualContent(
                 if (closedPositions.isEmpty()) {
                     Spacer(modifier = Modifier.height(16.dp))
                     Column(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Icon(
@@ -530,7 +533,8 @@ private fun ViewAllAction(onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = onClick),
+            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = onClick)
+            .padding(horizontal = 16.dp),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
