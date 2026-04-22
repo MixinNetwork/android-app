@@ -20,6 +20,7 @@ import one.mixin.android.crypto.aesEncrypt
 import one.mixin.android.crypto.argon2IHash
 import one.mixin.android.crypto.generateRandomBytes
 import one.mixin.android.crypto.getValueFromEncryptedPreferences
+import one.mixin.android.crypto.isMnemonicValid
 import one.mixin.android.crypto.newKeyPairFromMnemonic
 import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.crypto.removeValueFromEncryptedPreferences
