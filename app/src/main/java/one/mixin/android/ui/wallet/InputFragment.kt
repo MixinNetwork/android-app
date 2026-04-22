@@ -96,15 +96,17 @@ import one.mixin.android.vo.safe.toWeb3TokenItem
 import one.mixin.android.vo.toUser
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.SOLANA_RENT_EXEMPTION
+import one.mixin.android.web3.SolanaRecipientAccountState
 import one.mixin.android.web3.hasSolBalanceAfterFeeAndRent
 import one.mixin.android.web3.isNativeSolAsset
 import one.mixin.android.web3.nativeSolSpendableBalance
+import one.mixin.android.web3.solanaTransferAmountRange
+import one.mixin.android.web3.solanaRecipientAccountState
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.send.InsufficientBtcBalanceException
 import one.mixin.android.widget.Keyboard
 import org.sol4k.Base58
-import org.sol4k.PublicKey
 import org.sol4k.Constants.SIGNATURE_LENGTH
 import org.sol4kt.VersionedTransactionCompat
 import timber.log.Timber
@@ -207,7 +209,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private var currentNote: String? = null
 
-    private var isSolanaToAccountExists = true
+    private var solanaRecipientAccountState = SolanaRecipientAccountState.EXISTS
 
     @Inject
     lateinit var jobManager: MixinJobManager
@@ -877,20 +879,59 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         return BuildConfig.DEBUG
     }
 
+    private fun currentSolanaTransferRange() =
+        web3Token
+            ?.takeIf { it.chainId == Constants.ChainId.SOLANA_CHAIN_ID }
+            ?.let { transferToken ->
+                if (shouldUseGaslessFlow()) {
+                    val feeAmount = currentGaslessFee?.fee?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                    val feeToken = when (currentGaslessFee?.token?.assetId) {
+                        transferToken.assetId -> transferToken
+                        else -> gaslessFeeToken
+                    }
+                    solanaTransferAmountRange(
+                        token = transferToken,
+                        feeToken = feeToken,
+                        feeAmount = feeAmount,
+                        recipientAccountState = solanaRecipientAccountState,
+                        allowZeroBalance = true,
+                        includeAtaCreationReserve = false,
+                    )
+                } else {
+                    val feeAmount = gas ?: BigDecimal.ZERO
+                    val feeToken = if (transferToken.assetId == chainToken?.assetId) {
+                        transferToken
+                    } else {
+                        chainToken
+                    }
+                    solanaTransferAmountRange(
+                        token = transferToken,
+                        feeToken = feeToken,
+                        feeAmount = feeAmount,
+                        recipientAccountState = solanaRecipientAccountState,
+                        allowZeroBalance = false,
+                        includeAtaCreationReserve = transferToken.assetId != chainToken?.assetId,
+                    )
+                }
+            }
+
     private fun web3SpendableBalance(): BigDecimal {
         val transferToken = web3Token ?: return BigDecimal.ZERO
+        if (transferToken.chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
+            return currentSolanaTransferRange()?.maxAmount ?: BigDecimal.ZERO
+        }
         val transferBalance = transferToken.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO
         val selectedGaslessFee = currentGaslessFee?.fee?.toBigDecimalOrNull() ?: BigDecimal.ZERO
         return when {
             shouldUseGaslessFlow() && currentGaslessFee?.token?.assetId == transferToken.assetId -> {
                 if (transferToken.isNativeSolAsset()) {
-                    nativeSolSpendableBalance(transferBalance, selectedGaslessFee)
+                    nativeSolSpendableBalance(transferBalance, selectedGaslessFee, allowZeroBalance = true)
                 } else {
                     transferBalance.subtract(selectedGaslessFee).max(BigDecimal.ZERO)
                 }
             }
             shouldUseGaslessFlow() && transferToken.isNativeSolAsset() -> {
-                nativeSolSpendableBalance(transferBalance)
+                nativeSolSpendableBalance(transferBalance, allowZeroBalance = true)
             }
             transferToken.assetId == chainToken?.assetId -> {
                 if (transferToken.isNativeSolAsset()) {
@@ -910,8 +951,11 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         val token = web3Token ?: return false
         val chainAsset = chainToken ?: return true
         val gasAmount = gas ?: return true
-        val chainBalance = chainAsset.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO
         val inputAmount = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
+        if (token.chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
+            return !(currentSolanaTransferRange()?.canTransfer(inputAmount) ?: false)
+        }
+        val chainBalance = chainAsset.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO
         return if (token.isNativeSolAsset()) {
             inputAmount > nativeSolSpendableBalance(chainBalance, gasAmount)
         } else if (chainAsset.isNativeSolAsset()) {
@@ -926,24 +970,27 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     private fun isGaslessFeeEnough(amount: String): Boolean {
         val transferToken = web3Token ?: return false
         val fee = currentGaslessFee ?: return false
+        val inputAmount = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
+        if (transferToken.chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
+            return currentSolanaTransferRange()?.canTransfer(inputAmount) ?: false
+        }
         val feeTokenBalance = gaslessFeeToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
         val transferBalance = transferToken.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO
-        val inputAmount = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
         val feeAmount = fee.fee.toBigDecimalOrNull() ?: BigDecimal.ZERO
         return if (fee.token.assetId == transferToken.assetId) {
             if (transferToken.isNativeSolAsset()) {
-                inputAmount <= nativeSolSpendableBalance(transferBalance, feeAmount)
+                inputAmount <= nativeSolSpendableBalance(transferBalance, feeAmount, allowZeroBalance = true)
             } else {
                 transferBalance >= inputAmount.add(feeAmount)
             }
         } else {
             val transferEnough = if (transferToken.isNativeSolAsset()) {
-                inputAmount <= nativeSolSpendableBalance(transferBalance)
+                inputAmount <= nativeSolSpendableBalance(transferBalance, allowZeroBalance = true)
             } else {
                 transferBalance >= inputAmount
             }
             val feeEnough = if (isNativeSolAsset(fee.token.chainId, fee.token.assetId)) {
-                hasSolBalanceAfterFeeAndRent(feeTokenBalance, feeAmount)
+                hasSolBalanceAfterFeeAndRent(feeTokenBalance, feeAmount, allowZeroBalance = true)
             } else {
                 feeTokenBalance >= feeAmount
             }
@@ -1259,7 +1306,9 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     insufficientFunds.isVisible = false
                     continueVa.isEnabled = false
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
-                } else if (!isSolanaToAccountExists && BigDecimal(v) < SOLANA_RENT_EXEMPTION) {
+                } else if ((currentSolanaTransferRange()?.minAmount ?: BigDecimal.ZERO) > BigDecimal.ZERO &&
+                    BigDecimal(v) < (currentSolanaTransferRange()?.minAmount ?: BigDecimal.ZERO)
+                ) {
                     insufficientFeeBalance.isVisible = false
                     insufficientBalance.isVisible = false
                     insufficientFunds.isVisible = true
@@ -1394,7 +1443,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             }
         } else if (gas != null && chainToken != null) {
             val chainBalance = chainToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-            val insufficientGas = if (chainToken?.isNativeSolAsset() == true) {
+            val insufficientGas = if (web3Token?.chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
+                val inputAmount = currentInputAmount().toBigDecimalOrNull() ?: BigDecimal.ZERO
+                !(currentSolanaTransferRange()?.canTransfer(inputAmount) ?: false)
+            } else if (chainToken?.isNativeSolAsset() == true) {
                 !hasSolBalanceAfterFeeAndRent(chainBalance, gas ?: BigDecimal.ZERO)
             } else {
                 chainBalance < (gas ?: BigDecimal.ZERO)
@@ -1560,12 +1612,13 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     private suspend fun checkSolanaToExists() {
         val token = web3Token ?: return
         val to = toAddress ?: return
-        if (token.chainId != Constants.ChainId.SOLANA_CHAIN_ID || !token.isNativeSolAsset()) return
+        if (token.chainId != Constants.ChainId.SOLANA_CHAIN_ID) return
 
-        val toAccount = withContext(Dispatchers.IO) {
-            rpc.getAccountInfo(PublicKey(to))
+        solanaRecipientAccountState = withContext(Dispatchers.IO) {
+            runCatching {
+                token.solanaRecipientAccountState(rpc, to)
+            }.getOrDefault(SolanaRecipientAccountState.EXISTS)
         }
-        isSolanaToAccountExists = toAccount != null
     }
 
     private suspend fun refreshFee() {
