@@ -3,8 +3,8 @@ package one.mixin.android.ui.home.web3.trade.perps
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
-import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
@@ -18,7 +18,7 @@ import java.math.BigDecimal
 class PerpsMarketListAdapter(
     private val isQuoteColorReversed: Boolean,
     private val onMarketClick: (PerpsMarket) -> Unit
-) : PagingDataAdapter<PerpsMarket, PerpsMarketListAdapter.MarketViewHolder>(PerpsMarketDiffCallback()) {
+) : ListAdapter<PerpsMarket, PerpsMarketListAdapter.MarketViewHolder>(PerpsMarketDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MarketViewHolder {
         return MarketViewHolder(
@@ -31,7 +31,7 @@ class PerpsMarketListAdapter(
     }
 
     override fun onBindViewHolder(holder: MarketViewHolder, position: Int) {
-        getItem(position)?.let { holder.bind(it) }
+        holder.bind(getItem(position))
     }
 
     inner class MarketViewHolder(

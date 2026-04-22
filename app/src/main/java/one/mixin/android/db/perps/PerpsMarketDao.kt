@@ -1,6 +1,5 @@
 package one.mixin.android.db.perps
 
-import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -23,14 +22,6 @@ interface PerpsMarketDao : BaseDao<PerpsMarket> {
 
     @Query("SELECT * FROM markets WHERE CAST(volume AS REAL) > 0 ORDER BY rowid ASC")
     fun observeAllMarkets(): Flow<List<PerpsMarket>>
-
-    @Query("""
-        SELECT * FROM markets
-        WHERE CAST(volume AS REAL) > 0
-        AND (:query = '' OR token_symbol LIKE '%' || :query || '%')
-        ORDER BY rowid ASC
-    """)
-    fun getAllMarketsPaged(query: String): PagingSource<Int, PerpsMarket>
 
     @Query("SELECT * FROM markets WHERE market_id = :marketId")
     suspend fun getMarket(marketId: String): PerpsMarket?
