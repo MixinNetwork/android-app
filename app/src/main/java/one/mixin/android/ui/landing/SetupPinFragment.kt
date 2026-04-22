@@ -55,11 +55,10 @@ class SetupPinFragment : BaseFragment(R.layout.fragment_compose) {
         binding.titleView.leftIb.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
-        binding.titleView.setOnLongClickListener {
-            LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
-            true
-        }
         binding.titleView.isVisible = false
+        val showLogViewer = {
+            LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
+        }
         binding.compose.setContent {
             MixinAppTheme(
                 darkTheme = requireContext().isNightMode(),
@@ -106,7 +105,8 @@ class SetupPinFragment : BaseFragment(R.layout.fragment_compose) {
                             onRetry = {
                                 Timber.e("$TAG Retry setup PIN")
                                 errorMessage = ""
-                            }
+                            },
+                            onTopBarLongClick = showLogViewer,
                         )
                     }
                     composable(SetupPinDestination.Quiz.name) {
@@ -122,6 +122,7 @@ class SetupPinFragment : BaseFragment(R.layout.fragment_compose) {
                                 Timber.e("$TAG Quiz back pressed")
                                 navController.popBackStack()
                             },
+                            onTopBarLongClick = showLogViewer,
                             onShowResultBottomSheet = { isCorrect, onCorrect, onWrong ->
                                 QuizResultBottomSheetDialogFragment.newInstance(isCorrect).apply {
                                     onCorrectAction = onCorrect
@@ -133,6 +134,7 @@ class SetupPinFragment : BaseFragment(R.layout.fragment_compose) {
                     composable(SetupPinDestination.Loading.name) {
                         SetPinLoadingPage(
                             pin = pin,
+                            onTopBarLongClick = showLogViewer,
                             next = {
                                 Timber.e("$TAG PIN set successfully")
                                 AnalyticsTracker.trackSignUpEnd()

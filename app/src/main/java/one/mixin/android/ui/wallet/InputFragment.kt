@@ -1045,21 +1045,33 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         return options
     }
 
+    private fun selectPreferredFeeOption(
+        options: List<NetworkFee>,
+        selectedKey: String? = null,
+    ): NetworkFee? {
+        if (options.isEmpty()) return null
+
+        selectedKey?.let { key ->
+            options.firstOrNull { it.selectionKey == key }?.let { return it }
+        }
+
+        return options.firstOrNull { option ->
+            val balance = option.token.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO
+            val feeAmount = option.fee.toBigDecimalOrNull() ?: BigDecimal.ZERO
+            balance >= feeAmount
+        } ?: options.first()
+    }
+
     private fun syncSelectedWeb3Fee() {
         val options = web3FeeOptions()
         if (options.isEmpty()) {
             currentGaslessFee = null
             return
         }
-        val matchedOption = currentGaslessFee?.selectionKey?.let { selectionKey ->
-            options.firstOrNull { it.selectionKey == selectionKey }
-        }
-        val nextSelection = when {
-            matchedOption != null -> matchedOption
-            !hasManuallySelectedWeb3Fee && shouldOfferLegacyWeb3FeeOption() -> nativeWeb3FeeOption() ?: options.first()
-            !hasManuallySelectedWeb3Fee -> options.first()
-            else -> options.first()
-        }
+        val nextSelection = selectPreferredFeeOption(
+            options = options,
+            selectedKey = currentGaslessFee?.selectionKey,
+        )
         if (currentGaslessFee != nextSelection) {
             currentGaslessFee = nextSelection
         }
@@ -1119,7 +1131,6 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                         currentGaslessFee?.selectionKey,
                     ).apply {
                         callback = { networkFee ->
-                            hasManuallySelectedWeb3Fee = true
                             currentGaslessFee = networkFee
                             binding.insufficientFeeBalance.isVisible = false
                             dismiss()
@@ -1696,7 +1707,6 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             }
         }
     private var gaslessFeeToken: Web3TokenItem? = null
-    private var hasManuallySelectedWeb3Fee = false
 
     private fun refreshFeeTokenExtra(tokenId: String?) = viewLifecycleOwner.lifecycleScope.launch {
         feeTokensExtra = if (tokenId == null) null
@@ -1770,7 +1780,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     // do nothing
                 }
             }
-            fees.firstOrNull()?.let {
+            selectPreferredFeeOption(
+                options = fees,
+                selectedKey = currentFee?.selectionKey,
+            )?.let {
                 currentFee = it
                 binding.contentTextView.text = "${it.fee.numberFormat8()} ${it.token.symbol}"
                 updateUI()
