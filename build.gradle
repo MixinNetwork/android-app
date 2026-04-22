@@ -10,7 +10,7 @@ buildscript {
         ext.coilVersion = '3.4.0'
         ext.collectionx = '1.6.0'
         ext.roomVersion = '2.8.4'
-        ext.navigationVersion = '2.9.7'
+        ext.navigationVersion = '2.9.8'
         ext.workManagerVersion = '2.11.2'
         ext.constraintLayoutVersion = '2.2.1'
         ext.constraintLayoutComposeVersion = '1.1.1'
