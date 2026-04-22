@@ -88,6 +88,8 @@ fun solanaTransferAmountRange(
     } else {
         BigDecimal.ZERO
     }
+    // Native flow always uses SOL as fee, so feeToken.isNativeSolAsset() is always true there.
+    // Gasless flow passes includeAtaCreationReserve = false, so ataReserve is always zero.
     val ataReserve = if (
         includeAtaCreationReserve &&
         recipientAccountState == SolanaRecipientAccountState.NEEDS_TOKEN_ACCOUNT &&
@@ -117,12 +119,12 @@ fun solanaTransferAmountRange(
             if (!feeTokenEnough) {
                 BigDecimal.ZERO
             } else {
-            val solFee = if (feeToken?.assetId == token.assetId) feeAmount else BigDecimal.ZERO
-            nativeSolSpendableBalance(
-                balance = tokenBalance,
-                solFee = solFee,
-                allowZeroBalance = allowZeroBalance,
-            )
+                val solFee = if (feeToken?.assetId == token.assetId) feeAmount else BigDecimal.ZERO
+                nativeSolSpendableBalance(
+                    balance = tokenBalance,
+                    solFee = solFee,
+                    allowZeroBalance = allowZeroBalance,
+                )
             }
         }
         feeToken == null -> {
