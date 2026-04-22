@@ -18,6 +18,7 @@ import one.mixin.android.repository.Web3Repository
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.safe.UnifiedAssetItem
 import java.math.BigDecimal
+import java.math.RoundingMode
 import javax.inject.Inject
 
 
@@ -82,7 +83,7 @@ class AssetDistributionViewModel @Inject constructor(
                 val token2 = tokensWithValue[1]
                 val value1 = calculateValue(token1)
 
-                val p1 = value1.divide(totalTokenValue, 2, BigDecimal.ROUND_DOWN).toFloat()
+                val p1 = value1.divide(totalTokenValue, 2, RoundingMode.DOWN).toFloat()
                 val p2 = (1f - p1).coerceIn(0f, 1f)
 
                 listOf(
@@ -106,7 +107,7 @@ class AssetDistributionViewModel @Inject constructor(
 
                 val top2Distributions = top2.map { token ->
                     val value = calculateValue(token)
-                    val percentage = value.divide(totalTokenValue, 2, BigDecimal.ROUND_DOWN).toFloat()
+                    val percentage = value.divide(totalTokenValue, 2, RoundingMode.DOWN).toFloat()
                     AssetDistribution(
                         symbol = token.symbol,
                         percentage = percentage,
@@ -174,7 +175,7 @@ class AssetDistributionViewModel @Inject constructor(
             }
             2 -> {
                 val (t1, t2) = tokensWithValue
-                val p1 = calculateValue(t1).divide(totalWeb3Value, 2, BigDecimal.ROUND_DOWN).toFloat()
+                val p1 = calculateValue(t1).divide(totalWeb3Value, 2, RoundingMode.DOWN).toFloat()
                 val p2 = (1f - p1).coerceIn(0f, 1f)
                 listOf(
                     AssetDistribution(t1.symbol, p1, listOfNotNull(t1.iconUrl), count = 1),
@@ -185,7 +186,7 @@ class AssetDistributionViewModel @Inject constructor(
                 val top2 = tokensWithValue.take(2)
                 val others = tokensWithValue.drop(2)
                 val top2Dist = top2.map { token ->
-                    val percentage = calculateValue(token).divide(totalWeb3Value, 2, BigDecimal.ROUND_DOWN).toFloat()
+                    val percentage = calculateValue(token).divide(totalWeb3Value, 2, RoundingMode.DOWN).toFloat()
                     AssetDistribution(token.symbol, percentage, listOfNotNull(token.iconUrl), count = 1)
                 }
                 val othersPercentage = 1f - top2Dist.sumOf { it.percentage.toDouble() }.toFloat()
