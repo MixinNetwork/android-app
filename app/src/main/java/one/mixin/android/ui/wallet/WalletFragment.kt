@@ -293,8 +293,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             .autoDispose(destroyScope)
             .subscribe { event ->
                 if (event.type != WalletOperationType.RENAME) return@subscribe
-                val currentDestination = selectedWalletDestination
-                when (currentDestination) {
+                when (val currentDestination = selectedWalletDestination) {
                     is WalletDestination.Classic -> {
                         if (currentDestination.walletId == event.walletId) {
                             updateUi(currentDestination)
