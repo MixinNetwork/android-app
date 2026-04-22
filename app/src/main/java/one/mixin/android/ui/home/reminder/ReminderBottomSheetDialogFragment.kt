@@ -102,10 +102,14 @@ class ReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
 
         @StringRes
         private fun getBatteryOptimizationContentResId(): Int {
-            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                R.string.setting_battery_optimize_title_one_ui_above_s
+            return if (one.mixin.android.util.RomUtil.isOneUi) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    R.string.setting_battery_optimize_title_one_ui_above_s
+                } else {
+                    R.string.setting_battery_optimize_title_one_ui_below_s
+                }
             } else {
-                R.string.setting_battery_optimize_title_one_ui_below_s
+                R.string.setting_battery_optimize_title
             }
         }
     }
