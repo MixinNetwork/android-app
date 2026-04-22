@@ -57,6 +57,7 @@ import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment.Step
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.CrossWalletFeeFreeBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
@@ -193,7 +194,8 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     signMessage.isBtcMessage() -> Web3Signer.btcAddress
                     signMessage.isGaslessTransfer() && currentChain == Chain.Solana -> Web3Signer.solanaAddress
                     signMessage.isGaslessTransfer() -> Web3Signer.evmAddress
-                    else -> throw IllegalArgumentException("invalid signMessage type")
+                    currentChain == Chain.Solana -> Web3Signer.solanaAddress
+                    else -> throw IllegalArgumentException("invalid signMessage type $currentChain ${GsonHelper.customGson.toJson(signMessage)}")
                 }
             }
         }

@@ -155,12 +155,6 @@ object Constants {
             const val PREF_MIGRATION_COLLECTION = "pref_migration_inscription_collection"
         }
 
-        object ChainAddress {
-            const val EVM_ADDRESS = "evm_address"
-            const val SOLANA_ADDRESS = "solana_address"
-            const val BTC_ADDRESS = "btc_address"
-        }
-
     }
 
     object Scheme {

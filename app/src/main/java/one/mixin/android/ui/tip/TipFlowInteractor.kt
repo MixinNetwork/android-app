@@ -10,8 +10,6 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
-import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
-import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.Constants.Account.PREF_LOGIN_OR_SIGN_UP
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
@@ -30,7 +28,6 @@ import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.crypto.initFromSeedAndSign
 import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.crypto.removeValueFromEncryptedPreferences
-import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
@@ -124,6 +121,18 @@ class TipFlowInteractor @Inject internal constructor(
         onShowMessage: (String) -> Unit,
     ): Boolean {
         val pin: String = requireNotNull(tipBundle.pin) { "required pin can not be null" }
+        val retryRegister = tipBundle.tipStep as? RetryRegister
+        if (retryRegister != null) {
+            return handleProcessSuccess(
+                context = context,
+                tipBundle = tipBundle,
+                pin = pin,
+                tipPriv = retryRegister.tipPriv,
+                shouldOpenMainActivity = shouldOpenMainActivity,
+                onStepChanged = onStepChanged,
+                onShowMessage = onShowMessage,
+            )
+        }
         val oldPin: String? = tipBundle.oldPin
         val tipCounter = Session.getTipCounter()
         val deviceId = tipBundle.deviceId
@@ -312,13 +321,12 @@ class TipFlowInteractor @Inject internal constructor(
         )
         val registerResp = utxoService.registerPublicKey(registerRequest)
         if (registerResp.isSuccess) {
+            val account = requireNotNull(registerResp.data) { "required account can not be null" }
+            Session.storeAccount(account)
             val solAddress: String = getTipAddress(context, pin, SOLANA_CHAIN_ID)
-            PropertyHelper.updateKeyValue(SOLANA_ADDRESS, solAddress)
             val evmAddress: String = getTipAddress(context, pin, ETHEREUM_CHAIN_ID)
-            PropertyHelper.updateKeyValue(EVM_ADDRESS, evmAddress)
             Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Solana.name, solAddress)
             Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Ethereum.name, evmAddress)
-            Session.storeAccount(requireNotNull(registerResp.data) { "required account can not be null" })
             createWallet(context, spendSeed)
             if (Session.hasPhone()) {
                 removeValueFromEncryptedPreferences(context, Constants.Tip.MNEMONIC)

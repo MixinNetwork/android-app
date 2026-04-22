@@ -5,10 +5,15 @@ import android.view.View
 import androidx.annotation.LayoutRes
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
+import androidx.paging.PagingData
+import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentTransactionFiltersBinding
 import one.mixin.android.job.MixinJobManager
@@ -17,7 +22,7 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.CheckedFlowLayout
 import javax.inject.Inject
 
-abstract class BaseTransactionsFragment<C>(
+abstract class BaseTransactionsFragment(
     @LayoutRes contentLayoutId: Int,
 ) : BaseFragment(contentLayoutId) {
     @Inject
@@ -26,12 +31,11 @@ abstract class BaseTransactionsFragment<C>(
     protected val walletViewModel by viewModels<WalletViewModel>()
 
     private var transactionsRv: RecyclerView? = null
-    protected var initialLoadKey: Int? = null
-
-    protected lateinit var dataObserver: Observer<C>
 
     private var _filterBinding: FragmentTransactionFiltersBinding? = null
     private val filterBinding get() = requireNotNull(_filterBinding)
+
+    private var pagingJob: Job? = null
 
     protected fun showFiltersSheet() {
         filterBinding.apply {
@@ -48,12 +52,16 @@ abstract class BaseTransactionsFragment<C>(
         bottomSheet
     }
 
-    private var currentLiveData: LiveData<C>? = null
-
-    protected fun bindLiveData(liveData: LiveData<C>) {
-        currentLiveData?.removeObserver(dataObserver)
-        currentLiveData = liveData
-        currentLiveData?.observe(viewLifecycleOwner, dataObserver)
+    protected fun <T : Any> bindPagingData(
+        adapter: PagingDataAdapter<T, *>,
+        flow: Flow<PagingData<T>>,
+    ) {
+        pagingJob?.cancel()
+        pagingJob = viewLifecycleOwner.lifecycleScope.launch {
+            flow.collectLatest { pagingData ->
+                adapter.submitData(pagingData)
+            }
+        }
     }
 
     protected var currentType = R.id.filters_radio_all
@@ -90,11 +98,6 @@ abstract class BaseTransactionsFragment<C>(
             )
         }
         filterBinding.root
-    }
-
-    override fun onStop() {
-        super.onStop()
-        initialLoadKey = (transactionsRv?.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
     }
 
     override fun onDestroyView() {

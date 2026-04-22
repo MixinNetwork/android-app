@@ -1,7 +1,7 @@
 package one.mixin.android.db.web3
 
 import androidx.lifecycle.LiveData
-import androidx.paging.DataSource
+import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RawQuery
@@ -33,7 +33,7 @@ interface Web3TransactionDao : BaseDao<Web3Transaction> {
     fun web3Transactions(walletId: String, assetId: String): LiveData<List<Web3TransactionItem>>
 
     @RawQuery(observedEntities = [Web3Transaction::class])
-    fun allTransactions(query: SupportSQLiteQuery): DataSource.Factory<Int, Web3TransactionItem>
+    fun allTransactions(query: SupportSQLiteQuery): PagingSource<Int, Web3TransactionItem>
 
     @Query("SELECT DISTINCT transaction_hash, * FROM transactions WHERE transaction_hash = :hash AND chain_id = :chainId LIMIT 1")
     suspend fun getLatestTransaction(hash: String, chainId: String): Web3Transaction?

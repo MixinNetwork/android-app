@@ -4,7 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.paging.DataSource
+import androidx.paging.PagingSource
 import kotlinx.coroutines.flow.Flow
 import one.mixin.android.api.response.perps.PerpsPosition
 import one.mixin.android.api.response.perps.PerpsPositionItem
@@ -45,7 +45,7 @@ interface PerpsPositionDao : BaseDao<PerpsPosition> {
         WHERE p.wallet_id = :walletId AND (p.state = 'open' or p.state = 'opening')
         ORDER BY p.created_at DESC
     """)
-    fun getOpenPositionsPaged(walletId: String): DataSource.Factory<Int, PerpsPositionItem>
+    fun getOpenPositionsPaged(walletId: String): PagingSource<Int, PerpsPositionItem>
 
     @Query("""
         SELECT p.*, m.display_symbol, m.icon_url, m.token_symbol 
