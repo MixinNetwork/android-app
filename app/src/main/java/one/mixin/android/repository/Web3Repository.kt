@@ -18,12 +18,14 @@ import one.mixin.android.api.request.web3.GaslessFeeRequest
 import one.mixin.android.api.request.web3.GaslessTxRequest
 import one.mixin.android.api.request.web3.SubmitGaslessTxRequest
 import one.mixin.android.api.request.web3.WalletRequest
+import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.api.response.web3.GaslessSponsorTransactionResponse
 import one.mixin.android.api.response.web3.SubmitGaslessTxResponse
 import one.mixin.android.api.service.RouteService
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.db.property.Web3PropertyHelper
 import one.mixin.android.db.OrderDao
+import one.mixin.android.db.perps.PerpsMarketDao
 import one.mixin.android.db.web3.Web3AddressDao
 import one.mixin.android.db.web3.Web3ChainDao
 import one.mixin.android.db.web3.Web3TokenDao
@@ -73,6 +75,7 @@ constructor(
     val userRepository: UserRepository,
     val web3ChainDao: Web3ChainDao,
     val orderDao: OrderDao,
+    val perpsMarketDao: PerpsMarketDao,
     val walletOutputDao: WalletOutputDao,
 ) {
     suspend fun estimateFee(request: EstimateFeeRequest) = routeService.estimateFee(request)
@@ -86,6 +89,13 @@ constructor(
 
     suspend fun gaslessTransaction(id: String): MixinResponse<GaslessSponsorTransactionResponse> =
         routeService.gaslessTransaction(id)
+
+    suspend fun getPerpsMarket(marketId: String): PerpsMarket? {
+        val response = routeService.getPerpsMarket(marketId)
+        return response.data?.also { market ->
+            perpsMarketDao.upsertSuspend(market)
+        }
+    }
 
     suspend fun refreshBitcoinTokenAmount(walletId: String, address: String) {
         if (walletId.isBlank() || address.isBlank()) return

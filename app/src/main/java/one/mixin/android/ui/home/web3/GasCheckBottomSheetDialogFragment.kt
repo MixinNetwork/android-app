@@ -18,6 +18,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.response.web3.SwapResponse
@@ -40,8 +41,15 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.Rpc
+import one.mixin.android.web3.SOLANA_RENT_EXEMPTION
+import one.mixin.android.web3.SOLANA_TOKEN_ACCOUNT_RENT_EXEMPTION
+import one.mixin.android.web3.SolanaRecipientAccountState
+import one.mixin.android.web3.isNativeSolAsset
+import one.mixin.android.web3.solanaRecipientAccountState
+import one.mixin.android.web3.solanaTransferAmountRange
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.Web3Signer
+import org.sol4kt.VersionedTransactionCompat
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import timber.log.Timber
@@ -126,8 +134,13 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 val web3TokenItem = viewModel.web3TokenItemById(Web3Signer.currentWalletId, fromToken.assetId)
                 val chainTokenItem = viewModel.web3TokenItemById(Web3Signer.currentWalletId, fromToken.chain.chainId)
                 if (web3TokenItem != null) {
+                    val fromAddress = if (web3TokenItem.chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
+                        Web3Signer.solanaAddress
+                    } else {
+                        Web3Signer.evmAddress
+                    }
                     val jsSignMessage = web3TokenItem.buildTransaction(
-                        rpc, Web3Signer.evmAddress,
+                        rpc, fromAddress,
                         swapResult!!.depositDestination!!,
                         swapResult!!.quote.inAmount
                     )
@@ -239,7 +252,7 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
         chainToken: Web3TokenItem?,
     ) {
         if (chain == Chain.Solana) {
-            showBrowserWalletBottomSheet()
+            refreshSolanaEstimatedGasAndAsset(token, chainToken)
             return
         }
         val chainId = chain.getWeb3ChainId()
@@ -317,6 +330,88 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
         } catch (e: Exception) {
             showError(ErrorHandler.getErrorMessage(e))
         }
+    }
+
+    private suspend fun refreshSolanaEstimatedGasAndAsset(
+        token: Web3TokenItem?,
+        chainToken: Web3TokenItem?,
+    ) {
+        if (swapResult == null && signMessage.isGaslessTransfer()) {
+            showBrowserWalletBottomSheet()
+            return
+        }
+
+        val transferToken = token ?: run {
+            showBrowserWalletBottomSheet()
+            return
+        }
+        val senderAddress = Web3Signer.solanaAddress
+        val receiverAddress = toAddress ?: swapResult?.depositDestination ?: run {
+            showBrowserWalletBottomSheet()
+            return
+        }
+        val rawAmount = amount ?: swapResult?.quote?.inAmount ?: run {
+            showBrowserWalletBottomSheet()
+            return
+        }
+        val transferAmount = rawAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
+        val feeToken = if (transferToken.isNativeSolAsset()) {
+            transferToken
+        } else {
+            chainToken ?: run {
+                showBrowserWalletBottomSheet()
+                return
+            }
+        }
+        val solanaMessage = if (swapResult != null) {
+            transferToken.buildTransaction(rpc, senderAddress, receiverAddress, rawAmount)
+        } else {
+            signMessage
+        }
+        val rawTransaction = solanaMessage.data ?: run {
+            showBrowserWalletBottomSheet()
+            return
+        }
+        val fee = runCatching {
+            VersionedTransactionCompat.from(rawTransaction).calcFee(senderAddress)
+        }.getOrDefault(BigDecimal.ZERO)
+        val recipientState = runCatching {
+            transferToken.solanaRecipientAccountState(rpc, receiverAddress)
+        }.getOrDefault(SolanaRecipientAccountState.EXISTS)
+        val range = solanaTransferAmountRange(
+            token = transferToken,
+            feeToken = feeToken,
+            feeAmount = fee,
+            recipientAccountState = recipientState,
+            allowZeroBalance = false,
+            includeAtaCreationReserve = !transferToken.isNativeSolAsset(),
+        )
+
+        if (transferAmount < range.minAmount) {
+            showError(getString(R.string.send_sol_for_rent, SOLANA_RENT_EXEMPTION.stripTrailingZeros().toPlainString()))
+            return
+        }
+        if (!range.canTransfer(transferAmount)) {
+            val extraReserve = if (!transferToken.isNativeSolAsset() && recipientState == SolanaRecipientAccountState.NEEDS_TOKEN_ACCOUNT) {
+                SOLANA_TOKEN_ACCOUNT_RENT_EXEMPTION
+            } else {
+                BigDecimal.ZERO
+            }
+            TransferWeb3BalanceErrorBottomSheetDialogFragment.newInstance(
+                Web3TokenFeeItem(
+                    feeToken,
+                    if (transferToken.isNativeSolAsset()) transferAmount else BigDecimal.ZERO,
+                    fee + SOLANA_RENT_EXEMPTION + extraReserve,
+                )
+            ).showNow(
+                parentFragmentManager,
+                TransferWeb3BalanceErrorBottomSheetDialogFragment.TAG
+            )
+            dismiss()
+            return
+        }
+
+        showBrowserWalletBottomSheet()
     }
 
     @SuppressLint("SetTextI18n")

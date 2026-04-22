@@ -9,12 +9,12 @@ import android.view.View
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.isGone
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
-import androidx.paging.PagedList
+import androidx.recyclerview.widget.ConcatAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
@@ -35,6 +35,7 @@ import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.group.GroupFragment.Companion.MAX_USER
 import one.mixin.android.ui.group.adapter.GroupInfoAdapter
+import one.mixin.android.ui.group.adapter.GroupInfoHeaderAdapter
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.Participant
@@ -62,16 +63,14 @@ class GroupInfoFragment : BaseFragment(R.layout.fragment_group_info) {
 
     private val groupViewModel by viewModels<GroupViewModel>()
 
-    private val adapter by lazy {
-        GroupInfoAdapter(self)
-    }
+    private val adapter by lazy { GroupInfoAdapter(self) }
+    private val headerAdapter by lazy { GroupInfoHeaderAdapter() }
 
     private val conversationId: String by lazy {
         requireArguments().getString(ARGS_CONVERSATION_ID)!!
     }
 
-    private var observer: Observer<PagedList<ParticipantItem>>? = null
-    private var curLiveData: LiveData<PagedList<ParticipantItem>>? = null
+    private var pagingJob: Job? = null
 
     private var conversation: Conversation? = null
     private val self: User = Session.getAccount()!!.toUser()
@@ -91,9 +90,8 @@ class GroupInfoFragment : BaseFragment(R.layout.fragment_group_info) {
             activity?.onBackPressedDispatcher?.onBackPressed()
         }
         headerBinding = ViewGroupInfoHeaderBinding.inflate(LayoutInflater.from(context), binding.groupInfoRv, false)
-        adapter.headerView = headerBinding.root
-        adapter.setShowHeader(true, binding.groupInfoRv)
-        binding.groupInfoRv.adapter = adapter
+        headerAdapter.headerView = headerBinding.root
+        binding.groupInfoRv.adapter = ConcatAdapter(headerAdapter, adapter)
         adapter.setGroupInfoListener(
             object : GroupInfoAdapter.GroupInfoListener {
                 override fun onClick(
@@ -207,6 +205,12 @@ class GroupInfoFragment : BaseFragment(R.layout.fragment_group_info) {
             },
         )
 
+        viewLifecycleOwner.lifecycleScope.launch {
+            adapter.loadStateFlow.collectLatest {
+                refreshHeader(adapter.itemCount)
+            }
+        }
+
         filter()
 
         groupViewModel.getConversationById(conversationId).observe(
@@ -248,61 +252,54 @@ class GroupInfoFragment : BaseFragment(R.layout.fragment_group_info) {
             filter()
         }
 
-    private fun filter() =
-        lifecycleScope.launch {
-            observer?.let {
-                curLiveData?.removeObserver(it)
-            }
-            curLiveData =
+    private fun filter() {
+        pagingJob?.cancel()
+        pagingJob = viewLifecycleOwner.lifecycleScope.launch {
+            val flow =
                 if (keyword.isNotBlank()) {
                     groupViewModel.fuzzySearchGroupParticipants(conversationId, keyword)
                 } else {
                     groupViewModel.observeGroupParticipants(conversationId)
                 }
-            observer =
-                Observer {
-                    refreshHeader(it.size)
-                    adapter.submitList(it)
-                }
-            observer?.let {
-                curLiveData?.observe(viewLifecycleOwner, it)
+            flow.collectLatest { pagingData ->
+                adapter.submitData(pagingData)
             }
         }
+    }
 
-    private fun refreshHeader(participantCount: Int) =
-        lifecycleScope.launch {
-            var isAdmin = false
-            var inGroup = true
-            if (selfParticipant == null) {
-                selfParticipant =
-                    withContext(Dispatchers.IO) {
-                        groupViewModel.findParticipantById(conversationId, self.userId)
-                    }
+    private suspend fun refreshHeader(participantCount: Int) {
+        var isAdmin = false
+        var inGroup = true
+        if (selfParticipant == null) {
+            selfParticipant =
+                withContext(Dispatchers.IO) {
+                    groupViewModel.findParticipantById(conversationId, self.userId)
+                }
+        }
+        if (selfParticipant == null) {
+            inGroup = false
+        } else {
+            val role = selfParticipant!!.role
+            isAdmin = role == ParticipantRole.OWNER.name || role == ParticipantRole.ADMIN.name
+        }
+
+        headerBinding.apply {
+            addRl.setOnClickListener {
+                modifyMember(true)
             }
-            if (selfParticipant == null) {
-                inGroup = false
+            if (keyword.isBlank() && isAdmin && participantCount < MAX_USER) {
+                addRl.visibility = View.VISIBLE
+                inviteItem.visibility = View.VISIBLE
             } else {
-                val role = selfParticipant!!.role
-                isAdmin = role == ParticipantRole.OWNER.name || role == ParticipantRole.ADMIN.name
+                addRl.visibility = View.GONE
+                inviteItem.visibility = View.GONE
             }
-
-            headerBinding.apply {
-                addRl.setOnClickListener {
-                    modifyMember(true)
-                }
-                if (keyword.isBlank() && isAdmin && participantCount < MAX_USER) {
-                    addRl.visibility = View.VISIBLE
-                    inviteItem.visibility = View.VISIBLE
-                } else {
-                    addRl.visibility = View.GONE
-                    inviteItem.visibility = View.GONE
-                }
-                groupInfoNotIn.isGone = inGroup
-                inviteItem.setOnClickListener {
-                    InviteActivity.show(requireContext(), conversationId)
-                }
+            groupInfoNotIn.isGone = inGroup
+            inviteItem.setOnClickListener {
+                InviteActivity.show(requireContext(), conversationId)
             }
         }
+    }
 
     private fun handleAdminRole(
         userRole: String,
