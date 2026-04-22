@@ -150,6 +150,7 @@ import one.mixin.android.ui.home.web3.showGasCheckAndBrowserBottomSheetDialogFra
 import one.mixin.android.ui.player.MusicActivity
 import one.mixin.android.ui.player.MusicService
 import one.mixin.android.ui.player.MusicService.Companion.MUSIC_PLAYLIST
+import one.mixin.android.ui.player.collapse as collapsePlayer
 import one.mixin.android.ui.qr.QRCodeProcessor
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.setting.SettingActivity.Companion.ARGS_SUCCESS
@@ -207,6 +208,7 @@ class WebFragment : BaseFragment() {
         const val ARGS_SHAREABLE = "args_shareable"
         const val ARGS_SAVE_NAME = "args_save_name"
         const val ARGS_INJECTABLE = "args_injectable"
+        const val ARGS_FIXED_TITLE = "args_fixed_title"
         const val themeColorScript =
             """
             (function() {
@@ -244,6 +246,9 @@ class WebFragment : BaseFragment() {
 
     private val injectable: Boolean by lazy {
         requireArguments().getBoolean(ARGS_INJECTABLE, true)
+    }
+    private val fixedTitle: String? by lazy {
+        requireArguments().getString(ARGS_FIXED_TITLE)
     }
 
     private var currentUrl: String? = null
@@ -650,7 +655,7 @@ class WebFragment : BaseFragment() {
                 ) {
                     super.onReceivedTitle(view, title)
                     if (!isBot()) {
-                        _binding?.titleTv?.text = title
+                        _binding?.titleTv?.text = fixedTitle ?: title
                         if (once) {
                             once = false
                             val saveName = requireArguments().getBoolean(ARGS_SAVE_NAME, false)
@@ -680,7 +685,7 @@ class WebFragment : BaseFragment() {
                     icon: Bitmap?,
                 ) {
                     super.onReceivedIcon(view, icon)
-                    if (!isBot()) {
+                    if (!isBot() && fixedTitle == null) {
                         icon?.let {
                             _binding?.apply {
                                 iconIv.isVisible = true
@@ -907,7 +912,12 @@ class WebFragment : BaseFragment() {
                 }
             }
             app?.name?.let { binding.titleTv.text = it }
-            app?.iconUrl?.let {
+            fixedTitle?.let {
+                binding.titleTv.text = it
+                binding.iconIv.isVisible = false
+                binding.webControl.hideMore()
+            }
+            if (fixedTitle == null) app?.iconUrl?.let {
                 binding.iconIv.isVisible = true
                 binding.iconIv.loadImage(it)
                 binding.titleTv.updateLayoutParams<ViewGroup.MarginLayoutParams> {
@@ -1025,7 +1035,7 @@ class WebFragment : BaseFragment() {
 
             MusicService.playUrls(requireContext(), playlist)
             if (checkFloatingPermission()) {
-                one.mixin.android.ui.player.collapse(MUSIC_PLAYLIST)
+                collapsePlayer(MUSIC_PLAYLIST)
             } else {
                 requireActivity().showPipPermissionNotification(
                     MusicActivity::class.java,

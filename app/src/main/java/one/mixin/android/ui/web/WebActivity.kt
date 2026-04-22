@@ -14,6 +14,7 @@ import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.blurBitmap
 import one.mixin.android.extension.isDarkColor
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.openCustomerServiceIfMatched
 import one.mixin.android.extension.supportsS
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
@@ -45,8 +46,12 @@ class WebActivity : BaseActivity() {
             conversationId: String?,
             app: App? = null,
             appCard: AppCardData? = null,
-            saveName: Boolean? = null
+            saveName: Boolean? = null,
+            fixedTitle: String? = null
         ) {
+            if (context.openCustomerServiceIfMatched(url)) {
+                return
+            }
             context.startActivity(
                 Intent(context, WebActivity::class.java).apply {
                     if (context !is Activity) {
@@ -65,6 +70,7 @@ class WebActivity : BaseActivity() {
                             putParcelable(WebFragment.ARGS_APP, app)
                             putParcelable(WebFragment.ARGS_APP_CARD, appCard)
                             putBoolean(WebFragment.ARGS_SAVE_NAME, saveName ?: false)
+                            putString(WebFragment.ARGS_FIXED_TITLE, fixedTitle)
                         },
                     )
                 },

@@ -86,6 +86,8 @@ import one.mixin.android.ui.home.inscription.InscriptionActivity
 import one.mixin.android.ui.home.web3.GasCheckBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.PREF_TRADE_SELECTED_TAB_PREFIX
+import one.mixin.android.ui.home.web3.trade.perps.PerpsActivity
+import one.mixin.android.ui.common.BottomSheetViewModel as CommonBottomSheetViewModel
 import one.mixin.android.ui.oldwallet.BottomSheetViewModel
 import one.mixin.android.ui.oldwallet.MultisigsBottomSheetDialogFragment
 import one.mixin.android.ui.oldwallet.NftBottomSheetDialogFragment
@@ -164,7 +166,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
 
     private val oldLinkViewModel by viewModels<BottomSheetViewModel>()
 
-    val linkViewModel by viewModels<one.mixin.android.ui.common.BottomSheetViewModel>()
+    val linkViewModel by viewModels<CommonBottomSheetViewModel>()
 
     private val binding by viewBinding(FragmentBottomSheetBinding::inflate)
 
@@ -884,7 +886,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                     }
                 }
             }
-        } else if (url.startsWith(Scheme.SEND, true) || url.startsWith(Scheme.MIXIN_SEND, true) || url.startsWith(one.mixin.android.Constants.Scheme.HTTPS_SEND)) {
+        } else if (url.startsWith(Scheme.SEND, true) || url.startsWith(Scheme.MIXIN_SEND, true) || url.startsWith(Scheme.HTTPS_SEND)) {
             val uri = Uri.parse(url)
             lifecycleScope.launch(errorHandler) {
                 val userId = uri.getQueryParameter("user")
@@ -1076,10 +1078,35 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
     }
 
     private suspend fun handleTradeScheme(uri: Uri) {
+        val type = uri.getQueryParameter("type")
+        
+        if (type.equals("perps", true)) {
+            val marketId = uri.getQueryParameter("market")
+            if (marketId.isNullOrBlank() || !marketId.isUUID()) {
+                showError(R.string.Invalid_payment_link)
+                return
+            }
+            
+            val market = linkViewModel.getPerpsMarket(marketId)
+            if (market == null) {
+                showError(R.string.Data_error)
+                return
+            }
+            
+            PerpsActivity.showDetail(
+                requireContext(),
+                market.marketId,
+                market.displaySymbol,
+                market.displaySymbol,
+                market.tokenSymbol
+            )
+            dismiss()
+            return
+        }
+        
         val input = uri.getQueryParameter("input")
         val output = uri.getQueryParameter("output")
         val amount = uri.getQueryParameter("amount")
-        val type = uri.getQueryParameter("type")
         if (output != null && output.isUUID()) {
             checkToken(output)
         }

@@ -43,6 +43,7 @@ class MarketShareActivity : BaseActivity() {
     companion object {
         private const val ARGS_NAME = "name"
         private const val ARGS_COIN = "coin"
+        private const val SHARE_QR_URL = "https://mixin.one/mm"
         private var cover: Bitmap? = null
         fun show(context: Context, cover: Bitmap, name: String, coinId: String) {
             refreshScreenshot(context, 0x33000000)
@@ -87,8 +88,7 @@ class MarketShareActivity : BaseActivity() {
             binding.image.setImageBitmap(cropAndScaleBitmap(cover!!, 24.dp, (80 - 24 + 32).dp))
         }
         Session.getAccount()?.identityNumber.let {
-            val qrcodeContent = "$HTTPS_MARKET/$coinId?ref=$it"
-            val qrCode = qrcodeContent.generateQRCode(72.dp, 8.dp).first
+            val qrCode = SHARE_QR_URL.generateQRCode(72.dp, 8.dp).first
             binding.qr.setImageBitmap(qrCode)
         }
         binding.apply {
@@ -149,12 +149,11 @@ class MarketShareActivity : BaseActivity() {
     }
 
     private val onCopy: () -> Unit = {
-        Session.getAccount()?.identityNumber.let {
-            val link = "$HTTPS_MARKET/$coinId?ref=$it"
-            getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, link))
-            finish()
-            toast(R.string.copied_to_clipboard)
-        }
+        val marketLink = "$HTTPS_MARKET/$coinId"
+        val link = Session.getAccount()?.identityNumber?.let { "$marketLink?ref=$it" } ?: marketLink
+        getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, link))
+        finish()
+        toast(R.string.copied_to_clipboard)
     }
 
     private val onSave: () -> Unit = {

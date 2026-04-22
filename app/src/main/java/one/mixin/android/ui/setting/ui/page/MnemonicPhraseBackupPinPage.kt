@@ -1,6 +1,6 @@
 package one.mixin.android.ui.setting.ui.page
 
-import PageScaffold
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -91,6 +91,9 @@ fun MnemonicPhraseBackupPinPage(tip: Tip, pop: () -> Unit, next: (String) -> Uni
                     )
             }.onSuccess { response ->
                 if (response.isSuccess) {
+                    response.data?.let {
+                        Session.storeAccount(it)
+                    }
                     next(pinCode)
                 } else {
                     isLoading = false

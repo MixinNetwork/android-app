@@ -5,15 +5,20 @@ import android.graphics.Typeface
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.View
+import android.widget.RelativeLayout
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.skydoves.balloon.BalloonAnimation
+import com.skydoves.balloon.createBalloon
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.BuildConfig
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.web3.WalletOutput
 import one.mixin.android.databinding.FragmentWeb3TransactionBinding
 import one.mixin.android.databinding.ViewWalletWeb3TransactionBottomBinding
@@ -24,6 +29,7 @@ import one.mixin.android.db.web3.vo.Web3RawTransaction
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.db.web3.vo.isGaslessPending
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.forEachWithIndex
@@ -31,7 +37,9 @@ import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.openUrl
+import one.mixin.android.extension.priceFormat2
 import one.mixin.android.extension.toHex
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
@@ -44,7 +52,10 @@ import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.showGasCheckAndBrowserBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.Fiats
+import one.mixin.android.vo.Ticker
 import one.mixin.android.vo.WalletCategory
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.details.Web3TransactionsFragment.Companion.ARGS_TOKEN
 import one.mixin.android.web3.js.JsSignMessage
@@ -133,6 +144,192 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         } else {
             if (amount.startsWith("-")) amount else "-$amount"
         }
+    }
+
+    private fun shouldShowValueDetails(): Boolean {
+        if (transaction.status != TransactionStatus.SUCCESS.value) return false
+        if (transaction.transactionType != TransactionType.TRANSFER_IN.value &&
+            transaction.transactionType != TransactionType.TRANSFER_OUT.value) {
+            return false
+        }
+        if (transaction.transactionType == TransactionType.TRANSFER_OUT.value && transaction.senders.size > 1) {
+            return false
+        }
+        if (transaction.transactionType == TransactionType.TRANSFER_IN.value && transaction.receivers.size > 1) {
+            return false
+        }
+        return transaction.getMainAmount().toBigDecimalOrNull()?.compareTo(BigDecimal.ZERO) != 0
+    }
+
+    private fun setStatusAnchor(showValueDetails: Boolean) {
+        val layoutParams = binding.status.layoutParams as RelativeLayout.LayoutParams
+        layoutParams.addRule(RelativeLayout.BELOW, if (showValueDetails) R.id.that_va else R.id.value_tv)
+        binding.status.layoutParams = layoutParams
+    }
+
+    private fun getMainAssetSymbol(): String {
+        return when (transaction.transactionType) {
+            TransactionType.TRANSFER_OUT.value -> transaction.sendAssetSymbol
+            TransactionType.TRANSFER_IN.value -> transaction.receiveAssetSymbol
+            else -> token.symbol
+        } ?: token.symbol
+    }
+
+    private fun hideValueDetails() {
+        binding.valueAsTv.isVisible = false
+        binding.thatVa.isVisible = false
+        binding.thatTv.setOnClickListener(null)
+        setStatusAnchor(false)
+    }
+
+    private fun bindCurrentValue(
+        amount: BigDecimal,
+        symbol: String,
+        tokenItem: Web3TokenItem?,
+    ) {
+        binding.valueAsTv.isVisible = true
+        if (tokenItem == null) {
+            binding.valueAsTv.text = getString(R.string.value_now, getString(R.string.NA))
+            return
+        }
+        val fiatSymbol = Fiats.getSymbol()
+        val currentPrice = tokenItem.priceFiat()
+        val valueNow = amount.abs().multiply(currentPrice).numberFormat2()
+        val pricePerUnit = "(${fiatSymbol}${currentPrice.priceFormat2()}/$symbol)"
+        binding.valueAsTv.text = getString(R.string.value_now, "$fiatSymbol$valueNow $pricePerUnit")
+    }
+
+    private fun bindHistoricalValue(
+        ticker: Ticker,
+        amount: BigDecimal,
+        symbol: String,
+    ) {
+        if (!isAdded || view == null) return
+        binding.thatVa.isVisible = true
+        binding.thatVa.displayedChild = 1
+        binding.thatTv.apply {
+            text = if (ticker.priceUsd == "0") {
+                getString(R.string.value_then, getString(R.string.NA))
+            } else {
+                val fiatSymbol = Fiats.getSymbol()
+                val valueThen = amount.abs().multiply(ticker.priceFiat()).numberFormat2()
+                val pricePerUnit = if (BuildConfig.DEBUG) {
+                    "(${fiatSymbol}${ticker.priceFiat().priceFormat2()}/$symbol)"
+                } else {
+                    ""
+                }
+                getString(R.string.value_then, "$fiatSymbol$valueThen $pricePerUnit".trim())
+            }
+            setTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
+            setOnClickListener {
+                val context = context ?: return@setOnClickListener
+                val balloon = createBalloon(context) {
+                    setArrowSize(10)
+                    setHeight(45)
+                    setCornerRadius(4f)
+                    setAlpha(0.9f)
+                    setAutoDismissDuration(3000L)
+                    setBalloonAnimation(BalloonAnimation.FADE)
+                    setText(getString(R.string.wallet_transaction_that_time_value_tip))
+                    setTextColorResource(R.color.white)
+                    setPaddingLeft(10)
+                    setPaddingRight(10)
+                    setBackgroundColorResource(R.color.colorLightBlue)
+                    setLifecycleOwner(viewLifecycleOwner)
+                }
+                balloon.showAlignTop(this)
+            }
+        }
+    }
+
+    private fun bindHistoricalValueRetry(
+        assetId: String,
+        amount: BigDecimal,
+        symbol: String,
+    ) {
+        if (!isAdded || view == null) return
+        binding.thatVa.isVisible = true
+        binding.thatVa.displayedChild = 1
+        binding.thatTv.apply {
+            text = getString(R.string.Click_to_retry)
+            setTextColor(requireContext().getColor(R.color.colorDarkBlue))
+            setOnClickListener {
+                fetchHistoricalValue(assetId, amount, symbol)
+            }
+        }
+    }
+
+    private fun fetchHistoricalValue(
+        assetId: String,
+        amount: BigDecimal,
+        symbol: String,
+    ) {
+        binding.thatVa.isVisible = true
+        binding.thatVa.displayedChild = 0
+        lifecycleScope.launch {
+            handleMixinResponse(
+                invokeNetwork = { web3ViewModel.ticker(assetId, transaction.transactionAt) },
+                successBlock = { response ->
+                    val ticker = response.data
+                    if (ticker == null) {
+                        bindHistoricalValueRetry(assetId, amount, symbol)
+                    } else {
+                        bindHistoricalValue(ticker, amount, symbol)
+                    }
+                },
+                failureBlock = {
+                    bindHistoricalValueRetry(assetId, amount, symbol)
+                    true
+                },
+                exceptionBlock = {
+                    bindHistoricalValueRetry(assetId, amount, symbol)
+                    true
+                },
+            )
+        }
+    }
+
+    private fun showValueDetails() {
+        val amount = transaction.getMainAmount().toBigDecimalOrNull() ?: run {
+            hideValueDetails()
+            return
+        }
+        val assetId = transaction.getMainAssetId()
+        val symbol = getMainAssetSymbol()
+        setStatusAnchor(true)
+        binding.thatVa.isVisible = true
+        binding.thatVa.displayedChild = 0
+        lifecycleScope.launch {
+            val mainToken = fetchDisplayToken(assetId)
+            if (!isAdded || view == null) return@launch
+            bindCurrentValue(amount, symbol, mainToken)
+            fetchHistoricalValue(assetId, amount, symbol)
+        }
+    }
+
+    private suspend fun fetchDisplayToken(assetId: String): Web3TokenItem? {
+        if (token.assetId == assetId) return token
+        web3ViewModel.web3TokenItemById(wallet.id, assetId)?.let { return it }
+        web3ViewModel.web3TokenItemById(Web3Signer.currentWalletId, assetId)?.let { return it }
+        val syncedAsset: TokenItem = web3ViewModel.findOrSyncAsset(assetId) ?: return null
+        return Web3TokenItem(
+            walletId = wallet.id,
+            assetId = syncedAsset.assetId,
+            chainId = syncedAsset.chainId,
+            name = syncedAsset.name,
+            assetKey = syncedAsset.assetKey ?: "",
+            symbol = syncedAsset.symbol,
+            iconUrl = syncedAsset.iconUrl,
+            precision = syncedAsset.precision,
+            balance = syncedAsset.balance,
+            priceUsd = syncedAsset.priceUsd,
+            changeUsd = syncedAsset.changeUsd,
+            chainIcon = syncedAsset.chainIconUrl,
+            chainName = syncedAsset.chainName,
+            chainSymbol = syncedAsset.chainSymbol,
+            hidden = syncedAsset.hidden,
+            level = syncedAsset.level ?: 0,
+        )
     }
 
     @SuppressLint("SetTextI18n")
@@ -293,6 +490,12 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 }
             }
 
+            if (valueTv.isVisible && shouldShowValueDetails()) {
+                showValueDetails()
+            } else {
+                hideValueDetails()
+            }
+
             when {
                 transaction.status == TransactionStatus.NOT_FOUND.value || transaction.status == TransactionStatus.FAILED.value || transaction.status == TransactionStatus.PENDING.value -> {
                     avatar.bg.setImageResource(R.drawable.ic_web3_transaction_contract)
@@ -334,7 +537,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             avatar.badge.isVisible = false
 
             dateTv.text = transaction.transactionAt.fullDate()
-            feeLl.isVisible = transaction.transactionType != TransactionType.TRANSFER_IN.value && transaction.fee.isNotEmpty()
+            feeLl.isVisible = shouldShowFee(transaction.status)
             feeTv.text = "${transaction.fee} ${transaction.chainSymbol ?: ""}"
             statusLl.isVisible = false
             
@@ -359,7 +562,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                         senders = transaction.senders,
                         receivers = transaction.receivers,
                         fetchToken = { assetId ->
-                            web3ViewModel.web3TokenItemById(Web3Signer.currentWalletId, assetId)
+                            fetchDisplayToken(assetId)
                         },
                         approvals = transaction.approvals,
                     )
@@ -372,17 +575,19 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                         senders = if (transaction.transactionType == TransactionType.TRANSFER_IN.value) emptyList() else transaction.senders,
                         receivers = if (transaction.transactionType == TransactionType.TRANSFER_OUT.value) emptyList() else transaction.receivers,
                         fetchToken = { assetId ->
-                            web3ViewModel.web3TokenItemById(Web3Signer.currentWalletId, assetId)
-                        }
+                            fetchDisplayToken(assetId)
+                        },
                     )
                 }
             } else {
                 assetChangesLl.visibility = View.GONE
             }
-            if (transaction.status == TransactionStatus.PENDING.value
-                && transaction.chainId != Constants.ChainId.SOLANA_CHAIN_ID) {
+            if (transaction.status == TransactionStatus.PENDING.value) {
                 lifecycleScope.launch {
-                    updateActions()
+                    updateFeeVisibility(transaction.status)
+                    if (transaction.chainId != Constants.ChainId.SOLANA_CHAIN_ID) {
+                        updateActions()
+                    }
                 }
             }
         }
@@ -406,9 +611,37 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         return !isOnlyOutputToSelf
     }
 
-    private fun updateActions() {
+    private fun shouldShowFee(
+        status: String,
+        pendingRawTx: Web3RawTransaction? = null,
+    ): Boolean {
+        if (transaction.transactionType == TransactionType.TRANSFER_IN.value || transaction.fee.isEmpty()) {
+            return false
+        }
+        if (status != TransactionStatus.PENDING.value) {
+            return true
+        }
+        return pendingRawTx?.isGaslessPending() == false || transaction.fee.isNotEmpty()
+    }
+
+    private suspend fun updateFeeVisibility(status: String = transaction.status) {
+        val pendingRawTx: Web3RawTransaction? = if (status == TransactionStatus.PENDING.value) {
+            web3ViewModel.getRawTransactionByHashAndChain(wallet.id, transaction.transactionHash, transaction.chainId)
+        } else {
+            null
+        }
+        binding.feeLl.isVisible = shouldShowFee(status, pendingRawTx)
+    }
+
+    private fun updateActions(status: String = transaction.status) {
         lifecycleScope.launch {
             binding.apply {
+                if (status != TransactionStatus.PENDING.value) {
+                    actions.isVisible = false
+                    actions.speedUp.setOnClickListener(null)
+                    actions.cancelTx.setOnClickListener(null)
+                    return@apply
+                }
                 val pendingRawTx = web3ViewModel.getRawTransactionByHashAndChain(wallet.id, transaction.transactionHash, transaction.chainId)
                 val shouldShowActions = pendingRawTx != null
 
@@ -419,6 +652,12 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                     return@apply
                 }
                 val notNullPendingRawTx: Web3RawTransaction = pendingRawTx
+                if (notNullPendingRawTx.isGaslessPending()) {
+                    actions.isVisible = false
+                    actions.speedUp.setOnClickListener(null)
+                    actions.cancelTx.setOnClickListener(null)
+                    return@apply
+                }
                 if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
                     val hasSignedChange: Boolean = web3ViewModel.hasBitcoinSignedOutputsByTransactionHash(transaction.transactionHash)
                     if (hasSignedChange) {
@@ -523,7 +762,11 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 }
             }
         }
-        updateActions()
+        binding.feeLl.isVisible = shouldShowFee(newStatus)
+        lifecycleScope.launch {
+            updateFeeVisibility(newStatus)
+        }
+        updateActions(newStatus)
     }
 
     private fun handleSpeedUp(rawTransaction: Web3RawTransaction) {

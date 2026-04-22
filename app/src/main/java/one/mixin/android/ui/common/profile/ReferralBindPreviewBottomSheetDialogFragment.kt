@@ -40,6 +40,7 @@ import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.getSafeAreaInsetsBottom
@@ -231,7 +232,7 @@ class ReferralBindPreviewBottomSheetDialogFragment : MixinComposeBottomSheetDial
                                 colors = androidx.compose.material.ButtonDefaults.outlinedButtonColors(
                                     backgroundColor = MixinAppTheme.colors.accent
                                 ),
-                                shape = RoundedCornerShape(20.dp),
+                                shape = RoundedCornerShape(30.dp),
                                 contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 36.dp, vertical = 11.dp)
                             ) {
                                 Text(
@@ -269,7 +270,7 @@ class ReferralBindPreviewBottomSheetDialogFragment : MixinComposeBottomSheetDial
                         // No buttons during sending
                     }
                 }
-                Box(modifier = Modifier.height(36.dp))
+                Box(modifier = Modifier.height(32.dp))
             }
         }
     }
@@ -296,7 +297,7 @@ class ReferralBindPreviewBottomSheetDialogFragment : MixinComposeBottomSheetDial
                     true
                 },
                 requestSession = {
-                    viewModel.fetchSessionsSuspend(listOf(one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID))
+                    viewModel.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID))
                 }
             )
         }

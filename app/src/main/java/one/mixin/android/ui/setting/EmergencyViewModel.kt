@@ -7,21 +7,24 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.api.request.EmergencyRequest
+import one.mixin.android.api.service.EmergencyService
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.vo.User
 import javax.inject.Inject
+import javax.inject.Provider
 
 @HiltViewModel
 class EmergencyViewModel
     @Inject
     internal constructor(
-        private val accountRepository: AccountRepository,
-        private val userRepository: UserRepository,
+        private val emergencyService: EmergencyService,
+        private val accountRepositoryProvider: Provider<AccountRepository>,
+        private val userRepositoryProvider: Provider<UserRepository>,
     ) : ViewModel() {
         suspend fun createEmergency(request: EmergencyRequest) =
             withContext(Dispatchers.IO) {
-                accountRepository.createEmergency(request)
+                emergencyService.create(request)
             }
 
         suspend fun createVerifyEmergency(
@@ -29,7 +32,7 @@ class EmergencyViewModel
             request: EmergencyRequest,
         ) =
             withContext(Dispatchers.IO) {
-                accountRepository.createVerifyEmergency(id, request)
+                emergencyService.createVerify(id, request)
             }
 
         suspend fun loginVerifyEmergency(
@@ -37,25 +40,25 @@ class EmergencyViewModel
             request: EmergencyRequest,
         ) =
             withContext(Dispatchers.IO) {
-                accountRepository.loginVerifyEmergency(id, request)
+                emergencyService.loginVerify(id, request)
             }
 
-        suspend fun findFriendsNotBot() = userRepository.findFriendsNotBot()
+        suspend fun findFriendsNotBot() = userRepositoryProvider.get().findFriendsNotBot()
 
-        suspend fun findUserById(userId: String) = userRepository.suspendFindUserById(userId)
+        suspend fun findUserById(userId: String) = userRepositoryProvider.get().suspendFindUserById(userId)
 
         suspend fun showEmergency(pin: String) =
             withContext(Dispatchers.IO) {
-                accountRepository.showEmergency(pin)
+                accountRepositoryProvider.get().showEmergency(pin)
             }
 
         fun insertUser(u: User) =
             viewModelScope.launch(Dispatchers.IO) {
-                accountRepository.insertUserSuspend(u)
+                accountRepositoryProvider.get().insertUserSuspend(u)
             }
 
         suspend fun deleteEmergency(pin: String) =
             withContext(Dispatchers.IO) {
-                accountRepository.deleteEmergency(pin)
+                accountRepositoryProvider.get().deleteEmergency(pin)
             }
     }

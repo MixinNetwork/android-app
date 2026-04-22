@@ -113,8 +113,14 @@ object Constants {
         const val PREF_HAS_USED_SWAP = "pref_has_used_swap"
         const val PREF_HAS_USED_SWAP_TRANSACTION = "pref_has_used_swap_transaction" // -1: No data, 0: Never used, 1: Used before
         const val PREF_HAS_USED_MARKET = "pref_has_used_market"
+        const val PREF_NAV_MORE_BADGE_DISMISSED = "pref_nav_more_badge_dismissed"
 
         const val PREF_TRADE_LIMIT_ORDER_BADGE_DISMISSED = "pref_trade_limit_order_badge_dismissed"
+        const val PREF_TRADE_PERPETUAL_BADGE_DISMISSED = "pref_trade_perpetual_badge_dismissed"
+        const val PREF_TRADE_PERPETUAL_ORDER_BADGE_DISMISSED = "pref_trade_perpetual_order_badge_dismissed"
+        const val PREF_PERPS_ACCEPTED_ASSET_IDS = "pref_perps_accepted_asset_ids"
+        const val PREF_PERPS_ACCEPTED_ASSET_IDS_ORDERED = "pref_perps_accepted_asset_ids_ordered"
+        const val PREF_PERPS_ACCEPTED_ASSET_IDS_V2 = "pref_perps_accepted_asset_ids_v2"
 
         const val PREF_USED_WALLET = "pref_used_wallet"
 
@@ -144,12 +150,6 @@ object Constants {
             const val PREF_MIGRATION_BACKUP = "pref_migration_backup"
             const val PREF_MIGRATION_INSCRIPTION = "pref_migration_inscription"
             const val PREF_MIGRATION_COLLECTION = "pref_migration_inscription_collection"
-        }
-
-        object ChainAddress {
-            const val EVM_ADDRESS = "evm_address"
-            const val SOLANA_ADDRESS = "solana_address"
-            const val BTC_ADDRESS = "btc_address"
         }
 
     }
@@ -214,6 +214,7 @@ object Constants {
         const val FTS_DB_NAME = "fts.db"
         const val PENDING_DB_NAME = "pending.db"
         const val WEB3_DB_NAME = "web3.db"
+        const val PERPS_DB_NAME = "perps.db"
     }
 
     object Storage {

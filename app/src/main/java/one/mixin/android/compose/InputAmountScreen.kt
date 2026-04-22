@@ -815,8 +815,8 @@ fun InputAmountPreviewScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 50.dp, vertical = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(28.dp)
+                .padding(vertical = 16.dp, horizontal = 20.dp),
+            horizontalArrangement = Arrangement.spacedBy(28.dp, Alignment.CenterHorizontally)
         ) {
             if (invoiceUri != null) {
                 ActionButton(

@@ -224,7 +224,7 @@ private fun InscriptionPageImp(
                                                             backgroundColor = Color(0xFF, 0xFF, 0xFF, 0x1F),
                                                         ),
                                                     modifier = Modifier.weight(1f),
-                                                    shape = RoundedCornerShape(20.dp),
+                                                    shape = RoundedCornerShape(30.dp),
                                                     contentPadding = PaddingValues(vertical = 12.dp),
                                                     elevation =
                                                         ButtonDefaults.elevation(
@@ -253,7 +253,7 @@ private fun InscriptionPageImp(
                                                         backgroundColor = Color(0xFF, 0xFF, 0xFF, 0x1F),
                                                     ),
                                                 modifier = Modifier.weight(1f),
-                                                shape = RoundedCornerShape(20.dp),
+                                                shape = RoundedCornerShape(30.dp),
                                                 contentPadding = PaddingValues(vertical = 11.dp),
                                                 elevation =
                                                     ButtonDefaults.elevation(

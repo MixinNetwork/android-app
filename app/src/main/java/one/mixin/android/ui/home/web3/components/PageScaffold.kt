@@ -1,3 +1,5 @@
+package one.mixin.android.ui.home.web3.components
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.RowScope

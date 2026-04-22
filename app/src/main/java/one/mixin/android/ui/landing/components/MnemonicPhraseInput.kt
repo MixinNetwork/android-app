@@ -66,12 +66,12 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.checkout.threedsobfuscation.le
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.MixinApp
 import one.mixin.android.R
+import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.response.ExportRequest
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.crypto.getMatchingWords
@@ -83,10 +83,11 @@ import one.mixin.android.extension.toHex
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
+import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.trade.KeyboardAwareBox
 import one.mixin.android.ui.landing.components.HighlightedTextWithClick
-import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.getMixinErrorStringByCode
+import one.mixin.android.vo.Account
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.DotTextLayout
 import org.bitcoinj.crypto.MnemonicCode
@@ -103,6 +104,8 @@ fun MnemonicPhraseInput(
     onScan: (() -> Unit)? = null,
     validate: ((List<String>) -> String?)? = null,
     onCreate: (() -> Unit)? = null,
+    saltExport: (suspend (ExportRequest) -> MixinResponse<Account>)? = null,
+    getEncryptedTipBody: (suspend (String, String) -> String)? = null,
 ) {
     var legacy by remember { mutableStateOf(mnemonicList.size > 13) }
     var other by remember { mutableStateOf(false) }
@@ -132,11 +135,14 @@ fun MnemonicPhraseInput(
     var errorInfo by remember { mutableStateOf("") }
     val context = LocalContext.current
     val keyboardController = LocalSoftwareKeyboardController.current
-    val walletViewModel = hiltViewModel<WalletViewModel>()
     val coroutineScope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
     var currentText by remember { mutableStateOf("") }
     var focusIndex by remember { mutableIntStateOf(-1) }
+    fun hideInputMethod() {
+        focusManager.clearFocus(force = true)
+        keyboardController?.hide()
+    }
     MixinAppTheme {
         KeyboardAwareBox(
             modifier = Modifier.fillMaxSize(),
@@ -461,7 +467,10 @@ fun MnemonicPhraseInput(
                                                             return@KeyboardActions
                                                         }
                                                         when (state) {
-                                                            MnemonicState.Input -> onComplete.invoke(words)
+                                                            MnemonicState.Input -> {
+                                                                hideInputMethod()
+                                                                onComplete.invoke(words)
+                                                            }
                                                             MnemonicState.Import -> {
                                                                 val valid = (!legacy && words.size == 12 && isMnemonicValid(words)) ||
                                                                         (legacy && words.size == 24 && isMnemonicValid(words))
@@ -491,11 +500,13 @@ fun MnemonicPhraseInput(
                                                                             val selfId = Session.getAccountId()!!
                                                                             val seed = tip?.getOrRecoverTipPriv(context, pin!!)?.getOrThrow()
                                                                             val edKey = tip?.getMnemonicEdKey(context, pin!!, seed!!)
-                                                                            val r = walletViewModel.saltExport(
+                                                                            val export = requireNotNull(saltExport) { "saltExport is required for MnemonicState.Verify" }
+                                                                            val encryptedTipBody = requireNotNull(getEncryptedTipBody) { "getEncryptedTipBody is required for MnemonicState.Verify" }
+                                                                            val r = export(
                                                                                 ExportRequest(
                                                                                     publicKey = edKey!!.publicKey.toHex(),
                                                                                     signature = initFromSeedAndSign(edKey.privateKey, selfId.toByteArray()).toHex(),
-                                                                                    pinBase64 = walletViewModel.getEncryptedTipBody(selfId, pin!!),
+                                                                                    pinBase64 = encryptedTipBody(selfId, pin!!),
                                                                                 )
                                                                             )
                                                                             r.data?.let {
@@ -718,7 +729,10 @@ fun MnemonicPhraseInput(
                                         return@Button
                                     }
                                     when (state) {
-                                        MnemonicState.Input -> onComplete.invoke(words)
+                                        MnemonicState.Input -> {
+                                            hideInputMethod()
+                                            onComplete.invoke(words)
+                                        }
                                         MnemonicState.Import -> {
                                             val valid = (!legacy && words.size == 12 && isMnemonicValid(words)) ||
                                                     (legacy && words.size == 24 && isMnemonicValid(words))
@@ -740,11 +754,13 @@ fun MnemonicPhraseInput(
                                                         val selfId = Session.getAccountId()!!
                                                         val seed = tip?.getOrRecoverTipPriv(context, pin!!)?.getOrThrow()
                                                         val edKey = tip?.getMnemonicEdKey(context, pin!!, seed!!)
-                                                        val r = walletViewModel.saltExport(
+                                                        val export = requireNotNull(saltExport) { "saltExport is required for MnemonicState.Verify" }
+                                                        val encryptedTipBody = requireNotNull(getEncryptedTipBody) { "getEncryptedTipBody is required for MnemonicState.Verify" }
+                                                        val r = export(
                                                             ExportRequest(
                                                                 publicKey = edKey!!.publicKey.toHex(),
                                                                 signature = initFromSeedAndSign(edKey.privateKey, selfId.toByteArray()).toHex(),
-                                                                pinBase64 = walletViewModel.getEncryptedTipBody(selfId, pin!!),
+                                                                pinBase64 = encryptedTipBody(selfId, pin!!),
                                                             )
                                                         )
                                                         r.data?.let {

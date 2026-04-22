@@ -2,18 +2,25 @@ package one.mixin.android.ui.wallet
 
 import android.app.Activity
 import android.os.Bundle
+import android.view.WindowManager
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.ui.common.BlazeBaseActivity
 
 @AndroidEntryPoint
 class WalletSecurityActivity : BlazeBaseActivity() {
+    private val mode: Mode by lazy {
+        val modeOrdinal = intent.getIntExtra(EXTRA_MODE, Mode.IMPORT_MNEMONIC.ordinal)
+        Mode.entries[modeOrdinal]
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (mode.requiresSecureWindow()) {
+            window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        }
         setContentView(R.layout.activity_add_wallet)
         if (savedInstanceState == null) {
-            val modeOrdinal = intent.getIntExtra(EXTRA_MODE, Mode.IMPORT_MNEMONIC.ordinal)
-            val mode = Mode.entries[modeOrdinal]
             val chainId = intent.getStringExtra(EXTRA_CHAIN_ID)
             val walletId = intent.getStringExtra(EXTRA_WALLET_ID)
 
@@ -33,6 +40,13 @@ class WalletSecurityActivity : BlazeBaseActivity() {
                 .replace(R.id.container, fragment)
                 .commitNow()
         }
+    }
+
+    override fun onDestroy() {
+        if (mode.requiresSecureWindow()) {
+            window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        }
+        super.onDestroy()
     }
 
     companion object {
@@ -60,6 +74,9 @@ class WalletSecurityActivity : BlazeBaseActivity() {
         CREATE_WALLET,
         VIEW_ADDRESS,
     }
+
+    private fun Mode.requiresSecureWindow(): Boolean =
+        this == Mode.VIEW_MNEMONIC || this == Mode.VIEW_PRIVATE_KEY
 
     override fun onBackPressed() {
         super.onBackPressed()

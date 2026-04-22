@@ -2,13 +2,12 @@ package one.mixin.android.web3.js
 
 import okio.Buffer
 import one.mixin.android.Constants
-import one.mixin.android.Constants.Account.ChainAddress.BTC_ADDRESS
-import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
-import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.Constants.ChainId.BITCOIN_CHAIN_ID
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.api.response.web3.EIP7702SignRequest
+import one.mixin.android.api.response.web3.shouldSign
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.db.web3.vo.WalletItem
 import one.mixin.android.db.web3.vo.Web3Address
@@ -62,6 +61,7 @@ object Web3Signer {
     }
 
     private const val TAG = "Web3Signer"
+    private const val GASLESS_EIP7702_AUTHORIZED_ADDRESS = "0xe6cae83bde06e4c305530e199d7217f42808555b"
 
     private val sp by lazy {
         MixinApplication.appContext.defaultSharedPreferences
@@ -196,7 +196,7 @@ object Web3Signer {
         persist()
     }
 
-    private suspend fun updateAddressesAndPaths(
+    private fun updateAddressesAndPaths(
         walletId: String,
         queryAddress: (String) -> List<Web3Address>,
     ) {
@@ -212,10 +212,10 @@ object Web3Signer {
             btcAddress = addresses.firstOrNull {it.chainId == BITCOIN_CHAIN_ID}?.destination ?:""
             address = evmAddress
         } else {
-            evmAddress = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
-            solanaAddress = PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
-            btcAddress = PropertyHelper.findValueByKey(BTC_ADDRESS, "")
-            address = evmAddress
+            evmAddress = ""
+            solanaAddress = ""
+            btcAddress = ""
+            address = ""
             path = ""
         }
 
@@ -374,11 +374,14 @@ object Web3Signer {
     ): String {
         val keyPair = ECKeyPair.create(priv)
         val signature =
-            if (type == JsSignMessage.TYPE_TYPED_MESSAGE) {
-                val encoder = StructuredDataEncoder(message)
-                Sign.signMessage(encoder.hashStructuredData(), keyPair, false)
-            } else {
-                Sign.signPrefixedMessage(Numeric.hexStringToByteArray(message), keyPair)
+            when (type) {
+                JsSignMessage.TYPE_GASLESS_TRANSFER ->
+                    Sign.signMessage(Numeric.hexStringToByteArray(message), keyPair, false)
+                JsSignMessage.TYPE_TYPED_MESSAGE -> {
+                    val encoder = StructuredDataEncoder(message)
+                    Sign.signMessage(encoder.hashStructuredData(), keyPair, false)
+                }
+                else -> Sign.signPrefixedMessage(Numeric.hexStringToByteArray(message), keyPair)
             }
         val b = ByteArray(65)
         System.arraycopy(signature.r, 0, b, 0, 32)
@@ -470,6 +473,25 @@ object Web3Signer {
                 signature = sig.encodeToBase58String(),
             )
         return GsonHelper.customGson.toJson(signInOutput).toHex()
+    }
+
+    fun signEip7702Auth(
+        priv: ByteArray,
+        eip7702Auth: EIP7702SignRequest?,
+    ): String? {
+        return eip7702Auth
+            ?.takeIf { it.shouldSign }
+            ?.let { auth ->
+                val message = requireNotNull(auth.message) { "Missing EIP-7702 auth message" }
+                if (!auth.address.equals(GASLESS_EIP7702_AUTHORIZED_ADDRESS, ignoreCase = true)) {
+                    throw IllegalArgumentException("Unsupported EIP-7702 auth target")
+                }
+                signEthMessage(
+                    priv = priv,
+                    message = message,
+                    type = JsSignMessage.TYPE_GASLESS_TRANSFER,
+                )
+            }
     }
 
     private fun throwError(

@@ -1,6 +1,6 @@
 package one.mixin.android.ui.landing.components
 
-import PageScaffold
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -35,7 +35,6 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.openUrl
-import one.mixin.android.extension.toast
 import one.mixin.android.ui.landing.SetupPinViewModel
 import one.mixin.android.ui.landing.vo.SetupState
 import one.mixin.android.ui.tip.LegacyPIN
@@ -54,7 +53,6 @@ fun SetPinLoadingPage(
     val coroutineScope = rememberCoroutineScope()
     val setupState by viewModel.setupState.observeAsState(SetupState.Loading)
     val tipStep by viewModel.tipStep.observeAsState(TryConnecting)
-    val errorMessage by viewModel.errorMessage.observeAsState("")
     val context = LocalContext.current
 
     LaunchedEffect(pin) {
@@ -156,7 +154,11 @@ fun SetPinLoadingPage(
                             .height(48.dp),
                         onClick = {
                             coroutineScope.launch {
-                                viewModel.executeCreatePin(context, pin)
+                                viewModel.executeCreatePin(
+                                    context = context,
+                                    pin = pin,
+                                    preserveRetryRegisterStep = tipStep is RetryRegister,
+                                )
                             }
                         },
                         colors = ButtonDefaults.outlinedButtonColors(

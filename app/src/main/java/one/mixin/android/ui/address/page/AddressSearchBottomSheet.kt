@@ -20,7 +20,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -56,10 +55,10 @@ import one.mixin.android.vo.displayAddress
 @Composable
 fun AddressSearchBottomSheet(
     addresses: List<Address>,
-    modalSheetState: ModalBottomSheetState,
     onAddressClick: (Address) -> Unit,
     onAddClick: () -> Unit,
     onDeleteAddress: (Address) -> Unit,
+    onDismiss: () -> Unit,
 ) {
     var isDeleteMode by remember { mutableStateOf(false) }
     var searchText by remember { mutableStateOf("") }
@@ -74,13 +73,9 @@ fun AddressSearchBottomSheet(
             }
         }
     }
-    BackHandler (
-        enabled = modalSheetState.isVisible || isDeleteMode
-    ) {
-        scope.launch {
-            if (isDeleteMode) isDeleteMode = false
-            else modalSheetState.hide()
-        }
+    BackHandler(enabled = true) {
+        if (isDeleteMode) isDeleteMode = false
+        else onDismiss()
     }
 
     val actionBarHeight = with(LocalDensity.current) {
@@ -114,7 +109,7 @@ fun AddressSearchBottomSheet(
                 modifier = Modifier.weight(1f)
             )
 
-            if (searchText.isNotEmpty() || modalSheetState != null) {
+            if (searchText.isNotEmpty() || isDeleteMode) {
                 Text(
                     text = stringResource(R.string.Cancel),
                     color = MixinAppTheme.colors.textBlue,
@@ -126,10 +121,8 @@ fun AddressSearchBottomSheet(
                                 searchText = ""
                             } else if (isDeleteMode) {
                                 isDeleteMode = false
-                            } else if (modalSheetState != null) {
-                                scope.launch {
-                                    modalSheetState.hide()
-                                }
+                            } else {
+                                onDismiss()
                             }
                         })
             }
@@ -143,10 +136,8 @@ fun AddressSearchBottomSheet(
                     .fillMaxHeight()
             ) {
                 Row(modifier = Modifier.clickable {
-                    scope.launch {
-                        modalSheetState.hide()
-                        onAddClick()
-                    }
+                    onDismiss()
+                    onAddClick()
                 }) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_add_blue_24dp),
@@ -175,10 +166,8 @@ fun AddressSearchBottomSheet(
                         onDeleteClick = onDeleteAddress,
                         onAddressClick = {
                             isDeleteMode = false
-                            scope.launch {
-                                modalSheetState.hide()
-                                onAddressClick.invoke(address)
-                            }
+                            onDismiss()
+                            onAddressClick.invoke(address)
                         },
                     )
                 }
@@ -233,10 +222,8 @@ fun AddressSearchBottomSheet(
 
             IconButton(
                 onClick = {
-                    scope.launch {
-                        modalSheetState?.hide()
-                        onAddClick()
-                    }
+                    onDismiss()
+                    onAddClick()
                 }
             ) {
                 Icon(

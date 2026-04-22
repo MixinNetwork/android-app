@@ -268,7 +268,7 @@
                     android:paddingEnd="16dp"
                     android:paddingTop="8dp"
                     android:paddingBottom="8dp"
-                    android:textSize="14sp" />
+                    android:textSize="16sp" />
 
                 <TextView
                     android:id="@+id/retry_tv"
@@ -285,7 +285,7 @@
                     android:paddingEnd="16dp"
                     android:paddingTop="8dp"
                     android:paddingBottom="8dp"
-                    android:textSize="14sp" />
+                    android:textSize="16sp"/>
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -305,7 +305,7 @@
                         android:text="@string/Processing"
                         android:layout_marginTop="8dp"
                         android:textColor="?attr/text_assist"
-                        android:textSize="14sp"
+                        android:textSize="16sp"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" />
                 </LinearLayout>
