@@ -10,11 +10,12 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.paging.LoadState
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -64,8 +65,6 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
     private val isLong by lazy {
         arguments?.takeIf { it.containsKey(ARGS_IS_LONG) }?.getBoolean(ARGS_IS_LONG)
     }
-    private var allMarkets = listOf<PerpsMarket>()
-    private var currentQuery = ""
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
@@ -89,11 +88,11 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
 
             marketRv.layoutManager = LinearLayoutManager(requireContext())
             marketRv.adapter = adapter
+            (marketRv.itemAnimator as? androidx.recyclerview.widget.SimpleItemAnimator)?.supportsChangeAnimations = false
 
             searchEt.listener = object : SearchView.OnSearchViewListener {
                 override fun afterTextChanged(s: Editable?) {
-                    currentQuery = s?.toString().orEmpty()
-                    filterMarkets(currentQuery)
+                    viewModel.setMarketsQuery(s?.toString().orEmpty())
                 }
 
                 override fun onSearch() {}
@@ -107,9 +106,14 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 launch {
-                    viewModel.observeMarkets().collect { markets ->
-                        allMarkets = markets
-                        filterMarkets(currentQuery)
+                    viewModel.marketsPaged.collectLatest { pagingData ->
+                        adapter.submitData(pagingData)
+                    }
+                }
+                launch {
+                    adapter.loadStateFlow.collectLatest { loadStates ->
+                        val isEmpty = loadStates.refresh is LoadState.NotLoading && adapter.itemCount == 0
+                        binding.rvVa.displayedChild = if (isEmpty) 1 else 0
                     }
                 }
                 launch {
@@ -120,22 +124,6 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
                 }
             }
         }
-    }
-
-    private fun filterMarkets(query: String) {
-        if (query.isEmpty()) {
-            updateList(allMarkets)
-        } else {
-            val filtered = allMarkets.filter { market ->
-                market.tokenSymbol.contains(query, ignoreCase = true)
-            }
-            updateList(filtered)
-        }
-    }
-
-    private fun updateList(markets: List<PerpsMarket>) {
-        binding.rvVa.displayedChild = if (markets.isEmpty()) 1 else 0
-        adapter.submitList(markets)
     }
 
     private fun onMarketClick(market: PerpsMarket) {

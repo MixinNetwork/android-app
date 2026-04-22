@@ -9,6 +9,8 @@ import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
@@ -48,6 +50,26 @@ class PerpetualViewModel @Inject constructor(
     private val perpsMarketDao: PerpsMarketDao,
     private val jobManager: MixinJobManager
 ) : ViewModel() {
+
+    private val marketsSearchQuery = MutableStateFlow("")
+
+    val marketsPaged: Flow<PagingData<PerpsMarket>> = marketsSearchQuery
+        .flatMapLatest { query ->
+            Pager(
+                config = PagingConfig(
+                    pageSize = Constants.PAGE_SIZE,
+                    prefetchDistance = Constants.PAGE_SIZE * 2,
+                    enablePlaceholders = false,
+                ),
+            ) {
+                perpsMarketDao.getAllMarketsPaged(query)
+            }.flow
+        }
+        .cachedIn(viewModelScope)
+
+    fun setMarketsQuery(query: String) {
+        marketsSearchQuery.value = query
+    }
 
     fun refreshPositions(walletId: String) {
         jobManager.addJobInBackground(RefreshPerpsPositionsJob(walletId))

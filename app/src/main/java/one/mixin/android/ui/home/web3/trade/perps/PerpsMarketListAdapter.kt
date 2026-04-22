@@ -3,8 +3,8 @@ package one.mixin.android.ui.home.web3.trade.perps
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
@@ -18,7 +18,7 @@ import java.math.BigDecimal
 class PerpsMarketListAdapter(
     private val isQuoteColorReversed: Boolean,
     private val onMarketClick: (PerpsMarket) -> Unit
-) : ListAdapter<PerpsMarket, PerpsMarketListAdapter.MarketViewHolder>(PerpsMarketDiffCallback()) {
+) : PagingDataAdapter<PerpsMarket, PerpsMarketListAdapter.MarketViewHolder>(PerpsMarketDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MarketViewHolder {
         return MarketViewHolder(
@@ -31,7 +31,7 @@ class PerpsMarketListAdapter(
     }
 
     override fun onBindViewHolder(holder: MarketViewHolder, position: Int) {
-        holder.bind(getItem(position))
+        getItem(position)?.let { holder.bind(it) }
     }
 
     inner class MarketViewHolder(
@@ -42,7 +42,10 @@ class PerpsMarketListAdapter(
             binding.apply {
                 val fiatRate = BigDecimal(Fiats.getRate())
                 val fiatSymbol = Fiats.getSymbol()
-                iconIv.loadImage(market.iconUrl, R.drawable.ic_avatar_place_holder)
+                if (iconIv.tag != market.iconUrl) {
+                    iconIv.tag = market.iconUrl
+                    iconIv.loadImage(market.iconUrl, R.drawable.ic_avatar_place_holder)
+                }
                 symbolTv.text = market.tokenSymbol
                 leverageTv.text = root.context.getString(R.string.Perpetual_Leverage_Format, market.leverage)
 

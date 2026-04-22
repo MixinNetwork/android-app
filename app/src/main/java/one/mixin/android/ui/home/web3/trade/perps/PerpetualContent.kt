@@ -63,7 +63,6 @@ import java.math.RoundingMode
 
 private const val POSITION_REFRESH_INTERVAL_MS = 3_000L
 private const val CLOSED_POSITION_PREVIEW_LIMIT = 10
-private const val MARKET_REFRESH_INTERVAL_MS = 3_000L
 
 @Composable
 fun PerpetualContent(
