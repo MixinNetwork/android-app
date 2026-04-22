@@ -247,7 +247,11 @@ class Tip
                 return salt
             }
             val account = tipNetwork { accountService.getMeSuspend() }.getOrThrow()
-            val pinTokenEncryptedSalt = account.salt?.base64RawURLDecode() ?: throw TipNullException("account has no salt")
+            val pinTokenEncryptedSalt = account.salt
+                ?.takeIf { it.isNotBlank() }
+                ?.base64RawURLDecode()
+                ?.takeIf { it.isNotEmpty() }
+                ?: throw TipNullException("account has no salt")
             Session.storeAccount(account)
             val pinToken = Session.getPinToken()?.decodeBase64() ?: throw TipNullException("no pin token")
             salt = aesDecrypt(pinToken, pinTokenEncryptedSalt)
@@ -635,7 +639,11 @@ class Tip
                 )
             Timber.e("getAesKey before readTipSecret")
             val response = tipNetwork { tipService.readTipSecret(tipSecretReadRequest) }.getOrThrow()
-            return response.seedBase64?.base64RawURLDecode() ?: throw TipNullException("Not get tip secret")
+            return response.seedBase64
+                ?.takeIf { it.isNotBlank() }
+                ?.base64RawURLDecode()
+                ?.takeIf { it.isNotEmpty() }
+                ?: throw TipNullException("Not get tip secret")
         }
 
         private fun signTimestamp(

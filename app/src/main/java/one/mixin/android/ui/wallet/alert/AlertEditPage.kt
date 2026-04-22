@@ -120,7 +120,7 @@ fun AlertEditPage(
             var isLoading by remember { mutableStateOf(false) }
             var inputError by remember { mutableStateOf(if (alertValue.toBigDecimalOrNull() == currentPrice && selectedAlertType != AlertType.PRICE_REACHED) InputError.EQUALS_CURRENT_PRICE else null) }
             val viewModel = hiltViewModel<AlertViewModel>()
-                PageScaffold(
+            PageScaffold(
                     title = stringResource(id = if (alert == null) R.string.Add_Alert else R.string.Edit_Alert),
                     verticalScrollable = false,
                     pop = pop,

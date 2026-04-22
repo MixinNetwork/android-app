@@ -621,7 +621,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         if (status != TransactionStatus.PENDING.value) {
             return true
         }
-        return pendingRawTx?.isGaslessPending() == false
+        return pendingRawTx?.isGaslessPending() == false || transaction.fee.isNotEmpty()
     }
 
     private suspend fun updateFeeVisibility(status: String = transaction.status) {

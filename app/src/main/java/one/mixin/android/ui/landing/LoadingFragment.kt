@@ -17,6 +17,14 @@ import one.mixin.android.Constants.Account.PREF_TRIED_UPDATE_KEY
 import one.mixin.android.Constants.DEFAULT_BOTS
 import one.mixin.android.Constants.DEFAULT_CN_BOTS
 import one.mixin.android.Constants.DEVICE_ID
+import one.mixin.android.Constants.MIXIN_ALERT_USER_ID
+import one.mixin.android.Constants.MIXIN_CARD_USER_ID
+import one.mixin.android.Constants.MIXIN_COMMUNITY_USER_ID
+import one.mixin.android.Constants.MIXIN_DISCOURSE_USER_ID
+import one.mixin.android.Constants.MIXIN_REWARD_USER_ID
+import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
+import one.mixin.android.Constants.TEAM_MIXIN_USER_ID
+import one.mixin.android.Constants.TEAM_MIXIN_USER_NAME
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.request.SessionSecretRequest
@@ -144,6 +152,18 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
             jobManager.addJobInBackground(InitializeJob(botId))
         }
     }
+
+    private fun defaultBotName(botId: String): String =
+        when (botId) {
+            TEAM_MIXIN_USER_ID -> TEAM_MIXIN_USER_NAME
+            ROUTE_BOT_USER_ID -> "Route Bot"
+            MIXIN_ALERT_USER_ID -> "Mixin Alerts"
+            MIXIN_COMMUNITY_USER_ID -> "Mixin Community"
+            MIXIN_DISCOURSE_USER_ID -> "Mixin Discourse"
+            MIXIN_REWARD_USER_ID -> "Mixin Reward"
+            MIXIN_CARD_USER_ID -> "Mixin Card"
+            else -> ""
+        }
 
     private suspend fun updateRsa2EdDsa() {
         val sessionKey = generateEd25519KeyPair()

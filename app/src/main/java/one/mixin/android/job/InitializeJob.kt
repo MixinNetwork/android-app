@@ -6,7 +6,7 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
 
-class InitializeJob(private val botId: String) :
+class InitializeJob(private val botId: String, private val botName: String? = null) :
     BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).requireNetwork().persist()) {
     companion object {
         private var serialVersionUID: Long = 2L
@@ -18,13 +18,16 @@ class InitializeJob(private val botId: String) :
             if (botId.isEmpty()) {
                 return@runBlocking
             }
-            updateRelationship(botId)
+            updateRelationship(botId, botName)
         }
 
-    private suspend fun updateRelationship(botId: String) {
+    private suspend fun updateRelationship(
+        botId: String,
+        botName: String?,
+    ) {
         handleMixinResponse(
             invokeNetwork = {
-                userService.relationship(RelationshipRequest(botId, RelationshipAction.ADD.name))
+                userService.relationship(RelationshipRequest(botId, RelationshipAction.ADD.name, botName))
             },
             defaultErrorHandle = {},
             defaultExceptionHandle = {},
