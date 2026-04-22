@@ -210,7 +210,7 @@ class Tip
             do {
                 entropy = generateRandomBytes(16)
                 mnemonicPhrase = toCompleteMnemonic(toMnemonic(entropy))
-            } while (mnemonicPhrase.distinct().size != mnemonicPhrase.size)
+            } while (mnemonicPhrase.distinct().size != mnemonicPhrase.size || !isMnemonicValid(mnemonicPhrase))
             storeValueInEncryptedPreferences(context, Constants.Tip.MNEMONIC, entropy)
             return entropy
         }
