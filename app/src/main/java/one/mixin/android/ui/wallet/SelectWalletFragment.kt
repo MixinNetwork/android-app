@@ -7,7 +7,6 @@ import androidx.compose.runtime.getValue
 import androidx.fragment.app.activityViewModels
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentComposeBinding
-import one.mixin.android.extension.navTo
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.components.FetchWalletState
 import one.mixin.android.ui.wallet.components.SelectContent
@@ -35,13 +34,12 @@ class SelectWalletFragment : BaseFragment(R.layout.fragment_compose) {
                 selectedWalletInfos = selectedWalletInfos,
                 onWalletToggle = viewModel::toggleWalletSelection,
                 onContinue = {
-                    navTo(
-                        ImportingWalletFragment.newInstance(),
-                        ImportingWalletFragment.TAG
-                    )
-                    requireActivity().supportFragmentManager
-                        .beginTransaction()
-                        .remove(this@SelectWalletFragment)
+                    parentFragmentManager.beginTransaction()
+                        .replace(
+                            R.id.container,
+                            ImportingWalletFragment.newInstance(),
+                            ImportingWalletFragment.TAG
+                        )
                         .commit()
                 },
                 onBackPressed = { requireActivity().finish() },
