@@ -30,6 +30,7 @@ import one.mixin.android.api.ServerErrorException
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.getSafeAreaInsetsBottom
 import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isWebUrl
@@ -161,7 +162,7 @@ class AuthBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
 
 
     override fun getBottomSheetHeight(view: View): Int {
-        return 690.dp
+        return 690.dp + view.getSafeAreaInsetsBottom()
     }
 
 
