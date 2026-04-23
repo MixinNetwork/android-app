@@ -57,16 +57,13 @@ class ImportWalletDetailFragment : BaseFragment(R.layout.fragment_compose) {
                         activity?.finish()
                     },
                     onConfirmClick = { chainId, key ->
-                        navTo(
-                            ImportingWalletFragment.newInstance(key, chainId, mode),
-                            ImportingWalletFragment.TAG
-                        )
-                        if (isAdded) {
-                            requireActivity().supportFragmentManager
-                                .beginTransaction()
-                                .remove(this@ImportWalletDetailFragment)
-                                .commit()
-                        }
+                        parentFragmentManager.beginTransaction()
+                            .replace(
+                                R.id.container,
+                                ImportingWalletFragment.newInstance(key, chainId, mode),
+                                ImportingWalletFragment.TAG
+                            )
+                            .commit()
                     },
                     onScan = {
                         scanLauncher.launch(

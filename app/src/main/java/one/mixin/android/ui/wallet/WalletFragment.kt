@@ -518,12 +518,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     }
 
     override fun onBackPressed(): Boolean {
-        return if (binding.compose.isVisible) {
-            closeMenu()
-            true
-        } else {
-            false
-        }
+        return false
     }
 
     private var _importBottomBinding: ViewImportWalletBottomBinding? = null

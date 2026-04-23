@@ -8,7 +8,6 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentComposeBinding
-import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.components.FetchWalletState
@@ -45,10 +44,8 @@ class FetchingWalletFragment : BaseFragment(R.layout.fragment_compose) {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.state.collect { state ->
                 if (state == FetchWalletState.SELECT) {
-                    navTo(SelectWalletFragment.newInstance(), SelectWalletFragment.TAG)
-                    requireActivity().supportFragmentManager
-                        .beginTransaction()
-                        .remove(this@FetchingWalletFragment)
+                    parentFragmentManager.beginTransaction()
+                        .replace(R.id.container, SelectWalletFragment.newInstance(), SelectWalletFragment.TAG)
                         .commit()
                 }
             }
