@@ -20,13 +20,13 @@ fun toMnemonic(entropy: ByteArray): String {
     }
 }
 
-fun toCompleteMnemonic(mnemonic: String): List<String> {
+fun appendChecksumWordToMnemonic(mnemonic: String): List<String> {
     val words = mnemonic.split(" ")
     val checksum = mnemonicChecksumWord(words)
     return words + checksum
 }
 
-fun toCompleteMnemonic(words: List<String>): List<String> {
+fun appendChecksumWordToMnemonic(words: List<String>): List<String> {
     val checksum = mnemonicChecksumWord(words)
     return words + checksum
 }

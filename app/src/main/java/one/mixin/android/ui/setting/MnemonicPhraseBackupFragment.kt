@@ -14,7 +14,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.crypto.toCompleteMnemonic
+import one.mixin.android.crypto.appendChecksumWordToMnemonic
 import one.mixin.android.databinding.FragmentComposeBinding
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
@@ -119,7 +119,7 @@ class MnemonicPhraseBackupFragment : BaseFragment(R.layout.fragment_compose) {
                                     requireActivity().finish()
                                     return@launch
                                 }
-                                mnemonic = toCompleteMnemonic(list)
+                                mnemonic = appendChecksumWordToMnemonic(list)
                                 navController.navigate(MnemonicPhraseBackupStep.MnemonicPhrase.name)
                             }
                         })

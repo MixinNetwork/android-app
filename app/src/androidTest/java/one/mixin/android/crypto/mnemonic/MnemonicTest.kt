@@ -9,6 +9,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.lambdapioneer.argon2kt.Argon2Kt
 import dagger.hilt.android.testing.HiltAndroidTest
 import one.mixin.android.crypto.argon2IHash
+import one.mixin.android.crypto.isMnemonicValid
 import one.mixin.android.crypto.mnemonicChecksumWord
 import one.mixin.android.crypto.toEntropy
 import one.mixin.android.crypto.toSeed
@@ -23,6 +24,8 @@ import one.mixin.android.util.encodeToBase58String
 import one.mixin.eddsa.KeyPair
 import org.bitcoinj.crypto.MnemonicCode
 import org.junit.Assert.assertArrayEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.sol4k.Base58
@@ -172,12 +175,18 @@ class MnemonicTest {
         w = mnemonicChecksumWord(mnemonic, 3)
         println(w)
         assertEquals("wheel", w)
+        assertTrue(isMnemonicValid(mnemonic))
+        assertTrue(isMnemonicValid(mnemonic + w))
+        assertFalse(isMnemonicValid(mnemonic + "wrong"))
 
         // from 32 byte salt
         val legacyMn = "reason bubble doctor wolf ocean victory visual final employ lizard junior cancel benefit copper observe spider labor service odor dragon coconut twin hard sail".split(" ")
         val legacySeed = toSeed(legacyMn, "")
         val legacyKey = Bip32ECKeyPair.generateKeyPair(legacySeed)
         assertEquals("defy", mnemonicChecksumWord(legacyMn, 3))
+        assertTrue(isMnemonicValid(legacyMn))
+        assertTrue(isMnemonicValid(legacyMn + "defy"))
+        assertFalse(isMnemonicValid(legacyMn + "wheel"))
         val legacyEntropy = toEntropy(legacyMn)
         val legacySpendKey = argon.argon2IHash(tipSeed, legacyEntropy).rawHashAsByteArray()
         assertEquals(legacySpendKey.hexString(), "2f5b9cb89bb7151c5770c88dfcfeda8762b8246bec64437559cbc6d8339973f2")
