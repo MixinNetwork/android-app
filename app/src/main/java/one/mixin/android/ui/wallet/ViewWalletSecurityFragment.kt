@@ -37,11 +37,13 @@ class ViewWalletSecurityFragment : BaseFragment(R.layout.fragment_compose) {
                         requireActivity().finish()
                     },
                     next = {
-                        navTo(
-                            VerifyPinBeforeImportWalletFragment.newInstance(mode, walletId = walletId, chainId = chainId), "VerifyPinBeforeImportWalletFragment"
-                        )
                         parentFragmentManager.beginTransaction()
-                            .remove(this@ViewWalletSecurityFragment)
+                            .replace(
+                                R.id.container,
+                                VerifyPinBeforeImportWalletFragment.newInstance(mode, walletId = walletId, chainId = chainId),
+                                "VerifyPinBeforeImportWalletFragment"
+                            )
+                            .addToBackStack(null)
                             .commit()
                     }
                 )

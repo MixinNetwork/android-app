@@ -229,6 +229,7 @@
     <string name="Choose">Choose</string>
     <string name="Choose_folder">Choose folder</string>
     <string name="Choose_Network">Choose Network</string>
+    <string name="Wallet_Name">Wallet Name</string>
     <string name="Choose_network_tip">Please ensure the network you choose to deposit that Mixin supports. Otherwise, your assets may be lost.</string>
     <string name="circle_bottom">Create circle for different groups of chats and quickly switch between them</string>
     <string name="circle_delete_tip">Delete \"%1$s\" ?</string>
