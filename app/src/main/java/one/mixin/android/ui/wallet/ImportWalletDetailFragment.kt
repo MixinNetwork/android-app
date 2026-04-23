@@ -6,12 +6,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.activityViewModels
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
-import one.mixin.android.extension.navTo
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.wallet.components.ImportWalletDetailPage
@@ -51,16 +51,19 @@ class ImportWalletDetailFragment : BaseFragment(R.layout.fragment_compose) {
     ): View {
         return ComposeView(requireContext()).apply {
             setContent {
+                val defaultWalletName by produceState(initialValue = "") {
+                    value = viewModel.getDefaultImportWalletName(mode)
+                }
                 ImportWalletDetailPage(
                     mode = mode,
                     pop = {
                         activity?.finish()
                     },
-                    onConfirmClick = { chainId, key ->
+                    onConfirmClick = { chainId, key, walletName ->
                         parentFragmentManager.beginTransaction()
                             .replace(
                                 R.id.container,
-                                ImportingWalletFragment.newInstance(key, chainId, mode),
+                                ImportingWalletFragment.newInstance(key, chainId, mode, walletName),
                                 ImportingWalletFragment.TAG
                             )
                             .commit()
@@ -73,7 +76,8 @@ class ImportWalletDetailFragment : BaseFragment(R.layout.fragment_compose) {
                             )
                         )
                     },
-                    contentText = scannedText
+                    contentText = scannedText,
+                    defaultWalletName = defaultWalletName
                 )
             }
         }
