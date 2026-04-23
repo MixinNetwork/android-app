@@ -26,7 +26,7 @@ import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.crypto.removeValueFromEncryptedPreferences
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.crypto.storeValueInEncryptedPreferences
-import one.mixin.android.crypto.toCompleteMnemonic
+import one.mixin.android.crypto.toMnemonicWithChecksum
 import one.mixin.android.crypto.toMnemonic
 import one.mixin.android.event.TipEvent
 import one.mixin.android.extension.base64RawURLDecode
@@ -208,10 +208,14 @@ class Tip
         fun generateEntropyAndStore(context: Context): ByteArray {
             var entropy: ByteArray
             var mnemonicPhrase: List<String>
-            do {
+            while (true) {
                 entropy = generateRandomBytes(16)
-                mnemonicPhrase = toCompleteMnemonic(toMnemonic(entropy))
-            } while (mnemonicPhrase.distinct().size != mnemonicPhrase.size || !isMnemonicValid(mnemonicPhrase))
+                val words = toMnemonic(entropy).split(" ")
+                if (words.distinct().size != words.size) continue
+                if (!isMnemonicValid(words)) continue
+                mnemonicPhrase = toMnemonicWithChecksum(words)
+                if (mnemonicPhrase.distinct().size == mnemonicPhrase.size) break
+            }
             storeValueInEncryptedPreferences(context, Constants.Tip.MNEMONIC, entropy)
             return entropy
         }
