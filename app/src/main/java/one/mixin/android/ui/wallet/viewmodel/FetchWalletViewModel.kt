@@ -110,6 +110,35 @@ class FetchWalletViewModel @Inject constructor(
         return spendKey
     }
 
+    suspend fun getDefaultImportWalletName(mode: WalletSecurityActivity.Mode): String {
+        val categories = if (mode == WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS) {
+            listOf(WalletCategory.WATCH_ADDRESS.value)
+        } else {
+            listOf(
+                WalletCategory.CLASSIC.value,
+                WalletCategory.IMPORTED_PRIVATE_KEY.value,
+                WalletCategory.IMPORTED_MNEMONIC.value
+            )
+        }
+        val names = web3Repository.getAllWalletNames(categories)
+        val walletName = MixinApplication.appContext.getString(
+            if (mode == WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS) {
+                R.string.Watch_Wallet
+            } else {
+                R.string.Common_Wallet
+            }
+        )
+        val regex = """^$walletName (\d+)$""".toRegex()
+        val maxIndex = names
+            .filterNotNull()
+            .mapNotNull { name ->
+                regex.find(name)?.groupValues?.get(1)?.toIntOrNull()
+            }
+            .maxOrNull() ?: 0
+
+        return "$walletName ${maxIndex + 1}"
+    }
+
     fun findMoreWallets() {
         currentIndex += 10
         startFetching(currentIndex)
@@ -373,7 +402,7 @@ class FetchWalletViewModel @Inject constructor(
         return CryptoWalletHelper.getWeb3Mnemonic(context, currentSpendKey, Web3Signer.currentWalletId)
     }
 
-    fun importWallet(key: String, chainId: String, mode: WalletSecurityActivity.Mode) {
+    fun importWallet(key: String, chainId: String, mode: WalletSecurityActivity.Mode, walletName: String? = null) {
         viewModelScope.launch {
             try {
                 val address: String
@@ -396,15 +425,7 @@ class FetchWalletViewModel @Inject constructor(
                 if (address.isBlank()) {
                     throw IllegalArgumentException("Could not derive or find address.")
                 }
-                val names = web3Repository.getAllWalletNames(if (mode == WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS) listOf(WalletCategory.WATCH_ADDRESS.value) else listOf(WalletCategory.CLASSIC.value, WalletCategory.IMPORTED_PRIVATE_KEY.value, WalletCategory.IMPORTED_MNEMONIC.value))
-                val walletName = if (mode == WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS) { MixinApplication.appContext.getString(R.string.Watch_Wallet) } else { MixinApplication.appContext.getString(R.string.Common_Wallet) }
-                val regex = """^$walletName (\d+)$""".toRegex()
-                val maxIndex = names
-                    .filterNotNull()
-                    .mapNotNull { name ->
-                        regex.find(name)?.groupValues?.get(1)?.toIntOrNull()
-                    }.maxOrNull() ?: 0
-                val name = "${MixinApplication.appContext.getString(if (mode == WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS) R.string.Watch_Wallet else R.string.Common_Wallet)} ${maxIndex + 1}"
+                val name = walletName?.trim()?.takeIf { it.isNotEmpty() } ?: getDefaultImportWalletName(mode)
                 val web3AddressRequest = createSignedWeb3AddressRequest(
                     destination = address,
                     chainId = chainId,

@@ -75,11 +75,12 @@ import timber.log.Timber
 fun ImportWalletDetailPage(
     mode: WalletSecurityActivity.Mode,
     pop: () -> Unit,
-    onConfirmClick: (String, String) -> Unit,
+    onConfirmClick: (String, String, String?) -> Unit,
     onScan: (() -> Unit)? = null,
     contentText: String = "",
     walletId: String? = null,
     chainId: String? = null,
+    defaultWalletName: String? = null,
 ) {
     val context = LocalContext.current
     var text by remember(contentText) { mutableStateOf(contentText) }
@@ -105,6 +106,17 @@ fun ImportWalletDetailPage(
 
     var selectedNetworkName by remember(initialNetworkName) {
         mutableStateOf(initialNetworkName ?: "Ethereum")
+    }
+    val showWalletNameInput = mode == WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY ||
+        mode == WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS
+    var walletName by remember(showWalletNameInput) { mutableStateOf("") }
+    var hasInitializedWalletName by remember(showWalletNameInput) { mutableStateOf(false) }
+
+    LaunchedEffect(defaultWalletName, showWalletNameInput) {
+        if (showWalletNameInput && !hasInitializedWalletName && !defaultWalletName.isNullOrBlank()) {
+            walletName = defaultWalletName
+            hasInitializedWalletName = true
+        }
     }
 
 
@@ -215,10 +227,15 @@ fun ImportWalletDetailPage(
             mode == WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY && text.isNotEmpty() && isInputValid && isAddressMismatched
         }
     }
+    val isWalletNameValid by remember(showWalletNameInput, walletName) {
+        derivedStateOf {
+            !showWalletNameInput || walletName.trim().isNotEmpty()
+        }
+    }
 
     val isButtonEnabled = when (mode) {
         WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY -> isInputValid && !isAddressMismatched
-        else -> isInputValid && !addressExists
+        else -> isInputValid && !addressExists && isWalletNameValid
     }
 
     val title = when (mode) {
@@ -250,6 +267,36 @@ fun ImportWalletDetailPage(
                     .fillMaxSize()
                     .padding(16.dp)
             ) {
+                if (showWalletNameInput) {
+                    TextField(
+                        value = walletName,
+                        onValueChange = { walletName = it },
+                        label = { Text(stringResource(R.string.Wallet_Name), color = MixinAppTheme.colors.accent) },
+                        singleLine = true,
+                        colors = TextFieldDefaults.textFieldColors(
+                            textColor = MixinAppTheme.colors.textPrimary,
+                            backgroundColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            disabledIndicatorColor = Color.Transparent,
+                            cursorColor = MixinAppTheme.colors.accent,
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(
+                                color = MixinAppTheme.colors.background,
+                            )
+                            .border(
+                                width = 1.dp,
+                                color = MixinAppTheme.colors.borderColor,
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+
                 ExposedDropdownMenuBox(
                     expanded = expanded,
                     onExpandedChange = {
@@ -446,7 +493,8 @@ fun ImportWalletDetailPage(
                         .height(48.dp),
                     onClick = {
                         onConfirmClick(
-                            currentChainId, if (mode == WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS && isEvmNetwork) {
+                            currentChainId,
+                            if (mode == WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS && isEvmNetwork) {
                                 Keys.toChecksumAddress(text)
                             } else if ((mode == WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY || mode == WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY) && isBitcoin) {
                                 requireNotNull(normalizeBitcoinPrivateKeyToWif(text))
@@ -456,7 +504,8 @@ fun ImportWalletDetailPage(
                                 Numeric.hexStringToByteArray(text).encodeToBase58String()
                             } else {
                                 text
-                            }
+                            },
+                            walletName.trim().takeIf { showWalletNameInput }
                         )
                     },
                     enabled = isButtonEnabled,
@@ -544,4 +593,3 @@ private fun isBitcoinAddressValid(address: String): Boolean {
         false
     }
 }
-
