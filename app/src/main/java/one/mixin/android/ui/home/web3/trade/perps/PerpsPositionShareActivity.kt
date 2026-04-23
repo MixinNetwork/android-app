@@ -9,6 +9,7 @@ import android.graphics.Typeface
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.media.MediaScannerConnection
+import android.os.Build
 import android.os.Bundle
 import android.text.SpannableString
 import android.text.Spanned
@@ -130,7 +131,6 @@ class PerpsPositionShareActivity : BaseActivity() {
             topMargin = 80.dp
         }
         binding.iconFl.round(6.dp)
-        binding.qr.post { binding.qr.round(4.dp) }
 
         val hasContent = bindContent()
         if (!hasContent) {
@@ -237,6 +237,11 @@ class PerpsPositionShareActivity : BaseActivity() {
     private fun bindFooter() {
         if (referralShareInfo != null) {
             binding.title.text = referralShareInfo?.code
+            binding.title.typeface = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                Typeface.create(binding.title.typeface, 600, false)
+            } else {
+                Typeface.create(binding.title.typeface, Typeface.BOLD)
+            }
             val rebatePercent = referralShareInfo!!.rebatePercent
             binding.shareDescTv.minLines = if (rebatePercent.isZeroPercent()) 2 else 1
             binding.shareDescTv.text = buildReferralDescription(rebatePercent)

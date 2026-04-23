@@ -4,11 +4,17 @@ import android.content.ClipData
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.BitmapShader
+import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.Path
+import android.graphics.RectF
 import android.graphics.Typeface
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.media.MediaScannerConnection
+import android.os.Build
 import android.os.Bundle
 import android.text.SpannableString
 import android.text.Spanned
@@ -21,7 +27,6 @@ import android.widget.FrameLayout
 import android.widget.ProgressBar
 import androidx.core.content.FileProvider
 import androidx.core.graphics.drawable.toDrawable
-import androidx.core.graphics.scale
 import androidx.core.view.drawToBitmap
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
@@ -29,6 +34,7 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
 import java.io.FileOutputStream
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -36,6 +42,7 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.Scheme.HTTPS_MARKET
 import one.mixin.android.R
+import one.mixin.android.api.service.ReferralService
 import one.mixin.android.databinding.ActivityMarketShareBinding
 import one.mixin.android.extension.blurBitmap
 import one.mixin.android.extension.dp
@@ -49,8 +56,10 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.wallet.fiatmoney.ReferralShareInfo
 import one.mixin.android.ui.wallet.fiatmoney.buildReferralShareUrl
+import one.mixin.android.ui.wallet.fiatmoney.fetchDefaultReferralShareInfoOrNull
 import one.mixin.android.ui.web.getScreenshot
 import one.mixin.android.ui.web.refreshScreenshot
+import one.mixin.android.repository.UserRepository
 import java.math.BigDecimal
 
 @AndroidEntryPoint
@@ -58,7 +67,6 @@ class MarketShareActivity : BaseActivity() {
     companion object {
         private const val ARGS_NAME = "name"
         private const val ARGS_COIN = "coin"
-        private const val ARGS_REFERRAL_SHARE_INFO = "referral_share_info"
         private const val SHARE_QR_URL = "https://mixin.one/mm"
         private const val REFERRAL_REBATE_COLOR = "#FFEE70"
 
@@ -69,14 +77,12 @@ class MarketShareActivity : BaseActivity() {
             cover: Bitmap,
             name: String,
             coinId: String,
-            referralShareInfo: ReferralShareInfo? = null,
         ) {
             refreshScreenshot(context, 0x33000000)
             this.cover = cover
             context.startActivity(Intent(context, MarketShareActivity::class.java).apply {
                 putExtra(ARGS_NAME, name)
                 putExtra(ARGS_COIN, coinId)
-                putExtra(ARGS_REFERRAL_SHARE_INFO, referralShareInfo)
             })
         }
     }
@@ -87,18 +93,19 @@ class MarketShareActivity : BaseActivity() {
 
     private lateinit var binding: ActivityMarketShareBinding
     private lateinit var loadingOverlay: FrameLayout
+    @Inject
+    lateinit var referralService: ReferralService
+    @Inject
+    lateinit var userRepository: UserRepository
     private val name by lazy {
         intent.getStringExtra(ARGS_NAME)
     }
     private val coinId by lazy {
         intent.getStringExtra(ARGS_COIN)
     }
-    private val referralShareInfo by lazy {
-        intent.getSerializableExtra(ARGS_REFERRAL_SHARE_INFO) as? ReferralShareInfo
-    }
-    private val referralCode by lazy {
-        referralShareInfo?.code?.takeIf { it.isNotBlank() }
-    }
+    private var referralShareInfo: ReferralShareInfo? = null
+    private val referralCode: String?
+        get() = referralShareInfo?.code?.takeIf { it.isNotBlank() }
     private var isLoading = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -140,10 +147,18 @@ class MarketShareActivity : BaseActivity() {
         syncActionContainerVisibility()
         lifecycleScope.launch {
             showLoading(true)
+            referralShareInfo = withContext(Dispatchers.IO) {
+                fetchDefaultReferralShareInfoOrNull(
+                    referralService = referralService,
+                    userRepository = userRepository,
+                    logLabel = "market share",
+                )
+            }
             val preparedCover = withContext(Dispatchers.Default) {
                 cover?.let {
-                    val trimmedCover = trimTransparentPadding(it)
-                    cropAndScaleBitmap(trimmedCover, 18.dp, (80 - 24 + 32).dp)
+                    trimTransparentPadding(it)
+                        .cropBottom(8.dp)
+                        .roundBottomCorners(8.dp.toFloat())
                 }
             }
             val qrCode = withContext(Dispatchers.Default) {
@@ -191,6 +206,11 @@ class MarketShareActivity : BaseActivity() {
     private fun bindFooter(qrCode: Bitmap) {
         if (referralShareInfo != null) {
             binding.title.text = referralShareInfo?.code
+            binding.title.typeface = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                Typeface.create(binding.title.typeface, 600, false)
+            } else {
+                Typeface.create(binding.title.typeface, Typeface.BOLD)
+            }
             val rebatePercent = referralShareInfo!!.rebatePercent
             binding.shareDesc.minLines = if (rebatePercent.isZeroPercent()) 2 else 1
             binding.shareDesc.text = buildReferralDescription(rebatePercent)
@@ -249,20 +269,6 @@ class MarketShareActivity : BaseActivity() {
             .setListener(null)
     }
 
-    private fun cropAndScaleBitmap(original: Bitmap, cropHeight: Int, y: Int): Bitmap {
-        val croppedBitmap = Bitmap.createBitmap(
-            original,
-            0,
-            0,
-            original.width,
-            original.height - cropHeight
-        )
-        val targetWidth = croppedBitmap.width - y
-        val scale = targetWidth.toFloat() / croppedBitmap.width.toFloat()
-        val targetHeight = (croppedBitmap.height * scale).toInt()
-        return croppedBitmap.scale(targetWidth, targetHeight)
-    }
-
     private fun trimTransparentPadding(bitmap: Bitmap): Bitmap {
         var left = bitmap.width
         var top = bitmap.height
@@ -282,6 +288,35 @@ class MarketShareActivity : BaseActivity() {
 
         if (right < left || bottom < top) return bitmap
         return Bitmap.createBitmap(bitmap, left, top, right - left + 1, bottom - top + 1)
+    }
+
+    private fun Bitmap.cropBottom(cropHeight: Int): Bitmap {
+        if (cropHeight <= 0 || height <= cropHeight) return this
+        return Bitmap.createBitmap(this, 0, 0, width, height - cropHeight)
+    }
+
+    private fun Bitmap.roundBottomCorners(radius: Float): Bitmap {
+        if (width <= 0 || height <= 0 || radius <= 0f) return this
+
+        val output = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(output)
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            shader = BitmapShader(this@roundBottomCorners, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
+        }
+        val path = Path().apply {
+            addRoundRect(
+                RectF(0f, 0f, width.toFloat(), height.toFloat()),
+                floatArrayOf(
+                    0f, 0f,
+                    0f, 0f,
+                    radius, radius,
+                    radius, radius,
+                ),
+                Path.Direction.CW,
+            )
+        }
+        canvas.drawPath(path, paint)
+        return output
     }
 
     private val onShare: () -> Unit = {
