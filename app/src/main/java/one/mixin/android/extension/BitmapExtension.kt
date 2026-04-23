@@ -5,6 +5,11 @@ package one.mixin.android.extension
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.BitmapShader
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.RectF
+import android.graphics.Shader
 import android.renderscript.Allocation
 import android.renderscript.Element
 import android.renderscript.RenderScript
@@ -141,6 +146,23 @@ fun Bitmap.scaleDown(maxSize: Int): Bitmap {
     val large = if (width > height) width else height
     val ratio = large / maxSize.toFloat()
     return this.scale((width / ratio).toInt(), (height / ratio).toInt())
+}
+
+fun Bitmap.roundCorners(radius: Float): Bitmap {
+    if (width <= 0 || height <= 0 || radius <= 0f) return this
+
+    val output = createBitmap(width, height, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(output)
+    val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        shader = BitmapShader(this@roundCorners, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
+    }
+    canvas.drawRoundRect(
+        RectF(0f, 0f, width.toFloat(), height.toFloat()),
+        radius,
+        radius,
+        paint,
+    )
+    return output
 }
 
 fun Bitmap.base64Encode(format: Bitmap.CompressFormat = Bitmap.CompressFormat.JPEG): String? {
