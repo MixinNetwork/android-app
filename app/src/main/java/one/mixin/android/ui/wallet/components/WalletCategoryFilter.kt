@@ -90,9 +90,9 @@ private fun WalletCategoryTabRow(
                 onClick = {
                     onTabSelected(index)
 
-                    val itemInfo = listState.layoutInfo.visibleItemsInfo.firstOrNull { it.index == index }
-                        ?: return@OutlinedTab
                     val layoutInfo = listState.layoutInfo
+                    val itemInfo = layoutInfo.visibleItemsInfo.firstOrNull { it.index == index }
+                        ?: return@OutlinedTab
                     val viewportCenter = (layoutInfo.viewportStartOffset + layoutInfo.viewportEndOffset) / 2
                     val itemCenter = itemInfo.offset + (itemInfo.size / 2)
                     val delta = itemCenter - viewportCenter
