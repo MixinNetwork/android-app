@@ -27,6 +27,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,7 +35,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -45,6 +46,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.android.awaitFrame
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -67,7 +69,8 @@ fun AddressInputPage(
 ) {
     var address by remember(contentText) { mutableStateOf(contentText) }
     val focusRequester = remember { FocusRequester() }
-    val clipboardManager = LocalClipboardManager.current
+    val clipboard = LocalClipboard.current
+    val coroutineScope = rememberCoroutineScope()
     LaunchedEffect(Unit) {
         awaitFrame()
         focusRequester.requestFocus()
@@ -157,8 +160,10 @@ fun AddressInputPage(
                         Row(modifier = Modifier.align(Alignment.BottomEnd)) {
                             IconButton(
                                 onClick = {
-                                    clipboardManager.getText()?.let {
-                                        address = it.text
+                                    coroutineScope.launch {
+                                        clipboard.getClipEntry()?.clipData?.getItemAt(0)?.text?.toString()?.let {
+                                            address = it
+                                        }
                                     }
                                 }
                             ) {

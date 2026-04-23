@@ -487,12 +487,6 @@ dependencies {
         }
     }
 
-    // Leak Canary
-    debugImplementation "com.squareup.leakcanary:leakcanary-android:$leakcanaryVerison"
-    implementation "com.squareup.leakcanary:leakcanary-android-process:$leakcanaryVerison"
-    releaseImplementation "com.squareup.leakcanary:leakcanary-android-release:$leakcanaryVerison"
-    releaseImplementation "com.squareup.leakcanary:leakcanary-object-watcher-android:$leakcanaryVerison"
-
     // SumSub
     implementation("com.sumsub.sns:idensic-mobile-sdk:$sumsubVersion") {
         exclude group: 'com.twilio.audioswitch', module: 'AudioDevice'

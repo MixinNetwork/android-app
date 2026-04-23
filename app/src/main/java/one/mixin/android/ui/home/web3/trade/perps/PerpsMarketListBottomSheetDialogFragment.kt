@@ -11,6 +11,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.SimpleItemAnimator
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -89,6 +90,7 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
 
             marketRv.layoutManager = LinearLayoutManager(requireContext())
             marketRv.adapter = adapter
+            (marketRv.itemAnimator as? SimpleItemAnimator)?.supportsChangeAnimations = false
 
             searchEt.listener = object : SearchView.OnSearchViewListener {
                 override fun afterTextChanged(s: Editable?) {

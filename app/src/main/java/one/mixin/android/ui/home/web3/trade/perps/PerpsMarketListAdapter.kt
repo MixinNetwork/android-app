@@ -42,7 +42,10 @@ class PerpsMarketListAdapter(
             binding.apply {
                 val fiatRate = BigDecimal(Fiats.getRate())
                 val fiatSymbol = Fiats.getSymbol()
-                iconIv.loadImage(market.iconUrl, R.drawable.ic_avatar_place_holder)
+                if (iconIv.tag != market.iconUrl) {
+                    iconIv.tag = market.iconUrl
+                    iconIv.loadImage(market.iconUrl, R.drawable.ic_avatar_place_holder)
+                }
                 symbolTv.text = market.tokenSymbol
                 leverageTv.text = root.context.getString(R.string.Perpetual_Leverage_Format, market.leverage)
 

@@ -11,3 +11,4 @@ google-services.json
 .externalNativeBuild
 sentry.properties
 gemini.md
+.vscode/

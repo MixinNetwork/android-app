@@ -262,10 +262,10 @@ class ConversationRepository
         suspend fun getParticipantsWithoutBot(conversationId: String) =
             participantDao.getParticipantsWithoutBot(conversationId)
 
-        fun observeGroupParticipants(conversationId: String) =
+        fun observeGroupParticipantsPagingSource(conversationId: String) =
             participantDao.observeGroupParticipants(conversationId)
 
-        fun fuzzySearchGroupParticipants(
+        fun fuzzySearchGroupParticipantsPagingSource(
             conversationId: String,
             username: String,
             identityNumber: String,
