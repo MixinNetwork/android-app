@@ -162,7 +162,8 @@ class MarketShareActivity : BaseActivity() {
                 }
             }
             val qrCode = withContext(Dispatchers.Default) {
-                currentQrUrl().generateQRCode(72.dp, 8.dp).first
+                val qrPadding = 8.dp
+                currentQrUrl().generateQRCode(72.dp, qrPadding).first.roundQrBackground(qrPadding, 6.dp.toFloat())
             }
             preparedCover?.let(binding.image::setImageBitmap)
             bindFooter(qrCode)
@@ -316,6 +317,24 @@ class MarketShareActivity : BaseActivity() {
             )
         }
         canvas.drawPath(path, paint)
+        return output
+    }
+
+    private fun Bitmap.roundQrBackground(padding: Int, radius: Float): Bitmap {
+        if (width <= 0 || height <= 0 || radius <= 0f) return this
+
+        val output = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(output)
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            shader = BitmapShader(this@roundQrBackground, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
+        }
+        val inset = padding / 2f
+        canvas.drawRoundRect(
+            RectF(inset, inset, width - inset, height - inset),
+            radius,
+            radius,
+            paint,
+        )
         return output
     }
 

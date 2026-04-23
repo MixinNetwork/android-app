@@ -4,10 +4,14 @@ import android.content.ClipData
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.BitmapShader
+import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.Typeface
+import android.graphics.Paint
 import android.graphics.RenderEffect
+import android.graphics.RectF
 import android.graphics.Shader
+import android.graphics.Typeface
 import android.media.MediaScannerConnection
 import android.os.Build
 import android.os.Bundle
@@ -16,19 +20,17 @@ import android.text.Spanned
 import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
 import android.view.View
-import android.view.ViewGroup.MarginLayoutParams
 import android.widget.FrameLayout
 import androidx.core.content.FileProvider
+import androidx.core.graphics.drawable.toDrawable
 import androidx.core.view.drawToBitmap
 import androidx.core.view.updateLayoutParams
-import androidx.core.graphics.drawable.toDrawable
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
-import one.mixin.android.Constants.Scheme.HTTPS_TRADE
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
@@ -42,13 +44,12 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getPublicDownloadPath
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.priceFormat
-import one.mixin.android.extension.round
 import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
-import one.mixin.android.ui.wallet.fiatmoney.buildReferralShareUrl
 import one.mixin.android.ui.wallet.fiatmoney.ReferralShareInfo
+import one.mixin.android.ui.wallet.fiatmoney.buildReferralShareUrl
 import one.mixin.android.ui.web.getScreenshot
 import one.mixin.android.ui.web.refreshScreenshot
 import one.mixin.android.vo.Fiats
@@ -130,8 +131,6 @@ class PerpsPositionShareActivity : BaseActivity() {
             width = min(380.dp, (resources.displayMetrics.widthPixels - 80.dp).coerceAtLeast(0))
             topMargin = 80.dp
         }
-        binding.iconFl.round(6.dp)
-
         val hasContent = bindContent()
         if (!hasContent) {
             finish()
@@ -250,7 +249,8 @@ class PerpsPositionShareActivity : BaseActivity() {
             binding.title.text = getString(R.string.mixin_messenger)
             binding.shareDescTv.text = getString(R.string.share_desc)
         }
-        val qrCode = currentQrUrl().generateQRCode(72.dp, 8.dp).first
+        val qrPadding = 8.dp
+        val qrCode = currentQrUrl().generateQRCode(72.dp, qrPadding).first.roundQrBackground(qrPadding, 6.dp.toFloat())
         binding.qr.setImageBitmap(qrCode)
     }
 
@@ -370,6 +370,24 @@ class PerpsPositionShareActivity : BaseActivity() {
 
     private fun String?.toBigDecimalSafely(): BigDecimal? {
         return this?.toBigDecimalOrNull()
+    }
+
+    private fun Bitmap.roundQrBackground(padding: Int, radius: Float): Bitmap {
+        if (width <= 0 || height <= 0 || radius <= 0f) return this
+
+        val output = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(output)
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            shader = BitmapShader(this@roundQrBackground, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
+        }
+        val inset = padding / 2f
+        canvas.drawRoundRect(
+            RectF(inset, inset, width - inset, height - inset),
+            radius,
+            radius,
+            paint,
+        )
+        return output
     }
 
     private fun saveBitmapToFile(file: File, bitmap: Bitmap) {
