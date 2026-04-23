@@ -133,6 +133,9 @@ fun ClosedPositionItem(
                         text = displaySymbol,
                         fontSize = 16.sp,
                         color = MixinAppTheme.colors.textPrimary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false),
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
