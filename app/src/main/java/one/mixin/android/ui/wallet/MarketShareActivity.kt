@@ -338,9 +338,19 @@ class MarketShareActivity : BaseActivity() {
         return output
     }
 
+    private fun createShareBitmap(): Bitmap {
+        val closeVisibility = binding.close.visibility
+        binding.close.visibility = View.INVISIBLE
+        return try {
+            binding.llMarketShare.drawToBitmap()
+        } finally {
+            binding.close.visibility = closeVisibility
+        }
+    }
+
     private val onShare: () -> Unit = {
         lifecycleScope.launch {
-            val bitmap = binding.llMarketShare.drawToBitmap()
+            val bitmap = createShareBitmap()
             showLoading(true)
             try {
                 val file = File(cacheDir, "$name.png")
@@ -371,7 +381,7 @@ class MarketShareActivity : BaseActivity() {
     private val onSave: () -> Unit = {
         lifecycleScope.launch {
             delay(100)
-            val bitmap = binding.llMarketShare.drawToBitmap()
+            val bitmap = createShareBitmap()
             showLoading(true)
             try {
                 val dir = getPublicDownloadPath()

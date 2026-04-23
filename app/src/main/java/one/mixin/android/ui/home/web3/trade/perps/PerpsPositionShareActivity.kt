@@ -295,7 +295,7 @@ class PerpsPositionShareActivity : BaseActivity() {
 
     private val onShare: () -> Unit = {
         lifecycleScope.launch {
-            val bitmap = binding.topCard.drawToBitmap()
+            val bitmap = createShareBitmap()
             val file = File(cacheDir, "${buildFileName()}_position.png")
             saveBitmapToFile(file, bitmap)
             val uri = FileProvider.getUriForFile(this@PerpsPositionShareActivity, BuildConfig.APPLICATION_ID + ".provider", file)
@@ -319,7 +319,7 @@ class PerpsPositionShareActivity : BaseActivity() {
     private val onSave: () -> Unit = {
         lifecycleScope.launch {
             delay(100)
-            val bitmap = binding.topCard.drawToBitmap()
+            val bitmap = createShareBitmap()
             val dir = getPublicDownloadPath()
             dir.mkdirs()
             val file = File(dir, "${buildFileName()}_position.png")
@@ -370,6 +370,17 @@ class PerpsPositionShareActivity : BaseActivity() {
 
     private fun String?.toBigDecimalSafely(): BigDecimal? {
         return this?.toBigDecimalOrNull()
+    }
+
+    private fun createShareBitmap(): Bitmap {
+        val shareView = (binding.topCard.parent as? View) ?: binding.topCard
+        val closeVisibility = binding.close.visibility
+        binding.close.visibility = View.INVISIBLE
+        return try {
+            shareView.drawToBitmap()
+        } finally {
+            binding.close.visibility = closeVisibility
+        }
     }
 
     private fun Bitmap.roundQrBackground(padding: Int, radius: Float): Bitmap {
