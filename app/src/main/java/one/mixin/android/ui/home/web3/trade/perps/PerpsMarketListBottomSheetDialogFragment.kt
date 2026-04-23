@@ -169,6 +169,7 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
                     isLong = requireNotNull(isLong)
                 )
             }
+            dismiss()
         }
     }
 }
