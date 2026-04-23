@@ -378,11 +378,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             .autoDispose(destroyScope)
             .subscribe { e ->
                 lifecycleScope.launch {
-                    if (e is WCEvent.V2) {
-                        WalletConnectActivity.show(this@MainActivity, e)
-                    } else {
-                        WalletConnectActivity.show(this@MainActivity, e)
-                    }
+                    WalletConnectActivity.show(this@MainActivity, e)
                 }
             }
         RxBus.listen(WCErrorEvent::class.java)
