@@ -2,7 +2,6 @@ package one.mixin.android.ui.home.web3.trade
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -97,26 +96,26 @@ fun ClosedPositionItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier.weight(1f),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            CoilImage(
-                model = position.iconUrl,
-                placeholder = R.drawable.ic_avatar_place_holder,
-                modifier = Modifier
-                    .size(42.dp)
-                    .clip(CircleShape)
-            )
+        CoilImage(
+            model = position.iconUrl,
+            placeholder = R.drawable.ic_avatar_place_holder,
+            modifier = Modifier
+                .size(42.dp)
+                .clip(CircleShape)
+        )
 
-            Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(12.dp))
 
-            Column {
+        Column(modifier = Modifier.weight(1f)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Row(
+                    modifier = Modifier.weight(1f),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     val sideText = if (position.side.lowercase() == "long") {
@@ -134,6 +133,9 @@ fun ClosedPositionItem(
                         text = displaySymbol,
                         fontSize = 16.sp,
                         color = MixinAppTheme.colors.textPrimary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false),
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
@@ -148,31 +150,32 @@ fun ClosedPositionItem(
                             .padding(horizontal = 3.dp, vertical = 2.dp)
                     )
                 }
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "$quantity ${position.tokenSymbol ?: ""}",
-                    fontSize = 14.sp,
-                    color = MixinAppTheme.colors.textAssist
+
+                BasicText(
+                    text = "${formatPerpsSignedFiatDecimal(pnl.multiply(fiatRate), fiatSymbol)} (${formatPerpsSignedPercent(pnlPercent)})",
+                    modifier = Modifier.weight(0.85f),
+                    style = TextStyle(
+                        fontSize = 14.sp,
+                        color = pnlColor,
+                        textAlign = TextAlign.End
+                    ),
+                    maxLines = 1,
+                    softWrap = false,
+                    overflow = TextOverflow.Ellipsis,
+                    autoSize = TextAutoSize.StepBased(
+                        minFontSize = 8.sp,
+                        maxFontSize = 14.sp,
+                        stepSize = 0.5.sp
+                    )
                 )
             }
-        }
 
-        BasicText(
-            text = "${formatPerpsSignedFiatDecimal(pnl.multiply(fiatRate), fiatSymbol)} (${formatPerpsSignedPercent(pnlPercent)})",
-            modifier = Modifier.weight(0.85f),
-            style = TextStyle(
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "$quantity ${position.tokenSymbol ?: ""}",
                 fontSize = 14.sp,
-                color = pnlColor,
-                textAlign = TextAlign.End
-            ),
-            maxLines = 1,
-            softWrap = false,
-            overflow = TextOverflow.Ellipsis,
-            autoSize = TextAutoSize.StepBased(
-                minFontSize = 8.sp,
-                maxFontSize = 14.sp,
-                stepSize = 0.5.sp
+                color = MixinAppTheme.colors.textAssist
             )
-        )
+        }
     }
 }

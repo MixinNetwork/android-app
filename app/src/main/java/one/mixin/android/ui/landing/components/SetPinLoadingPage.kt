@@ -48,6 +48,7 @@ import one.mixin.android.ui.tip.TryConnecting
 fun SetPinLoadingPage(
     pin: String,
     next: () -> Unit,
+    onTopBarLongClick: (() -> Unit)? = null,
 ) {
     val viewModel = hiltViewModel<SetupPinViewModel>()
     val coroutineScope = rememberCoroutineScope()
@@ -102,6 +103,7 @@ fun SetPinLoadingPage(
     PageScaffold(
         title = "",
         verticalScrollable = false,
+        onTopBarLongClick = onTopBarLongClick,
         actions = {
             IconButton(onClick = {
                 context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)

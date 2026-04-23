@@ -66,13 +66,8 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.SessionRequest
-import one.mixin.android.api.request.web3.GaslessFeeRequest
-import one.mixin.android.api.request.web3.GaslessTxRequest
-import one.mixin.android.api.request.web3.SubmitGaslessTxRequest
-import one.mixin.android.api.response.web3.EthGaslessTxPayload
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
-import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PrivacyPreference.getIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
 import one.mixin.android.databinding.ActivityMainBinding
@@ -80,7 +75,6 @@ import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.UserDao
-import one.mixin.android.db.WalletDatabase
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.event.BadgeEvent
 import one.mixin.android.event.TipEvent
@@ -90,7 +84,6 @@ import one.mixin.android.extension.checkStorageNotLow
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getStringDeviceId
-import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isExternalTransferUrl
@@ -193,7 +186,6 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.isGroupConversation
-import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.websocket.ReconnectWorker
 import one.mixin.android.worker.SessionWorker
@@ -1345,28 +1337,6 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         binding.bottomNav.selectedItemId = R.id.nav_chat
         Timber.e("initFragmentsFromSavedState: nav_chat")
     }
-
-    private data class Eip7702GaslessDemoArgs(
-        val from: String?,
-        val to: String,
-        val assetId: String,
-        val amount: String,
-        val chainId: String,
-        val feeAssetId: String?,
-    )
-
-    private data class Eip7702GaslessDemoResult(
-        val from: String,
-        val to: String,
-        val assetId: String,
-        val amount: String,
-        val chainId: String,
-        val feeAssetId: String,
-        val userOpSignType: String,
-        val userOpSignature: String,
-        val eip7702Required: Boolean,
-        val eip7702AuthSignature: String?,
-    )
 
     companion object {
         const val URL = "url"
