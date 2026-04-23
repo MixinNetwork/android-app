@@ -18,6 +18,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
+import one.mixin.android.api.referral.ReferralShareInfo
 import one.mixin.android.api.referral.fetchDefaultReferralShareInfoOrNull
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.api.service.ReferralService
@@ -49,6 +50,9 @@ class PerpsActivity : BaseActivity() {
 
     private var selectedToken by mutableStateOf<TokenItem?>(null)
     private var renderJob: Job? = null
+    private var referralShareInfo: ReferralShareInfo? = null
+    private var referralShareInfoLoaded = false
+    private var referralShareInfoJob: Job? = null
 
     companion object {
         private const val EXTRA_MARKET_ID = "extra_market_id"
@@ -105,6 +109,11 @@ class PerpsActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         observePositionRefresh()
         renderPage()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        preloadReferralShareInfo()
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -214,21 +223,41 @@ class PerpsActivity : BaseActivity() {
         }
     }
 
-    private fun showSharePosition(position: PerpsPositionItem) {
-        lifecycleScope.launch {
-            val dialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
-                setCancelable(false)
-            }
-            dialog.show()
-            try {
-                val referralShareInfo = fetchDefaultReferralShareInfoOrNull(
+    private fun preloadReferralShareInfo() {
+        if (referralShareInfoLoaded || referralShareInfoJob?.isActive == true) return
+        referralShareInfoJob = lifecycleScope.launch {
+            referralShareInfo = withContext(Dispatchers.IO) {
+                fetchDefaultReferralShareInfoOrNull(
                     referralService = referralService,
                     userRepository = userRepository,
                     logLabel = "perps market share",
                 )
-                PerpsPositionShareActivity.show(this@PerpsActivity, position, referralShareInfo)
+            }
+            referralShareInfoLoaded = true
+        }
+    }
+
+    private suspend fun awaitReferralShareInfo(): ReferralShareInfo? {
+        preloadReferralShareInfo()
+        referralShareInfoJob?.join()
+        return referralShareInfo
+    }
+
+    private fun showSharePosition(position: PerpsPositionItem) {
+        lifecycleScope.launch {
+            val shouldShowDialog = !referralShareInfoLoaded
+            val dialog = if (shouldShowDialog) {
+                indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                    setCancelable(false)
+                    show()
+                }
+            } else {
+                null
+            }
+            try {
+                PerpsPositionShareActivity.show(this@PerpsActivity, position, awaitReferralShareInfo())
             } finally {
-                dialog.dismiss()
+                dialog?.dismiss()
             }
         }
     }

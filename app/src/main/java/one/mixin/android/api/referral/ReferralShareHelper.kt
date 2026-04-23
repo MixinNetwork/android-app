@@ -58,14 +58,14 @@ suspend fun fetchDefaultReferralShareInfoOrNull(
 private fun ReferralCode.toReferralShareInfo(referralResponse: ReferralResponse): ReferralShareInfo {
     return ReferralShareInfo(
         code = code,
-        rebatePercent = calculateRebatePercent(
+        rebatePercent = calculateReferralRebatePercentOrNull(
             tradingCommissionRatio = referralResponse.tradingCommissionRatio,
             inviterPercent = inviterPercent,
         ),
     )
 }
 
-private fun calculateRebatePercent(
+internal fun calculateReferralRebatePercentOrNull(
     tradingCommissionRatio: String?,
     inviterPercent: String?,
 ): String? {

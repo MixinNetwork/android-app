@@ -44,7 +44,7 @@ fun buildReferralDescription(context: Context, rebatePercent: String): CharSeque
 }
 
 fun String.isZeroPercent(): Boolean {
-    val normalized = removeSuffix("%").trim()
+    val normalized = replace("%", "").trim()
     return normalized.toBigDecimalOrNull()?.compareTo(BigDecimal.ZERO) == 0
 }
 
