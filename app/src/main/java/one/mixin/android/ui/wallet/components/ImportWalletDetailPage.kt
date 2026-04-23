@@ -270,7 +270,7 @@ fun ImportWalletDetailPage(
                 if (showWalletNameInput) {
                     TextField(
                         value = walletName,
-                        onValueChange = { walletName = it },
+                        onValueChange = { if (it.length <= 36) walletName = it },
                         label = { Text(stringResource(R.string.Wallet_Name), color = MixinAppTheme.colors.accent) },
                         singleLine = true,
                         colors = TextFieldDefaults.textFieldColors(
