@@ -4,26 +4,18 @@ import android.content.ClipData
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.BitmapShader
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
 import android.graphics.RenderEffect
-import android.graphics.RectF
 import android.graphics.Shader
 import android.graphics.Typeface
 import android.media.MediaScannerConnection
 import android.os.Build
 import android.os.Bundle
-import android.text.SpannableString
-import android.text.Spanned
-import android.text.style.ForegroundColorSpan
-import android.text.style.StyleSpan
 import android.view.View
 import android.widget.FrameLayout
 import androidx.core.content.FileProvider
 import androidx.core.graphics.drawable.toDrawable
 import androidx.core.view.drawToBitmap
+import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
@@ -32,6 +24,8 @@ import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.api.referral.ReferralShareInfo
+import one.mixin.android.api.referral.buildReferralShareUrl
 import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.databinding.ActivityPerpsPositionShareBinding
@@ -41,6 +35,7 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.getSerializableExtraCompat
 import one.mixin.android.extension.getPublicDownloadPath
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.priceFormat
@@ -48,8 +43,9 @@ import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
-import one.mixin.android.ui.wallet.fiatmoney.ReferralShareInfo
-import one.mixin.android.ui.wallet.fiatmoney.buildReferralShareUrl
+import one.mixin.android.ui.common.buildReferralDescription
+import one.mixin.android.ui.common.isZeroPercent
+import one.mixin.android.ui.common.roundQrBackground
 import one.mixin.android.ui.web.getScreenshot
 import one.mixin.android.ui.web.refreshScreenshot
 import one.mixin.android.vo.Fiats
@@ -66,7 +62,6 @@ class PerpsPositionShareActivity : BaseActivity() {
         private const val ARGS_POSITION_HISTORY = "args_position_history"
         private const val ARGS_REFERRAL_SHARE_INFO = "args_referral_share_info"
         private const val SHARE_QR_URL = "https://mixin.one/mm"
-        private const val REFERRAL_REBATE_COLOR = "#FFEE70"
         private val MIN_DISPLAY_PNL_PERCENT = BigDecimal("-100")
 
         fun show(context: Context, position: PerpsPositionItem, referralShareInfo: ReferralShareInfo? = null) {
@@ -105,7 +100,7 @@ class PerpsPositionShareActivity : BaseActivity() {
     }
 
     private val referralShareInfo by lazy {
-        intent.getSerializableExtra(ARGS_REFERRAL_SHARE_INFO) as? ReferralShareInfo
+        intent.getSerializableExtraCompat(ARGS_REFERRAL_SHARE_INFO, ReferralShareInfo::class.java)
     }
 
     private val referralCode: String? by lazy {
@@ -234,17 +229,25 @@ class PerpsPositionShareActivity : BaseActivity() {
     }
 
     private fun bindFooter() {
-        if (referralShareInfo != null) {
-            binding.title.text = referralShareInfo?.code
+        val info = referralShareInfo
+        if (info != null) {
+            binding.title.text = info.code
             binding.title.typeface = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 Typeface.create(binding.title.typeface, 600, false)
             } else {
                 Typeface.create(binding.title.typeface, Typeface.BOLD)
             }
-            val rebatePercent = referralShareInfo!!.rebatePercent
-            binding.shareDescTv.minLines = if (rebatePercent.isZeroPercent()) 2 else 1
-            binding.shareDescTv.text = buildReferralDescription(rebatePercent)
+            val rebatePercent = info.rebatePercent
+            if (rebatePercent.isNullOrBlank()) {
+                binding.shareDescTv.isVisible = false
+                binding.shareDescTv.minLines = 1
+            } else {
+                binding.shareDescTv.isVisible = true
+                binding.shareDescTv.minLines = if (rebatePercent.isZeroPercent()) 2 else 1
+                binding.shareDescTv.text = buildReferralDescription(this, rebatePercent)
+            }
         } else {
+            binding.shareDescTv.isVisible = true
             binding.shareDescTv.minLines = 1
             binding.title.text = getString(R.string.mixin_messenger)
             binding.shareDescTv.text = getString(R.string.share_desc)
@@ -255,35 +258,6 @@ class PerpsPositionShareActivity : BaseActivity() {
     }
 
     private fun currentQrUrl(): String = referralCode?.let(::buildReferralShareUrl) ?: SHARE_QR_URL
-
-    private fun buildReferralDescription(rebatePercent: String): CharSequence {
-        if (rebatePercent.isZeroPercent()) {
-            return getString(R.string.referral_share_desc_zero)
-        }
-        val text = getString(R.string.referral_share_desc, rebatePercent)
-        val start = text.indexOf(rebatePercent)
-        return SpannableString(text).apply {
-            if (start >= 0) {
-                setSpan(
-                    ForegroundColorSpan(Color.parseColor(REFERRAL_REBATE_COLOR)),
-                    start,
-                    start + rebatePercent.length,
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
-                )
-                setSpan(
-                    StyleSpan(Typeface.BOLD),
-                    start,
-                    start + rebatePercent.length,
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
-                )
-            }
-        }
-    }
-
-    private fun String.isZeroPercent(): Boolean {
-        val normalized = removeSuffix("%").trim()
-        return normalized.toBigDecimalOrNull()?.compareTo(BigDecimal.ZERO) == 0
-    }
 
     private fun applyFadeInAnimation(view: View) {
         view.alpha = 0f
@@ -373,32 +347,13 @@ class PerpsPositionShareActivity : BaseActivity() {
     }
 
     private fun createShareBitmap(): Bitmap {
-        val shareView = (binding.topCard.parent as? View) ?: binding.topCard
         val closeVisibility = binding.close.visibility
         binding.close.visibility = View.INVISIBLE
         return try {
-            shareView.drawToBitmap()
+            binding.shareCardContainer.drawToBitmap()
         } finally {
             binding.close.visibility = closeVisibility
         }
-    }
-
-    private fun Bitmap.roundQrBackground(padding: Int, radius: Float): Bitmap {
-        if (width <= 0 || height <= 0 || radius <= 0f) return this
-
-        val output = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(output)
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            shader = BitmapShader(this@roundQrBackground, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
-        }
-        val inset = padding / 2f
-        canvas.drawRoundRect(
-            RectF(inset, inset, width - inset, height - inset),
-            radius,
-            radius,
-            paint,
-        )
-        return output
     }
 
     private fun saveBitmapToFile(file: File, bitmap: Bitmap) {

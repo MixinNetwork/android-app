@@ -1,4 +1,4 @@
-package one.mixin.android.ui.wallet.fiatmoney
+package one.mixin.android.api.referral
 
 import one.mixin.android.Constants.RouteConfig.REFERRAL_BOT_USER_ID
 import one.mixin.android.Constants.Scheme.HTTPS_REFERRALS
@@ -12,7 +12,7 @@ import timber.log.Timber
 
 data class ReferralShareInfo(
     val code: String,
-    val rebatePercent: String,
+    val rebatePercent: String?,
 ) : Serializable
 
 fun buildReferralShareUrl(referralCode: String): String = "$HTTPS_REFERRALS/$referralCode"
@@ -68,10 +68,10 @@ private fun ReferralCode.toReferralShareInfo(referralResponse: ReferralResponse)
 private fun calculateRebatePercent(
     tradingCommissionRatio: String?,
     inviterPercent: String?,
-): String {
+): String? {
     val tradingRatio = tradingCommissionRatio?.trim()?.toBigDecimalOrNull()
     val inviterRatio = inviterPercent?.trim()?.toBigDecimalOrNull()
-    if (tradingRatio == null || inviterRatio == null) return DEFAULT_REBATE_PERCENT
+    if (tradingRatio == null || inviterRatio == null) return null
 
     val percent = tradingRatio
         .multiply((BigDecimal.ONE - inviterRatio).coerceAtLeast(BigDecimal.ZERO))
@@ -81,5 +81,4 @@ private fun calculateRebatePercent(
     return "$percent%"
 }
 
-private const val DEFAULT_REBATE_PERCENT = "20%"
 private val HUNDRED = BigDecimal("100")

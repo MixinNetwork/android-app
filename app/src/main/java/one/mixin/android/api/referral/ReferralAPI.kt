@@ -1,4 +1,4 @@
-package one.mixin.android.ui.wallet.fiatmoney
+package one.mixin.android.api.referral
 
 import one.mixin.android.Constants.Account.PREF_REFERRAL_BOT_PK
 import one.mixin.android.Constants.RouteConfig.REFERRAL_BOT_USER_ID
@@ -14,6 +14,37 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.generateConversationId
 import retrofit2.Response
+
+private suspend fun persistReferralBotSession(sessionData: UserSession) {
+    val account = requireNotNull(Session.getAccount()) { "Account is required for database access." }
+    val accountId = requireNotNull(Session.getAccountId()) { "Account id is required for referral session access." }
+
+    MixinApplication.appContext.defaultSharedPreferences.putString(PREF_REFERRAL_BOT_PK, sessionData.publicKey)
+    MixinDatabase.getDatabase(MixinApplication.appContext, account.identityNumber)
+        .participantSessionDao()
+        .insertSuspend(
+            ParticipantSession(
+                conversationId = generateConversationId(sessionData.userId, accountId),
+                userId = sessionData.userId,
+                sessionId = sessionData.sessionId,
+                publicKey = sessionData.publicKey,
+            ),
+        )
+}
+
+private suspend fun <R> retryReferralRequestAfterRefreshingSession(
+    requestSession: suspend (List<String>) -> MixinResponse<List<UserSession>>,
+    retryRequest: suspend () -> R?,
+): R? {
+    return handleMixinResponse(
+        invokeNetwork = { requestSession(listOf(REFERRAL_BOT_USER_ID)) },
+        successBlock = { response ->
+            val sessionData = requireNotNull(response.data).first()
+            persistReferralBotSession(sessionData)
+            retryRequest()
+        },
+    )
+}
 
 suspend fun <T, R> requestReferralMixinAPI(
     invokeNetwork: suspend () -> MixinResponse<T>,
@@ -50,23 +81,10 @@ suspend fun <T, R> requestReferralMixinAPI(
         result
     } else {
         if (response.errorCode == ErrorHandler.AUTHENTICATION && authErrorRetryCount > 0) {
-            return handleMixinResponse(
-                invokeNetwork = { requestSession(listOf(REFERRAL_BOT_USER_ID)) },
-                successBlock = { resp ->
-                    val sessionData = requireNotNull(resp.data)[0]
-                    val account = requireNotNull(Session.getAccount()) { "Account is required for database access." }
-                    MixinApplication.appContext.defaultSharedPreferences.putString(PREF_REFERRAL_BOT_PK, sessionData.publicKey)
-                    MixinDatabase.getDatabase(MixinApplication.appContext, account.identityNumber)
-                        .participantSessionDao()
-                        .insertSuspend(
-                            ParticipantSession(
-                                conversationId = generateConversationId(sessionData.userId, Session.getAccountId()!!),
-                                userId = sessionData.userId,
-                                sessionId = sessionData.sessionId,
-                                publicKey = sessionData.publicKey,
-                            ),
-                        )
-                    return@handleMixinResponse requestReferralMixinAPI(
+            return retryReferralRequestAfterRefreshingSession(
+                requestSession = requestSession,
+                retryRequest = {
+                    requestReferralMixinAPI(
                         invokeNetwork = invokeNetwork,
                         successBlock = successBlock,
                         failureBlock = failureBlock,
@@ -124,23 +142,10 @@ suspend fun <T, R> requestReferralAPI(
         result
     } else {
         if (response.code() == ErrorHandler.AUTHENTICATION && authErrorRetryCount > 0) {
-            return handleMixinResponse(
-                invokeNetwork = { requestSession(listOf(REFERRAL_BOT_USER_ID)) },
-                successBlock = { resp ->
-                    val sessionData = requireNotNull(resp.data)[0]
-                    val account = requireNotNull(Session.getAccount()) { "Account is required for database access." }
-                    MixinApplication.appContext.defaultSharedPreferences.putString(PREF_REFERRAL_BOT_PK, sessionData.publicKey)
-                    MixinDatabase.getDatabase(MixinApplication.appContext, account.identityNumber)
-                        .participantSessionDao()
-                        .insertSuspend(
-                            ParticipantSession(
-                                conversationId = generateConversationId(sessionData.userId, Session.getAccountId()!!),
-                                userId = sessionData.userId,
-                                sessionId = sessionData.sessionId,
-                                publicKey = sessionData.publicKey,
-                            ),
-                        )
-                    return@handleMixinResponse requestReferralAPI(
+            return retryReferralRequestAfterRefreshingSession(
+                requestSession = requestSession,
+                retryRequest = {
+                    requestReferralAPI(
                         invokeNetwork = invokeNetwork,
                         successBlock = successBlock,
                         failureBlock = failureBlock,

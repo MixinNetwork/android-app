@@ -6,7 +6,6 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapShader
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
@@ -16,10 +15,6 @@ import android.graphics.Shader
 import android.media.MediaScannerConnection
 import android.os.Build
 import android.os.Bundle
-import android.text.SpannableString
-import android.text.Spanned
-import android.text.style.ForegroundColorSpan
-import android.text.style.StyleSpan
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
@@ -42,6 +37,9 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.Scheme.HTTPS_MARKET
 import one.mixin.android.R
+import one.mixin.android.api.referral.ReferralShareInfo
+import one.mixin.android.api.referral.buildReferralShareUrl
+import one.mixin.android.api.referral.fetchDefaultReferralShareInfoOrNull
 import one.mixin.android.api.service.ReferralService
 import one.mixin.android.databinding.ActivityMarketShareBinding
 import one.mixin.android.extension.blurBitmap
@@ -54,13 +52,12 @@ import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
-import one.mixin.android.ui.wallet.fiatmoney.ReferralShareInfo
-import one.mixin.android.ui.wallet.fiatmoney.buildReferralShareUrl
-import one.mixin.android.ui.wallet.fiatmoney.fetchDefaultReferralShareInfoOrNull
+import one.mixin.android.ui.common.buildReferralDescription
+import one.mixin.android.ui.common.isZeroPercent
+import one.mixin.android.ui.common.roundQrBackground
 import one.mixin.android.ui.web.getScreenshot
 import one.mixin.android.ui.web.refreshScreenshot
 import one.mixin.android.repository.UserRepository
-import java.math.BigDecimal
 
 @AndroidEntryPoint
 class MarketShareActivity : BaseActivity() {
@@ -68,7 +65,6 @@ class MarketShareActivity : BaseActivity() {
         private const val ARGS_NAME = "name"
         private const val ARGS_COIN = "coin"
         private const val SHARE_QR_URL = "https://mixin.one/mm"
-        private const val REFERRAL_REBATE_COLOR = "#FFEE70"
 
         private var cover: Bitmap? = null
 
@@ -205,17 +201,25 @@ class MarketShareActivity : BaseActivity() {
     }
 
     private fun bindFooter(qrCode: Bitmap) {
-        if (referralShareInfo != null) {
-            binding.title.text = referralShareInfo?.code
+        val info = referralShareInfo
+        if (info != null) {
+            binding.title.text = info.code
             binding.title.typeface = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 Typeface.create(binding.title.typeface, 600, false)
             } else {
                 Typeface.create(binding.title.typeface, Typeface.BOLD)
             }
-            val rebatePercent = referralShareInfo!!.rebatePercent
-            binding.shareDesc.minLines = if (rebatePercent.isZeroPercent()) 2 else 1
-            binding.shareDesc.text = buildReferralDescription(rebatePercent)
+            val rebatePercent = info.rebatePercent
+            if (rebatePercent.isNullOrBlank()) {
+                binding.shareDesc.isVisible = false
+                binding.shareDesc.minLines = 1
+            } else {
+                binding.shareDesc.isVisible = true
+                binding.shareDesc.minLines = if (rebatePercent.isZeroPercent()) 2 else 1
+                binding.shareDesc.text = buildReferralDescription(this, rebatePercent)
+            }
         } else {
+            binding.shareDesc.isVisible = true
             binding.shareDesc.minLines = 1
             binding.title.text = getString(R.string.mixin_messenger)
             binding.shareDesc.text = getString(R.string.share_desc)
@@ -224,35 +228,6 @@ class MarketShareActivity : BaseActivity() {
     }
 
     private fun currentQrUrl(): String = referralCode?.let(::buildReferralShareUrl) ?: SHARE_QR_URL
-
-    private fun buildReferralDescription(rebatePercent: String): CharSequence {
-        if (rebatePercent.isZeroPercent()) {
-            return getString(R.string.referral_share_desc_zero)
-        }
-        val text = getString(R.string.referral_share_desc, rebatePercent)
-        val start = text.indexOf(rebatePercent)
-        return SpannableString(text).apply {
-            if (start >= 0) {
-                setSpan(
-                    ForegroundColorSpan(Color.parseColor(REFERRAL_REBATE_COLOR)),
-                    start,
-                    start + rebatePercent.length,
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
-                )
-                setSpan(
-                    StyleSpan(Typeface.BOLD),
-                    start,
-                    start + rebatePercent.length,
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
-                )
-            }
-        }
-    }
-
-    private fun String.isZeroPercent(): Boolean {
-        val normalized = removeSuffix("%").trim()
-        return normalized.toBigDecimalOrNull()?.compareTo(BigDecimal.ZERO) == 0
-    }
 
     private fun syncActionContainerVisibility() {
         val hasVisibleAction = binding.share.isVisible || binding.copy.isVisible || binding.save.isVisible
@@ -271,14 +246,20 @@ class MarketShareActivity : BaseActivity() {
     }
 
     private fun trimTransparentPadding(bitmap: Bitmap): Bitmap {
+        val width = bitmap.width
+        val height = bitmap.height
+        val pixels = IntArray(width * height)
+        bitmap.getPixels(pixels, 0, width, 0, 0, width, height)
+
         var left = bitmap.width
         var top = bitmap.height
         var right = -1
         var bottom = -1
 
-        for (x in 0 until bitmap.width) {
-            for (y in 0 until bitmap.height) {
-                if ((bitmap.getPixel(x, y) ushr 24) != 0) {
+        for (y in 0 until height) {
+            val rowOffset = y * width
+            for (x in 0 until width) {
+                if ((pixels[rowOffset + x] ushr 24) != 0) {
                     left = minOf(left, x)
                     top = minOf(top, y)
                     right = maxOf(right, x)
@@ -317,24 +298,6 @@ class MarketShareActivity : BaseActivity() {
             )
         }
         canvas.drawPath(path, paint)
-        return output
-    }
-
-    private fun Bitmap.roundQrBackground(padding: Int, radius: Float): Bitmap {
-        if (width <= 0 || height <= 0 || radius <= 0f) return this
-
-        val output = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(output)
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            shader = BitmapShader(this@roundQrBackground, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
-        }
-        val inset = padding / 2f
-        canvas.drawRoundRect(
-            RectF(inset, inset, width - inset, height - inset),
-            radius,
-            radius,
-            paint,
-        )
         return output
     }
 

@@ -18,6 +18,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
+import one.mixin.android.api.referral.fetchDefaultReferralShareInfoOrNull
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.api.service.ReferralService
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -31,7 +32,6 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletActivity
-import one.mixin.android.ui.wallet.fiatmoney.fetchDefaultReferralShareInfoOrNull
 import one.mixin.android.vo.safe.TokenItem
 import javax.inject.Inject
 
