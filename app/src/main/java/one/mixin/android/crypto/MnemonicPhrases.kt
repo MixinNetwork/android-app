@@ -19,14 +19,7 @@ fun toMnemonic(entropy: ByteArray): String {
         require(Blockchain.newMnemonic(entropy) == it)
     }
 }
-
-fun toCompleteMnemonic(mnemonic: String): List<String> {
-    val words = mnemonic.split(" ")
-    val checksum = mnemonicChecksumWord(words)
-    return words + checksum
-}
-
-fun toCompleteMnemonic(words: List<String>): List<String> {
+fun toMnemonicWithChecksum(words: List<String>): List<String> {
     val checksum = mnemonicChecksumWord(words)
     return words + checksum
 }

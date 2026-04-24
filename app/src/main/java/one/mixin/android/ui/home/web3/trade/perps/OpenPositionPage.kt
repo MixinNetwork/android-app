@@ -233,6 +233,10 @@ fun OpenPositionPage(
         else -> null
     }
     val displayedErrorInfo = errorInfo?.takeIf { it.isNotBlank() } ?: marginLimitError
+    val minMarginErrorString = stringResource(R.string.perps_minimum_margin, minimumMargin.stripTrailingZeros().toPlainString())
+    val maxMarginErrorString = stringResource(R.string.perps_maximum_margin, maximumMargin.stripTrailingZeros().toPlainString())
+    val errorWaitingOtherOrdersString = stringResource(R.string.error_waiting_other_orders)
+    val dataErrorString = stringResource(R.string.Data_error)
     val tokenNetworkName = currentToken?.chainName
         ?.takeIf { it.isNotBlank() }
         ?: currentToken?.chainSymbol
@@ -456,12 +460,16 @@ fun OpenPositionPage(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         leverageOptions.forEach { lev ->
-                            val isSelected = if (lev == -1) {
-                                !leverageOptions.dropLast(1).contains(leverage.toInt())
-                            } else if (lev == maxLeverage) {
-                                leverage.toInt() == maxLeverage
-                            } else {
-                                leverage.toInt() == lev
+                            val isSelected = when (lev) {
+                                -1 -> {
+                                    !leverageOptions.dropLast(1).contains(leverage.toInt())
+                                }
+                                maxLeverage -> {
+                                    leverage.toInt() == maxLeverage
+                                }
+                                else -> {
+                                    leverage.toInt() == lev
+                                }
                             }
 
                             val displayText = when (lev) {
@@ -616,17 +624,11 @@ fun OpenPositionPage(
 
                         if (amount <= BigDecimal.ZERO) return@MixinButton
                         if (minimumMargin > BigDecimal.ZERO && amount < minimumMargin) {
-                            errorInfo = context.getString(
-                                R.string.perps_minimum_margin,
-                                minimumMargin.stripTrailingZeros().toPlainString()
-                            )
+                            errorInfo = minMarginErrorString
                             return@MixinButton
                         }
                         if (maximumMargin > BigDecimal.ZERO && amount > maximumMargin) {
-                            errorInfo = context.getString(
-                                R.string.perps_maximum_margin,
-                                maximumMargin.stripTrailingZeros().toPlainString()
-                            )
+                            errorInfo = maxMarginErrorString
                             return@MixinButton
                         }
                         if (amount > (token.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO)) return@MixinButton
@@ -645,7 +647,7 @@ fun OpenPositionPage(
                             val hasOpeningPosition = viewModel.getOpenPositionsFromDb(walletId)
                                 .any { it.marketId == m.marketId }
                             if (hasOpeningPosition) {
-                                errorInfo = context.getString(R.string.error_waiting_other_orders)
+                                errorInfo = errorWaitingOtherOrdersString
                                 return@launch
                             }
 
@@ -662,7 +664,7 @@ fun OpenPositionPage(
                                         marketSymbol = m.displaySymbol,
                                         marketIcon = m.iconUrl,
                                         isLong = isLong,
-                                        amount = response.payAmount ?: "",
+                                        amount = response.payAmount,
                                         leverage = leverage.toInt(),
                                         entryPrice = m.last,
                                         tokenSymbol = token.symbol,
@@ -675,7 +677,7 @@ fun OpenPositionPage(
                                     errorInfo = if (errorCode > 0) {
                                         context.getMixinErrorStringByCode(errorCode, errorMessage)
                                     } else {
-                                        errorMessage.ifBlank { context.getString(R.string.Data_error) }
+                                        errorMessage.ifBlank { dataErrorString }
                                     }
                                 }
                             )
@@ -749,7 +751,7 @@ fun OpenPositionPage(
 
 private fun generateLeverageOptions(maxLeverage: Int): List<Int> {
     val safeMaxLeverage = maxLeverage.coerceAtLeast(1)
-    val baseOptions = listOf(2, 5, 10, 20)
+    val baseOptions = listOf(5, 10, 20)
     val options = baseOptions
         .filter { it in 1 until safeMaxLeverage }
         .toMutableList()
