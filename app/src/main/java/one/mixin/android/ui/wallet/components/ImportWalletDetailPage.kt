@@ -587,7 +587,7 @@ private fun normalizeBitcoinPrivateKeyToWif(privateKey: String): String? {
 
 private fun isBitcoinAddressValid(address: String): Boolean {
     return try {
-        AddressParser.getDefault().parseAddress(address)
+        AddressParser.getDefault(BitcoinNetwork.MAINNET).parseAddress(address)
         true
     } catch (e: Exception) {
         false
