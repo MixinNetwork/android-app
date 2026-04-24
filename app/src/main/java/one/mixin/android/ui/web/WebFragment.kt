@@ -2011,6 +2011,10 @@ class WebFragment : BaseFragment() {
                             null
                         }
 
+                    if (!from.equals(Web3Signer.evmAddress, ignoreCase = true)) {
+                        onWalletActionError(id)
+                        return
+                    }
                     signTransaction(id, WCEthereumTransaction(from, to, null, null, maxFeePerGas, maxPriorityFeePerGas, gas, null, value, data))
                 }
 

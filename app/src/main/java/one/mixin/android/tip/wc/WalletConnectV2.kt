@@ -353,6 +353,9 @@ object WalletConnectV2 : WalletConnect() {
                         Timber.e("$TAG parseSessionRequest ETHSignTransaction transaction is null")
                         return null
                     }
+                    if (localAddress.isNotBlank() && !transaction.from.equals(localAddress, true)) {
+                        throw IllegalArgumentException("Address unequal")
+                    }
                     WCSignData.V2SignData(request.request.id, transaction, request)
                 }
                 Method.ETHSendTransaction.name -> {
@@ -360,6 +363,9 @@ object WalletConnectV2 : WalletConnect() {
                     if (transaction == null) {
                         Timber.e("$TAG parseSessionRequest ETHSendTransaction transaction is null")
                         return null
+                    }
+                    if (localAddress.isNotBlank() && !transaction.from.equals(localAddress, true)) {
+                        throw IllegalArgumentException("Address unequal")
                     }
                     WCSignData.V2SignData(request.request.id, transaction, request)
                 }
