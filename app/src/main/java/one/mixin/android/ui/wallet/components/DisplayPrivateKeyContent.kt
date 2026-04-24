@@ -1,5 +1,7 @@
 package one.mixin.android.ui.wallet.components
 import android.content.ClipData
+import android.os.Build
+import android.os.PersistableBundle
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -17,6 +19,7 @@ import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,6 +30,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.getClipboardManager
@@ -38,6 +43,7 @@ fun DisplayPrivateKeyContent(
     pop: () -> Unit
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -99,12 +105,24 @@ fun DisplayPrivateKeyContent(
                     .clickable {
                         securityContent?.let { content ->
                             val clipboard = context.getClipboardManager()
-                            clipboard.setPrimaryClip(
-                                ClipData.newPlainText(
-                                    "Private Key", content
-                                )
-                            )
+                            val clip = ClipData.newPlainText("", content)
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                @Suppress("NewApi")
+                                clip.description.extras = PersistableBundle().apply {
+                                    putBoolean("android.content.extra.IS_SENSITIVE", true)
+                                }
+                            }
+                            clipboard.setPrimaryClip(clip)
                             toast(R.string.copied_to_clipboard)
+                            scope.launch {
+                                delay(60_000L)
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                                    val current = clipboard.primaryClip?.getItemAt(0)?.text?.toString()
+                                    if (current == content) {
+                                        clipboard.clearPrimaryClip()
+                                    }
+                                }
+                            }
                         }
                     }
             )
