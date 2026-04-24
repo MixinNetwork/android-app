@@ -103,7 +103,7 @@ object CryptoWalletHelper {
                 ?: throw IllegalArgumentException("Private key generation failed")
             val address = EthKeyGenerator.privateKeyToAddress(privateKey)
             val addressFromGo = Blockchain.generateEvmAddressFromMnemonic(mnemonic, path)
-            assert(addressFromGo.equals(address)) { "Address mismatch: $addressFromGo != $address" }
+            check(addressFromGo.equals(address, ignoreCase = true)) { "Ethereum address mismatch: $addressFromGo != $address" }
             return CryptoWallet(
                 mnemonic = mnemonic,
                 privateKey = Numeric.toHexString(privateKey),
@@ -122,7 +122,7 @@ object CryptoWalletHelper {
             val keyPair = newKeyPairFromSeed(privateKey)
             val address = keyPair.publicKey.encodeToBase58String()
             val addressFromGo = Blockchain.generateSolanaAddressFromMnemonic(mnemonic, path)
-            assert(addressFromGo.equals(address)) { "Address mismatch: $addressFromGo != $address" }
+            check(addressFromGo == address) { "Solana address mismatch: $addressFromGo != $address" }
 
             return CryptoWallet(
                 mnemonic = mnemonic,
