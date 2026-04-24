@@ -1934,7 +1934,7 @@ class WebFragment : BaseFragment() {
     ) {
         @JavascriptInterface
         fun postMessage(json: String) {
-            Timber.e("postMessage $json")
+            if (BuildConfig.DEBUG) Timber.d("postMessage $json")
             val obj = JSONObject(json)
             val id = obj.getLong("id")
             val method = DAppMethod.fromValue(obj.getString("name"))
