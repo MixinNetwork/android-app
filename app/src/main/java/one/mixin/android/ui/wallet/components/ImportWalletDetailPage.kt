@@ -546,7 +546,7 @@ private fun isBitcoinPrivateKeyValid(privateKey: String): Boolean {
             val privateKeyBytes = Numeric.hexStringToByteArray(privateKey)
             if (privateKeyBytes.size != 32) return false
             val scalar = BigInteger(1, privateKeyBytes)
-            return scalar >= BigInteger.ONE && scalar < ECKey.CURVE.n
+            return scalar >= BigInteger.ONE && scalar < ECKey.ecDomainParameters().n
         }
 
         Timber.e("Unknown private key format")

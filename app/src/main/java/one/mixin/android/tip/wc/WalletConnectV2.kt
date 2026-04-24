@@ -607,7 +607,7 @@ object WalletConnectV2 : WalletConnect() {
 
         val keyPair = ECKeyPair.create(priv)
         val credential = Credentials.create(keyPair)
-        val nonce = getNonce(credential.address)
+        val nonce = transaction.nonce?.toBigIntegerOrNull() ?: getNonce(credential.address)
         val v = Numeric.decodeQuantity(value)
         val tipGas = signData.tipGas
         if (tipGas == null) {
