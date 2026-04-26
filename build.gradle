@@ -125,7 +125,7 @@ buildscript {
         ext.lottieComposeVersion = '6.7.1'
         ext.composeBomVersion = '2026.04.01'
         ext.activityComposeVersion = '1.13.0'
-        ext.reownBomVersion = '1.6.12'
+        ext.reownBomVersion = '1.6.13'
         ext.kotsonVersion = '2.5.0'
         ext.playServicesMapsVersion = '20.0.0'
         ext.playServicesLocationVersion = '21.3.0'
