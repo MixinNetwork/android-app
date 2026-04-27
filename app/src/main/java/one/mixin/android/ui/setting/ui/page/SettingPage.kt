@@ -61,6 +61,8 @@ fun SettingPage() {
                         .verticalScroll(rememberScrollState()),
             ) {
                 val context = LocalContext.current
+                val inviteContent = stringResource(R.string.chat_on_mixin_content, Session.getAccount()?.identityNumber ?: "")
+                val share = stringResource(R.string.Share)
                 SettingTile(
                     icon = R.drawable.ic_setting_privacy,
                     title = stringResource(id = R.string.Account),
@@ -127,13 +129,13 @@ fun SettingPage() {
                     sendIntent.action = Intent.ACTION_SEND
                     sendIntent.putExtra(
                         Intent.EXTRA_TEXT,
-                        context.getString(R.string.chat_on_mixin_content, Session.getAccount()?.identityNumber),
+                        inviteContent,
                     )
                     sendIntent.type = "text/plain"
                     context.startActivity(
                         Intent.createChooser(
                             sendIntent,
-                            context.resources.getText(R.string.Share),
+                            share,
                         ),
                     )
                 }

@@ -70,6 +70,7 @@ fun SessionProposalPage(
         return
     }
     val context = LocalContext.current
+    val commonWallet = stringResource(R.string.Common_Wallet)
     var walletName by remember { mutableStateOf<String?>(null) }
     var walletDisplayInfo by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
 
@@ -81,7 +82,7 @@ fun SessionProposalPage(
 
     LaunchedEffect(Unit) {
         val wallet = viewModel.findWalletById(Web3Signer.currentWalletId)
-        walletName = wallet?.name.takeIf { !it.isNullOrEmpty() } ?: context.getString(R.string.Common_Wallet)
+        walletName = wallet?.name.takeIf { !it.isNullOrEmpty() } ?: commonWallet
     }
 
     LaunchedEffect(account) {

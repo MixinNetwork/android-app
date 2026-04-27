@@ -46,6 +46,7 @@ import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -135,6 +136,7 @@ fun CandleChart(
     marketPrice: String? = null,
 ) {
     val context = LocalContext.current
+    val dataError = stringResource(R.string.Data_error)
     val viewModel = hiltViewModel<PerpetualViewModel>()
     val lifecycleOwner = LocalLifecycleOwner.current
     var candles by remember { mutableStateOf<List<CandleView>>(emptyList()) }
@@ -182,14 +184,14 @@ fun CandleChart(
             }
             errorMessage != null -> {
                 Text(
-                    text = errorMessage ?: context.getString(R.string.Data_error),
+                    text = errorMessage ?: dataError,
                     fontSize = 14.sp,
                     color = MixinAppTheme.colors.textAssist
                 )
             }
             candles.isEmpty() -> {
                 Text(
-                    text = context.getString(R.string.Data_error),
+                    text = dataError,
                     fontSize = 14.sp,
                     color = MixinAppTheme.colors.textAssist
                 )
