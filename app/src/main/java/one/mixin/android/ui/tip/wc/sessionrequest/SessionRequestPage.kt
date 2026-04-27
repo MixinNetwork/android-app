@@ -99,6 +99,7 @@ fun SessionRequestPage(
 ) {
     val viewModel = hiltViewModel<SessionRequestViewModel>()
     val context = LocalContext.current
+    val commonWallet = stringResource(R.string.Common_Wallet)
     var walletName by remember { mutableStateOf<String?>(null) }
     var walletDisplayInfo by remember { mutableStateOf<Triple<String?, Int, Boolean?>?>(null) }
     var chainToken by remember { mutableStateOf<Web3TokenItem?>(null) }
@@ -134,9 +135,9 @@ fun SessionRequestPage(
     LaunchedEffect(Unit) {
         try {
             val wallet = viewModel.findWalletById(Web3Signer.currentWalletId)
-            walletName = wallet?.name?.takeIf { it.isNotEmpty() } ?: context.getString(R.string.Common_Wallet)
+            walletName = wallet?.name?.takeIf { it.isNotEmpty() } ?: commonWallet
         } catch (e: Exception) {
-            walletName = context.getString(R.string.Common_Wallet)
+            walletName = commonWallet
         }
     }
 
