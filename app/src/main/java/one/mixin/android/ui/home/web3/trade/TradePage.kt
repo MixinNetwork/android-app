@@ -101,7 +101,7 @@ fun TradePage(
     onShowTradingGuide: (Int) -> Unit,
     onShowHelpBottomSheet: (() -> Unit, () -> Unit) -> Unit,
     onShowMarketList: (Boolean) -> Unit,
-    onShowAllMarkets: () -> Unit,
+    onShowAllMarkets: (String?) -> Unit,
     onShowAllOpenPositions: () -> Unit,
     onShowAllClosedPositions: () -> Unit,
     onOpenPositionClick: (PerpsPositionItem) -> Unit,

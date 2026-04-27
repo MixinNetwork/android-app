@@ -5,8 +5,8 @@ import android.app.Dialog
 import android.text.Editable
 import android.view.ViewGroup
 import android.widget.ImageView
-import androidx.core.view.isVisible
 import androidx.core.view.doOnPreDraw
+import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -17,7 +17,6 @@ import androidx.recyclerview.widget.SimpleItemAnimator
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -56,11 +55,18 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
     companion object {
         const val TAG = "PerpsMarketListBottomSheetDialogFragment"
         private const val ARGS_IS_LONG = "args_is_long"
+        private const val ARGS_INITIAL_CATEGORY = "args_initial_category"
+        const val CATEGORY_STOCKS = "stocks"
+        const val CATEGORY_COMMODITIES = "commodities"
 
         fun newInstance() = PerpsMarketListBottomSheetDialogFragment()
 
         fun newInstance(isLong: Boolean) = PerpsMarketListBottomSheetDialogFragment().withArgs {
             putBoolean(ARGS_IS_LONG, isLong)
+        }
+
+        fun newInstance(initialCategory: String? = null) = PerpsMarketListBottomSheetDialogFragment().withArgs {
+            initialCategory?.let { putString(ARGS_INITIAL_CATEGORY, it) }
         }
     }
 
@@ -78,6 +84,9 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
 
     private val isLong by lazy {
         arguments?.takeIf { it.containsKey(ARGS_IS_LONG) }?.getBoolean(ARGS_IS_LONG)
+    }
+    private val initialCategory by lazy {
+        arguments?.getString(ARGS_INITIAL_CATEGORY)
     }
     private var allMarkets = listOf<PerpsMarket>()
     private var currentQuery = ""
@@ -108,6 +117,7 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
             marketRv.layoutManager = LinearLayoutManager(requireContext())
             marketRv.adapter = adapter
             (marketRv.itemAnimator as? SimpleItemAnimator)?.supportsChangeAnimations = false
+            applyInitialCategory()
             categoryScroll.scrollToCenterCheckedRadio(categoryGroup)
 
             searchEt.listener = object : SearchView.OnSearchViewListener {
@@ -135,36 +145,37 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
             }
 
             volumeSort.setOnClickListener {
-                updateSort(
-                    if (currentSort == MarketSort.RANK_ASCENDING) {
-                        MarketSort.RANK_DESCENDING
-                    } else {
-                        MarketSort.RANK_ASCENDING
-                    }
-                )
+                updateSort(nextSort(currentSort, MarketSort.RANK_ASCENDING, MarketSort.RANK_DESCENDING))
             }
             priceSort.setOnClickListener {
-                updateSort(
-                    if (currentSort == MarketSort.PRICE_ASCENDING) {
-                        MarketSort.PRICE_DESCENDING
-                    } else {
-                        MarketSort.PRICE_ASCENDING
-                    }
-                )
+                updateSort(nextSort(currentSort, MarketSort.PRICE_ASCENDING, MarketSort.PRICE_DESCENDING))
             }
             changeSort.setOnClickListener {
                 updateSort(
-                    if (currentSort == MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_ASCENDING) {
-                        MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_DESCENDING
-                    } else {
-                        MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_ASCENDING
-                    }
+                    nextSort(
+                        currentSort,
+                        MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_ASCENDING,
+                        MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_DESCENDING,
+                    )
                 )
             }
         }
 
         renderSortState()
         observeMarkets()
+    }
+
+    private fun applyInitialCategory() {
+        when (initialCategory) {
+            CATEGORY_STOCKS -> {
+                currentCategory = MarketCategory.STOCKS
+                binding.radioStocks.isChecked = true
+            }
+            CATEGORY_COMMODITIES -> {
+                currentCategory = MarketCategory.COMMODITIES
+                binding.radioCommodities.isChecked = true
+            }
+        }
     }
 
     private fun observeMarkets() {
@@ -186,7 +197,15 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
         }
     }
 
-    private fun updateSort(sort: MarketSort) {
+    private fun nextSort(current: MarketSort?, ascending: MarketSort, descending: MarketSort): MarketSort? {
+        return when (current) {
+            ascending -> descending
+            descending -> null
+            else -> ascending
+        }
+    }
+
+    private fun updateSort(sort: MarketSort?) {
         currentSort = sort
         renderSortState()
         filterAndSortMarkets(scrollToTop = true)

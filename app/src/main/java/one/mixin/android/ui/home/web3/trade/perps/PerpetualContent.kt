@@ -1,11 +1,11 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import one.mixin.android.widget.components.MixinButton
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -58,6 +57,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.home.web3.trade.ClosedPositionItem
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.Fiats
+import one.mixin.android.widget.components.MixinButton
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -68,7 +68,7 @@ private const val CLOSED_POSITION_PREVIEW_LIMIT = 10
 fun PerpetualContent(
     onShowTradingGuide: () -> Unit,
     onShowMarketList: (isLong: Boolean) -> Unit,
-    onShowAllMarkets: () -> Unit,
+    onShowAllMarkets: (String?) -> Unit,
     onShowAllOpenPositions: () -> Unit,
     onShowAllClosedPositions: () -> Unit,
     onOpenPositionClick: (PerpsPositionItem) -> Unit,
@@ -104,6 +104,10 @@ fun PerpetualContent(
     val openPositionsCount = openPositions.size
     val openPositionsPreview = openPositions.take(3)
     val marketsPreview = markets.take(3)
+    val stocksMarkets = markets.filter { it.isStocksCategory() }
+    val commoditiesMarkets = markets.filter { it.isCommoditiesCategory() }
+    val stocksMarketsPreview = stocksMarkets.take(3)
+    val commoditiesMarketsPreview = commoditiesMarkets.take(3)
     val closedPositionsPreview = closedPositions.take(3)
     val totalMargin = openPositions.fold(BigDecimal.ZERO) { total, position ->
         total + (position.margin?.toBigDecimalOrNull() ?: BigDecimal.ZERO)
@@ -296,46 +300,16 @@ fun PerpetualContent(
                     .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
                     .padding(vertical = 16.dp)
             ) {
-                // Markets Section
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { onShowAllMarkets() }
-                        .padding(horizontal = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = stringResource(R.string.perps_markets),
-                        fontSize = 14.sp,
-                        color = MixinAppTheme.colors.textPrimary,
-                    )
-                    Icon(
-                        painter = painterResource(R.drawable.ic_arrow_right),
-                        contentDescription = null,
-                        tint = MixinAppTheme.colors.textAssist,
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-
                 if (marketsPreview.isNotEmpty()) {
-                    marketsPreview.forEach { market ->
-                        PerpsMarketItem(
-                            market = market,
-                            quoteColorReversed = quoteColorReversed,
-                            onClick = {
-                                onMarketItemClick(market)
-                            }
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                    }
-
-                    if (markets.size > marketsPreview.size) {
-                        ViewAllAction(
-                            onClick = onShowAllMarkets
-                        )
-                    }
+                    MarketPreviewSection(
+                        title = stringResource(R.string.perps_markets),
+                        markets = marketsPreview,
+                        totalCount = markets.size,
+                        quoteColorReversed = quoteColorReversed,
+                        onTitleClick = { onShowAllMarkets(null) },
+                        onViewAllClick = { onShowAllMarkets(null) },
+                        onMarketItemClick = onMarketItemClick,
+                    )
                 } else if (isLoading) {
                     Box(
                         modifier = Modifier
@@ -362,6 +336,58 @@ fun PerpetualContent(
                             textAlign = TextAlign.Center
                         )
                     }
+                }
+            }
+
+            if (stocksMarketsPreview.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .clip(RoundedCornerShape(8.dp))
+                        .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
+                        .padding(vertical = 16.dp)
+                ) {
+                    MarketPreviewSection(
+                        title = stringResource(R.string.perps_category_stocks),
+                        markets = stocksMarketsPreview,
+                        totalCount = stocksMarkets.size,
+                        quoteColorReversed = quoteColorReversed,
+                        onTitleClick = {
+                            onShowAllMarkets(PerpsMarketListBottomSheetDialogFragment.CATEGORY_STOCKS)
+                        },
+                        onViewAllClick = {
+                            onShowAllMarkets(PerpsMarketListBottomSheetDialogFragment.CATEGORY_STOCKS)
+                        },
+                        onMarketItemClick = onMarketItemClick,
+                    )
+                }
+            }
+
+            if (commoditiesMarketsPreview.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .clip(RoundedCornerShape(8.dp))
+                        .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
+                        .padding(vertical = 16.dp)
+                ) {
+                    MarketPreviewSection(
+                        title = stringResource(R.string.perps_category_commodities),
+                        markets = commoditiesMarketsPreview,
+                        totalCount = commoditiesMarkets.size,
+                        quoteColorReversed = quoteColorReversed,
+                        onTitleClick = {
+                            onShowAllMarkets(PerpsMarketListBottomSheetDialogFragment.CATEGORY_COMMODITIES)
+                        },
+                        onViewAllClick = {
+                            onShowAllMarkets(PerpsMarketListBottomSheetDialogFragment.CATEGORY_COMMODITIES)
+                        },
+                        onMarketItemClick = onMarketItemClick,
+                    )
                 }
             }
 
@@ -511,6 +537,63 @@ fun PerpetualContent(
             }
         }
     }
+}
+
+@Composable
+private fun MarketPreviewSection(
+    title: String,
+    markets: List<PerpsMarket>,
+    totalCount: Int,
+    quoteColorReversed: Boolean,
+    onTitleClick: () -> Unit,
+    onViewAllClick: () -> Unit,
+    onMarketItemClick: (PerpsMarket) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onTitleClick() }
+            .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(
+            text = title,
+            fontSize = 14.sp,
+            color = MixinAppTheme.colors.textPrimary,
+        )
+        Icon(
+            painter = painterResource(R.drawable.ic_arrow_right),
+            contentDescription = null,
+            tint = MixinAppTheme.colors.textAssist,
+            modifier = Modifier.size(16.dp),
+        )
+    }
+    Spacer(modifier = Modifier.height(12.dp))
+
+    markets.forEachIndexed { index, market ->
+        PerpsMarketItem(
+            market = market,
+            quoteColorReversed = quoteColorReversed,
+            onClick = { onMarketItemClick(market) }
+        )
+        if (index != markets.lastIndex) {
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+    }
+
+    if (totalCount > markets.size) {
+        Spacer(modifier = Modifier.height(12.dp))
+        ViewAllAction(onClick = onViewAllClick)
+    }
+}
+
+private fun PerpsMarket.isStocksCategory(): Boolean {
+    return category.equals("stock", ignoreCase = true) || category.equals("stocks", ignoreCase = true)
+}
+
+private fun PerpsMarket.isCommoditiesCategory(): Boolean {
+    return category.equals("commodity", ignoreCase = true) || category.equals("commodities", ignoreCase = true)
 }
 
 private fun calculatePnlPercent(

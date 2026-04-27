@@ -2405,6 +2405,7 @@
     <string name="perps_category_indices">Indices</string>
     <string name="perps_category_commodities">Commodities</string>
     <string name="perps_category_forex">Forex</string>
+    <string name="perps_sort_volume_24">24 VOL</string>
     <string name="Forget_Pin">Forgot PIN</string>
     <string name="forget_pin_help_url">https://support.mixin.one/en/article/what-should-i-do-if-i-forget-my-pin-g12pmo/</string>
     <string name="Switch_Account">Switch Account</string>
