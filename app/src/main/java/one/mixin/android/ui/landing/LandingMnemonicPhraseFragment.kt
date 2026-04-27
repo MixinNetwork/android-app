@@ -5,7 +5,6 @@ import android.view.View
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import dagger.hilt.android.AndroidEntryPoint
-import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.crypto.mnemonicChecksum
 import one.mixin.android.databinding.FragmentComposeBinding

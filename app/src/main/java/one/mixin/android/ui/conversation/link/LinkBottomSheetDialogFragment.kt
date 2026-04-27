@@ -87,7 +87,6 @@ import one.mixin.android.ui.home.web3.GasCheckBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.PREF_TRADE_SELECTED_TAB_PREFIX
 import one.mixin.android.ui.home.web3.trade.perps.PerpsActivity
-import one.mixin.android.ui.common.BottomSheetViewModel as CommonBottomSheetViewModel
 import one.mixin.android.ui.oldwallet.BottomSheetViewModel
 import one.mixin.android.ui.oldwallet.MultisigsBottomSheetDialogFragment
 import one.mixin.android.ui.oldwallet.NftBottomSheetDialogFragment
@@ -132,6 +131,7 @@ import java.net.UnknownHostException
 import java.nio.charset.StandardCharsets.UTF_8
 import java.util.UUID
 import javax.inject.Inject
+import one.mixin.android.ui.common.BottomSheetViewModel as CommonBottomSheetViewModel
 
 @AndroidEntryPoint
 class LinkBottomSheetDialogFragment : SchemeBottomSheet() {

@@ -12,8 +12,8 @@ import one.mixin.android.Constants.Account.PREF_LOGIN_OR_SIGN_UP
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.ui.landing.vo.SetupState
-import one.mixin.android.ui.tip.TipBundle
 import one.mixin.android.ui.tip.RetryRegister
+import one.mixin.android.ui.tip.TipBundle
 import one.mixin.android.ui.tip.TipFlowInteractor
 import one.mixin.android.ui.tip.TipStep
 import one.mixin.android.ui.tip.TipType

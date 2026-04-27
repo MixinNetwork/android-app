@@ -4,12 +4,13 @@ import android.content.Context;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.text.format.Formatter;
-import timber.log.Timber;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.Collections;
 import java.util.List;
+
+import timber.log.Timber;
 
 public class NetworkUtils {
 

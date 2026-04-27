@@ -5,7 +5,6 @@ import android.app.Dialog
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.graphics.Rect
-import android.os.Bundle
 import android.view.ViewTreeObserver
 import android.webkit.CookieManager
 import android.webkit.WebChromeClient

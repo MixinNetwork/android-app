@@ -8,13 +8,13 @@ import android.graphics.ImageFormat
 import android.graphics.Matrix
 import android.graphics.Rect
 import android.graphics.YuvImage
-import androidx.exifinterface.media.ExifInterface
 import android.media.Image.Plane
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import androidx.annotation.RequiresApi
 import androidx.camera.core.ImageProxy
+import androidx.exifinterface.media.ExifInterface
 import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import java.io.IOException

@@ -5,13 +5,14 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.RenderEffect
 import android.graphics.Shader
-import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
+import androidx.core.graphics.drawable.toDrawable
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityWebBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.blurBitmap
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.isDarkColor
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.openCustomerServiceIfMatched
@@ -23,8 +24,6 @@ import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.widget.SixLayout
-import androidx.core.graphics.drawable.toDrawable
-import one.mixin.android.extension.colorFromAttribute
 
 @AndroidEntryPoint
 class WebActivity : BaseActivity() {

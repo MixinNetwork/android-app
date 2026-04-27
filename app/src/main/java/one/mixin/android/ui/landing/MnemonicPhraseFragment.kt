@@ -42,6 +42,7 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.toHex
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
+import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.initializeAccountSession
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
@@ -59,7 +60,6 @@ import one.mixin.android.widget.CaptchaView.Companion.hCAPTCHA
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Provider
-import one.mixin.android.repository.UserRepository
 
 @AndroidEntryPoint
 class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {

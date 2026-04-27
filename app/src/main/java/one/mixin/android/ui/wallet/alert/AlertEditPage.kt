@@ -1,6 +1,5 @@
 package one.mixin.android.ui.wallet.alert
 
-import one.mixin.android.ui.home.web3.components.PageScaffold
 import android.content.Context
 import android.graphics.Rect
 import androidx.annotation.DrawableRes
@@ -62,9 +61,8 @@ import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.removeEnd
-import one.mixin.android.ui.wallet.alert.components.AlertFrequencyBottom
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.wallet.alert.components.AlertFrequencySelector
-import one.mixin.android.ui.wallet.alert.components.AlertTypeBottom
 import one.mixin.android.ui.wallet.alert.components.AlertTypeSelector
 import one.mixin.android.ui.wallet.alert.components.PercentagesRow
 import one.mixin.android.ui.wallet.alert.components.cardBackground

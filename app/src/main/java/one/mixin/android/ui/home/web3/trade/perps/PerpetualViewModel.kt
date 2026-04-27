@@ -11,8 +11,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import one.mixin.android.MixinApplication
 import one.mixin.android.Constants
+import one.mixin.android.MixinApplication
 import one.mixin.android.api.request.perps.CloseOrderRequest
 import one.mixin.android.api.request.perps.OpenOrderRequest
 import one.mixin.android.api.request.perps.OpenOrderResponse

@@ -1,6 +1,5 @@
 package one.mixin.android.ui.home.web3.stake
 
-import one.mixin.android.ui.home.web3.components.PageScaffold
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -36,6 +35,7 @@ import one.mixin.android.api.response.web3.StakeAccountActivation
 import one.mixin.android.api.response.web3.Validator
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import java.math.BigDecimal
 import java.math.RoundingMode
 

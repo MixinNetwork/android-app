@@ -1,9 +1,7 @@
 package one.mixin.android.tip.wc.internal
 
-import one.mixin.android.Constants.DEFAULT_GAS_LIMIT_FOR_NONFUNGIBLE_TOKENS
 import one.mixin.android.api.request.web3.EstimateFeeResponse
 import org.bitcoinj.base.Coin
-import org.web3j.protocol.core.methods.response.EthEstimateGas
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import java.math.BigDecimal

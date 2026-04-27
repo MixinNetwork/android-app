@@ -75,14 +75,13 @@ import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapter
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.circle.CirclesFragment
-import one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment
 import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
+import one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment
 import one.mixin.android.ui.home.reminder.VerifyMobileReminderBottomSheetDialogFragment
 import one.mixin.android.ui.landing.MobileFragment
 import one.mixin.android.ui.landing.VerificationFragment
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.ui.setting.AddPhoneBeforeFragment
-import one.mixin.android.ui.setting.AddPhoneFragment
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.analytics.AnalyticsTracker

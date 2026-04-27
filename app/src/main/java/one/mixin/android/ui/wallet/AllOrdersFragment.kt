@@ -4,14 +4,14 @@ import android.os.Bundle
 import android.view.Gravity
 import android.view.View
 import android.view.View.VISIBLE
-import androidx.core.view.isGone
-import androidx.core.view.isVisible
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import androidx.appcompat.widget.ListPopupWindow
 import androidx.core.content.ContextCompat
 import androidx.core.util.Pair
+import androidx.core.view.isGone
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.LoadState

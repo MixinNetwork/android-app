@@ -38,7 +38,6 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.reown.walletkit.client.Wallet
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
-
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.composeDp
 import one.mixin.android.extension.notNullWithElse
@@ -49,8 +48,8 @@ import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.compose.ItemContent
 import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.ui.wallet.components.WalletLabel
-import one.mixin.android.widget.components.MixinButton
 import one.mixin.android.web3.js.Web3Signer
+import one.mixin.android.widget.components.MixinButton
 
 @Composable
 fun SessionProposalPage(

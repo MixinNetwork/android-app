@@ -1,6 +1,5 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
-import one.mixin.android.ui.home.web3.components.PageScaffold
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -39,6 +38,7 @@ import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.tip.wc.compose.ItemWalletContent
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.Fiats
