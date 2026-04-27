@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="?attr/selectableItemBackground"
-    android:paddingHorizontal="12dp"
+    android:paddingHorizontal="20dp"
     android:paddingVertical="12dp">
 
     <one.mixin.android.widget.CircleImageView

@@ -164,14 +164,15 @@
         android:layout_below="@id/category_scroll"
         android:background="?attr/bg_white"
         android:paddingTop="8dp"
-        android:paddingBottom="8dp">
+        android:paddingBottom="8dp"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp">
 
         <RelativeLayout
             android:id="@+id/volume_sort"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:layout_marginStart="20dp"
             android:background="?android:attr/selectableItemBackground"
             android:paddingTop="4dp"
             android:paddingBottom="4dp">
@@ -240,7 +241,6 @@
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
-            android:layout_marginEnd="20dp"
             android:background="?android:attr/selectableItemBackground"
             android:paddingTop="4dp"
             android:paddingBottom="4dp">
