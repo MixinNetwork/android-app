@@ -87,7 +87,7 @@
                 android:checked="true"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
-                android:text="@string/All"
+                android:text="@string/perps_category_all"
                 android:textColor="@drawable/radio_button_text_selector"
                 android:textSize="14sp" />
 
@@ -100,7 +100,7 @@
                 android:button="@null"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
-                android:text="Crypto"
+                android:text="@string/perps_category_crypto"
                 android:textColor="@drawable/radio_button_text_selector"
                 android:textSize="14sp" />
 
@@ -113,7 +113,7 @@
                 android:button="@null"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
-                android:text="@string/Stocks"
+                android:text="@string/perps_category_stocks"
                 android:textColor="@drawable/radio_button_text_selector"
                 android:textSize="14sp" />
 
@@ -126,7 +126,7 @@
                 android:button="@null"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
-                android:text="Indices"
+                android:text="@string/perps_category_indices"
                 android:textColor="@drawable/radio_button_text_selector"
                 android:textSize="14sp" />
 
@@ -139,7 +139,7 @@
                 android:button="@null"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
-                android:text="Commodities"
+                android:text="@string/perps_category_commodities"
                 android:textColor="@drawable/radio_button_text_selector"
                 android:textSize="14sp" />
 
@@ -151,7 +151,7 @@
                 android:button="@null"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
-                android:text="Forex"
+                android:text="@string/perps_category_forex"
                 android:textColor="@drawable/radio_button_text_selector"
                 android:textSize="14sp" />
         </RadioGroup>
