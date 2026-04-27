@@ -15,8 +15,8 @@
         android:id="@+id/search_view"
         android:layout_width="match_parent"
         android:layout_height="?android:attr/actionBarSize"
-        android:background="@drawable/bg_upper_round"
         android:layout_below="@id/ph"
+        android:background="@drawable/bg_upper_round"
         android:clickable="true"
         android:focusable="true">
 
@@ -59,11 +59,206 @@
 
     </RelativeLayout>
 
+    <HorizontalScrollView
+        android:id="@+id/category_scroll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/search_view"
+        android:background="?attr/bg_white"
+        android:scrollbars="none">
+
+        <RadioGroup
+            android:id="@+id/category_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="20dp"
+            android:paddingTop="12dp"
+            android:paddingEnd="20dp"
+            android:paddingBottom="8dp">
+
+            <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/radio_all"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/selector_radio"
+                android:button="@null"
+                android:checked="true"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="@string/All"
+                android:textColor="@drawable/radio_button_text_selector"
+                android:textSize="14sp" />
+
+            <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/radio_crypto"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/selector_radio"
+                android:button="@null"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="Crypto"
+                android:textColor="@drawable/radio_button_text_selector"
+                android:textSize="14sp" />
+
+            <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/radio_stocks"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/selector_radio"
+                android:button="@null"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="@string/Stocks"
+                android:textColor="@drawable/radio_button_text_selector"
+                android:textSize="14sp" />
+
+            <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/radio_indices"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/selector_radio"
+                android:button="@null"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="Indices"
+                android:textColor="@drawable/radio_button_text_selector"
+                android:textSize="14sp" />
+
+            <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/radio_commodities"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/selector_radio"
+                android:button="@null"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="Commodities"
+                android:textColor="@drawable/radio_button_text_selector"
+                android:textSize="14sp" />
+
+            <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/radio_forex"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/selector_radio"
+                android:button="@null"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="Forex"
+                android:textColor="@drawable/radio_button_text_selector"
+                android:textSize="14sp" />
+        </RadioGroup>
+    </HorizontalScrollView>
+
+    <RelativeLayout
+        android:id="@+id/sort_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/category_scroll"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp">
+
+        <RelativeLayout
+            android:id="@+id/volume_sort"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="20dp"
+            android:background="?android:attr/selectableItemBackground"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp">
+
+            <TextView
+                android:id="@+id/volume_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/Volume_24H"
+                android:textColor="?attr/text_assist"
+                android:textSize="12sp" />
+
+            <ImageView
+                android:id="@+id/volume_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@id/volume_title"
+                android:layout_alignTop="@id/volume_title"
+                android:layout_toEndOf="@id/volume_title"
+                android:layout_marginStart="4dp"
+                android:src="@drawable/ic_perps_sort_default" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/change_sort"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="20dp"
+            android:background="?android:attr/selectableItemBackground"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp">
+
+            <TextView
+                android:id="@+id/change_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/price_change_24h"
+                android:textColor="?attr/text_assist"
+                android:textSize="12sp" />
+
+            <ImageView
+                android:id="@+id/change_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@id/change_title"
+                android:layout_alignTop="@id/change_title"
+                android:layout_toEndOf="@id/change_title"
+                android:layout_marginStart="4dp"
+                android:src="@drawable/ic_perps_sort_default" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/price_sort"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toStartOf="@id/change_sort"
+            android:layout_marginEnd="20dp"
+            android:background="?android:attr/selectableItemBackground"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp">
+
+            <TextView
+                android:id="@+id/price_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="?attr/text_assist"
+                android:textSize="12sp" />
+
+            <ImageView
+                android:id="@+id/price_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@id/price_title"
+                android:layout_alignTop="@id/price_title"
+                android:layout_toEndOf="@id/price_title"
+                android:layout_marginStart="4dp"
+                android:src="@drawable/ic_perps_sort_default" />
+        </RelativeLayout>
+    </RelativeLayout>
+
     <ViewAnimator
         android:id="@+id/rv_va"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/search_view">
+        android:layout_below="@id/sort_layout">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/market_rv"

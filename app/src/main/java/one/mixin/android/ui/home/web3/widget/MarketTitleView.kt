@@ -3,9 +3,9 @@ package one.mixin.android.ui.home.web3.widget
 import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
+import android.widget.ImageView
 import android.widget.RelativeLayout
 import androidx.annotation.StringRes
-import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -72,31 +72,39 @@ class MarketTitleView : RelativeLayout {
         resetAllIcons()
         when (sort) {
             MarketSort.RANK_ASCENDING, MarketSort.RANK_DESCENDING -> {
-                _binding.rankIcon.isVisible = true
-                _binding.rankIcon.rotation = if (sort == MarketSort.RANK_ASCENDING) 0f else 180f
+                _binding.rankIcon.setImageResource(
+                    if (sort == MarketSort.RANK_ASCENDING) R.drawable.ic_perps_sort_asc else R.drawable.ic_perps_sort_desc
+                )
             }
 
             MarketSort.PRICE_ASCENDING, MarketSort.PRICE_DESCENDING -> {
-                _binding.priceIcon.isVisible = true
-                _binding.priceIcon.rotation = if (sort == MarketSort.PRICE_ASCENDING) 0f else 180f
+                _binding.priceIcon.setImageResource(
+                    if (sort == MarketSort.PRICE_ASCENDING) R.drawable.ic_perps_sort_asc else R.drawable.ic_perps_sort_desc
+                )
             }
 
             MarketSort.SEVEN_DAYS_PERCENTAGE_ASCENDING, MarketSort.SEVEN_DAYS_PERCENTAGE_DESCENDING -> {
-                _binding.percentageIcon.isVisible = true
-                _binding.percentageIcon.rotation = if (sort == MarketSort.SEVEN_DAYS_PERCENTAGE_ASCENDING) 0f else 180f
+                _binding.percentageIcon.setImageResource(
+                    if (sort == MarketSort.SEVEN_DAYS_PERCENTAGE_ASCENDING) R.drawable.ic_perps_sort_asc else R.drawable.ic_perps_sort_desc
+                )
             }
 
             MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_ASCENDING, MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_DESCENDING -> {
-                _binding.percentageIcon.isVisible = true
-                _binding.percentageIcon.rotation = if (sort == MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_ASCENDING) 0f else 180f
+                _binding.percentageIcon.setImageResource(
+                    if (sort == MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_ASCENDING) R.drawable.ic_perps_sort_asc else R.drawable.ic_perps_sort_desc
+                )
             }
         }
     }
 
     private fun resetAllIcons() {
-        _binding.rankIcon.isVisible = false
-        _binding.priceIcon.isVisible = false
-        _binding.percentageIcon.isVisible = false
+        resetIcon(_binding.rankIcon)
+        resetIcon(_binding.priceIcon)
+        resetIcon(_binding.percentageIcon)
+    }
+
+    private fun resetIcon(icon: ImageView) {
+        icon.setImageResource(R.drawable.ic_perps_sort_default)
     }
 
     private fun saveSortPreference() {
@@ -119,6 +127,8 @@ class MarketTitleView : RelativeLayout {
     fun setText(@StringRes str: Int) {
         _binding.rankTitle.setText(str)
     }
+
+    fun currentSortOrDefault(): MarketSort = currentSort ?: MarketSort.RANK_ASCENDING
 
     private fun updatePercentageText() {
         _binding.percentage.text = if (isSevenDays) {

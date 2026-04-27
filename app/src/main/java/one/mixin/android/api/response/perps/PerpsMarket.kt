@@ -3,9 +3,12 @@ package one.mixin.android.api.response.perps
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import androidx.room.TypeConverters
 import com.google.gson.annotations.SerializedName
+import one.mixin.android.db.converter.OptionalListConverter
 
 @Entity(tableName = "markets")
+@TypeConverters(OptionalListConverter::class)
 data class PerpsMarket(
     @PrimaryKey @SerializedName("market_id")
     @ColumnInfo(name = "market_id")
@@ -34,6 +37,14 @@ data class PerpsMarket(
     @SerializedName("icon_url")
     @ColumnInfo(name = "icon_url")
     val iconUrl: String,
+
+    @SerializedName("category")
+    @ColumnInfo(name = "category")
+    val category: String?,
+
+    @SerializedName("tags")
+    @ColumnInfo(name = "tags")
+    val tags: List<String>?,
 
     @SerializedName("funding_rate")
     @ColumnInfo(name = "funding_rate")

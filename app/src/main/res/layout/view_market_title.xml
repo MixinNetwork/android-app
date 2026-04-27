@@ -27,7 +27,7 @@
 
         <ImageView
             android:id="@+id/rank_icon"
-            android:src="@drawable/ic_small_drop_down"
+            android:src="@drawable/ic_perps_sort_default"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_toEndOf="@id/rank_title"
@@ -58,14 +58,13 @@
 
         <ImageView
             android:id="@+id/price_icon"
-            android:src="@drawable/ic_small_drop_down"
+            android:src="@drawable/ic_perps_sort_default"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_toEndOf="@id/price"
             android:layout_alignTop="@id/price"
             android:layout_alignBottom="@id/price"
-            android:layout_marginStart="4dp"
-            android:visibility="gone" />
+            android:layout_marginStart="4dp" />
     </RelativeLayout>
 
     <RelativeLayout
@@ -90,14 +89,13 @@
 
         <ImageView
             android:id="@+id/percentage_icon"
-            android:src="@drawable/ic_small_drop_down"
+            android:src="@drawable/ic_perps_sort_default"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_toEndOf="@id/percentage"
             android:layout_alignTop="@id/percentage"
             android:layout_alignBottom="@id/percentage"
-            android:layout_marginStart="4dp"
-            android:visibility="gone" />
+            android:layout_marginStart="4dp" />
     </RelativeLayout>
 
 </merge>

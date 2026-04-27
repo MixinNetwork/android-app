@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import one.mixin.android.Constants
@@ -27,13 +28,20 @@ import kotlin.math.min
         PerpsPositionHistory::class,
         PerpsMarket::class,
     ],
-    version = 1,
+    version = 2,
 )
 abstract class PerpsDatabase : RoomDatabase() {
     companion object {
         private var INSTANCE: PerpsDatabase? = null
         private val lock = Any()
         private var currentIdentityNumber: String? = null
+        private val MIGRATION_1_2 =
+            object : Migration(1, 2) {
+                override fun migrate(db: SupportSQLiteDatabase) {
+                    db.execSQL("ALTER TABLE markets ADD COLUMN category TEXT")
+                    db.execSQL("ALTER TABLE markets ADD COLUMN tags TEXT")
+                }
+            }
 
         fun getDatabase(
             context: Context,
@@ -58,7 +66,7 @@ abstract class PerpsDatabase : RoomDatabase() {
                             listOf(
                                 object : MixinCorruptionCallback {
                                     override fun onCorruption(database: SupportSQLiteDatabase) {
-                                        val e = IllegalStateException("Perps database is corrupted, current DB version: 1")
+                                        val e = IllegalStateException("Perps database is corrupted, current DB version: 2")
                                         reportException(e)
                                     }
                                 },
@@ -71,7 +79,8 @@ abstract class PerpsDatabase : RoomDatabase() {
                                 db.execSQL("PRAGMA synchronous = NORMAL")
                             }
                         },
-                    ).fallbackToDestructiveMigration()
+                    ).addMigrations(MIGRATION_1_2)
+                        .fallbackToDestructiveMigration()
                         .enableMultiInstanceInvalidation()
                         .setQueryExecutor(
                             Executors.newFixedThreadPool(

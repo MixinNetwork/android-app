@@ -159,6 +159,7 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
                     binding.markets.layoutManager?.scrollToPosition(0)
                 }
             }
+            currentOrder = titleLayout.currentSortOrDefault()
             root.doOnPreDraw {
                 empty.updateLayoutParams<MarginLayoutParams> {
                     topMargin = appBarLayout.height
