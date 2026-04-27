@@ -19,6 +19,7 @@ import one.mixin.android.api.request.web3.GaslessTxRequest
 import one.mixin.android.api.request.web3.SubmitGaslessTxRequest
 import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.response.perps.PerpsMarket
+import one.mixin.android.api.response.perps.withDefaults
 import one.mixin.android.api.response.web3.GaslessSponsorTransactionResponse
 import one.mixin.android.api.response.web3.SubmitGaslessTxResponse
 import one.mixin.android.api.service.RouteService
@@ -93,7 +94,7 @@ constructor(
 
     suspend fun getPerpsMarket(marketId: String): PerpsMarket? {
         val response = routeService.getPerpsMarket(marketId)
-        return response.data?.also { market ->
+        return response.data?.withDefaults()?.also { market ->
             perpsMarketDao.upsertSuspend(market)
         }
     }

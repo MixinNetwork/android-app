@@ -5,10 +5,10 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.google.gson.annotations.SerializedName
-import one.mixin.android.db.converter.OptionalListConverter
+import one.mixin.android.db.converter.ListConverter
 
 @Entity(tableName = "markets")
-@TypeConverters(OptionalListConverter::class)
+@TypeConverters(ListConverter::class)
 data class PerpsMarket(
     @PrimaryKey @SerializedName("market_id")
     @ColumnInfo(name = "market_id")
@@ -40,11 +40,11 @@ data class PerpsMarket(
 
     @SerializedName("category")
     @ColumnInfo(name = "category")
-    val category: String?,
+    val category: String = "",
 
     @SerializedName("tags")
     @ColumnInfo(name = "tags")
-    val tags: List<String>?,
+    val tags: List<String> = emptyList(),
 
     @SerializedName("funding_rate")
     @ColumnInfo(name = "funding_rate")
@@ -98,3 +98,9 @@ data class PerpsMarket(
     @ColumnInfo(name = "updated_at")
     val updatedAt: String,
 )
+
+fun PerpsMarket.withDefaults(): PerpsMarket =
+    copy(
+        category = (category as String?) ?: "",
+        tags = (tags as? List<*>)?.mapNotNull { it as? String }.orEmpty(),
+    )

@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 2,
-    "identityHash": "68013408992ecc2752724b973d5dc220",
+    "identityHash": "4423b2cbe0ba53b8f8a4190b84e04883",
     "entities": [
       {
         "tableName": "positions",
@@ -210,7 +210,7 @@
       },
       {
         "tableName": "markets",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`market_id` TEXT NOT NULL, `display_symbol` TEXT NOT NULL, `token_symbol` TEXT NOT NULL, `quote_symbol` TEXT NOT NULL, `mark_price` TEXT NOT NULL, `leverage` INTEGER NOT NULL, `icon_url` TEXT NOT NULL, `category` TEXT, `tags` TEXT, `funding_rate` TEXT NOT NULL, `min_amount` TEXT NOT NULL, `max_amount` TEXT NOT NULL, `last` TEXT NOT NULL, `volume` TEXT NOT NULL, `high` TEXT NOT NULL, `low` TEXT NOT NULL, `open` TEXT NOT NULL, `change` TEXT NOT NULL, `bid_price` TEXT NOT NULL, `ask_price` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`market_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`market_id` TEXT NOT NULL, `display_symbol` TEXT NOT NULL, `token_symbol` TEXT NOT NULL, `quote_symbol` TEXT NOT NULL, `mark_price` TEXT NOT NULL, `leverage` INTEGER NOT NULL, `icon_url` TEXT NOT NULL, `category` TEXT NOT NULL, `tags` TEXT NOT NULL, `funding_rate` TEXT NOT NULL, `min_amount` TEXT NOT NULL, `max_amount` TEXT NOT NULL, `last` TEXT NOT NULL, `volume` TEXT NOT NULL, `high` TEXT NOT NULL, `low` TEXT NOT NULL, `open` TEXT NOT NULL, `change` TEXT NOT NULL, `bid_price` TEXT NOT NULL, `ask_price` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`market_id`))",
         "fields": [
           {
             "fieldPath": "marketId",
@@ -257,12 +257,14 @@
           {
             "fieldPath": "category",
             "columnName": "category",
-            "affinity": "TEXT"
+            "affinity": "TEXT",
+            "notNull": true
           },
           {
             "fieldPath": "tags",
             "columnName": "tags",
-            "affinity": "TEXT"
+            "affinity": "TEXT",
+            "notNull": true
           },
           {
             "fieldPath": "fundingRate",
@@ -353,7 +355,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '68013408992ecc2752724b973d5dc220')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4423b2cbe0ba53b8f8a4190b84e04883')"
     ]
   }
 }
