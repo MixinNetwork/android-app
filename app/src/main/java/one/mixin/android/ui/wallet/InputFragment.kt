@@ -1150,6 +1150,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     }
 
     private fun handleSuccessfulWeb3Transfer() {
+        if (!isAdded) return
         val navController = findNavController()
         val backStackEntryCount = parentFragmentManager.backStackEntryCount
         val currentDestination = navController.currentDestination?.id
