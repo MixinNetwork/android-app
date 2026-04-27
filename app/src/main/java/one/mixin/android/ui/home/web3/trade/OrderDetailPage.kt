@@ -1,7 +1,6 @@
 package one.mixin.android.ui.home.web3.trade
 
 import android.content.ClipData
-import one.mixin.android.ui.home.web3.components.PageScaffold
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -58,6 +57,7 @@ import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.tip.wc.compose.ItemContent
 import one.mixin.android.ui.tip.wc.compose.ItemWalletContent
 import one.mixin.android.ui.wallet.alert.components.cardBackground

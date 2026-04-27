@@ -2,7 +2,6 @@ package one.mixin.android.ui.landing
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.content.ClipData
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -34,16 +33,13 @@ import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.booleanFromAttribute
-import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getSafeAreaInsetsTop
-import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.screenHeight
-import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.landing.components.HighlightedTextWithClick
-import one.mixin.android.widget.components.MixinButton
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.widget.components.MixinButton
 
 @AndroidEntryPoint
 class CreateAccountConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {

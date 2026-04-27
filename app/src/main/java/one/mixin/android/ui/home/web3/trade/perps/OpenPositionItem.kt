@@ -32,8 +32,6 @@ import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.ui.home.web3.trade.perps.formatPerpsFiatDecimal
-import one.mixin.android.ui.home.web3.trade.perps.formatPerpsSignedFiatDecimal
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 

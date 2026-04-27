@@ -11,7 +11,6 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.db.web3.vo.WalletItem
-import one.mixin.android.db.web3.vo.isMixinSafe
 import one.mixin.android.db.web3.vo.isOwner
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.Web3Repository

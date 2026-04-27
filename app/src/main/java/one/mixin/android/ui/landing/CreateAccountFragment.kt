@@ -9,7 +9,6 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentComposeBinding
 import one.mixin.android.extension.addFragment
-import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openCustomerService
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_LANDING

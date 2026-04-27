@@ -1,6 +1,5 @@
 package one.mixin.android.ui.home.web3.stake
 
-import one.mixin.android.ui.home.web3.components.PageScaffold
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -54,6 +53,7 @@ import one.mixin.android.R
 import one.mixin.android.api.response.web3.Validator
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.home.web3.trade.checkBalance
 
 @Composable

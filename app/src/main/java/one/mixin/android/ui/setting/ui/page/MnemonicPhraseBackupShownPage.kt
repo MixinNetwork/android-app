@@ -1,10 +1,10 @@
 package one.mixin.android.ui.setting.ui.page
 
-import one.mixin.android.ui.home.web3.components.PageScaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.landing.components.MnemonicPhraseInput
 import one.mixin.android.ui.landing.components.MnemonicState
 

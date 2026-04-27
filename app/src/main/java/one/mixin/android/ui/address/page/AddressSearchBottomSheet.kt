@@ -41,7 +41,6 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.compose.GetActionBarHeight
 import one.mixin.android.compose.GetStatusBarHeightValue

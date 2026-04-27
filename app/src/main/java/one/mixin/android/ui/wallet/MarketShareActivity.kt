@@ -11,6 +11,8 @@ import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
 import androidx.core.content.FileProvider
+import androidx.core.graphics.drawable.toDrawable
+import androidx.core.graphics.scale
 import androidx.core.view.drawToBitmap
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
@@ -35,8 +37,6 @@ import one.mixin.android.ui.web.getScreenshot
 import one.mixin.android.ui.web.refreshScreenshot
 import java.io.File
 import java.io.FileOutputStream
-import androidx.core.graphics.drawable.toDrawable
-import androidx.core.graphics.scale
 
 @AndroidEntryPoint
 class MarketShareActivity : BaseActivity() {

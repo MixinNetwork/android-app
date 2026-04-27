@@ -9,7 +9,6 @@ import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.WalletDatabase
 import one.mixin.android.db.pending.PendingDatabase
-import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.session.CurrentUserScopeManager
 import javax.inject.Provider
 

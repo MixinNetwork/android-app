@@ -1,8 +1,6 @@
 package one.mixin.android.ui.home.web3.components
 
 
-import one.mixin.android.Constants
-import one.mixin.android.api.response.web3.SwapToken
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -19,7 +17,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.home.web3.trade.FocusedField
 import java.math.BigDecimal
