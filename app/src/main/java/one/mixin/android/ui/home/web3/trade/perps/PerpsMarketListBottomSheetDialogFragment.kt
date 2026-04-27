@@ -248,9 +248,10 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
 
     private fun updateList(markets: List<PerpsMarket>, scrollToTop: Boolean = false) {
         binding.rvVa.displayedChild = if (markets.isEmpty()) 1 else 0
-        adapter.submitList(markets)
-        if (scrollToTop && markets.isNotEmpty()) {
-            binding.marketRv.scrollToPosition(0)
+        adapter.submitList(markets) {
+            if (scrollToTop && markets.isNotEmpty()) {
+                binding.marketRv.scrollToPosition(0)
+            }
         }
     }
 
