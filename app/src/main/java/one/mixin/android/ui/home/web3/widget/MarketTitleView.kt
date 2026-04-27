@@ -29,11 +29,14 @@ class MarketTitleView : RelativeLayout {
     }
 
     fun updatePadding(horizontalPadding: Int) {
-        _binding.priceOrder.updateLayoutParams<MarginLayoutParams> {
-            marginEnd = horizontalPadding * 2 + 60.dp
-        }
         _binding.percentageOrder.updateLayoutParams<MarginLayoutParams> {
             marginEnd = horizontalPadding
+        }
+        _binding.pricePercentageDivider.updateLayoutParams<MarginLayoutParams> {
+            marginEnd = 10.dp
+        }
+        _binding.priceOrder.updateLayoutParams<MarginLayoutParams> {
+            marginEnd = 10.dp
         }
         _binding.rankOrder.updateLayoutParams<MarginLayoutParams> {
             marginStart = horizontalPadding

@@ -101,7 +101,6 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
 
         binding.apply {
             priceTitle.text = getString(R.string.change_percent_period_hour, 24)
-
             closeIb.setOnClickListener {
                 dismiss()
             }
@@ -190,7 +189,7 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
     private fun updateSort(sort: MarketSort) {
         currentSort = sort
         renderSortState()
-        filterAndSortMarkets()
+        filterAndSortMarkets(scrollToTop = true)
     }
 
     private fun renderSortState() {
@@ -228,7 +227,7 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
         icon.isVisible = true
     }
 
-    private fun filterAndSortMarkets() {
+    private fun filterAndSortMarkets(scrollToTop: Boolean = false) {
         val query = currentQuery.trim()
         val filtered = allMarkets
             .asSequence()
@@ -244,12 +243,15 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
                 currentComparator()?.let { comparator -> markets.sortedWith(comparator) } ?: markets
             }
 
-        updateList(filtered)
+        updateList(filtered, scrollToTop)
     }
 
-    private fun updateList(markets: List<PerpsMarket>) {
+    private fun updateList(markets: List<PerpsMarket>, scrollToTop: Boolean = false) {
         binding.rvVa.displayedChild = if (markets.isEmpty()) 1 else 0
         adapter.submitList(markets)
+        if (scrollToTop && markets.isNotEmpty()) {
+            binding.marketRv.scrollToPosition(0)
+        }
     }
 
     private fun currentComparator(): Comparator<PerpsMarket>? {
