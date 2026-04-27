@@ -42,7 +42,6 @@ import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
-import org.bitcoinj.core.Transaction as BtcTransaction
 
 @Parcelize
 data class Web3TokenItem(

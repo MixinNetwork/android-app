@@ -3,13 +3,11 @@ package one.mixin.android.ui.wallet
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.DialogInterface
-import android.net.Uri
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.google.gson.JsonElement
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -58,6 +56,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.google.gson.JsonElement
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
@@ -93,8 +92,8 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.isNightMode
-import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.stripAmountZero
@@ -136,15 +135,10 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.membershipIcon
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toUser
-import one.mixin.android.widget.components.MixinButton
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.Web3Signer
-import org.sol4k.Base58
-import org.sol4k.Constants.SIGNATURE_LENGTH
-import org.sol4kt.VersionedTransactionCompat
-import org.web3j.utils.Convert
-import org.web3j.utils.Numeric
+import one.mixin.android.widget.components.MixinButton
 import org.bitcoinj.base.BitcoinNetwork
 import org.bitcoinj.base.Coin
 import org.bitcoinj.base.ScriptType
@@ -154,11 +148,16 @@ import org.bitcoinj.core.TransactionWitness
 import org.bitcoinj.crypto.ECKey
 import org.bitcoinj.script.Script
 import org.bitcoinj.script.ScriptBuilder
+import org.sol4k.Base58
+import org.sol4k.Constants.SIGNATURE_LENGTH
+import org.sol4kt.VersionedTransactionCompat
+import org.web3j.utils.Convert
+import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
-import java.util.UUID
 import java.nio.ByteBuffer
+import java.util.UUID
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 

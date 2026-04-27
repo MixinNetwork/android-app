@@ -49,13 +49,13 @@ import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
+import one.mixin.android.tip.Tip
 import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.buildTipGas
 import one.mixin.android.tip.wc.internal.estimateFeeInBtc
-import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.biometric.NftBiometricItem
 import one.mixin.android.ui.common.biometric.maxUtxoCount
 import one.mixin.android.ui.home.inscription.component.OwnerState

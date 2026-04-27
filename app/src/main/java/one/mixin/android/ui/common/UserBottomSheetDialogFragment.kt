@@ -10,8 +10,8 @@ import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
-import android.view.View.MeasureSpec
 import android.view.View.GONE
+import android.view.View.MeasureSpec
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.core.content.res.ResourcesCompat
@@ -48,6 +48,7 @@ import one.mixin.android.event.BotEvent
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.getParcelableCompat
@@ -58,7 +59,6 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.showConfirmDialog
 import one.mixin.android.extension.toast
-import one.mixin.android.extension.dp
 import one.mixin.android.session.Session
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.ui.common.info.MenuStyle

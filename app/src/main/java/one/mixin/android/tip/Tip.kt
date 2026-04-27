@@ -208,6 +208,8 @@ class Tip
         fun generateEntropyAndStore(context: Context): ByteArray {
             var entropy: ByteArray
             var mnemonicPhrase: List<String>
+            // Non-standard: BIP39 permits duplicate words, but we reject them to avoid
+            // confusing users during backup/restore. Negligible entropy impact at 128 bits.
             while (true) {
                 entropy = generateRandomBytes(16)
                 val words = toMnemonic(entropy).split(" ")

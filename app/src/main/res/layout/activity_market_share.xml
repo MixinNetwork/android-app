@@ -31,16 +31,16 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingStart="22dp"
-                android:paddingEnd="22dp"
-                android:layout_marginTop="16dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:layout_marginTop="10dp"
                 android:layout_marginBottom="10dp">
 
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center_vertical"
-                    android:layout_centerVertical="true"
+                    android:layout_alignBottom="@id/close"
                     android:orientation="horizontal">
 
                     <ImageView

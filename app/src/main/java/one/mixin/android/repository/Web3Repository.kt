@@ -51,6 +51,7 @@ import one.mixin.android.vo.route.Order
 import one.mixin.android.vo.safe.toWeb3TokenItem
 import org.bitcoinj.base.Address
 import org.bitcoinj.base.AddressParser
+import org.bitcoinj.base.BitcoinNetwork
 import timber.log.Timber
 import org.bitcoinj.core.Transaction
 import org.bitcoinj.script.Script
@@ -107,7 +108,7 @@ constructor(
     }
 
     suspend fun insertBitcoinChangeOutputs(fromAddress: String, signedHex: String): Int {
-        val addressParser = AddressParser.getDefault()
+        val addressParser = AddressParser.getDefault(BitcoinNetwork.MAINNET)
         val cleanedHex: String = signedHex.removePrefix("0x").trim()
         if (fromAddress.isBlank() || cleanedHex.isBlank()) return 0
         val tx: Transaction = runCatching {

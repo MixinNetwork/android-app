@@ -45,10 +45,10 @@ import one.mixin.android.web3.SOLANA_RENT_EXEMPTION
 import one.mixin.android.web3.SOLANA_TOKEN_ACCOUNT_RENT_EXEMPTION
 import one.mixin.android.web3.SolanaRecipientAccountState
 import one.mixin.android.web3.isNativeSolAsset
-import one.mixin.android.web3.solanaRecipientAccountState
-import one.mixin.android.web3.solanaTransferAmountRange
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.Web3Signer
+import one.mixin.android.web3.solanaRecipientAccountState
+import one.mixin.android.web3.solanaTransferAmountRange
 import org.sol4kt.VersionedTransactionCompat
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric

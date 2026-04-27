@@ -30,7 +30,6 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.home.MainActivity
-import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.util.SystemUIManager
 
 @AndroidEntryPoint

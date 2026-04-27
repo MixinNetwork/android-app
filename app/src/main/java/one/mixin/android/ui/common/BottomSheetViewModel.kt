@@ -47,8 +47,8 @@ import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.TransactionResponse
-import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.api.response.getTransactionResult
+import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.api.response.signature.SignatureAction
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.api.service.UtxoService
@@ -121,6 +121,7 @@ import one.mixin.android.vo.Trace
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserItem
 import one.mixin.android.vo.VerifiedTransactionData
+import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.createConversation
 import one.mixin.android.vo.generateConversationId
@@ -142,7 +143,6 @@ import one.mixin.android.vo.utxo.SignResult
 import one.mixin.android.vo.utxo.SignedTransaction
 import one.mixin.android.vo.utxo.changeToOutput
 import one.mixin.android.vo.utxo.consolidationOutput
-import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.Web3Signer
 import org.bitcoinj.base.ScriptType

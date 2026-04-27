@@ -41,8 +41,8 @@ import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.request.web3.EstimateFeeRequest
-import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.request.web3.GaslessTxRequest
+import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.response.CreateLimitOrderResponse
 import one.mixin.android.api.response.web3.GaslessTxResponse
 import one.mixin.android.api.response.web3.QuoteResult
@@ -51,8 +51,8 @@ import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Swappable
 import one.mixin.android.api.response.web3.sortByKeywordAndBalance
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TokenFeeItem
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.buildTransaction
 import one.mixin.android.event.BadgeEvent
 import one.mixin.android.extension.addToList
@@ -72,6 +72,8 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
+import one.mixin.android.tip.wc.internal.TipGas
+import one.mixin.android.tip.wc.internal.buildTipGas
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.trade.perps.AllPositionsFragment
@@ -84,8 +86,8 @@ import one.mixin.android.ui.wallet.DepositFragment
 import one.mixin.android.ui.wallet.LimitTransferBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.SwapTransferBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.SwapTransferPreviewData
-import one.mixin.android.ui.wallet.transfer.TransferWeb3BalanceErrorBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
+import one.mixin.android.ui.wallet.transfer.TransferWeb3BalanceErrorBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.analytics.AnalyticsTracker
@@ -95,14 +97,12 @@ import one.mixin.android.web3.SOLANA_RENT_EXEMPTION
 import one.mixin.android.web3.SOLANA_TOKEN_ACCOUNT_RENT_EXEMPTION
 import one.mixin.android.web3.SolanaRecipientAccountState
 import one.mixin.android.web3.isNativeSolAsset
+import one.mixin.android.web3.js.JsSignMessage
+import one.mixin.android.web3.js.Web3Signer
+import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.web3.requiredSolBalance
 import one.mixin.android.web3.solanaRecipientAccountState
-import one.mixin.android.web3.js.Web3Signer
-import one.mixin.android.web3.js.JsSignMessage
-import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.web3.swap.SwapTokenListBottomSheetDialogFragment
-import one.mixin.android.tip.wc.internal.TipGas
-import one.mixin.android.tip.wc.internal.buildTipGas
 import timber.log.Timber
 import java.math.BigDecimal
 import javax.inject.Inject

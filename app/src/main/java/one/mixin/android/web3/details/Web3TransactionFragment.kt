@@ -66,6 +66,7 @@ import one.mixin.android.web3.send.BtcTransactionBuilder
 import one.mixin.android.web3.send.InsufficientBtcBalanceException
 import one.mixin.android.widget.BottomSheet
 import org.bitcoinj.base.AddressParser
+import org.bitcoinj.base.BitcoinNetwork
 import org.bitcoinj.base.Coin
 import org.bitcoinj.base.Sha256Hash
 import org.bitcoinj.core.TransactionInput
@@ -601,7 +602,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             BtcTransaction.read(ByteBuffer.wrap(cleanedHex.hexStringToByteArray()))
         }.getOrNull() ?: return false
         if (parsedTransaction.outputs.size != 1) return true
-        val addressParser = AddressParser.getDefault()
+        val addressParser = AddressParser.getDefault(BitcoinNetwork.MAINNET)
         val parsedAddress = runCatching { addressParser.parseAddress(fromAddress) }.getOrNull() ?: return true
         val expectedScript: Script = runCatching { ScriptBuilder.createOutputScript(parsedAddress) }.getOrNull() ?: return true
         val output: TransactionOutput = parsedTransaction.outputs.firstOrNull() ?: return true

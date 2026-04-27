@@ -87,8 +87,8 @@ import one.mixin.android.extension.show
 import one.mixin.android.extension.toUri
 import one.mixin.android.job.BaseJob
 import one.mixin.android.job.JobLogger
-import one.mixin.android.job.MixinJob
 import one.mixin.android.job.JobNetworkUtil
+import one.mixin.android.job.MixinJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.MyJobService
 import one.mixin.android.job.TipCounterSyncedLiveData

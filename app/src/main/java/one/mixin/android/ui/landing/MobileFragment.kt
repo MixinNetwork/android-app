@@ -21,7 +21,6 @@ import com.google.i18n.phonenumbers.Phonenumber
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.VerificationPurpose
@@ -37,7 +36,6 @@ import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.inTransaction
-import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openCustomerService
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.tickVibrate

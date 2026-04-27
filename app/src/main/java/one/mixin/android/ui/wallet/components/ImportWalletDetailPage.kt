@@ -69,6 +69,7 @@ import org.bitcoinj.crypto.ECKey
 import org.web3j.crypto.Keys
 import org.web3j.utils.Numeric
 import timber.log.Timber
+import java.math.BigInteger
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -543,12 +544,9 @@ private fun isBitcoinPrivateKeyValid(privateKey: String): Boolean {
 
         if (privateKey.matches(Regex("^[0-9a-fA-F]+$"))) {
             val privateKeyBytes = Numeric.hexStringToByteArray(privateKey)
-            val valid = privateKeyBytes.size == 32
-            if (!valid) {
-                Timber.e("Invalid bitcoin private key length: %d bytes, expected 32",
-                    privateKeyBytes.size)
-            }
-            return valid
+            if (privateKeyBytes.size != 32) return false
+            val scalar = BigInteger(1, privateKeyBytes)
+            return scalar >= BigInteger.ONE && scalar < ECKey.ecDomainParameters().n
         }
 
         Timber.e("Unknown private key format")
@@ -587,7 +585,7 @@ private fun normalizeBitcoinPrivateKeyToWif(privateKey: String): String? {
 
 private fun isBitcoinAddressValid(address: String): Boolean {
     return try {
-        AddressParser.getDefault().parseAddress(address)
+        AddressParser.getDefault(BitcoinNetwork.MAINNET).parseAddress(address)
         true
     } catch (e: Exception) {
         false

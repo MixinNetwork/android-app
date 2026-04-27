@@ -1934,7 +1934,7 @@ class WebFragment : BaseFragment() {
     ) {
         @JavascriptInterface
         fun postMessage(json: String) {
-            Timber.e("postMessage $json")
+            if (BuildConfig.DEBUG) Timber.d("postMessage $json")
             val obj = JSONObject(json)
             val id = obj.getLong("id")
             val method = DAppMethod.fromValue(obj.getString("name"))
@@ -2011,6 +2011,10 @@ class WebFragment : BaseFragment() {
                             null
                         }
 
+                    if (!from.equals(Web3Signer.evmAddress, ignoreCase = true)) {
+                        onWalletActionError(id)
+                        return
+                    }
                     signTransaction(id, WCEthereumTransaction(from, to, null, null, maxFeePerGas, maxPriorityFeePerGas, gas, null, value, data))
                 }
 
