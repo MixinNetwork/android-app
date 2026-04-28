@@ -23,17 +23,17 @@ apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
 
 android {
-    compileSdk 36
-    ndkVersion "27.0.12077973"
-    namespace "one.mixin.android"
+    compileSdk = 36
+    ndkVersion = "27.0.12077973"
+    namespace = "one.mixin.android"
     defaultConfig {
-        applicationId "one.mixin.messenger"
-        minSdkVersion 26
-        targetSdkVersion 36
-        versionCode versionMajor * 1000000 + versionMinor * 10000 + versionPatch * 100 + versionBuild
-        versionName "${versionMajor}.${versionMinor}.${versionPatch}"
-        multiDexEnabled true
-        testInstrumentationRunner "one.mixin.android.CustomTestRunner"
+        applicationId = "one.mixin.messenger"
+        minSdk = 26
+        targetSdk = 36
+        versionCode = versionMajor * 1000000 + versionMinor * 10000 + versionPatch * 100 + versionBuild
+        versionName = "${versionMajor}.${versionMinor}.${versionPatch}"
+        multiDexEnabled = true
+        testInstrumentationRunner = "one.mixin.android.CustomTestRunner"
         resourceConfigurations += ['en', 'es', 'in', 'ja', 'ms', 'ru', 'zh-rCN', 'zh-rTW']
 
         packagingOptions {
@@ -77,8 +77,8 @@ android {
         }
     }
     buildFeatures {
-        viewBinding true
-        compose true
+        viewBinding = true
+        compose = true
         buildConfig = true
     }
 
@@ -94,7 +94,7 @@ android {
     }
 
     compileOptions {
-        coreLibraryDesugaringEnabled true
+        coreLibraryDesugaringEnabled = true
         targetCompatibility JavaVersion.VERSION_17
         sourceCompatibility JavaVersion.VERSION_17
     }
@@ -123,7 +123,7 @@ android {
         }
     }
 
-    testBuildType "debug"
+    testBuildType = "debug"
 
     signingConfigs {
         debug {
@@ -149,13 +149,13 @@ android {
             ndk {
                 abiFilters "armeabi-v7a", "arm64-v8a", "x86_64"
             }
-            debuggable false
-            jniDebuggable false
-            shrinkResources true
-            minifyEnabled true
+            debuggable = false
+            jniDebuggable = false
+            shrinkResources = true
+            minifyEnabled = true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             if (project.hasProperty("RELEASE_STORE_FILE")) {
-                signingConfig signingConfigs.release
+                signingConfig = signingConfigs.release
                 firebaseCrashlytics {
                     mappingFileUploadEnabled = true
                 }
@@ -166,8 +166,11 @@ android {
             }
         }
         debug {
-            signingConfig signingConfigs.debug
-            jniDebuggable false
+            signingConfig = signingConfigs.debug
+            jniDebuggable = false
+            FirebasePerformance {
+                instrumentationEnabled = false
+            }
             ndk {
                 if (includeDebugX86_64) {
                     abiFilters "arm64-v8a", "x86_64"
@@ -179,7 +182,7 @@ android {
 
         staging {
             initWith debug
-            applicationIdSuffix ".test"
+            applicationIdSuffix = ".test"
             matchingFallbacks = ['debug']
         }
     }
@@ -192,15 +195,15 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion '1.5.14'
+        kotlinCompilerExtensionVersion = '1.5.14'
     }
 
     lint {
-        abortOnError false
+        abortOnError = false
     }
     packagingOptions {
         jniLibs {
-            useLegacyPackaging true
+            useLegacyPackaging = true
             excludes += ['lib/x86_64/libcurve25519.so']
         }
     }
@@ -554,5 +557,4 @@ task syncStrings {
         }
     }
 }
-
 
