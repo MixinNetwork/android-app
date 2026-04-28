@@ -19,15 +19,19 @@ import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.referral.ReferralShareInfo
 import one.mixin.android.api.referral.buildReferralShareUrl
+import one.mixin.android.api.referral.fetchDefaultReferralShareInfoOrNull
 import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
+import one.mixin.android.api.service.ReferralService
 import one.mixin.android.databinding.ActivityPerpsPositionShareBinding
 import one.mixin.android.extension.blurBitmap
 import one.mixin.android.extension.defaultSharedPreferences
@@ -35,17 +39,18 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getParcelableCompat
-import one.mixin.android.extension.getSerializableExtraCompat
 import one.mixin.android.extension.getPublicDownloadPath
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.toast
+import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.common.buildReferralDescription
 import one.mixin.android.ui.common.isZeroPercent
 import one.mixin.android.ui.common.roundQrBackground
+import one.mixin.android.ui.wallet.LoadingProgressDialogFragment
 import one.mixin.android.ui.web.getScreenshot
 import one.mixin.android.ui.web.refreshScreenshot
 import one.mixin.android.vo.Fiats
@@ -60,23 +65,20 @@ class PerpsPositionShareActivity : BaseActivity() {
     companion object {
         private const val ARGS_POSITION = "args_position"
         private const val ARGS_POSITION_HISTORY = "args_position_history"
-        private const val ARGS_REFERRAL_SHARE_INFO = "args_referral_share_info"
         private const val SHARE_QR_URL = "https://mixin.one/mm"
         private val MIN_DISPLAY_PNL_PERCENT = BigDecimal("-100")
 
-        fun show(context: Context, position: PerpsPositionItem, referralShareInfo: ReferralShareInfo? = null) {
+        fun show(context: Context, position: PerpsPositionItem) {
             refreshScreenshot(context, 0x33000000)
             context.startActivity(Intent(context, PerpsPositionShareActivity::class.java).apply {
                 putExtra(ARGS_POSITION, position)
-                putExtra(ARGS_REFERRAL_SHARE_INFO, referralShareInfo)
             })
         }
 
-        fun show(context: Context, positionHistory: PerpsPositionHistoryItem, referralShareInfo: ReferralShareInfo? = null) {
+        fun show(context: Context, positionHistory: PerpsPositionHistoryItem) {
             refreshScreenshot(context, 0x33000000)
             context.startActivity(Intent(context, PerpsPositionShareActivity::class.java).apply {
                 putExtra(ARGS_POSITION_HISTORY, positionHistory)
-                putExtra(ARGS_REFERRAL_SHARE_INFO, referralShareInfo)
             })
         }
     }
@@ -86,6 +88,11 @@ class PerpsPositionShareActivity : BaseActivity() {
     override fun getDefaultThemeId(): Int = R.style.AppTheme_Blur
 
     private lateinit var binding: ActivityPerpsPositionShareBinding
+    private val loadingDialog by lazy { LoadingProgressDialogFragment() }
+    @Inject
+    lateinit var referralService: ReferralService
+    @Inject
+    lateinit var userRepository: UserRepository
 
     private val position: PerpsPositionItem? by lazy {
         intent.extras?.getParcelableCompat(ARGS_POSITION, PerpsPositionItem::class.java)
@@ -99,9 +106,7 @@ class PerpsPositionShareActivity : BaseActivity() {
         defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     }
 
-    private val referralShareInfo by lazy {
-        intent.getSerializableExtraCompat(ARGS_REFERRAL_SHARE_INFO, ReferralShareInfo::class.java)
-    }
+    private var referralShareInfo: ReferralShareInfo? = null
 
     private val referralCode: String? by lazy {
         referralShareInfo?.code?.takeIf { it.isNotBlank() }
@@ -131,27 +136,59 @@ class PerpsPositionShareActivity : BaseActivity() {
             finish()
             return
         }
-        bindFooter()
 
         binding.apply {
             share.setOnClickListener {
+                if (loadingDialog.isAdded) return@setOnClickListener
                 onShare()
             }
             copy.setOnClickListener {
+                if (loadingDialog.isAdded) return@setOnClickListener
                 onCopy()
             }
             save.setOnClickListener {
+                if (loadingDialog.isAdded) return@setOnClickListener
                 onSave()
             }
             close.setOnClickListener {
+                if (loadingDialog.isAdded) return@setOnClickListener
                 onBackPressed()
             }
             container.setOnClickListener {
+                if (loadingDialog.isAdded) return@setOnClickListener
                 onBackPressed()
             }
         }
 
-        applyFadeInAnimation(binding.root)
+        lifecycleScope.launch {
+            showLoading(true)
+            try {
+                referralShareInfo = withContext(kotlinx.coroutines.Dispatchers.IO) {
+                    fetchDefaultReferralShareInfoOrNull(
+                        referralService = referralService,
+                        userRepository = userRepository,
+                        logLabel = "perps position share",
+                    )
+                }
+                bindFooter()
+                applyFadeInAnimation(binding.root)
+            } finally {
+                showLoading(false)
+            }
+        }
+    }
+
+    private fun showLoading(show: Boolean) {
+        binding.content.isVisible = !show
+        if (show) {
+            if (!loadingDialog.isAdded) {
+                runCatching {
+                    loadingDialog.show(supportFragmentManager, LoadingProgressDialogFragment.TAG)
+                }
+            }
+        } else if (loadingDialog.isAdded) {
+            loadingDialog.dismissAllowingStateLoss()
+        }
     }
 
     private fun bindContent(): Boolean {

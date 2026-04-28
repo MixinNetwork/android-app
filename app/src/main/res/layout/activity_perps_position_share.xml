@@ -57,9 +57,7 @@
                         <one.mixin.android.widget.CircleImageView
                             android:id="@+id/asset_icon"
                             android:layout_width="44dp"
-                            android:layout_height="44dp"
-                            app:border_color="@color/white"
-                            app:border_width="0.5dp" />
+                            android:layout_height="44dp" />
 
                     </LinearLayout>
 

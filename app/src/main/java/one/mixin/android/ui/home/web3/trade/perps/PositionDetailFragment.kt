@@ -10,22 +10,18 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
-import one.mixin.android.R
-import one.mixin.android.api.referral.ReferralShareInfo
 import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.api.response.perps.toPosition
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getParcelableCompat
-import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.common.BaseFragment
@@ -59,11 +55,6 @@ class PositionDetailFragment : BaseFragment() {
 
     private val quoteColorReversed: Boolean by lazy {
         requireContext().defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        viewModel.preloadReferralShareInfo()
     }
 
     override fun onCreateView(
@@ -171,32 +162,10 @@ class PositionDetailFragment : BaseFragment() {
     }
 
     private fun sharePosition(position: PerpsPositionItem) {
-        launchShare { referralShareInfo ->
-            PerpsPositionShareActivity.show(requireContext(), position, referralShareInfo)
-        }
+        PerpsPositionShareActivity.show(requireContext(), position)
     }
 
     private fun sharePosition(positionHistory: PerpsPositionHistoryItem) {
-        launchShare { referralShareInfo ->
-            PerpsPositionShareActivity.show(requireContext(), positionHistory, referralShareInfo)
-        }
-    }
-
-    private fun launchShare(showShare: (ReferralShareInfo?) -> Unit) {
-        viewLifecycleOwner.lifecycleScope.launch {
-            val dialog = if (viewModel.hasResolvedReferralShareInfo()) {
-                null
-            } else {
-                indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
-                    setCancelable(false)
-                    show()
-                }
-            }
-            try {
-                showShare(viewModel.getReferralShareInfo())
-            } finally {
-                dialog?.dismiss()
-            }
-        }
+        PerpsPositionShareActivity.show(requireContext(), positionHistory)
     }
 }

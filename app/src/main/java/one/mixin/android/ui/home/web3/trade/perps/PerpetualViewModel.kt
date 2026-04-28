@@ -7,16 +7,12 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
-import one.mixin.android.api.referral.ReferralShareInfo
-import one.mixin.android.api.referral.fetchDefaultReferralShareInfoOrNull
 import one.mixin.android.api.request.perps.CloseOrderRequest
 import one.mixin.android.api.request.perps.OpenOrderRequest
 import one.mixin.android.api.request.perps.OpenOrderResponse
@@ -25,7 +21,6 @@ import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.api.response.perps.PerpsPosition
 import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
-import one.mixin.android.api.service.ReferralService
 import one.mixin.android.api.service.RouteService
 import one.mixin.android.db.TokenDao
 import one.mixin.android.db.perps.PerpsMarketDao
@@ -34,7 +29,6 @@ import one.mixin.android.db.perps.PerpsPositionHistoryDao
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshPerpsPositionsJob
 import one.mixin.android.job.RefreshTokensJob
-import one.mixin.android.repository.UserRepository
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.safe.TokenItem
@@ -48,58 +42,12 @@ import javax.inject.Inject
 @HiltViewModel
 class PerpetualViewModel @Inject constructor(
     private val routeService: RouteService,
-    private val referralService: ReferralService,
-    private val userRepository: UserRepository,
     private val tokenDao: TokenDao,
     private val perpsPositionDao: PerpsPositionDao,
     private val perpsPositionHistoryDao: PerpsPositionHistoryDao,
     private val perpsMarketDao: PerpsMarketDao,
     private val jobManager: MixinJobManager
 ) : ViewModel() {
-    companion object {
-        private const val REFERRAL_SHARE_LOG_LABEL = "perps share"
-    }
-
-    private var referralShareInfo: ReferralShareInfo? = null
-    private var hasResolvedReferralShareInfo = false
-    private var referralShareInfoRequest: Deferred<ReferralShareInfo?>? = null
-
-    fun preloadReferralShareInfo(logLabel: String = REFERRAL_SHARE_LOG_LABEL) {
-        if (hasResolvedReferralShareInfo || referralShareInfoRequest != null) return
-        referralShareInfoRequest = newReferralShareInfoRequest(logLabel)
-    }
-
-    fun hasResolvedReferralShareInfo(): Boolean = hasResolvedReferralShareInfo
-
-    suspend fun getReferralShareInfo(logLabel: String = REFERRAL_SHARE_LOG_LABEL): ReferralShareInfo? {
-        if (hasResolvedReferralShareInfo) return referralShareInfo
-
-        val request = referralShareInfoRequest ?: newReferralShareInfoRequest(logLabel).also {
-            referralShareInfoRequest = it
-        }
-
-        return try {
-            request.await().also { result ->
-                referralShareInfo = result
-                hasResolvedReferralShareInfo = true
-            }
-        } finally {
-            if (referralShareInfoRequest === request && request.isCompleted) {
-                referralShareInfoRequest = null
-            }
-        }
-    }
-
-    private fun newReferralShareInfoRequest(logLabel: String): Deferred<ReferralShareInfo?> {
-        return viewModelScope.async(Dispatchers.IO) {
-            fetchDefaultReferralShareInfoOrNull(
-                referralService = referralService,
-                userRepository = userRepository,
-                logLabel = logLabel,
-            )
-        }
-    }
-
     fun refreshPositions(walletId: String) {
         jobManager.addJobInBackground(RefreshPerpsPositionsJob(walletId))
     }

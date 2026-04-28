@@ -15,11 +15,8 @@ import android.graphics.Shader
 import android.media.MediaScannerConnection
 import android.os.Build
 import android.os.Bundle
-import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
-import android.widget.FrameLayout
-import android.widget.ProgressBar
 import androidx.core.content.FileProvider
 import androidx.core.graphics.drawable.toDrawable
 import androidx.core.view.drawToBitmap
@@ -88,11 +85,11 @@ class MarketShareActivity : BaseActivity() {
     override fun getDefaultThemeId(): Int = R.style.AppTheme_Blur
 
     private lateinit var binding: ActivityMarketShareBinding
-    private lateinit var loadingOverlay: FrameLayout
     @Inject
     lateinit var referralService: ReferralService
     @Inject
     lateinit var userRepository: UserRepository
+    private val loadingDialog by lazy { LoadingProgressDialogFragment() }
     private val name by lazy {
         intent.getStringExtra(ARGS_NAME)
     }
@@ -109,7 +106,6 @@ class MarketShareActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMarketShareBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        setupLoadingOverlay()
         getScreenshot()?.let {
             supportsS({
                 binding.background.background = it.toDrawable(resources)
@@ -168,36 +164,18 @@ class MarketShareActivity : BaseActivity() {
         }
     }
 
-    private fun setupLoadingOverlay() {
-        loadingOverlay = FrameLayout(this).apply {
-            setBackgroundColor(0x33000000)
-            isClickable = true
-            isFocusable = true
-            isVisible = false
-            addView(
-                ProgressBar(context).apply {
-                    isIndeterminate = true
-                },
-                FrameLayout.LayoutParams(
-                    FrameLayout.LayoutParams.WRAP_CONTENT,
-                    FrameLayout.LayoutParams.WRAP_CONTENT,
-                    Gravity.CENTER,
-                ),
-            )
-        }
-        binding.container.addView(
-            loadingOverlay,
-            FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT,
-            ),
-        )
-    }
-
     private fun showLoading(show: Boolean) {
         isLoading = show
         binding.content.isVisible = !show
-        loadingOverlay.isVisible = show
+        if (show) {
+            if (!loadingDialog.isAdded) {
+                runCatching {
+                    loadingDialog.show(supportFragmentManager, LoadingProgressDialogFragment.TAG)
+                }
+            }
+        } else if (loadingDialog.isAdded) {
+            loadingDialog.dismissAllowingStateLoss()
+        }
     }
 
     private fun bindFooter(qrCode: Bitmap) {
