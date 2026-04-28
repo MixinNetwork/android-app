@@ -106,7 +106,7 @@ class PositionDetailFragment : BaseFragment() {
                                 showCloseDialog(currentPosition)
                             },
                             onShare = {
-                                PerpsPositionShareActivity.show(requireContext(), currentPosition)
+                                sharePosition(currentPosition)
                             },
                             onSupport = {
                                 context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
@@ -123,7 +123,7 @@ class PositionDetailFragment : BaseFragment() {
                                 openTradeAgain(positionHistory)
                             },
                             onShare = {
-                                PerpsPositionShareActivity.show(requireContext(), positionHistory)
+                                sharePosition(positionHistory)
                             },
                             onSupport = {
                                 context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
@@ -158,5 +158,13 @@ class PositionDetailFragment : BaseFragment() {
             marketDisplaySymbol = positionHistory.displaySymbol.orEmpty(),
             marketTokenSymbol = positionHistory.tokenSymbol.orEmpty()
         )
+    }
+
+    private fun sharePosition(position: PerpsPositionItem) {
+        PerpsPositionShareActivity.show(requireContext(), position)
+    }
+
+    private fun sharePosition(positionHistory: PerpsPositionHistoryItem) {
+        PerpsPositionShareActivity.show(requireContext(), positionHistory)
     }
 }

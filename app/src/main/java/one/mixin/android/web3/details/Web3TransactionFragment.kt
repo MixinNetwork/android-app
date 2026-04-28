@@ -5,7 +5,7 @@ import android.graphics.Typeface
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.View
-import android.widget.RelativeLayout
+import android.view.ViewGroup.MarginLayoutParams
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
@@ -40,6 +40,7 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.priceFormat2
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.toHex
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
@@ -162,12 +163,6 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         return transaction.getMainAmount().toBigDecimalOrNull()?.compareTo(BigDecimal.ZERO) != 0
     }
 
-    private fun setStatusAnchor(showValueDetails: Boolean) {
-        val layoutParams = binding.status.layoutParams as RelativeLayout.LayoutParams
-        layoutParams.addRule(RelativeLayout.BELOW, if (showValueDetails) R.id.that_va else R.id.value_tv)
-        binding.status.layoutParams = layoutParams
-    }
-
     private fun getMainAssetSymbol(): String {
         return when (transaction.transactionType) {
             TransactionType.TRANSFER_OUT.value -> transaction.sendAssetSymbol
@@ -180,7 +175,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         binding.valueAsTv.isVisible = false
         binding.thatVa.isVisible = false
         binding.thatTv.setOnClickListener(null)
-        setStatusAnchor(false)
+        updateStatusBottomMargin()
     }
 
     private fun bindCurrentValue(
@@ -207,6 +202,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
     ) {
         if (!isAdded || view == null) return
         binding.thatVa.isVisible = true
+        updateStatusBottomMargin()
         binding.thatVa.displayedChild = 1
         binding.thatTv.apply {
             text = if (ticker.priceUsd == "0") {
@@ -250,6 +246,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
     ) {
         if (!isAdded || view == null) return
         binding.thatVa.isVisible = true
+        updateStatusBottomMargin()
         binding.thatVa.displayedChild = 1
         binding.thatTv.apply {
             text = getString(R.string.Click_to_retry)
@@ -266,6 +263,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         symbol: String,
     ) {
         binding.thatVa.isVisible = true
+        updateStatusBottomMargin()
         binding.thatVa.displayedChild = 0
         lifecycleScope.launch {
             handleMixinResponse(
@@ -297,8 +295,8 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         }
         val assetId = transaction.getMainAssetId()
         val symbol = getMainAssetSymbol()
-        setStatusAnchor(true)
         binding.thatVa.isVisible = true
+        updateStatusBottomMargin()
         binding.thatVa.displayedChild = 0
         lifecycleScope.launch {
             val mainToken = fetchDisplayToken(assetId)
@@ -641,6 +639,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                     actions.isVisible = false
                     actions.speedUp.setOnClickListener(null)
                     actions.cancelTx.setOnClickListener(null)
+                    updateStatusBottomMargin()
                     return@apply
                 }
                 val pendingRawTx = web3ViewModel.getRawTransactionByHashAndChain(wallet.id, transaction.transactionHash, transaction.chainId)
@@ -650,6 +649,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                     actions.isVisible = false
                     actions.speedUp.setOnClickListener(null)
                     actions.cancelTx.setOnClickListener(null)
+                    updateStatusBottomMargin()
                     return@apply
                 }
                 val notNullPendingRawTx: Web3RawTransaction = pendingRawTx
@@ -657,6 +657,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                     actions.isVisible = false
                     actions.speedUp.setOnClickListener(null)
                     actions.cancelTx.setOnClickListener(null)
+                    updateStatusBottomMargin()
                     return@apply
                 }
                 if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
@@ -665,10 +666,12 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                         actions.isVisible = false
                         actions.speedUp.setOnClickListener(null)
                         actions.cancelTx.setOnClickListener(null)
+                        updateStatusBottomMargin()
                         return@apply
                     }
                 }
                 actions.isVisible = true
+                updateStatusBottomMargin()
                 actions.speedUp.setOnClickListener {
                     handleSpeedUp(notNullPendingRawTx)
                 }
@@ -677,6 +680,13 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 }
             }
         }
+    }
+
+    private fun updateStatusBottomMargin() {
+        val layoutParams = binding.status.layoutParams as MarginLayoutParams
+        layoutParams.bottomMargin =
+            if (!binding.thatVa.isVisible && !binding.actions.isVisible) 24.dp else 0
+        binding.status.layoutParams = layoutParams
     }
 
     private fun tokenClick(transaction: Web3TransactionItem) {
