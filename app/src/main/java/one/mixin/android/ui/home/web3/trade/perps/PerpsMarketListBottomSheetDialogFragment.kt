@@ -109,7 +109,7 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
         }
 
         binding.apply {
-            priceTitle.text = getString(R.string.change_percent_period_hour, 24)
+            priceTitle.text = getString(R.string.change_period_hour, 24)
             closeIb.setOnClickListener {
                 dismiss()
             }
@@ -145,17 +145,17 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
             }
 
             volumeSort.setOnClickListener {
-                updateSort(nextSort(currentSort, MarketSort.RANK_ASCENDING, MarketSort.RANK_DESCENDING))
+                updateSort(nextSort(currentSort, MarketSort.RANK_DESCENDING, MarketSort.RANK_ASCENDING))
             }
             changeSort.setOnClickListener {
-                updateSort(nextSort(currentSort, MarketSort.PRICE_ASCENDING, MarketSort.PRICE_DESCENDING))
+                updateSort(nextSort(currentSort, MarketSort.PRICE_DESCENDING, MarketSort.PRICE_ASCENDING))
             }
             priceSort.setOnClickListener {
                 updateSort(
                     nextSort(
                         currentSort,
-                        MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_ASCENDING,
                         MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_DESCENDING,
+                        MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_ASCENDING,
                     )
                 )
             }
@@ -197,11 +197,11 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
         }
     }
 
-    private fun nextSort(current: MarketSort?, ascending: MarketSort, descending: MarketSort): MarketSort? {
+    private fun nextSort(current: MarketSort?, primary: MarketSort, secondary: MarketSort): MarketSort? {
         return when (current) {
-            ascending -> descending
-            descending -> null
-            else -> ascending
+            primary -> secondary
+            secondary -> null
+            else -> primary
         }
     }
 
@@ -281,8 +281,8 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
 
     private fun currentComparator(): Comparator<PerpsMarket>? {
         return when (currentSort) {
-            MarketSort.RANK_ASCENDING -> compareByDescending { it.volumeDecimal() }
-            MarketSort.RANK_DESCENDING -> compareBy { it.volumeDecimal() }
+            MarketSort.RANK_ASCENDING -> compareBy { it.volumeDecimal() }
+            MarketSort.RANK_DESCENDING -> compareByDescending { it.volumeDecimal() }
             MarketSort.PRICE_ASCENDING -> compareBy { it.lastDecimal() }
             MarketSort.PRICE_DESCENDING -> compareByDescending { it.lastDecimal() }
             MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_ASCENDING -> compareBy { it.changePercent() }

@@ -49,37 +49,36 @@ class MarketTitleView : RelativeLayout {
     private fun setupListeners() {
         _binding.rankOrder.setOnClickListener {
             currentSort =
-                if (currentSort == MarketSort.RANK_ASCENDING) {
-                    MarketSort.RANK_DESCENDING
-                } else {
-                    MarketSort.RANK_ASCENDING
+                when (currentSort) {
+                    MarketSort.RANK_ASCENDING -> MarketSort.RANK_DESCENDING
+                    else -> MarketSort.RANK_ASCENDING
                 }
             updateSortOrder(currentSort)
             saveSortPreference()
-            callback(currentSort)
+            callback(currentSortOrDefault())
         }
         _binding.priceOrder.setOnClickListener {
-            onTitleClicked(MarketSort.PRICE_ASCENDING, MarketSort.PRICE_DESCENDING)
+            onTitleClicked(MarketSort.PRICE_DESCENDING, MarketSort.PRICE_ASCENDING)
         }
         _binding.percentageOrder.setOnClickListener {
             if (isSevenDays) {
-                onTitleClicked(MarketSort.SEVEN_DAYS_PERCENTAGE_ASCENDING, MarketSort.SEVEN_DAYS_PERCENTAGE_DESCENDING)
+                onTitleClicked(MarketSort.SEVEN_DAYS_PERCENTAGE_DESCENDING, MarketSort.SEVEN_DAYS_PERCENTAGE_ASCENDING)
             } else {
-                onTitleClicked(MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_ASCENDING, MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_DESCENDING)
+                onTitleClicked(MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_DESCENDING, MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_ASCENDING)
             }
         }
     }
 
-    private fun onTitleClicked(ascending: MarketSort, descending: MarketSort) {
+    private fun onTitleClicked(descending: MarketSort, ascending: MarketSort) {
         currentSort =
             when (currentSort) {
-                ascending -> descending
-                descending -> MarketSort.RANK_ASCENDING
-                else -> ascending
+                descending -> ascending
+                ascending -> MarketSort.RANK_ASCENDING
+                else -> descending
             }
         updateSortOrder(currentSort)
         saveSortPreference()
-        callback(currentSort)
+        callback(currentSortOrDefault())
     }
 
     private fun updateSortOrder(sort: MarketSort) {
@@ -133,9 +132,8 @@ class MarketTitleView : RelativeLayout {
 
     private fun loadSortPreference() {
         val sortValue = sharedPreferences.getInt(Constants.Account.PREF_MARKET_ORDER, SORT_DEFAULT)
-        val sort = MarketSort.fromValueOrNull(sortValue) ?: MarketSort.RANK_ASCENDING
-        updateSortOrder(sort)
-        currentSort = sort
+        currentSort = MarketSort.fromValueOrNull(sortValue) ?: MarketSort.RANK_ASCENDING
+        updateSortOrder(currentSort)
     }
 
     fun setOnSortChangedListener(callback: (MarketSort) -> Unit) {
@@ -152,7 +150,7 @@ class MarketTitleView : RelativeLayout {
         _binding.percentage.text = if (isSevenDays) {
             context.getString(R.string.change_percent_period_day, 7)
         } else {
-            context.getString(R.string.change_percent_period_hour, 24)
+            context.getString(R.string.change_period_hour, 24)
         }
     }
 
@@ -170,7 +168,7 @@ class MarketTitleView : RelativeLayout {
             currentSort = newSort
             updateSortOrder(currentSort)
             saveSortPreference()
-            callback(currentSort)
+            callback(currentSortOrDefault())
         }
     }
 

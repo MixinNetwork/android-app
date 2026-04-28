@@ -26,7 +26,7 @@ class TopPercentageAdapter(private val context: Context, private val items: List
         binding.title.text = if (item.type == PercentageMenuType.SEVEN_DAYS) {
             binding.root.context.getString(R.string.change_percent_period_day, 7)
         } else {
-            binding.root.context.getString(R.string.change_percent_period_hour, 24)
+            binding.root.context.getString(R.string.change_period_hour, 24)
         }
         return binding.root
     }
