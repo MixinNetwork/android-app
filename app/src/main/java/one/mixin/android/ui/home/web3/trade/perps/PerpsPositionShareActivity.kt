@@ -6,9 +6,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.RenderEffect
 import android.graphics.Shader
-import android.graphics.Typeface
 import android.media.MediaScannerConnection
-import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.FrameLayout
@@ -26,12 +24,11 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.api.referral.buildReferralCopyUrl
 import one.mixin.android.api.referral.ReferralShareInfo
 import one.mixin.android.api.referral.buildReferralShareUrl
-import one.mixin.android.api.referral.fetchDefaultReferralShareInfoOrNull
 import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
-import one.mixin.android.api.service.ReferralService
 import one.mixin.android.databinding.ActivityPerpsPositionShareBinding
 import one.mixin.android.extension.blurBitmap
 import one.mixin.android.extension.defaultSharedPreferences
@@ -44,9 +41,9 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.toast
-import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.common.applyReferralTitleTypeface
 import one.mixin.android.ui.common.buildReferralDescription
 import one.mixin.android.ui.common.isZeroPercent
 import one.mixin.android.ui.common.roundQrBackground
@@ -58,7 +55,9 @@ import java.io.File
 import java.io.FileOutputStream
 import java.math.BigDecimal
 import java.math.RoundingMode
+import kotlinx.coroutines.Dispatchers
 import kotlin.math.min
+import one.mixin.android.repository.ReferralRepository
 
 @AndroidEntryPoint
 class PerpsPositionShareActivity : BaseActivity() {
@@ -90,9 +89,7 @@ class PerpsPositionShareActivity : BaseActivity() {
     private lateinit var binding: ActivityPerpsPositionShareBinding
     private val loadingDialog by lazy { LoadingProgressDialogFragment() }
     @Inject
-    lateinit var referralService: ReferralService
-    @Inject
-    lateinit var userRepository: UserRepository
+    lateinit var referralRepository: ReferralRepository
 
     private val position: PerpsPositionItem? by lazy {
         intent.extras?.getParcelableCompat(ARGS_POSITION, PerpsPositionItem::class.java)
@@ -108,9 +105,9 @@ class PerpsPositionShareActivity : BaseActivity() {
 
     private var referralShareInfo: ReferralShareInfo? = null
 
-    private val referralCode: String? by lazy {
-        referralShareInfo?.code?.takeIf { it.isNotBlank() }
-    }
+    private val referralCode: String?
+        get() = referralShareInfo?.code?.takeIf { it.isNotBlank() }
+    private var isLoading = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         skipSystemUi = true
@@ -139,23 +136,23 @@ class PerpsPositionShareActivity : BaseActivity() {
 
         binding.apply {
             share.setOnClickListener {
-                if (loadingDialog.isAdded) return@setOnClickListener
+                if (isLoading) return@setOnClickListener
                 onShare()
             }
             copy.setOnClickListener {
-                if (loadingDialog.isAdded) return@setOnClickListener
+                if (isLoading) return@setOnClickListener
                 onCopy()
             }
             save.setOnClickListener {
-                if (loadingDialog.isAdded) return@setOnClickListener
+                if (isLoading) return@setOnClickListener
                 onSave()
             }
             close.setOnClickListener {
-                if (loadingDialog.isAdded) return@setOnClickListener
+                if (isLoading) return@setOnClickListener
                 onBackPressed()
             }
             container.setOnClickListener {
-                if (loadingDialog.isAdded) return@setOnClickListener
+                if (isLoading) return@setOnClickListener
                 onBackPressed()
             }
         }
@@ -163,12 +160,8 @@ class PerpsPositionShareActivity : BaseActivity() {
         lifecycleScope.launch {
             showLoading(true)
             try {
-                referralShareInfo = withContext(kotlinx.coroutines.Dispatchers.IO) {
-                    fetchDefaultReferralShareInfoOrNull(
-                        referralService = referralService,
-                        userRepository = userRepository,
-                        logLabel = "perps position share",
-                    )
+                referralShareInfo = withContext(Dispatchers.IO) {
+                    referralRepository.fetchDefaultReferralShareInfoOrNull(logLabel = "perps position share")
                 }
                 bindFooter()
                 applyFadeInAnimation(binding.root)
@@ -179,6 +172,7 @@ class PerpsPositionShareActivity : BaseActivity() {
     }
 
     private fun showLoading(show: Boolean) {
+        isLoading = show
         binding.content.isVisible = !show
         if (show) {
             if (!loadingDialog.isAdded) {
@@ -269,11 +263,7 @@ class PerpsPositionShareActivity : BaseActivity() {
         val info = referralShareInfo
         if (info != null) {
             binding.title.text = info.code
-            binding.title.typeface = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                Typeface.create(binding.title.typeface, 600, false)
-            } else {
-                Typeface.create(binding.title.typeface, Typeface.BOLD)
-            }
+            binding.title.applyReferralTitleTypeface()
             val rebatePercent = info.rebatePercent
             if (rebatePercent.isNullOrBlank()) {
                 binding.shareDescTv.isVisible = false
@@ -320,8 +310,11 @@ class PerpsPositionShareActivity : BaseActivity() {
     }
 
     private val onCopy: () -> Unit = {
-        val link = referralCode?.let(::buildReferralShareUrl)
-            ?: (Session.getAccount()?.identityNumber?.let { "$SHARE_QR_URL&referral=$it" } ?: SHARE_QR_URL)
+        val link = buildReferralCopyUrl(
+            referralCode = referralCode,
+            defaultUrl = SHARE_QR_URL,
+            legacyReferralUrl = Session.getAccount()?.identityNumber?.let { "$SHARE_QR_URL&referral=$it" },
+        )
         getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, link))
         finish()
         toast(R.string.copied_to_clipboard)

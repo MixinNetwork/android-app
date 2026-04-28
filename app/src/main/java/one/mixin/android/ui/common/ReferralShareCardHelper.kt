@@ -13,6 +13,7 @@ import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
+import android.widget.TextView
 import one.mixin.android.R
 import java.math.BigDecimal
 
@@ -46,6 +47,14 @@ fun buildReferralDescription(context: Context, rebatePercent: String): CharSeque
 fun String.isZeroPercent(): Boolean {
     val normalized = replace("%", "").trim()
     return normalized.toBigDecimalOrNull()?.compareTo(BigDecimal.ZERO) == 0
+}
+
+fun TextView.applyReferralTitleTypeface() {
+    typeface = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+        Typeface.create(typeface, 600, false)
+    } else {
+        Typeface.create(typeface, Typeface.BOLD)
+    }
 }
 
 fun Bitmap.roundQrBackground(padding: Int, radius: Float): Bitmap {

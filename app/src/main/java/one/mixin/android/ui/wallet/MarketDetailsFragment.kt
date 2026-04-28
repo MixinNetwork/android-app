@@ -519,25 +519,12 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
     private var currentRise: String? = null
 
     private fun captureMarketShareBitmap() = with(binding.swapAlert) {
-        val originalVisibility = visibility
-        visibility = View.GONE
-        relayoutForBitmapCapture(binding.marketLl)
+        val originalInvisible = isInvisible
+        isInvisible = true
         try {
             binding.marketLl.drawToBitmap()
         } finally {
-            visibility = originalVisibility
-            relayoutForBitmapCapture(binding.marketLl)
+            isInvisible = originalInvisible
         }
-    }
-
-    private fun relayoutForBitmapCapture(view: View) {
-        val width = view.width.takeIf { it > 0 } ?: view.measuredWidth
-        if (width <= 0) return
-
-        view.measure(
-            View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
-            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
-        )
-        view.layout(view.left, view.top, view.left + view.measuredWidth, view.top + view.measuredHeight)
     }
 }

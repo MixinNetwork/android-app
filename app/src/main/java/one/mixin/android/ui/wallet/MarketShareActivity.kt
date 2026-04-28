@@ -9,11 +9,9 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
-import android.graphics.Typeface
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.media.MediaScannerConnection
-import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
@@ -34,10 +32,9 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.Scheme.HTTPS_MARKET
 import one.mixin.android.R
+import one.mixin.android.api.referral.buildReferralCopyUrl
 import one.mixin.android.api.referral.ReferralShareInfo
 import one.mixin.android.api.referral.buildReferralShareUrl
-import one.mixin.android.api.referral.fetchDefaultReferralShareInfoOrNull
-import one.mixin.android.api.service.ReferralService
 import one.mixin.android.databinding.ActivityMarketShareBinding
 import one.mixin.android.extension.blurBitmap
 import one.mixin.android.extension.dp
@@ -49,12 +46,13 @@ import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.common.applyReferralTitleTypeface
 import one.mixin.android.ui.common.buildReferralDescription
 import one.mixin.android.ui.common.isZeroPercent
 import one.mixin.android.ui.common.roundQrBackground
 import one.mixin.android.ui.web.getScreenshot
 import one.mixin.android.ui.web.refreshScreenshot
-import one.mixin.android.repository.UserRepository
+import one.mixin.android.repository.ReferralRepository
 
 @AndroidEntryPoint
 class MarketShareActivity : BaseActivity() {
@@ -86,9 +84,7 @@ class MarketShareActivity : BaseActivity() {
 
     private lateinit var binding: ActivityMarketShareBinding
     @Inject
-    lateinit var referralService: ReferralService
-    @Inject
-    lateinit var userRepository: UserRepository
+    lateinit var referralRepository: ReferralRepository
     private val loadingDialog by lazy { LoadingProgressDialogFragment() }
     private val name by lazy {
         intent.getStringExtra(ARGS_NAME)
@@ -139,28 +135,27 @@ class MarketShareActivity : BaseActivity() {
         syncActionContainerVisibility()
         lifecycleScope.launch {
             showLoading(true)
-            referralShareInfo = withContext(Dispatchers.IO) {
-                fetchDefaultReferralShareInfoOrNull(
-                    referralService = referralService,
-                    userRepository = userRepository,
-                    logLabel = "market share",
-                )
-            }
-            val preparedCover = withContext(Dispatchers.Default) {
-                cover?.let {
-                    trimTransparentPadding(it)
-                        .cropBottom(8.dp)
-                        .roundBottomCorners(8.dp.toFloat())
+            try {
+                referralShareInfo = withContext(Dispatchers.IO) {
+                    referralRepository.fetchDefaultReferralShareInfoOrNull(logLabel = "market share")
                 }
+                val preparedCover = withContext(Dispatchers.Default) {
+                    cover?.let {
+                        trimTransparentPadding(it)
+                            .cropBottom(8.dp)
+                            .roundBottomCorners(8.dp.toFloat())
+                    }
+                }
+                val qrCode = withContext(Dispatchers.Default) {
+                    val qrPadding = 8.dp
+                    currentQrUrl().generateQRCode(72.dp, qrPadding).first.roundQrBackground(qrPadding, 6.dp.toFloat())
+                }
+                preparedCover?.let(binding.image::setImageBitmap)
+                bindFooter(qrCode)
+                applyFadeInAnimation(binding.content)
+            } finally {
+                showLoading(false)
             }
-            val qrCode = withContext(Dispatchers.Default) {
-                val qrPadding = 8.dp
-                currentQrUrl().generateQRCode(72.dp, qrPadding).first.roundQrBackground(qrPadding, 6.dp.toFloat())
-            }
-            preparedCover?.let(binding.image::setImageBitmap)
-            bindFooter(qrCode)
-            showLoading(false)
-            applyFadeInAnimation(binding.content)
         }
     }
 
@@ -182,11 +177,7 @@ class MarketShareActivity : BaseActivity() {
         val info = referralShareInfo
         if (info != null) {
             binding.title.text = info.code
-            binding.title.typeface = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                Typeface.create(binding.title.typeface, 600, false)
-            } else {
-                Typeface.create(binding.title.typeface, Typeface.BOLD)
-            }
+            binding.title.applyReferralTitleTypeface()
             val rebatePercent = info.rebatePercent
             if (rebatePercent.isNullOrBlank()) {
                 binding.shareDesc.isVisible = false
@@ -310,10 +301,12 @@ class MarketShareActivity : BaseActivity() {
     }
 
     private val onCopy: () -> Unit = {
-        val link = referralCode?.let(::buildReferralShareUrl) ?: run {
-            val marketLink = "$HTTPS_MARKET/$coinId"
-            Session.getAccount()?.identityNumber?.let { "$marketLink?ref=$it" } ?: marketLink
-        }
+        val marketLink = "$HTTPS_MARKET/$coinId"
+        val link = buildReferralCopyUrl(
+            referralCode = referralCode,
+            defaultUrl = marketLink,
+            legacyReferralUrl = Session.getAccount()?.identityNumber?.let { "$marketLink?ref=$it" },
+        )
         getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, link))
         finish()
         toast(R.string.copied_to_clipboard)

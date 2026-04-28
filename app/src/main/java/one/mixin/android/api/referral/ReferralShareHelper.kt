@@ -1,14 +1,8 @@
 package one.mixin.android.api.referral
 
-import one.mixin.android.Constants.RouteConfig.REFERRAL_BOT_USER_ID
 import one.mixin.android.Constants.Scheme.HTTPS_REFERRALS
-import one.mixin.android.api.response.referral.ReferralCode
-import one.mixin.android.api.response.referral.ReferralResponse
-import one.mixin.android.api.service.ReferralService
-import one.mixin.android.repository.UserRepository
 import java.io.Serializable
 import java.math.BigDecimal
-import timber.log.Timber
 
 data class ReferralShareInfo(
     val code: String,
@@ -17,53 +11,11 @@ data class ReferralShareInfo(
 
 fun buildReferralShareUrl(referralCode: String): String = "$HTTPS_REFERRALS/$referralCode"
 
-suspend fun fetchDefaultReferralShareInfoOrNull(
-    referralService: ReferralService,
-    userRepository: UserRepository,
-    logLabel: String,
-): ReferralShareInfo? {
-    runCatching {
-        userRepository.getBotPublicKey(REFERRAL_BOT_USER_ID, false)
-    }.onFailure {
-        Timber.w(it, "Failed to warm up referral bot session before %s", logLabel)
-    }
-
-    return requestReferralMixinAPI(
-        invokeNetwork = { referralService.referral() },
-        successBlock = { response ->
-            response.data?.let { referralResponse ->
-                referralResponse.codes
-                    .firstOrNull { it.isDefault }
-                    ?.toReferralShareInfo(referralResponse)
-                    ?: referralResponse.codes.firstOrNull()?.toReferralShareInfo(referralResponse)
-            }
-        },
-        failureBlock = { response ->
-            Timber.d(
-                "Fetch referral before %s failed code=%s message=%s",
-                logLabel,
-                response.errorCode,
-                response.errorDescription,
-            )
-            true
-        },
-        exceptionBlock = {
-            Timber.w(it, "Fetch referral before %s failed", logLabel)
-            true
-        },
-        requestSession = { userRepository.fetchSessionsSuspend(it) },
-    )
-}
-
-private fun ReferralCode.toReferralShareInfo(referralResponse: ReferralResponse): ReferralShareInfo {
-    return ReferralShareInfo(
-        code = code,
-        rebatePercent = calculateReferralRebatePercentOrNull(
-            tradingCommissionRatio = referralResponse.tradingCommissionRatio,
-            inviterPercent = inviterPercent,
-        ),
-    )
-}
+fun buildReferralCopyUrl(
+    referralCode: String?,
+    defaultUrl: String,
+    legacyReferralUrl: String? = null,
+): String = referralCode?.let(::buildReferralShareUrl) ?: legacyReferralUrl ?: defaultUrl
 
 internal fun calculateReferralRebatePercentOrNull(
     tradingCommissionRatio: String?,
@@ -73,6 +25,7 @@ internal fun calculateReferralRebatePercentOrNull(
     val inviterRatio = inviterPercent?.trim()?.toBigDecimalOrNull()
     if (tradingRatio == null || inviterRatio == null) return null
 
+    // rebate = trading commission ratio * (1 - inviter ratio), and inviter ratio above 100% is clamped to 0 rebate.
     val percent = tradingRatio
         .multiply((BigDecimal.ONE - inviterRatio).coerceAtLeast(BigDecimal.ZERO))
         .multiply(HUNDRED)

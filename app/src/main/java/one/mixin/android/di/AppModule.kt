@@ -40,8 +40,8 @@ import one.mixin.android.Constants.API.URL
 import one.mixin.android.Constants.Account.PREF_REFERRAL_BOT_PK
 import one.mixin.android.Constants.Account.PREF_ROUTE_BOT_PK
 import one.mixin.android.Constants.DNS
-import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_URL
 import one.mixin.android.Constants.RouteConfig.REFERRAL_API_URL
+import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_URL
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.DataErrorException
 import one.mixin.android.api.ExpiredTokenException
