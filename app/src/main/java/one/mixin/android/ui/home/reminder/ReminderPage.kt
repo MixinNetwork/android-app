@@ -10,11 +10,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
@@ -46,9 +49,12 @@ fun ReminderPage(
     dismiss: (() -> Unit)?,
     contentSlot: @Composable () -> Unit,
     extraContent: (@Composable () -> Unit)? = null,
+    stickyFooter: Boolean = false,
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight()
             .clip(RoundedCornerShape(topEnd = 12.dp, topStart = 12.dp))
             .background(MixinAppTheme.colors.primary)
     ) {
@@ -75,56 +81,118 @@ fun ReminderPage(
                 modifier = Modifier.align(Alignment.BottomCenter)
             )
         }
-        Column(
-            modifier = Modifier.padding(horizontal = 30.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Spacer(modifier = Modifier.height(42.dp))
-            Text(
-                stringResource(title), color = MixinAppTheme.colors.textPrimary, fontSize = 22.sp, fontWeight = FontWeight.W600
-            )
-            Spacer(modifier = Modifier.height(10.dp))
-            contentSlot()
-            if (extraContent != null) {
-                Spacer(modifier = Modifier.height(20.dp))
-                extraContent()
-            }
-            Spacer(modifier = Modifier.height(20.dp))
-            Button(
+        if (stickyFooter) {
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(48.dp),
-                onClick = action,
-                colors = ButtonDefaults.outlinedButtonColors(
-                    backgroundColor = MixinAppTheme.colors.accent
-                ),
-                shape = RoundedCornerShape(32.dp),
-                elevation = ButtonDefaults.elevation(
-                    pressedElevation = 0.dp,
-                    defaultElevation = 0.dp,
-                    hoveredElevation = 0.dp,
-                    focusedElevation = 0.dp,
-                ),
+                    .weight(1f)
+                    .padding(horizontal = 30.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = stringResource(actionStr), color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.W400)
-            }
-            if (dismissStr != null && dismiss != null) {
-                Spacer(modifier = Modifier.height(18.dp))
-                Text(
+                Box(
                     modifier = Modifier
-                        .padding(8.dp)
-                        .align(Alignment.CenterHorizontally)
-                        .clickable { dismiss.invoke() },
-                    text = stringResource(dismissStr),
-                    color = MixinAppTheme.colors.accent,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.W400
+                        .fillMaxWidth()
+                        .weight(1f),
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .verticalScroll(rememberScrollState()),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        ReminderContent(
+                            title = title,
+                            contentSlot = contentSlot,
+                            extraContent = extraContent,
+                        )
+                    }
+                }
+                ReminderActions(
+                    actionStr = actionStr,
+                    dismissStr = dismissStr,
+                    action = action,
+                    dismiss = dismiss,
                 )
-                Spacer(modifier = Modifier.height(20.dp))
-            } else {
-                Spacer(modifier = Modifier.height(20.dp))
+            }
+        } else {
+            Column(
+                modifier = Modifier.padding(horizontal = 30.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                ReminderContent(
+                    title = title,
+                    contentSlot = contentSlot,
+                    extraContent = extraContent,
+                )
+                ReminderActions(
+                    actionStr = actionStr,
+                    dismissStr = dismissStr,
+                    action = action,
+                    dismiss = dismiss,
+                )
             }
         }
+    }
+}
+
+@Composable
+private fun ReminderContent(
+    @StringRes title: Int,
+    contentSlot: @Composable () -> Unit,
+    extraContent: (@Composable () -> Unit)?,
+) {
+    Spacer(modifier = Modifier.height(42.dp))
+    Text(
+        stringResource(title), color = MixinAppTheme.colors.textPrimary, fontSize = 22.sp, fontWeight = FontWeight.W600
+    )
+    Spacer(modifier = Modifier.height(10.dp))
+    contentSlot()
+    if (extraContent != null) {
+        Spacer(modifier = Modifier.height(20.dp))
+        extraContent()
+    }
+    Spacer(modifier = Modifier.height(20.dp))
+}
+
+@Composable
+private fun ReminderActions(
+    @StringRes actionStr: Int,
+    @StringRes dismissStr: Int?,
+    action: () -> Unit,
+    dismiss: (() -> Unit)?,
+) {
+    Button(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(48.dp),
+        onClick = action,
+        colors = ButtonDefaults.outlinedButtonColors(
+            backgroundColor = MixinAppTheme.colors.accent
+        ),
+        shape = RoundedCornerShape(32.dp),
+        elevation = ButtonDefaults.elevation(
+            pressedElevation = 0.dp,
+            defaultElevation = 0.dp,
+            hoveredElevation = 0.dp,
+            focusedElevation = 0.dp,
+        ),
+    ) {
+        Text(text = stringResource(actionStr), color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.W400)
+    }
+    if (dismissStr != null && dismiss != null) {
+        Spacer(modifier = Modifier.height(18.dp))
+        Text(
+            modifier = Modifier
+                .padding(8.dp)
+                .clickable { dismiss.invoke() },
+            text = stringResource(dismissStr),
+            color = MixinAppTheme.colors.accent,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.W400
+        )
+        Spacer(modifier = Modifier.height(20.dp))
+    } else {
+        Spacer(modifier = Modifier.height(20.dp))
     }
 }
 

@@ -53,11 +53,6 @@ class DepositTokensBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         super.setupDialog(dialog, style)
         contentView = binding.root
         dialog.setCancelable(false)
-        binding.ph.doOnPreDraw {
-            binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
-                height = binding.ph.getSafeAreaInsetsTop() + requireContext().appCompatActionBarHeight()
-            }
-        }
         (dialog as BottomSheet).apply {
             setCustomView(contentView)
         }
