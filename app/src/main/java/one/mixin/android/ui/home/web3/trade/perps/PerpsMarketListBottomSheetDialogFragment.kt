@@ -147,10 +147,10 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
             volumeSort.setOnClickListener {
                 updateSort(nextSort(currentSort, MarketSort.RANK_ASCENDING, MarketSort.RANK_DESCENDING))
             }
-            priceSort.setOnClickListener {
+            changeSort.setOnClickListener {
                 updateSort(nextSort(currentSort, MarketSort.PRICE_ASCENDING, MarketSort.PRICE_DESCENDING))
             }
-            changeSort.setOnClickListener {
+            priceSort.setOnClickListener {
                 updateSort(
                     nextSort(
                         currentSort,
@@ -225,13 +225,13 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
                 }
 
                 MarketSort.PRICE_ASCENDING, MarketSort.PRICE_DESCENDING -> {
-                    priceIcon.setImageResource(
+                    changeIcon.setImageResource(
                         if (currentSort == MarketSort.PRICE_ASCENDING) R.drawable.ic_perps_sort_asc else R.drawable.ic_perps_sort_desc
                     )
                 }
 
                 MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_ASCENDING, MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_DESCENDING -> {
-                    changeIcon.setImageResource(
+                    priceIcon.setImageResource(
                         if (currentSort == MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_ASCENDING) R.drawable.ic_perps_sort_asc else R.drawable.ic_perps_sort_desc
                     )
                 }
@@ -248,6 +248,7 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
 
     private fun filterAndSortMarkets(scrollToTop: Boolean = false) {
         val query = currentQuery.trim()
+        val sourceOrder = allMarkets.withIndex().associate { it.value.marketId to it.index }
         val filtered = allMarkets
             .asSequence()
             .filter { market ->
@@ -259,7 +260,11 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
             }
             .toList()
             .let { markets ->
-                currentComparator()?.let { comparator -> markets.sortedWith(comparator) } ?: markets
+                currentComparator()?.let { comparator ->
+                    markets.sortedWith(comparator)
+                } ?: markets.sortedBy { market ->
+                    sourceOrder[market.marketId] ?: Int.MAX_VALUE
+                }
             }
 
         updateList(filtered, scrollToTop)
@@ -276,11 +281,11 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
 
     private fun currentComparator(): Comparator<PerpsMarket>? {
         return when (currentSort) {
-            MarketSort.RANK_ASCENDING -> compareByDescending<PerpsMarket> { it.volumeDecimal() }
-            MarketSort.RANK_DESCENDING -> compareBy<PerpsMarket> { it.volumeDecimal() }
-            MarketSort.PRICE_ASCENDING -> compareBy<PerpsMarket> { it.lastDecimal() }
-            MarketSort.PRICE_DESCENDING -> compareByDescending<PerpsMarket> { it.lastDecimal() }
-            MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_ASCENDING -> compareBy<PerpsMarket> { it.changePercent() }
+            MarketSort.RANK_ASCENDING -> compareByDescending { it.volumeDecimal() }
+            MarketSort.RANK_DESCENDING -> compareBy { it.volumeDecimal() }
+            MarketSort.PRICE_ASCENDING -> compareBy { it.lastDecimal() }
+            MarketSort.PRICE_DESCENDING -> compareByDescending { it.lastDecimal() }
+            MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_ASCENDING -> compareBy { it.changePercent() }
             MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_DESCENDING -> compareByDescending<PerpsMarket> { it.changePercent() }
             else -> null
         }?.thenBy { it.tokenSymbol }

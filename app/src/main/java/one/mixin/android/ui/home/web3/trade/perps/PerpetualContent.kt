@@ -104,8 +104,15 @@ fun PerpetualContent(
     val openPositionsCount = openPositions.size
     val openPositionsPreview = openPositions.take(3)
     val marketsPreview = markets.take(3)
-    val stocksMarkets = markets.filter { it.isStocksCategory() }
-    val commoditiesMarkets = markets.filter { it.isCommoditiesCategory() }
+    val sourceOrder = remember(markets) {
+        markets.withIndex().associate { it.value.marketId to it.index }
+    }
+    val stocksMarkets = markets
+        .filter { it.isStocksCategory() }
+        .sortedBy { sourceOrder[it.marketId] ?: Int.MAX_VALUE }
+    val commoditiesMarkets = markets
+        .filter { it.isCommoditiesCategory() }
+        .sortedBy { sourceOrder[it.marketId] ?: Int.MAX_VALUE }
     val stocksMarketsPreview = stocksMarkets.take(3)
     val commoditiesMarketsPreview = commoditiesMarkets.take(3)
     val closedPositionsPreview = closedPositions.take(3)
