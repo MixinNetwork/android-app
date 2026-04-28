@@ -55,6 +55,7 @@ fun LogViewerScreen(
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
+    val share = stringResource(R.string.Share)
 
     LaunchedEffect(Unit) {
         viewModel.loadPreLoginLogs()
@@ -118,7 +119,7 @@ fun LogViewerScreen(
                                             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                                         }
                                         context.startActivity(
-                                            Intent.createChooser(shareIntent, context.getString(R.string.Share))
+                                            Intent.createChooser(shareIntent, share)
                                         )
                                     } catch (e: Exception) {
                                         toast(e.message ?: "Error sharing log file")

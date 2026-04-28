@@ -128,6 +128,8 @@ fun MnemonicPhraseInput(
     var loading by remember { mutableStateOf(false) }
     var errorInfo by remember { mutableStateOf("") }
     val context = LocalContext.current
+    val invalidMnemonicPhrase = stringResource(R.string.invalid_mnemonic_phrase)
+    val privacyWalletUrl = stringResource(R.string.url_privacy_wallet)
     val keyboardController = LocalSoftwareKeyboardController.current
     val coroutineScope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
@@ -284,7 +286,7 @@ fun MnemonicPhraseInput(
                                         textAlign = TextAlign.Start,
                                         color = MixinAppTheme.colors.textPrimary
                                     ) {
-                                        context.openUrl(context.getString(R.string.url_privacy_wallet))
+                                        context.openUrl(privacyWalletUrl)
                                     }
                                 }
                             }
@@ -482,8 +484,7 @@ fun MnemonicPhraseInput(
                                                                 val valid = (!legacy && words.size == 12 && isMnemonicValid(words)) ||
                                                                         (legacy && words.size == 24 && isMnemonicValid(words))
                                                                 if (!valid) {
-                                                                    errorInfo =
-                                                                        context.getString(R.string.invalid_mnemonic_phrase)
+                                                                    errorInfo = invalidMnemonicPhrase
                                                                 } else {
                                                                     onComplete.invoke(words)
                                                                 }
@@ -502,7 +503,7 @@ fun MnemonicPhraseInput(
                                                                             else -> false
                                                                         }
                                                                         if (!valid) {
-                                                                            errorInfo = context.getString(R.string.invalid_mnemonic_phrase)
+                                                                            errorInfo = invalidMnemonicPhrase
                                                                         } else if (state == MnemonicState.Verify) {
                                                                             val selfId = Session.getAccountId()!!
                                                                             val seed = tip?.getOrRecoverTipPriv(context, pin!!)?.getOrThrow()
@@ -605,8 +606,7 @@ fun MnemonicPhraseInput(
                                                             }
 
                                                             else -> {
-                                                                errorInfo =
-                                                                    context.getString(R.string.invalid_mnemonic_phrase)
+                                                                errorInfo = invalidMnemonicPhrase
                                                             }
                                                         }
                                                     }
@@ -730,7 +730,7 @@ fun MnemonicPhraseInput(
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
                                     modifier = Modifier.align(Alignment.Start),
-                                    text = context.getString(R.string.invalid_mnemonic_phrase), fontSize = 14.sp,
+                                    text = invalidMnemonicPhrase, fontSize = 14.sp,
                                     color = MixinAppTheme.colors.tipError,
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
@@ -757,8 +757,7 @@ fun MnemonicPhraseInput(
                                             val valid = (!legacy && words.size == 12 && isMnemonicValid(words)) ||
                                                     (legacy && words.size == 24 && isMnemonicValid(words))
                                             if (!valid) {
-                                                errorInfo =
-                                                    context.getString(R.string.invalid_mnemonic_phrase)
+                                                errorInfo = invalidMnemonicPhrase
                                             } else {
                                                 onComplete.invoke(words)
                                             }
@@ -769,7 +768,7 @@ fun MnemonicPhraseInput(
                                                 runCatching {
                                                     loading = true
                                                     if (mnemonicList != words) {
-                                                        errorInfo = context.getString(R.string.invalid_mnemonic_phrase)
+                                                        errorInfo = invalidMnemonicPhrase
                                                     } else {
                                                         val selfId = Session.getAccountId()!!
                                                         val seed = tip?.getOrRecoverTipPriv(context, pin!!)?.getOrThrow()
