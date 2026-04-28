@@ -194,10 +194,6 @@ android {
         }
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = '1.5.14'
-    }
-
     lint {
         abortOnError = false
     }
@@ -236,7 +232,6 @@ bugsnag {
 ksp {
     arg("room.schemaLocation", "$projectDir/schemas")
     arg("room.incremental", "true")
-    arg("room.expandProjection", "true")
 }
 
 dependencies {
