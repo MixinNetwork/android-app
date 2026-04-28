@@ -109,7 +109,7 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
         }
 
         binding.apply {
-            priceTitle.text = getString(R.string.change_period_hour, 24)
+            priceTitle.text = getString(R.string.change_24h, 24)
             closeIb.setOnClickListener {
                 dismiss()
             }
