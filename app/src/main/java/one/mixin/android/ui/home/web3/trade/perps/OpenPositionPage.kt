@@ -129,6 +129,8 @@ fun OpenPositionPage(
     onCurrentTokenChange: (TokenItem?) -> Unit = {},
 ) {
     val context = LocalContext.current
+    val waitingOtherOrdersError = stringResource(R.string.error_waiting_other_orders)
+    val dataError = stringResource(R.string.Data_error)
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
     val viewModel = hiltViewModel<PerpetualViewModel>()
@@ -221,22 +223,20 @@ fun OpenPositionPage(
     val insufficientBalance = hasInputAmount && inputAmount > tokenBalance
     val showAddAction = insufficientBalance || tokenBalance <= BigDecimal.ZERO
     val canReview = hasInputAmount && !belowMinimumMargin && !aboveMaximumMargin && !insufficientBalance
+    val minimumMarginError = stringResource(
+        R.string.perps_minimum_margin,
+        minimumMargin.stripTrailingZeros().toPlainString()
+    )
+    val maximumMarginError = stringResource(
+        R.string.perps_maximum_margin,
+        maximumMargin.stripTrailingZeros().toPlainString()
+    )
     val marginLimitError = when {
-        belowMinimumMargin -> stringResource(
-            R.string.perps_minimum_margin,
-            minimumMargin.stripTrailingZeros().toPlainString()
-        )
-        aboveMaximumMargin -> stringResource(
-            R.string.perps_maximum_margin,
-            maximumMargin.stripTrailingZeros().toPlainString()
-        )
+        belowMinimumMargin -> minimumMarginError
+        aboveMaximumMargin -> maximumMarginError
         else -> null
     }
     val displayedErrorInfo = errorInfo?.takeIf { it.isNotBlank() } ?: marginLimitError
-    val minMarginErrorString = stringResource(R.string.perps_minimum_margin, minimumMargin.stripTrailingZeros().toPlainString())
-    val maxMarginErrorString = stringResource(R.string.perps_maximum_margin, maximumMargin.stripTrailingZeros().toPlainString())
-    val errorWaitingOtherOrdersString = stringResource(R.string.error_waiting_other_orders)
-    val dataErrorString = stringResource(R.string.Data_error)
     val tokenNetworkName = currentToken?.chainName
         ?.takeIf { it.isNotBlank() }
         ?: currentToken?.chainSymbol
@@ -624,11 +624,11 @@ fun OpenPositionPage(
 
                         if (amount <= BigDecimal.ZERO) return@MixinButton
                         if (minimumMargin > BigDecimal.ZERO && amount < minimumMargin) {
-                            errorInfo = minMarginErrorString
+                            errorInfo = minimumMarginError
                             return@MixinButton
                         }
                         if (maximumMargin > BigDecimal.ZERO && amount > maximumMargin) {
-                            errorInfo = maxMarginErrorString
+                            errorInfo = maximumMarginError
                             return@MixinButton
                         }
                         if (amount > (token.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO)) return@MixinButton
@@ -647,7 +647,7 @@ fun OpenPositionPage(
                             val hasOpeningPosition = viewModel.getOpenPositionsFromDb(walletId)
                                 .any { it.marketId == m.marketId }
                             if (hasOpeningPosition) {
-                                errorInfo = errorWaitingOtherOrdersString
+                                errorInfo = waitingOtherOrdersError
                                 return@launch
                             }
 
@@ -677,7 +677,7 @@ fun OpenPositionPage(
                                     errorInfo = if (errorCode > 0) {
                                         context.getMixinErrorStringByCode(errorCode, errorMessage)
                                     } else {
-                                        errorMessage.ifBlank { dataErrorString }
+                                        errorMessage.ifBlank { dataError }
                                     }
                                 }
                             )

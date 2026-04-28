@@ -51,6 +51,7 @@ fun QuizPage(
     onTopBarLongClick: (() -> Unit)? = null,
 ) {
     val context = LocalContext.current
+    val whatIsPinUrl = stringResource(R.string.What_is_Pin_url)
     var selectedOption by remember { mutableStateOf(-1) }
     var isCorrectAnswer by remember { mutableStateOf(false) }
 
@@ -123,7 +124,7 @@ fun QuizPage(
                         fontWeight = W500,
                         color = MixinAppTheme.colors.textBlue,
                         modifier = Modifier.clickable {
-                            context.openUrl(context.getString(R.string.What_is_Pin_url))
+                            context.openUrl(whatIsPinUrl)
                         }
                     )
                     Spacer(modifier = Modifier.height(20.dp))
