@@ -206,7 +206,7 @@ fun PerpetualContent(
                         color = if (totalPnl >= 0) risingColor else fallingColor,
                     )
                     Text(
-                        text = "(${formatPerpsSignedPercent(totalPnlPercent)})",
+                        text = "(${formatPerpsSignedPercent(totalPnlPercent, withSign = false)})",
                         fontSize = 14.sp,
                         color = if (totalPnl >= 0) risingColor else fallingColor,
                     )

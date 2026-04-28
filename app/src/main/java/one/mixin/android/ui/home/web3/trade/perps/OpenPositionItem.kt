@@ -179,7 +179,7 @@ fun OpenPositionItem(
                     }
 
                     BasicText(
-                        text = "${formatPerpsSignedFiatDecimal(unrealizedPnl.multiply(fiatRate), fiatSymbol)} (${formatPerpsSignedPercent(roe)})",
+                        text = "${formatPerpsSignedFiatDecimal(unrealizedPnl.multiply(fiatRate), fiatSymbol)} (${formatPerpsSignedPercent(roe, withSign = false)})",
                         modifier = Modifier.weight(0.85f),
                         style = TextStyle(
                             fontSize = 14.sp,

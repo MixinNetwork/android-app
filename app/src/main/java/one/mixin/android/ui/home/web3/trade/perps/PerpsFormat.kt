@@ -63,12 +63,21 @@ fun calculateClosedRoe(
         .multiply(direction)
 }
 
-fun formatPerpsSignedPercent(value: BigDecimal): String {
-    return "${formatPerpsPercentDecimal(value.abs())}%"
+fun formatPerpsSignedPercent(value: BigDecimal, withSign: Boolean = true): String {
+    val percentText = "${formatPerpsPercentDecimal(value)}%"
+    if (!withSign) {
+        return percentText
+    }
+
+    return when {
+        value > BigDecimal.ZERO -> "+$percentText"
+        value < BigDecimal.ZERO -> "-$percentText"
+        else -> percentText
+    }
 }
 
-fun formatPerpsSignedPercent(value: Double): String {
-    return formatPerpsSignedPercent(BigDecimal.valueOf(value))
+fun formatPerpsSignedPercent(value: Double, withSign: Boolean = true): String {
+    return formatPerpsSignedPercent(BigDecimal.valueOf(value), withSign)
 }
 
 private fun formatPerpsPercentDecimal(value: BigDecimal): String {
