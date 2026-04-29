@@ -86,6 +86,7 @@ fun PerpsMarketDetailPage(
     tokenSymbol: String,
     initialMarket: PerpsMarket? = null,
     onBack: () -> Unit,
+    onSharePosition: (PerpsPositionItem) -> Unit,
 ) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<PerpetualViewModel>()
@@ -222,7 +223,7 @@ fun PerpsMarketDetailPage(
                         position = currentPosition,
                         viewModel = viewModel,
                         onShare = {
-                            PerpsPositionShareActivity.show(context, currentPosition)
+                            onSharePosition(currentPosition)
                         },
                     )
                     Spacer(modifier = Modifier.height(16.dp))

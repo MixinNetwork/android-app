@@ -105,6 +105,9 @@ object Constants {
         const val PREF_MARKET_ORDER = "pref_market_order"
         const val PREF_INSCRIPTION_ORDER = "pref_inscription_order"
         const val PREF_ROUTE_BOT_PK = "pref_route_bot_pk"
+
+        const val PREF_REFERRAL_BOT_PK = "pref_referral_bot_pk"
+
         const val PREF_GLOBAL_MARKET = "pref_global_market"
         const val PREF_MARKET_TOP_PERCENTAGE = "pref_market_top_percentage"
         const val PREF_QUOTE_COLOR = "pref_quote_color"
@@ -505,10 +508,13 @@ object Constants {
         val SUPPORTED_CARD_SCHEME = listOf(CardScheme.VISA, CardScheme.MASTERCARD, CardScheme.AMERICAN_EXPRESS, CardScheme.JCB)
 
         const val ROUTE_BOT_USER_ID = "61cb8dd4-16b1-4744-ba0c-7b2d2e52fc59"
+        const val REFERRAL_BOT_USER_ID = "b35af74d-cca6-400c-a62b-5a7e659de91e"
 
         const val SAFE_BOT_USER_ID = "b5418449-9ed6-4979-a690-82690949c542"
 
         const val ROUTE_BOT_URL = "https://api.route.mixin.one"
+
+        const val REFERRAL_API_URL = "https://rewards-api.mixin.space"
 
         const val GOOGLE_PAY = "googlepay"
 
