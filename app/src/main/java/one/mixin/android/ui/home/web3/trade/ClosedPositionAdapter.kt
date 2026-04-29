@@ -50,14 +50,15 @@ class ClosedPositionAdapter(
         fun bind(position: PerpsPositionHistoryItem, positionInList: Int, listSize: Int) {
             binding.apply {
                 val context = binding.root.context
-                root.setBackgroundResource(
-                    when {
-                        listSize <= 1 -> R.drawable.bg_card
-                        positionInList == 0 -> R.drawable.bg_card_top
-                        positionInList == listSize - 1 -> R.drawable.bg_card_bottom
-                        else -> R.drawable.bg_card_middle
+                val params = root.layoutParams as? RecyclerView.LayoutParams
+                if (params != null) {
+                    params.bottomMargin = if (positionInList < listSize - 1) {
+                        (12 * root.context.resources.displayMetrics.density).toInt()
+                    } else {
+                        0
                     }
-                )
+                    root.layoutParams = params
+                }
 
                 root.setOnClickListener {
                     onItemClick?.invoke(position)
