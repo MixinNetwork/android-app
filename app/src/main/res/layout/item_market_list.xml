@@ -35,7 +35,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="6dp"
-        android:background="@drawable/bg_round_window_24dp"
+        android:background="@drawable/bg_round_4_solid_light_gray"
         android:paddingStart="4dp"
         android:paddingTop="2dp"
         android:paddingEnd="4dp"

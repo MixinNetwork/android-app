@@ -2306,7 +2306,6 @@
     <string name="Total_Position_Value">仓位总价值</string>
     <string name="Margin">保证金</string>
     <string name="Perpetual_Side_Symbol_Title">%1$s %2$s</string>
-    <string name="Perpetual_Leverage_Format">%1$d倍</string>
     <string name="positions_count">仓位(%d)</string>
     <string name="perps_positions">持仓</string>
     <string name="perps_position">持仓</string>
