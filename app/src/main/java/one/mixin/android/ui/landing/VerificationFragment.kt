@@ -384,8 +384,8 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                 requireArguments().getString(ARGS_PHONE_NUM),
                 when {
                     from == FROM_DELETE_ACCOUNT -> VerificationPurpose.DEACTIVATED.name
-                    isPhoneModification() -> VerificationPurpose.PHONE.name
                     from == FROM_VERIFY_MOBILE_REMINDER -> VerificationPurpose.NONE.name
+                    isPhoneModification() -> VerificationPurpose.PHONE.name
                     else -> VerificationPurpose.SESSION.name
                 },
             )
