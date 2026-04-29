@@ -1052,7 +1052,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         }
         val replacementTx = BtcTransaction()
         for (input in originalInputs) {
-            val outPoint = TransactionOutPoint(input.outpoint.index, input.outpoint.hash)
+            val outPoint = TransactionOutPoint(input.outpoint.index(), input.outpoint.hash())
             val txInput = TransactionInput(replacementTx, byteArrayOf(), outPoint)
             txInput.withSequence(BTC_RBF_SEQUENCE)
             replacementTx.addInput(txInput)

@@ -129,7 +129,7 @@ class MarketShareActivity : BaseActivity() {
             }
             container.setOnClickListener {
                 if (isLoading) return@setOnClickListener
-                onBackPressed()
+                onBackPressedDispatcher.onBackPressed()
             }
         }
         syncActionContainerVisibility()

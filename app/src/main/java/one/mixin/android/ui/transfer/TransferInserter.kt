@@ -543,13 +543,14 @@ class TransferInserter(val db: MixinDatabase) {
                 stmt.bindString(15, asset.reserve)
             }
             val depositEntries = asset.depositEntries
-            if (depositEntries == null) {
+            val depositEntriesString = depositEntryListConverter.converterDate(depositEntries)
+            if (depositEntriesString == null) {
                 stmt.bindNull(16)
             } else {
-                stmt.bindString(16, depositEntryListConverter.converterDate(depositEntries))
+                stmt.bindString(16, depositEntriesString)
             }
             val withdrawalMemoPossibility = asset.withdrawalMemoPossibility
-            if (depositEntries == null) {
+            if (withdrawalMemoPossibility == null) {
                 stmt.bindNull(17)
             } else {
                 val withdrawalMemoPossibilityString = withdrawalMemoPossibilityConverter.converterDate(withdrawalMemoPossibility)
@@ -696,7 +697,7 @@ class TransferInserter(val db: MixinDatabase) {
             if (safeSnapshot.confirmations == null) {
                 stmt.bindNull(11)
             } else {
-                stmt.bindLong(11, safeSnapshot.confirmations.toLong())
+                stmt.bindLong(11, safeSnapshot.confirmations)
             }
             if (safeSnapshot.openingBalance == null) {
                 stmt.bindNull(12)

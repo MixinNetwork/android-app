@@ -758,21 +758,17 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                         } else if (address == null) {
                             showError(R.string.error_address_not_sync)
                         } else {
-                            if (asset != null) {
-                                TransferBottomSheetDialogFragment.newInstance(
-                                    AddressManageBiometricItem(
-                                        asset = asset,
-                                        addressId = addressId,
-                                        label = address.label,
-                                        destination = address.destination,
-                                        tag = address.tag,
-                                        type = TransferBottomSheetDialogFragment.DELETE,
-                                    ),
-                                ).showNow(this@LinkBottomSheetDialogFragment.parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
-                                dismiss()
-                            } else {
-                                showError()
-                            }
+                            TransferBottomSheetDialogFragment.newInstance(
+                                AddressManageBiometricItem(
+                                    asset = asset,
+                                    addressId = addressId,
+                                    label = address.label,
+                                    destination = address.destination,
+                                    tag = address.tag,
+                                    type = TransferBottomSheetDialogFragment.DELETE,
+                                ),
+                            ).showNow(this@LinkBottomSheetDialogFragment.parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
+                            dismiss()
                         }
                     }
                 } else {

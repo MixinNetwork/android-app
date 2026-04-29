@@ -149,11 +149,11 @@ class PerpsPositionShareActivity : BaseActivity() {
             }
             close.setOnClickListener {
                 if (isLoading) return@setOnClickListener
-                onBackPressed()
+                onBackPressedDispatcher.onBackPressed()
             }
             container.setOnClickListener {
                 if (isLoading) return@setOnClickListener
-                onBackPressed()
+                onBackPressedDispatcher.onBackPressed()
             }
         }
 

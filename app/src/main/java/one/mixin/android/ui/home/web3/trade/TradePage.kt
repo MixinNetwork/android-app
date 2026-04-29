@@ -191,10 +191,11 @@ fun TradePage(
 
     var perpetualTabIndex: Int? = null
     if (walletId == null) {
-        perpetualTabIndex = tabs.size
+        val currentPerpetualTabIndex = tabs.size
+        perpetualTabIndex = currentPerpetualTabIndex
         tabs += TabItem(title = stringResource(R.string.Perpetual)) {
             PerpetualContent(
-                onShowTradingGuide = { onShowTradingGuide(perpetualTabIndex ?: 0) },
+                onShowTradingGuide = { onShowTradingGuide(currentPerpetualTabIndex) },
                 onShowMarketList = onShowMarketList,
                 onShowAllMarkets = onShowAllMarkets,
                 onShowAllOpenPositions = onShowAllOpenPositions,

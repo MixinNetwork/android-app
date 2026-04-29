@@ -71,7 +71,7 @@ abstract class PerpsDatabase : RoomDatabase() {
                                 db.execSQL("PRAGMA synchronous = NORMAL")
                             }
                         },
-                    ).fallbackToDestructiveMigration()
+                    ).fallbackToDestructiveMigration(dropAllTables = true)
                         .enableMultiInstanceInvalidation()
                         .setQueryExecutor(
                             Executors.newFixedThreadPool(

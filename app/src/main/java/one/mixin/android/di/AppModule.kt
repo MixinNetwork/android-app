@@ -6,7 +6,7 @@ import android.content.ContentResolver
 import android.content.Context
 import android.content.SharedPreferences
 import com.birbit.android.jobqueue.config.Configuration
-import com.birbit.android.jobqueue.scheduling.FrameworkJobSchedulerService
+import com.birbit.android.jobqueue.scheduling.Scheduler
 import com.google.android.gms.net.CronetProviderInstaller
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
@@ -29,7 +29,6 @@ import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.ResponseBody.Companion.toResponseBody
 import okhttp3.logging.HttpLoggingInterceptor
-import okio.Timeout
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.ALLOW_INTERVAL
@@ -88,6 +87,7 @@ import one.mixin.android.extension.toUri
 import one.mixin.android.job.BaseJob
 import one.mixin.android.job.JobLogger
 import one.mixin.android.job.JobNetworkUtil
+import one.mixin.android.job.JobQueueSchedulerFactory
 import one.mixin.android.job.MixinJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.MyJobService
@@ -176,7 +176,7 @@ object AppModule {
             reportException(e)
             null
         } catch (e: Exception) {
-            if (e is TimeoutException || e is Timeout) {
+            if (e is TimeoutException) {
                 Timber.e(e)
             } else {
                 reportException(e)
@@ -436,10 +436,12 @@ object AppModule {
                 }
                 .customLogger(JobLogger())
                 .networkUtil(jobNetworkUtil)
-        builder.scheduler(
-            FrameworkJobSchedulerService
-                .createSchedulerFor(app.applicationContext, MyJobService::class.java),
-        )
+        val scheduler: Scheduler =
+            JobQueueSchedulerFactory.create(
+                app.applicationContext,
+                MyJobService::class.java,
+            )
+        builder.scheduler(scheduler)
         return MixinJobManager(builder.build())
     }
 
