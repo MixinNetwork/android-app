@@ -59,8 +59,6 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
         const val CATEGORY_STOCKS = "stocks"
         const val CATEGORY_COMMODITIES = "commodities"
 
-        fun newInstance() = PerpsMarketListBottomSheetDialogFragment()
-
         fun newInstance(isLong: Boolean) = PerpsMarketListBottomSheetDialogFragment().withArgs {
             putBoolean(ARGS_IS_LONG, isLong)
         }
