@@ -1798,6 +1798,8 @@
     <string name="watchlist_add_desc">%1$s is now on your watchlist</string>
     <string name="Stats">Stats</string>
     <string name="share_desc">Visit mixin.one/mm or scan the QR code to install.</string>
+    <string name="referral_share_desc">Scan to install Mixin, use this referral code for %1$s rebate.</string>
+    <string name="referral_share_desc_zero">Scan to install Mixin</string>
     <string name="current_version">Version: %1$s</string>
     <string name="quote_color">Quote Color</string>
     <string name="red_up_green_down">Red Up / Green Down</string>

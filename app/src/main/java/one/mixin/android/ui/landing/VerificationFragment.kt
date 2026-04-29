@@ -199,14 +199,14 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
         }
     }
 
-    private fun isPhoneModification() = pin != null
+    private fun isChangePhoneFlow() = from == FROM_CHANGE_PHONE_ACCOUNT
 
     @SuppressLint("InflateParams")
     private fun showBottom() {
         val builder = BottomSheet.Builder(requireActivity())
         val view = View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_verification_bottom, null)
         val viewBinding = ViewVerificationBottomBinding.bind(view)
-        viewBinding.lostTv.isVisible = hasEmergencyContact && !isPhoneModification()
+        viewBinding.lostTv.isVisible = hasEmergencyContact && !isChangePhoneFlow()
         builder.setCustomView(view)
         val bottomSheet = builder.create()
         viewBinding.cantTv.setOnClickListener {
@@ -384,8 +384,8 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                 requireArguments().getString(ARGS_PHONE_NUM),
                 when {
                     from == FROM_DELETE_ACCOUNT -> VerificationPurpose.DEACTIVATED.name
-                    isPhoneModification() -> VerificationPurpose.PHONE.name
                     from == FROM_VERIFY_MOBILE_REMINDER -> VerificationPurpose.NONE.name
+                    isChangePhoneFlow() -> VerificationPurpose.PHONE.name
                     else -> VerificationPurpose.SESSION.name
                 },
             )

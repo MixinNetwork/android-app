@@ -9,18 +9,24 @@ import android.graphics.Shader
 import android.media.MediaScannerConnection
 import android.os.Bundle
 import android.view.View
-import android.view.ViewGroup.MarginLayoutParams
+import android.widget.FrameLayout
 import androidx.core.content.FileProvider
 import androidx.core.graphics.drawable.toDrawable
 import androidx.core.view.drawToBitmap
+import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.api.referral.buildReferralCopyUrl
+import one.mixin.android.api.referral.ReferralShareInfo
+import one.mixin.android.api.referral.buildReferralShareUrl
 import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.databinding.ActivityPerpsPositionShareBinding
@@ -33,11 +39,15 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getPublicDownloadPath
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.priceFormat
-import one.mixin.android.extension.round
 import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.common.applyReferralTitleTypeface
+import one.mixin.android.ui.common.buildReferralDescription
+import one.mixin.android.ui.common.isZeroPercent
+import one.mixin.android.ui.common.roundQrBackground
+import one.mixin.android.ui.wallet.LoadingProgressDialogFragment
 import one.mixin.android.ui.web.getScreenshot
 import one.mixin.android.ui.web.refreshScreenshot
 import one.mixin.android.vo.Fiats
@@ -45,6 +55,9 @@ import java.io.File
 import java.io.FileOutputStream
 import java.math.BigDecimal
 import java.math.RoundingMode
+import kotlinx.coroutines.Dispatchers
+import kotlin.math.min
+import one.mixin.android.repository.ReferralRepository
 
 @AndroidEntryPoint
 class PerpsPositionShareActivity : BaseActivity() {
@@ -74,6 +87,9 @@ class PerpsPositionShareActivity : BaseActivity() {
     override fun getDefaultThemeId(): Int = R.style.AppTheme_Blur
 
     private lateinit var binding: ActivityPerpsPositionShareBinding
+    private val loadingDialog by lazy { LoadingProgressDialogFragment() }
+    @Inject
+    lateinit var referralRepository: ReferralRepository
 
     private val position: PerpsPositionItem? by lazy {
         intent.extras?.getParcelableCompat(ARGS_POSITION, PerpsPositionItem::class.java)
@@ -86,6 +102,12 @@ class PerpsPositionShareActivity : BaseActivity() {
     private val quoteColorReversed: Boolean by lazy {
         defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     }
+
+    private var referralShareInfo: ReferralShareInfo? = null
+
+    private val referralCode: String?
+        get() = referralShareInfo?.code?.takeIf { it.isNotBlank() }
+    private var isLoading = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         skipSystemUi = true
@@ -102,38 +124,65 @@ class PerpsPositionShareActivity : BaseActivity() {
             })
         }
 
-        binding.content.updateLayoutParams<MarginLayoutParams> {
+        binding.content.updateLayoutParams<FrameLayout.LayoutParams> {
+            width = min(380.dp, (resources.displayMetrics.widthPixels - 80.dp).coerceAtLeast(0))
             topMargin = 80.dp
         }
-        binding.iconFl.round(6.dp)
-        binding.qr.post { binding.qr.round(4.dp) }
-
         val hasContent = bindContent()
         if (!hasContent) {
             finish()
             return
         }
-        bindFooter()
 
         binding.apply {
             share.setOnClickListener {
+                if (isLoading) return@setOnClickListener
                 onShare()
             }
             copy.setOnClickListener {
+                if (isLoading) return@setOnClickListener
                 onCopy()
             }
             save.setOnClickListener {
+                if (isLoading) return@setOnClickListener
                 onSave()
             }
             close.setOnClickListener {
+                if (isLoading) return@setOnClickListener
                 onBackPressed()
             }
             container.setOnClickListener {
+                if (isLoading) return@setOnClickListener
                 onBackPressed()
             }
         }
 
-        applyFadeInAnimation(binding.root)
+        lifecycleScope.launch {
+            showLoading(true)
+            try {
+                referralShareInfo = withContext(Dispatchers.IO) {
+                    referralRepository.fetchDefaultReferralShareInfoOrNull(logLabel = "perps position share")
+                }
+                bindFooter()
+                applyFadeInAnimation(binding.root)
+            } finally {
+                showLoading(false)
+            }
+        }
+    }
+
+    private fun showLoading(show: Boolean) {
+        isLoading = show
+        binding.content.isVisible = !show
+        if (show) {
+            if (!loadingDialog.isAdded) {
+                runCatching {
+                    loadingDialog.show(supportFragmentManager, LoadingProgressDialogFragment.TAG)
+                }
+            }
+        } else if (loadingDialog.isAdded) {
+            loadingDialog.dismissAllowingStateLoss()
+        }
     }
 
     private fun bindContent(): Boolean {
@@ -211,11 +260,31 @@ class PerpsPositionShareActivity : BaseActivity() {
     }
 
     private fun bindFooter() {
-        Session.getAccount()?.identityNumber.let {
-            val qrCode = SHARE_QR_URL.generateQRCode(72.dp, 8.dp).first
-            binding.qr.setImageBitmap(qrCode)
+        val info = referralShareInfo
+        if (info != null) {
+            binding.title.text = info.code
+            binding.title.applyReferralTitleTypeface()
+            val rebatePercent = info.rebatePercent
+            if (rebatePercent.isNullOrBlank()) {
+                binding.shareDescTv.isVisible = false
+                binding.shareDescTv.minLines = 1
+            } else {
+                binding.shareDescTv.isVisible = true
+                binding.shareDescTv.minLines = if (rebatePercent.isZeroPercent()) 2 else 1
+                binding.shareDescTv.text = buildReferralDescription(this, rebatePercent)
+            }
+        } else {
+            binding.shareDescTv.isVisible = true
+            binding.shareDescTv.minLines = 1
+            binding.title.text = getString(R.string.mixin_messenger)
+            binding.shareDescTv.text = getString(R.string.share_desc)
         }
+        val qrPadding = 8.dp
+        val qrCode = currentQrUrl().generateQRCode(72.dp, qrPadding).first.roundQrBackground(qrPadding, 6.dp.toFloat())
+        binding.qr.setImageBitmap(qrCode)
     }
+
+    private fun currentQrUrl(): String = referralCode?.let(::buildReferralShareUrl) ?: SHARE_QR_URL
 
     private fun applyFadeInAnimation(view: View) {
         view.alpha = 0f
@@ -227,7 +296,7 @@ class PerpsPositionShareActivity : BaseActivity() {
 
     private val onShare: () -> Unit = {
         lifecycleScope.launch {
-            val bitmap = binding.topCard.drawToBitmap()
+            val bitmap = createShareBitmap()
             val file = File(cacheDir, "${buildFileName()}_position.png")
             saveBitmapToFile(file, bitmap)
             val uri = FileProvider.getUriForFile(this@PerpsPositionShareActivity, BuildConfig.APPLICATION_ID + ".provider", file)
@@ -241,7 +310,11 @@ class PerpsPositionShareActivity : BaseActivity() {
     }
 
     private val onCopy: () -> Unit = {
-        val link = Session.getAccount()?.identityNumber?.let { "$SHARE_QR_URL&referral=$it" } ?: SHARE_QR_URL
+        val link = buildReferralCopyUrl(
+            referralCode = referralCode,
+            defaultUrl = SHARE_QR_URL,
+            legacyReferralUrl = Session.getAccount()?.identityNumber?.let { "$SHARE_QR_URL&referral=$it" },
+        )
         getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, link))
         finish()
         toast(R.string.copied_to_clipboard)
@@ -250,7 +323,7 @@ class PerpsPositionShareActivity : BaseActivity() {
     private val onSave: () -> Unit = {
         lifecycleScope.launch {
             delay(100)
-            val bitmap = binding.topCard.drawToBitmap()
+            val bitmap = createShareBitmap()
             val dir = getPublicDownloadPath()
             dir.mkdirs()
             val file = File(dir, "${buildFileName()}_position.png")
@@ -301,6 +374,16 @@ class PerpsPositionShareActivity : BaseActivity() {
 
     private fun String?.toBigDecimalSafely(): BigDecimal? {
         return this?.toBigDecimalOrNull()
+    }
+
+    private fun createShareBitmap(): Bitmap {
+        val closeVisibility = binding.close.visibility
+        binding.close.visibility = View.INVISIBLE
+        return try {
+            binding.shareCardContainer.drawToBitmap()
+        } finally {
+            binding.close.visibility = closeVisibility
+        }
     }
 
     private fun saveBitmapToFile(file: File, bitmap: Bitmap) {

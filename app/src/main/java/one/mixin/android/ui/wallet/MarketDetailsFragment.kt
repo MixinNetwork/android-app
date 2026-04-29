@@ -48,9 +48,9 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.TokenItem
-import timber.log.Timber
 import java.math.BigDecimal
 import javax.inject.Inject
+import timber.log.Timber
 
 @AndroidEntryPoint
 class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
@@ -96,8 +96,14 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     rightExtraIb.setImageResource(if (marketItem.isFavored == true) R.drawable.ic_title_favorites_checked else R.drawable.ic_title_favorites)
                 }
                 rightIb.setOnClickListener {
-                    if (!isLoading || marketItem.coinId.isBlank()) MarketShareActivity.show(requireContext(), marketLl.drawToBitmap(), marketItem.symbol, marketItem.coinId)
-                    else toast(R.string.Please_wait_a_bit)
+                    if (!isLoading || marketItem.coinId.isBlank()) {
+                        MarketShareActivity.show(
+                            requireContext(),
+                            captureMarketShareBitmap(),
+                            marketItem.symbol,
+                            marketItem.coinId,
+                        )
+                    } else toast(R.string.Please_wait_a_bit)
                 }
             }
             swapAlert.swap.setOnClickListener {
@@ -511,4 +517,14 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
 
     private var currentPrice: String? = null
     private var currentRise: String? = null
+
+    private fun captureMarketShareBitmap() = with(binding.swapAlert) {
+        val originalInvisible = isInvisible
+        isInvisible = true
+        try {
+            binding.marketLl.drawToBitmap()
+        } finally {
+            isInvisible = originalInvisible
+        }
+    }
 }

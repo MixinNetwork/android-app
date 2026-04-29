@@ -18,6 +18,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
+import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.perps.PerpsMarketDao
 import one.mixin.android.extension.toast
@@ -159,7 +160,8 @@ class PerpsActivity : BaseActivity() {
                         displaySymbol = displaySymbol,
                         tokenSymbol = tokenSymbol,
                         initialMarket = market,
-                        onBack = { finish() }
+                        onBack = { finish() },
+                        onSharePosition = ::showSharePosition,
                     )
                 }
             }
@@ -202,5 +204,9 @@ class PerpsActivity : BaseActivity() {
                 }
             }
         }
+    }
+
+    private fun showSharePosition(position: PerpsPositionItem) {
+        PerpsPositionShareActivity.show(this@PerpsActivity, position)
     }
 }

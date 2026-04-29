@@ -195,5 +195,5 @@ private fun String.toFiatValue(
     if (token == null || isUnlimited) return null
     val amountValue = toBigDecimalOrNull() ?: return null
     val fiatValue = amountValue.abs().multiply(token.priceFiat())
-    return "≈ ${Fiats.getSymbol()}${fiatValue.numberFormat2()}"
+    return "${Fiats.getSymbol()}${fiatValue.numberFormat2()}"
 }

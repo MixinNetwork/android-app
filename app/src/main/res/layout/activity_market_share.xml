@@ -2,8 +2,8 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/container"
     android:layout_width="match_parent"
-    android:orientation="vertical"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <View
         android:id="@+id/background"
@@ -15,120 +15,151 @@
         android:id="@+id/content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:layout_marginStart="40dp"
         android:layout_marginEnd="40dp"
         android:layout_marginBottom="10dp"
-        android:layout_gravity="center"
         android:orientation="vertical">
 
-        <FrameLayout
+        <LinearLayout
+            android:id="@+id/ll_market_share"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_round_window_6dp"
+            android:orientation="vertical">
 
-            <LinearLayout
-                android:id="@+id/ll_market_share"
-                android:orientation="vertical"
-                android:layout_width="wrap_content"
+            <RelativeLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/bg_round_window_6dp">
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp">
 
-                <ImageView
-                    android:id="@+id/image"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:scaleType="centerCrop"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginEnd="16dp"
-                    android:contentDescription="@string/Market" />
-
-                <RelativeLayout
-                    android:layout_width="match_parent"
+                <LinearLayout
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/bg_share_market_gradient"
-                    android:paddingEnd="20dp"
-                    android:paddingStart="20dp"
-                    android:paddingTop="8dp"
-                    android:paddingBottom="8dp">
+                    android:gravity="center_vertical"
+                    android:layout_alignBottom="@id/close"
+                    android:orientation="horizontal">
 
-                    <LinearLayout
+                    <ImageView
+                        android:id="@+id/logo"
+                        android:layout_width="18dp"
+                        android:layout_height="14dp"
+                        android:contentDescription="@string/mixin_messenger"
+                        android:src="@drawable/ic_mixin_blue" />
+
+                    <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:layout_centerVertical="true"
-                        android:layout_toStartOf="@id/icon_fl">
+                        android:layout_marginStart="6dp"
+                        android:text="@string/mixin_messenger"
+                        android:textColor="?attr/text_primary"
+                        android:textFontWeight="600"
+                        android:textSize="14sp" />
+                </LinearLayout>
 
-                        <TextView
-                            android:id="@+id/title"
-                            android:text="@string/mixin_messenger"
-                            android:textSize="18sp"
-                            android:textFontWeight="500"
-                            android:textColor="@color/white"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content" />
-
-                        <TextView
-                            android:text="@string/share_desc"
-                            android:textSize="12sp"
-                            android:textColor="@color/white"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginEnd="24dp"
-                            android:layout_marginTop="4dp" />
-
-                    </LinearLayout>
-                    <FrameLayout
-                        android:id="@+id/icon_fl"
-                        android:layout_width="78dp"
-                        android:layout_height="78dp"
-                        android:layout_centerVertical="true"
-                        android:layout_alignParentEnd="true">
-
-                        <ImageView
-                            android:id="@+id/qr"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:layout_gravity="center" />
-
-                        <ImageView
-                            android:src="@drawable/ic_mixin_logo"
-                            android:layout_width="16dp"
-                            android:layout_height="16dp"
-                            android:layout_gravity="center" />
-                    </FrameLayout>
-
-                </RelativeLayout>
-            </LinearLayout>
+                <ImageView
+                    android:id="@+id/close"
+                    android:layout_centerVertical="true"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_float_close" />
+            </RelativeLayout>
 
             <ImageView
-                android:id="@+id/close"
-                android:layout_marginTop="10dp"
-                android:layout_marginEnd="10dp"
-                android:layout_width="wrap_content"
+                android:id="@+id/image"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_float_close"
-                android:layout_gravity="end|top" />
-        </FrameLayout>
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/Market"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:scaleType="fitCenter" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_share_market_gradient"
+                android:paddingStart="20dp"
+                android:paddingTop="8dp"
+                android:paddingEnd="20dp"
+                android:paddingBottom="8dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
+                    android:layout_toStartOf="@id/icon_fl"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/mixin_messenger"
+                        android:textColor="@color/white"
+                        android:textFontWeight="500"
+                        android:textSize="18sp" />
+
+                    <TextView
+                        android:id="@+id/share_desc"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginEnd="24dp"
+                        android:text="@string/share_desc"
+                        android:textColor="@color/white"
+                        android:textSize="12sp" />
+
+                </LinearLayout>
+
+                <FrameLayout
+                    android:id="@+id/icon_fl"
+                    android:layout_width="78dp"
+                    android:layout_height="78dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true">
+
+                    <ImageView
+                        android:id="@+id/qr"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center" />
+
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_mixin_logo" />
+                </FrameLayout>
+
+            </RelativeLayout>
+        </LinearLayout>
 
         <LinearLayout
             android:id="@+id/bottom"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:baselineAligned="false"
-            android:orientation="horizontal"
             android:layout_marginTop="10dp"
             android:background="@drawable/bg_round_white_6dp"
+            android:baselineAligned="false"
+            android:gravity="center"
+            android:orientation="horizontal"
             android:paddingTop="8dp"
-            android:paddingBottom="8dp"
-            android:gravity="center">
+            android:paddingBottom="8dp">
 
             <LinearLayout
                 android:id="@+id/share"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:orientation="vertical"
-                android:gravity="center">
+                android:gravity="center"
+                android:orientation="vertical">
 
                 <ImageView
                     android:layout_width="wrap_content"
@@ -143,8 +174,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/Share"
-                    android:textSize="12sp"
-                    android:textColor="?attr/text_primary" />
+                    android:textColor="?attr/text_primary"
+                    android:textSize="12sp" />
             </LinearLayout>
 
             <LinearLayout
@@ -152,8 +183,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:orientation="vertical"
-                android:gravity="center">
+                android:gravity="center"
+                android:orientation="vertical">
 
                 <ImageView
                     android:layout_width="wrap_content"
@@ -168,8 +199,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/Link"
-                    android:textSize="12sp"
-                    android:textColor="?attr/text_primary" />
+                    android:textColor="?attr/text_primary"
+                    android:textSize="12sp" />
             </LinearLayout>
 
             <LinearLayout
@@ -177,8 +208,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:orientation="vertical"
-                android:gravity="center">
+                android:gravity="center"
+                android:orientation="vertical">
 
                 <ImageView
                     android:layout_width="wrap_content"
@@ -193,8 +224,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/Save"
-                    android:textSize="12sp"
-                    android:textColor="?attr/text_primary" />
+                    android:textColor="?attr/text_primary"
+                    android:textSize="12sp" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>

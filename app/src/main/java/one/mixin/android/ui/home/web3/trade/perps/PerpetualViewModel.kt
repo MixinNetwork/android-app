@@ -49,7 +49,6 @@ class PerpetualViewModel @Inject constructor(
     private val perpsMarketDao: PerpsMarketDao,
     private val jobManager: MixinJobManager
 ) : ViewModel() {
-
     fun refreshPositions(walletId: String) {
         jobManager.addJobInBackground(RefreshPerpsPositionsJob(walletId))
     }

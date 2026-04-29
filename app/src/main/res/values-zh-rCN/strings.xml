@@ -1752,6 +1752,8 @@
     <string name="watchlist_add_desc">%1$s 已经加入自选</string>
     <string name="Stats">统计</string>
     <string name="share_desc">访问 mixin.one/mm 或扫描二维码进行安装。</string>
+    <string name="referral_share_desc">扫描安装 Mixin，使用此邀请码可享 %1$s 返佣。</string>
+    <string name="referral_share_desc_zero">扫描安装 Mixin</string>
     <string name="current_version">当前版本：%1$s</string>
     <string name="quote_color">涨跌颜色</string>
     <string name="red_up_green_down">红涨绿跌</string>
@@ -2274,7 +2276,7 @@
     <string name="Select_Token">选择代币</string>
     <string name="Select_Leverage">选择杠杆</string>
     <string name="position_size">仓位规模</string>
-    <string name="Liquidation_Price">清算价格</string>
+    <string name="Liquidation_Price">强平价格</string>
     <string name="Price_Change_Profit">价格%1$s %2$s%% → 盈利 %3$s%4$s%% (%5$s%6$s)</string>
     <string name="Long">做多</string>
     <string name="Short">做空</string>
@@ -2302,7 +2304,7 @@
     <string name="Opened_Short">持有空单</string>
     <string name="Closed_Long">历史多单</string>
     <string name="Closed_Short">历史空单</string>
-    <string name="Estimated_Liquidation_Price">预估清算价格</string>
+    <string name="Estimated_Liquidation_Price">预估强平价格</string>
     <string name="Total_Position_Value">仓位总价值</string>
     <string name="Margin">保证金</string>
     <string name="Perpetual_Side_Symbol_Title">%1$s %2$s</string>
