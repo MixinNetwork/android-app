@@ -43,8 +43,9 @@
         android:textColor="?attr/text_assist"
         android:textSize="12sp"
         android:includeFontPadding="false"
-        app:layout_constraintBaseline_toBaselineOf="@id/symbol_tv"
         app:layout_constraintStart_toEndOf="@id/symbol_tv"
+        app:layout_constraintTop_toTopOf="@id/symbol_tv"
+        app:layout_constraintBottom_toBottomOf="@id/symbol_tv"
         tools:text="100x" />
 
     <TextView
