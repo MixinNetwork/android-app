@@ -21,6 +21,7 @@ import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.api.response.perps.PerpsPosition
 import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
+import one.mixin.android.api.response.perps.withDefaults
 import one.mixin.android.api.service.RouteService
 import one.mixin.android.db.TokenDao
 import one.mixin.android.db.perps.PerpsMarketDao
@@ -102,9 +103,10 @@ class PerpetualViewModel @Inject constructor(
                 val data = response.data
                 if (response.isSuccess && data != null) {
                     Timber.d("Perps markets loaded: ${data.size} markets")
+                    val normalizedMarkets = data.map(PerpsMarket::withDefaults)
 
                     val orderedMarkets = withContext(Dispatchers.IO) {
-                        perpsMarketDao.upsertList(data)
+                        perpsMarketDao.upsertList(normalizedMarkets)
                         perpsMarketDao.getAllMarkets()
                     }
 
@@ -145,10 +147,11 @@ class PerpetualViewModel @Inject constructor(
 
                 val data = response.data
                 if (response.isSuccess && data != null) {
+                    val normalizedMarkets = data.map(PerpsMarket::withDefaults)
                     withContext(Dispatchers.IO) {
-                        perpsMarketDao.upsertList(data)
+                        perpsMarketDao.upsertList(normalizedMarkets)
                     }
-                    Timber.d("Perps markets refreshed: ${data.size} markets")
+                    Timber.d("Perps markets refreshed: ${normalizedMarkets.size} markets")
                 } else {
                     val error = "Failed to refresh markets: ${response.errorDescription}"
                     Timber.e(error)
@@ -175,8 +178,9 @@ class PerpetualViewModel @Inject constructor(
                 
                 val data = response.data
                 if (response.isSuccess && data != null) {
-                    Timber.d("Market detail loaded: ${data.displaySymbol}")
-                    onSuccess(data)
+                    val normalizedMarket = data.withDefaults()
+                    Timber.d("Market detail loaded: ${normalizedMarket.displaySymbol}")
+                    onSuccess(normalizedMarket)
                 } else {
                     val error = "Failed to load market detail: ${response.errorDescription}"
                     Timber.e(error)

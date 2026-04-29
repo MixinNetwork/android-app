@@ -41,9 +41,8 @@
 
             <TextView
                 android:id="@+id/title_tv"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:textColor="?attr/text_primary"
@@ -55,7 +54,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="6dp"
-                android:background="@drawable/bg_round_window_24dp"
+                android:background="@drawable/bg_round_window_4dp"
                 android:paddingStart="6dp"
                 android:paddingTop="2dp"
                 android:paddingEnd="6dp"

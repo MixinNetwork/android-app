@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="?attr/selectableItemBackground"
-    android:paddingHorizontal="12dp"
+    android:paddingHorizontal="20dp"
     android:paddingVertical="12dp">
 
     <one.mixin.android.widget.CircleImageView
@@ -36,13 +36,16 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="6dp"
         android:background="@drawable/bg_round_4_solid_light_gray"
-        android:gravity="center"
-        android:paddingHorizontal="4dp"
-        android:paddingVertical="2dp"
+        android:paddingStart="4dp"
+        android:paddingTop="2dp"
+        android:paddingEnd="4dp"
+        android:paddingBottom="2dp"
         android:textColor="?attr/text_assist"
         android:textSize="12sp"
-        app:layout_constraintBaseline_toBaselineOf="@id/symbol_tv"
+        android:includeFontPadding="false"
         app:layout_constraintStart_toEndOf="@id/symbol_tv"
+        app:layout_constraintTop_toTopOf="@id/symbol_tv"
+        app:layout_constraintBottom_toBottomOf="@id/symbol_tv"
         tools:text="100x" />
 
     <TextView

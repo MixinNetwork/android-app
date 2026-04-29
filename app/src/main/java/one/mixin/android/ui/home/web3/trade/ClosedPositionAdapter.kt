@@ -112,7 +112,7 @@ class ClosedPositionAdapter(
                     TypedValue.COMPLEX_UNIT_SP,
                     14f
                 )
-                rightTopValueTv.text = "${formatSignedUsd(pnl)} (${formatPerpsSignedPercent(pnlPercent)})"
+                rightTopValueTv.text = "${formatSignedUsd(pnl)} (${formatPerpsSignedPercent(pnlPercent, withSign = false)})"
                 rightTopValueTv.setTextColor(
                     when {
                         pnl > BigDecimal.ZERO -> {

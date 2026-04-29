@@ -1746,6 +1746,7 @@
     <string name="top_count">前 %1$d</string>
     <string name="change_percent_period_day">%1$d天 %%</string>
     <string name="change_percent_period_hour">%1$d小时 %%</string>
+    <string name="change_24h">%1$d小时涨跌</string>
     <string name="Choose_Token">选择 %1$s 网络</string>
     <string name="choose_token_desc">%1$s 在多个网络上发布</string>
     <string name="watchlist_add_desc">%1$s 已经加入自选</string>
@@ -2307,7 +2308,6 @@
     <string name="Total_Position_Value">仓位总价值</string>
     <string name="Margin">保证金</string>
     <string name="Perpetual_Side_Symbol_Title">%1$s %2$s</string>
-    <string name="Perpetual_Leverage_Format">%1$d倍</string>
     <string name="positions_count">仓位(%d)</string>
     <string name="perps_positions">持仓</string>
     <string name="perps_position">持仓</string>
@@ -2331,6 +2331,13 @@
     <string name="anonymous_number">匿名号码</string>
     <string name="perps_markets">市场</string>
     <string name="perps_market">合约</string>
+    <string name="perps_category_all">全部</string>
+    <string name="perps_category_crypto">加密货币</string>
+    <string name="perps_category_stocks">股票</string>
+    <string name="perps_category_indices">指数</string>
+    <string name="perps_category_commodities">大宗商品</string>
+    <string name="perps_category_forex">外汇</string>
+    <string name="perps_sort_volume_24">24 小时交易量</string>
     <string name="Forget_Pin">忘记 PIN</string>
     <string name="forget_pin_help_url">https://support.mixin.one/zh/article/pin-1vb2rc7/</string>
     <string name="Switch_Account">切换账号</string>

@@ -472,8 +472,8 @@ class TradeFragment : BaseFragment() {
                                 onShowMarketList = { isLong ->
                                     PerpsMarketListBottomSheetDialogFragment.newInstance(isLong).show(parentFragmentManager, PerpsMarketListBottomSheetDialogFragment.TAG)
                                 },
-                                onShowAllMarkets = {
-                                    PerpsMarketListBottomSheetDialogFragment.newInstance().show(parentFragmentManager, PerpsMarketListBottomSheetDialogFragment.TAG)
+                                onShowAllMarkets = { initialCategory ->
+                                    PerpsMarketListBottomSheetDialogFragment.newInstance(initialCategory).show(parentFragmentManager, PerpsMarketListBottomSheetDialogFragment.TAG)
                                 },
                                 onShowAllOpenPositions = {
                                     navTo(AllPositionsFragment.newOpenInstance(), AllPositionsFragment.TAG)
