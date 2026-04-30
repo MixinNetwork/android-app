@@ -35,7 +35,7 @@ abstract class PerpsDatabase : RoomDatabase() {
         private var INSTANCE: PerpsDatabase? = null
         private val lock = Any()
         private var currentIdentityNumber: String? = null
-        private val MIGRATION_1_2 =
+        internal val MIGRATION_1_2 =
             object : Migration(1, 2) {
                 override fun migrate(db: SupportSQLiteDatabase) {
                     db.execSQL("ALTER TABLE markets ADD COLUMN category TEXT NOT NULL DEFAULT ''")

@@ -86,9 +86,11 @@ android {
         String sharedTestDir = 'src/sharedTest/java'
         test {
             java.srcDirs += sharedTestDir
+            kotlin.srcDirs += sharedTestDir
         }
         androidTest {
             java.srcDirs += sharedTestDir
+            kotlin.srcDirs += sharedTestDir
             assets.srcDirs += files("$projectDir/schemas".toString())
         }
     }
@@ -350,11 +352,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-analytics'
     implementation 'com.google.firebase:firebase-crashlytics'
 
-    implementation("com.google.protobuf:protobuf-javalite") {
-        version {
-            strictly '3.11.0'
-        }
-    }
+    implementation "com.google.protobuf:protobuf-javalite:3.25.5"
 
     implementation "com.android.billingclient:billing-ktx:${billingKtxVersion}"
     implementation "com.google.mlkit:barcode-scanning:${mlkitBarcodeVersion}"
@@ -465,6 +463,7 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-contrib:${espressoVersion}", {
         exclude group: 'com.android.support', module: 'support-annotations'
         exclude group: 'org.checkerframework', module: 'checker'
+        exclude group: 'com.google.protobuf', module: 'protobuf-lite'
     })
     androidTestImplementation "androidx.test.espresso:espresso-idling-resource:$espressoVersion"
     androidTestImplementation "androidx.test.ext:junit:${androidxJunitVersion}"
@@ -479,11 +478,8 @@ dependencies {
     // ML Kit
     implementation 'com.google.mlkit:entity-extraction:16.0.0-beta6'
 
-    testImplementation("com.google.protobuf:protobuf-javalite") {
-        version {
-            strictly '3.11.0'
-        }
-    }
+    testImplementation "com.google.protobuf:protobuf-javalite:3.25.5"
+    androidTestImplementation "com.google.protobuf:protobuf-javalite:3.25.5"
 
     // SumSub
     implementation("com.sumsub.sns:idensic-mobile-sdk:$sumsubVersion") {
@@ -552,4 +548,3 @@ task syncStrings {
         }
     }
 }
-

@@ -18,16 +18,19 @@ import kotlin.time.Duration.Companion.days
 class TipTest {
     @Test
     fun testTipGuard() {
-        val suite = Tip.newSuiteBn256()
-        val signer = suite.scalar()
-        signer.setBytes("0da58ccc3b323d92af281367333f4c120418ed2700de803046947f59707b3479".hexStringToByteArray())
-        val user = suite.scalar()
-        assert(signer.publicKey().publicKeyString() == "5HSsddpV8HiKbu9vL3ZB69dtDjaZdQAn8RuL2aK1d1yZknUhBAXNhJLkZfCc2RwTxcaxKonNsXnQJFGcM8jgBztGTHzCA26LgKZWCe74Bw8VJ51FyqCGTysSLnNvkKPT3gh1RhjbyKPEoq3d3DXhJEQJt7GhVgZC82VeMfME9LnYECn9Pui1ta")
+        val signer =
+            Tip.newPrivateKeyFromBytes(
+                "0da58ccc3b323d92af281367333f4c120418ed2700de803046947f59707b3479".hexStringToByteArray(),
+            )
+        val signerPublic = Tip.publicKeyFromBytes(signer)
+        val signerIdentity = Tip.pointPublicKeyString(signerPublic)
 
-        user.setBytes("p8ogX1BMb-IsRisEBS2kOchXEqjbqxtsXR8J9Bf0AGI".base64RawURLDecode())
-        val ephemeral = suite.scalar()
-        ephemeral.setBytes("-e7M3ZD5k-rW6KQ7GVfV9V9bpmfbUY5y8HiqqBGv8-r46YMRRSlyc-ZKGU3s92gsC9GVuIhgn33I".base64RawURLDecode())
-        val eBytes = ephemeral.privateKeyBytes()
+        val user = Tip.newPrivateKeyFromBytes("p8ogX1BMb-IsRisEBS2kOchXEqjbqxtsXR8J9Bf0AGI".base64RawURLDecode())
+        val userPublic = Tip.publicKeyFromBytes(user)
+        val userIdentity = Tip.pointPublicKeyString(userPublic)
+
+        val ephemeral = Tip.newPrivateKeyFromBytes("-e7M3ZD5k-rW6KQ7GVfV9V9bpmfbUY5y8HiqqBGv8-r46YMRRSlyc-ZKGU3s92gsC9GVuIhgn33I".base64RawURLDecode())
+        val eBytes = ephemeral
 
         val nonce = 1024L
         val nonceBytes = nonce.toBeByteArray()
@@ -36,21 +39,19 @@ class TipTest {
         val graceBytes = grace.toBeByteArray()
         println("grace: ${graceBytes.toHex()}")
 
-        val sPk = signer.publicKey()
-        println("sPK: ${sPk.publicKeyString()}")
-        val uPk = user.publicKey()
-        val pKeyBytes = uPk.publicKeyBytes()
-        println("uSk: ${user.privateKeyBytes().toHex()}")
-        println("uPk: ${uPk.publicKeyString()}")
+        println("sPK: $signerIdentity")
+        val pKeyBytes = userPublic
+        println("uSk: ${user.toHex()}")
+        println("uPk: $userIdentity")
         val msg = pKeyBytes + eBytes + nonceBytes + graceBytes
         println("msg: ${msg.toHex()}")
 
-        val sig = user.sign(msg)
+        val sig = Tip.signFromBytes(user, msg)
         println("sig: ${sig.toHex()}")
 
         val data =
             TipSignData(
-                identity = uPk.publicKeyString(),
+                identity = userIdentity,
                 ephemeral = eBytes.toHex(),
                 nonce = nonce,
                 grace = grace,
@@ -60,10 +61,10 @@ class TipTest {
         val json = Gson().toJson(data).toByteArray()
         println("json: ${json.toHex()}")
 
-        val cipher = Tip.encrypt(sPk, user, json)
+        val cipher = Tip.encrypt(signerIdentity, user.toHex(), json)
         println("cipher: ${cipher.toHex()}")
 
-        val plain = Tip.decrypt(uPk, signer, cipher)
+        val plain = Tip.decrypt(userIdentity, signer.toHex(), cipher)
         assert(json.contentEquals(plain))
     }
 
