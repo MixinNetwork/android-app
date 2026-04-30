@@ -26,6 +26,7 @@ import one.mixin.android.ui.wallet.LoadingProgressDialogFragment
 import one.mixin.android.ui.wallet.PaymentFragment
 import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.ui.wallet.WalletActivity
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Card
 import one.mixin.android.vo.safe.TokenItem
@@ -140,7 +141,7 @@ class SelectPaymentFragment : BaseFragment(R.layout.fragment_select_payment) {
                     parentFragmentManager.beginTransaction()
                         .setCustomAnimations(0, R.anim.slide_out_right, R.anim.stay, 0)
                         .remove(this).commitNow()
-                    lifecycleScope.launch {
+                    lifecycleScope.launch(ErrorHandler.errorHandler) {
                         requestRouteAPI(
                             invokeNetwork = {
                                 fiatMoneyViewModel.createInstrument(RouteInstrumentRequest(token, cardholderName, Session.getAccount()?.phone))

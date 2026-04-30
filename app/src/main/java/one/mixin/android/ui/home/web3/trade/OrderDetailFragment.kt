@@ -102,7 +102,7 @@ class OrderDetailFragment : BaseFragment() {
                         walletId = walletId,
                         orderId = orderId,
                         onShare = { payAssetId: String, receiveAssetId: String, type: String ->
-                            viewLifecycleOwner.lifecycleScope.launch { shareOrder(payAssetId, receiveAssetId, type) }
+                            viewLifecycleOwner.lifecycleScope.launch(ErrorHandler.errorHandler) { shareOrder(payAssetId, receiveAssetId, type) }
                         },
                         onTryAgain = {walletId, type, payAssetId, receiveAssetId ->
                             val inMixin = walletId == null || walletId == Session.getAccountId()
@@ -142,7 +142,7 @@ class OrderDetailFragment : BaseFragment() {
 
     private fun startOrderPolling(orderId: String) {
         refreshJob?.cancel()
-        refreshJob = viewLifecycleOwner.lifecycleScope.launch {
+        refreshJob = viewLifecycleOwner.lifecycleScope.launch(ErrorHandler.errorHandler) {
             while (isActive) {
                 val local = withContext(Dispatchers.IO) { walletDatabase.orderDao().observeOrder(orderId).first() }
 

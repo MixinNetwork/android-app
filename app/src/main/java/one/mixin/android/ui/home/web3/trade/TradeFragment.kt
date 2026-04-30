@@ -25,6 +25,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -187,6 +188,10 @@ class TradeFragment : BaseFragment() {
 
     private val swapViewModel by viewModels<SwapViewModel>()
     private val web3ViewModel by viewModels<Web3ViewModel>()
+    private val coroutineErrorHandler = CoroutineExceptionHandler { _, error ->
+        Timber.e(error)
+        ErrorHandler.handleError(error)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -214,7 +219,7 @@ class TradeFragment : BaseFragment() {
         savedInstanceState: Bundle?,
     ): View {
         initAmount()
-        lifecycleScope.launch {
+        lifecycleScope.launch(coroutineErrorHandler) {
             val chainIds = walletId?.let { it ->
                 swapViewModel.getAddresses(it).map {
                     it.chainId
@@ -385,7 +390,7 @@ class TradeFragment : BaseFragment() {
                                     if (inMixin()) {
                                         deposit(token.assetId)
                                     } else {
-                                        this@TradeFragment.lifecycleScope.launch {
+                                        this@TradeFragment.lifecycleScope.launch(coroutineErrorHandler) {
                                             val t = swapViewModel.getTokenByWalletAndAssetId(Web3Signer.currentWalletId, token.assetId) ?: return@launch
                                             val address = swapViewModel.getAddressesByChainId(Web3Signer.currentWalletId, token.chain.chainId)
                                             if (address == null) {
@@ -546,7 +551,7 @@ class TradeFragment : BaseFragment() {
                     isFrom = true,
                 ).apply {
                     setOnDeposit {
-                        this@TradeFragment.lifecycleScope.launch {
+                        this@TradeFragment.lifecycleScope.launch(coroutineErrorHandler) {
                             val t = swapViewModel.getTokenByWalletAndAssetId(
                                 Web3Signer.currentWalletId, if (Web3Signer.evmAddress.isBlank()) {
                                     Constants.ChainId.SOLANA_CHAIN_ID
@@ -620,7 +625,7 @@ class TradeFragment : BaseFragment() {
     }
 
     private fun deposit(tokenId: String) {
-        lifecycleScope.launch {
+        lifecycleScope.launch(coroutineErrorHandler) {
             val token = swapViewModel.findToken(tokenId)
             if (token == null) {
                 dialog.show()
@@ -1413,7 +1418,7 @@ class TradeFragment : BaseFragment() {
 
     private fun startOrdersPolling() {
         refreshJob?.cancel()
-        refreshJob = lifecycleScope.launch {
+        refreshJob = lifecycleScope.launch(coroutineErrorHandler) {
             while (isAdded) {
                 swapViewModel.refreshOrders(walletId ?: Session.getAccountId()!!)
                 swapViewModel.refreshPendingOrders()
