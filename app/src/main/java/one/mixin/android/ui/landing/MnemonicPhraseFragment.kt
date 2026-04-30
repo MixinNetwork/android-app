@@ -167,6 +167,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
             }
             Timber.e("PublicKey:${edKey.publicKey.hexString()}")
             val (messageHex, signatureHex) = buildAnonymousRequestPayload(edKey)
+            var needCaptcha = false
             val r = handleMixinResponse(
                 invokeNetwork = {
                     landingViewModel.anonymousRequest(edKey.publicKey.hexString(), messageHex, signatureHex)
@@ -185,6 +186,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
 
                 failureBlock = { r ->
                     if (r.errorCode == NEED_CAPTCHA) {
+                        needCaptcha = true
                         errorInfo = null
                         landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Creating)
                         if (words.isNullOrEmpty()) {
@@ -210,8 +212,8 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 } else {
                     createAccount(sessionKey, edKey, r.data!!.id)
                 }
-            } else if (r != null) {
-                errorInfo = requireActivity().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
+            } else if (needCaptcha) {
+                return@launch
             }
         }
     }
@@ -266,6 +268,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
             errorInfo = null
             landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Creating)
             val (messageHex, signatureHex) = buildAnonymousRequestPayload(edKey)
+            var needCaptcha = false
             val r = handleMixinResponse(
                 invokeNetwork = {
                     landingViewModel.anonymousRequest(edKey.publicKey.hexString(), messageHex, signatureHex, hCaptchaResponse, gRecaptchaResponse, gtRecaptchaResponse)
@@ -284,6 +287,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
 
                 failureBlock = { r ->
                     if (r.errorCode == NEED_CAPTCHA) {
+                        needCaptcha = true
                         errorInfo = null
                         landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Creating)
                         initAndLoadCaptcha(sessionKey, edKey, r.errorDescription)
@@ -304,15 +308,9 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 } else {
                     createAccount(sessionKey, edKey, r.data!!.id)
                 }
+            } else if (needCaptcha) {
+                return@launch
             } else {
-                if (r != null) {
-                    if (r.errorCode == NEED_CAPTCHA) {
-                        landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Creating)
-                        initAndLoadCaptcha(sessionKey, edKey, r.errorDescription)
-                        return@launch
-                    }
-                    errorInfo = requireActivity().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
-                }
                 landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
             }
         }

@@ -619,6 +619,7 @@ fun OpenPositionPage(
                         .fillMaxWidth()
                         .height(48.dp),
                     onClick = {
+                        errorInfo = null
                         val token = currentToken ?: return@MixinButton
                         val amount = usdtAmount.toBigDecimalOrNull() ?: return@MixinButton
 

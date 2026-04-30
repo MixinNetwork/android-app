@@ -293,6 +293,7 @@ class RecoveryReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
                         )
                     }
                 },
+                stickyFooter = true,
             )
         }
     }

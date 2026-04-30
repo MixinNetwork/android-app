@@ -30,6 +30,7 @@ import one.mixin.android.extension.round
 import one.mixin.android.ui.address.adapter.ItemCallback
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.TransactionsFragment
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Card
 import one.mixin.android.vo.cardIcon
 import one.mixin.android.vo.safe.TokenItem
@@ -106,7 +107,7 @@ class SelectCardBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             viewHolder: RecyclerView.ViewHolder,
                             direction: Int,
                         ) {
-                            lifecycleScope.launch {
+                            lifecycleScope.launch(ErrorHandler.errorHandler) {
                                 val anchorView = cardRv
                                 val card = cardAdapter.data?.get(viewHolder.absoluteAdapterPosition) ?: return@launch
                                 delete(card)
@@ -155,7 +156,7 @@ class SelectCardBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 dialog.dismiss()
             }
             .setPositiveButton(R.string.Confirm) { dialog, _ ->
-                lifecycleScope.launch {
+                lifecycleScope.launch(ErrorHandler.errorHandler) {
                     cardAdapter.deletingIds.add(card.instrumentId)
                     cardAdapter.notifyDataSetChanged()
                     handleMixinResponse(

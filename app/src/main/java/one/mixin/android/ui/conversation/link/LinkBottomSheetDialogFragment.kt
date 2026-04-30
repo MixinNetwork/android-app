@@ -722,7 +722,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
         } else if (url.startsWith(Scheme.MIXIN_MARKET, true) || url.startsWith(Scheme.HTTPS_MARKET, true)) {
             val uri = Uri.parse(url)
             val id = uri.lastPathSegment
-            lifecycleScope.launch {
+            lifecycleScope.launch(ErrorHandler.errorHandler) {
                 if (id.isNullOrBlank()) {
                     showError()
                 } else {
