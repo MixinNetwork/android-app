@@ -161,7 +161,7 @@ fun ClosedPositionItem(
         }
 
         BasicText(
-            text = "${formatPerpsSignedFiatDecimal(pnl.multiply(fiatRate), fiatSymbol)} (${formatPerpsSignedPercent(pnlPercent)})",
+            text = "${formatPerpsSignedFiatDecimal(pnl.multiply(fiatRate), fiatSymbol)} (${formatPerpsSignedPercent(pnlPercent, withSign = false)})",
             modifier = Modifier.weight(0.85f),
             style = TextStyle(
                 fontSize = 14.sp,
