@@ -571,7 +571,7 @@ fun PositionDetailPage(
                 Spacer(modifier = Modifier.height(20.dp))
 
                 PositionDetailItem(
-                    label = stringResource(R.string.PnL),
+                    label = stringResource(R.string.PnL).uppercase(),
                     value = "${formatSignedFiat(pnl)} (${formatSignedPercent(roe)})",
                     valueColor = pnlColor,
                 )
