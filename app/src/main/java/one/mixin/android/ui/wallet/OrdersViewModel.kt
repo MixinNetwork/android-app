@@ -1,11 +1,12 @@
 package one.mixin.android.ui.wallet
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
-import androidx.paging.LivePagedListBuilder
-import androidx.paging.PagedList
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.api.service.RouteService
@@ -20,14 +21,15 @@ class OrdersViewModel @Inject constructor(
     private val routeService: RouteService,
 ) : ViewModel() {
 
-    fun allLimitOrders(initialLoadKey: Int? = 0, filterParams: OrderFilterParams): LiveData<PagedList<OrderItem>> {
-        val factory = LimitOrderDataProvider.allOrders(database, filterParams)
-        val config = PagedList.Config.Builder()
-            .setPrefetchDistance(Constants.PAGE_SIZE * 2)
-            .setPageSize(Constants.PAGE_SIZE)
-            .setEnablePlaceholders(true)
-            .build()
-        return LivePagedListBuilder(factory, config).setInitialLoadKey(initialLoadKey).build()
+    fun allLimitOrders(filterParams: OrderFilterParams): Flow<PagingData<OrderItem>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = Constants.PAGE_SIZE,
+                prefetchDistance = Constants.PAGE_SIZE * 2,
+                enablePlaceholders = true,
+            ),
+            pagingSourceFactory = { LimitOrderDataProvider.allOrders(database, filterParams) }
+        ).flow
     }
 
     suspend fun refreshPendingOrders(): Boolean = withContext(Dispatchers.IO) {

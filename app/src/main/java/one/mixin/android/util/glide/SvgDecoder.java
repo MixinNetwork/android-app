@@ -1,6 +1,9 @@
 package one.mixin.android.util.glide;
 
+import static com.bumptech.glide.request.target.Target.SIZE_ORIGINAL;
+
 import androidx.annotation.NonNull;
+
 import com.bumptech.glide.load.Options;
 import com.bumptech.glide.load.ResourceDecoder;
 import com.bumptech.glide.load.engine.Resource;
@@ -10,8 +13,6 @@ import com.caverock.androidsvg.SVGParseException;
 
 import java.io.IOException;
 import java.io.InputStream;
-
-import static com.bumptech.glide.request.target.Target.SIZE_ORIGINAL;
 
 /** Decodes an SVG internal representation from an {@link InputStream}. */
 public class SvgDecoder implements ResourceDecoder<InputStream, SVG> {

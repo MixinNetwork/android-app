@@ -1,6 +1,6 @@
 package one.mixin.android.ui.landing.components
 
-import PageScaffold
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.fadeIn
@@ -71,7 +71,8 @@ import one.mixin.android.extension.tickVibrate
 fun SetupPinPage(
     next: (String) -> Unit,
     errorMessage: String = "",
-    onRetry: (() -> Unit)? = null
+    onRetry: (() -> Unit)? = null,
+    onTopBarLongClick: (() -> Unit)? = null,
 ) {
     val context = LocalContext.current
     var size by remember { mutableStateOf(IntSize.Zero) }
@@ -119,6 +120,7 @@ fun SetupPinPage(
     PageScaffold(
         title = "",
         verticalScrollable = false,
+        onTopBarLongClick = onTopBarLongClick,
         actions = {
             IconButton(onClick = {
                 context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)

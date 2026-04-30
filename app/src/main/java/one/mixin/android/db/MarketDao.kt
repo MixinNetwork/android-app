@@ -41,10 +41,10 @@ interface MarketDao : BaseDao<Market> {
             CASE WHEN :sortValue = 1 THEN CAST(limitedMarkets.market_cap_rank AS INTEGER) END DESC,
             CASE WHEN :sortValue = 2 THEN CAST(limitedMarkets.current_price AS DECIMAL) END ASC,
             CASE WHEN :sortValue = 3 THEN CAST(limitedMarkets.current_price AS DECIMAL) END DESC,
-            CASE WHEN :sortValue = 4 THEN CAST(limitedMarkets.price_change_percentage_7d AS DECIMAL) END DESC,
-            CASE WHEN :sortValue = 5 THEN CAST(limitedMarkets.price_change_percentage_7d AS DECIMAL) END ASC,
-            CASE WHEN :sortValue = 6 THEN CAST(limitedMarkets.price_change_percentage_24h AS DECIMAL) END DESC,
-            CASE WHEN :sortValue = 7 THEN CAST(limitedMarkets.price_change_percentage_24h AS DECIMAL) END ASC
+            CASE WHEN :sortValue = 4 THEN CAST(limitedMarkets.price_change_percentage_7d AS DECIMAL) END ASC,
+            CASE WHEN :sortValue = 5 THEN CAST(limitedMarkets.price_change_percentage_7d AS DECIMAL) END DESC,
+            CASE WHEN :sortValue = 6 THEN CAST(limitedMarkets.price_change_percentage_24h AS DECIMAL) END ASC,
+            CASE WHEN :sortValue = 7 THEN CAST(limitedMarkets.price_change_percentage_24h AS DECIMAL) END DESC
         """
     )
     fun getWeb3Markets(limit: Int, sortValue: Int): PagingSource<Int, MarketItem>
@@ -62,10 +62,10 @@ interface MarketDao : BaseDao<Market> {
             CASE WHEN :sortValue = 1 THEN CAST(limitedFavoredMarkets.market_cap_rank AS INTEGER) END DESC,
             CASE WHEN :sortValue = 2 THEN CAST(limitedFavoredMarkets.current_price AS DECIMAL) END ASC,
             CASE WHEN :sortValue = 3 THEN CAST(limitedFavoredMarkets.current_price AS DECIMAL) END DESC,
-            CASE WHEN :sortValue = 4 THEN CAST(limitedFavoredMarkets.price_change_percentage_7d AS DECIMAL) END DESC,
-            CASE WHEN :sortValue = 5 THEN CAST(limitedFavoredMarkets.price_change_percentage_7d AS DECIMAL) END ASC,
-            CASE WHEN :sortValue = 6 THEN CAST(limitedFavoredMarkets.price_change_percentage_24h AS DECIMAL) END DESC,
-            CASE WHEN :sortValue = 7 THEN CAST(limitedFavoredMarkets.price_change_percentage_24h AS DECIMAL) END ASC
+            CASE WHEN :sortValue = 4 THEN CAST(limitedFavoredMarkets.price_change_percentage_7d AS DECIMAL) END ASC,
+            CASE WHEN :sortValue = 5 THEN CAST(limitedFavoredMarkets.price_change_percentage_7d AS DECIMAL) END DESC,
+            CASE WHEN :sortValue = 6 THEN CAST(limitedFavoredMarkets.price_change_percentage_24h AS DECIMAL) END ASC,
+            CASE WHEN :sortValue = 7 THEN CAST(limitedFavoredMarkets.price_change_percentage_24h AS DECIMAL) END DESC
         """
     )
     fun getFavoredWeb3Markets(sortValue: Int): PagingSource<Int, MarketItem>

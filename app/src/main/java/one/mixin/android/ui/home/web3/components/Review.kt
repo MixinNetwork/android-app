@@ -741,7 +741,7 @@ fun ActionButton(
             backgroundColor = if (enabled) backgroundColor else disabledBackgroundColor,
             contentColor = if (enabled) contentColor else disabledContentColor,
         ),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(30.dp),
         contentPadding = PaddingValues(horizontal = 35.dp, vertical = 10.dp),
         elevation = ButtonDefaults.elevation(
             pressedElevation = 0.dp,
@@ -754,7 +754,8 @@ fun ActionButton(
         Text(
             text = text,
             color = if (enabled) contentColor else disabledContentColor,
-            fontWeight = FontWeight.W500
+            fontSize = 16.sp,
+            fontWeight = FontWeight.W400
         )
     }
 }
@@ -778,7 +779,7 @@ fun ActionBottom(
         ActionButton(
             text = cancelTitle,
             onClick = cancelAction,
-            backgroundColor = MixinAppTheme.colors.backgroundGray,
+            backgroundColor = MixinAppTheme.colors.backgroundWindow,
             contentColor = MixinAppTheme.colors.textPrimary
         )
         Box(modifier = Modifier.width(36.dp))

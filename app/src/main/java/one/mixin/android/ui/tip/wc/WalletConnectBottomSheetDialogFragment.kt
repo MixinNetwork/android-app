@@ -30,6 +30,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.putLong
@@ -200,6 +201,9 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     }
 
     override fun getBottomSheetHeight(view: View): Int {
+        if (requestType == RequestType.Connect) {
+            return 200.dp
+        }
         return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
     }
 

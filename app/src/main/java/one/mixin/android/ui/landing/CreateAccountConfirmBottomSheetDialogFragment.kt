@@ -2,7 +2,6 @@ package one.mixin.android.ui.landing
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.content.ClipData
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -18,8 +17,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -36,15 +33,13 @@ import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.booleanFromAttribute
-import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getSafeAreaInsetsTop
-import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.screenHeight
-import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.widget.components.MixinButton
 
 @AndroidEntryPoint
 class CreateAccountConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
@@ -134,18 +129,17 @@ class CreateAccountConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDia
                     descriptionResId = R.string.feature_all_in_one_description,
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                Button(
+                MixinButton(
                     modifier = Modifier
                         .fillMaxWidth(),
                     onClick = {
                         onCreateAccount?.invoke()
                         dismiss()
                     },
-                    colors = ButtonDefaults.outlinedButtonColors(backgroundColor = MixinAppTheme.colors.accent),
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
-                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 36.dp, vertical = 11.dp),
+                    shape = RoundedCornerShape(30.dp),
+                    contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
                 ) {
-                    Text(text = stringResource(R.string.create_account_confirm_action_create), color = Color.White)
+                    Text(text = stringResource(R.string.create_account_confirm_action_create), fontSize = 16.sp, color = Color.White)
                 }
                 Spacer(modifier = Modifier.height(10.dp))
                 val privacyPolicyText = stringResource(R.string.Privacy_Policy)

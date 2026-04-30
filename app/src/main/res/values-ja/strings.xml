@@ -26,7 +26,7 @@
     <string name="Add_circle">グループリストを追加</string>
     <string name="Add_Contact">友だちを追加</string>
     <string name="Add_conversations">チャットルームを追加</string>
-    <string name="Add_emergency_contact">緊急連絡先を追加</string>
+    <string name="Add_emergency_contact">復旧用連絡先を追加</string>
     <string name="Add_group_description">グループアナウンス</string>
     <string name="Add_memo">メモを追加</string>
     <string name="Add_participants">メンバーを追加</string>
@@ -79,7 +79,7 @@
     <string name="ANSWER">電話に出る</string>
     <string name="app_card_shareable_false">このカードを共有することはできません</string>
     <string name="app_name">Mixin</string>
-    <string name="App_version">App version</string>
+    <string name="App_version">アプリのバージョン</string>
     <string name="Appearance">言語とテーマ</string>
     <string name="Apply">適用</string>
     <string name="Asset_Key">資産のキー</string>
@@ -134,9 +134,9 @@
     <string name="call_who">%1$sに電話をかける</string>
     <string name="Calling">着信中</string>
     <string name="Camera">カメラ</string>
-    <string name="can_not_recognize_qr_code">QRコードが見つかりません</string>
+    <string name="can_not_recognize_qr_code">QRコードを認識できません</string>
     <string name="Cancel">キャンセル</string>
-    <string name="Cancel_Floating">フローティングのキャンセル</string>
+    <string name="Cancel_Floating">フローティング解除</string>
     <string name="Canceled">キャンセルしました</string>
     <string name="Canceled_by_caller">発信者がキャンセルしました</string>
     <string name="Cant_receive_the_code">コードを受け取れませんか？</string>
@@ -146,7 +146,7 @@
     <string name="Chain">チェーン</string>
     <string name="Change">変更</string>
     <string name="Change_Amount">数量を変更</string>
-    <string name="Change_emergency_contact">緊急連絡先を変更</string>
+    <string name="Change_emergency_contact">復旧用連絡先を変更</string>
     <string name="Change_Number_Instead">電話番号を変更</string>
     <string name="Change_Phone_Number">電話番号を変更</string>
     <string name="Change_PIN">PINコードを変更</string>
@@ -278,7 +278,6 @@
     <string name="delete_account_hint_2">ローカルメッセージとiCloudにバックアップされた内容は自動的に削除されません</string>
     <string name="delete_account_hint_3">トランザクション履歴を削除することはできません</string>
     <string name="Delete_address">アドレスを削除</string>
-    <string name="Delete_emergency_contact">緊急連絡先を削除</string>
     <string name="Delete_for_everyone">全員のチャットから削除</string>
     <string name="Delete_for_me">あなたのチャットから削除</string>
     <string name="Delete_Group">グループを削除</string>
@@ -506,7 +505,7 @@
     <string name="live_permission">Mixinは、ピクチャーインピクチャーモードでビデオを再生するために、他のアプリより上の描画にアクセスする必要があります。</string>
     <string name="live_shareable_false">この配信を共有することはできません</string>
     <string name="loading_time">システム時刻が異常です。修正後、使用してください</string>
-    <string name="Local_IP">Local IP</string>
+    <string name="Local_IP">ローカルIP</string>
     <string name="Location">位置情報</string>
     <plurals name="location_accurate" tools:ignore="UnusedQuantity">
         <item quantity="one">精度：%1$dメートル</item>
@@ -529,7 +528,7 @@
     <string name="manage_all_your_circles">グループリストの編集</string>
     <string name="Manage_Bots">ミニアプリの管理</string>
     <string name="Manager_Sticker">スタンプ管理</string>
-    <string name="Manufacturer">Manufacturer</string>
+    <string name="Manufacturer">メーカー</string>
     <string name="Mark_as_read">既読</string>
     <string name="Media">メディア</string>
     <string name="Memo">メモ</string>
@@ -574,8 +573,8 @@
     <string name="Need_help">ヘルプが必要ですか？</string>
     <string name="Net_Diagnosis">ネットワーク診断</string>
     <string name="Network_error">ネットワークエラー</string>
-    <string name="Network_Operator">Operator</string>
-    <string name="Network_Type">Network Type</string>
+    <string name="Network_Operator">通信事業者</string>
+    <string name="Network_Type">ネットワーク種別</string>
     <string name="Network_unavailable">ネットワークは利用不可能です</string>
     <string name="Never">しない</string>
     <string name="New_Group">グループを作成</string>
@@ -632,10 +631,10 @@
     <string name="Open_Home_page">ホームページを開く</string>
     <string name="Open_in_browser">ブラウザで開く</string>
     <string name="Open_Link">リンクを開く: %1$s</string>
-    <string name="Operator">Operator</string>
+    <string name="Operator">通信事業者</string>
     <string name="OTHER">その他</string>
     <string name="Owner">オーナー</string>
-    <string name="parse_dns_result">Parse DNS result:</string>
+    <string name="parse_dns_result">DNS解析結果:</string>
     <string name="Participants">参加者</string>
     <string name="Pause">一時停止</string>
     <string name="pay_paid">この支払いリンクはすでに使用済みです。重複して支払いを行うことはできません。</string>
@@ -653,16 +652,13 @@
     <string name="Phone_Contact">連絡帳</string>
     <string name="Phone_Contacts">連絡帳</string>
     <string name="Phone_Number">電話番号を変更する</string>
-    <string name="Phone_number_change">電話番号変更</string>
     <string name="phone_number_privacy">あなたを電話番号検索で追加できるユーザー</string>
     <string name="Photo">写真</string>
     <string name="Photos">写真</string>
     <string name="PIN">PINコード</string>
-    <string name="PIN_change">PINコード変更</string>
     <string name="pin_check_tip">安全のため、定期的にPINコードを確認します。</string>
     <string name="pin_confirm_again_hint">もう一度PINコードを確認してください</string>
     <string name="pin_confirm_hint">PINコードを確実に記憶してください。ウォレットを失った場合、復元することはできません</string>
-    <string name="pin_creation">PINコードの生成</string>
     <string name="PIN_incorrect">PINコードが違います</string>
     <string name="pin_lost_hint">PINコードを忘れた場合、ウォレットを復元することは一切できません</string>
     <string name="pin_title">ピン留め</string>
@@ -840,10 +836,6 @@
     <string name="Show">表示</string>
     <string name="Show_in_chat">チャット内で表示</string>
     <string name="Shown">表示ずみ</string>
-    <string name="Sign_in">ログイン</string>
-    <string name="Sign_in_desktop_app">デスクトップにログイン</string>
-    <string name="Sign_with_emergency_contact">緊急連絡先でログイン</string>
-    <string name="Sign_with_mobile_number">電話番号でログイン</string>
     <string name="Silence_Notification">サイレント通知</string>
     <string name="Size">サイズ</string>
     <string name="Skip">スキップ</string>
@@ -874,7 +866,7 @@
     <string name="Syncing_messages">メッセージを同期中</string>
     <string name="syncs_contact_hint">あなたのアドレス帳をMixinと同期し、他のMixinユーザーと連携します。</string>
     <string name="System_options">システムオプション</string>
-    <string name="System_version">System version</string>
+    <string name="System_version">システムバージョン</string>
     <string name="Tag">タグ</string>
     <string name="Tap_to_join">タップして参加</string>
     <string name="Terms_of_Service">利用規約</string>
@@ -955,7 +947,6 @@
     <string name="User_not_found">ユーザーが見つかりませんでした</string>
     <string name="value_now">現在価格 %1$s</string>
     <string name="value_then">当時の価格 %1$s</string>
-    <string name="Verify">認証</string>
     <string name="Verify_by_Biometric">生体認証で認証</string>
     <string name="Verify_PIN">PINコードを認証</string>
     <string name="Verifying">認証中…</string>
@@ -1026,6 +1017,5 @@
     <string name="You">自分</string>
     <string name="You_deleted_this_message">このメッセージを削除しました。</string>
     <string name="You_have_left_the_group">グループから退会しました</string>
-    <string name="your_pin_has_been_created">PINコードが生成されました</string>
     <string name="Receivers">受取人</string>
 </resources>

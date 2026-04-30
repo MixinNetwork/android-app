@@ -1,5 +1,6 @@
 package one.mixin.android.util
 
+import android.os.Build
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
@@ -9,7 +10,7 @@ object RootUtil {
         get() = checkRootMethod1() || checkRootMethod2() || checkRootMethod3()
 
     private fun checkRootMethod1(): Boolean {
-        val buildTags = android.os.Build.TAGS
+        val buildTags = Build.TAGS
         return buildTags != null && buildTags.contains("test-keys")
     }
 

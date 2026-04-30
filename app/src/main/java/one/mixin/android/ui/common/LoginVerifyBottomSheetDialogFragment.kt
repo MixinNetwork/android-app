@@ -11,9 +11,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
-import one.mixin.android.Constants.Account.ChainAddress.BTC_ADDRESS
-import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
-import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.Constants.ChainId.BITCOIN_CHAIN_ID
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
@@ -21,24 +18,24 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
-import one.mixin.android.databinding.FragmentLoginVerifyBottomSheetBinding
-import one.mixin.android.db.property.PropertyHelper
-import one.mixin.android.event.TipEvent
-import one.mixin.android.extension.openUrl
-import one.mixin.android.extension.decodeBase64
-import one.mixin.android.job.TipCounterSyncedLiveData
-import one.mixin.android.session.Session
-import one.mixin.android.tip.Tip
 import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.request.web3.Web3AddressRequest
 import one.mixin.android.crypto.CryptoWalletHelper
+import one.mixin.android.databinding.FragmentLoginVerifyBottomSheetBinding
+import one.mixin.android.databinding.ViewLoginVerifyMoreBottomBinding
+import one.mixin.android.event.TipEvent
+import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putBoolean
+import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.repository.Web3Repository
+import one.mixin.android.session.Session
+import one.mixin.android.tip.Tip
+import one.mixin.android.tip.bip44.Bip44Path
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.common.biometric.BiometricLayout
-import one.mixin.android.databinding.ViewLoginVerifyMoreBottomBinding
 import one.mixin.android.ui.logs.LogViewerBottomSheet
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.util.analytics.AnalyticsTracker
@@ -48,10 +45,10 @@ import one.mixin.android.vo.Account
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.widget.BottomSheet
-import timber.log.Timber
 import org.bitcoinj.base.ScriptType
 import org.bitcoinj.crypto.ECKey
 import org.web3j.utils.Numeric
+import timber.log.Timber
 import java.math.BigInteger
 import java.time.Instant
 import javax.inject.Inject
@@ -121,7 +118,7 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
         val bottomSheet = builder.create()
         menuBinding.closeIv.setOnClickListener { bottomSheet.dismiss() }
         menuBinding.forgetPinTv.setOnClickListener {
-            context?.openUrl(getString(R.string.What_is_Pin_url))
+            context?.openUrl(getString(R.string.forget_pin_help_url))
             bottomSheet.dismiss()
         }
         menuBinding.switchAccountTv.setOnClickListener {
@@ -190,13 +187,9 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
         val r = bottomViewModel.verifyPin(pin)
         if (r.isSuccess) {
             val solAddress = bottomViewModel.getTipAddress(requireContext(), pin, SOLANA_CHAIN_ID)
-            PropertyHelper.updateKeyValue(SOLANA_ADDRESS, solAddress)
             Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Solana.name, solAddress)
             val evmAddress = bottomViewModel.getTipAddress(requireContext(), pin, ETHEREUM_CHAIN_ID)
-            PropertyHelper.updateKeyValue(EVM_ADDRESS, evmAddress)
             Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Ethereum.name, evmAddress)
-            val btcAddress = bottomViewModel.getTipAddress(requireContext(), pin, BITCOIN_CHAIN_ID)
-            PropertyHelper.updateKeyValue(BTC_ADDRESS, btcAddress)
             bottomViewModel.ensureClassicWallet(pin)
             MixinApplication.appContext.defaultSharedPreferences.putBoolean(Constants.Account.PREF_WEB3_ADDRESSES_SYNCED, true)
             addBtcAddressIfNeeded(pin)
@@ -263,7 +256,7 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
                     Web3AddressRequest(
                         destination = btcAddress,
                         chainId = BITCOIN_CHAIN_ID,
-                        path = one.mixin.android.tip.bip44.Bip44Path.bitcoinSegwitPathString(derivationIndex),
+                        path = Bip44Path.bitcoinSegwitPathString(derivationIndex),
                         signature = signature,
                         timestamp = now.toString(),
                     ),

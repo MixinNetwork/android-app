@@ -43,13 +43,13 @@ fun PriceInputArea(
     toToken: SwapToken?,
     lastOrderTime: Long?,
     priceMultiplier: Float?,
+    isPriceInverted: Boolean,
+    onPriceInvertedChange: (Boolean) -> Unit,
     onStandardPriceChanged: (String) -> Unit,
 ) {
     val viewModel = hiltViewModel<SwapViewModel>()
 
     val context = LocalContext.current
-    
-    var isPriceInverted by remember { mutableStateOf(false) }
 
     // Display price shown in the input field, initialized from market price
     var displayPrice by remember { mutableStateOf("") }
@@ -66,7 +66,7 @@ fun PriceInputArea(
         val isToUsd = toToken?.assetId?.let { id ->
             Constants.AssetId.usdtAssets.containsKey(id) || Constants.AssetId.usdcAssets.containsKey(id)
         } == true
-        isPriceInverted = isFromUsd && !isToUsd
+        onPriceInvertedChange(isFromUsd && !isToUsd)
     }
     
     LaunchedEffect(priceMultiplier) {
@@ -97,7 +97,7 @@ fun PriceInputArea(
             var fromP = fromMarket?.currentPrice?.toBigDecimalOrNull()
             var toP = toMarket?.currentPrice?.toBigDecimalOrNull()
             if (fromP != null && toP != null && toP > BigDecimal.ZERO) {
-                val price = fromP.divide(toP, 8, RoundingMode.HALF_UP)
+                val price = fromP.multiply(BigDecimal(0.99)).divide(toP, 8, RoundingMode.HALF_UP)
                 marketPrice = price
                 val priceString = price.stripTrailingZeros().toPlainString()
                 onStandardPriceChanged(priceString)
@@ -113,7 +113,7 @@ fun PriceInputArea(
                 fromP = fromMarket?.currentPrice?.toBigDecimalOrNull()
                 toP = toMarket?.currentPrice?.toBigDecimalOrNull()
                 if (fromP != null && toP != null && toP > BigDecimal.ZERO) {
-                    val updatedPrice = fromP.divide(toP, 8, RoundingMode.HALF_UP)
+                    val updatedPrice = fromP.multiply(BigDecimal(0.99)).divide(toP, 8, RoundingMode.HALF_UP)
                     if (price != updatedPrice) {
                         marketPrice = updatedPrice
                         val updatedPriceString = updatedPrice.stripTrailingZeros().toPlainString()
@@ -216,7 +216,7 @@ fun PriceInputArea(
                             tint = MixinAppTheme.colors.textAssist,
                             modifier = Modifier
                                 .size(16.dp)
-                                .clickable { isPriceInverted = !isPriceInverted }
+                                .clickable { onPriceInvertedChange(!isPriceInverted) }
                         )
                     }
                 }

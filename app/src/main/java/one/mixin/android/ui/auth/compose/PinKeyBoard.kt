@@ -39,8 +39,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -74,6 +72,7 @@ import one.mixin.android.extension.pxToDp
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.session.Session
 import one.mixin.android.util.BiometricUtil
+import one.mixin.android.widget.components.MixinButton
 
 @Composable
 fun PinKeyBoard(
@@ -196,24 +195,15 @@ fun PinKeyBoard(
                         textAlign = TextAlign.Center,
                         fontSize = 14.sp,
                     )
-                    Button(
+                    MixinButton(
                         onClick = {
                             onResetClick?.invoke()
                         },
-                        colors =
-                            ButtonDefaults.buttonColors(
-                                backgroundColor = MixinAppTheme.colors.accent,
-                            ),
-                        elevation = ButtonDefaults.elevation(
-                            pressedElevation = 0.dp,
-                            defaultElevation = 0.dp,
-                            hoveredElevation = 0.dp,
-                            focusedElevation = 0.dp,
-                        ),
                         contentPadding = PaddingValues(horizontal = 20.dp),
-                        shape = RoundedCornerShape(20.dp),
+                        shape = RoundedCornerShape(30.dp),
                     ) {
                         Text(
+                            fontSize = 16.sp,
                             text = stringResource(id = R.string.Continue),
                             color = Color.White,
                         )

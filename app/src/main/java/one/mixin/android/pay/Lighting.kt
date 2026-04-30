@@ -1,12 +1,8 @@
 package one.mixin.android.pay
 
-import one.mixin.android.Constants
 import one.mixin.android.api.response.AddressResponse
 import one.mixin.android.api.response.PaymentResponse
 import one.mixin.android.api.response.WithdrawalResponse
-import one.mixin.android.extension.stripAmountZero
-import one.mixin.android.vo.AssetPrecision
-import timber.log.Timber
 import java.math.BigDecimal
 
 internal suspend fun parseLightning(

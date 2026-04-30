@@ -41,6 +41,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putInt
+import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.exception.TipNetworkException
@@ -68,6 +69,7 @@ import one.mixin.android.widget.CaptchaView.Companion.gtCAPTCHA
 import one.mixin.android.widget.CaptchaView.Companion.hCAPTCHA
 import timber.log.Timber
 import javax.inject.Inject
+import javax.inject.Provider
 
 @AndroidEntryPoint
 class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
@@ -95,10 +97,13 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
             }
     }
 
-    private val viewModel by viewModels<MobileViewModel>()
+    private val viewModel by viewModels<LandingViewModel>()
 
     @Inject
     lateinit var tip: Tip
+
+    @Inject
+    lateinit var userRepositoryProvider: Provider<UserRepository>
 
     private var mCountDownTimer: CountDownTimer? = null
 
@@ -173,12 +178,15 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
             FROM_CHANGE_PHONE_ACCOUNT -> {
                 handlePhoneModification()
             }
+
             FROM_DELETE_ACCOUNT -> {
                 handleDeleteAccount()
             }
+
             FROM_VERIFY_MOBILE_REMINDER -> {
                 handleVerifyMobileReminder()
             }
+
             else -> {
                 handleLogin()
             }
@@ -186,17 +194,19 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
     }
 
     override fun insertUser(u: User) {
-        viewModel.insertUser(u)
+        lifecycleScope.launch(Dispatchers.IO) {
+            userRepositoryProvider.get().insertUser(u)
+        }
     }
 
-    private fun isPhoneModification() = pin != null
+    private fun isChangePhoneFlow() = from == FROM_CHANGE_PHONE_ACCOUNT
 
     @SuppressLint("InflateParams")
     private fun showBottom() {
         val builder = BottomSheet.Builder(requireActivity())
         val view = View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_verification_bottom, null)
         val viewBinding = ViewVerificationBottomBinding.bind(view)
-        viewBinding.lostTv.isVisible = hasEmergencyContact && !isPhoneModification()
+        viewBinding.lostTv.isVisible = hasEmergencyContact && !isChangePhoneFlow()
         builder.setCustomView(view)
         val bottomSheet = builder.create()
         viewBinding.cantTv.setOnClickListener {
@@ -254,7 +264,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                     val hasPhone = Session.hasPhone()
                     withContext(Dispatchers.IO) {
                         r.data?.let { u ->
-                            viewModel.updatePhone(u.userId, u.phone)
+                            userRepositoryProvider.get().updatePhone(u.userId, u.phone)
                             removeValueFromEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC)
                             Session.storeAccount(u)
                         }
@@ -343,7 +353,8 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                         }
                     }
                     alert(
-                        getString(R.string.verification_successful))
+                        getString(R.string.verification_successful)
+                    )
                         .setPositiveButton(android.R.string.ok) { dialog, _ ->
                             dialog.dismiss()
                             activity?.finish()
@@ -373,8 +384,8 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                 requireArguments().getString(ARGS_PHONE_NUM),
                 when {
                     from == FROM_DELETE_ACCOUNT -> VerificationPurpose.DEACTIVATED.name
-                    isPhoneModification() -> VerificationPurpose.PHONE.name
                     from == FROM_VERIFY_MOBILE_REMINDER -> VerificationPurpose.NONE.name
+                    isChangePhoneFlow() -> VerificationPurpose.PHONE.name
                     else -> VerificationPurpose.SESSION.name
                 },
             )

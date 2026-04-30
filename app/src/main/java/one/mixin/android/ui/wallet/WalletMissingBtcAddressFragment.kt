@@ -8,8 +8,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentWalletMissingBtcAddressIntroBinding
-import one.mixin.android.util.viewBinding
 import one.mixin.android.ui.common.LoginVerifyBottomSheetDialogFragment
+import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
 class WalletMissingBtcAddressFragment : Fragment(R.layout.fragment_wallet_missing_btc_address_intro) {

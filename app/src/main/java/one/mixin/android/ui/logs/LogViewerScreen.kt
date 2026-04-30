@@ -44,6 +44,7 @@ import one.mixin.android.R
 
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.toast
+import one.mixin.android.widget.components.MixinButton
 import java.io.File
 
 @Composable
@@ -54,6 +55,7 @@ fun LogViewerScreen(
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
+    val share = stringResource(R.string.Share)
 
     LaunchedEffect(Unit) {
         viewModel.loadPreLoginLogs()
@@ -117,30 +119,33 @@ fun LogViewerScreen(
                                             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                                         }
                                         context.startActivity(
-                                            Intent.createChooser(shareIntent, context.getString(R.string.Share))
+                                            Intent.createChooser(shareIntent, share)
                                         )
                                     } catch (e: Exception) {
                                         toast(e.message ?: "Error sharing log file")
                                     }
                                 },
                                 shape = RoundedCornerShape(32.dp),
+                                elevation = ButtonDefaults.elevation(
+                                    defaultElevation = 0.dp,
+                                    pressedElevation = 0.dp,
+                                    hoveredElevation = 0.dp,
+                                    focusedElevation = 0.dp,
+                                ),
                             ) {
                                 Text(text = stringResource(R.string.Share), color = MixinAppTheme.colors.accent)
                             }
-                            Button(
+                            MixinButton(
                                 modifier = Modifier
                                     .weight(1f)
                                     .height(48.dp),
-                                colors = ButtonDefaults.outlinedButtonColors(
-                                    backgroundColor =  MixinAppTheme.colors.accent
-                                ),
                                 onClick = {
                                     clipboardManager.setText(AnnotatedString(state.content))
                                     toast(R.string.copied_to_clipboard)
                                 },
                                 shape = RoundedCornerShape(32.dp),
                             ) {
-                                Text(text = stringResource(R.string.Copy), color = Color.White)
+                                Text(text = stringResource(R.string.Copy), fontSize = 16.sp, color = Color.White)
                             }
                         }
                     } else {
@@ -158,6 +163,12 @@ fun LogViewerScreen(
                                 shape = RoundedCornerShape(32.dp),
                                 colors = ButtonDefaults.outlinedButtonColors(
                                     backgroundColor =  MixinAppTheme.colors.accent
+                                ),
+                                elevation = ButtonDefaults.elevation(
+                                    defaultElevation = 0.dp,
+                                    pressedElevation = 0.dp,
+                                    hoveredElevation = 0.dp,
+                                    focusedElevation = 0.dp,
                                 ),
                             ) {
                                 Text(text = stringResource(R.string.Done), color = Color.White)

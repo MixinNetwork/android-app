@@ -131,7 +131,7 @@ object WalletConnectV2 : WalletConnect() {
                     sessionProposal: Wallet.Model.SessionProposal,
                     verifyContext: Wallet.Model.VerifyContext,
                 ) {
-                    Timber.d("$TAG onSessionProposal $sessionProposal")
+                    Timber.d("$TAG onSessionProposal $sessionProposal $verifyContext")
                     val chains = supportChainList.map { c -> c.chainId }
                     val namespaces =
                         (sessionProposal.requiredNamespaces.values + sessionProposal.optionalNamespaces.values)
@@ -319,7 +319,7 @@ object WalletConnectV2 : WalletConnect() {
                     val array = JsonParser.parseString(request.request.params).asJsonArray
                     val address = array[0].toString().trim('"')
                     val data = array[1].toString().trim('"')
-                    Timber.d("$TAG eth sign: $data")
+                    if (BuildConfig.DEBUG) Timber.d("$TAG eth sign: $data")
                     if (localAddress.isNotBlank() && !address.equals(localAddress, true)) {
                         throw IllegalArgumentException("Address unequal")
                     }
@@ -330,7 +330,7 @@ object WalletConnectV2 : WalletConnect() {
                     val array = JsonParser.parseString(request.request.params).asJsonArray
                     val data = array[0].toString().trim('"')
                     val address = array[1].toString().trim('"')
-                    Timber.d("$TAG personal sign: $data")
+                    if (BuildConfig.DEBUG) Timber.d("$TAG personal sign: $data")
                     if (localAddress.isNotBlank() && !address.equals(localAddress, true)) {
                         throw IllegalArgumentException("Address unequal")
                     }
@@ -341,7 +341,7 @@ object WalletConnectV2 : WalletConnect() {
                     val array = JsonParser.parseString(request.request.params).asJsonArray
                     val address = array[0].toString().trim('"')
                     val data = array[1].toString().trim('"')
-                    Timber.d("$TAG sign typed data: $data")
+                    if (BuildConfig.DEBUG) Timber.d("$TAG sign typed data: $data")
                     if (localAddress.isNotBlank() && !address.equals(localAddress, true)) {
                         throw IllegalArgumentException("Address unequal")
                     }
@@ -353,6 +353,9 @@ object WalletConnectV2 : WalletConnect() {
                         Timber.e("$TAG parseSessionRequest ETHSignTransaction transaction is null")
                         return null
                     }
+                    if (localAddress.isNotBlank() && !transaction.from.equals(localAddress, true)) {
+                        throw IllegalArgumentException("Address unequal")
+                    }
                     WCSignData.V2SignData(request.request.id, transaction, request)
                 }
                 Method.ETHSendTransaction.name -> {
@@ -360,6 +363,9 @@ object WalletConnectV2 : WalletConnect() {
                     if (transaction == null) {
                         Timber.e("$TAG parseSessionRequest ETHSendTransaction transaction is null")
                         return null
+                    }
+                    if (localAddress.isNotBlank() && !transaction.from.equals(localAddress, true)) {
+                        throw IllegalArgumentException("Address unequal")
                     }
                     WCSignData.V2SignData(request.request.id, transaction, request)
                 }
@@ -601,7 +607,7 @@ object WalletConnectV2 : WalletConnect() {
 
         val keyPair = ECKeyPair.create(priv)
         val credential = Credentials.create(keyPair)
-        val nonce = getNonce(credential.address)
+        val nonce = transaction.nonce?.toBigIntegerOrNull() ?: getNonce(credential.address)
         val v = Numeric.decodeQuantity(value)
         val tipGas = signData.tipGas
         if (tipGas == null) {
@@ -612,8 +618,10 @@ object WalletConnectV2 : WalletConnect() {
         val maxPriorityFeePerGas = tipGas.maxPriorityFeePerGas
         val maxFeePerGas = tipGas.selectMaxFeePerGas(transaction.maxFeePerGas?.let { Numeric.decodeQuantity(it) } ?: BigInteger.ZERO)
         val gasLimit = tipGas.gasLimit
-        Timber.e("$TAG dapp gas: ${transaction.gas?.let { Numeric.decodeQuantity(it) }} gasLimit: ${transaction.gasLimit?.let { Numeric.decodeQuantity(it) }} maxFeePerGas: ${transaction.maxFeePerGas?.let { Numeric.decodeQuantity(it) }} maxPriorityFeePerGas: ${transaction.maxPriorityFeePerGas?.let { Numeric.decodeQuantity(it) }} ")
-        Timber.e("$TAG nonce: $nonce, value $v wei, gasLimit: $gasLimit maxFeePerGas: $maxFeePerGas maxPriorityFeePerGas: $maxPriorityFeePerGas")
+        if (BuildConfig.DEBUG) {
+            Timber.d("$TAG dapp gas: ${transaction.gas?.let { Numeric.decodeQuantity(it) }} gasLimit: ${transaction.gasLimit?.let { Numeric.decodeQuantity(it) }} maxFeePerGas: ${transaction.maxFeePerGas?.let { Numeric.decodeQuantity(it) }} maxPriorityFeePerGas: ${transaction.maxPriorityFeePerGas?.let { Numeric.decodeQuantity(it) }} ")
+            Timber.d("$TAG nonce: $nonce, value $v wei, gasLimit: $gasLimit maxFeePerGas: $maxFeePerGas maxPriorityFeePerGas: $maxPriorityFeePerGas")
+        }
         val rawTransaction =
             RawTransaction.createTransaction(
                 chain.chainReference.toLong(),
@@ -627,7 +635,7 @@ object WalletConnectV2 : WalletConnect() {
             )
         val signedMessage = TransactionEncoder.signMessage(rawTransaction, chain.chainReference.toLong(), credential)
         val hexMessage = Numeric.toHexString(signedMessage)
-        Timber.d("$TAG signTransaction $hexMessage")
+        if (BuildConfig.DEBUG) Timber.d("$TAG signTransaction $hexMessage")
         if (approve) {
             approveRequestInternal(hexMessage, sessionRequest)
         }

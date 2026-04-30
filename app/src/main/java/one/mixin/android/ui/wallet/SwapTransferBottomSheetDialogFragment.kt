@@ -3,7 +3,6 @@ package one.mixin.android.ui.wallet
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.DialogInterface
-import android.net.Uri
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -30,9 +29,9 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -57,6 +56,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.google.gson.JsonElement
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
@@ -69,7 +69,13 @@ import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.ResponseError
 import one.mixin.android.api.request.web3.EstimateFeeRequest
+import one.mixin.android.api.request.web3.GaslessFeeRequest
+import one.mixin.android.api.request.web3.GaslessTxRequest
+import one.mixin.android.api.request.web3.SubmitGaslessTxRequest
+import one.mixin.android.api.request.web3.WEB3_FEE_TYPE_FREE
 import one.mixin.android.api.request.web3.Web3RawTransactionRequest
+import one.mixin.android.api.response.web3.EthGaslessTxPayload
+import one.mixin.android.api.response.web3.GaslessTxResponse
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.WalletOutput
@@ -82,13 +88,15 @@ import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.composeDp
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getSafeAreaInsetsTop
+import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.screenHeight
+import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.extension.toHex
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.withArgs
@@ -117,6 +125,7 @@ import one.mixin.android.ui.tip.wc.sessionrequest.FeeInfo
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.components.WalletLabel
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getMixinErrorStringByCode
@@ -129,9 +138,7 @@ import one.mixin.android.vo.toUser
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.Web3Signer
-import org.sol4kt.VersionedTransactionCompat
-import org.web3j.utils.Convert
-import org.web3j.utils.Numeric
+import one.mixin.android.widget.components.MixinButton
 import org.bitcoinj.base.BitcoinNetwork
 import org.bitcoinj.base.Coin
 import org.bitcoinj.base.ScriptType
@@ -141,11 +148,16 @@ import org.bitcoinj.core.TransactionWitness
 import org.bitcoinj.crypto.ECKey
 import org.bitcoinj.script.Script
 import org.bitcoinj.script.ScriptBuilder
+import org.sol4k.Base58
+import org.sol4k.Constants.SIGNATURE_LENGTH
+import org.sol4kt.VersionedTransactionCompat
+import org.web3j.utils.Convert
+import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
-import java.util.UUID
 import java.nio.ByteBuffer
+import java.util.UUID
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 
@@ -162,8 +174,14 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         private const val ARGS_OUT_ASSET = "args_out_asset"
         private const val ARGS_SOURCE = "args_source"
         private const val ARGS_DISPLAY_USER_ID = "args_display_user_id"
+        private const val ARGS_PREVIEW_DATA = "args_preview_data"
 
-        fun newInstance(swapResult: SwapResponse, inAsset: SwapToken, outAssetItem: SwapToken): SwapTransferBottomSheetDialogFragment {
+        fun newInstance(
+            swapResult: SwapResponse,
+            inAsset: SwapToken,
+            outAssetItem: SwapToken,
+            previewData: SwapTransferPreviewData? = null,
+        ): SwapTransferBottomSheetDialogFragment {
             return SwapTransferBottomSheetDialogFragment()
                 .withArgs {
                     putString(ARGS_LINK, swapResult.tx)
@@ -174,6 +192,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                     putString(ARGS_OUT_AMOUNT, swapResult.quote.outAmount)
                     putString(ARGS_SOURCE, swapResult.source)
                     putString(ARGS_DISPLAY_USER_ID, swapResult.displayUserId)
+                    putParcelable(ARGS_PREVIEW_DATA, previewData)
                 }
         }
     }
@@ -189,7 +208,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         val utxoMap: Map<String, WalletOutput> = localUtxos.associateBy { utxo -> "${utxo.transactionHash}:${utxo.outputIndex}" }
         val scriptCode: Script = ScriptBuilder.createP2PKHOutputScript(signingKey)
         val consumedOutputIds: MutableList<String> = mutableListOf()
-        transaction.inputs.forEachIndexed { inputIndex: Int, input: TransactionInput ->
+        transaction.inputs.toList().forEachIndexed { inputIndex: Int, input: TransactionInput ->
             val prevHash: String = input.outpoint.hash().toString()
             val prevIndex: Long = input.outpoint.index()
             val utxoKey = "$prevHash:$prevIndex"
@@ -278,12 +297,12 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         BigDecimal(requireNotNull(requireArguments().getString(ARGS_OUT_AMOUNT)))
     }
 
-    private val self by lazy {
-        requireNotNull(Session.getAccount()).toUser()
-    }
-
     private val link by lazy {
         requireNotNull(requireArguments().getString(ARGS_LINK)).toUri()
+    }
+
+    private val previewData by lazy {
+        requireArguments().getParcelableCompat(ARGS_PREVIEW_DATA, SwapTransferPreviewData::class.java)
     }
 
     private var step by mutableStateOf(Step.Pending)
@@ -299,6 +318,8 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     lateinit var tokenRepository: TokenRepository
 
     private var web3Transaction: JsSignMessage? by mutableStateOf(null)
+    private var gaslessPrepareResponse: GaslessTxResponse? by mutableStateOf(null)
+    private var isGaslessLoading by mutableStateOf(false)
     private var tipGas: TipGas? by mutableStateOf(null)
     private var solanaFee: BigDecimal? by mutableStateOf(null)
     private var btcFee: BigDecimal? by mutableStateOf(null)
@@ -475,23 +496,46 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                     ItemPriceContent(title = stringResource(id = R.string.Price).uppercase(), inAmount = inAmount, inAsset = inAsset, outAmount = outAmount, outAsset = outAsset)
                     Box(modifier = Modifier.height(20.dp))
                     if (source == "web3") {
-                        if (tipGas != null || solanaFee != null || btcFee != null) {
+                        val chainId = token?.chainId ?: inAsset.chain.chainId
+                        val isGaslessPrepared = web3Transaction?.type == JsSignMessage.TYPE_GASLESS_TRANSFER && gaslessPrepareResponse != null
+                        val previewFeeAmount = previewData?.feeAmount?.toBigDecimalOrNull()
+                        val previewFeeUsd = previewData?.feeUsd?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                        val shouldShowFeeLoading =
+                            !isGaslessPrepared && (
+                                isGaslessLoading ||
+                                    (chainId == Constants.ChainId.SOLANA_CHAIN_ID && solanaFee == null) ||
+                                    (chainId == Constants.ChainId.BITCOIN_CHAIN_ID && btcFee == null) ||
+                                    (chainId != Constants.ChainId.SOLANA_CHAIN_ID &&
+                                        chainId != Constants.ChainId.BITCOIN_CHAIN_ID &&
+                                        tipGas == null)
+                            )
+                        if (tipGas != null || solanaFee != null || btcFee != null || (isGaslessPrepared && previewFeeAmount != null)) {
                             val transaction = web3Transaction?.wcEthereumTransaction
-                            val fee = btcFee?.stripTrailingZeros() ?: solanaFee?.stripTrailingZeros() ?: tipGas?.displayValue(transaction?.maxFeePerGas) ?: BigDecimal.ZERO
+                            val fee = btcFee?.stripTrailingZeros()
+                                ?: solanaFee?.stripTrailingZeros()
+                                ?: tipGas?.displayValue(transaction?.maxFeePerGas)
+                                ?: previewFeeAmount
+                                ?: BigDecimal.ZERO
+                            val feeSymbol = previewData?.feeSymbol ?: asset?.symbol.orEmpty()
+                            val feeUsd = if (previewFeeUsd > BigDecimal.ZERO && tipGas == null && solanaFee == null && btcFee == null) {
+                                previewFeeUsd
+                            } else {
+                                fee.multiply(asset?.priceUsd?.toBigDecimal() ?: BigDecimal.ZERO)
+                            }
                             if (fee == BigDecimal.ZERO) {
                                 FeeInfo(
                                     amount = "$fee",
-                                    fee = fee.multiply(asset?.priceUsd?.toBigDecimal() ?: BigDecimal.ZERO),
+                                    fee = feeUsd,
                                 )
                             } else {
                                 FeeInfo(
-                                    amount = "$fee ${asset?.symbol ?: ""}",
-                                    fee = fee.multiply(asset?.priceUsd?.toBigDecimal() ?: BigDecimal.ZERO),
+                                    amount = "$fee $feeSymbol",
+                                    fee = feeUsd,
                                     gasPrice = tipGas?.displayGas(transaction?.maxFeePerGas)?.toPlainString(),
                                 )
                             }
                         } else {
-                            FeeInfo("0", BigDecimal("0"))
+                            FeeInfo("0", BigDecimal("0"), isLoading = shouldShowFeeLoading)
                         }
                     } else {
                         FeeInfo("0", BigDecimal("0"))
@@ -532,19 +576,15 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                         .fillMaxWidth(),
                                 horizontalArrangement = Arrangement.Center,
                             ) {
-                                Button(
+                                MixinButton(
                                     onClick = {
                                         onDoneAction?.invoke()
                                         dismiss()
                                     },
-                                    colors =
-                                        ButtonDefaults.outlinedButtonColors(
-                                            backgroundColor = MixinAppTheme.colors.accent,
-                                        ),
-                                    shape = RoundedCornerShape(20.dp),
-                                    contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
+                                    shape = RoundedCornerShape(30.dp),
+                                    contentPadding = PaddingValues(horizontal = 35.dp, vertical = 10.dp),
                                 ) {
-                                    Text(text = stringResource(id = R.string.Done), color = Color.White)
+                                    Text(text = stringResource(id = R.string.Done), fontSize = 16.sp, color = Color.White)
                                 }
                             }
                         }
@@ -578,7 +618,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                         }
                     }
                 }
-                Box(modifier = Modifier.height(36.dp))
+                Box(modifier = Modifier.height(32.dp))
             }
         }
     }
@@ -608,6 +648,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     }
 
     private fun showPin() {
+        errorInfo = null
         PinInputBottomSheetDialogFragment.newInstance(biometricInfo = getBiometricInfo(), from = 1).setOnPinComplete { pin ->
             lifecycleScope.launch(
                 CoroutineExceptionHandler { _, error ->
@@ -623,9 +664,22 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 step = Step.Sending
-                if (source == "web3" && web3Transaction != null) {
+                if (source == "web3") {
+                    val signMessage = requireNotNull(web3Transaction) { "Transaction not ready" }
                     try {
-                        when (web3Transaction!!.type) {
+                        when (signMessage.type) {
+                            JsSignMessage.TYPE_GASLESS_TRANSFER -> {
+                                submitGaslessTransfer(pin)
+                                defaultSharedPreferences.putLong(
+                                    Constants.BIOMETRIC_PIN_CHECK,
+                                    System.currentTimeMillis(),
+                                )
+                                context?.updatePinCheck()
+                                step = Step.Done
+                                val wallet = if (inAsset.isWeb3) AnalyticsTracker.TradeWallet.WEB3 else AnalyticsTracker.TradeWallet.MAIN
+                                AnalyticsTracker.trackTradeEnd(wallet, inAmount, inAsset.price)
+                            }
+
                             JsSignMessage.TYPE_RAW_TRANSACTION -> {
                                 val priv = bottomViewModel.getWeb3Priv(requireContext(), pin, inAsset.chain.chainId)
                                 val tx = Web3Signer.signSolanaTransaction(priv, requireNotNull(solanaTx) { "required solana tx can not be null" }) {
@@ -647,7 +701,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                             }
 
                             JsSignMessage.TYPE_TRANSACTION -> {
-                                val transaction = requireNotNull(web3Transaction!!.wcEthereumTransaction)
+                                val transaction = requireNotNull(signMessage.wcEthereumTransaction)
                                 val priv = bottomViewModel.getWeb3Priv(requireContext(), pin, inAsset.chain.chainId)
                                 val pair = Web3Signer.ethSignTransaction(priv, transaction, tipGas!!, chain = token?.getChainFromName()) { address ->
                                     val nonce = rpc.nonceAt(inAsset.chain.chainId, address) ?: throw IllegalArgumentException("failed to get nonce")
@@ -665,13 +719,13 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                             }
 
                             JsSignMessage.TYPE_BTC_TRANSACTION -> {
-                                val rawHex: String = web3Transaction!!.data ?: throw IllegalArgumentException("empty btc transaction hex")
+                                val rawHex: String = signMessage.data ?: throw IllegalArgumentException("empty btc transaction hex")
                                 val priv: ByteArray = bottomViewModel.getWeb3Priv(requireContext(), pin, Constants.ChainId.BITCOIN_CHAIN_ID)
                                 val key: ECKey = ECKey.fromPrivate(priv, true)
                                 val fromAddress: String = key.toAddress(ScriptType.P2WPKH, BitcoinNetwork.MAINNET).toString()
                                 val localUtxos: List<WalletOutput> = web3ViewModel.outputsByAddress(fromAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
                                 val signedResult: BtcSignedResult = signBtcTransaction(rawHex, key, localUtxos)
-                                bottomViewModel.postRawTx(signedResult.signedHex, Constants.ChainId.BITCOIN_CHAIN_ID, fromAddress, inAsset.assetId, rate = web3Transaction?.rate)
+                                bottomViewModel.postRawTx(signedResult.signedHex, Constants.ChainId.BITCOIN_CHAIN_ID, fromAddress, inAsset.assetId, rate = signMessage.rate)
                                 web3ViewModel.markOutputsToSigned(Web3Signer.currentWalletId, fromAddress, signedResult.signedHex, signedResult.consumedOutputIds)
                                 defaultSharedPreferences.putLong(
                                     Constants.BIOMETRIC_PIN_CHECK,
@@ -684,7 +738,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                             }
 
                             else -> {
-                                throw IllegalArgumentException("invalid signMessage type ${web3Transaction!!.type}")
+                                throw IllegalArgumentException("invalid signMessage type ${signMessage.type}")
                             }
                         }
                     } catch (e: Exception) {
@@ -814,54 +868,74 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                     val token = bottomViewModel.web3TokenItemById(Web3Signer.currentWalletId, inAsset.assetId)
                     if (token != null) {
                         try {
-                            val fromAddress: String = if (token.chainId == Constants.ChainId.Solana) {
-                                Web3Signer.solanaAddress
-                            } else if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-                                val btcAddress = web3ViewModel.getAddressesByChainId(Web3Signer.currentWalletId, Constants.ChainId.BITCOIN_CHAIN_ID)
-                                requireNotNull(btcAddress?.destination) { "btc address not found" }
-                            } else {
-                                Web3Signer.evmAddress
-                            }
+                            val fromAddress = resolveSenderAddress(token)
                             senderAddress = fromAddress
-                            val localUtxos: List<WalletOutput>? = if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-                                web3ViewModel.outputsByAddress(fromAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
-                            } else {
-                                null
-                            }
-                            val inputAmount: String = requireArguments().getString(ARGS_IN_AMOUNT)!!
-                            val transaction: JsSignMessage = if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-                                val zeroFeeTx: JsSignMessage = token.buildTransaction(
-                                    rpc = rpc,
-                                    fromAddress = fromAddress,
-                                    toAddress = depositDestination,
-                                    v = inputAmount,
-                                    localUtxos = localUtxos,
-                                    rate = BigDecimal.ONE,
-                                )
-                                val estimatedFee = web3ViewModel.calcFee(token, zeroFeeTx, fromAddress)
-                                btcFee = estimatedFee.fee ?: BigDecimal.ZERO
-                                token.buildTransaction(
-                                    rpc = rpc,
-                                    fromAddress = fromAddress,
-                                    toAddress = depositDestination,
-                                    v = inputAmount,
-                                    localUtxos = localUtxos,
-                                    rate = estimatedFee.rate,
-                                    minFee = estimatedFee.minFee,
-                                )
-                            } else {
-                                token.buildTransaction(
-                                    rpc,
-                                    fromAddress,
-                                    depositDestination,
-                                    inputAmount,
-                                )
-                            }
-                            web3Transaction = transaction
                             this@SwapTransferBottomSheetDialogFragment.token = token
+                            chainToken = bottomViewModel.web3TokenItemById(Web3Signer.currentWalletId, token.chainId)
+                            asset = chainToken?.toTokenItem()
+                            if (previewData != null) {
+                                applyPreviewData(previewData!!, token)
+                            } else {
+                                val localUtxos: List<WalletOutput>? = if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                                    web3ViewModel.outputsByAddress(fromAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
+                                } else {
+                                    null
+                                }
+                                val inputAmount: String = requireArguments().getString(ARGS_IN_AMOUNT)!!
+                                if (token.chainId != Constants.ChainId.BITCOIN_CHAIN_ID) {
+                                    isGaslessLoading = true
+                                    val gaslessPayload = try {
+                                        probeGaslessAvailability(
+                                            token = token,
+                                            fromAddress = fromAddress,
+                                            toAddress = depositDestination,
+                                            amount = inputAmount,
+                                        )
+                                    } finally {
+                                        isGaslessLoading = false
+                                    }
+                                    if (gaslessPayload != null) {
+                                        gaslessPrepareResponse = gaslessPayload
+                                        web3Transaction = JsSignMessage(
+                                            callbackId = 0L,
+                                            type = JsSignMessage.TYPE_GASLESS_TRANSFER,
+                                        )
+                                        return@let
+                                    }
+                                }
+                                val transaction: JsSignMessage = if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                                    val zeroFeeTx: JsSignMessage = token.buildTransaction(
+                                        rpc = rpc,
+                                        fromAddress = fromAddress,
+                                        toAddress = depositDestination,
+                                        v = inputAmount,
+                                        localUtxos = localUtxos,
+                                        rate = BigDecimal.ONE,
+                                    )
+                                    val estimatedFee = web3ViewModel.calcFee(token, zeroFeeTx, fromAddress)
+                                    btcFee = estimatedFee.fee ?: BigDecimal.ZERO
+                                    token.buildTransaction(
+                                        rpc = rpc,
+                                        fromAddress = fromAddress,
+                                        toAddress = depositDestination,
+                                        v = inputAmount,
+                                        localUtxos = localUtxos,
+                                        rate = estimatedFee.rate,
+                                        minFee = estimatedFee.minFee,
+                                    )
+                                } else {
+                                    token.buildTransaction(
+                                        rpc,
+                                        fromAddress,
+                                        depositDestination,
+                                        inputAmount,
+                                    )
+                                }
+                                web3Transaction = transaction
 
-                            val chain = token.getChainFromName()
-                            refreshEstimatedGasAndAsset(chain)
+                                val chain = token.getChainFromName()
+                                refreshEstimatedGasAndAsset(chain)
+                            }
                         } catch (e: Exception) {
                             Timber.e(e, "Failed to build transaction")
                             errorInfo = if (e is EmptyUtxoException) getString(R.string.no_available_utxo) else e.message
@@ -875,11 +949,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
             }
 
             else -> {
-                val uri = if (swapLink != null) {
-                    Uri.parse(swapLink)
-                } else {
-                    link
-                }
+                val uri = swapLink?.toUri() ?: link
 
                 val assetId = requireNotNull(uri.getQueryParameter("asset"))
                 val amount = requireNotNull(uri.getQueryParameter("amount"))
@@ -969,6 +1039,248 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                 }
                 asset = bottomViewModel.refreshAsset(Constants.ChainId.SOLANA_CHAIN_ID)
             }.launchIn(lifecycleScope)
+    }
+
+    private suspend fun resolveSenderAddress(token: Web3TokenItem): String {
+        return if (token.chainId == Constants.ChainId.Solana) {
+            Web3Signer.solanaAddress
+        } else if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+            val btcAddress = web3ViewModel.getAddressesByChainId(Web3Signer.currentWalletId, Constants.ChainId.BITCOIN_CHAIN_ID)
+            requireNotNull(btcAddress?.destination) { "btc address not found" }
+        } else {
+            Web3Signer.evmAddress
+        }
+    }
+
+    private fun applyPreviewData(
+        previewData: SwapTransferPreviewData,
+        token: Web3TokenItem,
+    ) {
+        senderAddress = previewData.senderAddress
+        receiver = previewData.receiver ?: receiver
+        web3Transaction = previewData.web3Transaction
+        gaslessPrepareResponse = previewData.gaslessPrepareResponseJson?.let {
+            GsonHelper.customGson.fromJson(it, GaslessTxResponse::class.java)
+        }
+
+        val previewFee = previewData.feeAmount.toBigDecimalOrNull()
+        when (token.chainId) {
+            Constants.ChainId.BITCOIN_CHAIN_ID -> btcFee = previewFee
+            Constants.ChainId.SOLANA_CHAIN_ID -> {
+                solanaFee = previewFee
+                previewData.web3Transaction.data?.let {
+                    solanaTx = VersionedTransactionCompat.from(it)
+                }
+            }
+            else -> {
+                tipGas = previewData.toTipGas(token.chainId)
+            }
+        }
+    }
+
+    private fun SwapTransferPreviewData.toTipGas(chainId: String): TipGas? {
+        val gasLimit = tipGasLimit?.toBigIntegerOrNull() ?: return null
+        val maxFeePerGas = tipGasMaxFeePerGas?.toBigIntegerOrNull() ?: return null
+        val maxPriorityFeePerGas = tipGasMaxPriorityFeePerGas?.toBigIntegerOrNull() ?: return null
+        return TipGas(
+            assetId = chainId,
+            gasLimit = gasLimit,
+            maxFeePerGas = maxFeePerGas,
+            maxPriorityFeePerGas = maxPriorityFeePerGas,
+        )
+    }
+
+    private suspend fun probeGaslessAvailability(
+        token: Web3TokenItem,
+        fromAddress: String,
+        toAddress: String,
+        amount: String,
+    ): GaslessTxResponse? {
+        val feeAmount = resolveGaslessFeeAmount(token, fromAddress, toAddress) ?: return null
+        return runCatching {
+            web3ViewModel.gaslessPrepare(
+                GaslessTxRequest(
+                    from = fromAddress,
+                    to = toAddress,
+                    assetId = token.assetId,
+                    amount = amount,
+                    feeAssetId = token.assetId,
+                    feeAmount = feeAmount,
+                    chainId = token.chainId,
+                ),
+            )
+        }.getOrNull()?.data
+    }
+
+    private suspend fun prepareGaslessTransfer(
+        token: Web3TokenItem,
+        fromAddress: String,
+        toAddress: String,
+        amount: String,
+    ): GaslessTxResponse {
+        gaslessPrepareResponse?.let { return it }
+        val feeAmount = requireNotNull(resolveGaslessFeeAmount(token, fromAddress, toAddress)) {
+            "gasless fee amount is required"
+        }
+        val response = web3ViewModel.gaslessPrepare(
+            GaslessTxRequest(
+                from = fromAddress,
+                to = toAddress,
+                assetId = token.assetId,
+                amount = amount,
+                feeAssetId = token.assetId,
+                feeAmount = feeAmount,
+                chainId = token.chainId,
+            ),
+        )
+        if (!response.isSuccess || response.data == null) {
+            throw IllegalStateException(response.errorDescription)
+        }
+        return response.data!!
+    }
+
+    private suspend fun resolveGaslessFeeAmount(
+        token: Web3TokenItem,
+        fromAddress: String,
+        toAddress: String,
+    ): String? {
+        val response = runCatching {
+            web3ViewModel.gaslessFee(
+                GaslessFeeRequest(
+                    from = fromAddress,
+                    to = toAddress,
+                    assetId = token.assetId,
+                    chainId = token.chainId,
+                ),
+            )
+        }.getOrNull() ?: return null
+        if (!response.isSuccess || response.data == null) return null
+
+        val sameAssetFee = response.data!!.fees.firstOrNull { it.assetId == token.assetId }
+        return (sameAssetFee ?: response.data!!.fees.firstOrNull())?.amount
+    }
+
+    private suspend fun submitGaslessTransfer(pin: String) {
+        val transferToken = requireNotNull(token) { "required web3 token can not be null" }
+        val fromAddress = requireNotNull(senderAddress) { "sender address can not be null" }
+        val toAddress = requireNotNull(depositDestination) { "deposit destination can not be null" }
+        val amount = inAmount.stripTrailingZeros().toPlainString()
+        val preparedResponse = prepareGaslessTransfer(transferToken, fromAddress, toAddress, amount)
+        val privateKey = web3ViewModel.getWeb3Priv(requireContext(), pin, transferToken.chainId)
+        when (transferToken.chainId) {
+            Constants.ChainId.SOLANA_CHAIN_ID -> submitSolanaGaslessTransfer(
+                token = transferToken,
+                amount = amount,
+                fromAddress = fromAddress,
+                toAddress = toAddress,
+                payload = preparedResponse.payload,
+                privateKey = privateKey,
+            )
+            in Constants.Web3EvmChainIds -> submitEvmGaslessTransfer(
+                token = transferToken,
+                fromAddress = fromAddress,
+                toAddress = toAddress,
+                amount = amount,
+                chainId = preparedResponse.chainId,
+                payload = preparedResponse.payload,
+                privateKey = privateKey,
+            )
+            else -> throw IllegalArgumentException("Gasless is not supported for ${transferToken.chainId}")
+        }
+    }
+
+    private suspend fun submitSolanaGaslessTransfer(
+        token: Web3TokenItem,
+        amount: String,
+        fromAddress: String,
+        toAddress: String,
+        payload: JsonElement,
+        privateKey: ByteArray,
+    ) {
+        val rawPayload = payload.takeIf { it.isJsonPrimitive }?.asString
+            ?: throw IllegalStateException("Gasless payload is not a Solana base64 transaction")
+        val tx = VersionedTransactionCompat.from(rawPayload)
+        val signedTx = Web3Signer.signSolanaTransaction(privateKey, tx) {
+            rpc.getLatestBlockhash() ?: throw IllegalArgumentException("failed to get blockhash")
+        }
+        if (!signedTx.allSignerSigned()) {
+            throw IllegalStateException("Gasless Solana transaction is not fully signed")
+        }
+        val rawTx = signedTx.serialize().base64Encode()
+        val txHash = signedTx.signatures.firstOrNull { signature ->
+            signature != Base58.encode(ByteArray(SIGNATURE_LENGTH))
+        } ?: throw IllegalStateException("Gasless Solana transaction signature is missing")
+        val now = nowInUtc()
+        web3ViewModel.insertSignedPendingTransaction(
+            hash = txHash,
+            chainId = Constants.ChainId.Solana,
+            account = fromAddress,
+            assetId = token.assetId,
+            amount = amount.stripAmountZero(),
+            fee = "0",
+            to = toAddress,
+            raw = rawTx,
+            createdAt = now,
+            updatedAt = now,
+        )
+        val response = web3ViewModel.postRawTx(
+            rawTx = rawTx,
+            web3ChainId = Constants.ChainId.Solana,
+            account = fromAddress,
+            to = toAddress,
+            assetId = token.assetId,
+            feeType = WEB3_FEE_TYPE_FREE,
+        )
+        if (!response.isSuccess) {
+            throw IllegalStateException(response.errorDescription)
+        }
+    }
+
+    private suspend fun submitEvmGaslessTransfer(
+        token: Web3TokenItem,
+        fromAddress: String,
+        toAddress: String,
+        amount: String,
+        chainId: String,
+        payload: JsonElement,
+        privateKey: ByteArray,
+    ) {
+        if (!payload.isJsonObject) {
+            throw IllegalStateException("Gasless payload is not an EVM object payload")
+        }
+        val ethPayload = GsonHelper.customGson.fromJson(payload, EthGaslessTxPayload::class.java)
+            ?: throw IllegalStateException("Failed to parse gasless EVM payload")
+        val userOpSignature = Web3Signer.signEthMessage(
+            priv = privateKey,
+            message = ethPayload.signing.userOperation.message,
+            type = JsSignMessage.TYPE_GASLESS_TRANSFER,
+        )
+        val eip7702AuthSignature = Web3Signer.signEip7702Auth(privateKey, ethPayload.signing.eip7702Auth)
+        val response = web3ViewModel.submitGaslessTx(
+            SubmitGaslessTxRequest(
+                chainId = chainId,
+                payload = payload,
+                userOpSignature = userOpSignature,
+                eip7702AuthSignature = eip7702AuthSignature,
+            ),
+        )
+        if (!response.isSuccess) {
+            throw IllegalStateException(response.errorDescription)
+        }
+        val sponsorTxId = response.data?.sponsorTxId ?: throw IllegalStateException("Missing sponsor tx id")
+        val now = nowInUtc()
+        web3ViewModel.insertGaslessPendingTransaction(
+            sponsorTxId = sponsorTxId,
+            chainId = chainId,
+            account = fromAddress,
+            assetId = token.assetId,
+            amount = amount.stripAmountZero(),
+            fee = "",
+            to = toAddress,
+            nonce = ethPayload.userOperation.nonce,
+            createdAt = now,
+            updatedAt = now,
+        )
     }
 
 
@@ -1173,13 +1485,24 @@ fun AssetChanges(
                 placeholder = R.drawable.ic_avatar_place_holder,
             )
             Box(modifier = Modifier.width(12.dp))
-            Text(
+            BasicText(
+                modifier = Modifier.weight(1f),
                 text = "-${inAmount.toPlainString()} ${inAsset.symbol}",
-                color = MixinAppTheme.colors.textPrimary,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.W600
+                style = TextStyle(
+                    color = MixinAppTheme.colors.textPrimary,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.W600,
+                ),
+                maxLines = 1,
+                softWrap = false,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                autoSize = TextAutoSize.StepBased(
+                    minFontSize = 8.sp,
+                    maxFontSize = 16.sp,
+                    stepSize = 0.5.sp,
+                ),
             )
-            Box(modifier = Modifier.weight(1f))
+            Box(modifier = Modifier.width(8.dp))
             Text(
                 text = inAsset.chain.name,
                 color = MixinAppTheme.colors.textAssist,
@@ -1200,17 +1523,30 @@ fun AssetChanges(
                 placeholder = R.drawable.ic_avatar_place_holder,
             )
             Box(modifier = Modifier.width(12.dp))
-            Text(
+            BasicText(
+                modifier = Modifier.weight(1f),
                 text = "+${outAmount.toPlainString()} ${outAsset.symbol}",
-                color = MixinAppTheme.colors.green,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.W600
+                style = TextStyle(
+                    color = MixinAppTheme.colors.green,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.W600,
+                ),
+                maxLines = 1,
+                softWrap = false,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                autoSize = TextAutoSize.StepBased(
+                    minFontSize = 8.sp,
+                    maxFontSize = 16.sp,
+                    stepSize = 0.5.sp,
+                ),
             )
-            Box(modifier = Modifier.weight(1f))
+            Box(modifier = Modifier.width(8.dp))
             Text(
                 text = outAsset.chain.name,
                 color = MixinAppTheme.colors.textAssist,
                 fontSize = 14.sp,
+                textAlign = TextAlign.End,
+                maxLines = 1
             )
         }
     }

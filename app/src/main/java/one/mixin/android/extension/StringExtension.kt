@@ -62,6 +62,7 @@ fun String.generateQRCode(
     qrSize: Int,
     padding: Int = 32.dp,
     innerPadding: Int = 0.dp,
+    foregroundColor: Int = Color.BLACK,
 ): Pair<Bitmap, Int> {
     require(isNotEmpty()) { "Found empty contents" }
     require(qrSize >= 0) { "Requested dimensions are too small: $qrSize" }
@@ -105,7 +106,7 @@ fun String.generateQRCode(
         innerPadding / 2f,
         blackPaint,
     )
-    blackPaint.color = Color.BLACK
+    blackPaint.color = foregroundColor
     val rect = GradientDrawable()
     rect.shape = GradientDrawable.RECTANGLE
     rect.cornerRadii = radii
@@ -141,7 +142,7 @@ fun String.generateQRCode(
         }
         var r = sideQuadSize * multiple / 3.0f
         Arrays.fill(radii, r)
-        rect.setColor(-0x1000000)
+        rect.setColor(foregroundColor)
         rect.setBounds(x, y, x + sideQuadSize * multiple, y + sideQuadSize * multiple)
         rect.draw(canvas)
         canvas.drawRect(
@@ -158,7 +159,7 @@ fun String.generateQRCode(
         rect.draw(canvas)
         r = (sideQuadSize - 2) * multiple / 4.0f
         Arrays.fill(radii, r)
-        rect.setColor(-0x1000000)
+        rect.setColor(foregroundColor)
         rect.setBounds(x + multiple * 2, y + multiple * 2, x + (sideQuadSize - 2) * multiple, y + (sideQuadSize - 2) * multiple)
         rect.draw(canvas)
     }

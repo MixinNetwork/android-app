@@ -1,6 +1,5 @@
 package one.mixin.android.ui.setting.ui.page
 
-import PageScaffold
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -59,6 +58,7 @@ import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.toHex
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
@@ -91,6 +91,9 @@ fun MnemonicPhraseBackupPinPage(tip: Tip, pop: () -> Unit, next: (String) -> Uni
                     )
             }.onSuccess { response ->
                 if (response.isSuccess) {
+                    response.data?.let {
+                        Session.storeAccount(it)
+                    }
                     next(pinCode)
                 } else {
                     isLoading = false

@@ -18,6 +18,7 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.Web3Exception
+import one.mixin.android.web3.isNativeSolAsset
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.js.Web3Signer
@@ -41,7 +42,6 @@ import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
-import org.bitcoinj.core.Transaction as BtcTransaction
 
 @Parcelize
 data class Web3TokenItem(
@@ -231,7 +231,7 @@ suspend fun Web3TokenItem.buildTransaction(
         val sender = PublicKey(fromAddress)
         val receiver = PublicKey(toAddress)
         val instructions = mutableListOf<Instruction>()
-        if (isNativeSolToken()) {
+        if (isNativeSolAsset()) {
             val amount = solToLamport(v).toLong()
             instructions.add(TransferInstruction(sender, receiver, amount))
         } else {

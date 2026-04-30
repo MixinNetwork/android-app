@@ -5,9 +5,6 @@ import android.app.Application
 import android.content.ContentResolver
 import android.content.Context
 import android.content.SharedPreferences
-import androidx.datastore.core.DataStore
-import androidx.datastore.core.DataStoreFactory
-import androidx.datastore.dataStoreFile
 import com.birbit.android.jobqueue.config.Configuration
 import com.birbit.android.jobqueue.scheduling.FrameworkJobSchedulerService
 import com.google.android.gms.net.CronetProviderInstaller
@@ -40,8 +37,10 @@ import one.mixin.android.Constants.API.FOURSQUARE_URL
 import one.mixin.android.Constants.API.GIPHY_URL
 import one.mixin.android.Constants.API.Mixin_URL
 import one.mixin.android.Constants.API.URL
+import one.mixin.android.Constants.Account.PREF_REFERRAL_BOT_PK
 import one.mixin.android.Constants.Account.PREF_ROUTE_BOT_PK
 import one.mixin.android.Constants.DNS
+import one.mixin.android.Constants.RouteConfig.REFERRAL_API_URL
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_URL
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.DataErrorException
@@ -63,6 +62,7 @@ import one.mixin.android.api.service.GiphyService
 import one.mixin.android.api.service.MemberService
 import one.mixin.android.api.service.MessageService
 import one.mixin.android.api.service.ProvisioningService
+import one.mixin.android.api.service.ReferralService
 import one.mixin.android.api.service.RouteService
 import one.mixin.android.api.service.SignalKeyService
 import one.mixin.android.api.service.TipNodeService
@@ -75,10 +75,8 @@ import one.mixin.android.crypto.JobSenderKey
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.db.MessageHistoryDao
-import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
-import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.db.web3.Web3RawTransactionDao
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.filterNonAscii
@@ -90,10 +88,13 @@ import one.mixin.android.extension.toUri
 import one.mixin.android.job.BaseJob
 import one.mixin.android.job.JobLogger
 import one.mixin.android.job.JobNetworkUtil
+import one.mixin.android.job.MixinJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.MyJobService
 import one.mixin.android.job.TipCounterSyncedLiveData
+import one.mixin.android.session.CurrentUserScopeManager
 import one.mixin.android.session.JwtResult
+import one.mixin.android.session.MissingAccountScopeException
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Ephemeral
 import one.mixin.android.tip.Identity
@@ -108,8 +109,6 @@ import one.mixin.android.util.LiveDataCallAdapterFactory
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.LinkState
-import one.mixin.android.vo.SafeBox
-import one.mixin.android.vo.route.serializer.SafeBoxSerializer
 import one.mixin.android.web3.Rpc
 import one.mixin.android.webrtc.CallDebugLiveData
 import one.mixin.android.websocket.ChatWebSocket
@@ -415,7 +414,24 @@ object AppModule {
                 .injector { job ->
                     if (job is BaseJob) {
                         val entryPoint = EntryPointAccessors.fromApplication(app.applicationContext, BaseJob.JobEntryPoint::class.java)
-                        entryPoint.inject(job)
+                        try {
+                            entryPoint.inject(job)
+                        } catch (t: Throwable) {
+                            val missingAccountScope = t.findMissingAccountScopeException()
+                            if (missingAccountScope != null) {
+                                job.setCancelled(true)
+                                if (job is MixinJob) {
+                                    runCatching { job.cancel() }
+                                        .onFailure { cancelError ->
+                                            Timber.w(cancelError, "Failed to cancel job after skipped injection: %s", job.javaClass.simpleName)
+                                        }
+                                }
+                                Timber.w(missingAccountScope, "Skip job injection because account scope is unavailable: %s", job.javaClass.simpleName)
+                                reportException("Skip job injection: ${job.javaClass.simpleName}", missingAccountScope)
+                            } else {
+                                throw t
+                            }
+                        }
                     }
                 }
                 .customLogger(JobLogger())
@@ -425,6 +441,12 @@ object AppModule {
                 .createSchedulerFor(app.applicationContext, MyJobService::class.java),
         )
         return MixinJobManager(builder.build())
+    }
+
+    private fun Throwable.findMissingAccountScopeException(): MissingAccountScopeException? {
+        return generateSequence(this) { it.cause }
+            .filterIsInstance<MissingAccountScopeException>()
+            .firstOrNull()
     }
 
     @Provides
@@ -445,12 +467,11 @@ object AppModule {
         @ApplicationScope applicationScope: CoroutineScope,
         okHttp: OkHttpClient,
         accountService: AccountService,
-        mixinDatabase: MixinDatabase,
-        pendingDatabase: PendingDatabase,
+        currentUserScopeManager: CurrentUserScopeManager,
         jobManager: MixinJobManager,
         linkState: LinkState,
     ): ChatWebSocket =
-        ChatWebSocket(applicationScope, okHttp, accountService, mixinDatabase, pendingDatabase, jobManager, linkState)
+        ChatWebSocket(applicationScope, okHttp, accountService, currentUserScopeManager, jobManager, linkState)
 
     @Provides
     @Singleton
@@ -533,6 +554,49 @@ object AppModule {
         return retrofit.create(RouteService::class.java)
     }
 
+    @Singleton
+    @Provides
+    fun provideReferralService(
+        resolver: ContentResolver,
+        httpLoggingInterceptor: HttpLoggingInterceptor?,
+        @ApplicationContext appContext: Context,
+    ): ReferralService {
+        val builder = OkHttpClient.Builder()
+        builder.connectTimeout(15, TimeUnit.SECONDS)
+        builder.writeTimeout(15, TimeUnit.SECONDS)
+        builder.readTimeout(15, TimeUnit.SECONDS)
+        builder.dns(DNS)
+        val client =
+            builder.apply {
+                httpLoggingInterceptor?.let { interceptor ->
+                    addNetworkInterceptor(interceptor)
+                }
+                addInterceptor { chain ->
+                    val sourceRequest = chain.request()
+                    val b = sourceRequest.newBuilder()
+                    b.addHeader("User-Agent", API_UA)
+                        .addHeader("Accept-Language", Locale.getDefault().language)
+                        .addHeader("Mixin-Device-Id", getStringDeviceId(resolver))
+                        .addHeader(xRequestId, UUID.randomUUID().toString())
+                    val botPublicKey = appContext.defaultSharedPreferences.getString(PREF_REFERRAL_BOT_PK, null)
+                    if (botPublicKey.isNullOrBlank()) return@addInterceptor chain.proceed(b.build())
+                    val (ts, signature) = Session.getBotSignature(botPublicKey, sourceRequest)
+                    b.addHeader(mrAccessTimestamp, ts.toString())
+                    b.addHeader(mrAccessSign, signature)
+                    val request = b.build()
+                    return@addInterceptor chain.proceed(request)
+                }
+            }.build()
+        val retrofit =
+            Retrofit.Builder()
+                .baseUrl(REFERRAL_API_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .addCallAdapterFactory(CoroutineCallAdapterFactory())
+                .client(client)
+                .build()
+        return retrofit.create(ReferralService::class.java)
+    }
+
     @Provides
     @Singleton
     fun provideCallState() = CallStateLiveData()
@@ -609,7 +673,6 @@ object AppModule {
     fun provideTransferStatus() = TransferStatusLiveData()
 
     @Provides
-    @Singleton
     fun providesRpc(routerService: RouteService, web3RawTransactionDao: Web3RawTransactionDao) = Rpc(routerService, web3RawTransactionDao)
 
     @DefaultDispatcher
@@ -639,7 +702,6 @@ object AppModule {
         }
 
     @Provides
-    @Singleton
     fun provideJobSenderKey(
         participantSessionDao: ParticipantSessionDao,
         signalProtocol: SignalProtocol,
@@ -657,27 +719,6 @@ object AppModule {
         linkState,
         messageHistoryDao,
     )
-
-    private const val DATA_STORE_FILE_NAME = "safe_box_%s.store"
-
-    @Singleton
-    @Provides
-    fun providesDataStore(
-        @ApplicationContext appContext: Context,
-    ): DataStore<SafeBox> {
-        return DataStoreFactory.create(
-            serializer = SafeBoxSerializer,
-            produceFile = {
-                appContext.dataStoreFile(
-                    String.format(
-                        DATA_STORE_FILE_NAME,
-                        Session.getAccountId(),
-                    ),
-                )
-            },
-            scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
-        )
-    }
 
     @Singleton
     @Provides

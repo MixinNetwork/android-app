@@ -1,6 +1,5 @@
 package one.mixin.android.ui.setting.ui.components
 
-import PageScaffold
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -33,6 +32,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.timeFormat
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.viewmodel.MemberViewModel
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.MemberOrderStatus

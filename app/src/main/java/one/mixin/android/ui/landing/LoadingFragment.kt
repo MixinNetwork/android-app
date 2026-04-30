@@ -51,8 +51,13 @@ import javax.inject.Inject
 class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
     companion object {
         const val TAG: String = "LoadingFragment"
+        private const val ARGS_SOURCE = "args_source"
 
-        fun newInstance() = LoadingFragment()
+        fun newInstance(source: String? = null) = LoadingFragment().apply {
+            arguments = Bundle().apply {
+                source?.let { putString(ARGS_SOURCE, it) }
+            }
+        }
     }
 
     @Inject
@@ -67,7 +72,10 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
     ) {
         super.onViewCreated(view, savedInstanceState)
         MixinApplication.get().isOnline.set(true)
-        AnalyticsTracker.trackSignalInit()
+        when (arguments?.getString(ARGS_SOURCE)) {
+            InitializeActivity.SOURCE_SIGN_UP -> AnalyticsTracker.trackSignUpSignalInit()
+            InitializeActivity.SOURCE_LOGIN -> AnalyticsTracker.trackLoginSignalInit()
+        }
         checkAndLoad()
     }
 

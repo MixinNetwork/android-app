@@ -764,7 +764,7 @@ public class RLottieDrawable extends BitmapDrawable implements Animatable, Bitma
             return;
         }
         boolean mustCancel = parentViews.isEmpty() && getCallback() == null;
-        if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             mustCancel = mustCancel && (masterParent == null || !masterParent.isAttachedToWindow());
         } else {
             mustCancel = mustCancel && masterParent == null;

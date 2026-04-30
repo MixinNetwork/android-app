@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <View
+        android:id="@+id/ph"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#22000000" />
+
+    <RelativeLayout
+        android:id="@+id/search_view"
+        android:layout_width="match_parent"
+        android:layout_height="?android:attr/actionBarSize"
+        android:layout_below="@id/ph"
+        android:background="@drawable/bg_upper_round"
+        android:clickable="true"
+        android:focusable="true">
+
+        <one.mixin.android.widget.SearchView
+            android:id="@+id/search_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="16dp"
+            android:layout_toStartOf="@+id/close_ib"
+            android:background="@drawable/bg_round_window_24dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:drawablePadding="6dp"
+            android:gravity="center_vertical"
+            android:hint="@string/search_placeholder_market"
+            android:imeOptions="actionSearch|flagNoExtractUi"
+            android:inputType="text"
+            android:maxLines="1"
+            android:textColor="?attr/text_primary"
+            android:textColorHint="?attr/text_assist"
+            android:textSize="14sp"
+            app:drawable_icon="@drawable/ic_edit_search"
+            app:circle_clear_icon="true" />
+
+        <TextView
+            android:id="@+id/close_ib"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="20dp"
+            android:background="@drawable/mixin_ripple"
+            android:text="@string/Cancel"
+            android:textColor="@color/selector_blue_tv"
+            tools:ignore="ContentDescription" />
+
+    </RelativeLayout>
+
+    <HorizontalScrollView
+        android:id="@+id/category_scroll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/search_view"
+        android:background="?attr/bg_white"
+        android:scrollbars="none">
+
+        <RadioGroup
+            android:id="@+id/category_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="20dp"
+            android:paddingTop="12dp"
+            android:paddingEnd="20dp"
+            android:paddingBottom="8dp">
+
+            <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/radio_all"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/selector_radio"
+                android:button="@null"
+                android:checked="true"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="@string/perps_category_all"
+                android:textColor="@drawable/radio_button_text_selector"
+                android:textSize="14sp" />
+
+            <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/radio_crypto"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/selector_radio"
+                android:button="@null"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="@string/perps_category_crypto"
+                android:textColor="@drawable/radio_button_text_selector"
+                android:textSize="14sp" />
+
+            <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/radio_stocks"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/selector_radio"
+                android:button="@null"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="@string/perps_category_stocks"
+                android:textColor="@drawable/radio_button_text_selector"
+                android:textSize="14sp" />
+
+            <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/radio_indices"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/selector_radio"
+                android:button="@null"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="@string/perps_category_indices"
+                android:textColor="@drawable/radio_button_text_selector"
+                android:textSize="14sp"
+                android:visibility="gone" />
+
+            <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/radio_commodities"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/selector_radio"
+                android:button="@null"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="@string/perps_category_commodities"
+                android:textColor="@drawable/radio_button_text_selector"
+                android:textSize="14sp" />
+
+            <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/radio_forex"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/selector_radio"
+                android:button="@null"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="@string/perps_category_forex"
+                android:textColor="@drawable/radio_button_text_selector"
+                android:textSize="14sp"
+                android:visibility="gone" />
+        </RadioGroup>
+    </HorizontalScrollView>
+
+    <RelativeLayout
+        android:id="@+id/sort_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/category_scroll"
+        android:background="?attr/bg_white"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp">
+
+        <RelativeLayout
+            android:id="@+id/volume_sort"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:background="?android:attr/selectableItemBackground"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp">
+
+            <TextView
+                android:id="@+id/volume_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/perps_sort_volume_24"
+                android:textColor="?attr/text_assist"
+                android:textSize="12sp" />
+
+            <ImageView
+                android:id="@+id/volume_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@id/volume_title"
+                android:layout_alignTop="@id/volume_title"
+                android:layout_toEndOf="@id/volume_title"
+                android:layout_marginStart="4dp"
+                android:src="@drawable/ic_perps_sort_default" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/change_sort"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toStartOf="@id/price_sort_divider"
+            android:layout_marginEnd="10dp"
+            android:background="?android:attr/selectableItemBackground"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp">
+
+            <TextView
+                android:id="@+id/change_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/Price"
+                android:textColor="?attr/text_assist"
+                android:textSize="12sp" />
+
+            <ImageView
+                android:id="@+id/change_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@id/change_title"
+                android:layout_alignTop="@id/change_title"
+                android:layout_toEndOf="@id/change_title"
+                android:layout_marginStart="4dp"
+                android:src="@drawable/ic_perps_sort_default" />
+        </RelativeLayout>
+
+        <View
+            android:id="@+id/price_sort_divider"
+            android:layout_width="1dp"
+            android:layout_height="12dp"
+            android:layout_centerVertical="true"
+            android:layout_toStartOf="@id/price_sort"
+            android:layout_marginEnd="10dp"
+            android:background="?attr/bg_window" />
+
+        <RelativeLayout
+            android:id="@+id/price_sort"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:background="?android:attr/selectableItemBackground"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp">
+
+            <TextView
+                android:id="@+id/price_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="?attr/text_assist"
+                android:textSize="12sp" />
+
+            <ImageView
+                android:id="@+id/price_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@id/price_title"
+                android:layout_alignTop="@id/price_title"
+                android:layout_toEndOf="@id/price_title"
+                android:layout_marginStart="4dp"
+                android:src="@drawable/ic_perps_sort_default" />
+        </RelativeLayout>
+
+
+    </RelativeLayout>
+
+    <ViewAnimator
+        android:id="@+id/rv_va"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/sort_layout">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/market_rv"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="?attr/bg_white"
+            android:paddingBottom="8dp"
+            app:layoutManager="LinearLayoutManager" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="?attr/bg_white"
+            android:orientation="vertical"
+            tools:ignore="UseCompoundDrawables">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="80dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_search_empty"
+                android:contentDescription="@null" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="@dimen/margin16"
+                android:text="@string/NO_RESULTS"
+                android:textColor="?attr/text_assist" />
+        </LinearLayout>
+    </ViewAnimator>
+</RelativeLayout>

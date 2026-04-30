@@ -1,14 +1,18 @@
 package one.mixin.android.ui.wallet.components
 
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.ui.home.web3.components.OutlinedTab
 import one.mixin.android.vo.WalletCategory
@@ -28,9 +32,6 @@ fun WalletCategoryFilter(
     if (hasAll) {
         tabs.add(WalletCategoryTab(category = null, textResId = R.string.All, showBadge = false))
     }
-    if (hasSafe) {
-        tabs.add(WalletCategoryTab(category = WalletCategory.MIXIN_SAFE.value, textResId = R.string.Wallet_Safe, showBadge = showSafeBadge))
-    }
     if (hasCreated) {
         tabs.add(WalletCategoryTab(category = WalletCategory.CLASSIC.value, textResId = R.string.Wallet_Created, showBadge = false))
     }
@@ -39,6 +40,9 @@ fun WalletCategoryFilter(
     }
     if (hasWatch) {
         tabs.add(WalletCategoryTab(category = "watch", textResId = R.string.Wallet_Watching, showBadge = false))
+    }
+    if (hasSafe) {
+        tabs.add(WalletCategoryTab(category = WalletCategory.MIXIN_SAFE.value, textResId = R.string.Wallet_Safe, showBadge = showSafeBadge))
     }
     val selectedIndex: Int = tabs.indexOfFirst { tab: WalletCategoryTab -> tab.category == selectedCategory }.let { index: Int ->
         if (index >= 0) index else 0
@@ -65,7 +69,11 @@ private fun WalletCategoryTabRow(
     selectedIndex: Int,
     onTabSelected: (Int) -> Unit
 ) {
+    val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+
     LazyRow(
+        state = listState,
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp),
@@ -79,7 +87,22 @@ private fun WalletCategoryTabRow(
                 text = stringResource(tab.textResId),
                 selected = index == selectedIndex,
                 showBadge = tab.showBadge,
-                onClick = { onTabSelected(index) },
+                onClick = {
+                    onTabSelected(index)
+
+                    val layoutInfo = listState.layoutInfo
+                    val itemInfo = layoutInfo.visibleItemsInfo.firstOrNull { it.index == index }
+                        ?: return@OutlinedTab
+                    val viewportCenter = (layoutInfo.viewportStartOffset + layoutInfo.viewportEndOffset) / 2
+                    val itemCenter = itemInfo.offset + (itemInfo.size / 2)
+                    val delta = itemCenter - viewportCenter
+
+                    if (delta != 0) {
+                        coroutineScope.launch {
+                            listState.animateScrollBy(delta.toFloat())
+                        }
+                    }
+                }
             )
         }
     }

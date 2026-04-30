@@ -72,9 +72,6 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         super.onViewCreated(view, savedInstanceState)
         Timber.e("$TAG onViewCreated type: ${tipBundle.tipType}, event: ${tipBundle.tipEvent}")
         binding.apply {
-            if (tipBundle.tipType == TipType.Create) {
-                AnalyticsTracker.trackSignUpPinSet()
-            }
             closeIv.setOnClickListener {
                 activity?.onBackPressedDispatcher?.onBackPressed()
             }
@@ -376,9 +373,6 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 TipType.Change -> toast(R.string.Change_PIN_successfully)
                 TipType.Create -> toast(R.string.Set_PIN_successfully)
                 TipType.Upgrade -> toast(R.string.Upgrade_TIP_successfully)
-            }
-            if (tipBundle.tipType == TipType.Create) {
-                AnalyticsTracker.trackSignUpEnd()
             }
             activity?.finish()
         }

@@ -17,11 +17,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.initRenderScript
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
+import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_THREAD
@@ -37,10 +40,45 @@ fun getScreenshot() = screenshot
 fun refreshScreenshot(context: Context, cover: Int? = null) {
     runCatching { 
         MixinApplication.get().currentActivity?.let { activity ->
-            val rootView: View = activity.window.decorView.findViewById(android.R.id.content)
-            if (!rootView.isLaidOut) return@let
+            val decorView = activity.window.decorView
+            val rootView: View = decorView.findViewById(android.R.id.content)
+            if (!rootView.isLaidOut || !decorView.isLaidOut) return@let
 
-            val screenBitmap = rootView.drawToBitmap()
+            val contentBitmap = rootView.drawToBitmap()
+            val statusBarHeight = context.statusBarHeight()
+            val navigationBarHeight = context.navigationBarHeight()
+            val screenBitmap =
+                if (statusBarHeight > 0 || navigationBarHeight > 0) {
+                    Bitmap.createBitmap(
+                        contentBitmap.width,
+                        contentBitmap.height + statusBarHeight + navigationBarHeight,
+                        Bitmap.Config.ARGB_8888
+                    ).apply {
+                        val canvas = Canvas(this)
+                        val bgWhite = context.colorFromAttribute(R.attr.bg_white)
+                        canvas.drawRect(
+                            0f,
+                            0f,
+                            contentBitmap.width.toFloat(),
+                            statusBarHeight.toFloat(),
+                            Paint(Paint.FILTER_BITMAP_FLAG).apply {
+                                color = bgWhite
+                            }
+                        )
+                        canvas.drawBitmap(contentBitmap, 0f, statusBarHeight.toFloat(), null)
+                        canvas.drawRect(
+                            0f,
+                            (statusBarHeight + contentBitmap.height).toFloat(),
+                            contentBitmap.width.toFloat(),
+                            (statusBarHeight + contentBitmap.height + navigationBarHeight).toFloat(),
+                            Paint(Paint.FILTER_BITMAP_FLAG).apply {
+                                color = bgWhite
+                            }
+                        )
+                    }
+                } else {
+                    contentBitmap
+                }
             
             // Convert hardware bitmap to software bitmap if needed
             val softwareBitmap = if (screenBitmap.config == Bitmap.Config.HARDWARE) {

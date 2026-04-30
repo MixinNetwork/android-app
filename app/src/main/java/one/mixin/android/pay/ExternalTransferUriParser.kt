@@ -11,7 +11,6 @@ import one.mixin.android.extension.toUri
 import one.mixin.android.pay.erc831.isEthereumURLString
 import one.mixin.android.vo.AssetPrecision
 import org.sol4k.Base58
-import timber.log.Timber
 import java.math.BigDecimal
 
 suspend fun parseExternalTransferUri(

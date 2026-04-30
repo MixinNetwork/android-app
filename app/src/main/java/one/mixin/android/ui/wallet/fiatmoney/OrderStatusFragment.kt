@@ -519,7 +519,6 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                     RiskConfig(
                         BuildConfig.CHCEKOUT_ID,
                         RISK_ENVIRONMENT,
-                        null,
                     ),
                 )
             if (riskInstance == null) {

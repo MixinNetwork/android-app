@@ -57,6 +57,7 @@ import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment.Step
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.CrossWalletFeeFreeBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
@@ -104,6 +105,8 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         const val ARGS_TO_ADDRESS = "args_to_address"
         const val ARGS_TO_USER = "args_to_user"
         const val ARGS_IS_FEE_FREE = "args_is_fee_free"
+        const val ARGS_FEE_AMOUNT = "args_fee_amount"
+        const val ARGS_FEE_TOKEN = "args_fee_token"
 
         fun newInstance(
             jsSignMessage: JsSignMessage,
@@ -112,6 +115,8 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             amount: String? = null,
             token: Web3TokenItem? = null,
             chainToken: Web3TokenItem? = null,
+            feeAmount: String? = null,
+            feeToken: Web3TokenItem? = null,
             toAddress: String? = null,
             toUser: User? = null,
             isFeeWaived: Boolean = false,
@@ -127,6 +132,8 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             amount?.let { putString(ARGS_AMOUNT, it) }
             token?.let { putParcelable(ARGS_TOKEN, it) }
             chainToken?.let { putParcelable(ARGS_CHAIN_TOKEN, it) }
+            feeAmount?.let { putString(ARGS_FEE_AMOUNT, it) }
+            feeToken?.let { putParcelable(ARGS_FEE_TOKEN, it) }
             toAddress?.let { putString(ARGS_TO_ADDRESS, it) }
             toUser?.let { putParcelable(ARGS_TO_USER, it) }
             putBoolean(ARGS_IS_FEE_FREE, isFeeWaived)
@@ -149,6 +156,10 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
 
     private val toUser by lazy {
         requireArguments().getParcelableCompat(ARGS_TO_USER, User::class.java)
+    }
+    private val feeAmount by lazy { requireArguments().getString(ARGS_FEE_AMOUNT) }
+    private val feeToken by lazy {
+        requireArguments().getParcelableCompat(ARGS_FEE_TOKEN, Web3TokenItem::class.java)
     }
     private val isFeeWaived by lazy { requireArguments().getBoolean(ARGS_IS_FEE_FREE, false) }
     private val currentChain by lazy {
@@ -177,14 +188,14 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         amount = requireArguments().getString(ARGS_AMOUNT)
         if (address.isBlank()) {
             lifecycleScope.launch {
-                address = if (signMessage.isEvmMessage()) {
-                    Web3Signer.evmAddress
-                } else if (signMessage.isSolMessage()) {
-                    Web3Signer.solanaAddress
-                } else if (signMessage.isBtcMessage()){
-                    Web3Signer.btcAddress
-                } else {
-                    throw IllegalArgumentException("invalid signMessage type")
+                address = when {
+                    signMessage.isEvmMessage() -> Web3Signer.evmAddress
+                    signMessage.isSolMessage() -> Web3Signer.solanaAddress
+                    signMessage.isBtcMessage() -> Web3Signer.btcAddress
+                    signMessage.isGaslessTransfer() && currentChain == Chain.Solana -> Web3Signer.solanaAddress
+                    signMessage.isGaslessTransfer() -> Web3Signer.evmAddress
+                    currentChain == Chain.Solana -> Web3Signer.solanaAddress
+                    else -> throw IllegalArgumentException("invalid signMessage type $currentChain ${GsonHelper.customGson.toJson(signMessage)}")
                 }
             }
         }
@@ -193,10 +204,10 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
 
     @Composable
     override fun ComposeContent() {
-        if (signMessage.isSolMessage() && Web3Signer.solanaAddress.isBlank()) {
+        if ((signMessage.isSolMessage() || (signMessage.isGaslessTransfer() && currentChain == Chain.Solana)) && Web3Signer.solanaAddress.isBlank()) {
             toast(getString(R.string.not_support_network, currentChain.symbol))
             dismiss()
-        } else if (signMessage.isEvmMessage() && Web3Signer.evmAddress.isBlank()) {
+        } else if ((signMessage.isEvmMessage() || (signMessage.isGaslessTransfer() && currentChain != Chain.Solana)) && Web3Signer.evmAddress.isBlank()) {
             toast(getString(R.string.not_support_network, currentChain.symbol))
             dismiss()
         } else {
@@ -205,6 +216,8 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                 currentChain,
                 amount,
                 token,
+                feeAmount,
+                feeToken,
                 toAddress,
                 toUser,
                 signMessage.type,
@@ -291,6 +304,12 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     }
 
     private fun refreshEstimatedGasAndAsset(chain: Chain) {
+        if (signMessage.isGaslessTransfer()) {
+            lifecycleScope.launch {
+                asset = viewModel.refreshAsset(feeToken?.assetId ?: chain.getWeb3ChainId())
+            }
+            return
+        }
         if (chain == Chain.Solana) {
             refreshSolana()
             return
@@ -377,6 +396,17 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             try {
                 step = Step.Loading
                 errorInfo = null
+                customPinAction?.let { action ->
+                    withContext(Dispatchers.Main.immediate) {
+                        action(pin)
+                        step = Step.Done
+                        defaultSharedPreferences.putLong(
+                            Constants.BIOMETRIC_PIN_CHECK,
+                            System.currentTimeMillis(),
+                        )
+                    }
+                    return@launch
+                }
                 if (signMessage.type == JsSignMessage.TYPE_BTC_TRANSACTION) {
                     val rawHex = signMessage.data ?: throw IllegalArgumentException("empty btc transaction hex")
                     val priv = viewModel.getWeb3Priv(requireContext(), pin, Constants.ChainId.BITCOIN_CHAIN_ID)
@@ -559,6 +589,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     private var onRejectAction: (() -> Unit)? = null
     private var onDismissAction: ((Boolean) -> Unit)? = null
     private var onTxhash: ((String, String) -> Unit)? = null
+    private var customPinAction: (suspend (String) -> Unit)? = null
 
     fun getBiometricInfo() =
         BiometricInfo(
@@ -581,6 +612,11 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
 
     private fun deposit() {
         dismiss()
+    }
+
+    fun setOnCustomPinAction(callback: suspend (String) -> Unit): BrowserWalletBottomSheetDialogFragment {
+        customPinAction = callback
+        return this
     }
 }
 
@@ -623,6 +659,8 @@ fun showBrowserBottomSheetDialogFragment(
     amount: String? = null,
     token: Web3TokenItem? = null,
     chainToken: Web3TokenItem? = null,
+    feeAmount: String? = null,
+    feeToken: Web3TokenItem? = null,
     toAddress: String? = null,
     currentUrl: String? = null,
     currentTitle: String? = null,
@@ -630,10 +668,11 @@ fun showBrowserBottomSheetDialogFragment(
     onDone: ((String?) -> Unit)? = null,
     onDismiss: ((Boolean) -> Unit)? = null,
     onTxhash: ((String, String) -> Unit)? = null,
+    onCustomPinAction: (suspend (String) -> Unit)? = null,
     toUser: User? = null,
     isFeeWaived: Boolean = false,
 ) {
-    val wcBottomSheet = BrowserWalletBottomSheetDialogFragment.newInstance(signMessage, currentUrl, currentTitle, amount, token, chainToken, toAddress, toUser, isFeeWaived)
+    val wcBottomSheet = BrowserWalletBottomSheetDialogFragment.newInstance(signMessage, currentUrl, currentTitle, amount, token, chainToken, feeAmount, feeToken, toAddress, toUser, isFeeWaived)
     onDismiss?.let {
         wcBottomSheet.setOnDismiss(onDismiss)
     }
@@ -645,6 +684,9 @@ fun showBrowserBottomSheetDialogFragment(
     }
     onTxhash?.let {
         wcBottomSheet.setOnTxhash(onTxhash)
+    }
+    onCustomPinAction?.let {
+        wcBottomSheet.setOnCustomPinAction(onCustomPinAction)
     }
     wcBottomSheet.showNow(
         fragmentActivity.supportFragmentManager,

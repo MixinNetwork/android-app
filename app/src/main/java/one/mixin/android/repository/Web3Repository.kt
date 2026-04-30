@@ -3,19 +3,30 @@ package one.mixin.android.repository
 import android.content.Context
 import androidx.lifecycle.liveData
 import androidx.lifecycle.switchMap
-import androidx.paging.DataSource
+import androidx.paging.PagingSource
 import androidx.room.RoomRawQuery
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.request.AddressSearchRequest
+import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.web3.EstimateFeeRequest
+import one.mixin.android.api.request.web3.GaslessFeeRequest
+import one.mixin.android.api.request.web3.GaslessTxRequest
+import one.mixin.android.api.request.web3.SubmitGaslessTxRequest
 import one.mixin.android.api.request.web3.WalletRequest
+import one.mixin.android.api.response.perps.PerpsMarket
+import one.mixin.android.api.response.perps.withDefaults
+import one.mixin.android.api.response.web3.GaslessSponsorTransactionResponse
+import one.mixin.android.api.response.web3.SubmitGaslessTxResponse
 import one.mixin.android.api.service.RouteService
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.db.property.Web3PropertyHelper
 import one.mixin.android.db.OrderDao
+import one.mixin.android.db.perps.PerpsMarketDao
 import one.mixin.android.db.web3.Web3AddressDao
 import one.mixin.android.db.web3.Web3ChainDao
 import one.mixin.android.db.web3.Web3TokenDao
@@ -41,6 +52,7 @@ import one.mixin.android.vo.route.Order
 import one.mixin.android.vo.safe.toWeb3TokenItem
 import org.bitcoinj.base.Address
 import org.bitcoinj.base.AddressParser
+import org.bitcoinj.base.BitcoinNetwork
 import timber.log.Timber
 import org.bitcoinj.core.Transaction
 import org.bitcoinj.script.Script
@@ -50,9 +62,7 @@ import java.math.BigDecimal
 import java.nio.ByteBuffer
 import java.util.UUID
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 class Web3Repository
 @Inject
 constructor(
@@ -67,9 +77,27 @@ constructor(
     val userRepository: UserRepository,
     val web3ChainDao: Web3ChainDao,
     val orderDao: OrderDao,
+    val perpsMarketDao: PerpsMarketDao,
     val walletOutputDao: WalletOutputDao,
 ) {
     suspend fun estimateFee(request: EstimateFeeRequest) = routeService.estimateFee(request)
+
+    suspend fun gaslessFee(request: GaslessFeeRequest) = routeService.gaslessFee(request)
+
+    suspend fun gaslessTx(request: GaslessTxRequest) = routeService.gaslessTx(request)
+
+    suspend fun submitGaslessTx(request: SubmitGaslessTxRequest): MixinResponse<SubmitGaslessTxResponse> =
+        routeService.submitGaslessTx(request)
+
+    suspend fun gaslessTransaction(id: String): MixinResponse<GaslessSponsorTransactionResponse> =
+        routeService.gaslessTransaction(id)
+
+    suspend fun getPerpsMarket(marketId: String): PerpsMarket? {
+        val response = routeService.getPerpsMarket(marketId)
+        return response.data?.withDefaults()?.also { market ->
+            perpsMarketDao.upsertSuspend(market)
+        }
+    }
 
     suspend fun refreshBitcoinTokenAmount(walletId: String, address: String) {
         if (walletId.isBlank() || address.isBlank()) return
@@ -81,7 +109,7 @@ constructor(
     }
 
     suspend fun insertBitcoinChangeOutputs(fromAddress: String, signedHex: String): Int {
-        val addressParser = AddressParser.getDefault()
+        val addressParser = AddressParser.getDefault(BitcoinNetwork.MAINNET)
         val cleanedHex: String = signedHex.removePrefix("0x").trim()
         if (fromAddress.isBlank() || cleanedHex.isBlank()) return 0
         val tx: Transaction = runCatching {
@@ -197,22 +225,24 @@ constructor(
             }
         }
 
-    fun allWeb3Transaction(filterParams: Web3FilterParams): DataSource.Factory<Int, Web3TransactionItem> {
-        return web3TransactionDao.allTransactions(filterParams.buildQuery()).map { transaction ->
-            val assetIds = transaction.senders.map { it.assetId } + transaction.receivers.map { it.assetId } + (transaction.approvals?.map { it.assetId } ?: emptyList())
-            val tokens = web3TokenDao.findWeb3TokenItemsByIdsSync(filterParams.walletId, assetIds.distinct()).associateBy { it.assetId }
-            transaction.copy(
-                senders = transaction.senders.map {
-                    it.copy(symbol = tokens[it.assetId]?.symbol)
-                },
-                receivers = transaction.receivers.map {
-                    it.copy(symbol = tokens[it.assetId]?.symbol)
-                },
-                approvals = transaction.approvals?.map {
-                    it.copy(symbol = tokens[it.assetId]?.symbol)
-                }
-            )
-        }
+    fun web3TransactionPagingSource(filterParams: Web3FilterParams): PagingSource<Int, Web3TransactionItem> {
+        return web3TransactionDao.allTransactions(filterParams.buildQuery())
+    }
+
+    suspend fun mapWeb3Transaction(transaction: Web3TransactionItem, walletId: String): Web3TransactionItem = withContext(Dispatchers.IO) {
+        val assetIds = transaction.senders.map { it.assetId } + transaction.receivers.map { it.assetId } + (transaction.approvals?.map { it.assetId } ?: emptyList())
+        val tokens = web3TokenDao.findWeb3TokenItemsByIdsSync(walletId, assetIds.distinct()).associateBy { it.assetId }
+        transaction.copy(
+            senders = transaction.senders.map {
+                it.copy(symbol = tokens[it.assetId]?.symbol)
+            },
+            receivers = transaction.receivers.map {
+                it.copy(symbol = tokens[it.assetId]?.symbol)
+            },
+            approvals = transaction.approvals?.map {
+                it.copy(symbol = tokens[it.assetId]?.symbol)
+            }
+        )
     }
 
     fun observeOutputsByAddress(address: String, assetId: String): Flow<List<WalletOutput>> {

@@ -1,6 +1,8 @@
 package one.mixin.android.ui.landing.components
 
 import android.content.ClipData
+import android.os.Build
+import android.os.PersistableBundle
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -50,7 +52,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -65,11 +66,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants
-import one.mixin.android.MixinApp
 import one.mixin.android.R
+import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.response.ExportRequest
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.crypto.getMatchingWords
@@ -82,11 +82,8 @@ import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.home.web3.trade.KeyboardAwareBox
-import one.mixin.android.ui.landing.components.HighlightedTextWithClick
-import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.getMixinErrorStringByCode
-import one.mixin.android.vo.safe.TokenItem
-import one.mixin.android.widget.DotTextLayout
+import one.mixin.android.vo.Account
 import org.bitcoinj.crypto.MnemonicCode
 
 @Composable
@@ -101,6 +98,8 @@ fun MnemonicPhraseInput(
     onScan: (() -> Unit)? = null,
     validate: ((List<String>) -> String?)? = null,
     onCreate: (() -> Unit)? = null,
+    saltExport: (suspend (ExportRequest) -> MixinResponse<Account>)? = null,
+    getEncryptedTipBody: (suspend (String, String) -> String)? = null,
 ) {
     var legacy by remember { mutableStateOf(mnemonicList.size > 13) }
     var other by remember { mutableStateOf(false) }
@@ -126,16 +125,20 @@ fun MnemonicPhraseInput(
         }
     }
 
-    val isInPreview = LocalInspectionMode.current
     var loading by remember { mutableStateOf(false) }
     var errorInfo by remember { mutableStateOf("") }
     val context = LocalContext.current
+    val invalidMnemonicPhrase = stringResource(R.string.invalid_mnemonic_phrase)
+    val privacyWalletUrl = stringResource(R.string.url_privacy_wallet)
     val keyboardController = LocalSoftwareKeyboardController.current
-    val walletViewModel = if (isInPreview) null else hiltViewModel<WalletViewModel>()
     val coroutineScope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
     var currentText by remember { mutableStateOf("") }
     var focusIndex by remember { mutableIntStateOf(-1) }
+    fun hideInputMethod() {
+        focusManager.clearFocus(force = true)
+        keyboardController?.hide()
+    }
     MixinAppTheme {
         KeyboardAwareBox(
             modifier = Modifier.fillMaxSize(),
@@ -283,7 +286,7 @@ fun MnemonicPhraseInput(
                                         textAlign = TextAlign.Start,
                                         color = MixinAppTheme.colors.textPrimary
                                     ) {
-                                        context.openUrl(context.getString(R.string.url_privacy_wallet))
+                                        context.openUrl(privacyWalletUrl)
                                     }
                                 }
                             }
@@ -351,13 +354,26 @@ fun MnemonicPhraseInput(
                                             .fillMaxWidth()
                                             .clip(RoundedCornerShape(4.dp))
                                             .clickable {
+                                                val content = mnemonicList.joinToString(" ")
                                                 val clipboard = context.getClipboardManager()
-                                                clipboard.setPrimaryClip(
-                                                    ClipData.newPlainText(
-                                                        null, mnemonicList.joinToString(" ")
-                                                    )
-                                                )
+                                                val clip = ClipData.newPlainText("", content)
+                                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                                    @Suppress("NewApi")
+                                                    clip.description.extras = PersistableBundle().apply {
+                                                        putBoolean("android.content.extra.IS_SENSITIVE", true)
+                                                    }
+                                                }
+                                                clipboard.setPrimaryClip(clip)
                                                 toast(R.string.copied_to_clipboard)
+                                                coroutineScope.launch {
+                                                    delay(60_000L)
+                                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                                                        val current = clipboard.primaryClip?.getItemAt(0)?.text?.toString()
+                                                        if (current == content) {
+                                                            clipboard.clearPrimaryClip()
+                                                        }
+                                                    }
+                                                }
                                             }
                                             .padding(8.dp)) {
 
@@ -460,13 +476,15 @@ fun MnemonicPhraseInput(
                                                             return@KeyboardActions
                                                         }
                                                         when (state) {
-                                                            MnemonicState.Input -> onComplete.invoke(words)
+                                                            MnemonicState.Input -> {
+                                                                hideInputMethod()
+                                                                onComplete.invoke(words)
+                                                            }
                                                             MnemonicState.Import -> {
                                                                 val valid = (!legacy && words.size == 12 && isMnemonicValid(words)) ||
                                                                         (legacy && words.size == 24 && isMnemonicValid(words))
                                                                 if (!valid) {
-                                                                    errorInfo =
-                                                                        context.getString(R.string.invalid_mnemonic_phrase)
+                                                                    errorInfo = invalidMnemonicPhrase
                                                                 } else {
                                                                     onComplete.invoke(words)
                                                                 }
@@ -485,16 +503,18 @@ fun MnemonicPhraseInput(
                                                                             else -> false
                                                                         }
                                                                         if (!valid) {
-                                                                            errorInfo = context.getString(R.string.invalid_mnemonic_phrase)
+                                                                            errorInfo = invalidMnemonicPhrase
                                                                         } else if (state == MnemonicState.Verify) {
                                                                             val selfId = Session.getAccountId()!!
                                                                             val seed = tip?.getOrRecoverTipPriv(context, pin!!)?.getOrThrow()
                                                                             val edKey = tip?.getMnemonicEdKey(context, pin!!, seed!!)
-                                                                            val r = requireNotNull(walletViewModel).saltExport(
+                                                                            val export = requireNotNull(saltExport) { "saltExport is required for MnemonicState.Verify" }
+                                                                            val encryptedTipBody = requireNotNull(getEncryptedTipBody) { "getEncryptedTipBody is required for MnemonicState.Verify" }
+                                                                            val r = export(
                                                                                 ExportRequest(
                                                                                     publicKey = edKey!!.publicKey.toHex(),
                                                                                     signature = initFromSeedAndSign(edKey.privateKey, selfId.toByteArray()).toHex(),
-                                                                                    pinBase64 = requireNotNull(walletViewModel).getEncryptedTipBody(selfId, pin!!),
+                                                                                    pinBase64 = encryptedTipBody(selfId, pin!!),
                                                                                 )
                                                                             )
                                                                             r.data?.let {
@@ -586,8 +606,7 @@ fun MnemonicPhraseInput(
                                                             }
 
                                                             else -> {
-                                                                errorInfo =
-                                                                    context.getString(R.string.invalid_mnemonic_phrase)
+                                                                errorInfo = invalidMnemonicPhrase
                                                             }
                                                         }
                                                     }
@@ -632,13 +651,26 @@ fun MnemonicPhraseInput(
                                                 if (state == MnemonicState.Input || state == MnemonicState.Verify || state == MnemonicState.Import) {
                                                     inputs = inputs.map { "" }
                                                 } else if (state == MnemonicState.Display) {
+                                                    val content = mnemonicList.joinToString(" ")
                                                     val clipboard = context.getClipboardManager()
-                                                    clipboard.setPrimaryClip(
-                                                        ClipData.newPlainText(
-                                                            null, mnemonicList.joinToString(" ")
-                                                        )
-                                                    )
+                                                    val clip = ClipData.newPlainText("", content)
+                                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                                        @Suppress("NewApi")
+                                                        clip.description.extras = PersistableBundle().apply {
+                                                            putBoolean("android.content.extra.IS_SENSITIVE", true)
+                                                        }
+                                                    }
+                                                    clipboard.setPrimaryClip(clip)
                                                     toast(R.string.copied_to_clipboard)
+                                                    coroutineScope.launch {
+                                                        delay(60_000L)
+                                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                                                            val current = clipboard.primaryClip?.getItemAt(0)?.text?.toString()
+                                                            if (current == content) {
+                                                                clipboard.clearPrimaryClip()
+                                                            }
+                                                        }
+                                                    }
                                                 }
                                             }
                                             .padding(8.dp)
@@ -698,7 +730,7 @@ fun MnemonicPhraseInput(
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
                                     modifier = Modifier.align(Alignment.Start),
-                                    text = context.getString(R.string.invalid_mnemonic_phrase), fontSize = 14.sp,
+                                    text = invalidMnemonicPhrase, fontSize = 14.sp,
                                     color = MixinAppTheme.colors.tipError,
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
@@ -717,13 +749,15 @@ fun MnemonicPhraseInput(
                                         return@Button
                                     }
                                     when (state) {
-                                        MnemonicState.Input -> onComplete.invoke(words)
+                                        MnemonicState.Input -> {
+                                            hideInputMethod()
+                                            onComplete.invoke(words)
+                                        }
                                         MnemonicState.Import -> {
                                             val valid = (!legacy && words.size == 12 && isMnemonicValid(words)) ||
                                                     (legacy && words.size == 24 && isMnemonicValid(words))
                                             if (!valid) {
-                                                errorInfo =
-                                                    context.getString(R.string.invalid_mnemonic_phrase)
+                                                errorInfo = invalidMnemonicPhrase
                                             } else {
                                                 onComplete.invoke(words)
                                             }
@@ -734,16 +768,18 @@ fun MnemonicPhraseInput(
                                                 runCatching {
                                                     loading = true
                                                     if (mnemonicList != words) {
-                                                        errorInfo = context.getString(R.string.invalid_mnemonic_phrase)
+                                                        errorInfo = invalidMnemonicPhrase
                                                     } else {
                                                         val selfId = Session.getAccountId()!!
                                                         val seed = tip?.getOrRecoverTipPriv(context, pin!!)?.getOrThrow()
                                                         val edKey = tip?.getMnemonicEdKey(context, pin!!, seed!!)
-                                                        val r = requireNotNull(walletViewModel).saltExport(
+                                                        val export = requireNotNull(saltExport) { "saltExport is required for MnemonicState.Verify" }
+                                                        val encryptedTipBody = requireNotNull(getEncryptedTipBody) { "getEncryptedTipBody is required for MnemonicState.Verify" }
+                                                        val r = export(
                                                             ExportRequest(
                                                                 publicKey = edKey!!.publicKey.toHex(),
                                                                 signature = initFromSeedAndSign(edKey.privateKey, selfId.toByteArray()).toHex(),
-                                                                pinBase64 = requireNotNull(walletViewModel).getEncryptedTipBody(selfId, pin!!),
+                                                                pinBase64 = encryptedTipBody(selfId, pin!!),
                                                             )
                                                         )
                                                         r.data?.let {

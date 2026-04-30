@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -19,6 +20,7 @@ import one.mixin.android.databinding.FragmentComposeBinding
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.components.QuizPage
+import one.mixin.android.ui.landing.components.QuizResultBottomSheetDialogFragment
 import one.mixin.android.ui.landing.components.SetPinLoadingPage
 import one.mixin.android.ui.landing.components.SetupPinPage
 import one.mixin.android.ui.logs.LogViewerBottomSheet
@@ -53,11 +55,10 @@ class SetupPinFragment : BaseFragment(R.layout.fragment_compose) {
         binding.titleView.leftIb.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
-        binding.titleView.setOnLongClickListener {
-            LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
-            true
-        }
         binding.titleView.isVisible = false
+        val showLogViewer = {
+            LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
+        }
         binding.compose.setContent {
             MixinAppTheme(
                 darkTheme = requireContext().isNightMode(),
@@ -104,10 +105,14 @@ class SetupPinFragment : BaseFragment(R.layout.fragment_compose) {
                             onRetry = {
                                 Timber.e("$TAG Retry setup PIN")
                                 errorMessage = ""
-                            }
+                            },
+                            onTopBarLongClick = showLogViewer,
                         )
                     }
                     composable(SetupPinDestination.Quiz.name) {
+                        LaunchedEffect(Unit) {
+                            AnalyticsTracker.trackSignUpPinQuiz()
+                        }
                         QuizPage(
                             next = {
                                 Timber.e("$TAG Quiz completed")
@@ -116,12 +121,20 @@ class SetupPinFragment : BaseFragment(R.layout.fragment_compose) {
                             pop = {
                                 Timber.e("$TAG Quiz back pressed")
                                 navController.popBackStack()
+                            },
+                            onTopBarLongClick = showLogViewer,
+                            onShowResultBottomSheet = { isCorrect, onCorrect, onWrong ->
+                                QuizResultBottomSheetDialogFragment.newInstance(isCorrect).apply {
+                                    onCorrectAction = onCorrect
+                                    onWrongAction = onWrong
+                                }.show(parentFragmentManager, QuizResultBottomSheetDialogFragment.TAG)
                             }
                         )
                     }
                     composable(SetupPinDestination.Loading.name) {
                         SetPinLoadingPage(
                             pin = pin,
+                            onTopBarLongClick = showLogViewer,
                             next = {
                                 Timber.e("$TAG PIN set successfully")
                                 AnalyticsTracker.trackSignUpEnd()

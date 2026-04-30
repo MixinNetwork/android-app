@@ -1,6 +1,5 @@
 package one.mixin.android.ui.wallet
 
-import PageScaffold
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -52,6 +51,7 @@ import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 

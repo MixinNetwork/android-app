@@ -1,6 +1,6 @@
 package one.mixin.android.ui.home.web3.trade
 
-import PageScaffold
+import android.content.ClipData
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -57,6 +57,7 @@ import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.tip.wc.compose.ItemContent
 import one.mixin.android.ui.tip.wc.compose.ItemWalletContent
 import one.mixin.android.ui.wallet.alert.components.cardBackground
@@ -76,6 +77,11 @@ fun OrderDetailPage(
     pop: () -> Unit,
 ) {
     val context = LocalContext.current
+    val swapOrderPaid = stringResource(R.string.swap_order_paid).uppercase()
+    val swapOrderReceived = stringResource(R.string.swap_order_received).uppercase()
+    val estimatedReceive = stringResource(R.string.Estimated_Receive).uppercase()
+    val orderTypeLimit = stringResource(R.string.order_type_limit)
+    val orderTypeSwap = stringResource(R.string.order_type_swap)
     val viewModel: SwapViewModel = hiltViewModel()
     val orderItem = viewModel.getOrderById(orderId).collectAsState(null)
     var walletDisplayName by remember { mutableStateOf<String?>(null) }
@@ -383,7 +389,7 @@ fun DetailItem(
                             .padding(horizontal = 16.dp, vertical = 16.dp)
                     ) {
                         DetailItem(
-                            context.getString(R.string.swap_order_paid).uppercase(),
+                            swapOrderPaid,
                             "-${order.payAmount} ${order.assetSymbol}",
                             MixinAppTheme.colors.walletRed,
                             order.assetIconUrl,
@@ -391,7 +397,7 @@ fun DetailItem(
                         )
 
                         DetailItem(
-                            if (uiState.isDone()) context.getString(R.string.swap_order_received).uppercase() else context.getString(R.string.Estimated_Receive).uppercase(),
+                            if (uiState.isDone()) swapOrderReceived else estimatedReceive,
                             "+${if (uiState.isDone()) (order.filledReceiveAmount ?: order.receiveAmount ?: "0") else (order.expectedReceiveAmount ?: order.receiveAmount ?: "0")} ${order.receiveAssetSymbol}",
                             if (uiState.isCancel() || uiState.isPending()) MixinAppTheme.colors.textAssist else MixinAppTheme.colors.walletGreen,
                             order.receiveAssetIconUrl,
@@ -447,7 +453,7 @@ fun DetailItem(
                             }
                             DetailItem(
                                 label = stringResource(R.string.Type).uppercase(),
-                                value = context.getString(R.string.order_type_limit),
+                                value = orderTypeLimit,
                             )
                         } else {
                             val isPrivacyWallet = currentWalletId != null && currentWalletId == Session.getAccountId()
@@ -466,7 +472,7 @@ fun DetailItem(
                             }
                             DetailItem(
                                 label = stringResource(R.string.Type).uppercase(),
-                                value = context.getString(R.string.order_type_swap),
+                                value = orderTypeSwap,
                             )
                         }
                         DetailItem(
@@ -478,7 +484,7 @@ fun DetailItem(
                             value = order.orderId,
                             onCopy = {
                                 context.getClipboardManager().setPrimaryClip(
-                                    android.content.ClipData.newPlainText(
+                                    ClipData.newPlainText(
                                         null,
                                         order.orderId
                                     )
@@ -496,7 +502,6 @@ fun DetailItem(
 
 @Composable
 fun DetailPriceItemLimit(orderItem: OrderItem) {
-    val context = LocalContext.current
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -504,7 +509,7 @@ fun DetailPriceItemLimit(orderItem: OrderItem) {
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = context.getString(R.string.Price),
+                text = stringResource(R.string.Price),
                 fontSize = 14.sp,
                 color = MixinAppTheme.colors.textAssist,
             )
@@ -553,7 +558,8 @@ fun DetailPriceItemLimit(orderItem: OrderItem) {
 private fun DetailPriceItem(
     orderItem: OrderItem
 ) {
-    val context = LocalContext.current
+    val price = stringResource(R.string.Price)
+    val estimatedPrice = stringResource(R.string.Estimated_Price).uppercase()
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -561,7 +567,7 @@ private fun DetailPriceItem(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = if (orderItem.state == OrderState.SUCCESS.value) context.getString(R.string.Price) else context.getString(R.string.Estimated_Price).uppercase(),
+                text = if (orderItem.state == OrderState.SUCCESS.value) price else estimatedPrice,
                 fontSize = 14.sp,
                 color = MixinAppTheme.colors.textAssist,
             )

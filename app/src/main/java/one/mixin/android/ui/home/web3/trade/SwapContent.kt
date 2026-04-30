@@ -81,6 +81,8 @@ import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.getMixinErrorStringByCode
+import one.mixin.android.web3.isNativeSolAsset
+import one.mixin.android.web3.nativeSolSpendableBalance
 import java.math.BigDecimal
 
 @Composable
@@ -139,13 +141,18 @@ fun SwapContent(
             .collectLatest { text ->
                 fromToken?.let { from ->
                     toToken?.let { to ->
-                        if (text.isNotBlank() && runCatching { BigDecimal(text) }.getOrDefault(BigDecimal.ZERO) > BigDecimal.ZERO && !reviewing) {
+                        val amount = runCatching { BigDecimal(text) }.getOrDefault(BigDecimal.ZERO)
+                        if (reviewing) {
+                            isLoading = false
+                            return@collectLatest
+                        }
+                        if (text.isNotBlank() && amount > BigDecimal.ZERO) {
                             isLoading = true
                             quoteError = null
                             quoteMin = null
                             quoteMax = null
-                            val amount = if (source == "") from.toLongAmount(text).toString() else text
-                            viewModel.quote(context, from.symbol, from.assetId, to.assetId, amount, source)
+                            val quoteAmount = if (source == "") from.toLongAmount(text).toString() else text
+                            viewModel.quote(context, from.symbol, from.assetId, to.assetId, quoteAmount, source)
                                 .onSuccess { value ->
                                     quoteResult = value
                                     isLoading = false
@@ -177,6 +184,13 @@ fun SwapContent(
 
     fromToken?.let { from ->
         val fromBalance = viewModel.tokenExtraFlow(from).collectAsStateWithLifecycle(from.balance).value
+        val rawFromBalanceValue = fromBalance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+        val availableFromBalanceValue = if (from.isNativeSolAsset()) {
+            nativeSolSpendableBalance(rawFromBalanceValue)
+        } else {
+            rawFromBalanceValue
+        }
+        val availableFromBalance = availableFromBalanceValue.stripTrailingZeros().toPlainString()
         KeyboardAwareBox(modifier = Modifier.fillMaxHeight(), content = { availableHeight ->
             Column(
                 modifier = if (availableHeight != null) {
@@ -251,8 +265,9 @@ fun SwapContent(
                                 selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.To else SelectTokenType.From) },
                                 onInputChanged = { inputText = it },
                                 onDeposit = onDeposit,
+                                displayBalanceOverride = if (from.isNativeSolAsset()) fromBalance else null,
                                 onMax = {
-                                    val balance = fromBalance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                                    val balance = availableFromBalanceValue
                                     if (balance > BigDecimal.ZERO) {
                                         inputText = balance.stripTrailingZeros().toPlainString()
                                     } else {
@@ -296,11 +311,12 @@ fun SwapContent(
                 Spacer(modifier = Modifier.height(if (availableHeight == null) 14.dp else 8.dp))
                 ReviewButton(
                     inputText = inputText,
-                    fromBalance = fromBalance,
+                    fromBalance = availableFromBalance,
                     fromToken = fromToken!!,
                     quoteResult = quoteResult,
                     quoteError = quoteError,
                     isLoading = isLoading,
+                    reviewing = reviewing,
                     isButtonEnabled = isButtonEnabled,
                     onButtonEnabledChange = { isButtonEnabled = it },
                     onReview = { onReview(it, fromToken!!, toToken!!, inputText) },
@@ -317,7 +333,7 @@ fun SwapContent(
                     .background(MixinAppTheme.colors.backgroundWindow)
                     .padding(horizontal = 12.dp, vertical = 8.dp), horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                val balance = fromBalance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                val balance = availableFromBalanceValue
 
                 InputAction("25%", showBorder = true) {
                     if (balance > BigDecimal.ZERO) {
@@ -359,6 +375,7 @@ fun ReviewButton(
     quoteResult: QuoteResult?,
     quoteError: Throwable?,
     isLoading: Boolean,
+    reviewing: Boolean,
     isButtonEnabled: Boolean,
     onButtonEnabledChange: (Boolean) -> Unit,
     onReview: (QuoteResult) -> Unit,
@@ -367,7 +384,7 @@ fun ReviewButton(
     scope: CoroutineScope
 ) {
     val checkBalance = checkBalance(inputText, fromBalance)
-    
+    val isBusy = isLoading || reviewing
     val hasError = quoteError != null
     Button(
         modifier = Modifier
@@ -386,7 +403,7 @@ fun ReviewButton(
                 }
             }
         },
-        enabled = quoteResult != null && !hasError && !isLoading && checkBalance == true,
+        enabled = quoteResult != null && !hasError && !isBusy && checkBalance == true,
         colors = ButtonDefaults.outlinedButtonColors(
             backgroundColor = if (quoteResult != null && !hasError && checkBalance == true) {
                 MixinAppTheme.colors.accent
@@ -402,7 +419,7 @@ fun ReviewButton(
             focusedElevation = 0.dp,
         ),
     ) {
-        if (isLoading) {
+        if (isBusy) {
             CircularProgressIndicator(
                 modifier = Modifier.size(18.dp),
                 color = if (quoteResult != null && !hasError && checkBalance == true) {
@@ -428,13 +445,24 @@ fun ReviewButton(
     }
 }
 
-private fun buildSwapDisplayedErrorInfo(context: Context, quoteError: Throwable?, quoteMax: String?): String? {
+private fun isInputGreaterThanQuoteMax(inputText: String, quoteMax: String?): Boolean {
+    val inputAmount = inputText.toBigDecimalOrNull() ?: return false
+    val maxAmount = quoteMax?.toBigDecimalOrNull() ?: return false
+    return inputAmount > maxAmount
+}
+
+private fun buildSwapDisplayedErrorInfo(
+    context: Context,
+    quoteError: Throwable?,
+    quoteMax: String?,
+    inputText: String,
+): String? {
     if (quoteError == null) return null
     return when (quoteError) {
         is TradeQuoteMixinErrorException -> {
             when (quoteError.code) {
                 ErrorHandler.INVALID_QUOTE_AMOUNT -> {
-                    if (quoteMax != null) {
+                    if (isInputGreaterThanQuoteMax(inputText, quoteMax)) {
                         context.getString(R.string.error_invalid_quote_amount_detailed, quoteMax)
                     } else {
                         context.getString(R.string.error_invalid_quote_amount)
@@ -469,8 +497,8 @@ fun QuoteInfoBox(
     onSwitchToLimitOrder: (String, SwapToken, SwapToken) -> Unit,
 ) {
     val context = LocalContext.current
-    val displayedErrorInfo = remember(quoteError, quoteMax) {
-        buildSwapDisplayedErrorInfo(context, quoteError, quoteMax)
+    val displayedErrorInfo = remember(quoteError, quoteMax, inputText) {
+        buildSwapDisplayedErrorInfo(context, quoteError, quoteMax, inputText)
     }
     Box(
         modifier = if (availableHeight == null) Modifier.heightIn(48.dp) else Modifier
@@ -526,9 +554,7 @@ fun QuoteInfoBox(
                 val canSwitchToLimitOrder: Boolean = if (mixinError == null) {
                     false
                 } else if (mixinError.code == ErrorHandler.INVALID_QUOTE_AMOUNT) {
-                    val inputAmount: BigDecimal? = inputText.toBigDecimalOrNull()
-                    val maxAmount: BigDecimal? = mixinError.max?.toBigDecimalOrNull()
-                    inputAmount != null && maxAmount != null && inputAmount > maxAmount
+                    isInputGreaterThanQuoteMax(inputText, mixinError.max)
                 } else {
                     mixinError.code in setOf(
                         ErrorHandler.INVALID_SWAP,
@@ -566,4 +592,3 @@ fun QuoteInfoBox(
         }
     }
 }
-
