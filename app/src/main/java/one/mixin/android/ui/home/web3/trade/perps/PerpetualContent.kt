@@ -277,7 +277,8 @@ fun PerpetualContent(
                             modifier = Modifier.size(16.dp)
                         )
                     }
-                    openPositionsPreview.forEach { position ->
+                    Spacer(modifier = Modifier.height(12.dp))
+                    openPositionsPreview.forEachIndexed { index, position ->
                         OpenPositionItem(
                             position = position,
                             onClick = {
@@ -289,9 +290,13 @@ fun PerpetualContent(
                                 }
                             }
                         )
+                        if (index != openPositionsPreview.lastIndex) {
+                            Spacer(modifier = Modifier.height(12.dp))
+                        }
                     }
 
                     if (openPositionsCount > openPositionsPreview.size) {
+                        Spacer(modifier = Modifier.height(12.dp))
                         ViewAllAction(onClick = onShowAllOpenPositions)
                     }
                 }

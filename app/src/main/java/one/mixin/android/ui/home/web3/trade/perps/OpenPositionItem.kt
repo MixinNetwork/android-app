@@ -108,7 +108,10 @@ fun OpenPositionItem(
                     Text(
                         text = displaySymbol,
                         fontSize = 16.sp,
-                        color = MixinAppTheme.colors.textPrimary
+                        color = MixinAppTheme.colors.textPrimary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
@@ -153,7 +156,7 @@ fun OpenPositionItem(
                 }
             }
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(2.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
