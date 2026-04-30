@@ -51,6 +51,7 @@ android {
 
             resources {
                 excludes += '/META-INF/{AL2.0,LGPL2.1}'
+                excludes += 'google/protobuf/descriptor.proto'
             }
         }
 
@@ -242,7 +243,6 @@ dependencies {
     }
     coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:${desugarJdkLibsVersion}"
     implementation platform("com.google.firebase:firebase-bom:${firebaseBomVersion}")
-    implementation("com.google.firebase:firebase-perf")
     implementation fileTree(include: ['*.aar'], dir: 'libs')
     implementation "androidx.fragment:fragment-ktx:${fragmentVersion}"
     implementation("androidx.activity:activity-ktx:$activity_version")
@@ -351,8 +351,10 @@ dependencies {
     implementation "com.google.firebase:firebase-messaging"
     implementation 'com.google.firebase:firebase-analytics'
     implementation 'com.google.firebase:firebase-crashlytics'
-
-    implementation "com.google.protobuf:protobuf-javalite:3.25.5"
+    implementation('com.google.firebase:firebase-perf') {
+        exclude group: 'com.google.firebase', module: 'protolite-well-known-types'
+    }
+    implementation "com.google.protobuf:protobuf-javalite:4.29.3"
 
     implementation "com.android.billingclient:billing-ktx:${billingKtxVersion}"
     implementation "com.google.mlkit:barcode-scanning:${mlkitBarcodeVersion}"
@@ -478,8 +480,8 @@ dependencies {
     // ML Kit
     implementation 'com.google.mlkit:entity-extraction:16.0.0-beta6'
 
-    testImplementation "com.google.protobuf:protobuf-javalite:3.25.5"
-    androidTestImplementation "com.google.protobuf:protobuf-javalite:3.25.5"
+    testImplementation "com.google.protobuf:protobuf-javalite:4.29.3"
+    androidTestImplementation "com.google.protobuf:protobuf-javalite:4.29.3"
 
     // SumSub
     implementation("com.sumsub.sns:idensic-mobile-sdk:$sumsubVersion") {
