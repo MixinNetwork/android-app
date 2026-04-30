@@ -38,6 +38,15 @@ class OpenPositionAdapter(
         holder.bind(position = item, positionInList = position, listSize = itemCount)
     }
 
+    override fun onBindViewHolder(holder: ViewHolder, position: Int, payloads: MutableList<Any>) {
+        if (payloads.isNotEmpty()) {
+            val item = getItem(position) ?: return
+            holder.bindContent(item)
+        } else {
+            super.onBindViewHolder(holder, position, payloads)
+        }
+    }
+
     class ViewHolder(
         private val binding: ItemClosedPositionListBinding,
         private val isQuoteColorReversed: Boolean,
@@ -45,30 +54,29 @@ class OpenPositionAdapter(
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(position: PerpsPositionItem, positionInList: Int, listSize: Int) {
+            binding.root.setBackgroundResource(
+                when {
+                    listSize <= 1 -> R.drawable.bg_card
+                    positionInList == 0 -> R.drawable.bg_card_top
+                    positionInList == listSize - 1 -> R.drawable.bg_card_bottom
+                    else -> R.drawable.bg_card_middle
+                }
+            )
+            val dp8 = (8 * binding.root.context.resources.displayMetrics.density).toInt()
+            val dp16 = (16 * binding.root.context.resources.displayMetrics.density).toInt()
+            val topPadding = if (positionInList == 0) dp16 else dp8
+            val bottomPadding = if (positionInList == listSize - 1) dp16 else dp8
+            binding.root.setPadding(dp16, topPadding, dp16, bottomPadding)
+            binding.root.setOnClickListener { onItemClick?.invoke(position) }
+            binding.iconIv.loadImage(position.iconUrl, R.drawable.ic_avatar_place_holder)
+            bindContent(position)
+        }
+
+        fun bindContent(position: PerpsPositionItem) {
             binding.apply {
                 val context = binding.root.context
-
-                root.setBackgroundResource(
-                    when {
-                        listSize <= 1 -> R.drawable.bg_card
-                        positionInList == 0 -> R.drawable.bg_card_top
-                        positionInList == listSize - 1 -> R.drawable.bg_card_bottom
-                        else -> R.drawable.bg_card_middle
-                    }
-                )
-
-                root.setOnClickListener {
-                    onItemClick?.invoke(position)
-                }
-
-                iconIv.loadImage(position.iconUrl, R.drawable.ic_avatar_place_holder)
-
                 val isLong = position.side.equals("long", ignoreCase = true)
-                val sideText = if (isLong) {
-                    context.getString(R.string.Long)
-                } else {
-                    context.getString(R.string.Short)
-                }
+                val sideText = if (isLong) context.getString(R.string.Long) else context.getString(R.string.Short)
                 val sideColor = context.getColor(
                     if (isLong) {
                         if (isQuoteColorReversed) R.color.wallet_red else R.color.wallet_green
@@ -81,13 +89,7 @@ class OpenPositionAdapter(
                 titleTv.text = context.getString(R.string.Perpetual_Side_Symbol_Title, sideText, displaySymbol)
                 leverageTv.isVisible = true
                 leverageTv.text = "${position.leverage}x"
-                leverageTv.setTextColor(
-                    if (isOpening) {
-                        resolveAttrColor(root, R.attr.text_assist)
-                    } else {
-                        sideColor
-                    }
-                )
+                leverageTv.setTextColor(if (isOpening) resolveAttrColor(root, R.attr.text_assist) else sideColor)
                 leverageTv.setBackgroundResource(
                     if (isOpening) {
                         R.drawable.bg_round_window_4dp
@@ -123,17 +125,9 @@ class OpenPositionAdapter(
                     rightBottomValueTv.text = "${formatSignedUsd(pnl)} (${formatPerpsSignedPercent(roe, withSign = false)})"
                     rightBottomValueTv.setTextColor(
                         when {
-                            pnl > BigDecimal.ZERO -> {
-                                context.getColor(if (isQuoteColorReversed) R.color.wallet_red else R.color.wallet_green)
-                            }
-
-                            pnl < BigDecimal.ZERO -> {
-                                context.getColor(if (isQuoteColorReversed) R.color.wallet_green else R.color.wallet_red)
-                            }
-
-                            else -> {
-                                resolveAttrColor(root, R.attr.text_primary)
-                            }
+                            pnl > BigDecimal.ZERO -> context.getColor(if (isQuoteColorReversed) R.color.wallet_red else R.color.wallet_green)
+                            pnl < BigDecimal.ZERO -> context.getColor(if (isQuoteColorReversed) R.color.wallet_green else R.color.wallet_red)
+                            else -> resolveAttrColor(root, R.attr.text_primary)
                         }
                     )
                 }
@@ -164,18 +158,12 @@ class OpenPositionAdapter(
     }
 
     private class DiffCallback : DiffUtil.ItemCallback<PerpsPositionItem>() {
-        override fun areItemsTheSame(
-            oldItem: PerpsPositionItem,
-            newItem: PerpsPositionItem
-        ): Boolean {
-            return oldItem.positionId == newItem.positionId
-        }
+        override fun areItemsTheSame(oldItem: PerpsPositionItem, newItem: PerpsPositionItem) =
+            oldItem.positionId == newItem.positionId
 
-        override fun areContentsTheSame(
-            oldItem: PerpsPositionItem,
-            newItem: PerpsPositionItem
-        ): Boolean {
-            return oldItem == newItem
-        }
+        override fun areContentsTheSame(oldItem: PerpsPositionItem, newItem: PerpsPositionItem) =
+            oldItem == newItem
+
+        override fun getChangePayload(oldItem: PerpsPositionItem, newItem: PerpsPositionItem): Any = Unit
     }
 }

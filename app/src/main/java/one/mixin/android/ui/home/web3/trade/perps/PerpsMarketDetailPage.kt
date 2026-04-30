@@ -843,10 +843,13 @@ private fun ClosedPositionsSection(
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
             .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
-            .padding(16.dp)
+            .padding(vertical = 16.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onViewAll)
+                .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -857,14 +860,12 @@ private fun ClosedPositionsSection(
                 color = MixinAppTheme.colors.textPrimary
             )
 
-            if (positions.size > 3) {
-                Text(
-                    text = stringResource(R.string.view_all),
-                    fontSize = 14.sp,
-                    color = MixinAppTheme.colors.accent,
-                    modifier = Modifier.clickable { onViewAll() }
-                )
-            }
+            Icon(
+                painter = painterResource(R.drawable.ic_arrow_right),
+                contentDescription = null,
+                tint = MixinAppTheme.colors.textAssist,
+                modifier = Modifier.size(16.dp)
+            )
         }
 
         Spacer(modifier = Modifier.height(12.dp))

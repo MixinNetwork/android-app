@@ -169,10 +169,17 @@ class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions
         if (positionType == PositionType.OPEN) {
             binding.titleView.setSubTitle(getString(R.string.perps_positions), "")
             totalValueAdapter.submitTitle(R.string.Total_Position_Value)
+            binding.positionsRv.setBackgroundResource(0)
+            binding.positionsRv.clipToOutline = false
+            binding.positionsRv.setPadding(0, 0, 0, 0)
             binding.positionsRv.adapter = ConcatAdapter(totalValueAdapter, openPositionAdapter)
             loadOpenPositions()
         } else {
             binding.titleView.setSubTitle(getString(R.string.perps_activity), "")
+            val dp16 = (16 * resources.displayMetrics.density).toInt()
+            binding.positionsRv.setBackgroundResource(R.drawable.bg_card)
+            binding.positionsRv.clipToOutline = true
+            binding.positionsRv.setPadding(0, dp16, 0, dp16)
             binding.positionsRv.adapter = closedPositionAdapter
             loadClosedPositions()
         }
