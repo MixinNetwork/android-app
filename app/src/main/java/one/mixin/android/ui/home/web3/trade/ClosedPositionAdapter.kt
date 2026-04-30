@@ -139,7 +139,7 @@ class ClosedPositionAdapter(
             return formatPerpsSignedFiatDecimal(amount.multiply(fiatRate), fiatSymbol)
         }
         private fun resolveAttrColor(view: View, @AttrRes attr: Int): Int {
-            val typedValue = android.util.TypedValue()
+            val typedValue = TypedValue()
             view.context.theme.resolveAttribute(attr, typedValue, true)
             return if (typedValue.resourceId != 0) {
                 view.context.getColor(typedValue.resourceId)
