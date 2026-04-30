@@ -514,7 +514,7 @@ object Constants {
 
         const val ROUTE_BOT_URL = "https://api.route.mixin.one"
 
-        const val REFERRAL_API_URL = "https://rewards-api.mixin.space"
+        const val REFERRAL_API_URL = "https://api.reward.mixin.one"
 
         const val GOOGLE_PAY = "googlepay"
 
