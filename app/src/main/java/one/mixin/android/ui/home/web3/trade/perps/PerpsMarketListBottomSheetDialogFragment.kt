@@ -139,7 +139,7 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
                 currentSort = null
                 renderSortState()
                 categoryScroll.scrollToCenterCheckedRadio(group)
-                filterAndSortMarkets()
+                filterAndSortMarkets(scrollToTop = true)
             }
 
             volumeSort.setOnClickListener {
