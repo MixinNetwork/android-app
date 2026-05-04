@@ -91,6 +91,7 @@
     <string name="auth_profile_content">%1$s, %2$s, 頭像</string>
     <string name="authorization">授權</string>
     <string name="Authorizations">授權</string>
+    <string name="permission_authorize">授權</string>
     <string name="auto_download_hint">媒體自動下載設定，所有語音訊息將自動下載。</string>
     <string name="Auto_Lock">自動鎖定</string>
     <string name="Back_To_Chat">返回聊天</string>

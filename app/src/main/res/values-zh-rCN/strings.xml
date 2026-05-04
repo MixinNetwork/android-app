@@ -106,6 +106,7 @@
     <string name="auth_profile_content">%1$s, %2$s, 头像</string>
     <string name="authorization">授权</string>
     <string name="Authorizations">授权</string>
+    <string name="permission_authorize">授权</string>
     <string name="auto_download_hint">媒体自动下载设定，所有语音消息将自动下载。</string>
     <string name="Auto_Lock">自动锁定</string>
     <string name="Back_To_Chat">返回聊天</string>

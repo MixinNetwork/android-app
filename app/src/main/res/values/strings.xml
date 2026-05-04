@@ -115,6 +115,7 @@
     <string name="auth_profile_content">%1$s, %2$s, profile photo</string>
     <string name="authorization">authorization</string>
     <string name="Authorizations">Authorizations</string>
+    <string name="permission_authorize">Authorize</string>
     <string name="auto_download_hint">Change auto-download settings for media. Voice messages are always downloaded automatically.</string>
     <string name="Auto_Lock">Auto-Lock</string>
     <string name="avatar_transition_name">avatar_transition_name</string>
