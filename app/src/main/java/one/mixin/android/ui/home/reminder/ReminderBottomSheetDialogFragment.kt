@@ -36,6 +36,7 @@ class ReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
         const val TAG = "ReminderBottomSheetDialogFragment"
         private const val PREF_NOTIFICATION_ON = "pref_notification_on"
         const val PREF_NEW_VERSION = "pref_new_version"
+        private const val PREF_NEW_VERSION_DEBUG_ALLOW_ONCE = "pref_new_version_debug_allow_once"
         const val ARGS_POPUP_TYPE = "args_popup_type"
 
         fun newInstance(
@@ -47,6 +48,9 @@ class ReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
 
         fun getType(context: Context): PopupType? {
             val sharedPreferences = context.defaultSharedPreferences
+            if (consumeDebugShowOnce(sharedPreferences)) {
+                return PopupType.NewVersionReminder
+            }
             val account = Session.getAccount()
             val appVersion = account?.system?.messenger
 
@@ -67,6 +71,17 @@ class ReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
             }
 
             return null
+        }
+
+        fun allowDebugShowOnce(context: Context) {
+            context.defaultSharedPreferences.putLong(PREF_NEW_VERSION_DEBUG_ALLOW_ONCE, 1L)
+        }
+
+        private fun consumeDebugShowOnce(sharedPreferences: android.content.SharedPreferences): Boolean {
+            val shouldShow = sharedPreferences.getLong(PREF_NEW_VERSION_DEBUG_ALLOW_ONCE, 0L) == 1L
+            if (!shouldShow) return false
+            sharedPreferences.putLong(PREF_NEW_VERSION_DEBUG_ALLOW_ONCE, 0L)
+            return true
         }
 
         private fun compareVersions(remoteVersion: String): Int {
@@ -152,7 +167,8 @@ class ReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
                                 modifier = Modifier.fillMaxWidth(),
                                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
                             )
-                        }
+                        },
+                        stickyFooter = true,
                     )
                 }
 
@@ -182,7 +198,8 @@ class ReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
                                 modifier = Modifier.fillMaxWidth(),
                                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
                             )
-                        }
+                        },
+                        stickyFooter = true,
                     )
                 }
 
