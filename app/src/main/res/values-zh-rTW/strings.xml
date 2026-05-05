@@ -791,6 +791,7 @@
     <string name="Set_PIN_successfully">PIN 設定成功</string>
     <string name="setting_auth_access">授權時間：%1$s, 上次訪問：%2$s</string>
     <string name="setting_auth_search_hint">Mixin ID, 暱稱</string>
+    <string name="Battery_Optimization">電池最佳化</string>
     <string name="setting_battery_optimize_title">這將提高 Mixin 通知和呼叫的可靠性。</string>
     <string name="setting_battery_optimize_title_one_ui_above_s">這將提高 Mixin 通知和呼叫的可靠性. 請在設定 > 電池中選擇 **已最佳化** 或者 **不受限制**。</string>
     <string name="setting_battery_optimize_title_one_ui_below_s">這將提高 Mixin 通知和呼叫的可靠性。點選設定 -> 電池，開啟**允許後臺活動**。</string>
