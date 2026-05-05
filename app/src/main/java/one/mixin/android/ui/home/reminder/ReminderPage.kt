@@ -51,10 +51,15 @@ fun ReminderPage(
     extraContent: (@Composable () -> Unit)? = null,
     stickyFooter: Boolean = false,
 ) {
+    val containerModifier = if (stickyFooter) {
+        Modifier.fillMaxHeight()
+    } else {
+        Modifier.wrapContentHeight()
+    }
     Column(
         horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier
             .fillMaxWidth()
-            .fillMaxHeight()
+            .then(containerModifier)
             .clip(RoundedCornerShape(topEnd = 12.dp, topStart = 12.dp))
             .background(MixinAppTheme.colors.primary)
     ) {
