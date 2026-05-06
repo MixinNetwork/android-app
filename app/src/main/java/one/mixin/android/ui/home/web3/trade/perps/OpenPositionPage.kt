@@ -291,7 +291,7 @@ fun OpenPositionPage(
                         Text(
                             text = stringResource(
                                 R.string.Current_price,
-                                formatFiatPrice(currentMarket.last)
+                                formatFiatPrice(currentMarket.last, fiatRate, fiatSymbol)
                             ),
                             fontSize = 13.sp,
                             color = MixinAppTheme.colors.textAssist
@@ -588,6 +588,8 @@ fun OpenPositionPage(
                                 currentMarket.last,
                                 leverage,
                                 isLong,
+                                fiatRate,
+                                fiatSymbol,
                             ),
                             fontSize = 14.sp,
                             color = MixinAppTheme.colors.textAssist
@@ -821,12 +823,14 @@ private fun calculateLiquidationPrice(
     currentPrice: String,
     leverage: Float,
     isLong: Boolean,
+    fiatRate: BigDecimal,
+    fiatSymbol: String,
 ): String {
     val price = currentPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
 
 
     if (price == BigDecimal.ZERO) {
-        return "${PERPS_USD_SYMBOL}0"
+        return "${fiatSymbol}0"
     }
 
     val liquidationPercent = BigDecimal(100.0 / leverage)
@@ -836,12 +840,15 @@ private fun calculateLiquidationPrice(
     } else {
         price * (BigDecimal.ONE + liquidationRatio)
     }
-    return "$PERPS_USD_SYMBOL${liquidationPrice.priceFormat()}"
+    val fiatLiquidationPrice = liquidationPrice.multiply(fiatRate)
+    return "${fiatSymbol}${fiatLiquidationPrice.priceFormat()}"
 }
 
 private fun formatFiatPrice(
     rawPrice: String,
+    fiatRate: BigDecimal,
+    fiatSymbol: String,
 ): String {
     val price = rawPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    return "$PERPS_USD_SYMBOL${price.priceFormat()}"
+    return "${fiatSymbol}${price.multiply(fiatRate).priceFormat()}"
 }
