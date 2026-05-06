@@ -102,6 +102,10 @@ fun PositionDetailPage(
         return formatPerpsSignedFiatDecimal(value.multiply(fiatRate), fiatSymbol)
     }
 
+    fun formatPriceUsd(value: BigDecimal): String {
+        return formatPerpsUsdDecimal(value)
+    }
+
     PageScaffold(
         title = title,
         verticalScrollable = false,
@@ -257,7 +261,7 @@ fun PositionDetailPage(
 
                 PositionDetailItem(
                     label = stringResource(R.string.Entry_Price).uppercase(),
-                    value = formatFiat(entryPrice)
+                    value = formatPriceUsd(entryPrice)
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -427,6 +431,10 @@ fun PositionDetailPage(
         return formatPerpsSignedFiatDecimal(value.multiply(fiatRate), fiatSymbol)
     }
 
+    fun formatPriceUsd(value: BigDecimal): String {
+        return formatPerpsUsdDecimal(value)
+    }
+
     PageScaffold(
         title = title,
         verticalScrollable = false,
@@ -580,14 +588,14 @@ fun PositionDetailPage(
 
                 PositionDetailItem(
                     label = stringResource(R.string.Entry_Price).uppercase(),
-                    value = formatFiat(positionHistory.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+                    value = formatPriceUsd(positionHistory.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO)
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
 
                 PositionDetailItem(
                     label = stringResource(R.string.Close_Price).uppercase(),
-                    value = formatFiat(positionHistory.closePrice.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+                    value = formatPriceUsd(positionHistory.closePrice.toBigDecimalOrNull() ?: BigDecimal.ZERO)
                 )
                 
                 Spacer(modifier = Modifier.height(20.dp))

@@ -57,11 +57,11 @@ class PerpsMarketListAdapter(
                 volumeTv.text = root.context.getString(R.string.Vol, "$fiatSymbol$formattedVolume")
 
                 val formattedPrice = try {
-                    BigDecimal(market.last).multiply(fiatRate).priceFormat()
+                    BigDecimal(market.last).priceFormat()
                 } catch (e: Exception) {
                     market.last
                 }
-                priceTv.text = "$fiatSymbol$formattedPrice"
+                priceTv.text = "$PERPS_USD_SYMBOL$formattedPrice"
 
                 val changePercent = market.changePercent()
                 val isPositive = changePercent >= BigDecimal.ZERO
