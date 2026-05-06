@@ -52,10 +52,8 @@ fun PerpsMarketItem(
     }
     val changeText = formatPerpsSignedPercent(changePercent)
     val fiatRate = BigDecimal(Fiats.getRate())
-    val fiatSymbol = Fiats.getSymbol()
-
     val formattedPrice = try {
-        BigDecimal(market.last).multiply(fiatRate).priceFormat()
+        BigDecimal(market.last).priceFormat()
     } catch (e: Exception) {
         market.last
     }
@@ -110,7 +108,7 @@ fun PerpsMarketItem(
                     )
                 }
                 Text(
-                    text = "$fiatSymbol$formattedPrice",
+                    text = "$PERPS_USD_SYMBOL$formattedPrice",
                     fontSize = 14.sp,
                     color = MixinAppTheme.colors.textPrimary,
                 )
@@ -120,7 +118,7 @@ fun PerpsMarketItem(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = stringResource(R.string.Vol, "$fiatSymbol$formattedVolume"),
+                    text = stringResource(R.string.Vol, "${Fiats.getSymbol()}$formattedVolume"),
                     fontSize = 14.sp,
                     color = MixinAppTheme.colors.textAssist,
                     modifier = Modifier.weight(1f)
