@@ -1047,13 +1047,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private fun selectPreferredFeeOption(
         options: List<NetworkFee>,
-        selectedKey: String? = null,
     ): NetworkFee? {
         if (options.isEmpty()) return null
-
-        selectedKey?.let { key ->
-            options.firstOrNull { it.selectionKey == key }?.let { return it }
-        }
 
         return options.firstOrNull { option ->
             val balance = option.token.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO
@@ -1070,7 +1065,6 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         }
         val nextSelection = selectPreferredFeeOption(
             options = options,
-            selectedKey = currentGaslessFee?.selectionKey,
         )
         if (currentGaslessFee != nextSelection) {
             currentGaslessFee = nextSelection
@@ -1783,7 +1777,6 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             }
             selectPreferredFeeOption(
                 options = fees,
-                selectedKey = currentFee?.selectionKey,
             )?.let {
                 currentFee = it
                 binding.contentTextView.text = "${it.fee.numberFormat8()} ${it.token.symbol}"
