@@ -70,10 +70,19 @@ open class SnapshotHolder(itemView: View, layout: Boolean = false) : NormalHolde
             }
 
             SafeSnapshotType.pending -> {
+                val maxConfirmations = snapshot.assetConfirmations.coerceAtLeast(0)
+                val currentConfirmations = (snapshot.confirmations ?: 0)
+                    .coerceAtLeast(0)
+                    .coerceAtMost(maxConfirmations)
                 binding.name.textColor = binding.root.context.colorFromAttribute(R.attr.text_primary)
-                binding.name.text = itemView.context.resources.getQuantityString(R.plurals.pending_confirmation, snapshot.confirmations ?: 0, snapshot.confirmations ?: 0, snapshot.assetConfirmations)
+                binding.name.text = itemView.context.resources.getQuantityString(
+                    R.plurals.pending_confirmation,
+                    currentConfirmations,
+                    currentConfirmations,
+                    maxConfirmations
+                )
                 binding.avatar.setDeposit()
-                binding.bg.setConfirmation(snapshot.assetConfirmations, snapshot.confirmations ?: 0)
+                binding.bg.setConfirmation(maxConfirmations, currentConfirmations)
             }
 
             else -> {
