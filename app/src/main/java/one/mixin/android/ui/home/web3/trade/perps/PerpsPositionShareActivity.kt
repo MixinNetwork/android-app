@@ -50,7 +50,6 @@ import one.mixin.android.ui.common.roundQrBackground
 import one.mixin.android.ui.wallet.LoadingProgressDialogFragment
 import one.mixin.android.ui.web.getScreenshot
 import one.mixin.android.ui.web.refreshScreenshot
-import one.mixin.android.vo.Fiats
 import java.io.File
 import java.io.FileOutputStream
 import java.math.BigDecimal
@@ -368,8 +367,7 @@ class PerpsPositionShareActivity : BaseActivity() {
 
     private fun formatFiat(value: String?): String {
         val price = value.toBigDecimalSafely() ?: BigDecimal.ZERO
-        val fiatPrice = price.multiply(BigDecimal(Fiats.getRate()))
-        return "${Fiats.getSymbol()}${fiatPrice.priceFormat()}"
+        return "$PERPS_USD_SYMBOL${price.priceFormat()}"
     }
 
     private fun String?.toBigDecimalSafely(): BigDecimal? {

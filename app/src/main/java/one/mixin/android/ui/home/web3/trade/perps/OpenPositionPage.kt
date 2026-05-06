@@ -62,6 +62,7 @@ import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.putInt
+import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.home.web3.components.InputAction
 import one.mixin.android.ui.home.web3.components.PageScaffold
@@ -142,6 +143,8 @@ fun OpenPositionPage(
     var currentToken by remember { mutableStateOf<TokenItem?>(selectedToken) }
     var availableTokens by remember { mutableStateOf<List<TokenItem>>(emptyList()) }
     var usdtAmount by remember { mutableStateOf("") }
+    var takeProfitPrice by remember { mutableStateOf("") }
+    var stopLossPrice by remember { mutableStateOf("") }
     var errorInfo by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
 
@@ -243,6 +246,37 @@ fun OpenPositionPage(
             ?.takeIf { it.isNotBlank() }
             ?: ""
 
+    fun showPerpsGuide(tab: Int) {
+        val activity = context as? FragmentActivity ?: return
+        PerpetualGuideBottomSheetDialogFragment.newInstance(tab)
+            .show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
+    }
+
+    fun showTpSlBottomSheet(mode: PerpsTpSlBottomSheetDialogFragment.Mode) {
+        val activity = context as? FragmentActivity ?: return
+        PerpsTpSlBottomSheetDialogFragment.newInstance(
+            mode = mode,
+            price = if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
+                takeProfitPrice
+            } else {
+                stopLossPrice
+            },
+            currentPrice = currentMarket.last,
+            isLong = isLong,
+            marketIconUrl = currentMarket.iconUrl,
+            marketSymbol = currentMarket.displaySymbol,
+            marginAmount = usdtAmount,
+            leverage = leverage.toInt(),
+            entryPrice = currentMarket.last,
+        ).setOnApply { value ->
+            if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
+                takeProfitPrice = value.orEmpty()
+            } else {
+                stopLossPrice = value.orEmpty()
+            }
+        }.show(activity.supportFragmentManager, PerpsTpSlBottomSheetDialogFragment.TAG)
+    }
+
     MixinAppTheme {
         PageScaffold(
             title = stringResource(R.string.Open_Position),
@@ -291,7 +325,7 @@ fun OpenPositionPage(
                         Text(
                             text = stringResource(
                                 R.string.Current_price,
-                                formatFiatPrice(currentMarket.last, fiatRate, fiatSymbol)
+                                formatFiatPrice(currentMarket.last)
                             ),
                             fontSize = 13.sp,
                             color = MixinAppTheme.colors.textAssist
@@ -313,7 +347,7 @@ fun OpenPositionPage(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = stringResource(R.string.Amount),
+                            text = stringResource(R.string.Margin),
                             fontSize = 14.sp,
                             color = MixinAppTheme.colors.textPrimary
                         )
@@ -544,57 +578,49 @@ fun OpenPositionPage(
 
                 Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
+                        .fillMaxWidth(),
                 ) {
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Row (verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = stringResource(R.string.position_size),
-                                fontSize = 14.sp,
-                                color = MixinAppTheme.colors.textAssist
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_tip),
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .size(12.dp)
-                                    .clickable {
-                                        val activity = context as? FragmentActivity ?: return@clickable
-                                        PerpetualGuideBottomSheetDialogFragment.newInstance(PerpetualGuideBottomSheetDialogFragment.TAB_POSITION)
-                                            .show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
-                                    },
-                                tint = MixinAppTheme.colors.textAssist
-                            )
-                        }
-                        Text(
-                            text = "${calculateOrderValue(usdtAmount, leverage, currentMarket.last)} ${currentMarket.tokenSymbol}",
-                            fontSize = 14.sp,
-                            color = MixinAppTheme.colors.textAssist
-                        )
-                    }
+                    PerpsActionRow(
+                        title = stringResource(R.string.Take_Profit),
+                        value = takeProfitPrice.takeIf { it.isNotBlank() }?.let(::formatFiatPrice),
+                        onClick = {
+                            showTpSlBottomSheet(PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT)
+                        },
+                        onTipClick = {
+                            showPerpsGuide(PerpetualGuideBottomSheetDialogFragment.TAB_TP_SL)
+                        },
+                    )
                     Spacer(modifier = Modifier.height(16.dp))
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Row (verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = stringResource(R.string.Liquidation_Price),
-                                fontSize = 14.sp,
-                                color = MixinAppTheme.colors.textAssist
-                            )
+                    PerpsActionRow(
+                        title = stringResource(R.string.Stop_Loss),
+                        value = stopLossPrice.takeIf { it.isNotBlank() }?.let(::formatFiatPrice),
+                        onClick = {
+                            showTpSlBottomSheet(PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS)
+                        },
+                        onTipClick = {
+                            showPerpsGuide(PerpetualGuideBottomSheetDialogFragment.TAB_TP_SL)
+                        },
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    PerpsInfoRow(
+                        title = stringResource(R.string.position_size),
+                        value = "${calculateOrderValue(usdtAmount, leverage, currentMarket.last)} ${currentMarket.tokenSymbol}",
+                        onTipClick = {
+                            showPerpsGuide(PerpetualGuideBottomSheetDialogFragment.TAB_POSITION)
                         }
-                        Text(
-                            text = calculateLiquidationPrice(
-                                currentMarket.last,
-                                leverage,
-                                isLong,
-                                fiatRate,
-                                fiatSymbol,
-                            ),
-                            fontSize = 14.sp,
-                            color = MixinAppTheme.colors.textAssist
-                        )
-                    }
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    PerpsInfoRow(
+                        title = stringResource(R.string.Liquidation_Price),
+                        value = calculateLiquidationPrice(
+                            currentMarket.last,
+                            leverage,
+                            isLong,
+                        ),
+                        onTipClick = {
+                            showPerpsGuide(PerpetualGuideBottomSheetDialogFragment.TAB_LIQUIDATION)
+                        },
+                    )
                 }
 
                 Spacer(modifier = Modifier.weight(1f))
@@ -659,6 +685,8 @@ fun OpenPositionPage(
                                 amount = amount.stripTrailingZeros().toPlainString(),
                                 leverage = leverage.toInt(),
                                 walletId = walletId,
+                                takeProfitPrice = takeProfitPrice.takeIf { it.isNotBlank() },
+                                stopLossPrice = stopLossPrice.takeIf { it.isNotBlank() },
                                 entryPrice = m.last,
                                 onSuccess = { response ->
                                     PerpsConfirmBottomSheetDialogFragment.newInstance(
@@ -823,14 +851,12 @@ private fun calculateLiquidationPrice(
     currentPrice: String,
     leverage: Float,
     isLong: Boolean,
-    fiatRate: BigDecimal,
-    fiatSymbol: String,
 ): String {
     val price = currentPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
 
 
     if (price == BigDecimal.ZERO) {
-        return "${fiatSymbol}0"
+        return "${PERPS_USD_SYMBOL}0"
     }
 
     val liquidationPercent = BigDecimal(100.0 / leverage)
@@ -840,15 +866,97 @@ private fun calculateLiquidationPrice(
     } else {
         price * (BigDecimal.ONE + liquidationRatio)
     }
-    val fiatLiquidationPrice = liquidationPrice.multiply(fiatRate)
-    return "${fiatSymbol}${fiatLiquidationPrice.priceFormat()}"
+    return "$PERPS_USD_SYMBOL${liquidationPrice.priceFormat()}"
 }
 
 private fun formatFiatPrice(
     rawPrice: String,
-    fiatRate: BigDecimal,
-    fiatSymbol: String,
 ): String {
     val price = rawPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    return "${fiatSymbol}${price.multiply(fiatRate).priceFormat()}"
+    return price.priceFormat()
+}
+
+@Composable
+private fun PerpsActionRow(
+    title: String,
+    value: String?,
+    onClick: () -> Unit,
+    onTipClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = title,
+                fontSize = 14.sp,
+                color = MixinAppTheme.colors.textAssist,
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Icon(
+                painter = painterResource(id = R.drawable.ic_tip),
+                contentDescription = null,
+                tint = MixinAppTheme.colors.textAssist,
+                modifier = Modifier
+                    .size(16.dp)
+                    .clickable(onClick = onTipClick),
+            )
+        }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = value ?: stringResource(R.string.Add),
+                fontSize = 14.sp,
+                color = if (value == null) MixinAppTheme.colors.accent else MixinAppTheme.colors.textAssist,
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Icon(
+                painter = painterResource(id = R.drawable.ic_arrow_right),
+                contentDescription = null,
+                tint = MixinAppTheme.colors.textAssist,
+                modifier = Modifier.size(16.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun PerpsInfoRow(
+    title: String,
+    value: String,
+    onTipClick: (() -> Unit)? = null,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = title,
+                fontSize = 14.sp,
+                color = MixinAppTheme.colors.textAssist,
+            )
+            if (onTipClick != null) {
+                Spacer(modifier = Modifier.width(4.dp))
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_tip),
+                    contentDescription = null,
+                    tint = MixinAppTheme.colors.textAssist,
+                    modifier = Modifier
+                        .size(16.dp)
+                        .clickable(onClick = onTipClick),
+                )
+            }
+        }
+        Text(
+            text = value,
+            fontSize = 14.sp,
+            color = MixinAppTheme.colors.textAssist,
+            textAlign = TextAlign.End,
+        )
+    }
 }

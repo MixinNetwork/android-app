@@ -1,12 +1,12 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 2,
-    "identityHash": "4423b2cbe0ba53b8f8a4190b84e04883",
+    "version": 3,
+    "identityHash": "4125e3155ef8cf5810ce33ab5bd1fd50",
     "entities": [
       {
         "tableName": "positions",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`position_id` TEXT NOT NULL, `market_id` TEXT NOT NULL, `side` TEXT NOT NULL, `quantity` TEXT NOT NULL, `entry_price` TEXT NOT NULL, `margin` TEXT NOT NULL, `leverage` INTEGER NOT NULL, `state` TEXT NOT NULL, `mark_price` TEXT NOT NULL, `unrealized_pnl` TEXT NOT NULL, `roe` TEXT NOT NULL, `settle_asset_id` TEXT NOT NULL, `open_pay_amount` TEXT NOT NULL, `open_pay_asset_id` TEXT NOT NULL, `bot_id` TEXT NOT NULL, `wallet_id` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`position_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`position_id` TEXT NOT NULL, `market_id` TEXT NOT NULL, `side` TEXT NOT NULL, `quantity` TEXT NOT NULL, `entry_price` TEXT NOT NULL, `margin` TEXT NOT NULL, `leverage` INTEGER NOT NULL, `state` TEXT NOT NULL, `mark_price` TEXT NOT NULL, `unrealized_pnl` TEXT NOT NULL, `roe` TEXT NOT NULL, `settle_asset_id` TEXT NOT NULL, `open_pay_amount` TEXT NOT NULL, `open_pay_asset_id` TEXT NOT NULL, `take_profit_price` TEXT, `stop_loss_price` TEXT, `bot_id` TEXT NOT NULL, `wallet_id` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`position_id`))",
         "fields": [
           {
             "fieldPath": "positionId",
@@ -91,6 +91,16 @@
             "columnName": "open_pay_asset_id",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "takeProfitPrice",
+            "columnName": "take_profit_price",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "stopLossPrice",
+            "columnName": "stop_loss_price",
+            "affinity": "TEXT"
           },
           {
             "fieldPath": "botId",
@@ -355,7 +365,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4423b2cbe0ba53b8f8a4190b84e04883')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4125e3155ef8cf5810ce33ab5bd1fd50')"
     ]
   }
 }

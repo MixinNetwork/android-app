@@ -5,6 +5,7 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 
 private val perpsMinDisplayValue = BigDecimal("0.01")
+const val PERPS_USD_SYMBOL = "\$"
 
 fun PerpsMarket.changePercent(): BigDecimal {
     return try {
@@ -41,6 +42,19 @@ fun formatPerpsSignedFiatDecimal(value: BigDecimal?, fiatSymbol: String): String
         else -> formatPerpsFiatDecimal(BigDecimal.ZERO, fiatSymbol)
     }
 }
+
+fun formatPerpsSignedDecimal(value: BigDecimal?): String {
+    val safeValue = value ?: BigDecimal.ZERO
+    return when {
+        safeValue > BigDecimal.ZERO -> "+${formatPerpsDisplayDecimal(safeValue)}"
+        safeValue < BigDecimal.ZERO -> "-${formatPerpsDisplayDecimal(safeValue.abs())}"
+        else -> formatPerpsDisplayDecimal(BigDecimal.ZERO)
+    }
+}
+
+fun formatPerpsUsdDecimal(value: BigDecimal?): String = formatPerpsFiatDecimal(value, PERPS_USD_SYMBOL)
+
+fun formatPerpsSignedUsdDecimal(value: BigDecimal?): String = formatPerpsSignedFiatDecimal(value, PERPS_USD_SYMBOL)
 
 fun calculateClosedRoe(
     entryPrice: String?,

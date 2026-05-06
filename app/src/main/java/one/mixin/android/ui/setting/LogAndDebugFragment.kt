@@ -28,6 +28,7 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshWeb3TransactionsJob
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
+import one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment
 import one.mixin.android.ui.home.reminder.VerifyMobileReminderBottomSheetDialogFragment
 import one.mixin.android.ui.setting.diagnosis.DiagnosisFragment
 import one.mixin.android.util.debug.FileLogTree
@@ -116,6 +117,11 @@ class LogAndDebugFragment : BaseFragment(R.layout.fragment_log_debug) {
                 previewRecoveryReminder.setOnClickListener {
                     RecoveryReminderBottomSheetDialogFragment.allowDebugShowOnce(requireContext())
                     toast(R.string.Recovery_Reminder_Will_Show_Once)
+                }
+
+                previewNewUpdateReminder.setOnClickListener {
+                    ReminderBottomSheetDialogFragment.allowDebugShowOnce(requireContext())
+                    toast(R.string.New_Update_Reminder_Will_Show_Once)
                 }
 
                 deleteWeb3Transactions.setOnClickListener {

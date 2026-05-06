@@ -16,6 +16,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.api.request.perps.CloseOrderRequest
 import one.mixin.android.api.request.perps.OpenOrderRequest
 import one.mixin.android.api.request.perps.OpenOrderResponse
+import one.mixin.android.api.request.perps.PositionTpSlRequest
 import one.mixin.android.api.response.perps.CandleView
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.api.response.perps.PerpsPosition
@@ -292,6 +293,8 @@ class PerpetualViewModel @Inject constructor(
         amount: String,
         leverage: Int,
         walletId: String,
+        takeProfitPrice: String? = null,
+        stopLossPrice: String? = null,
         destination: String? = null,
         entryPrice: String,
         onSuccess: (OpenOrderResponse) -> Unit,
@@ -306,6 +309,8 @@ class PerpetualViewModel @Inject constructor(
                     amount = amount,
                     leverage = leverage,
                     walletId = walletId,
+                    takeProfitPrice = takeProfitPrice,
+                    stopLossPrice = stopLossPrice,
                     destination = destination
                 )
                 
@@ -328,6 +333,8 @@ class PerpetualViewModel @Inject constructor(
                         margin = data.payAmount,
                         openPayAmount = data.payAmount,
                         openPayAssetId = assetId,
+                        takeProfitPrice = takeProfitPrice,
+                        stopLossPrice = stopLossPrice,
                         leverage = leverage,
                         state = "opening",
                         markPrice = entryPrice,
@@ -354,6 +361,42 @@ class PerpetualViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 val error = "Error opening perps order: ${e.message}"
+                Timber.e(e, error)
+                onError(-1, error)
+            }
+        }
+    }
+
+    fun setPositionTpSl(
+        positionId: String,
+        takeProfitPrice: String?,
+        stopLossPrice: String?,
+        onSuccess: (PerpsPosition) -> Unit,
+        onError: (Int, String) -> Unit,
+    ) {
+        viewModelScope.launch {
+            try {
+                val response = withContext(Dispatchers.IO) {
+                    routeService.setPerpsPositionTpSl(
+                        PositionTpSlRequest(
+                            positionId = positionId,
+                            takeProfitPrice = takeProfitPrice,
+                            stopLossPrice = stopLossPrice,
+                        )
+                    )
+                }
+
+                val data = response.data
+                if (response.isSuccess && data != null) {
+                    withContext(Dispatchers.IO) {
+                        perpsPositionDao.upsertSuspend(data)
+                    }
+                    onSuccess(data)
+                } else {
+                    onError(response.errorCode, response.errorDescription)
+                }
+            } catch (e: Exception) {
+                val error = "Error setting position TP/SL: ${e.message}"
                 Timber.e(e, error)
                 onError(-1, error)
             }

@@ -53,6 +53,12 @@ data class PerpsPosition(
     @SerializedName("open_pay_asset_id")
     @ColumnInfo(name = "open_pay_asset_id")
     val openPayAssetId: String,
+    @SerializedName("take_profit_price")
+    @ColumnInfo(name = "take_profit_price")
+    val takeProfitPrice: String? = null,
+    @SerializedName("stop_loss_price")
+    @ColumnInfo(name = "stop_loss_price")
+    val stopLossPrice: String? = null,
     @SerializedName("bot_id")
     @ColumnInfo(name = "bot_id")
     val botId: String,

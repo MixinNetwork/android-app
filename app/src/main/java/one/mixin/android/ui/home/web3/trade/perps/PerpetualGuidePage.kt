@@ -47,6 +47,7 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.priceFormat
 import one.mixin.android.ui.home.web3.components.OutlinedTab
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.widget.components.DotText
@@ -90,7 +91,9 @@ fun PerpetualGuidePage(
         stringResource(R.string.Long),
         stringResource(R.string.Short),
         stringResource(R.string.Leverage),
-        stringResource(R.string.position_size)
+        stringResource(R.string.position_size),
+        stringResource(R.string.Take_Profit_Stop_Loss),
+        stringResource(R.string.Liquidation_Price),
     )
     val safeInitialTab = initialTab.coerceIn(0, tabs.lastIndex)
     var selectedTab by remember(safeInitialTab) { mutableIntStateOf(safeInitialTab) }
@@ -160,6 +163,8 @@ fun PerpetualGuidePage(
                         2 -> ShortContent()
                         3 -> LeverageContent()
                         4 -> PositionContent()
+                        5 -> TpSlContent()
+                        6 -> LiquidationContent()
                     }
                     Spacer(modifier = Modifier.height(24.dp))
                 }
@@ -189,8 +194,19 @@ private fun OverviewContent() {
 
 @Composable
 private fun LongContent() {
+    val viewModel = hiltViewModel<PerpetualViewModel>()
     val leverage = 10
+    val investment = 1000
     val maxLossPercent = 100f / leverage
+    val btcToken by remember {
+        viewModel.observeTokenByChainAndSymbol(
+            chainId = Constants.ChainId.BITCOIN_CHAIN_ID,
+            symbol = "BTC",
+        )
+    }.collectAsStateWithLifecycle(initialValue = null)
+    val localBtcPrice = btcToken?.priceUsd?.toBigDecimalOrNull()
+    val orderValueUsdt = leverage * investment
+    val orderValueText = buildOrderValueText(orderValueUsdt, localBtcPrice, "BTC")
     ExampleWithScenariosCard(
         title = stringResource(R.string.Example),
         rows = listOf(
@@ -209,7 +225,11 @@ private fun LongContent() {
             ),
             GuideRowData(
                 label = stringResource(R.string.example_amount),
-                value = "1,000 USDT"
+                value = "${formatGuideInt(investment)} USDT"
+            ),
+            GuideRowData(
+                label = stringResource(R.string.position_size),
+                value = orderValueText,
             )
         ),
         scenarios = listOf(
@@ -247,8 +267,19 @@ private fun LongContent() {
 
 @Composable
 private fun ShortContent() {
+    val viewModel = hiltViewModel<PerpetualViewModel>()
     val leverage = 10
+    val investment = 1000
     val maxLossPercent = 100f / leverage
+    val ethToken by remember {
+        viewModel.observeTokenByChainAndSymbol(
+            chainId = Constants.ChainId.ETHEREUM_CHAIN_ID,
+            symbol = "ETH",
+        )
+    }.collectAsStateWithLifecycle(initialValue = null)
+    val localEthPrice = ethToken?.priceUsd?.toBigDecimalOrNull()
+    val orderValueUsdt = leverage * investment
+    val orderValueText = buildOrderValueText(orderValueUsdt, localEthPrice, "ETH")
     ExampleWithScenariosCard(
         title = stringResource(R.string.Example),
         rows = listOf(
@@ -267,7 +298,11 @@ private fun ShortContent() {
             ),
             GuideRowData(
                 label = stringResource(R.string.example_amount),
-                value = "1,000 USDT"
+                value = "${formatGuideInt(investment)} USDT"
+            ),
+            GuideRowData(
+                label = stringResource(R.string.position_size),
+                value = orderValueText,
             )
         ),
         scenarios = listOf(
@@ -305,9 +340,20 @@ private fun ShortContent() {
 
 @Composable
 private fun LeverageContent() {
+    val viewModel = hiltViewModel<PerpetualViewModel>()
     var leverage by remember { mutableIntStateOf(10) }
+    val investment = 1000
     val fixedProfitPercent = 10f
     val liquidationPercent = if (leverage > 0) 100f / leverage else 100f
+    val solToken by remember {
+        viewModel.observeTokenByChainAndSymbol(
+            chainId = Constants.ChainId.Solana,
+            symbol = "SOL",
+        )
+    }.collectAsStateWithLifecycle(initialValue = null)
+    val localSolPrice = solToken?.priceUsd?.toBigDecimalOrNull()
+    val orderValueUsdt = leverage * investment
+    val orderValueText = buildOrderValueText(orderValueUsdt, localSolPrice, "SOL")
     val profitPnlAmount = leverage * 100
     val profitPnlPercent = leverage * 10
     ExampleWithScenariosCard(
@@ -328,7 +374,11 @@ private fun LeverageContent() {
             ),
             GuideRowData(
                 label = stringResource(R.string.example_amount),
-                value = "1,000 USDT"
+                value = "${formatGuideInt(investment)} USDT"
+            ),
+            GuideRowData(
+                label = stringResource(R.string.position_size),
+                value = orderValueText,
             )
         ),
         scenarios = listOf(
@@ -387,7 +437,8 @@ private fun PositionContent() {
     val orderValueUsdt = leverage * investment
     val orderValueText = buildOrderValueText(
         orderValueUsdt = orderValueUsdt,
-        localSolPrice = localSolPrice
+        localPrice = localSolPrice,
+        symbol = "SOL",
     )
     val profitPnlAmount = (orderValueUsdt * fixedProfitPercent / 100).roundToInt()
     val profitPnlPercent = (leverage * fixedProfitPercent).roundToInt()
@@ -458,6 +509,145 @@ private fun PositionContent() {
             stringResource(R.string.perps_position_size_notice_2)
         ),
         riskContents = emptyList()
+    )
+}
+
+@Composable
+private fun TpSlContent() {
+    ExampleWithScenariosCard(
+        title = stringResource(R.string.Example),
+        rows = listOf(
+            GuideRowData(
+                label = stringResource(R.string.perps_market),
+                value = "SOL - USD",
+                iconRes = R.drawable.ic_chain_sol,
+            ),
+            GuideRowData(
+                label = stringResource(R.string.Direction),
+                value = stringResource(R.string.Long),
+            ),
+            GuideRowData(
+                label = stringResource(R.string.Leverage),
+                value = "10x",
+            ),
+            GuideRowData(
+                label = stringResource(R.string.example_amount),
+                value = "1,000 USDT",
+            ),
+        ),
+        scenarios = listOf(
+            ScenarioData(
+                scenario = stringResource(R.string.perps_scene_tp_triggered),
+                change = stringResource(R.string.PnL),
+                initialPercent = 1f,
+                basePnlAmount = 100,
+                basePnlPercent = 10,
+                isProfit = true,
+                isPriceIncrease = true,
+            ),
+            ScenarioData(
+                scenario = stringResource(R.string.perps_scene_sl_triggered),
+                change = stringResource(R.string.PnL),
+                initialPercent = 1f,
+                basePnlAmount = 100,
+                basePnlPercent = 10,
+                isProfit = false,
+                isPriceIncrease = false,
+            ),
+        ),
+        isScenarioChangeAdjustable = false,
+    )
+    Spacer(modifier = Modifier.height(16.dp))
+    DescriptionWithInfoAndRiskCard(
+        description = stringResource(R.string.perps_tpsl_overview),
+        infoTitle = stringResource(R.string.Key_Points),
+        infoContents = listOf(
+            stringResource(R.string.perps_tpsl_key_point_1),
+            stringResource(R.string.perps_tpsl_key_point_2),
+        ),
+        riskContents = listOf(
+            stringResource(R.string.perps_tpsl_risk_notice_1),
+            stringResource(R.string.perps_tpsl_risk_notice_2),
+        ),
+    )
+}
+
+@Composable
+private fun LiquidationContent() {
+    val viewModel = hiltViewModel<PerpetualViewModel>()
+    val leverage = 10
+    val liquidationPercent = 100f / leverage
+    val solToken by remember {
+        viewModel.observeTokenByChainAndSymbol(
+            chainId = Constants.ChainId.Solana,
+            symbol = "SOL",
+        )
+    }.collectAsStateWithLifecycle(initialValue = null)
+    val localSolPrice = solToken?.priceUsd?.toBigDecimalOrNull()
+    val markPrice = localSolPrice ?: BigDecimal("148.78")
+    val liquidationPrice = markPrice.multiply(BigDecimal.valueOf((100 - liquidationPercent).toDouble() / 100))
+        .setScale(2, RoundingMode.HALF_UP)
+    ExampleWithScenariosCard(
+        title = stringResource(R.string.Example),
+        rows = listOf(
+            GuideRowData(
+                label = stringResource(R.string.perps_market),
+                value = "SOL - USD",
+                iconRes = R.drawable.ic_chain_sol,
+            ),
+            GuideRowData(
+                label = stringResource(R.string.Direction),
+                value = "${stringResource(R.string.Long)} / ${stringResource(R.string.Short)}",
+            ),
+            GuideRowData(
+                label = stringResource(R.string.Leverage),
+                value = "${leverage}x",
+            ),
+            GuideRowData(
+                label = stringResource(R.string.Mark_Price),
+                value = "1 SOL ≈ ${PERPS_USD_SYMBOL}${markPrice.priceFormat()}",
+            ),
+            GuideRowData(
+                label = stringResource(R.string.Liquidation_Price),
+                value = "$PERPS_USD_SYMBOL${liquidationPrice.priceFormat()}",
+            ),
+        ),
+        scenarios = listOf(
+            ScenarioData(
+                scenario = stringResource(R.string.example_scene1_increasing),
+                change = stringResource(R.string.Price_Change),
+                initialPercent = 10f,
+                basePnlAmount = 1000,
+                basePnlPercent = 100,
+                isProfit = true,
+                isPriceIncrease = true,
+            ),
+            ScenarioData(
+                scenario = stringResource(R.string.example_scene2_decreasing),
+                change = stringResource(R.string.Price_Change),
+                initialPercent = liquidationPercent,
+                basePnlAmount = 1000,
+                basePnlPercent = 100,
+                isProfit = false,
+                isPriceIncrease = false,
+                maxPercent = liquidationPercent,
+            ),
+        ),
+        isScenarioChangeAdjustable = false,
+    )
+    Spacer(modifier = Modifier.height(16.dp))
+    DescriptionWithInfoAndRiskCard(
+        description = stringResource(R.string.perps_liquidation_price_overview),
+        infoTitle = stringResource(R.string.Key_Points),
+        infoContents = listOf(
+            stringResource(R.string.perps_liquidation_price_key_point_1),
+            stringResource(R.string.perps_liquidation_price_key_point_2),
+            stringResource(R.string.perps_liquidation_price_key_point_3),
+        ),
+        riskContents = listOf(
+            stringResource(R.string.perps_liquidation_price_risk_notice_1),
+            stringResource(R.string.perps_liquidation_price_risk_notice_2),
+        ),
     )
 }
 
@@ -941,17 +1131,18 @@ private fun formatGuideInt(value: Int): String {
 
 private fun buildOrderValueText(
     orderValueUsdt: Int,
-    localSolPrice: BigDecimal?,
+    localPrice: BigDecimal?,
+    symbol: String,
 ): String {
-    val solPrice = localSolPrice ?: return "-- SOL"
-    if (solPrice <= BigDecimal.ZERO) {
-        return "-- SOL"
+    val price = localPrice ?: return "-- $symbol"
+    if (price <= BigDecimal.ZERO) {
+        return "-- $symbol"
     }
-    val solAmount = BigDecimal(orderValueUsdt.toString())
-        .divide(solPrice, 2, RoundingMode.HALF_UP)
+    val amount = BigDecimal(orderValueUsdt.toString())
+        .divide(price, 2, RoundingMode.HALF_UP)
         .stripTrailingZeros()
         .toPlainString()
-    return "$solAmount SOL"
+    return "$amount $symbol"
 }
 
 private fun formatPercent(percent: Float): String {
