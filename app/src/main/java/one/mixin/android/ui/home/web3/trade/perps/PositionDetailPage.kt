@@ -268,7 +268,7 @@ fun PositionDetailPage(
 
                 PositionDetailItem(
                     label = stringResource(R.string.Liquidation_Price).uppercase(),
-                    value = formatFiat(liquidationPrice)
+                    value = formatPriceUsd(liquidationPrice)
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
