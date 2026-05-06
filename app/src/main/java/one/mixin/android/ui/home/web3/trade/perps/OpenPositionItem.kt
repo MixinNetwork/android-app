@@ -135,9 +135,8 @@ fun OpenPositionItem(
                         modifier = Modifier.weight(0.85f)
                     )
                 } else {
-                    val marginFiat = margin.multiply(fiatRate)
                     BasicText(
-                        text = formatPerpsFiatDecimal(marginFiat, fiatSymbol),
+                        text = formatPerpsDisplayDecimal(margin),
                         modifier = Modifier.weight(0.85f),
                         style = TextStyle(
                             fontSize = 14.sp,
@@ -182,7 +181,7 @@ fun OpenPositionItem(
                     }
 
                     BasicText(
-                        text = "${formatPerpsSignedFiatDecimal(unrealizedPnl.multiply(fiatRate), fiatSymbol)} (${formatPerpsSignedPercent(roe, withSign = false)})",
+                        text = "${formatPerpsSignedDecimal(unrealizedPnl)} (${formatPerpsSignedPercent(roe, withSign = false)})",
                         modifier = Modifier.weight(0.85f),
                         style = TextStyle(
                             fontSize = 14.sp,

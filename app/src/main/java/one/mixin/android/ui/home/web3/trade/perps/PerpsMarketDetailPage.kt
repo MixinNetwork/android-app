@@ -455,8 +455,8 @@ private fun formatVolume(
     fiatSymbol: String,
 ): String {
     return try {
-        val fiatVolume = BigDecimal(volume).multiply(fiatRate)
-        "${fiatSymbol}${fiatVolume.numberFormatCompact()}"
+        val vol = BigDecimal(volume)
+        vol.numberFormatCompact()
     } catch (e: NumberFormatException) {
         stringResource(R.string.N_A)
     }
@@ -618,7 +618,7 @@ private fun OpenPositionCard(
 
     val quantity = position.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val marginAmount = position.margin?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    val amountValue = marginAmount.multiply(fiatRate)
+    val amountValue = marginAmount
 
     val entryPrice = position.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val liquidationPrice = calculateLiquidationPriceValue(entryPrice, position.leverage, isLong)
@@ -685,7 +685,7 @@ private fun OpenPositionCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "${formatPerpsSignedFiatDecimal(pnl.multiply(fiatRate), fiatSymbol)} (${formatPerpsSignedPercent(roe, withSign = false)})",
+                    text = "${formatPerpsSignedDecimal(pnl)} (${formatPerpsSignedPercent(roe, withSign = false)})",
                     fontSize = 14.sp,
                     lineHeight = 17.sp,
                     style = compactTextStyle,
@@ -771,7 +771,7 @@ private fun OpenPositionCard(
                     color = MixinAppTheme.colors.textPrimary
                 )
                 Text(
-                    text = formatPerpsFiatDecimal(amountValue, fiatSymbol),
+                    text = formatPerpsDisplayDecimal(amountValue),
                     fontSize = 14.sp,
                     lineHeight = 17.sp,
                     style = compactTextStyle,
@@ -817,7 +817,7 @@ private fun OpenPositionCard(
                     color = MixinAppTheme.colors.textPrimary
                 )
                 Text(
-                    text = "${fiatSymbol}${liquidationPrice.multiply(fiatRate).priceFormat()}",
+                    text = liquidationPrice.priceFormat(),
                     fontSize = 14.sp,
                     lineHeight = 17.sp,
                     style = compactTextStyle,

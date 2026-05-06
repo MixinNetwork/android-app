@@ -774,30 +774,29 @@ private fun calculateProfitInfo(
     val leverageInt = leverage.roundToInt()
     if (amountValue == BigDecimal.ZERO) {
         return if (isLong) {
-            stringResource(R.string.Price_Up_Profit, "1", leverageInt.toString(), "${fiatSymbol}0.00")
+            stringResource(R.string.Price_Up_Profit, "1", leverageInt.toString(), "0.00")
         } else {
-            stringResource(R.string.Price_Down_Profit, "1", leverageInt.toString(), "${fiatSymbol}0.00")
+            stringResource(R.string.Price_Down_Profit, "1", leverageInt.toString(), "0.00")
         }
     }
 
     val profitPercent = leverageInt
     val profitAmount = amountValue
         .multiply(BigDecimal(profitPercent).divide(BigDecimal(100)))
-        .multiply(fiatRate)
 
     return if (isLong) {
         stringResource(
             R.string.Price_Up_Profit,
             String.format("%.0f", abs(priceChangePercent)),
             profitPercent.toString(),
-            "${fiatSymbol}${profitAmount.priceFormat()}"
+            profitAmount.priceFormat()
         )
     } else {
         stringResource(
             R.string.Price_Down_Profit,
             String.format("%.0f", abs(priceChangePercent)),
             profitPercent.toString(),
-            "${fiatSymbol}${profitAmount.priceFormat()}"
+            profitAmount.priceFormat()
         )
     }
 }

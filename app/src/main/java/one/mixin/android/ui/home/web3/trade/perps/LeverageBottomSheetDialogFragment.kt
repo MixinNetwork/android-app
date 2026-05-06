@@ -293,9 +293,9 @@ private fun ProfitLossInfo(
         ) {
             Text(
                 text = if (isLong) {
-                    stringResource(R.string.Price_Up_Profit, priceChangePercent.toString(), profitPercent.toString(), "$0.00")
+                    stringResource(R.string.Price_Up_Profit, priceChangePercent.toString(), profitPercent.toString(), "0.00")
                 } else {
-                    stringResource(R.string.Price_Down_Profit, priceChangePercent.toString(), profitPercent.toString(), "$0.00")
+                    stringResource(R.string.Price_Down_Profit, priceChangePercent.toString(), profitPercent.toString(), "0.00")
                 },
                 fontSize = 13.sp,
                 color = MixinAppTheme.colors.textAssist
@@ -303,9 +303,9 @@ private fun ProfitLossInfo(
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = if (isLong) {
-                    stringResource(R.string.Price_Down_Loss, String.format("%.2f", liquidationPercent), "$0.00", "")
+                    stringResource(R.string.Price_Down_Loss, String.format("%.2f", liquidationPercent), "0.00", "")
                 } else {
-                    stringResource(R.string.Price_Up_Loss, String.format("%.2f", liquidationPercent), "$0.00", "")
+                    stringResource(R.string.Price_Up_Loss, String.format("%.2f", liquidationPercent), "0.00", "")
                 },
                 fontSize = 13.sp,
                 color = MixinAppTheme.colors.textAssist
@@ -328,14 +328,14 @@ private fun ProfitLossInfo(
                     R.string.Price_Up_Profit,
                     priceChangePercent.toString(),
                     profitPercent.toString(),
-                    String.format("$%.2f", profitAmount)
+                    String.format("%.2f", profitAmount)
                 )
             } else {
                 stringResource(
                     R.string.Price_Down_Profit,
                     priceChangePercent.toString(),
                     profitPercent.toString(),
-                    String.format("$%.2f", profitAmount)
+                    String.format("%.2f", profitAmount)
                 )
             },
             fontSize = 13.sp,
@@ -347,14 +347,14 @@ private fun ProfitLossInfo(
                 stringResource(
                     R.string.Price_Down_Loss,
                     String.format("%.2f", liquidationPercent),
-                    String.format("$%.2f", lossAmount),
+                    String.format("%.2f", lossAmount),
                     ""
                 )
             } else {
                 stringResource(
                     R.string.Price_Up_Loss,
                     String.format("%.2f", liquidationPercent),
-                    String.format("$%.2f", lossAmount),
+                    String.format("%.2f", lossAmount),
                     ""
                 )
             },

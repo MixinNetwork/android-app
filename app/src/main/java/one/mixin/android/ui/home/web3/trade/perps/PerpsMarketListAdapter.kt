@@ -50,11 +50,11 @@ class PerpsMarketListAdapter(
                 leverageTv.text = root.context.getString(R.string.Perpetual_Leverage_Format, market.leverage)
 
                 val formattedVolume = try {
-                    BigDecimal(market.volume).multiply(fiatRate).numberFormatCompact()
+                    BigDecimal(market.volume).numberFormatCompact()
                 } catch (e: Exception) {
                     market.volume
                 }
-                volumeTv.text = root.context.getString(R.string.Vol, "$fiatSymbol$formattedVolume")
+                volumeTv.text = root.context.getString(R.string.Vol, formattedVolume)
 
                 val formattedPrice = try {
                     BigDecimal(market.last).priceFormat()

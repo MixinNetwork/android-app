@@ -59,7 +59,7 @@ fun PerpsMarketItem(
     }
 
     val formattedVolume = try {
-        BigDecimal(market.volume).multiply(fiatRate).numberFormatCompact()
+        BigDecimal(market.volume).numberFormatCompact()
     } catch (e: Exception) {
         market.volume
     }
@@ -118,7 +118,7 @@ fun PerpsMarketItem(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = stringResource(R.string.Vol, "${Fiats.getSymbol()}$formattedVolume"),
+                    text = stringResource(R.string.Vol, formattedVolume),
                     fontSize = 14.sp,
                     color = MixinAppTheme.colors.textAssist,
                     modifier = Modifier.weight(1f)

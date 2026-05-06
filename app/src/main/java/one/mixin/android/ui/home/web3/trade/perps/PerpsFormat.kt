@@ -44,6 +44,15 @@ fun formatPerpsSignedFiatDecimal(value: BigDecimal?, fiatSymbol: String): String
 
 fun formatPerpsUsdDecimal(value: BigDecimal?): String = formatPerpsFiatDecimal(value, "")
 
+fun formatPerpsSignedDecimal(value: BigDecimal?): String {
+    val safeValue = value ?: BigDecimal.ZERO
+    return when {
+        safeValue > BigDecimal.ZERO -> "+${formatPerpsDisplayDecimal(safeValue)}"
+        safeValue < BigDecimal.ZERO -> "-${formatPerpsDisplayDecimal(safeValue.abs())}"
+        else -> formatPerpsDisplayDecimal(BigDecimal.ZERO)
+    }
+}
+
 
 fun calculateClosedRoe(
     entryPrice: String?,
