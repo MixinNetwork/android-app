@@ -826,7 +826,7 @@ private fun calculateLiquidationPrice(
 
 
     if (price == BigDecimal.ZERO) {
-        return "${PERPS_USD_SYMBOL}0"
+        return "0"
     }
 
     val liquidationPercent = BigDecimal(100.0 / leverage)
@@ -836,12 +836,12 @@ private fun calculateLiquidationPrice(
     } else {
         price * (BigDecimal.ONE + liquidationRatio)
     }
-    return "$PERPS_USD_SYMBOL${liquidationPrice.priceFormat()}"
+    return "${liquidationPrice.priceFormat()}"
 }
 
 private fun formatFiatPrice(
     rawPrice: String,
 ): String {
     val price = rawPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    return "$PERPS_USD_SYMBOL${price.priceFormat()}"
+    return "${price.priceFormat()}"
 }

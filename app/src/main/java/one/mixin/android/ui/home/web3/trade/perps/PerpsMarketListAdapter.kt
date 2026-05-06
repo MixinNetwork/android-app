@@ -61,7 +61,7 @@ class PerpsMarketListAdapter(
                 } catch (e: Exception) {
                     market.last
                 }
-                priceTv.text = "$PERPS_USD_SYMBOL$formattedPrice"
+                priceTv.text = "$formattedPrice"
 
                 val changePercent = market.changePercent()
                 val isPositive = changePercent >= BigDecimal.ZERO

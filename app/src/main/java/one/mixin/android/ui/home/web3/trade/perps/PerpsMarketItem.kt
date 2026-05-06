@@ -108,7 +108,7 @@ fun PerpsMarketItem(
                     )
                 }
                 Text(
-                    text = "$PERPS_USD_SYMBOL$formattedPrice",
+                    text = "$formattedPrice",
                     fontSize = 14.sp,
                     color = MixinAppTheme.colors.textPrimary,
                 )

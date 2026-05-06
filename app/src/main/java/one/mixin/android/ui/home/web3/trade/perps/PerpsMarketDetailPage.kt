@@ -515,7 +515,7 @@ private fun MarketDetailCard(
                 )
                 Spacer(modifier = Modifier.height(7.dp))
                 Text(
-                    text = "$PERPS_USD_SYMBOL$formattedPrice",
+                    text = "$formattedPrice",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.W500,
                     color = MixinAppTheme.colors.textPrimary
@@ -810,7 +810,7 @@ private fun OpenPositionCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "$PERPS_USD_SYMBOL${entryPrice.priceFormat()}",
+                    text = "${entryPrice.priceFormat()}",
                     fontSize = 14.sp,
                     lineHeight = 17.sp,
                     style = compactTextStyle,

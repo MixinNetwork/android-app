@@ -367,7 +367,7 @@ class PerpsPositionShareActivity : BaseActivity() {
 
     private fun formatFiat(value: String?): String {
         val price = value.toBigDecimalSafely() ?: BigDecimal.ZERO
-        return "$PERPS_USD_SYMBOL${price.priceFormat()}"
+        return "${price.priceFormat()}"
     }
 
     private fun String?.toBigDecimalSafely(): BigDecimal? {
