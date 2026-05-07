@@ -62,6 +62,7 @@ data class PerpsPosition(
     @SerializedName("bot_id")
     @ColumnInfo(name = "bot_id")
     val botId: String,
+    @SerializedName("wallet_id")
     @ColumnInfo(name = "wallet_id")
     val walletId: String,
     @SerializedName("created_at")
