@@ -92,8 +92,8 @@ fun PerpetualGuidePage(
         stringResource(R.string.Short),
         stringResource(R.string.Leverage),
         stringResource(R.string.position_size),
-        stringResource(R.string.Take_Profit_Stop_Loss),
         stringResource(R.string.Liquidation_Price),
+        stringResource(R.string.Take_Profit_Stop_Loss),
     )
     val safeInitialTab = initialTab.coerceIn(0, tabs.lastIndex)
     var selectedTab by remember(safeInitialTab) { mutableIntStateOf(safeInitialTab) }
@@ -163,8 +163,8 @@ fun PerpetualGuidePage(
                         2 -> ShortContent()
                         3 -> LeverageContent()
                         4 -> PositionContent()
-                        5 -> TpSlContent()
-                        6 -> LiquidationContent()
+                        5 -> LiquidationContent()
+                        6 -> TpSlContent()
                     }
                     Spacer(modifier = Modifier.height(24.dp))
                 }
@@ -204,9 +204,6 @@ private fun LongContent() {
             symbol = "BTC",
         )
     }.collectAsStateWithLifecycle(initialValue = null)
-    val localBtcPrice = btcToken?.priceUsd?.toBigDecimalOrNull()
-    val orderValueUsdt = leverage * investment
-    val orderValueText = buildOrderValueText(orderValueUsdt, localBtcPrice, "BTC")
     ExampleWithScenariosCard(
         title = stringResource(R.string.Example),
         rows = listOf(
@@ -226,10 +223,6 @@ private fun LongContent() {
             GuideRowData(
                 label = stringResource(R.string.example_amount),
                 value = "${formatGuideInt(investment)} USDT"
-            ),
-            GuideRowData(
-                label = stringResource(R.string.position_size),
-                value = orderValueText,
             )
         ),
         scenarios = listOf(
@@ -242,18 +235,10 @@ private fun LongContent() {
                 isProfit = true,
                 isPriceIncrease = true,
                 maxPercent = null
-            ),
-            ScenarioData(
-                scenario = stringResource(R.string.example_scene2_decreasing),
-                change = stringResource(R.string.Price_Change),
-                initialPercent = maxLossPercent,
-                basePnlAmount = 1000,
-                basePnlPercent = 100,
-                isProfit = false,
-                isPriceIncrease = false,
-                maxPercent = maxLossPercent,
             )
-        )
+        ),
+        showScenarioTitle = false,
+        showRowsDivider = true,
     )
     Spacer(modifier = Modifier.height(16.dp))
     DescriptionWithRulesCard(
@@ -277,9 +262,6 @@ private fun ShortContent() {
             symbol = "ETH",
         )
     }.collectAsStateWithLifecycle(initialValue = null)
-    val localEthPrice = ethToken?.priceUsd?.toBigDecimalOrNull()
-    val orderValueUsdt = leverage * investment
-    val orderValueText = buildOrderValueText(orderValueUsdt, localEthPrice, "ETH")
     ExampleWithScenariosCard(
         title = stringResource(R.string.Example),
         rows = listOf(
@@ -299,10 +281,6 @@ private fun ShortContent() {
             GuideRowData(
                 label = stringResource(R.string.example_amount),
                 value = "${formatGuideInt(investment)} USDT"
-            ),
-            GuideRowData(
-                label = stringResource(R.string.position_size),
-                value = orderValueText,
             )
         ),
         scenarios = listOf(
@@ -315,18 +293,10 @@ private fun ShortContent() {
                 isProfit = true,
                 isPriceIncrease = false,
                 maxPercent = null,
-            ),
-            ScenarioData(
-                scenario = stringResource(R.string.example_scene2_increasing),
-                change = stringResource(R.string.Price_Change),
-                initialPercent = maxLossPercent,
-                basePnlAmount = 1000,
-                basePnlPercent = 100,
-                isProfit = false,
-                isPriceIncrease = true,
-                maxPercent = maxLossPercent,
             )
-        )
+        ),
+        showScenarioTitle = false,
+        showRowsDivider = true,
     )
     Spacer(modifier = Modifier.height(16.dp))
     DescriptionWithRulesCard(
@@ -391,21 +361,13 @@ private fun LeverageContent() {
                 isProfit = true,
                 isPriceIncrease = true,
                 maxPercent = null
-            ),
-            ScenarioData(
-                scenario = stringResource(R.string.example_scene2_decreasing),
-                change = stringResource(R.string.Price_Change),
-                initialPercent = liquidationPercent,
-                basePnlAmount = 1000,
-                basePnlPercent = 100,
-                isProfit = false,
-                isPriceIncrease = false,
-                maxPercent = liquidationPercent,
             )
         ),
         leverageValue = leverage,
         onLeverageChange = { leverage = it.coerceIn(1, 200) },
         isScenarioChangeAdjustable = false,
+        showScenarioTitle = false,
+        showRowsDivider = true,
     )
     Spacer(modifier = Modifier.height(16.dp))
     DescriptionWithInfoAndRiskCard(
@@ -480,16 +442,6 @@ private fun PositionContent() {
                 isProfit = true,
                 isPriceIncrease = true,
                 maxPercent = null
-            ),
-            ScenarioData(
-                scenario = stringResource(R.string.example_scene2_decreasing),
-                change = stringResource(R.string.Price_Change),
-                initialPercent = maxLossPercent,
-                basePnlAmount = lossPnlAmount,
-                basePnlPercent = lossPnlPercent,
-                isProfit = false,
-                isPriceIncrease = false,
-                maxPercent = maxLossPercent,
             )
         ),
         leverageValue = leverage,
@@ -499,6 +451,8 @@ private fun PositionContent() {
         onInvestmentChange = { investment = it.coerceIn(100, 100000) },
         investmentConfig = AdjusterConfig(min = 100, max = 100000, step = 100),
         isScenarioChangeAdjustable = false,
+        showScenarioTitle = false,
+        showRowsDivider = true,
     )
     Spacer(modifier = Modifier.height(16.dp))
     DescriptionWithInfoAndRiskCard(
@@ -847,6 +801,8 @@ private fun ExampleWithScenariosCard(
     onInvestmentChange: ((Int) -> Unit)? = null,
     investmentConfig: AdjusterConfig = AdjusterConfig(min = 10, max = 1000, step = 10),
     isScenarioChangeAdjustable: Boolean = true,
+    showScenarioTitle: Boolean = true,
+    showRowsDivider: Boolean = false,
 ) {
     val context = LocalContext.current
     val quoteColorReversed = context.defaultSharedPreferences
@@ -953,6 +909,16 @@ private fun ExampleWithScenariosCard(
             }
         }
 
+        if (showRowsDivider) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(MixinAppTheme.colors.backgroundWindow)
+            )
+        }
+
         Spacer(modifier = Modifier.height(16.dp))
 
         orderedScenarios.forEachIndexed { index, scenario ->
@@ -965,13 +931,15 @@ private fun ExampleWithScenariosCard(
                 modifier = Modifier
                     .fillMaxWidth()
             ) {
-                Text(
-                    text = scenario.scenario,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.W500,
-                    color = MixinAppTheme.colors.textPrimary
-                )
-                Spacer(modifier = Modifier.height(6.dp))
+                if (showScenarioTitle) {
+                    Text(
+                        text = scenario.scenario,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.W500,
+                        color = MixinAppTheme.colors.textPrimary
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                }
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Text(

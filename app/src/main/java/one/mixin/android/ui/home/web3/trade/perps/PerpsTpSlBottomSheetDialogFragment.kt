@@ -385,7 +385,7 @@ private fun PerpsTpSlContent(
 
             Row(
                 modifier = Modifier
-                    .fillMaxWidth(),
+                    a.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 TpSlTypeChip(
