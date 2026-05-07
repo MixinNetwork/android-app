@@ -193,10 +193,10 @@ interface UserDao : BaseDao<User> {
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         "SELECT u.user_id, u.identity_number, u.biography, u.full_name, u.relationship, " +
-            "NULL AS avatar_url, NULL AS phone, NULL AS is_verified, NULL AS created_at, NULL AS mute_until, " +
-            "NULL AS has_pin, NULL AS app_id, NULL AS is_scam, NULL AS is_deactivated, NULL AS membership " +
-            "FROM participants p, users u " +
-            "WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id",
+        "NULL AS avatar_url, NULL AS phone, NULL AS is_verified, NULL AS created_at, NULL AS mute_until, " +
+        "NULL AS has_pin, NULL AS app_id, NULL AS is_scam, NULL AS is_deactivated, NULL AS membership " +
+        "FROM participants p, users u " +
+        "WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id",
     )
     fun getGroupParticipants(conversationId: String): LiveData<List<User>>
 
