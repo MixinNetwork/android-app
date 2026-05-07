@@ -2353,6 +2353,7 @@
     <string name="perps_tpsl_take_profit_when">Take Profit When</string>
     <string name="perps_tpsl_stop_loss_when">Stop Loss When</string>
     <string name="perps_tpsl_profit_reaches_percent">Profit reaches %</string>
+    <string name="perps_tpsl_loss_reaches_percent">Loss reaches %</string>
     <string name="perps_tpsl_price_reaches">Price reaches</string>
     <string name="perps_tpsl_auto_close_hint">Auto-close when target is reached.</string>
     <string name="perps_tpsl_info_take_profit_title">What\'s the Take Profit?</string>

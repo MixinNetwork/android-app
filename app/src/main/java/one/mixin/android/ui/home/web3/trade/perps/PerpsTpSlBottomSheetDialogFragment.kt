@@ -7,14 +7,18 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -22,14 +26,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,27 +46,27 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.booleanFromAttribute
-import one.mixin.android.extension.composeDp
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.alert.components.cardBackground
-import one.mixin.android.util.SystemUIManager
 import one.mixin.android.widget.components.MixinButton
+import one.mixin.android.util.SystemUIManager
 import java.math.BigDecimal
 import java.math.RoundingMode
+
+private enum class InputType { PNL, PRICE }
 
 @AndroidEntryPoint
 class PerpsTpSlBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
@@ -105,6 +110,25 @@ class PerpsTpSlBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment
         }
     }
 
+    private val mode by lazy {
+        Mode.valueOf(requireNotNull(requireArguments().getString(ARGS_MODE)) { "mode is null" })
+    }
+    private val initialPrice by lazy { requireArguments().getString(ARGS_PRICE).orEmpty() }
+    private val currentPrice by lazy { requireArguments().getString(ARGS_CURRENT_PRICE).orEmpty() }
+    private val isLong by lazy { requireArguments().getBoolean(ARGS_IS_LONG, true) }
+    private val marketIconUrl by lazy { requireArguments().getString(ARGS_MARKET_ICON_URL).orEmpty() }
+    private val marketSymbol by lazy { requireArguments().getString(ARGS_MARKET_SYMBOL).orEmpty() }
+    private val marginAmount by lazy { requireArguments().getString(ARGS_MARGIN_AMOUNT).orEmpty() }
+    private val leverage by lazy { requireArguments().getInt(ARGS_LEVERAGE, 1) }
+    private val entryPrice by lazy { requireArguments().getString(ARGS_ENTRY_PRICE).orEmpty() }
+
+    private var onApply: ((String?) -> Unit)? = null
+
+    fun setOnApply(callback: (String?) -> Unit): PerpsTpSlBottomSheetDialogFragment {
+        onApply = callback
+        return this
+    }
+
     override fun getTheme() = R.style.AppTheme_Dialog
 
     @SuppressLint("RestrictedApi")
@@ -130,432 +154,29 @@ class PerpsTpSlBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment
         }
     }
 
-    private val viewModel by viewModels<PerpetualViewModel>()
-
-    private val mode by lazy {
-        Mode.valueOf(requireNotNull(requireArguments().getString(ARGS_MODE)) { "mode is null" })
-    }
-    private val initialPrice by lazy { requireArguments().getString(ARGS_PRICE) }
-    private val currentPrice by lazy {
-        requireNotNull(requireArguments().getString(ARGS_CURRENT_PRICE)) { "currentPrice is null" }
-    }
-    private val isLong by lazy { requireArguments().getBoolean(ARGS_IS_LONG, true) }
-    private val marketIconUrl by lazy { requireArguments().getString(ARGS_MARKET_ICON_URL).orEmpty() }
-    private val marketSymbol by lazy { requireArguments().getString(ARGS_MARKET_SYMBOL).orEmpty() }
-    private val marginAmount by lazy { requireArguments().getString(ARGS_MARGIN_AMOUNT) ?: "0" }
-    private val leverage by lazy { requireArguments().getInt(ARGS_LEVERAGE, 1) }
-    private val entryPrice by lazy { requireArguments().getString(ARGS_ENTRY_PRICE) }
-
-    private var priceInput by mutableStateOf("")
-
-    private var onApply: ((String?) -> Unit)? = null
-
-    fun setOnApply(callback: (String?) -> Unit): PerpsTpSlBottomSheetDialogFragment {
-        onApply = callback
-        return this
-    }
-
     override fun getBottomSheetHeight(view: View): Int {
         return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
     }
 
     @Composable
     override fun ComposeContent() {
-        val currentPriceValue = try {
-            BigDecimal(currentPrice)
-        } catch (e: Exception) {
-            BigDecimal.ZERO
-        }
-
-        val actualEntryPrice = try {
-            entryPrice?.let { BigDecimal(it) }?.takeIf { it > BigDecimal.ZERO } ?: currentPriceValue
-        } catch (e: Exception) {
-            currentPriceValue
-        }
-
-        LaunchedEffect(Unit) {
-            priceInput = initialPrice.orEmpty()
-        }
-
-        val inputPrice = try {
-            priceInput.toBigDecimalOrNull() ?: BigDecimal.ZERO
-        } catch (e: Exception) {
-            BigDecimal.ZERO
-        }
-
-        val margin = try {
-            BigDecimal(marginAmount)
-        } catch (e: Exception) {
-            BigDecimal.ZERO
-        }
-
-        // Calculate PnL
-        val pnl = if (inputPrice > BigDecimal.ZERO && actualEntryPrice > BigDecimal.ZERO) {
-            val priceDiff = if (isLong) {
-                inputPrice.subtract(actualEntryPrice)
-            } else {
-                actualEntryPrice.subtract(inputPrice)
-            }
-            margin.multiply(priceDiff)
-                .divide(actualEntryPrice, 8, RoundingMode.HALF_UP)
-                .multiply(BigDecimal(leverage))
-        } else {
-            BigDecimal.ZERO
-        }
-
-        val pnlPercent = if (margin > BigDecimal.ZERO && actualEntryPrice > BigDecimal.ZERO) {
-            val priceDiff = if (isLong) {
-                inputPrice.subtract(actualEntryPrice)
-            } else {
-                actualEntryPrice.subtract(inputPrice)
-            }
-            priceDiff.divide(actualEntryPrice, 8, RoundingMode.HALF_UP)
-                .multiply(BigDecimal(leverage))
-                .multiply(BigDecimal(100))
-        } else {
-            BigDecimal.ZERO
-        }
-
-        // Calculate target price from profit %
-        val orderValueUsdt = margin.multiply(BigDecimal(leverage))
-        val tokenAmount = if (currentPriceValue > BigDecimal.ZERO) {
-            orderValueUsdt.divide(currentPriceValue, 4, RoundingMode.HALF_UP)
-        } else {
-            BigDecimal.ZERO
-        }
-
-        val quoteColorReversed = false
-        val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
-        val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
-        val pnlColor = if (pnl >= BigDecimal.ZERO) risingColor else fallingColor
-
         MixinAppTheme {
-            Column(
-                modifier = Modifier
-                    .clip(shape = RoundedCornerShape(topStart = 8.composeDp, topEnd = 8.composeDp))
-                    .fillMaxWidth()
-                    .fillMaxHeight()
-                    .background(MixinAppTheme.colors.background),
-            ) {
-                Column(
-                    modifier = Modifier
-                        .verticalScroll(rememberScrollState())
-                        .weight(weight = 1f, fill = true),
-                ) {
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    // Header: market icon + symbol + direction + leverage
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        CoilImage(
-                            model = marketIconUrl,
-                            placeholder = R.drawable.ic_avatar_place_holder,
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape),
-                            contentScale = ContentScale.Crop,
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = marketSymbol,
-                            color = MixinAppTheme.colors.textPrimary,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.W600,
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        // Direction chip
-                        Text(
-                            text = stringResource(if (isLong) R.string.Long else R.string.Short),
-                            modifier = Modifier
-                                .background(
-                                    MixinAppTheme.colors.backgroundWindow,
-                                    RoundedCornerShape(4.dp)
-                                )
-                                .padding(horizontal = 8.dp, vertical = 2.dp),
-                            color = MixinAppTheme.colors.textPrimary,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.W500,
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        // Leverage chip
-                        Text(
-                            text = "${leverage}x",
-                            modifier = Modifier
-                                .background(
-                                    MixinAppTheme.colors.backgroundWindow,
-                                    RoundedCornerShape(4.dp)
-                                )
-                                .padding(horizontal = 8.dp, vertical = 2.dp),
-                            color = MixinAppTheme.colors.textPrimary,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.W500,
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    // Current price
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp)
-                            .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
-                            .padding(16.dp),
-                    ) {
-                        Text(
-                            text = currentPriceValue.priceFormat(),
-                            color = MixinAppTheme.colors.textPrimary,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = stringResource(R.string.perps_current_price),
-                            color = MixinAppTheme.colors.textMinor,
-                            fontSize = 14.sp,
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    // Input card
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp)
-                            .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
-                            .padding(16.dp),
-                    ) {
-                        Text(
-                            text = stringResource(
-                                id = when (mode) {
-                                    Mode.TAKE_PROFIT -> R.string.perps_tpsl_take_profit_when
-                                    Mode.STOP_LOSS -> R.string.perps_tpsl_stop_loss_when
-                                }
-                            ),
-                            color = MixinAppTheme.colors.textPrimary,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.W600,
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        // Profit reaches % row
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text(
-                                text = stringResource(R.string.perps_tpsl_profit_reaches_percent),
-                                color = MixinAppTheme.colors.textMinor,
-                                fontSize = 14.sp,
-                            )
-                            Spacer(modifier = Modifier.weight(1f))
-                            Text(
-                                text = if (inputPrice > BigDecimal.ZERO && actualEntryPrice > BigDecimal.ZERO) {
-                                    "${formatPerpsDisplayDecimal(pnlPercent.abs())}%"
-                                } else {
-                                    ""
-                                },
-                                color = MixinAppTheme.colors.accent,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.W500,
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_action_edit),
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp),
-                                tint = MixinAppTheme.colors.textMinor,
-                            )
-                        }
-
-                        Divider(
-                            modifier = Modifier.padding(vertical = 12.dp),
-                            color = MixinAppTheme.colors.borderColor,
-                            thickness = 0.5.dp,
-                        )
-
-                        // Price reaches row
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text(
-                                text = stringResource(R.string.perps_tpsl_price_reaches),
-                                color = MixinAppTheme.colors.textMinor,
-                                fontSize = 14.sp,
-                            )
-                            Spacer(modifier = Modifier.weight(1f))
-                            BasicTextField(
-                                value = priceInput,
-                                onValueChange = { newValue ->
-                                    if (newValue.isEmpty() || newValue.matches(Regex("^\\d*\\.?\\d*$"))) {
-                                        priceInput = newValue
-                                    }
-                                },
-                                modifier = Modifier.width(120.dp),
-                                textStyle = TextStyle(
-                                    color = MixinAppTheme.colors.accent,
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.W500,
-                                    textAlign = TextAlign.End,
-                                ),
-                                cursorBrush = SolidColor(MixinAppTheme.colors.accent),
-                                singleLine = true,
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_action_edit),
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp),
-                                tint = MixinAppTheme.colors.textMinor,
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    // Summary card
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp)
-                            .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
-                            .padding(16.dp),
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.Top,
-                        ) {
-                            // Left: Est. P&L and Est. ROE
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = stringResource(R.string.perps_tpsl_est_pnl),
-                                    color = MixinAppTheme.colors.textMinor,
-                                    fontSize = 12.sp,
-                                )
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(
-                                    text = if (inputPrice > BigDecimal.ZERO) {
-                                        "${formatPerpsSignedDecimal(pnl)} USDT"
-                                    } else {
-                                        "--"
-                                    },
-                                    color = if (inputPrice > BigDecimal.ZERO) pnlColor else MixinAppTheme.colors.textMinor,
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.W600,
-                                )
-                                Spacer(modifier = Modifier.height(12.dp))
-                                Text(
-                                    text = stringResource(R.string.perps_tpsl_est_roe),
-                                    color = MixinAppTheme.colors.textMinor,
-                                    fontSize = 12.sp,
-                                )
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(
-                                    text = if (inputPrice > BigDecimal.ZERO) {
-                                        "${formatPerpsSignedPercent(pnlPercent)}"
-                                    } else {
-                                        "--"
-                                    },
-                                    color = if (inputPrice > BigDecimal.ZERO) pnlColor else MixinAppTheme.colors.textMinor,
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.W600,
-                                )
-                                if (inputPrice > BigDecimal.ZERO && pnl > BigDecimal.ZERO) {
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.ic_arrow_top_right),
-                                        contentDescription = null,
-                                        modifier = Modifier.size(20.dp),
-                                        tint = MixinAppTheme.colors.walletGreen,
-                                    )
-                                }
-                            }
-
-                            // Right: Leverage + position size
-                            Column(
-                                horizontalAlignment = Alignment.End,
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.Leverage),
-                                    color = MixinAppTheme.colors.textMinor,
-                                    fontSize = 12.sp,
-                                )
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(
-                                    text = "${leverage}x",
-                                    color = MixinAppTheme.colors.textPrimary,
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.W600,
-                                )
-                                Spacer(modifier = Modifier.height(12.dp))
-                                Text(
-                                    text = stringResource(R.string.position_size),
-                                    color = MixinAppTheme.colors.textMinor,
-                                    fontSize = 12.sp,
-                                )
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(
-                                    text = "${tokenAmount.stripTrailingZeros().toPlainString()} ${marketSymbol.substringBefore("-")}",
-                                    color = MixinAppTheme.colors.textPrimary,
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.W600,
-                                )
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-
-                // Bottom buttons
-                Row(
-                    modifier = Modifier
-                        .background(MixinAppTheme.colors.background)
-                        .padding(horizontal = 20.dp, vertical = 16.dp)
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    // Cancel button
-                    MixinButton(
-                        onClick = {
-                            dismiss()
-                        },
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(30.dp),
-                        contentPadding = PaddingValues(vertical = 12.dp),
-                        backgroundColor = MixinAppTheme.colors.backgroundWindow,
-                    ) {
-                        Text(
-                            text = stringResource(R.string.Cancel),
-                            fontSize = 16.sp,
-                            color = MixinAppTheme.colors.textPrimary,
-                        )
-                    }
-                    // Confirm button
-                    MixinButton(
-                        onClick = {
-                            onApply?.invoke(priceInput.takeIf { it.isNotBlank() })
-                            dismiss()
-                        },
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(30.dp),
-                        contentPadding = PaddingValues(vertical = 12.dp),
-                    ) {
-                        Text(
-                            text = stringResource(R.string.Confirm),
-                            fontSize = 16.sp,
-                            color = Color.White,
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.height(32.dp))
-            }
+            PerpsTpSlContent(
+                mode = mode,
+                initialPrice = initialPrice,
+                currentPrice = currentPrice,
+                isLong = isLong,
+                marketIconUrl = marketIconUrl,
+                marketSymbol = marketSymbol,
+                marginAmount = marginAmount,
+                leverage = leverage,
+                entryPrice = entryPrice,
+                onCancel = { dismiss() },
+                onApply = { value ->
+                    onApply?.invoke(value)
+                    dismiss()
+                },
+            )
         }
     }
 
@@ -567,7 +188,747 @@ class PerpsTpSlBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment
         dismissAllowingStateLoss()
     }
 
-    override fun showError(error: String) {
-        // No-op for TP/SL bottom sheet
+    override fun showError(error: String) = Unit
+}
+
+@Composable
+private fun PerpsTpSlContent(
+    mode: PerpsTpSlBottomSheetDialogFragment.Mode,
+    initialPrice: String,
+    currentPrice: String,
+    isLong: Boolean,
+    marketIconUrl: String,
+    marketSymbol: String,
+    marginAmount: String,
+    leverage: Int,
+    entryPrice: String,
+    onCancel: () -> Unit,
+    onApply: (String?) -> Unit,
+) {
+    val currentPriceValue = remember(currentPrice) { currentPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO }
+    val basePrice = remember(entryPrice, currentPrice) {
+        entryPrice.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: currentPriceValue
     }
+    val leverageValue = leverage.coerceAtLeast(1)
+    val marginValue = remember(marginAmount) { marginAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO }
+
+    var inputType by rememberSaveable(initialPrice) {
+        mutableStateOf(
+            if (initialPrice.isBlank()) {
+                InputType.PNL
+            } else {
+                InputType.PRICE
+            }
+        )
+    }
+    var priceInput by rememberSaveable(initialPrice) { mutableStateOf(initialPrice) }
+    var percentMagnitudeInput by rememberSaveable(initialPrice, currentPrice, entryPrice, isLong, mode) {
+        mutableStateOf(
+            derivePercentMagnitudeInput(
+                priceInput = initialPrice,
+                basePrice = basePrice,
+                isLong = isLong,
+                mode = mode,
+            )
+        )
+    }
+
+    val signedPercent = signedPercentFromPrice(
+        priceInput = priceInput,
+        basePrice = basePrice,
+        isLong = isLong,
+        mode = mode,
+    )
+    val errorText = validateTpSlPrice(
+        rawValue = priceInput,
+        currentPrice = currentPriceValue,
+        isLong = isLong,
+        isTakeProfit = mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT,
+    )
+    val currentPriceText = "$PERPS_USD_SYMBOL${currentPriceValue.priceFormat()}"
+    val activePercentText = percentMagnitudeInput.takeIf { it.isNotBlank() }
+    val filledValue = when (inputType) {
+        InputType.PNL -> percentMagnitudeInput.isNotBlank()
+        InputType.PRICE -> priceInput.isNotBlank()
+    }
+    val summaryText = buildTpSlSummaryText(
+        signedPercent = signedPercent,
+        marginAmount = marginValue,
+        leverage = leverageValue,
+        isTakeProfit = mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT,
+    )
+    val summaryColor = if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
+        MixinAppTheme.colors.walletGreen
+    } else {
+        MixinAppTheme.colors.walletRed
+    }
+    val pageColor = MixinAppTheme.colors.backgroundGrayLight
+    val surfaceColor = MixinAppTheme.colors.background
+    val subtleSurfaceColor = MixinAppTheme.colors.backgroundWindow
+    val illustrationTint = if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
+        MixinAppTheme.colors.walletGreen.copy(alpha = 0.14f)
+    } else {
+        MixinAppTheme.colors.walletRed.copy(alpha = 0.14f)
+    }
+    val quickOptions = if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
+        listOf("10", "25", "50", "100")
+    } else {
+        listOf("5", "10", "25", "50")
+    }
+    val infoIconRes = if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
+        R.drawable.ic_perps_tpsl_info_tp
+    } else {
+        R.drawable.ic_perps_tpsl_info_sl
+    }
+    val infoTitleRes = if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
+        R.string.perps_tpsl_info_take_profit_title
+    } else {
+        R.string.perps_tpsl_info_stop_loss_title
+    }
+    val infoDescRes = if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
+        R.string.perps_tpsl_info_take_profit_description
+    } else {
+        R.string.perps_tpsl_info_stop_loss_description
+    }
+    var showInfoCard by rememberSaveable(mode.name) { mutableStateOf(true) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                color = pageColor,
+                shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+            ),
+    ) {
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(start = 16.dp, end = 16.dp, top = 18.dp, bottom = 16.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                CoilImage(
+                    model = marketIconUrl,
+                    placeholder = R.drawable.ic_avatar_place_holder,
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop,
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    if (marketSymbol.isNotBlank()) {
+                        Text(
+                            text = marketSymbol,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.W500,
+                            color = MixinAppTheme.colors.textMinor,
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                    }
+                    Text(
+                        text = stringResource(
+                            if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
+                                R.string.Take_Profit
+                            } else {
+                                R.string.Stop_Loss
+                            }
+                        ),
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.W600,
+                        color = MixinAppTheme.colors.textPrimary,
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = stringResource(R.string.Current_price, currentPriceText),
+                        fontSize = 12.sp,
+                        color = MixinAppTheme.colors.textAssist,
+                    )
+                }
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape)
+                        .background(surfaceColor)
+                        .border(
+                            width = 1.dp,
+                            color = MixinAppTheme.colors.borderColor,
+                            shape = CircleShape,
+                        )
+                        .clickable(onClick = onCancel),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_close_grey),
+                        contentDescription = stringResource(R.string.close),
+                        tint = Color.Unspecified,
+                        modifier = Modifier.size(16.dp),
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(18.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(18.dp))
+                    .background(subtleSurfaceColor)
+                    .padding(4.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                TpSlTypeChip(
+                    modifier = Modifier.weight(1f),
+                    text = stringResource(R.string.PnL),
+                    selected = inputType == InputType.PNL,
+                    onClick = { inputType = InputType.PNL },
+                )
+                TpSlTypeChip(
+                    modifier = Modifier.weight(1f),
+                    text = stringResource(R.string.limit_price),
+                    selected = inputType == InputType.PRICE,
+                    onClick = { inputType = InputType.PRICE },
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        color = surfaceColor,
+                        shape = RoundedCornerShape(20.dp),
+                    )
+                    .padding(horizontal = 16.dp, vertical = 16.dp),
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = stringResource(
+                            if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
+                                R.string.perps_tpsl_take_profit_when
+                            } else {
+                                R.string.perps_tpsl_stop_loss_when
+                            }
+                        ),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.W500,
+                        color = MixinAppTheme.colors.textPrimary,
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    if (filledValue) {
+                        Text(
+                            text = stringResource(R.string.Clear),
+                            fontSize = 14.sp,
+                            color = MixinAppTheme.colors.accent,
+                            modifier = Modifier.clickable {
+                                percentMagnitudeInput = ""
+                                priceInput = ""
+                            },
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(subtleSurfaceColor)
+                        .padding(horizontal = 16.dp, vertical = 16.dp),
+                ) {
+                    TpSlInputField(
+                        inputType = inputType,
+                        mode = mode,
+                        percentMagnitudeValue = percentMagnitudeInput,
+                        priceValue = priceInput,
+                        onPercentMagnitudeChange = { raw ->
+                            percentMagnitudeInput = normalizeDecimalInput(raw)
+                            priceInput = percentToPriceInput(
+                                percentMagnitudeInput = percentMagnitudeInput,
+                                basePrice = basePrice,
+                                isLong = isLong,
+                                mode = mode,
+                            )
+                        },
+                        onPriceValueChange = { raw ->
+                            priceInput = normalizeDecimalInput(raw)
+                            percentMagnitudeInput = derivePercentMagnitudeInput(
+                                priceInput = priceInput,
+                                basePrice = basePrice,
+                                isLong = isLong,
+                                mode = mode,
+                            )
+                        },
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    quickOptions.forEach { option ->
+                        TpSlQuickChip(
+                            modifier = Modifier.weight(1f),
+                            text = "${if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) "+" else "-"}$option%",
+                            selected = activePercentText == option,
+                            onClick = {
+                                percentMagnitudeInput = option
+                                priceInput = percentToPriceInput(
+                                    percentMagnitudeInput = option,
+                                    basePrice = basePrice,
+                                    isLong = isLong,
+                                    mode = mode,
+                                )
+                            },
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    text = summaryText ?: stringResource(R.string.perps_tpsl_auto_close_hint),
+                    fontSize = 13.sp,
+                    color = if (summaryText == null) MixinAppTheme.colors.textAssist else summaryColor,
+                )
+            }
+
+            if (errorText != null) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = errorText,
+                    fontSize = 12.sp,
+                    color = MixinAppTheme.colors.walletRed,
+                    modifier = Modifier.padding(horizontal = 4.dp),
+                )
+            }
+
+            if (showInfoCard) {
+                Spacer(modifier = Modifier.height(14.dp))
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            color = surfaceColor,
+                            shape = RoundedCornerShape(20.dp),
+                        )
+                        .padding(16.dp),
+                ) {
+                    Column(modifier = Modifier.padding(end = 88.dp)) {
+                        Text(
+                            text = stringResource(infoTitleRes),
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.W600,
+                            color = MixinAppTheme.colors.textPrimary,
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = stringResource(infoDescRes),
+                            fontSize = 14.sp,
+                            lineHeight = 20.sp,
+                            color = MixinAppTheme.colors.textMinor,
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .size(24.dp)
+                            .clip(CircleShape)
+                            .background(subtleSurfaceColor)
+                            .clickable { showInfoCard = false },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_close_grey),
+                            contentDescription = null,
+                            tint = Color.Unspecified,
+                            modifier = Modifier.size(14.dp),
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .size(56.dp)
+                            .clip(CircleShape)
+                            .background(illustrationTint),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            painter = painterResource(id = infoIconRes),
+                            contentDescription = null,
+                            tint = Color.Unspecified,
+                            modifier = Modifier.size(28.dp),
+                        )
+                    }
+                }
+            }
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(surfaceColor)
+                .padding(horizontal = 16.dp, vertical = 14.dp)
+                .imePadding(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            MixinButton(
+                onClick = onCancel,
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(28.dp),
+                contentPadding = PaddingValues(vertical = 14.dp),
+                backgroundColor = subtleSurfaceColor,
+            ) {
+                Text(
+                    text = stringResource(R.string.Cancel),
+                    fontSize = 16.sp,
+                    color = MixinAppTheme.colors.textPrimary,
+                )
+            }
+            MixinButton(
+                onClick = {
+                    if (errorText == null) {
+                        onApply(priceInput.trim().takeIf { it.isNotEmpty() })
+                    }
+                },
+                enabled = errorText == null,
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(28.dp),
+                contentPadding = PaddingValues(vertical = 14.dp),
+                backgroundColor = if (errorText == null) {
+                    MixinAppTheme.colors.accent
+                } else {
+                    subtleSurfaceColor
+                },
+            ) {
+                Text(
+                    text = stringResource(R.string.Set),
+                    fontSize = 16.sp,
+                    color = if (errorText == null) Color.White else MixinAppTheme.colors.textAssist,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TpSlTypeChip(
+    modifier: Modifier = Modifier,
+    text: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(14.dp))
+            .background(if (selected) MixinAppTheme.colors.background else Color.Transparent)
+            .border(
+                width = 1.dp,
+                color = if (selected) MixinAppTheme.colors.accent else MixinAppTheme.colors.borderColor,
+                shape = RoundedCornerShape(14.dp),
+            )
+            .clickable(onClick = onClick)
+            .padding(horizontal = 14.dp, vertical = 10.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = text,
+            fontSize = 14.sp,
+            fontWeight = if (selected) FontWeight.W600 else FontWeight.W500,
+            color = if (selected) MixinAppTheme.colors.accent else MixinAppTheme.colors.textPrimary,
+        )
+    }
+}
+
+@Composable
+private fun TpSlQuickChip(
+    modifier: Modifier = Modifier,
+    text: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(14.dp))
+            .background(
+                if (selected) {
+                    MixinAppTheme.colors.accent.copy(alpha = 0.08f)
+                } else {
+                    MixinAppTheme.colors.backgroundWindow
+                },
+            )
+            .border(
+                width = 1.dp,
+                color = if (selected) MixinAppTheme.colors.accent else MixinAppTheme.colors.borderColor,
+                shape = RoundedCornerShape(14.dp),
+            )
+            .clickable(onClick = onClick)
+            .padding(horizontal = 8.dp, vertical = 9.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = text,
+            fontSize = 13.sp,
+            color = if (selected) MixinAppTheme.colors.accent else MixinAppTheme.colors.textPrimary,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
+}
+
+@Composable
+private fun TpSlInputField(
+    inputType: InputType,
+    mode: PerpsTpSlBottomSheetDialogFragment.Mode,
+    percentMagnitudeValue: String,
+    priceValue: String,
+    onPercentMagnitudeChange: (String) -> Unit,
+    onPriceValueChange: (String) -> Unit,
+) {
+    when (inputType) {
+        InputType.PNL -> {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (percentMagnitudeValue.isNotBlank()) {
+                    Text(
+                        text = if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) "+" else "-",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.W600,
+                        color = MixinAppTheme.colors.textPrimary,
+                    )
+                }
+                BasicTextField(
+                    value = percentMagnitudeValue,
+                    onValueChange = onPercentMagnitudeChange,
+                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Decimal),
+                    singleLine = true,
+                    cursorBrush = SolidColor(MixinAppTheme.colors.accent),
+                    textStyle = TextStyle(
+                        color = MixinAppTheme.colors.textPrimary,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.W600,
+                    ),
+                    decorationBox = { innerTextField ->
+                        if (percentMagnitudeValue.isBlank()) {
+                            Text(
+                                text = stringResource(
+                                    if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
+                                        R.string.perps_tpsl_profit_reaches_percent
+                                    } else {
+                                        R.string.perps_tpsl_loss_reaches_percent
+                                    }
+                                ),
+                                fontSize = 18.sp,
+                                color = MixinAppTheme.colors.textAssist,
+                            )
+                        }
+                        innerTextField()
+                    },
+                )
+                if (percentMagnitudeValue.isNotBlank()) {
+                    Text(
+                        text = "%",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.W600,
+                        color = MixinAppTheme.colors.textPrimary,
+                    )
+                }
+            }
+        }
+
+        InputType.PRICE -> {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (priceValue.isNotBlank()) {
+                    Text(
+                        text = PERPS_USD_SYMBOL,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.W600,
+                        color = MixinAppTheme.colors.textPrimary,
+                    )
+                }
+                BasicTextField(
+                    value = priceValue,
+                    onValueChange = onPriceValueChange,
+                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Decimal),
+                    singleLine = true,
+                    cursorBrush = SolidColor(MixinAppTheme.colors.accent),
+                    textStyle = TextStyle(
+                        color = MixinAppTheme.colors.textPrimary,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.W600,
+                    ),
+                    decorationBox = { innerTextField ->
+                        if (priceValue.isBlank()) {
+                            Text(
+                                text = "${stringResource(R.string.perps_tpsl_price_reaches)} $PERPS_USD_SYMBOL",
+                                fontSize = 18.sp,
+                                color = MixinAppTheme.colors.textAssist,
+                            )
+                        }
+                        innerTextField()
+                    },
+                )
+            }
+        }
+    }
+}
+
+private fun normalizeDecimalInput(value: String): String {
+    val filtered = buildString {
+        var hasDot = false
+        value.forEach { char ->
+            when {
+                char.isDigit() -> append(char)
+                char == '.' && !hasDot -> {
+                    append(char)
+                    hasDot = true
+                }
+            }
+        }
+    }
+    return if (filtered == ".") "" else filtered
+}
+
+private fun percentToPriceInput(
+    percentMagnitudeInput: String,
+    basePrice: BigDecimal,
+    isLong: Boolean,
+    mode: PerpsTpSlBottomSheetDialogFragment.Mode,
+): String {
+    val magnitude = percentMagnitudeInput.toBigDecimalOrNull() ?: return ""
+    if (basePrice <= BigDecimal.ZERO) {
+        return ""
+    }
+    val signedPercent = if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
+        magnitude
+    } else {
+        magnitude.negate()
+    }
+    val marketDeltaPercent = if (isLong) signedPercent else signedPercent.negate()
+    val multiplier = BigDecimal.ONE + marketDeltaPercent.divide(BigDecimal(100), 8, RoundingMode.HALF_UP)
+    if (multiplier <= BigDecimal.ZERO) {
+        return ""
+    }
+    return basePrice.multiply(multiplier).stripTrailingZeros().toPlainString()
+}
+
+private fun derivePercentMagnitudeInput(
+    priceInput: String,
+    basePrice: BigDecimal,
+    isLong: Boolean,
+    mode: PerpsTpSlBottomSheetDialogFragment.Mode,
+): String {
+    val signedPercent = signedPercentFromPrice(
+        priceInput = priceInput,
+        basePrice = basePrice,
+        isLong = isLong,
+        mode = mode,
+    ) ?: return ""
+    return signedPercent.abs().stripTrailingZeros().toPlainString()
+}
+
+private fun signedPercentFromPrice(
+    priceInput: String,
+    basePrice: BigDecimal,
+    isLong: Boolean,
+    mode: PerpsTpSlBottomSheetDialogFragment.Mode,
+): BigDecimal? {
+    val targetPrice = priceInput.toBigDecimalOrNull() ?: return null
+    if (targetPrice <= BigDecimal.ZERO || basePrice <= BigDecimal.ZERO) {
+        return null
+    }
+    val marketDeltaPercent = targetPrice
+        .subtract(basePrice)
+        .multiply(BigDecimal(100))
+        .divide(basePrice, 8, RoundingMode.HALF_UP)
+    val signedPercent = if (isLong) marketDeltaPercent else marketDeltaPercent.negate()
+    return when {
+        mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT && signedPercent > BigDecimal.ZERO -> signedPercent
+        mode == PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS && signedPercent < BigDecimal.ZERO -> signedPercent
+        else -> null
+    }
+}
+
+private fun buildTpSlSummaryText(
+    signedPercent: BigDecimal?,
+    marginAmount: BigDecimal,
+    leverage: Int,
+    isTakeProfit: Boolean,
+): String? {
+    val percent = signedPercent?.abs() ?: return null
+    if (marginAmount <= BigDecimal.ZERO || leverage <= 0 || percent <= BigDecimal.ZERO) {
+        return null
+    }
+    val leverageValue = BigDecimal(leverage)
+    val pnlAmount = marginAmount
+        .multiply(leverageValue)
+        .multiply(percent)
+        .divide(BigDecimal(100), 2, RoundingMode.HALF_UP)
+        .stripTrailingZeros()
+        .toPlainString()
+    val pnlPercent = leverageValue
+        .multiply(percent)
+        .stripTrailingZeros()
+        .toPlainString()
+    return if (isTakeProfit) {
+        one.mixin.android.MixinApplication.appContext.getString(
+            R.string.perps_tpsl_max_profit,
+            pnlAmount,
+            pnlPercent,
+        )
+    } else {
+        one.mixin.android.MixinApplication.appContext.getString(
+            R.string.perps_tpsl_max_loss,
+            pnlAmount,
+        )
+    }
+}
+
+private fun validateTpSlPrice(
+    rawValue: String,
+    currentPrice: BigDecimal,
+    isLong: Boolean,
+    isTakeProfit: Boolean,
+): String? {
+    val trimmed = rawValue.trim()
+    if (trimmed.isEmpty()) {
+        return null
+    }
+
+    val price = trimmed.toBigDecimalOrNull() ?: return MixinApplicationHolder.getString(R.string.error_invalid_number)
+    if (price <= BigDecimal.ZERO) {
+        return MixinApplicationHolder.getString(R.string.error_invalid_number)
+    }
+    if (currentPrice <= BigDecimal.ZERO) {
+        return null
+    }
+    if (price.compareTo(currentPrice) == 0) {
+        return MixinApplicationHolder.getString(R.string.error_equals_current_price)
+    }
+
+    val shouldBeGreaterThanCurrent = if (isLong) isTakeProfit else !isTakeProfit
+    return if (shouldBeGreaterThanCurrent && price <= currentPrice) {
+        MixinApplicationHolder.getString(R.string.error_must_be_greater_than_current_price)
+    } else if (!shouldBeGreaterThanCurrent && price >= currentPrice) {
+        MixinApplicationHolder.getString(R.string.error_must_be_less_than_current_price)
+    } else {
+        null
+    }
+}
+
+private object MixinApplicationHolder {
+    fun getString(resId: Int): String = one.mixin.android.MixinApplication.appContext.getString(resId)
 }

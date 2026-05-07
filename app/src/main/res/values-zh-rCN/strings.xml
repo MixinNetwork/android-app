@@ -2287,6 +2287,7 @@
     <string name="perps_tpsl_take_profit_when">止盈触发条件</string>
     <string name="perps_tpsl_stop_loss_when">止损触发条件</string>
     <string name="perps_tpsl_profit_reaches_percent">收益达到 %</string>
+    <string name="perps_tpsl_loss_reaches_percent">亏损达到 %</string>
     <string name="perps_tpsl_price_reaches">价格达到</string>
     <string name="perps_tpsl_auto_close_hint">到达目标后自动平仓。</string>
     <string name="perps_tpsl_info_take_profit_title">什么是止盈？</string>
