@@ -13,6 +13,8 @@ on:
 
 jobs:
   build:
+    permissions:
+      contents: read
     env:
       GOOGLE_MAVEN_MIRROR_URL: ${{ vars.GOOGLE_MAVEN_MIRROR_URL }}
 
