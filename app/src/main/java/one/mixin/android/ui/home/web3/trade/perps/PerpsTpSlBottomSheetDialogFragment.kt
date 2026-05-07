@@ -22,6 +22,8 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -47,6 +49,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -61,6 +64,7 @@ import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.widget.components.MixinButton
 import one.mixin.android.util.SystemUIManager
 import java.math.BigDecimal
@@ -262,14 +266,8 @@ private fun PerpsTpSlContent(
     } else {
         MixinAppTheme.colors.walletRed
     }
-    val pageColor = MixinAppTheme.colors.backgroundGrayLight
+    val pageColor = MixinAppTheme.colors.background
     val surfaceColor = MixinAppTheme.colors.background
-    val subtleSurfaceColor = MixinAppTheme.colors.backgroundWindow
-    val illustrationTint = if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
-        MixinAppTheme.colors.walletGreen.copy(alpha = 0.14f)
-    } else {
-        MixinAppTheme.colors.walletRed.copy(alpha = 0.14f)
-    }
     val quickOptions = if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
         listOf("10", "25", "50", "100")
     } else {
@@ -297,7 +295,7 @@ private fun PerpsTpSlContent(
             .fillMaxSize()
             .background(
                 color = pageColor,
-                shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+                shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp),
             ),
     ) {
         Column(
@@ -305,7 +303,7 @@ private fun PerpsTpSlContent(
                 .weight(1f)
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
-                .padding(start = 16.dp, end = 16.dp, top = 18.dp, bottom = 16.dp),
+                .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 12.dp),
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -330,18 +328,6 @@ private fun PerpsTpSlContent(
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                     }
-                    Text(
-                        text = stringResource(
-                            if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
-                                R.string.Take_Profit
-                            } else {
-                                R.string.Stop_Loss
-                            }
-                        ),
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.W600,
-                        color = MixinAppTheme.colors.textPrimary,
-                    )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = stringResource(R.string.Current_price, currentPriceText),
@@ -349,46 +335,31 @@ private fun PerpsTpSlContent(
                         color = MixinAppTheme.colors.textAssist,
                     )
                 }
-                Box(
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_circle_close),
+                    contentDescription = stringResource(R.string.close),
+                    tint = Color.Unspecified,
                     modifier = Modifier
-                        .size(32.dp)
-                        .clip(CircleShape)
-                        .background(surfaceColor)
-                        .border(
-                            width = 1.dp,
-                            color = MixinAppTheme.colors.borderColor,
-                            shape = CircleShape,
-                        )
+                        .size(26.dp)
                         .clickable(onClick = onCancel),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_close_grey),
-                        contentDescription = stringResource(R.string.close),
-                        tint = Color.Unspecified,
-                        modifier = Modifier.size(16.dp),
-                    )
-                }
+                )
             }
 
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(18.dp))
-                    .background(subtleSurfaceColor)
-                    .padding(4.dp),
+                    .fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 TpSlTypeChip(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.wrapContentSize(),
                     text = stringResource(R.string.PnL),
                     selected = inputType == InputType.PNL,
                     onClick = { inputType = InputType.PNL },
                 )
                 TpSlTypeChip(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.wrapContentSize(),
                     text = stringResource(R.string.limit_price),
                     selected = inputType == InputType.PRICE,
                     onClick = { inputType = InputType.PRICE },
@@ -400,11 +371,8 @@ private fun PerpsTpSlContent(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(
-                        color = surfaceColor,
-                        shape = RoundedCornerShape(20.dp),
-                    )
-                    .padding(horizontal = 16.dp, vertical = 16.dp),
+                    .cardBackground(surfaceColor, MixinAppTheme.colors.borderColor)
+                    .padding(horizontal = 16.dp, vertical = 14.dp),
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -436,14 +404,12 @@ private fun PerpsTpSlContent(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(subtleSurfaceColor)
-                        .padding(horizontal = 16.dp, vertical = 16.dp),
+                        .padding(horizontal = 4.dp, vertical = 4.dp),
                 ) {
                     TpSlInputField(
                         inputType = inputType,
@@ -471,7 +437,7 @@ private fun PerpsTpSlContent(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -479,7 +445,7 @@ private fun PerpsTpSlContent(
                 ) {
                     quickOptions.forEach { option ->
                         TpSlQuickChip(
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier.wrapContentSize(),
                             text = "${if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) "+" else "-"}$option%",
                             selected = activePercentText == option,
                             onClick = {
@@ -495,7 +461,7 @@ private fun PerpsTpSlContent(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 Text(
                     text = summaryText ?: stringResource(R.string.perps_tpsl_auto_close_hint),
@@ -515,18 +481,15 @@ private fun PerpsTpSlContent(
             }
 
             if (showInfoCard) {
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(
-                            color = surfaceColor,
-                            shape = RoundedCornerShape(20.dp),
-                        )
-                        .padding(16.dp),
+                        .cardBackground(surfaceColor, MixinAppTheme.colors.borderColor)
+                        .padding(horizontal = 16.dp, vertical = 14.dp),
                 ) {
-                    Column(modifier = Modifier.padding(end = 88.dp)) {
+                    Column(modifier = Modifier.padding(end = 72.dp)) {
                         Text(
                             text = stringResource(infoTitleRes),
                             fontSize = 14.sp,
@@ -542,38 +505,24 @@ private fun PerpsTpSlContent(
                         )
                     }
 
-                    Box(
+
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_close_grey),
+                        contentDescription = null,
+                        tint = Color.Unspecified,
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .size(24.dp)
-                            .clip(CircleShape)
-                            .background(subtleSurfaceColor)
                             .clickable { showInfoCard = false },
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_close_grey),
-                            contentDescription = null,
-                            tint = Color.Unspecified,
-                            modifier = Modifier.size(14.dp),
-                        )
-                    }
-
-                    Box(
+                    )
+                    Icon(
+                        painter = painterResource(id = infoIconRes),
+                        contentDescription = null,
+                        tint = Color.Unspecified,
                         modifier = Modifier
+                            .size(48.dp)
                             .align(Alignment.BottomEnd)
-                            .size(56.dp)
-                            .clip(CircleShape)
-                            .background(illustrationTint),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Icon(
-                            painter = painterResource(id = infoIconRes),
-                            contentDescription = null,
-                            tint = Color.Unspecified,
-                            modifier = Modifier.size(28.dp),
-                        )
-                    }
+                    )
                 }
             }
         }
@@ -582,16 +531,19 @@ private fun PerpsTpSlContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(surfaceColor)
-                .padding(horizontal = 16.dp, vertical = 14.dp)
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 20.dp, top = 12.dp)
                 .imePadding(),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             MixinButton(
                 onClick = onCancel,
-                modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(28.dp),
-                contentPadding = PaddingValues(vertical = 14.dp),
-                backgroundColor = subtleSurfaceColor,
+                modifier = Modifier
+                    .weight(1f)
+                    .height(48.dp),
+                shape = RoundedCornerShape(32.dp),
+                contentPadding = PaddingValues(vertical = 12.dp),
+                backgroundColor = MixinAppTheme.colors.backgroundGrayLight,
             ) {
                 Text(
                     text = stringResource(R.string.Cancel),
@@ -606,13 +558,15 @@ private fun PerpsTpSlContent(
                     }
                 },
                 enabled = errorText == null,
-                modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(28.dp),
-                contentPadding = PaddingValues(vertical = 14.dp),
+                modifier = Modifier
+                    .weight(1f)
+                    .height(48.dp),
+                shape = RoundedCornerShape(32.dp),
+                contentPadding = PaddingValues(vertical = 12.dp),
                 backgroundColor = if (errorText == null) {
                     MixinAppTheme.colors.accent
                 } else {
-                    subtleSurfaceColor
+                    MixinAppTheme.colors.backgroundGrayLight
                 },
             ) {
                 Text(
@@ -634,21 +588,24 @@ private fun TpSlTypeChip(
 ) {
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(14.dp))
-            .background(if (selected) MixinAppTheme.colors.background else Color.Transparent)
+            .height(32.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color.Transparent)
             .border(
                 width = 1.dp,
                 color = if (selected) MixinAppTheme.colors.accent else MixinAppTheme.colors.borderColor,
-                shape = RoundedCornerShape(14.dp),
+                shape = RoundedCornerShape(16.dp),
             )
-            .clickable(onClick = onClick)
-            .padding(horizontal = 14.dp, vertical = 10.dp),
+            .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         Text(
+            modifier = Modifier
+                .padding(horizontal = 10.dp)
+                .widthIn(min = 20.dp),
+            textAlign = TextAlign.Center,
             text = text,
-            fontSize = 14.sp,
-            fontWeight = if (selected) FontWeight.W600 else FontWeight.W500,
+            fontSize = 12.sp,
             color = if (selected) MixinAppTheme.colors.accent else MixinAppTheme.colors.textPrimary,
         )
     }
@@ -663,26 +620,24 @@ private fun TpSlQuickChip(
 ) {
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(14.dp))
-            .background(
-                if (selected) {
-                    MixinAppTheme.colors.accent.copy(alpha = 0.08f)
-                } else {
-                    MixinAppTheme.colors.backgroundWindow
-                },
-            )
+            .height(32.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color.Transparent)
             .border(
                 width = 1.dp,
                 color = if (selected) MixinAppTheme.colors.accent else MixinAppTheme.colors.borderColor,
-                shape = RoundedCornerShape(14.dp),
+                shape = RoundedCornerShape(16.dp),
             )
-            .clickable(onClick = onClick)
-            .padding(horizontal = 8.dp, vertical = 9.dp),
+            .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         Text(
+            modifier = Modifier
+                .padding(horizontal = 10.dp)
+                .widthIn(min = 20.dp),
+            textAlign = TextAlign.Center,
             text = text,
-            fontSize = 13.sp,
+            fontSize = 12.sp,
             color = if (selected) MixinAppTheme.colors.accent else MixinAppTheme.colors.textPrimary,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
