@@ -54,6 +54,7 @@ interface MessageMentionDao : BaseDao<MessageMention> {
     fun findMessageMentionById(id: String): MessageMention?
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @RewriteQueriesToDropUnusedColumns
     @Query("SELECT mm.* FROM message_mentions mm WHERE mm.rowid > :rowId ORDER BY mm.rowid ASC LIMIT :limit")
     fun getMessageMentionByLimitAndRowId(
         limit: Int,
@@ -61,6 +62,7 @@ interface MessageMentionDao : BaseDao<MessageMention> {
     ): List<TransferMessageMention>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @RewriteQueriesToDropUnusedColumns
     @Query("SELECT mm.* FROM message_mentions mm WHERE mm.rowid > :rowId AND conversation_id IN (:conversationIds) ORDER BY mm.rowid ASC LIMIT :limit")
     fun getMessageMentionByLimitAndRowId(
         limit: Int,

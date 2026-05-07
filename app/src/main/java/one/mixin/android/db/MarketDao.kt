@@ -17,6 +17,7 @@ interface MarketDao : BaseDao<Market> {
     fun marketById(assetId: String): LiveData<MarketItem?>
 
     @Query("SELECT m.*, mf.is_favored FROM markets m LEFT JOIN market_favored mf on mf.coin_id = m.coin_id WHERE m.coin_id = :coinId")
+    @RewriteQueriesToDropUnusedColumns
     fun marketByCoinId(coinId: String): LiveData<MarketItem?>
 
     @Query(
@@ -68,23 +69,29 @@ interface MarketDao : BaseDao<Market> {
             CASE WHEN :sortValue = 7 THEN CAST(limitedFavoredMarkets.price_change_percentage_24h AS DECIMAL) END DESC
         """
     )
+    @RewriteQueriesToDropUnusedColumns
     fun getFavoredWeb3Markets(sortValue: Int): PagingSource<Int, MarketItem>
 
     @Query("SELECT * FROM markets WHERE coin_id = :coinId")
     fun findMarketById(coinId: String): Market?
 
     @Query("SELECT m.*, mf.is_favored FROM markets m LEFT JOIN market_favored mf on mf.coin_id = m.coin_id LEFT JOIN market_coins mc ON mc.coin_id = m.coin_id WHERE mc.asset_id = :assetId")
+    @RewriteQueriesToDropUnusedColumns
     suspend fun findMarketItemByAssetId(assetId: String): MarketItem?
 
     @Query("SELECT m.*, mf.is_favored FROM markets m LEFT JOIN market_favored mf on mf.coin_id = m.coin_id WHERE m.coin_id = :coinId")
+    @RewriteQueriesToDropUnusedColumns
     suspend fun findMarketItemByCoinId(coinId: String): MarketItem?
 
     @Query("SELECT m.* FROM markets m ORDER BY CAST(m.market_cap_rank AS INTEGER) ASC, CAST(m.market_cap AS INTEGER) ASC")
+    @RewriteQueriesToDropUnusedColumns
     fun coinItems(): LiveData<List<CoinItem>>
 
     @Query("SELECT m.* FROM markets m WHERE coin_id = :coinId")
+    @RewriteQueriesToDropUnusedColumns
     suspend fun simpleCoinItem(coinId: String): CoinItem?
 
     @Query("SELECT m.* FROM markets m LEFT JOIN market_coins mc on mc.coin_id = m.coin_id WHERE mc.asset_id = :assetId")
+    @RewriteQueriesToDropUnusedColumns
     suspend fun simpleCoinItemByAssetId(assetId: String): CoinItem?
 }

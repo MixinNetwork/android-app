@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.Transaction
 import one.mixin.android.ui.home.web3.components.InscriptionState
 import one.mixin.android.vo.UtxoItem
@@ -56,6 +57,7 @@ interface OutputDao : BaseDao<Output> {
     fun getUnsignedOutputs(outputIds: List<String>): List<String>
 
     @Query("SELECT * FROM outputs WHERE asset = :asset ORDER BY created_at DESC, rowid DESC")
+    @RewriteQueriesToDropUnusedColumns
     fun utxoItem(asset: String): PagingSource<Int, UtxoItem>
 
     @Query("DELETE FROM outputs WHERE asset = :asset AND sequence >= :offset")

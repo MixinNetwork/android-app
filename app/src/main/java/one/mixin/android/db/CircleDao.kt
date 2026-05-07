@@ -13,6 +13,7 @@ import one.mixin.android.vo.ConversationCircleManagerItem
 import one.mixin.android.vo.ConversationMinimal
 
 @Dao
+@SuppressWarnings(RoomWarnings.QUERY_MISMATCH, RoomWarnings.CURSOR_MISMATCH)
 interface CircleDao : BaseDao<Circle> {
     @Transaction
     fun insertUpdate(

@@ -87,6 +87,7 @@ interface UserDao : BaseDao<User> {
     fun findUserById(id: String): LiveData<User>
 
     @Query("SELECT * FROM users WHERE user_id IN (SELECT DISTINCT opponent_id FROM safe_snapshots)")
+    @RewriteQueriesToDropUnusedColumns
     fun allRecipients(): LiveData<List<UserItem>>
 
     @Query("SELECT * FROM users WHERE user_id = :id")
@@ -190,7 +191,7 @@ interface UserDao : BaseDao<User> {
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
-        "SELECT u.user_id, u.identity_number, u.biography, u.full_name, u.relationship FROM participants p, users u " +
+        "SELECT u.* FROM participants p, users u " +
             "WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id",
     )
     fun getGroupParticipants(conversationId: String): LiveData<List<User>>
@@ -221,6 +222,7 @@ interface UserDao : BaseDao<User> {
     suspend fun findMultiUsersByIds(userIds: Set<String>): List<User>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @RewriteQueriesToDropUnusedColumns
     @Query(
         """SELECT * FROM users u INNER JOIN participants p ON p.user_id = u.user_id
         WHERE p.conversation_id = :conversationId AND u.user_id IN (:userIds)
@@ -232,6 +234,7 @@ interface UserDao : BaseDao<User> {
     ): List<CallUser>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @RewriteQueriesToDropUnusedColumns
     @Query(
         """SELECT * FROM users u INNER JOIN participants p ON p.user_id = u.user_id
         WHERE p.conversation_id = :conversationId AND u.user_id = :userId

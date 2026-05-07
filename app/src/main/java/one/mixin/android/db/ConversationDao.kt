@@ -119,7 +119,10 @@ interface ConversationDao : BaseDao<Conversation> {
             "c.name AS groupName, c.status AS status, c.last_read_message_id AS lastReadMessageId, " +
             "c.unseen_message_count AS unseenMessageCount, c.owner_id AS ownerId, c.pin_time AS pinTime, c.mute_until AS muteUntil, " +
             "ou.avatar_url AS avatarUrl, ou.full_name AS name, ou.is_verified AS ownerVerified, " +
-            "ou.identity_number AS ownerIdentityNumber, ou.mute_until AS ownerMuteUntil " +
+            "ou.identity_number AS ownerIdentityNumber, ou.mute_until AS ownerMuteUntil, " +
+            "NULL AS content, NULL AS contentType, NULL AS createdAt, NULL AS senderId, NULL AS senderFullName, " +
+            "NULL AS messageStatus, NULL AS actionName, NULL AS participantFullName, NULL AS participantUserId, " +
+            "NULL AS appId, NULL AS mentions, 0 AS mentionCount, NULL AS membership " +
             "FROM conversations c " +
             "INNER JOIN users ou ON ou.user_id = c.owner_id " +
             "WHERE c.conversation_id = :conversationId",
