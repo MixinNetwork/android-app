@@ -2350,8 +2350,6 @@
     <string name="perps_liquidation_price_key_point_1">Liquidation is triggered by mark price</string>
     <string name="perps_liquidation_price_key_point_2">Liquidation does not affect other assets in your wallet</string>
     <string name="perps_liquidation_price_key_point_3">Higher leverage increases the risk of liquidation</string>
-    <string name="perps_liquidation_price_risk_notice_1">Once liquidation is triggered, the position may be closed automatically to prevent further losses.</string>
-    <string name="perps_liquidation_price_risk_notice_2">When the market moves quickly, you may not have enough time to react before liquidation happens.</string>
     <string name="perps_tpsl_take_profit_when">Take Profit When</string>
     <string name="perps_tpsl_stop_loss_when">Stop Loss When</string>
     <string name="perps_tpsl_profit_reaches_percent">Profit reaches %</string>
@@ -2376,9 +2374,11 @@
     <string name="Select_Leverage">Select Leverage</string>
     <string name="Take_Profit">Take Profit</string>
     <string name="Stop_Loss">Stop Loss</string>
-    <string name="Take_Profit_Stop_Loss">Take Profit / Stop Loss</string>
+    <string name="Take_Profit_Stop_Loss">TP/SL</string>
+    <string name="perps_guide_liquidation_tab">Liquidation</string>
     <string name="position_size">Size</string>
     <string name="Liquidation_Price">Liquidation Price</string>
+    <string name="perps_market_price">Market Price</string>
     <string name="Price_Change_Profit">Price %1$s %2$s%% → Profit %3$s%4$s%% (%5$s%6$s)</string>
     <string name="Long">Long</string>
     <string name="Short">Short</string>

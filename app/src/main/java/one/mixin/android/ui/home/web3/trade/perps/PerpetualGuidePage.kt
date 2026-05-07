@@ -4,6 +4,7 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,12 +21,16 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -47,13 +52,17 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.ui.home.web3.components.OutlinedTab
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.components.DotText
 import one.mixin.android.widget.components.MixinButton
 import java.math.BigDecimal
 import java.math.RoundingMode
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlin.math.roundToInt
 
 data class ScenarioData(
@@ -92,7 +101,7 @@ fun PerpetualGuidePage(
         stringResource(R.string.Short),
         stringResource(R.string.Leverage),
         stringResource(R.string.position_size),
-        stringResource(R.string.Liquidation_Price),
+        stringResource(R.string.perps_guide_liquidation_tab),
         stringResource(R.string.Take_Profit_Stop_Loss),
     )
     val safeInitialTab = initialTab.coerceIn(0, tabs.lastIndex)
@@ -473,8 +482,8 @@ private fun TpSlContent() {
         rows = listOf(
             GuideRowData(
                 label = stringResource(R.string.perps_market),
-                value = "SOL - USD",
-                iconRes = R.drawable.ic_chain_sol,
+                value = "BTC - USD",
+                iconRes = R.drawable.ic_chain_btc,
             ),
             GuideRowData(
                 label = stringResource(R.string.Direction),
@@ -492,83 +501,6 @@ private fun TpSlContent() {
         scenarios = listOf(
             ScenarioData(
                 scenario = stringResource(R.string.perps_scene_tp_triggered),
-                change = stringResource(R.string.PnL),
-                initialPercent = 1f,
-                basePnlAmount = 100,
-                basePnlPercent = 10,
-                isProfit = true,
-                isPriceIncrease = true,
-            ),
-            ScenarioData(
-                scenario = stringResource(R.string.perps_scene_sl_triggered),
-                change = stringResource(R.string.PnL),
-                initialPercent = 1f,
-                basePnlAmount = 100,
-                basePnlPercent = 10,
-                isProfit = false,
-                isPriceIncrease = false,
-            ),
-        ),
-        isScenarioChangeAdjustable = false,
-    )
-    Spacer(modifier = Modifier.height(16.dp))
-    DescriptionWithInfoAndRiskCard(
-        description = stringResource(R.string.perps_tpsl_overview),
-        infoTitle = stringResource(R.string.Key_Points),
-        infoContents = listOf(
-            stringResource(R.string.perps_tpsl_key_point_1),
-            stringResource(R.string.perps_tpsl_key_point_2),
-        ),
-        riskContents = listOf(
-            stringResource(R.string.perps_tpsl_risk_notice_1),
-            stringResource(R.string.perps_tpsl_risk_notice_2),
-        ),
-    )
-}
-
-@Composable
-private fun LiquidationContent() {
-    val viewModel = hiltViewModel<PerpetualViewModel>()
-    val leverage = 10
-    val liquidationPercent = 100f / leverage
-    val solToken by remember {
-        viewModel.observeTokenByChainAndSymbol(
-            chainId = Constants.ChainId.Solana,
-            symbol = "SOL",
-        )
-    }.collectAsStateWithLifecycle(initialValue = null)
-    val localSolPrice = solToken?.priceUsd?.toBigDecimalOrNull()
-    val markPrice = localSolPrice ?: BigDecimal("148.78")
-    val liquidationPrice = markPrice.multiply(BigDecimal.valueOf((100 - liquidationPercent).toDouble() / 100))
-        .setScale(2, RoundingMode.HALF_UP)
-    ExampleWithScenariosCard(
-        title = stringResource(R.string.Example),
-        rows = listOf(
-            GuideRowData(
-                label = stringResource(R.string.perps_market),
-                value = "SOL - USD",
-                iconRes = R.drawable.ic_chain_sol,
-            ),
-            GuideRowData(
-                label = stringResource(R.string.Direction),
-                value = "${stringResource(R.string.Long)} / ${stringResource(R.string.Short)}",
-            ),
-            GuideRowData(
-                label = stringResource(R.string.Leverage),
-                value = "${leverage}x",
-            ),
-            GuideRowData(
-                label = stringResource(R.string.Mark_Price),
-                value = "1 SOL ≈ ${PERPS_USD_SYMBOL}${markPrice.priceFormat()}",
-            ),
-            GuideRowData(
-                label = stringResource(R.string.Liquidation_Price),
-                value = "$PERPS_USD_SYMBOL${liquidationPrice.priceFormat()}",
-            ),
-        ),
-        scenarios = listOf(
-            ScenarioData(
-                scenario = stringResource(R.string.example_scene1_increasing),
                 change = stringResource(R.string.Price_Change),
                 initialPercent = 10f,
                 basePnlAmount = 1000,
@@ -576,32 +508,82 @@ private fun LiquidationContent() {
                 isProfit = true,
                 isPriceIncrease = true,
             ),
-            ScenarioData(
-                scenario = stringResource(R.string.example_scene2_decreasing),
-                change = stringResource(R.string.Price_Change),
-                initialPercent = liquidationPercent,
-                basePnlAmount = 1000,
-                basePnlPercent = 100,
-                isProfit = false,
-                isPriceIncrease = false,
-                maxPercent = liquidationPercent,
-            ),
         ),
         isScenarioChangeAdjustable = false,
+        showScenarioTitle = false,
+        showRowsDivider = true,
+    )
+    Spacer(modifier = Modifier.height(16.dp))
+    DescriptionWithInfoAndRiskCard(
+        description = stringResource(R.string.perps_tpsl_overview),
+        infoTitle = stringResource(R.string.PnL),
+        infoContents = listOf(
+            stringResource(R.string.perps_tpsl_key_point_1),
+            stringResource(R.string.perps_tpsl_key_point_2),
+        ),
+        riskContents = emptyList(),
+    )
+}
+
+@Composable
+private fun LiquidationContent() {
+    val viewModel = hiltViewModel<PerpetualViewModel>()
+    var isLong by remember { mutableStateOf(true) }
+    var leverage by remember { mutableIntStateOf(10) }
+    var priceRefreshFlag by remember { mutableStateOf(false) }
+    var isPriceDisplayReversed by remember { mutableStateOf(false) }
+    val btcToken by remember {
+        viewModel.observeTokenByChainAndSymbol(
+            chainId = Constants.ChainId.BITCOIN_CHAIN_ID,
+            symbol = "BTC",
+        )
+    }.collectAsStateWithLifecycle(initialValue = null)
+    val usdtToken by remember {
+        viewModel.observeTokenByChainAndSymbol(
+            chainId = Constants.ChainId.ETHEREUM_CHAIN_ID,
+            symbol = "USDT",
+        )
+    }.collectAsStateWithLifecycle(initialValue = null)
+    val marketPrice = remember(btcToken?.priceUsd, usdtToken?.priceUsd, priceRefreshFlag) {
+        calculateGuideMarketPrice(
+            baseToken = btcToken,
+            quoteToken = usdtToken,
+        )
+    }
+    val liquidationPrice = remember(marketPrice, leverage, isLong) {
+        calculateGuideLiquidationPrice(
+            marketPrice = marketPrice,
+            leverage = leverage,
+            isLong = isLong,
+        )
+    }
+
+    LiquidationExampleCard(
+        title = stringResource(R.string.Example),
+        isLong = isLong,
+        onDirectionChange = { isLong = it },
+        leverage = leverage,
+        onLeverageChange = { leverage = it.coerceIn(1, 200) },
+        marketPrice = marketPrice,
+        liquidationPrice = liquidationPrice,
+        isPriceDisplayReversed = isPriceDisplayReversed,
+        onSwitchPriceDisplay = {
+            isPriceDisplayReversed = !isPriceDisplayReversed
+        },
+        onPriceExpired = {
+            priceRefreshFlag = !priceRefreshFlag
+        },
     )
     Spacer(modifier = Modifier.height(16.dp))
     DescriptionWithInfoAndRiskCard(
         description = stringResource(R.string.perps_liquidation_price_overview),
-        infoTitle = stringResource(R.string.Key_Points),
+        infoTitle = stringResource(R.string.Spot_Trade_Guide_Additional_Notes),
         infoContents = listOf(
             stringResource(R.string.perps_liquidation_price_key_point_1),
             stringResource(R.string.perps_liquidation_price_key_point_2),
             stringResource(R.string.perps_liquidation_price_key_point_3),
         ),
-        riskContents = listOf(
-            stringResource(R.string.perps_liquidation_price_risk_notice_1),
-            stringResource(R.string.perps_liquidation_price_risk_notice_2),
-        ),
+        riskContents = emptyList(),
     )
 }
 
@@ -674,6 +656,105 @@ private fun GuideBottomNavigation(
             isPrevious = isPrevious,
             modifier = Modifier.fillMaxWidth(0.5f),
             onClick = { onSelect(targetIndex) },
+        )
+    }
+}
+
+@Composable
+private fun LiquidationExampleCard(
+    title: String,
+    isLong: Boolean,
+    onDirectionChange: (Boolean) -> Unit,
+    leverage: Int,
+    onLeverageChange: (Int) -> Unit,
+    marketPrice: BigDecimal,
+    liquidationPrice: BigDecimal,
+    isPriceDisplayReversed: Boolean,
+    onSwitchPriceDisplay: () -> Unit,
+    onPriceExpired: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
+            .padding(16.dp)
+    ) {
+        Text(
+            text = title,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.W500,
+            color = MixinAppTheme.colors.textPrimary
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        GuideValueRow(title = stringResource(R.string.perps_market)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_chain_btc),
+                    contentDescription = null,
+                    tint = Color.Unspecified,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = "BTC - USD",
+                    fontSize = 14.sp,
+                    color = MixinAppTheme.colors.textPrimary
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        GuideValueRow(title = stringResource(R.string.Direction)) {
+            GuideDirectionToggle(
+                isLong = isLong,
+                onDirectionChange = onDirectionChange,
+            )
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        GuideValueRow(title = stringResource(R.string.Leverage)) {
+            GuideNumberAdjuster(
+                valueText = "${leverage}x",
+                canDecrease = leverage > 1,
+                canIncrease = leverage < 200,
+                onDecrease = { onLeverageChange(leverage - 1) },
+                onIncrease = { onLeverageChange(leverage + 1) },
+            )
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(MixinAppTheme.colors.backgroundWindow)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = stringResource(R.string.Mark_Price),
+            fontSize = 14.sp,
+            fontWeight = FontWeight.W500,
+            color = MixinAppTheme.colors.textPrimary
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        GuideValueRow(title = stringResource(R.string.Liquidation_Price)) {
+            Text(
+                text = "$PERPS_USD_SYMBOL${liquidationPrice.priceFormat()}",
+                fontSize = 14.sp,
+                color = MixinAppTheme.colors.textPrimary
+            )
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        GuideValueRow(title = stringResource(R.string.perps_market_price)) {
+            Text(
+                text = "$PERPS_USD_SYMBOL${marketPrice.priceFormat()}",
+                fontSize = 14.sp,
+                color = MixinAppTheme.colors.textPrimary
+            )
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        GuidePriceSubtitle(
+            marketPrice = marketPrice,
+            isReversed = isPriceDisplayReversed,
+            onSwitchDirection = onSwitchPriceDisplay,
+            onPriceExpired = onPriceExpired,
         )
     }
 }
@@ -1093,8 +1174,160 @@ private fun GuideNumberAdjuster(
     }
 }
 
+@Composable
+private fun GuideValueRow(
+    title: String,
+    value: @Composable () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = title,
+            fontSize = 14.sp,
+            color = MixinAppTheme.colors.textAssist,
+            modifier = Modifier.weight(1f)
+        )
+        Box(contentAlignment = Alignment.CenterEnd) {
+            value()
+        }
+    }
+}
+
+@Composable
+private fun GuideDirectionToggle(
+    isLong: Boolean,
+    onDirectionChange: (Boolean) -> Unit,
+) {
+    val context = LocalContext.current
+    val quoteColorReversed = context.defaultSharedPreferences
+        .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
+    val longColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+    val shortColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+    Row(
+        modifier = Modifier
+            .clip(RoundedCornerShape(6.dp))
+            .background(MixinAppTheme.colors.backgroundWindow)
+            .padding(2.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        listOf(true, false).forEach { itemIsLong ->
+            val selected = itemIsLong == isLong
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(
+                        if (selected) {
+                            if (itemIsLong) longColor else shortColor
+                        } else {
+                            Color.Transparent
+                        }
+                    )
+                    .clickable { onDirectionChange(itemIsLong) }
+                    .padding(horizontal = 8.dp, vertical = 2.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = stringResource(if (itemIsLong) R.string.Long else R.string.Short),
+                    color = if (selected) Color.White else MixinAppTheme.colors.textAssist,
+                    fontSize = 13.sp,
+                    lineHeight = 18.sp,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun GuidePriceSubtitle(
+    marketPrice: BigDecimal,
+    isReversed: Boolean,
+    onSwitchDirection: () -> Unit,
+    onPriceExpired: () -> Unit = {},
+) {
+    var quoteCountDown by remember(marketPrice) { mutableFloatStateOf(0f) }
+
+    LaunchedEffect(marketPrice) {
+        while (isActive) {
+            quoteCountDown = 0f
+            while (isActive && quoteCountDown < 1f) {
+                delay(100)
+                quoteCountDown += 0.01f
+            }
+            onPriceExpired()
+        }
+    }
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Text(
+            text = if (isReversed) {
+                val inverted = safeGuideDivide(BigDecimal.ONE, marketPrice)
+                "1 USDT = ${inverted.numberFormat8()} BTC"
+            } else {
+                "1 BTC ≈ ${marketPrice.priceFormat()} USDT"
+            },
+            fontSize = 14.sp,
+            color = MixinAppTheme.colors.textAssist,
+        )
+        CircularProgressIndicator(
+            progress = quoteCountDown,
+            modifier = Modifier.size(12.dp),
+            strokeWidth = 2.dp,
+            color = MixinAppTheme.colors.textPrimary,
+            backgroundColor = MixinAppTheme.colors.textAssist,
+        )
+        Spacer(modifier = Modifier.weight(1f))
+        Icon(
+            painter = painterResource(id = R.drawable.ic_price_switch),
+            contentDescription = null,
+            tint = Color.Unspecified,
+            modifier = Modifier
+                .size(16.dp)
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = onSwitchDirection,
+                ),
+        )
+    }
+}
+
 private fun formatGuideInt(value: Int): String {
     return String.format("%,d", value)
+}
+
+private fun calculateGuideMarketPrice(
+    baseToken: TokenItem?,
+    quoteToken: TokenItem?,
+): BigDecimal {
+    val quotePrice = quoteToken?.priceUsd?.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: BigDecimal.ONE
+    val basePrice = baseToken?.priceUsd?.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: BigDecimal("95594.89")
+    return safeGuideDivide(basePrice, quotePrice)
+}
+
+private fun calculateGuideLiquidationPrice(
+    marketPrice: BigDecimal,
+    leverage: Int,
+    isLong: Boolean,
+): BigDecimal {
+    val safeLeverage = leverage.coerceAtLeast(1)
+    val liquidationOffset = BigDecimal.ONE.divide(
+        safeLeverage.toBigDecimal(),
+        8,
+        RoundingMode.HALF_UP,
+    )
+    val multiplier = if (isLong) {
+        BigDecimal.ONE.subtract(liquidationOffset)
+    } else {
+        BigDecimal.ONE.add(liquidationOffset)
+    }
+    return marketPrice.multiply(multiplier).setScale(2, RoundingMode.HALF_UP)
 }
 
 private fun buildOrderValueText(
@@ -1140,6 +1373,16 @@ private fun ScenarioData.formatPnl(currentPercent: Float): String {
     } else {
         "$sign$amountText $pnlAsset"
     }
+}
+
+private fun safeGuideDivide(
+    dividend: BigDecimal,
+    divisor: BigDecimal,
+): BigDecimal {
+    if (divisor.compareTo(BigDecimal.ZERO) == 0) {
+        return BigDecimal.ZERO
+    }
+    return dividend.divide(divisor, 8, RoundingMode.HALF_UP)
 }
 
 @Composable
