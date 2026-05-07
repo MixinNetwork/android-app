@@ -98,6 +98,8 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         private const val ARGS_LEVERAGE = "args_leverage"
         private const val ARGS_ENTRY_PRICE = "args_entry_price"
         private const val ARGS_TOKEN_SYMBOL = "args_token_symbol"
+        private const val ARGS_TAKE_PROFIT_PRICE = "args_take_profit_price"
+        private const val ARGS_STOP_LOSS_PRICE = "args_stop_loss_price"
         private const val ARGS_PAY_URL = "args_pay_url"
 
         fun newInstance(
@@ -108,6 +110,8 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
             leverage: Int,
             entryPrice: String,
             tokenSymbol: String,
+            takeProfitPrice: String? = null,
+            stopLossPrice: String? = null,
             payUrl: String?,
         ): PerpsConfirmBottomSheetDialogFragment {
             return PerpsConfirmBottomSheetDialogFragment().withArgs {
@@ -118,6 +122,8 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                 putInt(ARGS_LEVERAGE, leverage)
                 putString(ARGS_ENTRY_PRICE, entryPrice)
                 putString(ARGS_TOKEN_SYMBOL, tokenSymbol)
+                putString(ARGS_TAKE_PROFIT_PRICE, takeProfitPrice)
+                putString(ARGS_STOP_LOSS_PRICE, stopLossPrice)
                 putString(ARGS_PAY_URL, payUrl)
             }
         }
@@ -164,6 +170,8 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     private val leverage by lazy { requireArguments().getInt(ARGS_LEVERAGE) }
     private val entryPrice by lazy { requireNotNull(requireArguments().getString(ARGS_ENTRY_PRICE)) }
     private val tokenSymbol by lazy { requireNotNull(requireArguments().getString(ARGS_TOKEN_SYMBOL)) }
+    private val takeProfitPrice by lazy { requireArguments().getString(ARGS_TAKE_PROFIT_PRICE).orEmpty() }
+    private val stopLossPrice by lazy { requireArguments().getString(ARGS_STOP_LOSS_PRICE).orEmpty() }
     private val fiatRate by lazy { BigDecimal(Fiats.getRate()) }
     private val fiatSymbol by lazy { Fiats.getSymbol() }
 
@@ -172,6 +180,8 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         val price = entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
         "$PERPS_USD_SYMBOL${price.priceFormat()}"
     }
+    private val takeProfitFiatPrice by lazy { formatOptionalPerpsPrice(takeProfitPrice) }
+    private val stopLossFiatPrice by lazy { formatOptionalPerpsPrice(stopLossPrice) }
 
     private val liquidationPrice by lazy {
         try {
@@ -369,6 +379,22 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                         value = entryFiatPrice
                     )
                     Box(modifier = Modifier.height(20.dp))
+
+                    takeProfitFiatPrice?.let { takeProfit ->
+                        PerpsInfoItem(
+                            title = stringResource(R.string.Take_Profit).uppercase(),
+                            value = takeProfit,
+                        )
+                        Box(modifier = Modifier.height(20.dp))
+                    }
+
+                    stopLossFiatPrice?.let { stopLoss ->
+                        PerpsInfoItem(
+                            title = stringResource(R.string.Stop_Loss).uppercase(),
+                            value = stopLoss,
+                        )
+                        Box(modifier = Modifier.height(20.dp))
+                    }
 
                     val lossPercent = remember(leverage) {
                         val percent = String.format("%.2f", 100.0 / leverage)
@@ -687,4 +713,9 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         errorInfo = error
         step = Step.Error
     }
+}
+
+private fun formatOptionalPerpsPrice(rawPrice: String): String? {
+    val value = rawPrice.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: return null
+    return "$PERPS_USD_SYMBOL${value.priceFormat()}"
 }

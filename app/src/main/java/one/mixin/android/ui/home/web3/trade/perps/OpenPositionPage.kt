@@ -697,6 +697,8 @@ fun OpenPositionPage(
                                         leverage = leverage.toInt(),
                                         entryPrice = m.last,
                                         tokenSymbol = token.symbol,
+                                        takeProfitPrice = takeProfitPrice.takeIf { it.isNotBlank() },
+                                        stopLossPrice = stopLossPrice.takeIf { it.isNotBlank() },
                                         payUrl = response.paymentUrl
                                     ).setOnDone {
                                             onOpenSuccess(m.marketId)

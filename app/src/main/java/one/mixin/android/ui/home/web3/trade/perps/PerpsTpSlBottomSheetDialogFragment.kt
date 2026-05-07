@@ -6,6 +6,7 @@ import android.content.DialogInterface
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -33,6 +34,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,6 +46,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -51,6 +55,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dagger.hilt.android.AndroidEntryPoint
@@ -58,9 +64,12 @@ import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.booleanFromAttribute
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.priceFormat
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
@@ -71,6 +80,10 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 
 private enum class InputType { PNL, PRICE }
+
+private const val PREF_TPSL_INPUT_TYPE = "pref_perps_tpsl_input_type"
+private const val PREF_TPSL_INFO_TP_DISMISSED = "pref_perps_tpsl_info_tp_dismissed"
+private const val PREF_TPSL_INFO_SL_DISMISSED = "pref_perps_tpsl_info_sl_dismissed"
 
 @AndroidEntryPoint
 class PerpsTpSlBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
@@ -146,6 +159,10 @@ class PerpsTpSlBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.MATCH_PARENT,
         )
+        dialog.window?.setSoftInputMode(
+            WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE or
+                WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE,
+        )
     }
 
     override fun onStart() {
@@ -209,21 +226,31 @@ private fun PerpsTpSlContent(
     onCancel: () -> Unit,
     onApply: (String?) -> Unit,
 ) {
+    val context = LocalContext.current
+    val preferences = remember(context) { context.defaultSharedPreferences }
     val currentPriceValue = remember(currentPrice) { currentPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO }
     val basePrice = remember(entryPrice, currentPrice) {
         entryPrice.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: currentPriceValue
     }
     val leverageValue = leverage.coerceAtLeast(1)
     val marginValue = remember(marginAmount) { marginAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO }
+    val storedInputType = remember(preferences) {
+        preferences.getString(PREF_TPSL_INPUT_TYPE, null)
+            ?.let { stored -> InputType.values().firstOrNull { it.name == stored } }
+    }
+    val defaultInputType = remember(initialPrice, storedInputType) {
+        storedInputType ?: if (initialPrice.isBlank()) InputType.PNL else InputType.PRICE
+    }
+    val infoDismissedPrefKey = remember(mode) {
+        if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
+            PREF_TPSL_INFO_TP_DISMISSED
+        } else {
+            PREF_TPSL_INFO_SL_DISMISSED
+        }
+    }
 
-    var inputType by rememberSaveable(initialPrice) {
-        mutableStateOf(
-            if (initialPrice.isBlank()) {
-                InputType.PNL
-            } else {
-                InputType.PRICE
-            }
-        )
+    var inputType by rememberSaveable(initialPrice, mode.name) {
+        mutableStateOf(defaultInputType)
     }
     var priceInput by rememberSaveable(initialPrice) { mutableStateOf(initialPrice) }
     var percentMagnitudeInput by rememberSaveable(initialPrice, currentPrice, entryPrice, isLong, mode) {
@@ -288,7 +315,14 @@ private fun PerpsTpSlContent(
     } else {
         R.string.perps_tpsl_info_stop_loss_description
     }
-    var showInfoCard by rememberSaveable(mode.name) { mutableStateOf(true) }
+    var showInfoCard by rememberSaveable(mode.name) {
+        mutableStateOf(!preferences.getBoolean(infoDismissedPrefKey, false))
+    }
+
+    fun selectInputType(newType: InputType) {
+        inputType = newType
+        preferences.putString(PREF_TPSL_INPUT_TYPE, newType.name)
+    }
 
     Column(
         modifier = Modifier
@@ -356,13 +390,13 @@ private fun PerpsTpSlContent(
                     modifier = Modifier.wrapContentSize(),
                     text = stringResource(R.string.PnL),
                     selected = inputType == InputType.PNL,
-                    onClick = { inputType = InputType.PNL },
+                    onClick = { selectInputType(InputType.PNL) },
                 )
                 TpSlTypeChip(
                     modifier = Modifier.wrapContentSize(),
                     text = stringResource(R.string.limit_price),
                     selected = inputType == InputType.PRICE,
-                    onClick = { inputType = InputType.PRICE },
+                    onClick = { selectInputType(InputType.PRICE) },
                 )
             }
 
@@ -513,7 +547,10 @@ private fun PerpsTpSlContent(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .size(24.dp)
-                            .clickable { showInfoCard = false },
+                            .clickable {
+                                showInfoCard = false
+                                preferences.putBoolean(infoDismissedPrefKey, true)
+                            },
                     )
                     Icon(
                         painter = painterResource(id = infoIconRes),
@@ -654,6 +691,14 @@ private fun TpSlInputField(
     onPercentMagnitudeChange: (String) -> Unit,
     onPriceValueChange: (String) -> Unit,
 ) {
+    val focusRequester = remember { FocusRequester() }
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    LaunchedEffect(inputType, mode) {
+        focusRequester.requestFocus()
+        keyboardController?.show()
+    }
+
     when (inputType) {
         InputType.PNL -> {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -668,6 +713,7 @@ private fun TpSlInputField(
                 BasicTextField(
                     value = percentMagnitudeValue,
                     onValueChange = onPercentMagnitudeChange,
+                    modifier = Modifier.focusRequester(focusRequester),
                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Decimal),
                     singleLine = true,
                     cursorBrush = SolidColor(MixinAppTheme.colors.accent),
@@ -717,6 +763,7 @@ private fun TpSlInputField(
                 BasicTextField(
                     value = priceValue,
                     onValueChange = onPriceValueChange,
+                    modifier = Modifier.focusRequester(focusRequester),
                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Decimal),
                     singleLine = true,
                     cursorBrush = SolidColor(MixinAppTheme.colors.accent),
