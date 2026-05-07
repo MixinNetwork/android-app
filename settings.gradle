@@ -1,7 +1,6 @@
-def googleMavenMirrorUrl = startParameter.projectProperties['googleMavenMirrorUrl'] ?: System.getenv('GOOGLE_MAVEN_MIRROR_URL')
-
 pluginManagement {
     repositories {
+        def googleMavenMirrorUrl = settings.startParameter.projectProperties['googleMavenMirrorUrl'] ?: System.getenv('GOOGLE_MAVEN_MIRROR_URL')
         if (googleMavenMirrorUrl) {
             maven { url = uri(googleMavenMirrorUrl) }
         }
