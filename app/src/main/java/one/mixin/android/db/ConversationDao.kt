@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.paging.DataSource
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.RoomWarnings
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationItem
@@ -39,7 +40,7 @@ interface ConversationDao : BaseDao<Conversation> {
     }
 
     // Read SQL
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @RewriteQueriesToDropUnusedColumns
     @Query(
         """$PREFIX_CONVERSATION_ITEM
         WHERE c.category IN ('CONTACT', 'GROUP')
