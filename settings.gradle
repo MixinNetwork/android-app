@@ -1,5 +1,10 @@
+def googleMavenMirrorUrl = startParameter.projectProperties['googleMavenMirrorUrl'] ?: System.getenv('GOOGLE_MAVEN_MIRROR_URL')
+
 pluginManagement {
     repositories {
+        if (googleMavenMirrorUrl) {
+            maven { url = uri(googleMavenMirrorUrl) }
+        }
         gradlePluginPortal()
         google()
         mavenCentral()
