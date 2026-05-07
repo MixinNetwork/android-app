@@ -1,5 +1,3 @@
-def googleMavenMirrorUrl = findProperty('googleMavenMirrorUrl') ?: System.getenv('GOOGLE_MAVEN_MIRROR_URL')
-
 buildscript {
 
     ext {
@@ -142,6 +140,7 @@ buildscript {
     }
 
     repositories {
+        def googleMavenMirrorUrl = findProperty('googleMavenMirrorUrl') ?: System.getenv('GOOGLE_MAVEN_MIRROR_URL')
         if (googleMavenMirrorUrl) {
             maven { url = uri(googleMavenMirrorUrl) }
         }
@@ -176,6 +175,7 @@ plugins {
 
 allprojects {
     repositories {
+        def googleMavenMirrorUrl = findProperty('googleMavenMirrorUrl') ?: System.getenv('GOOGLE_MAVEN_MIRROR_URL')
         if (googleMavenMirrorUrl) {
             maven { url = uri(googleMavenMirrorUrl) }
         }
