@@ -22,6 +22,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -67,6 +68,8 @@ fun OpenPositionItem(
     } else {
         sideColor.copy(alpha = 0.1f)
     }
+    val hasTakeProfit = !position.takeProfitPrice.isNullOrBlank()
+    val hasStopLoss = !position.stopLossPrice.isNullOrBlank()
 
     Row(
         modifier = Modifier
@@ -124,6 +127,14 @@ fun OpenPositionItem(
                             .background(leverageBackgroundColor)
                             .padding(horizontal = 3.dp, vertical = 2.dp)
                     )
+                    if (hasTakeProfit) {
+                        Spacer(modifier = Modifier.width(4.dp))
+                        TpSlStatusTag(text = "TP")
+                    }
+                    if (hasStopLoss) {
+                        Spacer(modifier = Modifier.width(4.dp))
+                        TpSlStatusTag(text = "SL")
+                    }
                 }
 
                 if (isOpening) {
@@ -202,4 +213,21 @@ fun OpenPositionItem(
             }
         }
     }
+}
+
+@Composable
+private fun TpSlStatusTag(
+    text: String,
+) {
+    Text(
+        text = text,
+        fontSize = 11.sp,
+        fontWeight = FontWeight.W500,
+        color = MixinAppTheme.colors.accent,
+        lineHeight = 14.sp,
+        modifier = Modifier
+            .clip(RoundedCornerShape(4.dp))
+            .background(MixinAppTheme.colors.accent.copy(alpha = 0.1f))
+            .padding(horizontal = 4.dp, vertical = 2.dp),
+    )
 }

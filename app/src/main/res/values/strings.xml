@@ -1846,6 +1846,8 @@
     <string name="error_below_min_price">The price is below the minimum allowed value.</string>
     <string name="error_must_be_less_than_current_price">The price must be less than the current price.</string>
     <string name="error_must_be_greater_than_current_price">The price must be greater than the current price.</string>
+    <string name="error_price_must_be_greater_than_value">The price must be greater than %1$s.</string>
+    <string name="error_price_must_be_less_than_value">The price must be less than %1$s.</string>
     <string name="error_increase_too_high">The increase percentage cannot exceed 1000%.</string>
     <string name="error_increase_too_low">The increase percentage must be at least 0.01%.</string>
     <string name="error_decrease_too_high">The decrease percentage cannot exceed -99.99%.</string>
@@ -2360,6 +2362,7 @@
     <string name="perps_tpsl_info_take_profit_description">Take profit (TP) automatically closes your position when you reach your target profit.</string>
     <string name="perps_tpsl_info_stop_loss_title">What\'s the Stop Loss?</string>
     <string name="perps_tpsl_info_stop_loss_description">Stop loss (SL) limits your losses by closing your position if the price moves against you.</string>
+    <string name="perps_tpsl_guide_hide_14_days">Close to hide this reminder for 14 days.</string>
     <string name="perps_tpsl_max_profit">Max Profit +%1$s (%2$s%%)</string>
     <string name="perps_tpsl_max_loss">Max Loss -%1$s</string>
     <string name="perps_tpsl_est_pnl">Est. P&amp;L</string>

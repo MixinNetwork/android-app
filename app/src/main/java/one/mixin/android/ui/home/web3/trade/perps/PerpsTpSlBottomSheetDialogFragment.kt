@@ -84,6 +84,7 @@ private enum class InputType { PNL, PRICE }
 private const val PREF_TPSL_INPUT_TYPE = "pref_perps_tpsl_input_type"
 private const val PREF_TPSL_INFO_TP_DISMISSED = "pref_perps_tpsl_info_tp_dismissed"
 private const val PREF_TPSL_INFO_SL_DISMISSED = "pref_perps_tpsl_info_sl_dismissed"
+private val PERPS_TPSL_MIN_PRICE = BigDecimal("0.01")
 
 @AndroidEntryPoint
 class PerpsTpSlBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
@@ -273,6 +274,7 @@ private fun PerpsTpSlContent(
     val errorText = validateTpSlPrice(
         rawValue = priceInput,
         currentPrice = currentPriceValue,
+        leverage = leverageValue,
         isLong = isLong,
         isTakeProfit = mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT,
     )
@@ -902,6 +904,7 @@ private fun buildTpSlSummaryText(
 private fun validateTpSlPrice(
     rawValue: String,
     currentPrice: BigDecimal,
+    leverage: Int,
     isLong: Boolean,
     isTakeProfit: Boolean,
 ): String? {
@@ -917,20 +920,36 @@ private fun validateTpSlPrice(
     if (currentPrice <= BigDecimal.ZERO) {
         return null
     }
-    if (price.compareTo(currentPrice) == 0) {
-        return MixinApplicationHolder.getString(R.string.error_equals_current_price)
+    if (leverage <= 0) {
+        return null
     }
 
-    val shouldBeGreaterThanCurrent = if (isLong) isTakeProfit else !isTakeProfit
-    return if (shouldBeGreaterThanCurrent && price <= currentPrice) {
-        MixinApplicationHolder.getString(R.string.error_must_be_greater_than_current_price)
-    } else if (!shouldBeGreaterThanCurrent && price >= currentPrice) {
-        MixinApplicationHolder.getString(R.string.error_must_be_less_than_current_price)
-    } else {
-        null
+    val leverageRatio = BigDecimal(100)
+        .divide(BigDecimal(leverage), 8, RoundingMode.HALF_UP)
+    val upperBound = currentPrice.multiply(BigDecimal.ONE + leverageRatio)
+    val lowerBound = PERPS_TPSL_MIN_PRICE
+
+    val minAllowed = if (isLong == isTakeProfit) currentPrice else lowerBound
+    val maxAllowed = if (isLong == isTakeProfit) upperBound else currentPrice
+
+    return when {
+        price <= minAllowed -> {
+            MixinApplicationHolder.getString(
+                R.string.error_price_must_be_greater_than_value,
+                minAllowed.stripTrailingZeros().toPlainString(),
+            )
+        }
+        price >= maxAllowed -> {
+            MixinApplicationHolder.getString(
+                R.string.error_price_must_be_less_than_value,
+                maxAllowed.stripTrailingZeros().toPlainString(),
+            )
+        }
+        else -> null
     }
 }
 
 private object MixinApplicationHolder {
-    fun getString(resId: Int): String = one.mixin.android.MixinApplication.appContext.getString(resId)
+    fun getString(resId: Int, vararg formatArgs: Any): String =
+        one.mixin.android.MixinApplication.appContext.getString(resId, *formatArgs)
 }

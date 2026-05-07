@@ -1,6 +1,7 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,10 +22,15 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
@@ -38,6 +44,8 @@ import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.putLong
 import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.tip.wc.compose.ItemWalletContent
 import one.mixin.android.ui.wallet.alert.components.cardBackground
@@ -48,6 +56,15 @@ import org.threeten.bp.format.DateTimeFormatter
 import java.math.BigDecimal
 import java.math.RoundingMode
 
+private const val HIDE_TPSL_GUIDE_DURATION_MS = 14L * 24 * 60 * 60 * 1000
+private const val PREF_HIDE_TP_GUIDE_UNTIL = "pref_hide_tp_guide_until"
+private const val PREF_HIDE_SL_GUIDE_UNTIL = "pref_hide_sl_guide_until"
+
+private enum class TpSlGuideType {
+    TAKE_PROFIT,
+    STOP_LOSS,
+}
+
 @Composable
 fun PositionDetailPage(
     position: PerpsPositionItem,
@@ -57,6 +74,8 @@ fun PositionDetailPage(
     onShare: (() -> Unit)? = null,
     onSupport: (() -> Unit)? = null,
 ) {
+    val context = LocalContext.current
+    val preferences = remember(context) { context.defaultSharedPreferences }
     val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault())
     
     fun formatDate(dateStr: String?): String {
@@ -93,6 +112,19 @@ fun PositionDetailPage(
     val liquidationPrice = calculateLiquidationPriceValue(entryPrice, position.leverage, isLong)
     val fiatRate = BigDecimal(Fiats.getRate())
     val fiatSymbol = Fiats.getSymbol()
+    val hasTakeProfit = !position.takeProfitPrice.isNullOrBlank()
+    val hasStopLoss = !position.stopLossPrice.isNullOrBlank()
+    val now = remember { System.currentTimeMillis() }
+    val hideTpGuideUntil = remember(preferences) { preferences.getLong(PREF_HIDE_TP_GUIDE_UNTIL, 0L) }
+    val hideSlGuideUntil = remember(preferences) { preferences.getLong(PREF_HIDE_SL_GUIDE_UNTIL, 0L) }
+    val initialGuideType = when {
+        pnl > BigDecimal.ZERO && !hasTakeProfit && now >= hideTpGuideUntil -> TpSlGuideType.TAKE_PROFIT
+        pnl < BigDecimal.ZERO && !hasStopLoss && now >= hideSlGuideUntil -> TpSlGuideType.STOP_LOSS
+        else -> null
+    }
+    var guideType by remember(position.positionId, position.takeProfitPrice, position.stopLossPrice, position.unrealizedPnl) {
+        mutableStateOf(initialGuideType)
+    }
 
     fun formatFiat(value: BigDecimal): String {
         return formatPerpsFiatDecimal(value.multiply(fiatRate), fiatSymbol)
@@ -257,6 +289,23 @@ fun PositionDetailPage(
                     subtitle = formatSignedPercent(roe),
                 )
 
+                guideType?.let { currentGuideType ->
+                    Spacer(modifier = Modifier.height(16.dp))
+                    PositionTpSlGuideCard(
+                        guideType = currentGuideType,
+                        onClose = {
+                            val hideUntil = System.currentTimeMillis() + HIDE_TPSL_GUIDE_DURATION_MS
+                            val prefKey = if (currentGuideType == TpSlGuideType.TAKE_PROFIT) {
+                                PREF_HIDE_TP_GUIDE_UNTIL
+                            } else {
+                                PREF_HIDE_SL_GUIDE_UNTIL
+                            }
+                            preferences.putLong(prefKey, hideUntil)
+                            guideType = null
+                        },
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(20.dp))
 
                 PositionDetailItem(
@@ -289,6 +338,84 @@ fun PositionDetailPage(
 
             Spacer(modifier = Modifier.height(40.dp))
         }
+    }
+}
+
+@Composable
+private fun PositionTpSlGuideCard(
+    guideType: TpSlGuideType,
+    onClose: () -> Unit,
+) {
+    val infoTitleRes = if (guideType == TpSlGuideType.TAKE_PROFIT) {
+        R.string.perps_tpsl_info_take_profit_title
+    } else {
+        R.string.perps_tpsl_info_stop_loss_title
+    }
+    val infoDescRes = if (guideType == TpSlGuideType.TAKE_PROFIT) {
+        R.string.perps_tpsl_info_take_profit_description
+    } else {
+        R.string.perps_tpsl_info_stop_loss_description
+    }
+    val infoIconRes = if (guideType == TpSlGuideType.TAKE_PROFIT) {
+        R.drawable.ic_perps_tpsl_info_tp
+    } else {
+        R.drawable.ic_perps_tpsl_info_sl
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+    ) {
+        Column(modifier = Modifier.padding(end = 72.dp)) {
+            Text(
+                text = stringResource(infoTitleRes),
+                fontSize = 14.sp,
+                fontWeight = FontWeight.W600,
+                color = MixinAppTheme.colors.textPrimary,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = stringResource(infoDescRes),
+                fontSize = 14.sp,
+                lineHeight = 20.sp,
+                color = MixinAppTheme.colors.textMinor,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = stringResource(R.string.perps_tpsl_guide_hide_14_days),
+                fontSize = 12.sp,
+                color = MixinAppTheme.colors.textAssist,
+            )
+        }
+
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .size(24.dp)
+                .clip(CircleShape)
+                .background(MixinAppTheme.colors.background)
+                .border(1.dp, MixinAppTheme.colors.borderColor, CircleShape)
+                .clickable(onClick = onClose),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_close_grey),
+                contentDescription = null,
+                tint = Color.Unspecified,
+                modifier = Modifier.size(14.dp),
+            )
+        }
+
+        Icon(
+            painter = painterResource(id = infoIconRes),
+            contentDescription = null,
+            tint = Color.Unspecified,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .size(40.dp),
+        )
     }
 }
 

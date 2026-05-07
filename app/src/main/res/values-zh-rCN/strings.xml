@@ -1800,6 +1800,8 @@
     <string name="error_below_min_price">价格低于允许的最小值。</string>
     <string name="error_must_be_less_than_current_price">价格必须低于当前价格。</string>
     <string name="error_must_be_greater_than_current_price">价格必须高于当前价格。</string>
+    <string name="error_price_must_be_greater_than_value">价格必须高于 %1$s。</string>
+    <string name="error_price_must_be_less_than_value">价格必须低于 %1$s。</string>
     <string name="error_increase_too_high">涨幅不能超过1000%。</string>
     <string name="error_increase_too_low">涨幅必须至少为0.01%。</string>
     <string name="error_decrease_too_high">跌幅不能超过-99.99%。</string>
@@ -2294,6 +2296,7 @@
     <string name="perps_tpsl_info_take_profit_description">止盈（TP）会在达到目标盈利时，自动帮您平掉仓位。</string>
     <string name="perps_tpsl_info_stop_loss_title">什么是止损？</string>
     <string name="perps_tpsl_info_stop_loss_description">止损（SL）会在价格朝不利方向波动时，自动平仓以控制亏损。</string>
+    <string name="perps_tpsl_guide_hide_14_days">关闭后 14 天内不再显示该提醒。</string>
     <string name="perps_tpsl_max_profit">最大盈利 +%1$s (%2$s%%)</string>
     <string name="perps_tpsl_max_loss">最大亏损 -%1$s</string>
     <string name="perps_tpsl_est_pnl">预计盈亏</string>
