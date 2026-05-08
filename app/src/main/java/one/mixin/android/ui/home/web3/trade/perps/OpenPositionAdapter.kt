@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.databinding.ItemClosedPositionListBinding
+import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.loadImage
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
@@ -99,6 +100,17 @@ class OpenPositionAdapter(
                         if (isQuoteColorReversed) R.drawable.bg_perps_leverage_long else R.drawable.bg_perps_leverage_short
                     }
                 )
+                val hasTakeProfit = !position.takeProfitPrice.isNullOrBlank()
+                val hasStopLoss = !position.stopLossPrice.isNullOrBlank()
+                tpSlTagTv.isVisible = hasTakeProfit || hasStopLoss
+                if (tpSlTagTv.isVisible) {
+                    tpSlTagTv.text = when {
+                        hasTakeProfit && hasStopLoss -> context.getString(R.string.Take_Profit_Stop_Loss)
+                        hasTakeProfit -> "TP"
+                        else -> "SL"
+                    }
+                    tpSlTagTv.setTextColor(context.getColor(android.R.color.white))
+                }
 
                 val quantity = position.quantity
                     .toBigDecimalOrNull()

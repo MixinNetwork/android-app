@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -43,6 +44,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -767,11 +769,13 @@ fun GuideNavigationButton(
     onClick: () -> Unit,
 ) {
     MixinButton(
-        modifier = modifier.wrapContentSize(),
+        modifier = modifier,
         onClick = onClick,
         shape = RoundedCornerShape(32.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
     ) {
         Row(
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
         ) {
@@ -788,6 +792,9 @@ fun GuideNavigationButton(
                 fontSize = 14.sp,
                 fontWeight = FontWeight.W500,
                 color = Color.White,
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Ellipsis,
             )
             if (!isPrevious) {
                 Spacer(modifier = Modifier.width(4.dp))

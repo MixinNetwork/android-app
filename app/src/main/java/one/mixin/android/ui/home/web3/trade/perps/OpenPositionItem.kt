@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -32,6 +33,7 @@ import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
@@ -70,6 +72,12 @@ fun OpenPositionItem(
     }
     val hasTakeProfit = !position.takeProfitPrice.isNullOrBlank()
     val hasStopLoss = !position.stopLossPrice.isNullOrBlank()
+    val tpSlTagText = when {
+        hasTakeProfit && hasStopLoss -> stringResource(R.string.Take_Profit_Stop_Loss)
+        hasTakeProfit -> "TP"
+        hasStopLoss -> "SL"
+        else -> null
+    }
 
     Row(
         modifier = Modifier
@@ -127,13 +135,9 @@ fun OpenPositionItem(
                             .background(leverageBackgroundColor)
                             .padding(horizontal = 3.dp, vertical = 2.dp)
                     )
-                    if (hasTakeProfit) {
+                    if (tpSlTagText != null) {
                         Spacer(modifier = Modifier.width(4.dp))
-                        TpSlStatusTag(text = "TP")
-                    }
-                    if (hasStopLoss) {
-                        Spacer(modifier = Modifier.width(4.dp))
-                        TpSlStatusTag(text = "SL")
+                        TpSlStatusTag(text = tpSlTagText)
                     }
                 }
 
@@ -219,15 +223,16 @@ fun OpenPositionItem(
 private fun TpSlStatusTag(
     text: String,
 ) {
+    val backgroundColor = Color(LocalContext.current.colorAttr(R.attr.bg_market_gradient_start))
     Text(
         text = text,
         fontSize = 11.sp,
         fontWeight = FontWeight.W500,
-        color = MixinAppTheme.colors.accent,
+        color = Color.White,
         lineHeight = 14.sp,
         modifier = Modifier
             .clip(RoundedCornerShape(4.dp))
-            .background(MixinAppTheme.colors.accent.copy(alpha = 0.1f))
+            .background(backgroundColor)
             .padding(horizontal = 4.dp, vertical = 2.dp),
     )
 }

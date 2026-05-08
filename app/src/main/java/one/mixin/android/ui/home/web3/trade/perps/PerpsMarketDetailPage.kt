@@ -974,32 +974,46 @@ private fun TpSlActionCell(
     alignment: Alignment.Horizontal = Alignment.Start,
     onClick: () -> Unit,
 ) {
-    Row(
-        modifier = modifier.clickable(enabled = !loading, onClick = onClick),
-        horizontalArrangement = if (alignment == Alignment.End) Arrangement.End else Arrangement.Start,
-        verticalAlignment = Alignment.CenterVertically
+    val hasValue = value != null
+    Box(
+        modifier = modifier.fillMaxWidth(),
+        contentAlignment = if (alignment == Alignment.End) Alignment.CenterEnd else Alignment.CenterStart,
     ) {
-        if (loading) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(16.dp),
-                strokeWidth = 2.dp,
-                color = MixinAppTheme.colors.accent
-            )
-        } else {
-            Text(
-                text = value ?: stringResource(R.string.Add),
-                fontSize = 14.sp,
-                lineHeight = 17.sp,
-                style = compactTextStyle,
-                color = MixinAppTheme.colors.accent
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            Icon(
-                painter = painterResource(id = R.drawable.ic_arrow_right),
-                contentDescription = null,
-                tint = MixinAppTheme.colors.textAssist,
-                modifier = Modifier.size(16.dp)
-            )
+        Row(
+            modifier = Modifier.clickable(enabled = !loading, onClick = onClick),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (!hasValue && loading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(16.dp),
+                    strokeWidth = 2.dp,
+                    color = MixinAppTheme.colors.accent
+                )
+            } else {
+                Text(
+                    text = value ?: stringResource(R.string.Add),
+                    fontSize = 14.sp,
+                    lineHeight = 17.sp,
+                    style = compactTextStyle,
+                    color = if (hasValue) MixinAppTheme.colors.textPrimary else MixinAppTheme.colors.accent
+                )
+            }
+            if (hasValue && loading) {
+                Spacer(modifier = Modifier.width(4.dp))
+                CircularProgressIndicator(
+                    modifier = Modifier.size(16.dp),
+                    strokeWidth = 2.dp,
+                    color = MixinAppTheme.colors.accent
+                )
+            } else if (!loading) {
+                Spacer(modifier = Modifier.width(4.dp))
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_arrow_right),
+                    contentDescription = null,
+                    tint = MixinAppTheme.colors.textAssist,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
         }
     }
 }

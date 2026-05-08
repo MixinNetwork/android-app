@@ -50,9 +50,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.focus.FocusRequester
@@ -234,7 +236,6 @@ private fun PerpsTpSlContent(
         entryPrice.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: currentPriceValue
     }
     val leverageValue = leverage.coerceAtLeast(1)
-    val marginValue = remember(marginAmount) { marginAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO }
     val storedInputType = remember(preferences) {
         preferences.getString(PREF_TPSL_INPUT_TYPE, null)
             ?.let { stored -> InputType.values().firstOrNull { it.name == stored } }
@@ -253,18 +254,23 @@ private fun PerpsTpSlContent(
     var inputType by rememberSaveable(initialPrice, mode.name) {
         mutableStateOf(defaultInputType)
     }
-    var priceInput by rememberSaveable(initialPrice) { mutableStateOf(initialPrice) }
-    var percentMagnitudeInput by rememberSaveable(initialPrice, currentPrice, entryPrice, isLong, mode) {
+    var priceFieldValue by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(textFieldValueAtEnd(initialPrice))
+    }
+    var percentFieldValue by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(
-            derivePercentMagnitudeInput(
-                priceInput = initialPrice,
-                basePrice = basePrice,
-                isLong = isLong,
-                mode = mode,
+            textFieldValueAtEnd(
+                derivePercentMagnitudeInput(
+                    priceInput = initialPrice,
+                    basePrice = basePrice,
+                    isLong = isLong,
+                    mode = mode,
+                )
             )
         )
     }
 
+    val priceInput = priceFieldValue.text
     val signedPercent = signedPercentFromPrice(
         priceInput = priceInput,
         basePrice = basePrice,
@@ -279,21 +285,11 @@ private fun PerpsTpSlContent(
         isTakeProfit = mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT,
     )
     val currentPriceText = "$PERPS_USD_SYMBOL${currentPriceValue.priceFormat()}"
+    val percentMagnitudeInput = percentFieldValue.text
     val activePercentText = percentMagnitudeInput.takeIf { it.isNotBlank() }
     val filledValue = when (inputType) {
         InputType.PNL -> percentMagnitudeInput.isNotBlank()
         InputType.PRICE -> priceInput.isNotBlank()
-    }
-    val summaryText = buildTpSlSummaryText(
-        signedPercent = signedPercent,
-        marginAmount = marginValue,
-        leverage = leverageValue,
-        isTakeProfit = mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT,
-    )
-    val summaryColor = if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
-        MixinAppTheme.colors.walletGreen
-    } else {
-        MixinAppTheme.colors.walletRed
     }
     val pageColor = MixinAppTheme.colors.background
     val surfaceColor = MixinAppTheme.colors.background
@@ -433,8 +429,8 @@ private fun PerpsTpSlContent(
                             fontSize = 14.sp,
                             color = MixinAppTheme.colors.accent,
                             modifier = Modifier.clickable {
-                                percentMagnitudeInput = ""
-                                priceInput = ""
+                                percentFieldValue = textFieldValueAtEnd("")
+                                priceFieldValue = textFieldValueAtEnd("")
                             },
                         )
                     }
@@ -450,24 +446,36 @@ private fun PerpsTpSlContent(
                     TpSlInputField(
                         inputType = inputType,
                         mode = mode,
-                        percentMagnitudeValue = percentMagnitudeInput,
-                        priceValue = priceInput,
-                        onPercentMagnitudeChange = { raw ->
-                            percentMagnitudeInput = normalizeDecimalInput(raw)
-                            priceInput = percentToPriceInput(
-                                percentMagnitudeInput = percentMagnitudeInput,
-                                basePrice = basePrice,
-                                isLong = isLong,
-                                mode = mode,
+                        percentFieldValue = percentFieldValue,
+                        priceFieldValue = priceFieldValue,
+                        onPercentFieldValueChange = { fieldValue ->
+                            val normalized = normalizeDecimalInput(fieldValue.text)
+                            percentFieldValue = fieldValue.copy(
+                                text = normalized,
+                                selection = TextRange(normalized.length),
+                            )
+                            priceFieldValue = textFieldValueAtEnd(
+                                percentToPriceInput(
+                                    percentMagnitudeInput = normalized,
+                                    basePrice = basePrice,
+                                    isLong = isLong,
+                                    mode = mode,
+                                )
                             )
                         },
-                        onPriceValueChange = { raw ->
-                            priceInput = normalizeDecimalInput(raw)
-                            percentMagnitudeInput = derivePercentMagnitudeInput(
-                                priceInput = priceInput,
-                                basePrice = basePrice,
-                                isLong = isLong,
-                                mode = mode,
+                        onPriceFieldValueChange = { fieldValue ->
+                            val normalized = normalizeDecimalInput(fieldValue.text)
+                            priceFieldValue = fieldValue.copy(
+                                text = normalized,
+                                selection = TextRange(normalized.length),
+                            )
+                            percentFieldValue = textFieldValueAtEnd(
+                                derivePercentMagnitudeInput(
+                                    priceInput = normalized,
+                                    basePrice = basePrice,
+                                    isLong = isLong,
+                                    mode = mode,
+                                )
                             )
                         },
                     )
@@ -485,12 +493,14 @@ private fun PerpsTpSlContent(
                             text = "${if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) "+" else "-"}$option%",
                             selected = activePercentText == option,
                             onClick = {
-                                percentMagnitudeInput = option
-                                priceInput = percentToPriceInput(
-                                    percentMagnitudeInput = option,
-                                    basePrice = basePrice,
-                                    isLong = isLong,
-                                    mode = mode,
+                                percentFieldValue = textFieldValueAtEnd(option)
+                                priceFieldValue = textFieldValueAtEnd(
+                                    percentToPriceInput(
+                                        percentMagnitudeInput = option,
+                                        basePrice = basePrice,
+                                        isLong = isLong,
+                                        mode = mode,
+                                    )
                                 )
                             },
                         )
@@ -500,9 +510,9 @@ private fun PerpsTpSlContent(
                 Spacer(modifier = Modifier.height(10.dp))
 
                 Text(
-                    text = summaryText ?: stringResource(R.string.perps_tpsl_auto_close_hint),
+                    text = stringResource(R.string.perps_tpsl_auto_close_hint),
                     fontSize = 13.sp,
-                    color = if (summaryText == null) MixinAppTheme.colors.textAssist else summaryColor,
+                    color = MixinAppTheme.colors.textAssist,
                 )
             }
 
@@ -688,10 +698,10 @@ private fun TpSlQuickChip(
 private fun TpSlInputField(
     inputType: InputType,
     mode: PerpsTpSlBottomSheetDialogFragment.Mode,
-    percentMagnitudeValue: String,
-    priceValue: String,
-    onPercentMagnitudeChange: (String) -> Unit,
-    onPriceValueChange: (String) -> Unit,
+    percentFieldValue: TextFieldValue,
+    priceFieldValue: TextFieldValue,
+    onPercentFieldValueChange: (TextFieldValue) -> Unit,
+    onPriceFieldValueChange: (TextFieldValue) -> Unit,
 ) {
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -704,7 +714,7 @@ private fun TpSlInputField(
     when (inputType) {
         InputType.PNL -> {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                if (percentMagnitudeValue.isNotBlank()) {
+                if (percentFieldValue.text.isNotBlank()) {
                     Text(
                         text = if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) "+" else "-",
                         fontSize = 18.sp,
@@ -713,8 +723,8 @@ private fun TpSlInputField(
                     )
                 }
                 BasicTextField(
-                    value = percentMagnitudeValue,
-                    onValueChange = onPercentMagnitudeChange,
+                    value = percentFieldValue,
+                    onValueChange = onPercentFieldValueChange,
                     modifier = Modifier.focusRequester(focusRequester),
                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Decimal),
                     singleLine = true,
@@ -725,7 +735,7 @@ private fun TpSlInputField(
                         fontWeight = FontWeight.W600,
                     ),
                     decorationBox = { innerTextField ->
-                        if (percentMagnitudeValue.isBlank()) {
+                        if (percentFieldValue.text.isBlank()) {
                             Text(
                                 text = stringResource(
                                     if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
@@ -741,7 +751,7 @@ private fun TpSlInputField(
                         innerTextField()
                     },
                 )
-                if (percentMagnitudeValue.isNotBlank()) {
+                if (percentFieldValue.text.isNotBlank()) {
                     Text(
                         text = "%",
                         fontSize = 18.sp,
@@ -754,7 +764,7 @@ private fun TpSlInputField(
 
         InputType.PRICE -> {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                if (priceValue.isNotBlank()) {
+                if (priceFieldValue.text.isNotBlank()) {
                     Text(
                         text = PERPS_USD_SYMBOL,
                         fontSize = 18.sp,
@@ -763,8 +773,8 @@ private fun TpSlInputField(
                     )
                 }
                 BasicTextField(
-                    value = priceValue,
-                    onValueChange = onPriceValueChange,
+                    value = priceFieldValue,
+                    onValueChange = onPriceFieldValueChange,
                     modifier = Modifier.focusRequester(focusRequester),
                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Decimal),
                     singleLine = true,
@@ -775,7 +785,7 @@ private fun TpSlInputField(
                         fontWeight = FontWeight.W600,
                     ),
                     decorationBox = { innerTextField ->
-                        if (priceValue.isBlank()) {
+                        if (priceFieldValue.text.isBlank()) {
                             Text(
                                 text = "${stringResource(R.string.perps_tpsl_price_reaches)} $PERPS_USD_SYMBOL",
                                 fontSize = 18.sp,
@@ -789,6 +799,12 @@ private fun TpSlInputField(
         }
     }
 }
+
+private fun textFieldValueAtEnd(text: String): TextFieldValue =
+    TextFieldValue(
+        text = text,
+        selection = TextRange(text.length),
+    )
 
 private fun normalizeDecimalInput(value: String): String {
     val filtered = buildString {
@@ -863,41 +879,6 @@ private fun signedPercentFromPrice(
         mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT && signedPercent > BigDecimal.ZERO -> signedPercent
         mode == PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS && signedPercent < BigDecimal.ZERO -> signedPercent
         else -> null
-    }
-}
-
-private fun buildTpSlSummaryText(
-    signedPercent: BigDecimal?,
-    marginAmount: BigDecimal,
-    leverage: Int,
-    isTakeProfit: Boolean,
-): String? {
-    val percent = signedPercent?.abs() ?: return null
-    if (marginAmount <= BigDecimal.ZERO || leverage <= 0 || percent <= BigDecimal.ZERO) {
-        return null
-    }
-    val leverageValue = BigDecimal(leverage)
-    val pnlAmount = marginAmount
-        .multiply(leverageValue)
-        .multiply(percent)
-        .divide(BigDecimal(100), 2, RoundingMode.HALF_UP)
-        .stripTrailingZeros()
-        .toPlainString()
-    val pnlPercent = leverageValue
-        .multiply(percent)
-        .stripTrailingZeros()
-        .toPlainString()
-    return if (isTakeProfit) {
-        one.mixin.android.MixinApplication.appContext.getString(
-            R.string.perps_tpsl_max_profit,
-            pnlAmount,
-            pnlPercent,
-        )
-    } else {
-        one.mixin.android.MixinApplication.appContext.getString(
-            R.string.perps_tpsl_max_loss,
-            pnlAmount,
-        )
     }
 }
 
