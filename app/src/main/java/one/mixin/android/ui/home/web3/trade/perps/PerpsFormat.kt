@@ -51,7 +51,6 @@ fun formatPerpsSignedDecimal(value: BigDecimal?): String {
         else -> formatPerpsDisplayDecimal(BigDecimal.ZERO)
     }
 }
-
 fun formatPerpsUsdDecimal(value: BigDecimal?): String = formatPerpsFiatDecimal(value, PERPS_USD_SYMBOL)
 
 fun formatPerpsSignedUsdDecimal(value: BigDecimal?): String = formatPerpsSignedFiatDecimal(value, PERPS_USD_SYMBOL)
