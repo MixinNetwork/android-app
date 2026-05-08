@@ -484,8 +484,6 @@ private fun MarketDetailCard(
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
     val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
-    val fiatRate = BigDecimal(Fiats.getRate())
-    val fiatSymbol = Fiats.getSymbol()
 
     val changePercent = market.changePercent()
     val isPositive = changePercent >= BigDecimal.ZERO
@@ -497,7 +495,7 @@ private fun MarketDetailCard(
         ?: displaySymbol
 
     val formattedPrice = try {
-        val price = BigDecimal(market.last).multiply(fiatRate)
+        val price = BigDecimal(market.last)
         price.marketPriceFormat()
     } catch (e: Exception) {
         market.last
@@ -517,7 +515,7 @@ private fun MarketDetailCard(
                 )
                 Spacer(modifier = Modifier.height(7.dp))
                 Text(
-                    text = "${fiatSymbol}$formattedPrice",
+                    text = "$PERPS_USD_SYMBOL$formattedPrice",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.W500,
                     color = MixinAppTheme.colors.textPrimary
@@ -812,7 +810,7 @@ private fun OpenPositionCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "${fiatSymbol}${entryPrice.multiply(fiatRate).priceFormat()}",
+                    text = "$PERPS_USD_SYMBOL${entryPrice.priceFormat()}",
                     fontSize = 14.sp,
                     lineHeight = 17.sp,
                     style = compactTextStyle,
