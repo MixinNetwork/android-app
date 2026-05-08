@@ -81,8 +81,6 @@ fun PerpetualContent(
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
     val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
-    val fiatSymbol = Fiats.getSymbol()
-    val fiatRate = BigDecimal(Fiats.getRate())
     val viewModel = hiltViewModel<PerpetualViewModel>()
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -121,7 +119,7 @@ fun PerpetualContent(
     }
     val totalPnlAmount = BigDecimal.valueOf(totalPnl)
     val totalPositionValueFiatText = formatPerpsUsdDecimal(totalMargin)
-    val totalPnlFiatText = formatPerpsSignedRawUsdDecimal(totalPnlAmount)
+    val totalPnlFiatText = formatPerpsSignedUsdDecimal(totalPnlAmount)
     val totalPnlPercent = calculatePnlPercent(totalMargin, totalPnlAmount)
 
     LaunchedEffect(Unit) {
