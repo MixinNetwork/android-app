@@ -135,11 +135,11 @@ class OpenPositionAdapter(
         }
 
         private fun formatUsd(amount: BigDecimal): String {
-            return formatPerpsDisplayDecimal(amount)
+            return formatPerpsUsdDecimal(amount)
         }
 
         private fun formatSignedUsd(amount: BigDecimal): String {
-            return formatPerpsSignedDecimal(amount)
+            return formatPerpsSignedRawUsdDecimal(amount)
         }
 
         private fun resolveAttrColor(view: View, @AttrRes attr: Int): Int {

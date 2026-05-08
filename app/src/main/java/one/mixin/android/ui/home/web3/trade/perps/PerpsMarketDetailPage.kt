@@ -679,7 +679,7 @@ private fun OpenPositionCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "${formatPerpsSignedDecimal(pnl)} (${formatPerpsSignedPercent(roe, withSign = false)})",
+                    text = "${formatPerpsSignedRawUsdDecimal(pnl)} (${formatPerpsSignedPercent(roe, withSign = false)})",
                     fontSize = 14.sp,
                     lineHeight = 17.sp,
                     style = compactTextStyle,
@@ -765,7 +765,7 @@ private fun OpenPositionCard(
                     color = MixinAppTheme.colors.textPrimary
                 )
                 Text(
-                    text = formatPerpsDisplayDecimal(amountValue),
+                    text = formatPerpsUsdDecimal(amountValue),
                     fontSize = 14.sp,
                     lineHeight = 17.sp,
                     style = compactTextStyle,
@@ -811,7 +811,7 @@ private fun OpenPositionCard(
                     color = MixinAppTheme.colors.textPrimary
                 )
                 Text(
-                    text = liquidationPrice.priceFormat(),
+                    text = formatPerpsUsdDecimal(liquidationPrice),
                     fontSize = 14.sp,
                     lineHeight = 17.sp,
                     style = compactTextStyle,

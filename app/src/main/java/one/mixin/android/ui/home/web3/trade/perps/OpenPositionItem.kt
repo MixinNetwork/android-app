@@ -136,7 +136,7 @@ fun OpenPositionItem(
                     )
                 } else {
                     BasicText(
-                        text = formatPerpsDisplayDecimal(margin),
+                        text = formatPerpsUsdDecimal(margin),
                         modifier = Modifier.weight(0.85f),
                         style = TextStyle(
                             fontSize = 14.sp,
@@ -181,7 +181,7 @@ fun OpenPositionItem(
                     }
 
                     BasicText(
-                        text = "${formatPerpsSignedDecimal(unrealizedPnl)} (${formatPerpsSignedPercent(roe, withSign = false)})",
+                        text = "${formatPerpsSignedRawUsdDecimal(unrealizedPnl)} (${formatPerpsSignedPercent(roe, withSign = false)})",
                         modifier = Modifier.weight(0.85f),
                         style = TextStyle(
                             fontSize = 14.sp,

@@ -120,8 +120,8 @@ fun PerpetualContent(
         total + (position.margin?.toBigDecimalOrNull() ?: BigDecimal.ZERO)
     }
     val totalPnlAmount = BigDecimal.valueOf(totalPnl)
-    val totalPositionValueFiatText = formatPerpsDisplayDecimal(totalMargin)
-    val totalPnlFiatText = "${if (totalPnlAmount >= BigDecimal.ZERO) "+" else "-"}${formatPerpsDisplayDecimal(totalPnlAmount.abs())}"
+    val totalPositionValueFiatText = formatPerpsUsdDecimal(totalMargin)
+    val totalPnlFiatText = formatPerpsSignedRawUsdDecimal(totalPnlAmount)
     val totalPnlPercent = calculatePnlPercent(totalMargin, totalPnlAmount)
 
     LaunchedEffect(Unit) {

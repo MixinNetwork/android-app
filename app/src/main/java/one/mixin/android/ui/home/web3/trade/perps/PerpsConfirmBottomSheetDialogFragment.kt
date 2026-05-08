@@ -526,7 +526,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         val amountValue = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
         val profitPercent = 1.0 * leverage
         val profitAmount = amountValue * BigDecimal(profitPercent / 100)
-        val formattedProfitAmount = profitAmount.priceFormat()
+        val formattedProfitAmount = formatPerpsRawUsdDecimal(profitAmount)
 
         Timber.d("ProfitLossInfo - amount: $amount, amountValue: $amountValue, leverage: $leverage, isLong: $isLong, profitPercent: $profitPercent, profitAmount: $profitAmount")
 

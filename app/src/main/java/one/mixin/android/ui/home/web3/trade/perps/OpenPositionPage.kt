@@ -774,9 +774,9 @@ private fun calculateProfitInfo(
     val leverageInt = leverage.roundToInt()
     if (amountValue == BigDecimal.ZERO) {
         return if (isLong) {
-            stringResource(R.string.Price_Up_Profit, "1", leverageInt.toString(), "0.00")
+            stringResource(R.string.Price_Up_Profit, "1", leverageInt.toString(), formatPerpsRawUsdDecimal(BigDecimal.ZERO))
         } else {
-            stringResource(R.string.Price_Down_Profit, "1", leverageInt.toString(), "0.00")
+            stringResource(R.string.Price_Down_Profit, "1", leverageInt.toString(), formatPerpsRawUsdDecimal(BigDecimal.ZERO))
         }
     }
 
@@ -789,14 +789,14 @@ private fun calculateProfitInfo(
             R.string.Price_Up_Profit,
             String.format("%.0f", abs(priceChangePercent)),
             profitPercent.toString(),
-            profitAmount.priceFormat()
+            formatPerpsRawUsdDecimal(profitAmount)
         )
     } else {
         stringResource(
             R.string.Price_Down_Profit,
             String.format("%.0f", abs(priceChangePercent)),
             profitPercent.toString(),
-            profitAmount.priceFormat()
+            formatPerpsRawUsdDecimal(profitAmount)
         )
     }
 }
@@ -835,7 +835,7 @@ private fun calculateLiquidationPrice(
     } else {
         price * (BigDecimal.ONE + liquidationRatio)
     }
-    return "${liquidationPrice.priceFormat()}"
+    return formatPerpsUsdDecimal(liquidationPrice)
 }
 
 private fun formatFiatPrice(

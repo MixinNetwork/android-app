@@ -95,11 +95,11 @@ fun PositionDetailPage(
     val fiatSymbol = Fiats.getSymbol()
 
     fun formatFiat(value: BigDecimal): String {
-        return formatPerpsDisplayDecimal(value)
+        return formatPerpsUsdDecimal(value)
     }
 
     fun formatSignedFiat(value: BigDecimal): String {
-        return formatPerpsSignedDecimal(value)
+        return formatPerpsSignedRawUsdDecimal(value)
     }
 
     fun formatPriceUsd(value: BigDecimal): String {
@@ -424,11 +424,11 @@ fun PositionDetailPage(
     )
 
     fun formatFiat(value: BigDecimal): String {
-        return formatPerpsDisplayDecimal(value)
+        return formatPerpsUsdDecimal(value)
     }
 
     fun formatSignedFiat(value: BigDecimal): String {
-        return formatPerpsSignedDecimal(value)
+        return formatPerpsSignedRawUsdDecimal(value)
     }
 
     fun formatPriceUsd(value: BigDecimal): String {
