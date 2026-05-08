@@ -3,7 +3,8 @@ package one.mixin.android.ui.home.web3.trade.perps
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.gestures.animateScrollBy
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,6 +19,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -49,6 +54,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -63,8 +70,6 @@ import one.mixin.android.widget.components.DotText
 import one.mixin.android.widget.components.MixinButton
 import java.math.BigDecimal
 import java.math.RoundingMode
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 import kotlin.math.roundToInt
 
 data class ScenarioData(
@@ -97,6 +102,7 @@ fun PerpetualGuidePage(
     pop: () -> Unit,
 ) {
     val coroutineScope = rememberCoroutineScope()
+    val tabListState = rememberLazyListState()
     val tabs = listOf(
         stringResource(R.string.Brief_Introduction),
         stringResource(R.string.Long),
@@ -108,6 +114,21 @@ fun PerpetualGuidePage(
     )
     val safeInitialTab = initialTab.coerceIn(0, tabs.lastIndex)
     var selectedTab by remember(safeInitialTab) { mutableIntStateOf(safeInitialTab) }
+    var hasCenteredInitialTab by remember { mutableStateOf(false) }
+
+    LaunchedEffect(selectedTab) {
+        if (!hasCenteredInitialTab) {
+            tabListState.scrollToItem(selectedTab)
+            tabListState.centerVisibleTab(selectedTab, animate = false)
+            hasCenteredInitialTab = true
+        } else {
+            val isVisible = tabListState.layoutInfo.visibleItemsInfo.any { it.index == selectedTab }
+            if (!isVisible) {
+                tabListState.animateScrollToItem(selectedTab)
+            }
+            tabListState.centerVisibleTab(selectedTab, animate = true)
+        }
+    }
 
     MixinAppTheme {
         Column(
@@ -144,19 +165,22 @@ fun PerpetualGuidePage(
                     .fillMaxSize()
                     .padding(horizontal = 16.dp)
             ) {
-                Row(
+                LazyRow(
+                    state = tabListState,
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState())
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    tabs.forEachIndexed { index, tab ->
+                    itemsIndexed(
+                        items = tabs,
+                        key = { index, tab -> "$tab-$index" }
+                    ) { index, tab ->
                         OutlinedTab(
                             text = tab,
                             selected = selectedTab == index,
                             showBadge = false,
                             onClick = { coroutineScope.launch { selectedTab = index } }
                         )
-                        if (index < tabs.size - 1) Spacer(modifier = Modifier.width(10.dp))
                     }
                 }
 
@@ -191,6 +215,19 @@ fun PerpetualGuidePage(
                 Spacer(modifier = Modifier.height(24.dp))
             }
         }
+    }
+}
+
+private suspend fun LazyListState.centerVisibleTab(index: Int, animate: Boolean) {
+    val itemInfo = layoutInfo.visibleItemsInfo.firstOrNull { it.index == index } ?: return
+    val viewportCenter = (layoutInfo.viewportStartOffset + layoutInfo.viewportEndOffset) / 2
+    val itemCenter = itemInfo.offset + (itemInfo.size / 2)
+    val delta = itemCenter - viewportCenter
+    if (delta == 0) return
+    if (animate) {
+        animateScrollBy(delta.toFloat())
+    } else {
+        scrollBy(delta.toFloat())
     }
 }
 
