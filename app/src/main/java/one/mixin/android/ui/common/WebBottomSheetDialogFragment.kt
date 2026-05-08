@@ -161,7 +161,11 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         if (it !is ActivityNotFoundException) {
                             Timber.w(it)
                         }
-                    }.isSuccess
+                    }.isSuccess.also { handled ->
+                        if (handled && request.isForMainFrame) {
+                            dismiss()
+                        }
+                    }
                 }
             }
         }
