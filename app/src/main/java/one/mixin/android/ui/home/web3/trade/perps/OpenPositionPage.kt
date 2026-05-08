@@ -74,7 +74,6 @@ import one.mixin.android.ui.wallet.AddFeeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.getMixinErrorStringByCode
-import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.components.MixinButton
 import java.math.BigDecimal
@@ -214,8 +213,6 @@ fun OpenPositionPage(
     }
 
     val leverageOptions = generateLeverageOptions(maxLeverage)
-    val fiatRate = BigDecimal(Fiats.getRate())
-    val fiatSymbol = Fiats.getSymbol()
     val inputAmount = usdtAmount.toBigDecimalOrNull()
     val tokenBalance = currentToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val minimumMargin = currentMarket.minAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
@@ -325,7 +322,7 @@ fun OpenPositionPage(
                         Text(
                             text = stringResource(
                                 R.string.Current_price,
-                                formatFiatPrice(currentMarket.last)
+                                formatPerpsPrice(currentMarket.last)
                             ),
                             fontSize = 13.sp,
                             color = MixinAppTheme.colors.textAssist
@@ -560,8 +557,6 @@ fun OpenPositionPage(
                         leverage = leverage,
                         isLong = isLong,
                         priceChangePercent = 1.0,
-                        fiatRate = fiatRate,
-                        fiatSymbol = fiatSymbol,
                     )
 
                     Text(
@@ -582,7 +577,7 @@ fun OpenPositionPage(
                 ) {
                     PerpsActionRow(
                         title = stringResource(R.string.Take_Profit),
-                        value = takeProfitPrice.takeIf { it.isNotBlank() }?.let(::formatFiatPrice),
+                        value = takeProfitPrice.takeIf { it.isNotBlank() }?.let(::formatPerpsPrice),
                         onClick = {
                             showTpSlBottomSheet(PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT)
                         },
@@ -593,7 +588,7 @@ fun OpenPositionPage(
                     Spacer(modifier = Modifier.height(16.dp))
                     PerpsActionRow(
                         title = stringResource(R.string.Stop_Loss),
-                        value = stopLossPrice.takeIf { it.isNotBlank() }?.let(::formatFiatPrice),
+                        value = stopLossPrice.takeIf { it.isNotBlank() }?.let(::formatPerpsPrice),
                         onClick = {
                             showTpSlBottomSheet(PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS)
                         },
@@ -799,37 +794,34 @@ private fun calculateProfitInfo(
     leverage: Float,
     isLong: Boolean,
     priceChangePercent: Double,
-    fiatRate: BigDecimal,
-    fiatSymbol: String,
 ): String {
     val amountValue = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val leverageInt = leverage.roundToInt()
     if (amountValue == BigDecimal.ZERO) {
         return if (isLong) {
-            stringResource(R.string.Price_Up_Profit, "1", leverageInt.toString(), "${fiatSymbol}0.00")
+            stringResource(R.string.Price_Up_Profit, "1", leverageInt.toString(), formatPerpsRawUsdDecimal(BigDecimal.ZERO))
         } else {
-            stringResource(R.string.Price_Down_Profit, "1", leverageInt.toString(), "${fiatSymbol}0.00")
+            stringResource(R.string.Price_Down_Profit, "1", leverageInt.toString(), formatPerpsRawUsdDecimal(BigDecimal.ZERO))
         }
     }
 
     val profitPercent = leverageInt
     val profitAmount = amountValue
         .multiply(BigDecimal(profitPercent).divide(BigDecimal(100)))
-        .multiply(fiatRate)
 
     return if (isLong) {
         stringResource(
             R.string.Price_Up_Profit,
             String.format("%.0f", abs(priceChangePercent)),
             profitPercent.toString(),
-            "${fiatSymbol}${profitAmount.priceFormat()}"
+            formatPerpsRawUsdDecimal(profitAmount)
         )
     } else {
         stringResource(
             R.string.Price_Down_Profit,
             String.format("%.0f", abs(priceChangePercent)),
             profitPercent.toString(),
-            "${fiatSymbol}${profitAmount.priceFormat()}"
+            formatPerpsRawUsdDecimal(profitAmount)
         )
     }
 }
@@ -858,7 +850,7 @@ private fun calculateLiquidationPrice(
 
 
     if (price == BigDecimal.ZERO) {
-        return "${PERPS_USD_SYMBOL}0"
+        return formatPerpsUsdDecimal(BigDecimal.ZERO)
     }
 
     val liquidationPercent = BigDecimal(100.0 / leverage)
@@ -868,14 +860,14 @@ private fun calculateLiquidationPrice(
     } else {
         price * (BigDecimal.ONE + liquidationRatio)
     }
-    return "$PERPS_USD_SYMBOL${liquidationPrice.priceFormat()}"
+    return formatPerpsUsdDecimal(liquidationPrice)
 }
 
-private fun formatFiatPrice(
+private fun formatPerpsPrice(
     rawPrice: String,
 ): String {
     val price = rawPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    return price.priceFormat()
+    return "$PERPS_USD_SYMBOL${price.priceFormat()}"
 }
 
 @Composable

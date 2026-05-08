@@ -55,6 +55,21 @@ fun formatPerpsUsdDecimal(value: BigDecimal?): String = formatPerpsFiatDecimal(v
 
 fun formatPerpsSignedUsdDecimal(value: BigDecimal?): String = formatPerpsSignedFiatDecimal(value, PERPS_USD_SYMBOL)
 
+fun formatPerpsRawUsdDecimal(value: BigDecimal?): String {
+    val safeValue = value ?: BigDecimal.ZERO
+    val normalized = safeValue.abs().stripTrailingZeros().toPlainString()
+    return "$PERPS_USD_SYMBOL$normalized"
+}
+
+fun formatPerpsSignedRawUsdDecimal(value: BigDecimal?): String {
+    val safeValue = value ?: BigDecimal.ZERO
+    return when {
+        safeValue > BigDecimal.ZERO -> "+${formatPerpsRawUsdDecimal(safeValue)}"
+        safeValue < BigDecimal.ZERO -> "-${formatPerpsRawUsdDecimal(safeValue.abs())}"
+        else -> formatPerpsRawUsdDecimal(BigDecimal.ZERO)
+    }
+}
+
 fun calculateClosedRoe(
     entryPrice: String?,
     closePrice: String?,

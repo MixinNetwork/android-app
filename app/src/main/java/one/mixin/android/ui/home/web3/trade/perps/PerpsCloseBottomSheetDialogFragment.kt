@@ -444,7 +444,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                                 fontSize = 14.sp
                             )
                             Text(
-                                text = "${formatPerpsSignedDecimal(pnl)} (${formatPerpsSignedPercent(pnlPercent, withSign = false)})",
+                                text = "${formatPerpsSignedRawUsdDecimal(pnl)} (${formatPerpsSignedPercent(pnlPercent, withSign = false)})",
                                 color = pnlColor,
                                 fontSize = 14.sp
                             )

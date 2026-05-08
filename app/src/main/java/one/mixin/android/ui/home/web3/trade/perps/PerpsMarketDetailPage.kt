@@ -62,7 +62,6 @@ import one.mixin.android.api.response.perps.toPosition
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.marketPriceFormat
 import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.priceFormat
@@ -457,8 +456,8 @@ private fun formatVolume(
     fiatSymbol: String,
 ): String {
     return try {
-        val fiatVolume = BigDecimal(volume).multiply(fiatRate)
-        "${fiatSymbol}${fiatVolume.numberFormatCompact()}"
+        val vol = BigDecimal(volume)
+        vol.numberFormatCompact()
     } catch (e: NumberFormatException) {
         stringResource(R.string.N_A)
     }
@@ -496,12 +495,7 @@ private fun MarketDetailCard(
         ?: market.tokenSymbol.takeIf { it.isNotBlank() }
         ?: displaySymbol
 
-    val formattedPrice = try {
-        val price = BigDecimal(market.last)
-        price.marketPriceFormat()
-    } catch (e: Exception) {
-        market.last
-    }
+    val displayPrice = market.last
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
@@ -517,7 +511,7 @@ private fun MarketDetailCard(
                 )
                 Spacer(modifier = Modifier.height(7.dp))
                 Text(
-                    text = "$PERPS_USD_SYMBOL$formattedPrice",
+                    text = "$PERPS_USD_SYMBOL$displayPrice",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.W500,
                     color = MixinAppTheme.colors.textPrimary
@@ -607,9 +601,6 @@ private fun OpenPositionCard(
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
     val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
-    val fiatRate = BigDecimal(Fiats.getRate())
-    val fiatSymbol = Fiats.getSymbol()
-
     val pnl = position.unrealizedPnl?.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val roe = (position.roe?.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(BigDecimal(100))
     val isProfit = pnl >= BigDecimal.ZERO
@@ -620,7 +611,7 @@ private fun OpenPositionCard(
 
     val quantity = position.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val marginAmount = position.margin?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    val amountValue = marginAmount.multiply(fiatRate)
+    val amountValue = marginAmount
     var tpSlLoadingMode by remember(position.positionId) {
         mutableStateOf<PerpsTpSlBottomSheetDialogFragment.Mode?>(null)
     }
@@ -748,7 +739,7 @@ private fun OpenPositionCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "${formatPerpsSignedFiatDecimal(pnl.multiply(fiatRate), fiatSymbol)} (${formatPerpsSignedPercent(roe, withSign = false)})",
+                    text = "${formatPerpsSignedRawUsdDecimal(pnl)} (${formatPerpsSignedPercent(roe, withSign = false)})",
                     fontSize = 14.sp,
                     lineHeight = 17.sp,
                     style = compactTextStyle,
@@ -834,7 +825,7 @@ private fun OpenPositionCard(
                     color = MixinAppTheme.colors.textPrimary
                 )
                 Text(
-                    text = formatPerpsFiatDecimal(amountValue, fiatSymbol),
+                    text = formatPerpsUsdDecimal(amountValue),
                     fontSize = 14.sp,
                     lineHeight = 17.sp,
                     style = compactTextStyle,
@@ -880,7 +871,7 @@ private fun OpenPositionCard(
                     color = MixinAppTheme.colors.textPrimary
                 )
                 Text(
-                    text = "${fiatSymbol}${liquidationPrice.multiply(fiatRate).priceFormat()}",
+                    text = formatPerpsUsdDecimal(liquidationPrice),
                     fontSize = 14.sp,
                     lineHeight = 17.sp,
                     style = compactTextStyle,
