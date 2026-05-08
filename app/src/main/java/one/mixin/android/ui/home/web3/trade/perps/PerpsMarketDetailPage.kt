@@ -62,7 +62,6 @@ import one.mixin.android.api.response.perps.toPosition
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.marketPriceFormat
 import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.priceFormat
@@ -494,12 +493,7 @@ private fun MarketDetailCard(
         ?: market.tokenSymbol.takeIf { it.isNotBlank() }
         ?: displaySymbol
 
-    val formattedPrice = try {
-        val price = BigDecimal(market.last)
-        price.marketPriceFormat()
-    } catch (e: Exception) {
-        market.last
-    }
+    val displayPrice = market.last
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
@@ -515,7 +509,7 @@ private fun MarketDetailCard(
                 )
                 Spacer(modifier = Modifier.height(7.dp))
                 Text(
-                    text = "$formattedPrice",
+                    text = "$PERPS_USD_SYMBOL$displayPrice",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.W500,
                     color = MixinAppTheme.colors.textPrimary

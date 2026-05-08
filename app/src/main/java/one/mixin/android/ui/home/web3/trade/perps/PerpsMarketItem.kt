@@ -25,7 +25,6 @@ import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.numberFormatCompact
-import one.mixin.android.extension.priceFormat
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
@@ -52,11 +51,7 @@ fun PerpsMarketItem(
     }
     val changeText = formatPerpsSignedPercent(changePercent)
     val fiatRate = BigDecimal(Fiats.getRate())
-    val formattedPrice = try {
-        BigDecimal(market.last).priceFormat()
-    } catch (e: Exception) {
-        market.last
-    }
+    val displayPrice = market.last
 
     val formattedVolume = try {
         BigDecimal(market.volume).numberFormatCompact()
@@ -108,7 +103,7 @@ fun PerpsMarketItem(
                     )
                 }
                 Text(
-                    text = "$formattedPrice",
+                    text = "$PERPS_USD_SYMBOL$displayPrice",
                     fontSize = 14.sp,
                     color = MixinAppTheme.colors.textPrimary,
                 )

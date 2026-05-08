@@ -841,6 +841,5 @@ private fun calculateLiquidationPrice(
 private fun formatFiatPrice(
     rawPrice: String,
 ): String {
-    val price = rawPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    return "${price.priceFormat()}"
+    return "$PERPS_USD_SYMBOL$rawPrice"
 }

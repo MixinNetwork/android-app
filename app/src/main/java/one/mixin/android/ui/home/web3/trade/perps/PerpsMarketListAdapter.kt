@@ -11,7 +11,6 @@ import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.databinding.ItemMarketListBinding
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormatCompact
-import one.mixin.android.extension.priceFormat
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
@@ -56,12 +55,7 @@ class PerpsMarketListAdapter(
                 }
                 volumeTv.text = root.context.getString(R.string.Vol, formattedVolume)
 
-                val formattedPrice = try {
-                    BigDecimal(market.last).priceFormat()
-                } catch (e: Exception) {
-                    market.last
-                }
-                priceTv.text = "$formattedPrice"
+                priceTv.text = "$PERPS_USD_SYMBOL${market.last}"
 
                 val changePercent = market.changePercent()
                 val isPositive = changePercent >= BigDecimal.ZERO
