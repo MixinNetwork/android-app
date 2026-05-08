@@ -170,17 +170,17 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     private val payUrl by lazy { requireArguments().getString(ARGS_PAY_URL) }
     private val entryFiatPrice by lazy {
         val price = entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
-        "${price.priceFormat()}"
+        "$PERPS_USD_SYMBOL${price.priceFormat()}"
     }
 
     private val liquidationPrice by lazy {
         try {
             if (leverage <= 0) {
-                "0"
+                "${PERPS_USD_SYMBOL}0"
             } else {
                 val price = entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
                 if (price == BigDecimal.ZERO) {
-                    "0"
+                    "${PERPS_USD_SYMBOL}0"
                 } else {
                     val liquidationPercent = BigDecimal(100.0 / leverage)
                     val liquidationRatio = liquidationPercent.divide(BigDecimal(100), 8, RoundingMode.HALF_UP)
@@ -189,12 +189,12 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                     } else {
                         price * (BigDecimal.ONE + liquidationRatio)
                     }
-                    "${liquidation.priceFormat()}"
+                    "$PERPS_USD_SYMBOL${liquidation.priceFormat()}"
                 }
             }
         } catch (e: Exception) {
             Timber.e(e, "Failed to calculate liquidation price")
-            "0"
+            "${PERPS_USD_SYMBOL}0"
         }
     }
 

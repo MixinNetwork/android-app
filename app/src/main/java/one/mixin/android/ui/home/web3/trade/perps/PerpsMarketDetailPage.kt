@@ -804,7 +804,7 @@ private fun OpenPositionCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "${entryPrice.priceFormat()}",
+                    text = "$PERPS_USD_SYMBOL${entryPrice.priceFormat()}",
                     fontSize = 14.sp,
                     lineHeight = 17.sp,
                     style = compactTextStyle,

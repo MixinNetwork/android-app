@@ -5,6 +5,7 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 
 private val perpsMinDisplayValue = BigDecimal("0.01")
+const val PERPS_USD_SYMBOL = "\$"
 
 fun PerpsMarket.changePercent(): BigDecimal {
     return try {
@@ -42,7 +43,7 @@ fun formatPerpsSignedFiatDecimal(value: BigDecimal?, fiatSymbol: String): String
     }
 }
 
-fun formatPerpsUsdDecimal(value: BigDecimal?): String = formatPerpsFiatDecimal(value, "")
+fun formatPerpsUsdDecimal(value: BigDecimal?): String = formatPerpsFiatDecimal(value, PERPS_USD_SYMBOL)
 
 fun formatPerpsSignedDecimal(value: BigDecimal?): String {
     val safeValue = value ?: BigDecimal.ZERO
@@ -53,6 +54,7 @@ fun formatPerpsSignedDecimal(value: BigDecimal?): String {
     }
 }
 
+fun formatPerpsSignedUsdDecimal(value: BigDecimal?): String = formatPerpsSignedFiatDecimal(value, PERPS_USD_SYMBOL)
 
 fun formatPerpsRawUsdDecimal(value: BigDecimal?): String {
     val safeValue = value ?: BigDecimal.ZERO
