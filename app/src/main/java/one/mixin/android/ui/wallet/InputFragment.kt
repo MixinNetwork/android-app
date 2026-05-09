@@ -1048,25 +1048,13 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     private fun selectPreferredFeeOption(
         options: List<NetworkFee>,
         selectedKey: String? = null,
-        preferredAssetId: String? = null,
     ): NetworkFee? {
         if (options.isEmpty()) return null
 
         selectedKey?.let { key ->
             options.firstOrNull { it.selectionKey == key }?.let { return it }
         }
-
-        fun NetworkFee.isAffordable(): Boolean {
-            val balance = token.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO
-            val feeAmount = fee.toBigDecimalOrNull() ?: BigDecimal.ZERO
-            return balance >= feeAmount
-        }
-
-        if (preferredAssetId != null) {
-            options.firstOrNull { it.token.assetId == preferredAssetId && it.isAffordable() }?.let { return it }
-        }
-
-        return options.firstOrNull { it.isAffordable() } ?: options.first()
+        return options.firstOrNull(NetworkFee::canCoverSelectionFee) ?: options.first()
     }
 
     private fun syncSelectedWeb3Fee() {
@@ -1075,10 +1063,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             currentGaslessFee = null
             return
         }
-        val nextSelection = selectPreferredFeeOption(
+        val nextSelection = selectPreferredGaslessFeeOption(
             options = options,
-            selectedKey = currentGaslessFee?.selectionKey,
             preferredAssetId = web3Token?.assetId,
+            selectedKey = currentGaslessFee?.selectionKey,
         )
         if (currentGaslessFee != nextSelection) {
             currentGaslessFee = nextSelection
