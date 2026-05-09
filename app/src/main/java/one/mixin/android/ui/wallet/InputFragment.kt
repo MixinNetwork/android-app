@@ -1038,10 +1038,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private fun web3FeeOptions(): List<NetworkFee> {
         val options = mutableListOf<NetworkFee>()
+        options.addAll(gaslessFees)
         if (shouldOfferLegacyWeb3FeeOption()) {
             nativeWeb3FeeOption()?.let(options::add)
         }
-        options.addAll(gaslessFees)
         return options
     }
 
