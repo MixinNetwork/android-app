@@ -25,7 +25,6 @@ import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.numberFormatCompact
-import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
 @Composable
@@ -50,7 +49,6 @@ fun PerpsMarketItem(
         }
     }
     val changeText = formatPerpsSignedPercent(changePercent)
-    val fiatRate = BigDecimal(Fiats.getRate())
     val displayPrice = market.last
 
     val formattedVolume = try {

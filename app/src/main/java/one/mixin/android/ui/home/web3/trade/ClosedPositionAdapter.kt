@@ -14,9 +14,8 @@ import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.databinding.ItemClosedPositionListBinding
 import one.mixin.android.extension.loadImage
 import one.mixin.android.ui.home.web3.trade.perps.calculateClosedRoe
-import one.mixin.android.ui.home.web3.trade.perps.formatPerpsSignedFiatDecimal
 import one.mixin.android.ui.home.web3.trade.perps.formatPerpsSignedPercent
-import one.mixin.android.vo.Fiats
+import one.mixin.android.ui.home.web3.trade.perps.formatPerpsSignedUsdDecimal
 import java.math.BigDecimal
 
 class ClosedPositionAdapter(
@@ -134,9 +133,7 @@ class ClosedPositionAdapter(
         }
 
         private fun formatSignedUsd(amount: BigDecimal): String {
-            val fiatRate = BigDecimal(Fiats.getRate())
-            val fiatSymbol = Fiats.getSymbol()
-            return formatPerpsSignedFiatDecimal(amount.multiply(fiatRate), fiatSymbol)
+            return formatPerpsSignedUsdDecimal(amount)
         }
         private fun resolveAttrColor(view: View, @AttrRes attr: Int): Int {
             val typedValue = TypedValue()

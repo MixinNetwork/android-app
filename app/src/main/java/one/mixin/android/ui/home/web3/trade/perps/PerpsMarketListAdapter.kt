@@ -11,7 +11,6 @@ import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.databinding.ItemMarketListBinding
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormatCompact
-import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
 class PerpsMarketListAdapter(
@@ -39,8 +38,6 @@ class PerpsMarketListAdapter(
 
         fun bind(market: PerpsMarket) {
             binding.apply {
-                val fiatRate = BigDecimal(Fiats.getRate())
-                val fiatSymbol = Fiats.getSymbol()
                 if (iconIv.tag != market.iconUrl) {
                     iconIv.tag = market.iconUrl
                     iconIv.loadImage(market.iconUrl, R.drawable.ic_avatar_place_holder)
