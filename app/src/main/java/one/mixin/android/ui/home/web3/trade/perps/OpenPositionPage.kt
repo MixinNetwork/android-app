@@ -575,9 +575,14 @@ fun OpenPositionPage(
                     modifier = Modifier
                         .fillMaxWidth(),
                 ) {
+                    val quoteColorReversed = context.defaultSharedPreferences
+                        .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
+                    val tpColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+                    val slColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
                     PerpsActionRow(
                         title = stringResource(R.string.Take_Profit),
                         value = takeProfitPrice.takeIf { it.isNotBlank() }?.let(::formatPerpsPrice),
+                        valueColor = tpColor,
                         onClick = {
                             showTpSlBottomSheet(PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT)
                         },
@@ -589,6 +594,7 @@ fun OpenPositionPage(
                     PerpsActionRow(
                         title = stringResource(R.string.Stop_Loss),
                         value = stopLossPrice.takeIf { it.isNotBlank() }?.let(::formatPerpsPrice),
+                        valueColor = slColor,
                         onClick = {
                             showTpSlBottomSheet(PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS)
                         },
@@ -874,6 +880,7 @@ private fun formatPerpsPrice(
 private fun PerpsActionRow(
     title: String,
     value: String?,
+    valueColor: Color? = null,
     onClick: () -> Unit,
     onTipClick: () -> Unit,
 ) {
@@ -904,7 +911,7 @@ private fun PerpsActionRow(
             Text(
                 text = value ?: stringResource(R.string.Add),
                 fontSize = 14.sp,
-                color = if (value == null) MixinAppTheme.colors.accent else MixinAppTheme.colors.textAssist,
+                color = if (value == null) MixinAppTheme.colors.accent else (valueColor ?: MixinAppTheme.colors.textPrimary),
             )
             Spacer(modifier = Modifier.width(4.dp))
             Icon(
