@@ -377,9 +377,6 @@ private fun MarketInfoCard(
     market: PerpsMarket,
     onLearnClick: () -> Unit,
 ) {
-    val fiatRate = BigDecimal(Fiats.getRate())
-    val fiatSymbol = Fiats.getSymbol()
-
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -427,7 +424,7 @@ private fun MarketInfoCard(
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-            text = formatVolume(market.volume, fiatRate, fiatSymbol),
+            text = formatVolume(market.volume),
             fontSize = 16.sp,
             color = MixinAppTheme.colors.textPrimary
         )
@@ -450,12 +447,10 @@ private fun MarketInfoCard(
 @Composable
 private fun formatVolume(
     volume: String,
-    fiatRate: BigDecimal,
-    fiatSymbol: String,
 ): String {
     return try {
         val vol = BigDecimal(volume)
-        vol.numberFormatCompact()
+        "$PERPS_USD_SYMBOL${vol.numberFormatCompact()}"
     } catch (e: NumberFormatException) {
         stringResource(R.string.N_A)
     }
