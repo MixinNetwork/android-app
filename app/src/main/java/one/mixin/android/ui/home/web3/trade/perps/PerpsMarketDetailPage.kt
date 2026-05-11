@@ -62,7 +62,6 @@ import one.mixin.android.api.response.perps.toPosition
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.marketPriceFormat
 import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.priceFormat
@@ -378,9 +377,6 @@ private fun MarketInfoCard(
     market: PerpsMarket,
     onLearnClick: () -> Unit,
 ) {
-    val fiatRate = BigDecimal(Fiats.getRate())
-    val fiatSymbol = Fiats.getSymbol()
-
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -428,7 +424,7 @@ private fun MarketInfoCard(
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-            text = formatVolume(market.volume, fiatRate, fiatSymbol),
+            text = formatVolume(market.volume),
             fontSize = 16.sp,
             color = MixinAppTheme.colors.textPrimary
         )
@@ -451,12 +447,10 @@ private fun MarketInfoCard(
 @Composable
 private fun formatVolume(
     volume: String,
-    fiatRate: BigDecimal,
-    fiatSymbol: String,
 ): String {
     return try {
-        val fiatVolume = BigDecimal(volume).multiply(fiatRate)
-        "${fiatSymbol}${fiatVolume.numberFormatCompact()}"
+        val vol = BigDecimal(volume)
+        "$PERPS_USD_SYMBOL${vol.numberFormatCompact()}"
     } catch (e: NumberFormatException) {
         stringResource(R.string.N_A)
     }
@@ -494,12 +488,7 @@ private fun MarketDetailCard(
         ?: market.tokenSymbol.takeIf { it.isNotBlank() }
         ?: displaySymbol
 
-    val formattedPrice = try {
-        val price = BigDecimal(market.last)
-        price.marketPriceFormat()
-    } catch (e: Exception) {
-        market.last
-    }
+    val displayPrice = market.last
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
@@ -515,7 +504,7 @@ private fun MarketDetailCard(
                 )
                 Spacer(modifier = Modifier.height(7.dp))
                 Text(
-                    text = "$PERPS_USD_SYMBOL$formattedPrice",
+                    text = "$PERPS_USD_SYMBOL$displayPrice",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.W500,
                     color = MixinAppTheme.colors.textPrimary
@@ -618,7 +607,7 @@ private fun OpenPositionCard(
 
     val quantity = position.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val marginAmount = position.margin?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    val amountValue = marginAmount.multiply(fiatRate)
+    val amountValue = marginAmount
 
     val entryPrice = position.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val liquidationPrice = calculateLiquidationPriceValue(entryPrice, position.leverage, isLong)
@@ -685,7 +674,7 @@ private fun OpenPositionCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "${formatPerpsSignedFiatDecimal(pnl.multiply(fiatRate), fiatSymbol)} (${formatPerpsSignedPercent(roe, withSign = false)})",
+                    text = "${formatPerpsSignedRawUsdDecimal(pnl)} (${formatPerpsSignedPercent(roe, withSign = false)})",
                     fontSize = 14.sp,
                     lineHeight = 17.sp,
                     style = compactTextStyle,
@@ -771,7 +760,7 @@ private fun OpenPositionCard(
                     color = MixinAppTheme.colors.textPrimary
                 )
                 Text(
-                    text = formatPerpsFiatDecimal(amountValue, fiatSymbol),
+                    text = formatPerpsUsdDecimal(amountValue),
                     fontSize = 14.sp,
                     lineHeight = 17.sp,
                     style = compactTextStyle,
@@ -817,7 +806,7 @@ private fun OpenPositionCard(
                     color = MixinAppTheme.colors.textPrimary
                 )
                 Text(
-                    text = "${fiatSymbol}${liquidationPrice.multiply(fiatRate).priceFormat()}",
+                    text = formatPerpsUsdDecimal(liquidationPrice),
                     fontSize = 14.sp,
                     lineHeight = 17.sp,
                     style = compactTextStyle,
