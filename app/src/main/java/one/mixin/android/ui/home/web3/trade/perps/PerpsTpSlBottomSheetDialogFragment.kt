@@ -75,9 +75,9 @@ import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.findFragmentActivityOrNull
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.putString
@@ -690,11 +690,12 @@ private fun PerpsTpSlContent(
                     },
                     actionText = stringResource(R.string.Learn_More),
                     onActionClick = {
-                        context.findFragmentActivityOrNull()?.let { activity ->
-                            PerpetualGuideBottomSheetDialogFragment.newInstance(
-                                PerpetualGuideBottomSheetDialogFragment.TAB_TP_SL
-                            ).show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
+                        val url = if (isTakeProfit) {
+                            context.getString(R.string.take_profit_help_url)
+                        } else {
+                            context.getString(R.string.stop_loss_help_url)
                         }
+                        context.openUrl(url)
                     },
                     layout = PerpsTpSlGuideCardLayout.BOTTOM_SHEET,
                 )

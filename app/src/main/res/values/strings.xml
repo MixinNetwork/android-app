@@ -1952,6 +1952,8 @@
     <string name="mixin_dial_code" translatable="false">+XIN</string>
     <string name="ask_me_anything">Ask me anything</string>
     <string name="help_link">https://support.mixin.one/en/category/mixin-messenger-epr6vk</string>
+    <string name="take_profit_help_url">https://support.mixin.one/en/article/how-to-set-take-profit-and-stop-loss-1eoepxc/#1-take-profit</string>
+    <string name="stop_loss_help_url">https://support.mixin.one/en/article/how-to-set-take-profit-and-stop-loss-1eoepxc/#1-stop-loss</string>
     <string name="deposit_url">https://support.mixin.one/en/article/how-to-deposit-assets-to-mixin-messenger-1usvjod</string>
     <string name="emergency_url">https://support.mixin.one/en/article/how-to-set-up-an-emergency-contact-1kvd6g8</string>
     <string name="Deposit_Pending_Confirmation">%1$s Pending Confirmation</string>

@@ -313,6 +313,7 @@ private fun LazyListScope.openPositionItems(
                     backgroundColor = MixinAppTheme.colors.background,
                     borderColor = MixinAppTheme.colors.borderColor,
                 )
+                .padding(vertical = 8.dp)
         ) {
             for (index in 0 until positions.itemCount) {
                 val position = positions[index] ?: continue

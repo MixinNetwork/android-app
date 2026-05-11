@@ -261,7 +261,9 @@ fun PerpsMarketDetailPage(
                                     PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT -> currentPosition.stopLossPrice
                                     PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS -> requestedValue
                                 },
-                                onSuccess = {},
+                                onSuccess = {
+                                    toast(context.getString(R.string.Successful))
+                                },
                                 onError = { errorCode, errorMessage ->
                                     toast(context.getMixinErrorStringByCode(errorCode, errorMessage))
                                 },
@@ -749,6 +751,7 @@ private fun OpenPositionCard(
                 },
                 onSuccess = {
                     tpSlLoadingMode = null
+                    toast(context.getString(R.string.Successful))
                 },
                 onError = { errorCode, errorMessage ->
                     tpSlLoadingMode = null
@@ -993,6 +996,22 @@ private fun OpenPositionCard(
                     onClick = {
                         showTpSlBottomSheet(PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT)
                     },
+                    onDelete = {
+                        tpSlLoadingMode = PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT
+                        viewModel.setPositionTpSl(
+                            positionId = position.positionId,
+                            takeProfitPrice = "",
+                            stopLossPrice = position.stopLossPrice,
+                            onSuccess = {
+                                tpSlLoadingMode = null
+                                toast(context.getString(R.string.Successful))
+                            },
+                            onError = { errorCode, errorMessage ->
+                                tpSlLoadingMode = null
+                                toast(context.getMixinErrorStringByCode(errorCode, errorMessage))
+                            },
+                        )
+                    },
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 TpSlActionCell(
@@ -1003,6 +1022,22 @@ private fun OpenPositionCard(
                     alignment = Alignment.End,
                     onClick = {
                         showTpSlBottomSheet(PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS)
+                    },
+                    onDelete = {
+                        tpSlLoadingMode = PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS
+                        viewModel.setPositionTpSl(
+                            positionId = position.positionId,
+                            takeProfitPrice = position.takeProfitPrice,
+                            stopLossPrice = "",
+                            onSuccess = {
+                                tpSlLoadingMode = null
+                                toast(context.getString(R.string.Successful))
+                            },
+                            onError = { errorCode, errorMessage ->
+                                tpSlLoadingMode = null
+                                toast(context.getMixinErrorStringByCode(errorCode, errorMessage))
+                            },
+                        )
                     },
                 )
             }
@@ -1044,6 +1079,7 @@ private fun TpSlActionCell(
     compactTextStyle: TextStyle,
     alignment: Alignment.Horizontal = Alignment.Start,
     onClick: () -> Unit,
+    onDelete: (() -> Unit)? = null,
 ) {
     val hasValue = value != null
     Box(
@@ -1051,7 +1087,7 @@ private fun TpSlActionCell(
         contentAlignment = if (alignment == Alignment.End) Alignment.CenterEnd else Alignment.CenterStart,
     ) {
         Row(
-            modifier = Modifier.clickable(enabled = !loading, onClick = onClick),
+            modifier = Modifier.clickable(enabled = !loading, onClick = if (hasValue && onDelete != null) onDelete else onClick),
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (!hasValue && loading) {
@@ -1075,6 +1111,14 @@ private fun TpSlActionCell(
                     modifier = Modifier.size(16.dp),
                     strokeWidth = 2.dp,
                     color = MixinAppTheme.colors.accent
+                )
+            } else if (hasValue) {
+                Spacer(modifier = Modifier.width(4.dp))
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_action_delete),
+                    contentDescription = null,
+                    tint = MixinAppTheme.colors.textAssist,
+                    modifier = Modifier.size(16.dp)
                 )
             } else if (!loading) {
                 Spacer(modifier = Modifier.width(4.dp))

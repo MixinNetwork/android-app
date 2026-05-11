@@ -1907,6 +1907,8 @@
     <string name="mixin_support">Mixin 客服</string>
     <string name="ask_me_anything">向我提问</string>
     <string name="help_link">https://support.mixin.one/zh/category/mixin-messenger-1hmc388</string>
+    <string name="take_profit_help_url">https://support.mixin.one/zh/article/mixin-1ftc7wn/#1-5q2i55ui</string>
+    <string name="stop_loss_help_url">https://support.mixin.one/zh/article/mixin-1ftc7wn/#1-5q2i5o2f</string>
     <string name="deposit_url">https://support.mixin.one/zh/article/mixin-messenger-5ynqjm</string>
     <string name="emergency_url">https://support.mixin.one/zh/article/5aac5l2v6k6572u57sn5ocl6igu57o75lq6-d2nssy</string>
     <string name="Deposit_Pending_Confirmation">%1$s 充值确认中</string>
