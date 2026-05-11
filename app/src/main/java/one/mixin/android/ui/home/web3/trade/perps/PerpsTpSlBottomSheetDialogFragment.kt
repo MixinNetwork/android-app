@@ -232,8 +232,13 @@ private fun PerpsTpSlContent(
     val context = LocalContext.current
     val preferences = remember(context) { context.defaultSharedPreferences }
     val currentPriceValue = remember(currentPrice) { currentPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO }
-    val basePrice = remember(entryPrice) {
-        entryPrice.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: BigDecimal.ZERO
+    val triggerBasePrice = remember(currentPrice) {
+        currentPrice.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: BigDecimal.ZERO
+    }
+    val liquidationBasePrice = remember(entryPrice, currentPrice) {
+        entryPrice.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO }
+            ?: currentPrice.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO }
+            ?: BigDecimal.ZERO
     }
     val leverageValue = leverage.coerceAtLeast(1)
     val storedInputType = remember(preferences) {
@@ -262,7 +267,7 @@ private fun PerpsTpSlContent(
             textFieldValueAtEnd(
                 derivePercentMagnitudeInput(
                     priceInput = initialPrice,
-                    basePrice = basePrice,
+                    triggerBasePrice = triggerBasePrice,
                     isLong = isLong,
                     mode = mode,
                 )
@@ -273,7 +278,7 @@ private fun PerpsTpSlContent(
     val priceInput = priceFieldValue.text
     val signedPercent = signedPercentFromPrice(
         priceInput = priceInput,
-        basePrice = basePrice,
+        triggerBasePrice = triggerBasePrice,
         isLong = isLong,
         mode = mode,
     )
@@ -281,13 +286,16 @@ private fun PerpsTpSlContent(
     val isTakeProfit = mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT
     val priceErrorText = validateTpSlPrice(
         rawValue = priceInput,
-        basePrice = basePrice,
+        currentPrice = triggerBasePrice,
+        liquidationBasePrice = liquidationBasePrice,
         leverage = leverageValue,
         isLong = isLong,
         isTakeProfit = isTakeProfit,
     )
     val percentErrorText = validateTpSlPercent(
         rawValue = percentMagnitudeInput,
+        currentPrice = triggerBasePrice,
+        liquidationBasePrice = liquidationBasePrice,
         leverage = leverageValue,
         isLong = isLong,
         isTakeProfit = isTakeProfit,
@@ -305,10 +313,17 @@ private fun PerpsTpSlContent(
     val quickOptions = if (isTakeProfit) {
         listOf("10", "25", "50", "100")
     } else {
-        generateStopLossQuickOptions(leverageValue)
+        generateStopLossQuickOptions(
+            currentPrice = triggerBasePrice,
+            liquidationBasePrice = liquidationBasePrice,
+            isLong = isLong,
+            leverage = leverageValue,
+        )
     }.filter { option ->
         validateTpSlPercent(
             rawValue = option,
+            currentPrice = triggerBasePrice,
+            liquidationBasePrice = liquidationBasePrice,
             leverage = leverageValue,
             isLong = isLong,
             isTakeProfit = isTakeProfit,
@@ -461,7 +476,7 @@ private fun PerpsTpSlContent(
                             priceFieldValue = textFieldValueAtEnd(
                                 percentToPriceInput(
                                     percentMagnitudeInput = normalized,
-                                    basePrice = basePrice,
+                                    triggerBasePrice = triggerBasePrice,
                                     isLong = isLong,
                                     mode = mode,
                                 )
@@ -476,7 +491,7 @@ private fun PerpsTpSlContent(
                             percentFieldValue = textFieldValueAtEnd(
                                 derivePercentMagnitudeInput(
                                     priceInput = normalized,
-                                    basePrice = basePrice,
+                                    triggerBasePrice = triggerBasePrice,
                                     isLong = isLong,
                                     mode = mode,
                                 )
@@ -501,7 +516,7 @@ private fun PerpsTpSlContent(
                                 priceFieldValue = textFieldValueAtEnd(
                                     percentToPriceInput(
                                         percentMagnitudeInput = option,
-                                        basePrice = basePrice,
+                                        triggerBasePrice = triggerBasePrice,
                                         isLong = isLong,
                                         mode = mode,
                                     )
@@ -853,12 +868,12 @@ private fun normalizeDecimalInput(value: String): String {
 
 private fun percentToPriceInput(
     percentMagnitudeInput: String,
-    basePrice: BigDecimal,
+    triggerBasePrice: BigDecimal,
     isLong: Boolean,
     mode: PerpsTpSlBottomSheetDialogFragment.Mode,
 ): String {
     val magnitude = percentMagnitudeInput.toBigDecimalOrNull() ?: return ""
-    if (basePrice <= BigDecimal.ZERO) {
+    if (triggerBasePrice <= BigDecimal.ZERO) {
         return ""
     }
     val signedPercent = if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
@@ -871,18 +886,18 @@ private fun percentToPriceInput(
     if (multiplier <= BigDecimal.ZERO) {
         return ""
     }
-    return basePrice.multiply(multiplier).stripTrailingZeros().toPlainString()
+    return triggerBasePrice.multiply(multiplier).stripTrailingZeros().toPlainString()
 }
 
 private fun derivePercentMagnitudeInput(
     priceInput: String,
-    basePrice: BigDecimal,
+    triggerBasePrice: BigDecimal,
     isLong: Boolean,
     mode: PerpsTpSlBottomSheetDialogFragment.Mode,
 ): String {
     val signedPercent = signedPercentFromPrice(
         priceInput = priceInput,
-        basePrice = basePrice,
+        triggerBasePrice = triggerBasePrice,
         isLong = isLong,
         mode = mode,
     ) ?: return ""
@@ -891,18 +906,18 @@ private fun derivePercentMagnitudeInput(
 
 private fun signedPercentFromPrice(
     priceInput: String,
-    basePrice: BigDecimal,
+    triggerBasePrice: BigDecimal,
     isLong: Boolean,
     mode: PerpsTpSlBottomSheetDialogFragment.Mode,
 ): BigDecimal? {
     val targetPrice = priceInput.toBigDecimalOrNull() ?: return null
-    if (targetPrice <= BigDecimal.ZERO || basePrice <= BigDecimal.ZERO) {
+    if (targetPrice <= BigDecimal.ZERO || triggerBasePrice <= BigDecimal.ZERO) {
         return null
     }
     val marketDeltaPercent = targetPrice
-        .subtract(basePrice)
+        .subtract(triggerBasePrice)
         .multiply(BigDecimal(100))
-        .divide(basePrice, 8, RoundingMode.HALF_UP)
+        .divide(triggerBasePrice, 8, RoundingMode.HALF_UP)
     val signedPercent = if (isLong) marketDeltaPercent else marketDeltaPercent.negate()
     return when {
         mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT && signedPercent > BigDecimal.ZERO -> signedPercent
@@ -913,7 +928,8 @@ private fun signedPercentFromPrice(
 
 private fun validateTpSlPrice(
     rawValue: String,
-    basePrice: BigDecimal,
+    currentPrice: BigDecimal,
+    liquidationBasePrice: BigDecimal,
     leverage: Int,
     isLong: Boolean,
     isTakeProfit: Boolean,
@@ -927,7 +943,7 @@ private fun validateTpSlPrice(
     if (price <= BigDecimal.ZERO) {
         return MixinApplicationHolder.getString(R.string.error_invalid_number)
     }
-    if (basePrice <= BigDecimal.ZERO) {
+    if (currentPrice <= BigDecimal.ZERO) {
         return null
     }
     if (leverage <= 0) {
@@ -935,23 +951,23 @@ private fun validateTpSlPrice(
     }
 
     val liquidationOffset = BigDecimal.ONE.divide(BigDecimal(leverage), 8, RoundingMode.HALF_UP)
-    val liquidationPriceLong = basePrice.multiply(BigDecimal.ONE.subtract(liquidationOffset))
-    val liquidationPriceShort = basePrice.multiply(BigDecimal.ONE.add(liquidationOffset))
+    val liquidationPriceLong = liquidationBasePrice.multiply(BigDecimal.ONE.subtract(liquidationOffset))
+    val liquidationPriceShort = liquidationBasePrice.multiply(BigDecimal.ONE.add(liquidationOffset))
 
     return when {
         isLong && isTakeProfit -> {
-            if (price <= basePrice) {
+            if (price <= currentPrice) {
                 MixinApplicationHolder.getString(
                     R.string.error_price_must_be_greater_than_value,
-                    "$PERPS_USD_SYMBOL${basePrice.stripTrailingZeros().toPlainString()}",
+                    "$PERPS_USD_SYMBOL${currentPrice.stripTrailingZeros().toPlainString()}",
                 )
             } else null
         }
         isLong && !isTakeProfit -> {
             when {
-                price >= basePrice -> MixinApplicationHolder.getString(
+                price >= currentPrice -> MixinApplicationHolder.getString(
                     R.string.error_price_must_be_less_than_value,
-                    "$PERPS_USD_SYMBOL${basePrice.stripTrailingZeros().toPlainString()}",
+                    "$PERPS_USD_SYMBOL${currentPrice.stripTrailingZeros().toPlainString()}",
                 )
                 price <= liquidationPriceLong -> MixinApplicationHolder.getString(
                     R.string.error_price_must_be_greater_than_value,
@@ -962,9 +978,9 @@ private fun validateTpSlPrice(
         }
         !isLong && isTakeProfit -> {
             when {
-                price >= basePrice -> MixinApplicationHolder.getString(
+                price >= currentPrice -> MixinApplicationHolder.getString(
                     R.string.error_price_must_be_less_than_value,
-                    "$PERPS_USD_SYMBOL${basePrice.stripTrailingZeros().toPlainString()}",
+                    "$PERPS_USD_SYMBOL${currentPrice.stripTrailingZeros().toPlainString()}",
                 )
                 else -> null
             }
@@ -972,9 +988,9 @@ private fun validateTpSlPrice(
         else -> {
             // !isLong && !isTakeProfit (short stop loss)
             when {
-                price <= basePrice -> MixinApplicationHolder.getString(
+                price <= currentPrice -> MixinApplicationHolder.getString(
                     R.string.error_price_must_be_greater_than_value,
-                    "$PERPS_USD_SYMBOL${basePrice.stripTrailingZeros().toPlainString()}",
+                    "$PERPS_USD_SYMBOL${currentPrice.stripTrailingZeros().toPlainString()}",
                 )
                 price >= liquidationPriceShort -> MixinApplicationHolder.getString(
                     R.string.error_price_must_be_less_than_value,
@@ -988,6 +1004,8 @@ private fun validateTpSlPrice(
 
 private fun validateTpSlPercent(
     rawValue: String,
+    currentPrice: BigDecimal,
+    liquidationBasePrice: BigDecimal,
     leverage: Int,
     isLong: Boolean,
     isTakeProfit: Boolean,
@@ -1005,8 +1023,12 @@ private fun validateTpSlPercent(
     val maxPercentExclusive = when {
         isTakeProfit && isLong -> null
         isTakeProfit && !isLong -> BigDecimal(100)
-        leverage <= 0 -> null
-        else -> BigDecimal(100).divide(BigDecimal(leverage), 8, RoundingMode.HALF_UP)
+        else -> calculateStopLossMaxPercentExclusive(
+            currentPrice = currentPrice,
+            liquidationBasePrice = liquidationBasePrice,
+            isLong = isLong,
+            leverage = leverage,
+        )
     } ?: return null
 
     return if (percent >= maxPercentExclusive) {
@@ -1019,8 +1041,42 @@ private fun validateTpSlPercent(
     }
 }
 
-private fun generateStopLossQuickOptions(leverage: Int): List<String> {
-    val maxPercent = BigDecimal(100).divide(BigDecimal(leverage), 4, RoundingMode.HALF_UP)
+private fun calculateStopLossMaxPercentExclusive(
+    currentPrice: BigDecimal,
+    liquidationBasePrice: BigDecimal,
+    isLong: Boolean,
+    leverage: Int,
+): BigDecimal? {
+    if (currentPrice <= BigDecimal.ZERO || liquidationBasePrice <= BigDecimal.ZERO || leverage <= 0) {
+        return null
+    }
+    val liquidationOffset = BigDecimal.ONE.divide(BigDecimal(leverage), 8, RoundingMode.HALF_UP)
+    val liquidationPrice = if (isLong) {
+        liquidationBasePrice.multiply(BigDecimal.ONE.subtract(liquidationOffset))
+    } else {
+        liquidationBasePrice.multiply(BigDecimal.ONE.add(liquidationOffset))
+    }
+    val percent = if (isLong) {
+        currentPrice.subtract(liquidationPrice)
+    } else {
+        liquidationPrice.subtract(currentPrice)
+    }.multiply(BigDecimal(100)).divide(currentPrice, 8, RoundingMode.HALF_UP)
+
+    return percent.takeIf { it > BigDecimal.ZERO }
+}
+
+private fun generateStopLossQuickOptions(
+    currentPrice: BigDecimal,
+    liquidationBasePrice: BigDecimal,
+    isLong: Boolean,
+    leverage: Int,
+): List<String> {
+    val maxPercent = calculateStopLossMaxPercentExclusive(
+        currentPrice = currentPrice,
+        liquidationBasePrice = liquidationBasePrice,
+        isLong = isLong,
+        leverage = leverage,
+    ) ?: return emptyList()
     return (1..4).map { i ->
         val value = maxPercent.multiply(BigDecimal(i * 20))
             .divide(BigDecimal(100), 2, RoundingMode.HALF_UP)
