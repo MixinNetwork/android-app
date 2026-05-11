@@ -1,7 +1,6 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -47,23 +46,18 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putLong
 import one.mixin.android.ui.home.web3.components.PageScaffold
+import androidx.fragment.app.FragmentActivity
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.tip.wc.compose.ItemWalletContent
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.Fiats
 import org.threeten.bp.Instant
 import org.threeten.bp.ZoneId
 import org.threeten.bp.format.DateTimeFormatter
 import java.math.BigDecimal
 import java.math.RoundingMode
-
-private const val HIDE_TPSL_GUIDE_DURATION_MS = 14L * 24 * 60 * 60 * 1000
-private const val PREF_HIDE_TP_GUIDE_UNTIL = "pref_hide_tp_guide_until"
-private const val PREF_HIDE_SL_GUIDE_UNTIL = "pref_hide_sl_guide_until"
-
-private enum class TpSlGuideType {
-    TAKE_PROFIT,
-    STOP_LOSS,
-}
 
 @Composable
 fun PositionDetailPage(
@@ -114,16 +108,48 @@ fun PositionDetailPage(
     val fiatSymbol = Fiats.getSymbol()
     val hasTakeProfit = !position.takeProfitPrice.isNullOrBlank()
     val hasStopLoss = !position.stopLossPrice.isNullOrBlank()
-    val now = remember { System.currentTimeMillis() }
-    val hideTpGuideUntil = remember(preferences) { preferences.getLong(PREF_HIDE_TP_GUIDE_UNTIL, 0L) }
-    val hideSlGuideUntil = remember(preferences) { preferences.getLong(PREF_HIDE_SL_GUIDE_UNTIL, 0L) }
-    val initialGuideType = when {
-        pnl > BigDecimal.ZERO && !hasTakeProfit && now >= hideTpGuideUntil -> TpSlGuideType.TAKE_PROFIT
-        pnl < BigDecimal.ZERO && !hasStopLoss && now >= hideSlGuideUntil -> TpSlGuideType.STOP_LOSS
-        else -> null
-    }
-    var guideType by remember(position.positionId, position.takeProfitPrice, position.stopLossPrice, position.unrealizedPnl) {
-        mutableStateOf(initialGuideType)
+    var hideGuideUntil by remember(preferences) { mutableStateOf(preferences.getLong(PREF_HIDE_TPSL_GUIDE_UNTIL, 0L)) }
+    val viewModel = hiltViewModel<PerpetualViewModel>()
+
+    fun showTpSlBottomSheetFromGuide(mode: PerpsTpSlBottomSheetDialogFragment.Mode) {
+        val activity = context as? FragmentActivity ?: return
+        val existingPrice = when (mode) {
+            PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT -> position.takeProfitPrice.orEmpty()
+            PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS -> position.stopLossPrice.orEmpty()
+        }
+        val currentPrice = position.markPrice.orEmpty().ifBlank { position.entryPrice }
+        val requestMarginAmount = position.margin ?: position.openPayAmount.orEmpty()
+        PerpsTpSlBottomSheetDialogFragment.newInstance(
+            mode = mode,
+            price = existingPrice,
+            currentPrice = currentPrice,
+            isLong = position.side.equals("long", ignoreCase = true),
+            marketIconUrl = position.iconUrl.orEmpty(),
+            marketSymbol = position.displaySymbol ?: position.tokenSymbol.orEmpty(),
+            marginAmount = requestMarginAmount,
+            leverage = position.leverage,
+            entryPrice = position.entryPrice,
+        ).setOnApply { value ->
+            val normalizedValue = value?.trim().orEmpty()
+            if (normalizedValue == existingPrice) return@setOnApply
+            if (normalizedValue.isEmpty() && existingPrice.isEmpty()) return@setOnApply
+            val requestedValue = normalizedValue.ifEmpty { "" }
+            viewModel.setPositionTpSl(
+                positionId = position.positionId,
+                takeProfitPrice = when (mode) {
+                    PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT -> requestedValue
+                    PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS -> position.takeProfitPrice
+                },
+                stopLossPrice = when (mode) {
+                    PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT -> position.stopLossPrice
+                    PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS -> requestedValue
+                },
+                onSuccess = {},
+                onError = { errorCode, errorMessage ->
+                    toast(context.getMixinErrorStringByCode(errorCode, errorMessage))
+                },
+            )
+        }.show(activity.supportFragmentManager, PerpsTpSlBottomSheetDialogFragment.TAG)
     }
 
     fun formatFiat(value: BigDecimal): String {
@@ -289,20 +315,32 @@ fun PositionDetailPage(
                     subtitle = formatSignedPercent(roe),
                 )
 
-                guideType?.let { currentGuideType ->
+                if (!hasTakeProfit && System.currentTimeMillis() >= hideGuideUntil) {
                     Spacer(modifier = Modifier.height(16.dp))
-                    PositionTpSlGuideCard(
-                        guideType = currentGuideType,
+                    PerpsTpSlGuideCard(
+                        guideType = TpSlGuideType.TAKE_PROFIT,
                         onClose = {
                             val hideUntil = System.currentTimeMillis() + HIDE_TPSL_GUIDE_DURATION_MS
-                            val prefKey = if (currentGuideType == TpSlGuideType.TAKE_PROFIT) {
-                                PREF_HIDE_TP_GUIDE_UNTIL
-                            } else {
-                                PREF_HIDE_SL_GUIDE_UNTIL
-                            }
-                            preferences.putLong(prefKey, hideUntil)
-                            guideType = null
+                            hideGuideUntil = hideUntil
+                            preferences.putLong(PREF_HIDE_TPSL_GUIDE_UNTIL, hideUntil)
                         },
+                        actionText = stringResource(R.string.Take_Profit),
+                        onActionClick = { showTpSlBottomSheetFromGuide(PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) },
+                        layout = PerpsTpSlGuideCardLayout.DETAIL,
+                    )
+                }
+                if (!hasStopLoss && System.currentTimeMillis() >= hideGuideUntil) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    PerpsTpSlGuideCard(
+                        guideType = TpSlGuideType.STOP_LOSS,
+                        onClose = {
+                            val hideUntil = System.currentTimeMillis() + HIDE_TPSL_GUIDE_DURATION_MS
+                            hideGuideUntil = hideUntil
+                            preferences.putLong(PREF_HIDE_TPSL_GUIDE_UNTIL, hideUntil)
+                        },
+                        actionText = stringResource(R.string.Stop_Loss),
+                        onActionClick = { showTpSlBottomSheetFromGuide(PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS) },
+                        layout = PerpsTpSlGuideCardLayout.DETAIL,
                     )
                 }
 
@@ -338,84 +376,6 @@ fun PositionDetailPage(
 
             Spacer(modifier = Modifier.height(40.dp))
         }
-    }
-}
-
-@Composable
-private fun PositionTpSlGuideCard(
-    guideType: TpSlGuideType,
-    onClose: () -> Unit,
-) {
-    val infoTitleRes = if (guideType == TpSlGuideType.TAKE_PROFIT) {
-        R.string.perps_tpsl_info_take_profit_title
-    } else {
-        R.string.perps_tpsl_info_stop_loss_title
-    }
-    val infoDescRes = if (guideType == TpSlGuideType.TAKE_PROFIT) {
-        R.string.perps_tpsl_info_take_profit_description
-    } else {
-        R.string.perps_tpsl_info_stop_loss_description
-    }
-    val infoIconRes = if (guideType == TpSlGuideType.TAKE_PROFIT) {
-        R.drawable.ic_perps_tpsl_info_tp
-    } else {
-        R.drawable.ic_perps_tpsl_info_sl
-    }
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-    ) {
-        Column(modifier = Modifier.padding(end = 72.dp)) {
-            Text(
-                text = stringResource(infoTitleRes),
-                fontSize = 14.sp,
-                fontWeight = FontWeight.W600,
-                color = MixinAppTheme.colors.textPrimary,
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = stringResource(infoDescRes),
-                fontSize = 14.sp,
-                lineHeight = 20.sp,
-                color = MixinAppTheme.colors.textMinor,
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = stringResource(R.string.perps_tpsl_guide_hide_14_days),
-                fontSize = 12.sp,
-                color = MixinAppTheme.colors.textAssist,
-            )
-        }
-
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .size(24.dp)
-                .clip(CircleShape)
-                .background(MixinAppTheme.colors.background)
-                .border(1.dp, MixinAppTheme.colors.borderColor, CircleShape)
-                .clickable(onClick = onClose),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_close_grey),
-                contentDescription = null,
-                tint = Color.Unspecified,
-                modifier = Modifier.size(14.dp),
-            )
-        }
-
-        Icon(
-            painter = painterResource(id = infoIconRes),
-            contentDescription = null,
-            tint = Color.Unspecified,
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .size(40.dp),
-        )
     }
 }
 

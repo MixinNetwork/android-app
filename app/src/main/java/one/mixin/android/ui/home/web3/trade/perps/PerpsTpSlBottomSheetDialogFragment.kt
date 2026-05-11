@@ -314,16 +314,6 @@ private fun PerpsTpSlContent(
             isTakeProfit = isTakeProfit,
         ) == null
     }
-    val infoTitleRes = if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
-        R.string.perps_tpsl_info_take_profit_title
-    } else {
-        R.string.perps_tpsl_info_stop_loss_title
-    }
-    val infoDescRes = if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
-        R.string.perps_tpsl_info_take_profit_description
-    } else {
-        R.string.perps_tpsl_info_stop_loss_description
-    }
     var showInfoCard by rememberSaveable(mode.name) {
         mutableStateOf(!preferences.getBoolean(infoDismissedPrefKey, false))
     }
@@ -585,82 +575,26 @@ private fun PerpsTpSlContent(
             if (showInfoCard) {
                 Spacer(modifier = Modifier.height(12.dp))
 
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .cardBackground(surfaceColor, MixinAppTheme.colors.borderColor)
-                        .padding(horizontal = 16.dp, vertical = 14.dp),
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(
-                            text = stringResource(infoTitleRes),
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.W600,
-                            color = MixinAppTheme.colors.textPrimary,
-                            modifier = Modifier.weight(1f),
-                        )
-                        val longColor = if (context.defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false))
-                            MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
-                        val shortColor = if (context.defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false))
-                            MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
-                        Row(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(MixinAppTheme.colors.backgroundWindow)
-                                .padding(2.dp),
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(6.dp))
-                                    .background(if (isLong) longColor else Color.Transparent)
-                                    .padding(horizontal = 8.dp, vertical = 2.dp),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.Long),
-                                    color = if (isLong) Color.White else MixinAppTheme.colors.textAssist,
-                                    fontSize = 12.sp,
-                                )
-                            }
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(6.dp))
-                                    .background(if (!isLong) shortColor else Color.Transparent)
-                                    .padding(horizontal = 8.dp, vertical = 2.dp),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.Short),
-                                    color = if (!isLong) Color.White else MixinAppTheme.colors.textAssist,
-                                    fontSize = 12.sp,
-                                )
-                            }
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = stringResource(infoDescRes),
-                        fontSize = 14.sp,
-                        lineHeight = 20.sp,
-                        color = MixinAppTheme.colors.textMinor,
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text(
-                        text = stringResource(R.string.Learn_More),
-                        fontSize = 13.sp,
-                        color = MixinAppTheme.colors.accent,
-                        modifier = Modifier.clickable {
-                            val activity = context as? FragmentActivity ?: return@clickable
+                PerpsTpSlGuideCard(
+                    guideType = if (isTakeProfit) {
+                        TpSlGuideType.TAKE_PROFIT
+                    } else {
+                        TpSlGuideType.STOP_LOSS
+                    },
+                    onClose = {
+                        showInfoCard = false
+                        preferences.putBoolean(infoDismissedPrefKey, true)
+                    },
+                    actionText = stringResource(R.string.Learn_More),
+                    onActionClick = {
+                        (context as? FragmentActivity)?.let { activity ->
                             PerpetualGuideBottomSheetDialogFragment.newInstance(
                                 PerpetualGuideBottomSheetDialogFragment.TAB_TP_SL
                             ).show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
-                        },
-                    )
-                }
+                        }
+                    },
+                    layout = PerpsTpSlGuideCardLayout.BOTTOM_SHEET,
+                )
             }
         }
 

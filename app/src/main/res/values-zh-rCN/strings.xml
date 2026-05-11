@@ -2296,7 +2296,10 @@
     <string name="perps_tpsl_info_take_profit_description">止盈（TP）会在达到目标盈利时，自动帮您平掉仓位。</string>
     <string name="perps_tpsl_info_stop_loss_title">什么是止损？</string>
     <string name="perps_tpsl_info_stop_loss_description">止损（SL）会在价格朝不利方向波动时，自动平仓以控制亏损。</string>
-    <string name="perps_tpsl_guide_hide_14_days">关闭后 14 天内不再显示该提醒。</string>
+    <string name="perps_tpsl_detail_take_profit_title">锁定盈利</string>
+    <string name="perps_tpsl_detail_take_profit_description">价格达到目标时自动平仓以锁定利润。</string>
+    <string name="perps_tpsl_detail_stop_loss_title">防止进一步亏损</string>
+    <string name="perps_tpsl_detail_stop_loss_description">价格下跌至目标时自动平仓以限制亏损。</string>
     <string name="perps_tpsl_max_profit">最大盈利 +%1$s (%2$s%%)</string>
     <string name="perps_tpsl_max_loss">最大亏损 -%1$s</string>
     <string name="perps_tpsl_est_pnl">预计盈亏</string>

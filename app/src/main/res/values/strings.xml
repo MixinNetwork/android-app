@@ -2362,7 +2362,10 @@
     <string name="perps_tpsl_info_take_profit_description">Take profit (TP) automatically closes your position when you reach your target profit.</string>
     <string name="perps_tpsl_info_stop_loss_title">What\'s the Stop Loss?</string>
     <string name="perps_tpsl_info_stop_loss_description">Stop loss (SL) limits your losses by closing your position if the price moves against you.</string>
-    <string name="perps_tpsl_guide_hide_14_days">Close to hide this reminder for 14 days.</string>
+    <string name="perps_tpsl_detail_take_profit_title">Lock in profits</string>
+    <string name="perps_tpsl_detail_take_profit_description">Auto-close when price hits target to lock profit.</string>
+    <string name="perps_tpsl_detail_stop_loss_title">Prevent further loss</string>
+    <string name="perps_tpsl_detail_stop_loss_description">Auto-close when price falls to target to limit loss.</string>
     <string name="perps_tpsl_max_profit">Max Profit +%1$s (%2$s%%)</string>
     <string name="perps_tpsl_max_loss">Max Loss -%1$s</string>
     <string name="perps_tpsl_est_pnl">Est. P&amp;L</string>

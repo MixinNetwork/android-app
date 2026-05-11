@@ -64,6 +64,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.openUrl
+import one.mixin.android.extension.putLong
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
@@ -91,6 +92,7 @@ fun PerpsMarketDetailPage(
 ) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<PerpetualViewModel>()
+    val preferences = remember(context) { context.defaultSharedPreferences }
     val lifecycleOwner = LocalLifecycleOwner.current
     var market by remember(marketId, initialMarket) { mutableStateOf(initialMarket) }
     var isLoading by remember(marketId, initialMarket) { mutableStateOf(initialMarket == null) }
@@ -220,6 +222,87 @@ fun PerpsMarketDetailPage(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 if (currentPosition != null && market != null) {
+                    val pnl = currentPosition.unrealizedPnl?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                    val hasTakeProfit = !currentPosition.takeProfitPrice.isNullOrBlank()
+                    val hasStopLoss = !currentPosition.stopLossPrice.isNullOrBlank()
+                    var hideGuideUntil by remember(preferences) { mutableStateOf(preferences.getLong(PREF_HIDE_TPSL_GUIDE_UNTIL, 0L)) }
+
+                    fun showTpSlBottomSheetFromGuide(mode: PerpsTpSlBottomSheetDialogFragment.Mode) {
+                        val activity = context as? FragmentActivity ?: return
+                        val existingPrice = when (mode) {
+                            PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT -> currentPosition.takeProfitPrice.orEmpty()
+                            PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS -> currentPosition.stopLossPrice.orEmpty()
+                        }
+                        val currentPrice = currentPosition.markPrice.orEmpty().ifBlank { currentPosition.entryPrice }
+                        val requestMarginAmount = currentPosition.margin ?: currentPosition.openPayAmount.orEmpty()
+                        PerpsTpSlBottomSheetDialogFragment.newInstance(
+                            mode = mode,
+                            price = existingPrice,
+                            currentPrice = currentPrice,
+                            isLong = currentPosition.side.equals("long", ignoreCase = true),
+                            marketIconUrl = currentPosition.iconUrl.orEmpty(),
+                            marketSymbol = currentPosition.displaySymbol ?: currentPosition.tokenSymbol.orEmpty(),
+                            marginAmount = requestMarginAmount,
+                            leverage = currentPosition.leverage,
+                            entryPrice = currentPosition.entryPrice,
+                        ).setOnApply { value ->
+                            val normalizedValue = value?.trim().orEmpty()
+                            if (normalizedValue == existingPrice) return@setOnApply
+                            if (normalizedValue.isEmpty() && existingPrice.isEmpty()) return@setOnApply
+                            val requestedValue = normalizedValue.ifEmpty { "" }
+                            viewModel.setPositionTpSl(
+                                positionId = currentPosition.positionId,
+                                takeProfitPrice = when (mode) {
+                                    PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT -> requestedValue
+                                    PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS -> currentPosition.takeProfitPrice
+                                },
+                                stopLossPrice = when (mode) {
+                                    PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT -> currentPosition.stopLossPrice
+                                    PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS -> requestedValue
+                                },
+                                onSuccess = {},
+                                onError = { errorCode, errorMessage ->
+                                    toast(context.getMixinErrorStringByCode(errorCode, errorMessage))
+                                },
+                            )
+                        }.show(activity.supportFragmentManager, PerpsTpSlBottomSheetDialogFragment.TAG)
+                    }
+
+                    val guideType = resolveTpSlGuideType(
+                        pnl = pnl,
+                        hasTakeProfit = hasTakeProfit,
+                        hasStopLoss = hasStopLoss,
+                        hideGuideUntil = hideGuideUntil,
+                        now = System.currentTimeMillis(),
+                    )
+                    guideType?.let { currentGuideType ->
+                        PerpsTpSlGuideCard(
+                            guideType = currentGuideType,
+                            onClose = {
+                                val hideUntil = System.currentTimeMillis() + HIDE_TPSL_GUIDE_DURATION_MS
+                                hideGuideUntil = hideUntil
+                                preferences.putLong(PREF_HIDE_TPSL_GUIDE_UNTIL, hideUntil)
+                            },
+                            actionText = stringResource(
+                                if (currentGuideType == TpSlGuideType.TAKE_PROFIT) {
+                                    R.string.Take_Profit
+                                } else {
+                                    R.string.Stop_Loss
+                                }
+                            ),
+                            onActionClick = {
+                                showTpSlBottomSheetFromGuide(
+                                    if (currentGuideType == TpSlGuideType.TAKE_PROFIT) {
+                                        PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT
+                                    } else {
+                                        PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS
+                                    }
+                                )
+                            },
+                            layout = PerpsTpSlGuideCardLayout.DETAIL,
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
                     OpenPositionCard(
                         position = currentPosition,
                         viewModel = viewModel,
