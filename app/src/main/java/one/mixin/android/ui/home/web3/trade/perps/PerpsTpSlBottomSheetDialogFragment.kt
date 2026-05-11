@@ -13,6 +13,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -290,12 +291,14 @@ private fun PerpsTpSlContent(
     var percentFieldValue by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(
             textFieldValueAtEnd(
-                derivePercentMagnitudeInput(
-                    priceInput = initialPrice,
-                    percentBasePrice = percentBasePrice,
-                    leverage = leverageValue,
-                    isLong = isLong,
-                    mode = mode,
+                normalizePercentInput(
+                    derivePercentMagnitudeInput(
+                        priceInput = initialPrice,
+                        percentBasePrice = percentBasePrice,
+                        leverage = leverageValue,
+                        isLong = isLong,
+                        mode = mode,
+                    )
                 )
             )
         )
@@ -534,7 +537,7 @@ private fun PerpsTpSlContent(
                         percentFieldValue = percentFieldValue,
                         priceFieldValue = priceFieldValue,
                         onPercentFieldValueChange = { fieldValue ->
-                            val normalized = normalizeDecimalInput(fieldValue.text)
+                            val normalized = normalizePercentInput(fieldValue.text)
                             percentFieldValue = fieldValue.copy(
                                 text = normalized,
                                 selection = TextRange(normalized.length),
@@ -556,12 +559,14 @@ private fun PerpsTpSlContent(
                                 selection = TextRange(normalized.length),
                             )
                             percentFieldValue = textFieldValueAtEnd(
-                                derivePercentMagnitudeInput(
-                                    priceInput = normalized,
-                                    percentBasePrice = percentBasePrice,
-                                    leverage = leverageValue,
-                                    isLong = isLong,
-                                    mode = mode,
+                                normalizePercentInput(
+                                    derivePercentMagnitudeInput(
+                                        priceInput = normalized,
+                                        percentBasePrice = percentBasePrice,
+                                        leverage = leverageValue,
+                                        isLong = isLong,
+                                        mode = mode,
+                                    )
                                 )
                             )
                         },
@@ -839,50 +844,91 @@ private fun TpSlInputField(
                         color = MixinAppTheme.colors.textPrimary,
                     )
                 }
-                Row(
-                    modifier = Modifier.weight(1f, fill = false),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    BasicTextField(
-                        value = percentFieldValue,
-                        onValueChange = onPercentFieldValueChange,
-                        modifier = Modifier
-                            .focusRequester(focusRequester)
-                            .weight(1f, fill = false),
-                        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Decimal),
-                        singleLine = true,
-                        cursorBrush = SolidColor(MixinAppTheme.colors.accent),
-                        textStyle = TextStyle(
-                            color = MixinAppTheme.colors.textPrimary,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.W600,
-                        ),
-                        decorationBox = { innerTextField ->
-                            if (percentFieldValue.text.isBlank()) {
-                                Text(
-                                    text = stringResource(
-                                        if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
-                                            R.string.profit_reaches_percent
-                                        } else {
-                                            R.string.profit_reaches_percent
-                                        }
-                                    ),
-                                    fontSize = 18.sp,
-                                    color = MixinAppTheme.colors.textAssist,
-                                )
+                BasicTextField(
+                    value = percentFieldValue,
+                    onValueChange = { newValue ->
+                        val raw = newValue.text
+
+                        val filtered = buildString {
+                            var dotSeen = false
+                            var intCount = 0
+                            var decCount = 0
+                            for (ch in raw) {
+                                when {
+                                    ch == '.' && !dotSeen -> {
+                                        dotSeen = true
+                                        append(ch)
+                                    }
+                                    ch.isDigit() && !dotSeen && intCount < 8 -> {
+                                        intCount++
+                                        append(ch)
+                                    }
+                                    ch.isDigit() && dotSeen && decCount < 2 -> {
+                                        decCount++
+                                        append(ch)
+                                    }
+                                }
                             }
-                            innerTextField()
-                        },
-                    )
-                    if (percentFieldValue.text.isNotBlank()) {
-                        Text(
-                            text = "%",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.W600,
-                            color = MixinAppTheme.colors.textPrimary,
+                        }
+
+                        val cursorPos = newValue.selection.end.coerceAtMost(filtered.length)
+                        onPercentFieldValueChange(
+                            newValue.copy(
+                                text = filtered,
+                                selection = TextRange(cursorPos),
+                            )
                         )
-                    }
-                }
+                    },
+                    modifier = Modifier
+                        .focusRequester(focusRequester)
+                        .widthIn(min = 1.dp),
+                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Decimal),
+                    singleLine = true,
+                    cursorBrush = SolidColor(MixinAppTheme.colors.accent),
+                    textStyle = TextStyle(
+                        color = MixinAppTheme.colors.textPrimary,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.W600,
+                    ),
+                    decorationBox = { innerTextField ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Box {
+                                if (percentFieldValue.text.isBlank()) {
+                                    Text(
+                                        text = stringResource(
+                                            if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
+                                                R.string.profit_reaches_percent
+                                            } else {
+                                                R.string.profit_reaches_percent
+                                            }
+                                        ),
+                                        fontSize = 18.sp,
+                                        color = MixinAppTheme.colors.textAssist,
+                                        maxLines = 1,  
+                                    )
+                                }
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.width(IntrinsicSize.Min),
+                                ) {
+                                    Box(modifier = Modifier.widthIn(min = 1.dp)) {
+                                        innerTextField()
+                                    }
+                                    if (percentFieldValue.text.isNotBlank()) {
+                                        Text(
+                                            text = "%",
+                                            fontSize = 18.sp,
+                                            fontWeight = FontWeight.W600,
+                                            color = MixinAppTheme.colors.textPrimary,
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    },
+                )
             }
         }
 
@@ -944,6 +990,20 @@ private fun normalizeDecimalInput(value: String): String {
         }
     }
     return if (filtered == ".") "" else filtered
+}
+
+private fun normalizePercentInput(value: String): String {
+    val normalized = normalizeDecimalInput(value)
+    if (normalized.isBlank()) {
+        return normalized
+    }
+    val dotIndex = normalized.indexOf('.')
+    val limitedDecimals = if (dotIndex >= 0) {
+        normalized.take(dotIndex + 3)
+    } else {
+        normalized
+    }
+    return limitedDecimals.take(8)
 }
 
 private fun percentToPriceInput(
