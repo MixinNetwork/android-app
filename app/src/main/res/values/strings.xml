@@ -1848,6 +1848,8 @@
     <string name="error_must_be_greater_than_current_price">The price must be greater than the current price.</string>
     <string name="error_price_must_be_greater_than_value">The price must be greater than %1$s.</string>
     <string name="error_price_must_be_less_than_value">The price must be less than %1$s.</string>
+    <string name="error_percentage_must_be_greater_than_value">The percentage must be greater than %1$s.</string>
+    <string name="error_percentage_must_be_less_than_value">The percentage must be less than %1$s.</string>
     <string name="error_increase_too_high">The increase percentage cannot exceed 1000%.</string>
     <string name="error_increase_too_low">The increase percentage must be at least 0.01%.</string>
     <string name="error_decrease_too_high">The decrease percentage cannot exceed -99.99%.</string>
@@ -2352,8 +2354,8 @@
     <string name="perps_liquidation_price_key_point_3">Higher leverage increases the risk of liquidation</string>
     <string name="perps_tpsl_take_profit_when">Take Profit When</string>
     <string name="perps_tpsl_stop_loss_when">Stop Loss When</string>
-    <string name="perps_tpsl_profit_reaches_percent">Profit reaches %</string>
-    <string name="perps_tpsl_loss_reaches_percent">Loss reaches %</string>
+    <string name="perps_tpsl_profit_reaches_percent">Profit reaches</string>
+    <string name="perps_tpsl_loss_reaches_percent">Loss reaches</string>
     <string name="perps_tpsl_price_reaches">Price reaches</string>
     <string name="perps_tpsl_auto_close_hint">Auto-close when target is reached.</string>
     <string name="perps_tpsl_info_take_profit_title">What\'s the Take Profit?</string>

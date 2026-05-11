@@ -1802,6 +1802,8 @@
     <string name="error_must_be_greater_than_current_price">价格必须高于当前价格。</string>
     <string name="error_price_must_be_greater_than_value">价格必须高于 %1$s。</string>
     <string name="error_price_must_be_less_than_value">价格必须低于 %1$s。</string>
+    <string name="error_percentage_must_be_greater_than_value">百分比必须高于 %1$s。</string>
+    <string name="error_percentage_must_be_less_than_value">百分比必须低于 %1$s。</string>
     <string name="error_increase_too_high">涨幅不能超过1000%。</string>
     <string name="error_increase_too_low">涨幅必须至少为0.01%。</string>
     <string name="error_decrease_too_high">跌幅不能超过-99.99%。</string>
@@ -2286,8 +2288,8 @@
     <string name="perps_liquidation_price_key_point_3">高杠杆会增加被强制平仓的风险</string>
     <string name="perps_tpsl_take_profit_when">止盈触发条件</string>
     <string name="perps_tpsl_stop_loss_when">止损触发条件</string>
-    <string name="perps_tpsl_profit_reaches_percent">收益达到 %</string>
-    <string name="perps_tpsl_loss_reaches_percent">亏损达到 %</string>
+    <string name="perps_tpsl_profit_reaches_percent">收益达到</string>
+    <string name="perps_tpsl_loss_reaches_percent">亏损达到</string>
     <string name="perps_tpsl_price_reaches">价格达到</string>
     <string name="perps_tpsl_auto_close_hint">到达目标后自动平仓。</string>
     <string name="perps_tpsl_info_take_profit_title">什么是止盈？</string>

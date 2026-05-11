@@ -573,7 +573,7 @@ fun OpenPositionPage(
 
                 Column(
                     modifier = Modifier
-                        .fillMaxWidth(),
+                        .fillMaxWidth().padding(horizontal = 16.dp),
                 ) {
                     val quoteColorReversed = context.defaultSharedPreferences
                         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)

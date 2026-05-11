@@ -61,6 +61,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.fragment.app.FragmentActivity
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -70,7 +71,6 @@ import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
-import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.putString
@@ -277,15 +277,23 @@ private fun PerpsTpSlContent(
         isLong = isLong,
         mode = mode,
     )
-    val errorText = validateTpSlPrice(
+    val percentMagnitudeInput = percentFieldValue.text
+    val isTakeProfit = mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT
+    val priceErrorText = validateTpSlPrice(
         rawValue = priceInput,
         basePrice = basePrice,
         leverage = leverageValue,
         isLong = isLong,
-        isTakeProfit = mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT,
+        isTakeProfit = isTakeProfit,
     )
+    val percentErrorText = validateTpSlPercent(
+        rawValue = percentMagnitudeInput,
+        leverage = leverageValue,
+        isLong = isLong,
+        isTakeProfit = isTakeProfit,
+    )
+    val errorText = if (inputType == InputType.PNL) percentErrorText else priceErrorText
     val currentPriceText = "$PERPS_USD_SYMBOL${currentPriceValue.priceFormat()}"
-    val percentMagnitudeInput = percentFieldValue.text
     val activePercentText = percentMagnitudeInput.takeIf { it.isNotBlank() }
         ?.toBigDecimalOrNull()?.stripTrailingZeros()?.toPlainString()
     val filledValue = when (inputType) {
@@ -294,10 +302,17 @@ private fun PerpsTpSlContent(
     }
     val pageColor = MixinAppTheme.colors.background
     val surfaceColor = MixinAppTheme.colors.background
-    val quickOptions = if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
+    val quickOptions = if (isTakeProfit) {
         listOf("10", "25", "50", "100")
     } else {
         generateStopLossQuickOptions(leverageValue)
+    }.filter { option ->
+        validateTpSlPercent(
+            rawValue = option,
+            leverage = leverageValue,
+            isLong = isLong,
+            isTakeProfit = isTakeProfit,
+        ) == null
     }
     val infoTitleRes = if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
         R.string.perps_tpsl_info_take_profit_title
@@ -639,7 +654,10 @@ private fun PerpsTpSlContent(
                         fontSize = 13.sp,
                         color = MixinAppTheme.colors.accent,
                         modifier = Modifier.clickable {
-                            context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                            val activity = context as? FragmentActivity ?: return@clickable
+                            PerpetualGuideBottomSheetDialogFragment.newInstance(
+                                PerpetualGuideBottomSheetDialogFragment.TAB_TP_SL
+                            ).show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
                         },
                     )
                 }
@@ -1031,6 +1049,39 @@ private fun validateTpSlPrice(
                 else -> null
             }
         }
+    }
+}
+
+private fun validateTpSlPercent(
+    rawValue: String,
+    leverage: Int,
+    isLong: Boolean,
+    isTakeProfit: Boolean,
+): String? {
+    val trimmed = rawValue.trim()
+    if (trimmed.isEmpty()) {
+        return null
+    }
+
+    val percent = trimmed.toBigDecimalOrNull() ?: return MixinApplicationHolder.getString(R.string.error_invalid_number)
+    if (percent <= BigDecimal.ZERO) {
+        return MixinApplicationHolder.getString(R.string.error_percentage_must_be_greater_than_value, "0%")
+    }
+
+    val maxPercentExclusive = when {
+        isTakeProfit && isLong -> null
+        isTakeProfit && !isLong -> BigDecimal(100)
+        leverage <= 0 -> null
+        else -> BigDecimal(100).divide(BigDecimal(leverage), 8, RoundingMode.HALF_UP)
+    } ?: return null
+
+    return if (percent >= maxPercentExclusive) {
+        MixinApplicationHolder.getString(
+            R.string.error_percentage_must_be_less_than_value,
+            "${maxPercentExclusive.stripTrailingZeros().toPlainString()}%",
+        )
+    } else {
+        null
     }
 }
 
