@@ -773,13 +773,11 @@ private fun LiquidationExampleCard(
             color = MixinAppTheme.colors.textPrimary
         )
         Spacer(modifier = Modifier.height(16.dp))
-        GuideValueRow(title = stringResource(R.string.Liquidation_Price)) {
-            Text(
-                text = "$PERPS_USD_SYMBOL${liquidationPrice.priceFormat()}",
-                fontSize = 14.sp,
-                color = MixinAppTheme.colors.textPrimary
-            )
-        }
+        Text(
+            text = "$PERPS_USD_SYMBOL${liquidationPrice.priceFormat()}",
+            fontSize = 14.sp,
+            color = MixinAppTheme.colors.textPrimary
+        )
         Spacer(modifier = Modifier.height(16.dp))
         GuideValueRow(title = stringResource(R.string.perps_market_price)) {
             Text(
