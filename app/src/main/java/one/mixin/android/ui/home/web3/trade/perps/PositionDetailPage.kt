@@ -316,31 +316,31 @@ fun PositionDetailPage(
                     subtitle = formatSignedPercent(roe),
                 )
 
-                if (!hasTakeProfit && System.currentTimeMillis() >= hideGuideUntil) {
+                val guideType = resolveTpSlGuideType(
+                    pnl = pnl,
+                    hasTakeProfit = hasTakeProfit,
+                    hasStopLoss = hasStopLoss,
+                    hideGuideUntil = hideGuideUntil,
+                    now = System.currentTimeMillis(),
+                )
+                guideType?.let { currentGuideType ->
                     Spacer(modifier = Modifier.height(16.dp))
                     PerpsTpSlGuideCard(
-                        guideType = TpSlGuideType.TAKE_PROFIT,
+                        guideType = currentGuideType,
                         onClose = {
-                            val hideUntil = System.currentTimeMillis() + HIDE_TPSL_GUIDE_DURATION_MS
-                            hideGuideUntil = hideUntil
-                            preferences.putLong(PREF_HIDE_TPSL_GUIDE_UNTIL, hideUntil)
+                            val until = System.currentTimeMillis() + HIDE_TPSL_GUIDE_DURATION_MS
+                            hideGuideUntil = until
+                            preferences.putLong(PREF_HIDE_TPSL_GUIDE_UNTIL, until)
                         },
-                        actionText = stringResource(R.string.Take_Profit),
-                        onActionClick = { showTpSlBottomSheetFromGuide(PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) },
-                        layout = PerpsTpSlGuideCardLayout.DETAIL,
-                    )
-                }
-                if (!hasStopLoss && System.currentTimeMillis() >= hideGuideUntil) {
-                    Spacer(modifier = Modifier.height(12.dp))
-                    PerpsTpSlGuideCard(
-                        guideType = TpSlGuideType.STOP_LOSS,
-                        onClose = {
-                            val hideUntil = System.currentTimeMillis() + HIDE_TPSL_GUIDE_DURATION_MS
-                            hideGuideUntil = hideUntil
-                            preferences.putLong(PREF_HIDE_TPSL_GUIDE_UNTIL, hideUntil)
+                        actionText = stringResource(
+                            if (currentGuideType == TpSlGuideType.TAKE_PROFIT) R.string.Take_Profit else R.string.Stop_Loss
+                        ),
+                        onActionClick = {
+                            showTpSlBottomSheetFromGuide(
+                                if (currentGuideType == TpSlGuideType.TAKE_PROFIT) PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT
+                                else PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS
+                            )
                         },
-                        actionText = stringResource(R.string.Stop_Loss),
-                        onActionClick = { showTpSlBottomSheetFromGuide(PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS) },
                         layout = PerpsTpSlGuideCardLayout.DETAIL,
                     )
                 }

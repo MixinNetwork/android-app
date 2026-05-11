@@ -280,9 +280,9 @@ fun PerpsMarketDetailPage(
                         PerpsTpSlGuideCard(
                             guideType = currentGuideType,
                             onClose = {
-                                val hideUntil = System.currentTimeMillis() + HIDE_TPSL_GUIDE_DURATION_MS
-                                hideGuideUntil = hideUntil
-                                preferences.putLong(PREF_HIDE_TPSL_GUIDE_UNTIL, hideUntil)
+                                val until = System.currentTimeMillis() + HIDE_TPSL_GUIDE_DURATION_MS
+                                hideGuideUntil = until
+                                preferences.putLong(PREF_HIDE_TPSL_GUIDE_UNTIL, until)
                             },
                             actionText = stringResource(
                                 if (currentGuideType == TpSlGuideType.TAKE_PROFIT) {

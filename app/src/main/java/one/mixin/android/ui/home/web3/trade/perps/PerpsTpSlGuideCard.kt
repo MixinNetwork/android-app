@@ -53,15 +53,13 @@ internal fun resolveTpSlGuideType(
     hideGuideUntil: Long,
     now: Long,
 ): TpSlGuideType? {
-    val preferredGuideType = when {
-        hasTakeProfit && hasStopLoss -> null
-        hasTakeProfit -> TpSlGuideType.STOP_LOSS
-        hasStopLoss -> TpSlGuideType.TAKE_PROFIT
-        pnl > BigDecimal.ZERO -> TpSlGuideType.TAKE_PROFIT
-        else -> TpSlGuideType.STOP_LOSS
-    } ?: return null
+    if (now < hideGuideUntil) return null
 
-    return preferredGuideType.takeIf { now >= hideGuideUntil }
+    return when {
+        !hasTakeProfit && pnl > BigDecimal.ZERO -> TpSlGuideType.TAKE_PROFIT
+        !hasStopLoss && pnl < BigDecimal.ZERO -> TpSlGuideType.STOP_LOSS
+        else -> null
+    }
 }
 
 @Composable

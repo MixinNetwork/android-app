@@ -5,7 +5,6 @@ import one.mixin.android.extension.priceFormat
 import java.math.BigDecimal
 import java.math.RoundingMode
 
-private val perpsMinDisplayValue = BigDecimal("0.01")
 const val PERPS_USD_SYMBOL = "\$"
 
 fun PerpsMarket.changePercent(): BigDecimal {
@@ -16,23 +15,11 @@ fun PerpsMarket.changePercent(): BigDecimal {
     }
 }
 
-fun formatPerpsDisplayDecimal(value: BigDecimal?): String {
-    val safeValue = value ?: BigDecimal.ZERO
-    val absValue = safeValue.abs()
-    if (absValue > BigDecimal.ZERO && absValue < perpsMinDisplayValue) {
-        return "<0.01"
-    }
-    return safeValue.setScale(2, RoundingMode.HALF_UP).toPlainString()
-}
 
 fun formatPerpsFiatDecimal(value: BigDecimal?, fiatSymbol: String): String {
     val safeValue = value ?: BigDecimal.ZERO
     val absValue = safeValue.abs()
-    return if (absValue > BigDecimal.ZERO && absValue < perpsMinDisplayValue) {
-        "<${fiatSymbol}0.01"
-    } else {
-        "$fiatSymbol${absValue.setScale(2, RoundingMode.HALF_UP).priceFormat()}"
-    }
+    return "$fiatSymbol${absValue.setScale(2, RoundingMode.HALF_UP).priceFormat()}"
 }
 
 fun formatPerpsSignedFiatDecimal(value: BigDecimal?, fiatSymbol: String): String {
@@ -44,14 +31,6 @@ fun formatPerpsSignedFiatDecimal(value: BigDecimal?, fiatSymbol: String): String
     }
 }
 
-fun formatPerpsSignedDecimal(value: BigDecimal?): String {
-    val safeValue = value ?: BigDecimal.ZERO
-    return when {
-        safeValue > BigDecimal.ZERO -> "+${formatPerpsDisplayDecimal(safeValue)}"
-        safeValue < BigDecimal.ZERO -> "-${formatPerpsDisplayDecimal(safeValue.abs())}"
-        else -> formatPerpsDisplayDecimal(BigDecimal.ZERO)
-    }
-}
 fun formatPerpsUsdDecimal(value: BigDecimal?): String = formatPerpsFiatDecimal(value, PERPS_USD_SYMBOL)
 
 fun formatPerpsSignedUsdDecimal(value: BigDecimal?): String = formatPerpsSignedFiatDecimal(value, PERPS_USD_SYMBOL)
