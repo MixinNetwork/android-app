@@ -20,13 +20,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import java.math.BigDecimal
 
@@ -69,6 +72,9 @@ internal fun PerpsTpSlGuideCard(
     onActionClick: (() -> Unit)? = null,
     layout: PerpsTpSlGuideCardLayout = PerpsTpSlGuideCardLayout.DETAIL,
 ) {
+    val context = LocalContext.current
+    val quoteColorReversed = context.defaultSharedPreferences
+        .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     val infoTitleRes = when (layout) {
         PerpsTpSlGuideCardLayout.DETAIL -> if (guideType == TpSlGuideType.TAKE_PROFIT) {
             R.string.perps_tpsl_detail_take_profit_title
@@ -94,9 +100,9 @@ internal fun PerpsTpSlGuideCard(
         }
     }
     val infoIconRes = if (guideType == TpSlGuideType.TAKE_PROFIT) {
-        R.drawable.ic_perps_tpsl_info_tp
+        if (quoteColorReversed) R.drawable.ic_perps_tpsl_info_tp_reversed else R.drawable.ic_perps_tpsl_info_tp
     } else {
-        R.drawable.ic_perps_tpsl_info_sl
+        if (quoteColorReversed) R.drawable.ic_perps_tpsl_info_sl_reversed else R.drawable.ic_perps_tpsl_info_sl
     }
 
     Box(
