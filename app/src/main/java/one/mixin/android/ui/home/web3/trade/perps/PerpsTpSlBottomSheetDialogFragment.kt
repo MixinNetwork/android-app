@@ -426,11 +426,11 @@ private fun PerpsTpSlContent(
                     model = marketIconUrl,
                     placeholder = R.drawable.ic_avatar_place_holder,
                     modifier = Modifier
-                        .size(36.dp)
+                        .size(30.dp)
                         .clip(CircleShape),
                     contentScale = ContentScale.Crop,
                 )
-                Spacer(modifier = Modifier.width(12.dp))
+                Spacer(modifier = Modifier.width(10.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = stringResource(
@@ -441,13 +441,15 @@ private fun PerpsTpSlContent(
                             }
                         ),
                         fontSize = 16.sp,
+                        lineHeight = 20.sp,
                         fontWeight = FontWeight.W600,
                         color = MixinAppTheme.colors.textPrimary,
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = subtitleText,
                         fontSize = 12.sp,
+                        lineHeight = 16.sp,
                     )
                 }
                 Icon(
@@ -1059,7 +1061,7 @@ private fun validateTpSlPrice(
                     R.string.error_price_must_be_less_than_value,
                     "$PERPS_USD_SYMBOL${currentPrice.stripTrailingZeros().toPlainString()}",
                 )
-                price <= liquidationPriceLong -> MixinApplicationHolder.getString(
+                price < liquidationPriceLong -> MixinApplicationHolder.getString(
                     R.string.error_price_must_be_greater_than_value,
                     "$PERPS_USD_SYMBOL${liquidationPriceLong.stripTrailingZeros().toPlainString()}",
                 )
@@ -1082,7 +1084,7 @@ private fun validateTpSlPrice(
                     R.string.error_price_must_be_greater_than_value,
                     "$PERPS_USD_SYMBOL${currentPrice.stripTrailingZeros().toPlainString()}",
                 )
-                price >= liquidationPriceShort -> MixinApplicationHolder.getString(
+                price > liquidationPriceShort -> MixinApplicationHolder.getString(
                     R.string.error_price_must_be_less_than_value,
                     "$PERPS_USD_SYMBOL${liquidationPriceShort.stripTrailingZeros().toPlainString()}",
                 )

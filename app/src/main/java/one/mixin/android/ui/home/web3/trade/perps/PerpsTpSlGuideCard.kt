@@ -181,7 +181,7 @@ internal fun PerpsTpSlGuideCard(
                     tint = Color.Unspecified,
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .padding(top = 24.dp, end = 28.dp)
+                        .padding(top = 24.dp)
                         .size(40.dp),
                 )
             }
