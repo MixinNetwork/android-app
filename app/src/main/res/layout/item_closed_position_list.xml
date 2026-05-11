@@ -21,7 +21,7 @@
 
     <LinearLayout
         android:id="@+id/left_container"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"
         android:layout_marginEnd="12dp"

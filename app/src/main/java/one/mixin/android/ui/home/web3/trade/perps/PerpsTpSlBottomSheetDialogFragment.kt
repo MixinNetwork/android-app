@@ -384,7 +384,8 @@ private fun PerpsTpSlContent(
         listOf("5", "10", "25", "100")
     }
     var showInfoCard by rememberSaveable(mode.name) {
-        mutableStateOf(System.currentTimeMillis() >= preferences.getLong(PREF_HIDE_TPSL_GUIDE_UNTIL, 0L))
+        val prefKey = if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) PREF_HIDE_TP_GUIDE_UNTIL else PREF_HIDE_SL_GUIDE_UNTIL
+        mutableStateOf(System.currentTimeMillis() >= preferences.getLong(prefKey, 0L))
     }
 
     LaunchedEffect(latestCurrentPrice, inputType, hasEntryPrice, percentMagnitudeInput, leverageValue, isLong, mode) {
@@ -492,10 +493,12 @@ private fun PerpsTpSlContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .cardBackground(surfaceColor, MixinAppTheme.colors.borderColor)
-                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                    .padding(vertical = 14.dp),
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
@@ -529,7 +532,7 @@ private fun PerpsTpSlContent(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 4.dp, vertical = 4.dp),
+                        .padding(vertical = 4.dp),
                 ) {
                     TpSlInputField(
                         inputType = inputType,
@@ -576,7 +579,9 @@ private fun PerpsTpSlContent(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     quickOptions.forEach { option ->
@@ -614,7 +619,10 @@ private fun PerpsTpSlContent(
                         .divide(BigDecimal(100), 2, RoundingMode.HALF_UP)
                     val roePercent = pnlPercent.stripTrailingZeros().toPlainString()
                     if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                        ) {
                             Text(
                                 text = "Max Profit ",
                                 fontSize = 13.sp,
@@ -627,7 +635,10 @@ private fun PerpsTpSlContent(
                             )
                         }
                     } else {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                        ) {
                             Text(
                                 text = "Max Loss ",
                                 fontSize = 13.sp,
@@ -645,6 +656,7 @@ private fun PerpsTpSlContent(
                         text = stringResource(R.string.auto_close_description),
                         fontSize = 13.sp,
                         color = MixinAppTheme.colors.textAssist,
+                        modifier = Modifier.padding(horizontal = 16.dp),
                     )
                 }
             }
@@ -670,8 +682,9 @@ private fun PerpsTpSlContent(
                     },
                     onClose = {
                         showInfoCard = false
+                        val prefKey = if (isTakeProfit) PREF_HIDE_TP_GUIDE_UNTIL else PREF_HIDE_SL_GUIDE_UNTIL
                         preferences.putLong(
-                            PREF_HIDE_TPSL_GUIDE_UNTIL,
+                            prefKey,
                             System.currentTimeMillis() + HIDE_TPSL_GUIDE_DURATION_MS,
                         )
                     },
@@ -957,7 +970,7 @@ private fun TpSlInputField(
                     decorationBox = { innerTextField ->
                         if (priceFieldValue.text.isBlank()) {
                             Text(
-                                text = "${stringResource(R.string.price_reaches_dollar)} $PERPS_USD_SYMBOL",
+                                text = stringResource(R.string.price_reaches_dollar),
                                 fontSize = 18.sp,
                                 color = MixinAppTheme.colors.textAssist,
                             )

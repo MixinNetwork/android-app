@@ -2327,7 +2327,7 @@
     <string name="stop_loss_price_must_higher">止损触发价必须高于 %1$s</string>
     <string name="stop_loss_price_must_lower">止损触发价必须低于 %1$s</string>
     <string name="stop_loss_price_must_higher_lower">止损触发价必须高于 %1$s 且低于 %2$s</string>
-    <string name="perps_guide_liquidation_tab">强平</string>
+    <string name="perps_guide_liquidation_tab">强平价格</string>
     <string name="position_size">仓位规模</string>
     <string name="Liquidation_Price">强平价格</string>
     <string name="perps_market_price">市场价格</string>

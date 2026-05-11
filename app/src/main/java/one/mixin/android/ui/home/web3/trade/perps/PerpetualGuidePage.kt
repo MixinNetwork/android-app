@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.gestures.scrollBy
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,13 +26,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -54,18 +51,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.ui.home.web3.components.OutlinedTab
 import one.mixin.android.ui.wallet.alert.components.cardBackground
-import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.components.DotText
 import one.mixin.android.widget.components.MixinButton
 import java.math.BigDecimal
@@ -569,25 +562,14 @@ private fun LiquidationContent() {
     val viewModel = hiltViewModel<PerpetualViewModel>()
     var isLong by remember { mutableStateOf(true) }
     var leverage by remember { mutableIntStateOf(10) }
-    var priceRefreshFlag by remember { mutableStateOf(false) }
-    var isPriceDisplayReversed by remember { mutableStateOf(false) }
-    val btcToken by remember {
+    val solToken by remember {
         viewModel.observeTokenByChainAndSymbol(
-            chainId = Constants.ChainId.BITCOIN_CHAIN_ID,
-            symbol = "BTC",
+            chainId = Constants.ChainId.Solana,
+            symbol = "SOL",
         )
     }.collectAsStateWithLifecycle(initialValue = null)
-    val usdtToken by remember {
-        viewModel.observeTokenByChainAndSymbol(
-            chainId = Constants.ChainId.ETHEREUM_CHAIN_ID,
-            symbol = "USDT",
-        )
-    }.collectAsStateWithLifecycle(initialValue = null)
-    val marketPrice = remember(btcToken?.priceUsd, usdtToken?.priceUsd, priceRefreshFlag) {
-        calculateGuideMarketPrice(
-            baseToken = btcToken,
-            quoteToken = usdtToken,
-        )
+    val marketPrice = remember(solToken?.priceUsd) {
+        solToken?.priceUsd?.toBigDecimalOrNull() ?: BigDecimal("170.00")
     }
     val liquidationPrice = remember(marketPrice, leverage, isLong) {
         calculateGuideLiquidationPrice(
@@ -605,13 +587,6 @@ private fun LiquidationContent() {
         onLeverageChange = { leverage = it.coerceIn(1, 200) },
         marketPrice = marketPrice,
         liquidationPrice = liquidationPrice,
-        isPriceDisplayReversed = isPriceDisplayReversed,
-        onSwitchPriceDisplay = {
-            isPriceDisplayReversed = !isPriceDisplayReversed
-        },
-        onPriceExpired = {
-            priceRefreshFlag = !priceRefreshFlag
-        },
     )
     Spacer(modifier = Modifier.height(16.dp))
     DescriptionWithInfoAndRiskCard(
@@ -708,9 +683,6 @@ private fun LiquidationExampleCard(
     onLeverageChange: (Int) -> Unit,
     marketPrice: BigDecimal,
     liquidationPrice: BigDecimal,
-    isPriceDisplayReversed: Boolean,
-    onSwitchPriceDisplay: () -> Unit,
-    onPriceExpired: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -728,14 +700,14 @@ private fun LiquidationExampleCard(
         GuideValueRow(title = stringResource(R.string.perps_market)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_chain_btc),
+                    painter = painterResource(id = R.drawable.ic_chain_sol),
                     contentDescription = null,
                     tint = Color.Unspecified,
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = "BTC - USD",
+                    text = "SOL - USD",
                     fontSize = 14.sp,
                     color = MixinAppTheme.colors.textPrimary
                 )
@@ -766,20 +738,7 @@ private fun LiquidationExampleCard(
                 .background(MixinAppTheme.colors.backgroundWindow)
         )
         Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = stringResource(R.string.Mark_Price),
-            fontSize = 14.sp,
-            fontWeight = FontWeight.W500,
-            color = MixinAppTheme.colors.textPrimary
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "$PERPS_USD_SYMBOL${liquidationPrice.priceFormat()}",
-            fontSize = 14.sp,
-            color = MixinAppTheme.colors.textPrimary
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        GuideValueRow(title = stringResource(R.string.perps_market_price)) {
+        GuideValueRow(title = stringResource(R.string.Entry_Price)) {
             Text(
                 text = "$PERPS_USD_SYMBOL${marketPrice.priceFormat()}",
                 fontSize = 14.sp,
@@ -787,12 +746,13 @@ private fun LiquidationExampleCard(
             )
         }
         Spacer(modifier = Modifier.height(16.dp))
-        GuidePriceSubtitle(
-            marketPrice = marketPrice,
-            isReversed = isPriceDisplayReversed,
-            onSwitchDirection = onSwitchPriceDisplay,
-            onPriceExpired = onPriceExpired,
-        )
+        GuideValueRow(title = stringResource(R.string.Liquidation_Price)) {
+            Text(
+                text = "$PERPS_USD_SYMBOL${liquidationPrice.priceFormat()}",
+                fontSize = 14.sp,
+                color = MixinAppTheme.colors.textPrimary
+            )
+        }
     }
 }
 
@@ -1282,75 +1242,8 @@ private fun GuideDirectionToggle(
     }
 }
 
-@Composable
-private fun GuidePriceSubtitle(
-    marketPrice: BigDecimal,
-    isReversed: Boolean,
-    onSwitchDirection: () -> Unit,
-    onPriceExpired: () -> Unit = {},
-) {
-    var quoteCountDown by remember(marketPrice) { mutableFloatStateOf(0f) }
-
-    LaunchedEffect(marketPrice) {
-        while (isActive) {
-            quoteCountDown = 0f
-            while (isActive && quoteCountDown < 1f) {
-                delay(100)
-                quoteCountDown += 0.01f
-            }
-            onPriceExpired()
-        }
-    }
-
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
-    ) {
-        Text(
-            text = if (isReversed) {
-                val inverted = safeGuideDivide(BigDecimal.ONE, marketPrice)
-                "1 USDT = ${inverted.numberFormat8()} BTC"
-            } else {
-                "1 BTC ≈ ${marketPrice.priceFormat()} USDT"
-            },
-            fontSize = 14.sp,
-            color = MixinAppTheme.colors.textAssist,
-        )
-        CircularProgressIndicator(
-            progress = quoteCountDown,
-            modifier = Modifier.size(12.dp),
-            strokeWidth = 2.dp,
-            color = MixinAppTheme.colors.textPrimary,
-            backgroundColor = MixinAppTheme.colors.textAssist,
-        )
-        Spacer(modifier = Modifier.weight(1f))
-        Icon(
-            painter = painterResource(id = R.drawable.ic_price_switch),
-            contentDescription = null,
-            tint = Color.Unspecified,
-            modifier = Modifier
-                .size(16.dp)
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    onClick = onSwitchDirection,
-                ),
-        )
-    }
-}
-
 private fun formatGuideInt(value: Int): String {
     return String.format("%,d", value)
-}
-
-private fun calculateGuideMarketPrice(
-    baseToken: TokenItem?,
-    quoteToken: TokenItem?,
-): BigDecimal {
-    val quotePrice = quoteToken?.priceUsd?.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: BigDecimal.ONE
-    val basePrice = baseToken?.priceUsd?.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: BigDecimal("95594.89")
-    return safeGuideDivide(basePrice, quotePrice)
 }
 
 private fun calculateGuideLiquidationPrice(
@@ -1415,16 +1308,6 @@ private fun ScenarioData.formatPnl(currentPercent: Float): String {
     } else {
         "$sign$amountText $pnlAsset"
     }
-}
-
-private fun safeGuideDivide(
-    dividend: BigDecimal,
-    divisor: BigDecimal,
-): BigDecimal {
-    if (divisor.compareTo(BigDecimal.ZERO) == 0) {
-        return BigDecimal.ZERO
-    }
-    return dividend.divide(divisor, 8, RoundingMode.HALF_UP)
 }
 
 @Composable

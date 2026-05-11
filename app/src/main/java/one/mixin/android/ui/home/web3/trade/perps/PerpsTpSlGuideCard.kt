@@ -35,6 +35,8 @@ import java.math.BigDecimal
 
 internal const val HIDE_TPSL_GUIDE_DURATION_MS = 14L * 24 * 60 * 60 * 1000
 internal const val PREF_HIDE_TPSL_GUIDE_UNTIL = "pref_hide_tpsl_guide_until"
+internal const val PREF_HIDE_TP_GUIDE_UNTIL = "pref_hide_tp_guide_until"
+internal const val PREF_HIDE_SL_GUIDE_UNTIL = "pref_hide_sl_guide_until"
 
 internal enum class TpSlGuideType {
     TAKE_PROFIT,
