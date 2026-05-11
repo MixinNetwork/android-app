@@ -906,7 +906,7 @@ private fun TpSlInputField(
                                         ),
                                         fontSize = 18.sp,
                                         color = MixinAppTheme.colors.textAssist,
-                                        maxLines = 1,  
+                                        maxLines = 1,
                                     )
                                 }
                                 Row(

@@ -1,6 +1,7 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
 import one.mixin.android.api.response.perps.PerpsMarket
+import one.mixin.android.extension.priceFormat
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -30,7 +31,7 @@ fun formatPerpsFiatDecimal(value: BigDecimal?, fiatSymbol: String): String {
     return if (absValue > BigDecimal.ZERO && absValue < perpsMinDisplayValue) {
         "<${fiatSymbol}0.01"
     } else {
-        "$fiatSymbol${absValue.setScale(2, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()}"
+        "$fiatSymbol${absValue.setScale(2, RoundingMode.HALF_UP).priceFormat()}"
     }
 }
 
