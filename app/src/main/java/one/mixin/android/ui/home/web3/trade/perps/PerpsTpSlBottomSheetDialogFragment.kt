@@ -88,8 +88,6 @@ private enum class InputType { PNL, PRICE }
 private const val PREF_TPSL_INPUT_TYPE = "pref_perps_tpsl_input_type"
 private const val PREF_TPSL_INFO_TP_DISMISSED = "pref_perps_tpsl_info_tp_dismissed"
 private const val PREF_TPSL_INFO_SL_DISMISSED = "pref_perps_tpsl_info_sl_dismissed"
-private val PERPS_TPSL_MIN_PRICE = BigDecimal("0.01")
-
 @AndroidEntryPoint
 class PerpsTpSlBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
 
@@ -234,8 +232,8 @@ private fun PerpsTpSlContent(
     val context = LocalContext.current
     val preferences = remember(context) { context.defaultSharedPreferences }
     val currentPriceValue = remember(currentPrice) { currentPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO }
-    val basePrice = remember(entryPrice, currentPrice) {
-        entryPrice.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: currentPriceValue
+    val basePrice = remember(entryPrice) {
+        entryPrice.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: BigDecimal.ZERO
     }
     val leverageValue = leverage.coerceAtLeast(1)
     val storedInputType = remember(preferences) {
@@ -1015,10 +1013,6 @@ private fun validateTpSlPrice(
                 price >= basePrice -> MixinApplicationHolder.getString(
                     R.string.error_price_must_be_less_than_value,
                     "$PERPS_USD_SYMBOL${basePrice.stripTrailingZeros().toPlainString()}",
-                )
-                price <= PERPS_TPSL_MIN_PRICE -> MixinApplicationHolder.getString(
-                    R.string.error_price_must_be_greater_than_value,
-                    "$PERPS_USD_SYMBOL${PERPS_TPSL_MIN_PRICE.stripTrailingZeros().toPlainString()}",
                 )
                 else -> null
             }
