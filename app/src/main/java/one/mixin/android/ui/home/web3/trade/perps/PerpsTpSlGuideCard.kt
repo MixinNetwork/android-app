@@ -82,9 +82,9 @@ internal fun PerpsTpSlGuideCard(
             R.string.perps_tpsl_detail_stop_loss_title
         }
         PerpsTpSlGuideCardLayout.BOTTOM_SHEET -> if (guideType == TpSlGuideType.TAKE_PROFIT) {
-            R.string.perps_tpsl_info_take_profit_title
+            R.string.take_profit_intro_title
         } else {
-            R.string.perps_tpsl_info_stop_loss_title
+            R.string.stop_loss_intro_title
         }
     }
     val infoDescRes = when (layout) {
@@ -94,9 +94,9 @@ internal fun PerpsTpSlGuideCard(
             R.string.perps_tpsl_detail_stop_loss_description
         }
         PerpsTpSlGuideCardLayout.BOTTOM_SHEET -> if (guideType == TpSlGuideType.TAKE_PROFIT) {
-            R.string.perps_tpsl_info_take_profit_description
+            R.string.take_profit_intro_description
         } else {
-            R.string.perps_tpsl_info_stop_loss_description
+            R.string.stop_loss_intro_description
         }
     }
     val infoIconRes = if (guideType == TpSlGuideType.TAKE_PROFIT) {

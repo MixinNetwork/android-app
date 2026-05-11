@@ -105,7 +105,7 @@ class OpenPositionAdapter(
                 tpSlTagTv.isVisible = hasTakeProfit || hasStopLoss
                 if (tpSlTagTv.isVisible) {
                     tpSlTagTv.text = when {
-                        hasTakeProfit && hasStopLoss -> context.getString(R.string.Take_Profit_Stop_Loss)
+                        hasTakeProfit && hasStopLoss -> context.getString(R.string.take_profit_stop_loss_label)
                         hasTakeProfit -> "TP"
                         else -> "SL"
                     }

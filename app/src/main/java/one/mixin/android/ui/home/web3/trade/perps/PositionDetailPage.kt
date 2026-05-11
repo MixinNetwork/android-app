@@ -129,6 +129,7 @@ fun PositionDetailPage(
             marginAmount = requestMarginAmount,
             leverage = position.leverage,
             entryPrice = position.entryPrice,
+            marketId = position.marketId,
         ).setOnApply { value ->
             val normalizedValue = value?.trim().orEmpty()
             if (normalizedValue == existingPrice) return@setOnApply

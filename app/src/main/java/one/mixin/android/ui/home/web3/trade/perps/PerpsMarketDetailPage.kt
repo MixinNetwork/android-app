@@ -245,6 +245,7 @@ fun PerpsMarketDetailPage(
                             marginAmount = requestMarginAmount,
                             leverage = currentPosition.leverage,
                             entryPrice = currentPosition.entryPrice,
+                            marketId = currentPosition.marketId,
                         ).setOnApply { value ->
                             val normalizedValue = value?.trim().orEmpty()
                             if (normalizedValue == existingPrice) return@setOnApply
@@ -724,6 +725,7 @@ private fun OpenPositionCard(
             marginAmount = requestMarginAmount,
             leverage = position.leverage,
             entryPrice = position.entryPrice,
+            marketId = position.marketId,
         ).setOnApply { value ->
             val normalizedValue = value?.trim().orEmpty()
             if (normalizedValue == existingPrice) {
