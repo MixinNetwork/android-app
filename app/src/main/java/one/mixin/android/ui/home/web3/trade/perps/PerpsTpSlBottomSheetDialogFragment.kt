@@ -48,6 +48,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
@@ -63,6 +64,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.FragmentActivity
@@ -71,6 +73,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import one.mixin.android.Constants
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -854,7 +857,9 @@ private fun TpSlInputField(
 
     when (inputType) {
         InputType.PNL -> {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 if (percentFieldValue.text.isNotBlank()) {
                     Text(
                         text = if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) "+" else "-",
@@ -930,9 +935,21 @@ private fun TpSlInputField(
                                 }
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.width(IntrinsicSize.Min),
+                                    modifier = Modifier
+                                        .width(IntrinsicSize.Min),
                                 ) {
-                                    Box(modifier = Modifier.widthIn(min = 1.dp)) {
+                                    Box(
+                                        modifier = Modifier
+                                            .widthIn(min = 1.dp)
+                                            .layout { measurable, constraints ->
+                                                val placeable = measurable.measure(constraints)
+                                                val cursorPadding = 6.dp.roundToPx()
+                                                val w = (placeable.width - cursorPadding).coerceAtLeast(0)
+                                                layout(w, placeable.height) {
+                                                    placeable.placeRelative(0, 0)
+                                                }
+                                            },
+                                    ) {
                                         innerTextField()
                                     }
                                     if (percentFieldValue.text.isNotBlank()) {
@@ -1213,5 +1230,83 @@ private fun validateTpSlPercent(
 
 private object MixinApplicationHolder {
     fun getString(resId: Int, vararg formatArgs: Any): String =
-        one.mixin.android.MixinApplication.appContext.getString(resId, *formatArgs)
+        MixinApplication.appContext.getString(resId, *formatArgs)
+}
+
+
+@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
+@Composable
+private fun TpSlInputFieldPreview() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.White)
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp),
+    ) {
+        Text(text = "PNL / TAKE_PROFIT / empty", fontSize = 12.sp, color = Color.Gray)
+        TpSlInputFieldPreviewCase(
+            inputType = InputType.PNL,
+            mode = PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT,
+            percentText = "",
+            priceText = "",
+        )
+
+        Text(text = "PNL / TAKE_PROFIT / 10", fontSize = 12.sp, color = Color.Gray)
+        TpSlInputFieldPreviewCase(
+            inputType = InputType.PNL,
+            mode = PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT,
+            percentText = "10",
+            priceText = "",
+        )
+
+        Text(text = "PNL / STOP_LOSS / 25.50", fontSize = 12.sp, color = Color.Gray)
+        TpSlInputFieldPreviewCase(
+            inputType = InputType.PNL,
+            mode = PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS,
+            percentText = "25.50",
+            priceText = "",
+        )
+
+        Text(text = "PRICE / TAKE_PROFIT / empty", fontSize = 12.sp, color = Color.Gray)
+        TpSlInputFieldPreviewCase(
+            inputType = InputType.PRICE,
+            mode = PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT,
+            percentText = "",
+            priceText = "",
+        )
+
+        Text(text = "PRICE / TAKE_PROFIT / 123.45", fontSize = 12.sp, color = Color.Gray)
+        TpSlInputFieldPreviewCase(
+            inputType = InputType.PRICE,
+            mode = PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT,
+            percentText = "",
+            priceText = "123.45",
+        )
+    }
+}
+
+@Composable
+private fun TpSlInputFieldPreviewCase(
+    inputType: InputType,
+    mode: PerpsTpSlBottomSheetDialogFragment.Mode,
+    percentText: String,
+    priceText: String,
+) {
+    var percentValue by remember {
+        mutableStateOf(TextFieldValue(percentText, TextRange(percentText.length)))
+    }
+    var priceValue by remember {
+        mutableStateOf(TextFieldValue(priceText, TextRange(priceText.length)))
+    }
+    val focusRequester = remember { FocusRequester() }
+    TpSlInputField(
+        inputType = inputType,
+        mode = mode,
+        percentFieldValue = percentValue,
+        priceFieldValue = priceValue,
+        onPercentFieldValueChange = { percentValue = it },
+        onPriceFieldValueChange = { priceValue = it },
+        focusRequester = focusRequester,
+    )
 }
