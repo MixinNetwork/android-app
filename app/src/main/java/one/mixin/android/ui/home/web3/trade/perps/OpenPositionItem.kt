@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
@@ -74,8 +75,8 @@ fun OpenPositionItem(
     val hasStopLoss = !position.stopLossPrice.isNullOrBlank()
     val tpSlTagText = when {
         hasTakeProfit && hasStopLoss -> stringResource(R.string.take_profit_stop_loss_label)
-        hasTakeProfit -> "TP"
-        hasStopLoss -> "SL"
+        hasTakeProfit -> stringResource(R.string.tp_label)
+        hasStopLoss -> stringResource(R.string.sl_label)
         else -> null
     }
 
@@ -142,17 +143,18 @@ fun OpenPositionItem(
                 }
 
                 if (isOpening) {
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = stringResource(R.string.Pending),
                         fontSize = 14.sp,
                         color = MixinAppTheme.colors.textAssist,
                         textAlign = TextAlign.End,
-                        modifier = Modifier.weight(0.85f)
                     )
                 } else {
+                    Spacer(modifier = Modifier.width(8.dp))
                     BasicText(
                         text = formatPerpsUsdDecimal(margin),
-                        modifier = Modifier.weight(0.85f),
+                        modifier = Modifier.widthIn(max = 120.dp),
                         style = TextStyle(
                             fontSize = 14.sp,
                             color = MixinAppTheme.colors.textPrimary,
@@ -184,7 +186,7 @@ fun OpenPositionItem(
                 )
 
                 if (isOpening) {
-                    Spacer(modifier = Modifier.weight(0.85f))
+                    Spacer(modifier = Modifier.width(8.dp))
                 } else {
                     val unrealizedPnl = position.unrealizedPnl?.toBigDecimalOrNull() ?: BigDecimal.ZERO
                     val roe = (position.roe?.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(BigDecimal(100))
@@ -195,9 +197,10 @@ fun OpenPositionItem(
                         if (quoteColorPref) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
                     }
 
+                    Spacer(modifier = Modifier.width(8.dp))
                     BasicText(
                         text = "${formatPerpsSignedRawUsdDecimal(unrealizedPnl)} (${formatPerpsSignedPercent(roe, withSign = false)})",
-                        modifier = Modifier.weight(0.85f),
+                        modifier = Modifier.widthIn(max = 120.dp),
                         style = TextStyle(
                             fontSize = 14.sp,
                             color = pnlColor,

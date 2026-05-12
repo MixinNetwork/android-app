@@ -2314,6 +2314,8 @@
     <string name="Take_Profit">止盈</string>
     <string name="Stop_Loss">止损</string>
     <string name="take_profit_stop_loss_label">止盈止损</string>
+    <string name="tp_label">止盈</string>
+    <string name="sl_label">止损</string>
     <string name="perps_guide_liquidation_tab">强平价格</string>
     <string name="position_size">仓位规模</string>
     <string name="Liquidation_Price">强平价格</string>

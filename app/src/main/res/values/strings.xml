@@ -2380,6 +2380,8 @@
     <string name="Take_Profit">Take Profit</string>
     <string name="Stop_Loss">Stop Loss</string>
     <string name="take_profit_stop_loss_label">TP/SL</string>
+    <string name="tp_label">TP</string>
+    <string name="sl_label">SL</string>
     <string name="perps_guide_liquidation_tab">Liquidation</string>
     <string name="position_size">Size</string>
     <string name="Liquidation_Price">Liquidation Price</string>
@@ -2456,7 +2458,7 @@
     <string name="Spot_Trade_Guide_Overview_Desc">Mixin supports both Simple and Advanced trading modes, allowing you to trade across multiple chains and assets with aggregated liquidity from DEXs and CEXs.</string>
     <string name="Spot_Trade_Guide_Feature_1">Liquidity aggregation: access to liquidity from Uniswap, 1inch, Jupiter, MixPay, BigONE, and other DEXs and CEXs.</string>
     <string name="Spot_Trade_Guide_Feature_2">Cross-chain trading: supports assets across Bitcoin, Ethereum, Solana, and more.</string>
-    <string name="Spot_Trade_Guide_Additional_Notes">Additional Notes</string>
+    <string name="Spot_Trade_Guide_Additional_Notes">Notes</string>
     <string name="Spot_Trade_Guide_Fees">Fees</string>
     <string name="Spot_Trade_Guide_Note_1">Trading fees mainly consist of exchange fees and network fees. Mixin does not charge additional platform fees.</string>
     <string name="Perpetual_Example">Example</string>
