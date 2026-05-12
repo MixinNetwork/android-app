@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -500,8 +499,8 @@ private fun PositionContent() {
         description = stringResource(R.string.perps_position_size_overview),
         infoTitle = stringResource(R.string.PnL),
         infoContents = listOf(
-            stringResource(R.string.perps_position_size_notice_1),
-            stringResource(R.string.perps_position_size_notice_2)
+            stringResource(R.string.perps_position_size_pnl_1),
+            stringResource(R.string.perps_position_size_pnl_2)
         ),
         riskContents = emptyList()
     )
