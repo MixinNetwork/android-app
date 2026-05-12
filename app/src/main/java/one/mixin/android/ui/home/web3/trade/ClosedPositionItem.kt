@@ -35,7 +35,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.ui.home.web3.trade.perps.calculateClosedRoe
 import one.mixin.android.ui.home.web3.trade.perps.formatPerpsSignedPercent
-import one.mixin.android.ui.home.web3.trade.perps.formatPerpsSignedUsdDecimal
+import one.mixin.android.ui.home.web3.trade.perps.formatPerpsSignedRawUsdDecimal
 import java.math.BigDecimal
 
 @Composable
@@ -158,7 +158,7 @@ fun ClosedPositionItem(
         }
 
         BasicText(
-            text = "${formatPerpsSignedUsdDecimal(pnl)} (${formatPerpsSignedPercent(pnlPercent, withSign = false)})",
+            text = "${formatPerpsSignedRawUsdDecimal(pnl)} (${formatPerpsSignedPercent(pnlPercent, withSign = false)})",
             modifier = Modifier.weight(0.85f),
             style = TextStyle(
                 fontSize = 14.sp,

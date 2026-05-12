@@ -197,7 +197,8 @@ fun CandleChart(
                 ScrollableCandleChart(
                     candles = candles,
                     context = context,
-                    marketPrice = marketPrice?.toBigDecimalOrNull()
+                    marketPrice = marketPrice?.toBigDecimalOrNull(),
+                    marketPriceText = marketPrice,
                 )
             }
         }
@@ -209,6 +210,7 @@ private fun ScrollableCandleChart(
     candles: List<CandleView>,
     context: android.content.Context,
     marketPrice: BigDecimal?,
+    marketPriceText: String?,
 ) {
     val candleView = candles.firstOrNull() ?: return
     val items = candleView.items
@@ -248,7 +250,20 @@ private fun ScrollableCandleChart(
     }
     val selectedItem = selectedIndex?.let { index -> items.getOrNull(index) }
     val latestPrice = marketPrice ?: items.lastOrNull()?.close?.toBigDecimalOrNull()
-    val axisPanelWidth = 52.dp
+
+    val textMeasurer = rememberTextMeasurer()
+    val axisPanelWidth: Dp = remember(items, marketPriceText) {
+        var longestText: String = marketPriceText ?: ""
+        items.forEach { item ->
+            if (item.high.length > longestText.length) longestText = item.high
+            if (item.low.length > longestText.length) longestText = item.low
+        }
+        val textWidth = textMeasurer.measure(
+            text = longestText,
+            style = TextStyle(fontSize = 10.sp)
+        ).size.width
+        with(density) { (textWidth.toDp() + 8.dp).coerceAtLeast(52.dp) }
+    }
 
     Row(modifier = Modifier.fillMaxSize()) {
         BoxWithConstraints(
@@ -272,22 +287,31 @@ private fun ScrollableCandleChart(
             }
 
             val prices = mutableListOf<BigDecimal>()
+            val priceStrings = mutableMapOf<BigDecimal, String>()
             visibleItems.forEach { item ->
-                item.high.toBigDecimalOrNull()?.let { prices.add(it) }
-                item.low.toBigDecimalOrNull()?.let { prices.add(it) }
+                item.high.toBigDecimalOrNull()?.let {
+                    prices.add(it)
+                    priceStrings[it] = item.high
+                }
+                item.low.toBigDecimalOrNull()?.let {
+                    prices.add(it)
+                    priceStrings[it] = item.low
+                }
             }
-            latestPrice?.let { prices.add(it) }
+            latestPrice?.let {
+                prices.add(it)
+                if (marketPriceText != null) priceStrings[it] = marketPriceText
+            }
             val maxPrice = prices.maxOrNull() ?: BigDecimal.ZERO
             val minPrice = prices.minOrNull() ?: BigDecimal.ZERO
-            val midPrice = (maxPrice + minPrice) / BigDecimal(2)
-            val priceScale = resolveChartPriceScale(maxPrice, minPrice, midPrice)
-            val maxPriceText = formatPrice(maxPrice, priceScale)
-            val midPriceText = formatPrice(midPrice, priceScale)
-            val minPriceText = formatPrice(minPrice, priceScale)
+            val maxPriceText = priceStrings[maxPrice] ?: maxPrice.toPlainString()
+            val minPriceText = priceStrings[minPrice] ?: minPrice.toPlainString()
+            val midPrice = (maxPrice + minPrice).divide(BigDecimal(2), maxPrice.scale().coerceAtLeast(minPrice.scale()), java.math.RoundingMode.HALF_UP)
+            val midPriceText = midPrice.stripTrailingZeros().toPlainString()
 
             val selectedPrice = selectedItem?.close?.toBigDecimalOrNull()
             val showCurrentPrice = selectedPrice == null && latestPrice != null
-            val currentPriceText = latestPrice?.let { formatPrice(it, priceScale) }
+            val currentPriceText = marketPriceText ?: latestPrice?.toPlainString()
             val isCurrentPriceInRange = latestPrice?.let { it >= minPrice && it <= maxPrice } == true
             val isCurrentPriceOverlapping = currentPriceText != null &&
                 currentPriceText in setOf(maxPriceText, midPriceText, minPriceText)
@@ -431,6 +455,9 @@ private fun ScrollableCandleChart(
                             fontSize = 10.sp,
                             color = MixinAppTheme.colors.textPrimary,
                             textAlign = TextAlign.End,
+                            maxLines = 1,
+                            softWrap = false,
+                            overflow = TextOverflow.Clip,
                             modifier = Modifier
                                 .padding(horizontal = 2.dp, vertical = 1.dp)
                         )
@@ -439,6 +466,9 @@ private fun ScrollableCandleChart(
                             fontSize = 10.sp,
                             color = MixinAppTheme.colors.textPrimary,
                             textAlign = TextAlign.End,
+                            maxLines = 1,
+                            softWrap = false,
+                            overflow = TextOverflow.Clip,
                             modifier = Modifier
                                 .padding(horizontal = 2.dp, vertical = 1.dp)
                         )
@@ -447,6 +477,9 @@ private fun ScrollableCandleChart(
                             fontSize = 10.sp,
                             color = MixinAppTheme.colors.textPrimary,
                             textAlign = TextAlign.End,
+                            maxLines = 1,
+                            softWrap = false,
+                            overflow = TextOverflow.Clip,
                             modifier = Modifier
                                 .padding(horizontal = 2.dp, vertical = 1.dp)
                         )
@@ -461,7 +494,7 @@ private fun ScrollableCandleChart(
                             contentAlignment = Alignment.CenterEnd
                         ) {
                             Text(
-                                text = formatPrice(currentPrice, priceScale),
+                                text = marketPriceText ?: currentPrice?.toPlainString() ?: "",
                                 fontSize = 10.sp,
                                 color = MixinAppTheme.colors.textPrimary,
                                 textAlign = TextAlign.End,
@@ -499,7 +532,7 @@ private fun ScrollableCandleChart(
                                 contentAlignment = Alignment.CenterEnd
                             ) {
                                 Text(
-                                    text = formatPrice(selectedPrice, priceScale),
+                                    text = selectedItem.close,
                                     fontSize = 10.sp,
                                     color = MixinAppTheme.colors.textPrimary,
                                     textAlign = TextAlign.End,
@@ -737,35 +770,6 @@ private fun DrawScope.drawTouchCrosshair(
         textLayoutResult = timeTextLayout,
         topLeft = Offset(timeTagX + timeTagHorizontalPadding, timeTagY + timeTagVerticalPadding)
     )
-}
-
-private fun resolveChartPriceScale(
-    maxPrice: BigDecimal,
-    minPrice: BigDecimal,
-    midPrice: BigDecimal,
-): Int {
-    if (maxPrice < BigDecimal.ONE && minPrice < BigDecimal.ONE) {
-        return 6
-    }
-
-    var scale = 2
-    while (scale < 4) {
-        val maxText = formatPrice(maxPrice, scale)
-        val minText = formatPrice(minPrice, scale)
-        val midText = formatPrice(midPrice, scale)
-        if (setOf(maxText, minText, midText).size == 3) {
-            break
-        }
-        scale++
-    }
-    return scale
-}
-
-private fun formatPrice(
-    price: BigDecimal,
-    scale: Int,
-): String {
-    return price.setScale(scale, java.math.RoundingMode.HALF_UP).toPlainString()
 }
 
 private fun formatCandleTime(timestamp: Long, timeFrame: String): String {

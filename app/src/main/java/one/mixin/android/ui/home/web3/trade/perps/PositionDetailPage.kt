@@ -708,6 +708,7 @@ fun PositionDetailPage(
 }
 
 private fun formatSignedPercent(value: BigDecimal): String {
-    val number = value.abs().setScale(2, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
+    val scaled = value.abs().setScale(2, RoundingMode.FLOOR)
+    val number = if (scaled.compareTo(BigDecimal.ZERO) == 0) "0.0" else scaled.stripTrailingZeros().toPlainString()
     return "$number%"
 }

@@ -37,8 +37,12 @@ fun formatPerpsSignedUsdDecimal(value: BigDecimal?): String = formatPerpsSignedF
 
 fun formatPerpsRawUsdDecimal(value: BigDecimal?): String {
     val safeValue = value ?: BigDecimal.ZERO
-    val normalized = safeValue.abs().stripTrailingZeros().toPlainString()
-    return "$PERPS_USD_SYMBOL$normalized"
+    val absValue = safeValue.abs()
+    return when {
+        absValue.compareTo(BigDecimal.ZERO) == 0 -> "${PERPS_USD_SYMBOL}0.00"
+        absValue < BigDecimal("0.01") -> "<${PERPS_USD_SYMBOL}0.01"
+        else -> "$PERPS_USD_SYMBOL${absValue.setScale(2, RoundingMode.FLOOR).priceFormat()}"
+    }
 }
 
 fun formatPerpsSignedRawUsdDecimal(value: BigDecimal?): String {
@@ -90,9 +94,7 @@ fun formatPerpsSignedPercent(value: Double, withSign: Boolean = true): String {
 
 private fun formatPerpsPercentDecimal(value: BigDecimal): String {
     val safeValue = value.abs()
-    val scale = if (safeValue > BigDecimal.ZERO && safeValue < BigDecimal("0.01")) 3 else 2
-    return safeValue
-        .setScale(scale, RoundingMode.HALF_UP)
-        .stripTrailingZeros()
-        .toPlainString()
+    val scaled = safeValue.setScale(2, RoundingMode.FLOOR)
+    if (scaled.compareTo(BigDecimal.ZERO) == 0) return "0.0"
+    return scaled.stripTrailingZeros().toPlainString()
 }

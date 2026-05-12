@@ -361,7 +361,8 @@ class PerpsPositionShareActivity : BaseActivity() {
             displayValue < BigDecimal.ZERO -> "-"
             else -> ""
         }
-        val number = displayValue.abs().setScale(2, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
+        val scaled = displayValue.abs().setScale(2, RoundingMode.FLOOR)
+        val number = if (scaled.compareTo(BigDecimal.ZERO) == 0) "0.0" else scaled.stripTrailingZeros().toPlainString()
         return "$sign$number%"
     }
 
