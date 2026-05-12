@@ -396,7 +396,7 @@ private fun TotalPositionValueCard(
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-            text = "${formatPerpsSignedFiatDecimal(totalPnl.multiply(BigDecimal(Fiats.getRate())), Fiats.getSymbol())} (${formatPerpsSignedPercent(totalPnlPercent, withSign = false)})",
+            text = "${formatPerpsSignedUsdDecimal(totalPnl)} (${formatPerpsSignedPercent(totalPnlPercent, withSign = false)})",
             fontSize = 13.sp,
             color = pnlColor,
         )

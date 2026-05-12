@@ -335,7 +335,8 @@ private fun ScrollableCandleChart(
 
                             do {
                                 val event = awaitPointerEvent()
-                                val zoom = event.compatCalculateZoom()
+                                val rawZoom = event.compatCalculateZoom()
+                                val zoom = 1f + (rawZoom - 1f) * 0.5f
                                 val pan = event.compatCalculatePan()
                                 val centroid = event.compatCalculateCentroid()
                                 val pressedCount = event.changes.count { it.pressed }
@@ -348,23 +349,24 @@ private fun ScrollableCandleChart(
 
                                     val oldScale = candleScale
                                     val newScale = (oldScale * zoom).coerceIn(MIN_CANDLE_SCALE, MAX_CANDLE_SCALE)
-                                    val oldStepPx = (baseCandleWidthPx + baseSpacingPx) * oldScale
-                                    val newStepPx = (baseCandleWidthPx + baseSpacingPx) * newScale
-                                    val contentX = scrollState.value + centroid.x - chartStartPaddingPx
-                                    val stepIndex = if (oldStepPx > 0f) contentX / oldStepPx else 0f
 
-                                    candleScale = newScale
+                                    if (newScale != oldScale) {
+                                        candleScale = newScale
 
-                                    val newTotalWidthPx = chartStartPaddingPx +
-                                        (baseCandleWidthPx * newScale * items.size) +
-                                        (baseSpacingPx * newScale * (items.size - 1).coerceAtLeast(0))
-                                    val maxScroll = (newTotalWidthPx - viewportWidthPx).coerceAtLeast(0f)
-                                    val anchoredScroll = (stepIndex * newStepPx) - (centroid.x - chartStartPaddingPx)
-                                    val targetScroll = (anchoredScroll - pan.x).roundToInt()
-                                        .coerceIn(0, maxScroll.roundToInt())
+                                        val scroll = scrollState.value.toFloat()
+                                        val contentX = scroll + centroid.x - chartStartPaddingPx
+                                        val newScroll = scroll + contentX * (newScale / oldScale - 1f)
 
-                                    coroutineScope.launch {
-                                        scrollState.scrollTo(targetScroll)
+                                        val newTotalWidthPx = chartStartPaddingPx +
+                                            (baseCandleWidthPx + baseSpacingPx) * newScale * items.size -
+                                            baseSpacingPx * newScale
+                                        val maxScroll = (newTotalWidthPx - viewportWidthPx).coerceAtLeast(0f)
+                                        val targetScroll = (newScroll - pan.x).roundToInt()
+                                            .coerceIn(0, maxScroll.roundToInt())
+
+                                        coroutineScope.launch {
+                                            scrollState.scrollTo(targetScroll)
+                                        }
                                     }
 
                                     event.changes.forEach { change ->
