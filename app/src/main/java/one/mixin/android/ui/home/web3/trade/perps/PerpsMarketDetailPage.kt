@@ -950,13 +950,29 @@ private fun OpenPositionCard(
                     style = compactTextStyle,
                     color = MixinAppTheme.colors.textAssist
                 )
-                Text(
-                    text = stringResource(R.string.Liquidation_Price).uppercase(),
-                    fontSize = 12.sp,
-                    lineHeight = 14.sp,
-                    style = compactTextStyle,
-                    color = MixinAppTheme.colors.textAssist
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = stringResource(R.string.Liquidation_Price).uppercase(),
+                        fontSize = 12.sp,
+                        lineHeight = 14.sp,
+                        style = compactTextStyle,
+                        color = MixinAppTheme.colors.textAssist
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_tip),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(12.dp)
+                            .clickable {
+                                val activity = context as? FragmentActivity ?: return@clickable
+                                PerpetualGuideBottomSheetDialogFragment.newInstance(
+                                    PerpetualGuideBottomSheetDialogFragment.TAB_LIQUIDATION
+                                ).show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
+                            },
+                        tint = MixinAppTheme.colors.textAssist
+                    )
+                }
             }
             Spacer(modifier = Modifier.height(10.dp))
             Row(

@@ -2326,6 +2326,10 @@
     <string name="Price_Down_Profit">Price fall %1$s%% → Profit %2$s%% (+%3$s)</string>
     <string name="Price_Down_Loss">Price fall %1$s%% → Loss -%2$s %3$s</string>
     <string name="Price_Up_Loss">Price rise %1$s%% → Loss -%2$s %3$s</string>
+    <string name="Max_Profit">Max Profit</string>
+    <string name="Max_Loss">Max Loss</string>
+    <string name="price_change_up">Price +%1$s%%</string>
+    <string name="price_change_down">Price -%1$s%%</string>
     <string name="example_amount">Amount</string>
     <string name="example_scene1_decreasing">Scenario 1: Price Falls</string>
     <string name="example_scene1_increasing">Scenario 1: Price Rises</string>

@@ -45,6 +45,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
@@ -62,12 +64,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.fragment.app.FragmentActivity
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
@@ -82,15 +81,15 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.openUrl
-import one.mixin.android.extension.putLong
 import one.mixin.android.extension.priceFormat
+import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.alert.components.cardBackground
-import one.mixin.android.widget.components.MixinButton
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.widget.components.MixinButton
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -632,7 +631,7 @@ private fun PerpsTpSlContent(
                             modifier = Modifier.padding(horizontal = 16.dp),
                         ) {
                             Text(
-                                text = "Max Profit ",
+                                text = "${stringResource(R.string.Max_Profit)} ",
                                 fontSize = 13.sp,
                                 color = MixinAppTheme.colors.textAssist,
                             )
@@ -648,12 +647,12 @@ private fun PerpsTpSlContent(
                             modifier = Modifier.padding(horizontal = 16.dp),
                         ) {
                             Text(
-                                text = "Max Loss ",
+                                text = "${stringResource(R.string.Max_Loss)} ",
                                 fontSize = 13.sp,
                                 color = MixinAppTheme.colors.textAssist,
                             )
                             Text(
-                                text = "-${formatPerpsRawUsdDecimal(pnlAmount)} (${formatPerpsSignedPercent(pnlPercent, withSign = false)})",
+                                text = "-${formatPerpsRawUsdDecimal(pnlAmount)}",
                                 fontSize = 13.sp,
                                 color = lossColor,
                             )

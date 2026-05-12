@@ -223,6 +223,10 @@
     <string name="Price_Down_Profit">价格下跌 %1$s%% → 盈利 %2$s%%（+%3$s）</string>
     <string name="Price_Down_Loss">价格下跌 %1$s%% → 亏损 -%2$s %3$s</string>
     <string name="Price_Up_Loss">价格上涨 %1$s%% → 亏损 -%2$s %3$s</string>
+    <string name="Max_Profit">最大盈利</string>
+    <string name="Max_Loss">最大亏损</string>
+    <string name="price_change_up">价格 +%1$s%%</string>
+    <string name="price_change_down">价格 -%1$s%%</string>
     <string name="Choose_Network">选择网络</string>
     <string name="Wallet_Name">钱包名称</string>
     <string name="Choose_network_tip">请选择 Mixin 支持的网络进行充值，否则您的充值将不会到账。</string>

@@ -17,15 +17,15 @@ import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.api.referral.buildReferralCopyUrl
 import one.mixin.android.api.referral.ReferralShareInfo
+import one.mixin.android.api.referral.buildReferralCopyUrl
 import one.mixin.android.api.referral.buildReferralShareUrl
 import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
@@ -41,6 +41,7 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.toast
+import one.mixin.android.repository.ReferralRepository
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.common.applyReferralTitleTypeface
@@ -54,9 +55,8 @@ import java.io.File
 import java.io.FileOutputStream
 import java.math.BigDecimal
 import java.math.RoundingMode
-import kotlinx.coroutines.Dispatchers
+import javax.inject.Inject
 import kotlin.math.min
-import one.mixin.android.repository.ReferralRepository
 
 @AndroidEntryPoint
 class PerpsPositionShareActivity : BaseActivity() {
