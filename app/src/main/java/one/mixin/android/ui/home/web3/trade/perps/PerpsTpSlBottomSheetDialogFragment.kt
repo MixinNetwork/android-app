@@ -1216,7 +1216,8 @@ private fun validateTpSlPercent(
         mode = mode,
     )
     if (derivedPrice.isBlank()) {
-        return MixinApplicationHolder.getString(R.string.error_invalid_number)
+        val maxPercent = (leverage * 100).toBigDecimal().stripTrailingZeros().toPlainString()
+        return MixinApplicationHolder.getString(R.string.error_percentage_must_be_less_than_value, "$maxPercent%")
     }
     return validateTpSlPrice(
         rawValue = derivedPrice,
