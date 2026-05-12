@@ -385,7 +385,7 @@ private fun PerpsTpSlContent(
     val quickOptions = if (isTakeProfit) {
         listOf("10", "25", "50", "100")
     } else {
-        listOf("5", "10", "25", "100")
+        listOf("5", "10", "25", "50")
     }
     var showInfoCard by rememberSaveable(mode.name) {
         val prefKey = if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) PREF_HIDE_TP_GUIDE_UNTIL else PREF_HIDE_SL_GUIDE_UNTIL

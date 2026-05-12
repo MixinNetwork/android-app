@@ -316,14 +316,19 @@ fun PerpsMarketDetailPage(
                 }
 
                 if (market != null) {
+                    if (currentPosition == null) {
+                        HowPerpsWorksCard(
+                            onLearnClick = {
+                                val activity = context as? FragmentActivity ?: return@HowPerpsWorksCard
+                                PerpetualGuideBottomSheetDialogFragment.newInstance(
+                                    PerpetualGuideBottomSheetDialogFragment.TAB_OVERVIEW
+                                ).show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
+                            }
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
                     MarketInfoCard(
                         market = market!!,
-                        onLearnClick = {
-                            val activity = context as? FragmentActivity ?: return@MarketInfoCard
-                            PerpetualGuideBottomSheetDialogFragment.newInstance(
-                                PerpetualGuideBottomSheetDialogFragment.TAB_OVERVIEW
-                            ).show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
-                        }
                     )
                 }
 
@@ -360,6 +365,18 @@ fun PerpsMarketDetailPage(
                                 )
                                 .addToBackStack(null)
                                 .commit()
+                        }
+                    )
+                }
+
+                if (currentPosition != null && market != null) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    HowPerpsWorksCard(
+                        onLearnClick = {
+                            val activity = context as? FragmentActivity ?: return@HowPerpsWorksCard
+                            PerpetualGuideBottomSheetDialogFragment.newInstance(
+                                PerpetualGuideBottomSheetDialogFragment.TAB_OVERVIEW
+                            ).show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
                         }
                     )
                 }
@@ -460,8 +477,7 @@ fun PerpsMarketDetailPage(
 }
 
 @Composable
-private fun MarketInfoCard(
-    market: PerpsMarket,
+private fun HowPerpsWorksCard(
     onLearnClick: () -> Unit,
 ) {
     Column(
@@ -494,9 +510,12 @@ private fun MarketInfoCard(
             }
         }
     }
+}
 
-    Spacer(modifier = Modifier.height(16.dp))
-
+@Composable
+private fun MarketInfoCard(
+    market: PerpsMarket,
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -870,7 +889,7 @@ private fun OpenPositionCard(
                         style = compactTextStyle,
                         color = MixinAppTheme.colors.textAssist
                     )
-                    Spacer(modifier = Modifier.width(9.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
                     Icon(
                         painter = painterResource(id = R.drawable.ic_tip),
                         contentDescription = null,
@@ -1058,7 +1077,7 @@ private fun TpSlLabel(
             style = compactTextStyle,
             color = MixinAppTheme.colors.textAssist
         )
-        Spacer(modifier = Modifier.width(6.dp))
+        Spacer(modifier = Modifier.width(4.dp))
         Icon(
             painter = painterResource(id = R.drawable.ic_tip),
             contentDescription = null,
@@ -1086,7 +1105,6 @@ private fun TpSlActionCell(
         contentAlignment = if (alignment == Alignment.End) Alignment.CenterEnd else Alignment.CenterStart,
     ) {
         Row(
-            modifier = Modifier.clickable(enabled = !loading, onClick = if (hasValue && onDelete != null) onDelete else onClick),
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (!hasValue && loading) {
@@ -1101,7 +1119,8 @@ private fun TpSlActionCell(
                     fontSize = 14.sp,
                     lineHeight = 17.sp,
                     style = compactTextStyle,
-                    color = if (hasValue) MixinAppTheme.colors.textPrimary else MixinAppTheme.colors.accent
+                    color = if (hasValue) MixinAppTheme.colors.textPrimary else MixinAppTheme.colors.accent,
+                    modifier = if (!hasValue) Modifier.clickable(enabled = !loading, onClick = onClick) else Modifier,
                 )
             }
             if (hasValue && loading) {
@@ -1117,7 +1136,9 @@ private fun TpSlActionCell(
                     painter = painterResource(id = R.drawable.ic_action_delete),
                     contentDescription = null,
                     tint = MixinAppTheme.colors.textAssist,
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier
+                        .size(16.dp)
+                        .clickable(enabled = !loading && onDelete != null) { onDelete?.invoke() }
                 )
             } else if (!loading) {
                 Spacer(modifier = Modifier.width(4.dp))
