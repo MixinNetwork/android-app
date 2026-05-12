@@ -1083,7 +1083,7 @@ private fun derivePercentMagnitudeInput(
         isLong = isLong,
         mode = mode,
     ) ?: return ""
-    return signedPercent.abs().stripTrailingZeros().toPlainString()
+    return signedPercent.abs().setScale(2, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
 }
 
 private fun signedPercentFromPrice(
