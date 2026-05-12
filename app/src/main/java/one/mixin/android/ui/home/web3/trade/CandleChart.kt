@@ -5,7 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
+import androidx.compose.foundation.gestures.awaitLongPressOrCancellation
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -384,26 +384,31 @@ private fun ScrollableCandleChart(
                     }
                     .pointerInput(items.size, totalChartWidthPx, isPinching) {
                         if (isPinching) return@pointerInput
-                        detectDragGesturesAfterLongPress(
-                            onDragStart = { offset ->
+                        awaitEachGesture {
+                            val down = awaitFirstDown(requireUnconsumed = false)
+                            val startPos = down.position
+
+                            touchXOnChart = (startPos.x + scrollState.value)
+                                .coerceIn(chartStartPaddingPx, max(totalChartWidthPx, chartStartPaddingPx))
+
+                            val longPress = awaitLongPressOrCancellation(down.id)
+                            if (longPress != null) {
                                 isTouching = true
-                                touchXOnChart = (offset.x + scrollState.value)
-                                    .coerceIn(chartStartPaddingPx, max(totalChartWidthPx, chartStartPaddingPx))
-                            },
-                            onDrag = { change, _ ->
-                                touchXOnChart = (change.position.x + scrollState.value)
-                                    .coerceIn(chartStartPaddingPx, max(totalChartWidthPx, chartStartPaddingPx))
-                                change.consume()
-                            },
-                            onDragEnd = {
+                                do {
+                                    val event = awaitPointerEvent()
+                                    val pressed = event.changes.any { it.pressed }
+                                    if (pressed) {
+                                        val pos = event.changes.first { it.pressed }.position
+                                        touchXOnChart = (pos.x + scrollState.value)
+                                            .coerceIn(chartStartPaddingPx, max(totalChartWidthPx, chartStartPaddingPx))
+                                        event.changes.forEach { it.consume() }
+                                    }
+                                } while (pressed)
                                 isTouching = false
-                                touchXOnChart = null
-                            },
-                            onDragCancel = {
-                                isTouching = false
-                                touchXOnChart = null
                             }
-                        )
+
+                            touchXOnChart = null
+                        }
                     }
                     .horizontalScroll(scrollState, enabled = !isTouching && !isPinching)
                     .clipToBounds()
@@ -414,7 +419,7 @@ private fun ScrollableCandleChart(
                     context = context,
                     candleWidth = candleWidth,
                     spacing = spacing,
-                    touchXOnChart = if (isTouching) touchXOnChart else null,
+                    touchXOnChart = touchXOnChart,
                     scrollOffset = scrollState.value.toFloat(),
                     viewportWidth = viewportWidthPx,
                     maxPrice = maxPrice,
