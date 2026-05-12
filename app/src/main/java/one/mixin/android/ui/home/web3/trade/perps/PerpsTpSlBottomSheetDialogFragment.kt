@@ -10,6 +10,7 @@ import android.view.WindowManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -529,9 +530,13 @@ private fun PerpsTpSlContent(
 
                 Spacer(modifier = Modifier.height(10.dp))
 
+                val inputFocusRequester = remember { FocusRequester() }
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) {
+                            inputFocusRequester.requestFocus()
+                        }
                         .padding(vertical = 4.dp, horizontal = 16.dp),
                 ) {
                     TpSlInputField(
@@ -539,6 +544,7 @@ private fun PerpsTpSlContent(
                         mode = mode,
                         percentFieldValue = percentFieldValue,
                         priceFieldValue = priceFieldValue,
+                        focusRequester = inputFocusRequester,
                         onPercentFieldValueChange = { fieldValue ->
                             val normalized = normalizePercentInput(fieldValue.text)
                             percentFieldValue = fieldValue.copy(
@@ -616,8 +622,7 @@ private fun PerpsTpSlContent(
 
                 if (pnlPercent != null && pnlPercent > BigDecimal.ZERO && marginValue > BigDecimal.ZERO) {
                     val pnlAmount = marginValue.multiply(pnlPercent)
-                        .divide(BigDecimal(100), 2, RoundingMode.HALF_UP)
-                    val roePercent = pnlPercent.stripTrailingZeros().toPlainString()
+                        .divide(BigDecimal(100), 2, RoundingMode.FLOOR)
                     if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -629,7 +634,7 @@ private fun PerpsTpSlContent(
                                 color = MixinAppTheme.colors.textAssist,
                             )
                             Text(
-                                text = "+$PERPS_USD_SYMBOL${pnlAmount.stripTrailingZeros().toPlainString()} (${roePercent}%)",
+                                text = "${formatPerpsSignedRawUsdDecimal(pnlAmount)} (${formatPerpsSignedPercent(pnlPercent, withSign = false)})",
                                 fontSize = 13.sp,
                                 color = profitColor,
                             )
@@ -645,7 +650,7 @@ private fun PerpsTpSlContent(
                                 color = MixinAppTheme.colors.textAssist,
                             )
                             Text(
-                                text = "-$PERPS_USD_SYMBOL${pnlAmount.stripTrailingZeros().toPlainString()}",
+                                text = "-${formatPerpsRawUsdDecimal(pnlAmount)} (${formatPerpsSignedPercent(pnlPercent, withSign = false)})",
                                 fontSize = 13.sp,
                                 color = lossColor,
                             )
@@ -838,8 +843,8 @@ private fun TpSlInputField(
     priceFieldValue: TextFieldValue,
     onPercentFieldValueChange: (TextFieldValue) -> Unit,
     onPriceFieldValueChange: (TextFieldValue) -> Unit,
+    focusRequester: FocusRequester,
 ) {
-    val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
 
     LaunchedEffect(inputType, mode) {
@@ -1107,7 +1112,7 @@ private fun validateTpSlPrice(
 
     val price = trimmed.toBigDecimalOrNull() ?: return MixinApplicationHolder.getString(R.string.error_invalid_number)
     if (price <= BigDecimal.ZERO) {
-        return MixinApplicationHolder.getString(R.string.error_invalid_number)
+        return MixinApplicationHolder.getString(R.string.error_price_must_be_greater_than_value, "${PERPS_USD_SYMBOL}0")
     }
     if (currentPrice <= BigDecimal.ZERO) {
         return null
