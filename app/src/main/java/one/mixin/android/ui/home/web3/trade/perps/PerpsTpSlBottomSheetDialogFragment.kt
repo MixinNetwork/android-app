@@ -448,11 +448,13 @@ private fun PerpsTpSlContent(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = stringResource(
-                            if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
-                                R.string.Take_Profit
-                            } else {
-                                R.string.Stop_Loss
-                            }
+                            when {
+                                mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT && isLong -> R.string.take_profit_for_long
+                                mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT && !isLong -> R.string.take_profit_for_short
+                                mode == PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS && isLong -> R.string.stop_loss_for_long
+                                else -> R.string.stop_loss_for_short
+                            },
+                            marketSymbol,
                         ),
                         fontSize = 16.sp,
                         lineHeight = 20.sp,

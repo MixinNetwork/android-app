@@ -2314,6 +2314,10 @@
     <string name="Select_Leverage">选择杠杆</string>
     <string name="Take_Profit">止盈</string>
     <string name="Stop_Loss">止损</string>
+    <string name="take_profit_for_long">%1$s 做多止盈</string>
+    <string name="take_profit_for_short">%1$s 做空止盈</string>
+    <string name="stop_loss_for_long">%1$s 做多止损</string>
+    <string name="stop_loss_for_short">%1$s 做空止损</string>
     <string name="take_profit_stop_loss_label">止盈止损</string>
     <string name="tp_label">止盈</string>
     <string name="sl_label">止损</string>

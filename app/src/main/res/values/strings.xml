@@ -2380,6 +2380,10 @@
     <string name="Select_Leverage">Select Leverage</string>
     <string name="Take_Profit">Take Profit</string>
     <string name="Stop_Loss">Stop Loss</string>
+    <string name="take_profit_for_long">Take Profit for Long %1$s</string>
+    <string name="take_profit_for_short">Take Profit for Short %1$s</string>
+    <string name="stop_loss_for_long">Stop Loss for Long %1$s</string>
+    <string name="stop_loss_for_short">Stop Loss for Short %1$s</string>
     <string name="take_profit_stop_loss_label">TP/SL</string>
     <string name="tp_label">TP</string>
     <string name="sl_label">SL</string>
