@@ -15,7 +15,6 @@ fun PerpsMarket.changePercent(): BigDecimal {
     }
 }
 
-
 fun formatPerpsFiatDecimal(value: BigDecimal?, fiatSymbol: String): String {
     val safeValue = value ?: BigDecimal.ZERO
     val absValue = safeValue.abs()
