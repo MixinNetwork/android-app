@@ -19,7 +19,7 @@ interface PerpsPositionDao : BaseDao<PerpsPosition> {
     suspend fun insertAll(positions: List<PerpsPosition>)
 
     @Query("""
-        SELECT p.*, m.display_symbol, m.icon_url, m.token_symbol 
+        SELECT p.*, m.display_symbol, m.icon_url, m.token_symbol, m.price_scale 
         FROM positions p 
         LEFT JOIN markets m ON m.market_id = p.market_id 
         WHERE p.wallet_id = :walletId AND (p.state = 'open' or p.state = 'opening')
@@ -29,7 +29,7 @@ interface PerpsPositionDao : BaseDao<PerpsPosition> {
 
     @Query(
         """
-        SELECT p.*, m.display_symbol, m.icon_url, m.token_symbol
+        SELECT p.*, m.display_symbol, m.icon_url, m.token_symbol, m.price_scale
         FROM positions p
         LEFT JOIN markets m ON m.market_id = p.market_id
         WHERE p.wallet_id = :walletId AND (p.state = 'open' or p.state = 'opening')
@@ -39,7 +39,7 @@ interface PerpsPositionDao : BaseDao<PerpsPosition> {
     fun observeOpenPositions(walletId: String): Flow<List<PerpsPositionItem>>
 
     @Query("""
-        SELECT p.*, m.display_symbol, m.icon_url, m.token_symbol
+        SELECT p.*, m.display_symbol, m.icon_url, m.token_symbol, m.price_scale
         FROM positions p
         LEFT JOIN markets m ON m.market_id = p.market_id
         WHERE p.wallet_id = :walletId AND (p.state = 'open' or p.state = 'opening')
@@ -48,7 +48,7 @@ interface PerpsPositionDao : BaseDao<PerpsPosition> {
     fun getOpenPositionsPaged(walletId: String): PagingSource<Int, PerpsPositionItem>
 
     @Query("""
-        SELECT p.*, m.display_symbol, m.icon_url, m.token_symbol 
+        SELECT p.*, m.display_symbol, m.icon_url, m.token_symbol, m.price_scale 
         FROM positions p 
         LEFT JOIN markets m ON m.market_id = p.market_id 
         WHERE p.position_id = :positionId
@@ -56,7 +56,7 @@ interface PerpsPositionDao : BaseDao<PerpsPosition> {
     suspend fun getPosition(positionId: String): PerpsPositionItem?
 
     @Query("""
-        SELECT p.*, m.display_symbol, m.icon_url, m.token_symbol
+        SELECT p.*, m.display_symbol, m.icon_url, m.token_symbol, m.price_scale
         FROM positions p
         LEFT JOIN markets m ON m.market_id = p.market_id
         WHERE p.position_id = :positionId

@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 3,
-    "identityHash": "4125e3155ef8cf5810ce33ab5bd1fd50",
+    "identityHash": "7eacf037326a2a5b7d343699b2e0a7c4",
     "entities": [
       {
         "tableName": "positions",
@@ -220,7 +220,7 @@
       },
       {
         "tableName": "markets",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`market_id` TEXT NOT NULL, `display_symbol` TEXT NOT NULL, `token_symbol` TEXT NOT NULL, `quote_symbol` TEXT NOT NULL, `mark_price` TEXT NOT NULL, `leverage` INTEGER NOT NULL, `icon_url` TEXT NOT NULL, `category` TEXT NOT NULL, `tags` TEXT NOT NULL, `funding_rate` TEXT NOT NULL, `min_amount` TEXT NOT NULL, `max_amount` TEXT NOT NULL, `last` TEXT NOT NULL, `volume` TEXT NOT NULL, `high` TEXT NOT NULL, `low` TEXT NOT NULL, `open` TEXT NOT NULL, `change` TEXT NOT NULL, `bid_price` TEXT NOT NULL, `ask_price` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`market_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`market_id` TEXT NOT NULL, `display_symbol` TEXT NOT NULL, `token_symbol` TEXT NOT NULL, `quote_symbol` TEXT NOT NULL, `mark_price` TEXT NOT NULL, `price_scale` INTEGER NOT NULL DEFAULT 2, `leverage` INTEGER NOT NULL, `icon_url` TEXT NOT NULL, `category` TEXT NOT NULL, `tags` TEXT NOT NULL, `funding_rate` TEXT NOT NULL, `min_amount` TEXT NOT NULL, `max_amount` TEXT NOT NULL, `last` TEXT NOT NULL, `volume` TEXT NOT NULL, `high` TEXT NOT NULL, `low` TEXT NOT NULL, `open` TEXT NOT NULL, `change` TEXT NOT NULL, `bid_price` TEXT NOT NULL, `ask_price` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`market_id`))",
         "fields": [
           {
             "fieldPath": "marketId",
@@ -251,6 +251,13 @@
             "columnName": "mark_price",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "priceScale",
+            "columnName": "price_scale",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "2"
           },
           {
             "fieldPath": "leverage",
@@ -365,7 +372,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4125e3155ef8cf5810ce33ab5bd1fd50')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7eacf037326a2a5b7d343699b2e0a7c4')"
     ]
   }
 }

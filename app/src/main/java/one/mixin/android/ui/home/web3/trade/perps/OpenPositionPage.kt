@@ -266,6 +266,7 @@ fun OpenPositionPage(
             leverage = leverage.toInt(),
             entryPrice = null,
             marketId = currentMarket.marketId,
+            priceScale = currentMarket.priceScale,
         ).setOnApply { value ->
             if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
                 takeProfitPrice = value.orEmpty()

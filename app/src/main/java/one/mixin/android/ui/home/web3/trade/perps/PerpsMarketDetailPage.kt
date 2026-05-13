@@ -245,6 +245,7 @@ fun PerpsMarketDetailPage(
                             leverage = currentPosition.leverage,
                             entryPrice = currentPosition.entryPrice,
                             marketId = currentPosition.marketId,
+                            priceScale = currentPosition.priceScale ?: DEFAULT_PERPS_PRICE_SCALE,
                         ).setOnApply { value ->
                             val normalizedValue = value?.trim().orEmpty()
                             if (normalizedValue == existingPrice) return@setOnApply
@@ -746,6 +747,7 @@ private fun OpenPositionCard(
             leverage = position.leverage,
             entryPrice = position.entryPrice,
             marketId = position.marketId,
+            priceScale = position.priceScale ?: DEFAULT_PERPS_PRICE_SCALE,
         ).setOnApply { value ->
             val normalizedValue = value?.trim().orEmpty()
             if (normalizedValue == existingPrice) {
@@ -981,14 +983,14 @@ private fun OpenPositionCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "$PERPS_USD_SYMBOL${entryPrice.priceFormat()}",
+                    text = formatPerpsPrice(entryPrice, position.priceScale ?: DEFAULT_PERPS_PRICE_SCALE),
                     fontSize = 14.sp,
                     lineHeight = 17.sp,
                     style = compactTextStyle,
                     color = MixinAppTheme.colors.textPrimary
                 )
                 Text(
-                    text = formatPerpsUsdDecimal(liquidationPrice),
+                    text = formatPerpsPrice(liquidationPrice, position.priceScale ?: DEFAULT_PERPS_PRICE_SCALE),
                     fontSize = 14.sp,
                     lineHeight = 17.sp,
                     style = compactTextStyle,
@@ -1024,7 +1026,7 @@ private fun OpenPositionCard(
             ) {
                 TpSlActionCell(
                     modifier = Modifier.weight(1f),
-                    value = formatMarketTpSlDisplayValue(position.takeProfitPrice),
+                    value = formatMarketTpSlDisplayValue(position.takeProfitPrice, position.priceScale ?: DEFAULT_PERPS_PRICE_SCALE),
                     loading = tpSlLoadingMode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT,
                     compactTextStyle = compactTextStyle,
                     onClick = {
@@ -1050,7 +1052,7 @@ private fun OpenPositionCard(
                 Spacer(modifier = Modifier.width(12.dp))
                 TpSlActionCell(
                     modifier = Modifier.weight(1f),
-                    value = formatMarketTpSlDisplayValue(position.stopLossPrice),
+                    value = formatMarketTpSlDisplayValue(position.stopLossPrice, position.priceScale ?: DEFAULT_PERPS_PRICE_SCALE),
                     loading = tpSlLoadingMode == PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS,
                     compactTextStyle = compactTextStyle,
                     alignment = Alignment.End,
@@ -1169,12 +1171,12 @@ private fun TpSlActionCell(
     }
 }
 
-private fun formatMarketTpSlDisplayValue(rawValue: String?): String? {
+private fun formatMarketTpSlDisplayValue(rawValue: String?, priceScale: Int = DEFAULT_PERPS_PRICE_SCALE): String? {
     val normalized = rawValue?.trim().orEmpty()
     if (normalized.isEmpty()) {
         return null
     }
-    return normalized.toBigDecimalOrNull()?.let { "$PERPS_USD_SYMBOL${it.priceFormat()}" } ?: normalized
+    return normalized.toBigDecimalOrNull()?.let { formatPerpsPrice(it, priceScale) } ?: normalized
 }
 
 @Composable
