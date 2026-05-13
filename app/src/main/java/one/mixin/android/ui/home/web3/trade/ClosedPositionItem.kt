@@ -34,9 +34,8 @@ import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.ui.home.web3.trade.perps.calculateClosedRoe
-import one.mixin.android.ui.home.web3.trade.perps.formatPerpsSignedFiatDecimal
 import one.mixin.android.ui.home.web3.trade.perps.formatPerpsSignedPercent
-import one.mixin.android.vo.Fiats
+import one.mixin.android.ui.home.web3.trade.perps.formatPerpsSignedUsdDecimal
 import java.math.BigDecimal
 
 @Composable
@@ -47,8 +46,6 @@ fun ClosedPositionItem(
     val context = LocalContext.current
     val quoteColorPref = context.defaultSharedPreferences
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
-    val fiatRate = BigDecimal(Fiats.getRate())
-    val fiatSymbol = Fiats.getSymbol()
 
     val pnl = try {
         BigDecimal(position.realizedPnl)
@@ -161,7 +158,7 @@ fun ClosedPositionItem(
         }
 
         BasicText(
-            text = "${formatPerpsSignedFiatDecimal(pnl.multiply(fiatRate), fiatSymbol)} (${formatPerpsSignedPercent(pnlPercent, withSign = false)})",
+            text = "${formatPerpsSignedUsdDecimal(pnl)} (${formatPerpsSignedPercent(pnlPercent, withSign = false)})",
             modifier = Modifier.weight(0.85f),
             style = TextStyle(
                 fontSize = 14.sp,

@@ -1074,6 +1074,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
         }
         defaultSharedPreferences.putInt("$PREF_TRADE_SELECTED_TAB_PREFIX${Session.getAccountId() ?: ""}", 0)
         SwapActivity.show(requireContext(), input, output, amount, referral)
+        closeSourceWebActivityIfNeeded()
         dismiss()
     }
 
@@ -1100,6 +1101,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                 market.displaySymbol,
                 market.tokenSymbol
             )
+            closeSourceWebActivityIfNeeded()
             dismiss()
             return
         }
@@ -1123,7 +1125,12 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
 
         defaultSharedPreferences.putInt("$PREF_TRADE_SELECTED_TAB_PREFIX${Session.getAccountId() ?: ""}", if (openLimit) 1 else 0)
         SwapActivity.show(requireContext(), input, output, amount, referral)
+        closeSourceWebActivityIfNeeded()
         dismiss()
+    }
+
+    private fun closeSourceWebActivityIfNeeded() {
+        (activity as? WebActivity)?.finish()
     }
 
     private fun handleTipScheme(uri: Uri) {

@@ -2035,6 +2035,8 @@
     <string name="Preview_Recovery_Reminder">Preview recovery reminder</string>
     <string name="Verify_Mobile_Reminder_Will_Show_Once">Verify mobile reminder will show once</string>
     <string name="Recovery_Reminder_Will_Show_Once">Recovery reminder will show once</string>
+    <string name="Preview_New_Update_Reminder">Preview New Update Reminder</string>
+    <string name="New_Update_Reminder_Will_Show_Once">New update reminder will show once</string>
     <string name="Web3_Transactions_Deleted">Web3 transaction data has been deleted and will be re-synchronized</string>
     <string name="Delete_Failed">Delete failed: %1$s</string>
     <string name="Whats_Privacy_Wallet">What\'s the Privacy Wallet?</string>
@@ -2394,7 +2396,7 @@
     <string name="No_Markets">No Markets</string>
     <string name="View_More">View More</string>
     <string name="Loading">Loading...</string>
-    <string name="Vol">VOL %1$s</string>
+    <string name="Vol">VOL $%1$s</string>
     <string name="Entry_Close_Price">Entry: $%1$s → Close: $%2$s</string>
     <string name="Select_Market">Select Market</string>
     <string name="search">Search&#8230;</string>

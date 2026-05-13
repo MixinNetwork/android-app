@@ -8,6 +8,8 @@ import one.mixin.android.api.response.referral.ReferralCode
 import one.mixin.android.api.response.referral.ReferralResponse
 import one.mixin.android.api.service.ReferralService
 import one.mixin.android.Constants.RouteConfig.REFERRAL_BOT_USER_ID
+import one.mixin.android.session.Session
+import one.mixin.android.vo.Membership
 import timber.log.Timber
 
 class ReferralRepository
@@ -17,6 +19,11 @@ class ReferralRepository
         private val userRepository: UserRepository,
     ) {
         suspend fun fetchDefaultReferralShareInfoOrNull(logLabel: String): ReferralShareInfo? {
+            if (!hasValidReferralMembership(Session.getAccount()?.membership)) {
+                Timber.d("Skip fetch referral before %s because membership is invalid or expired", logLabel)
+                return null
+            }
+
             runCatching {
                 userRepository.getBotPublicKey(REFERRAL_BOT_USER_ID, false)
             }.onFailure {
@@ -50,6 +57,8 @@ class ReferralRepository
             )
         }
     }
+
+internal fun hasValidReferralMembership(membership: Membership?): Boolean = membership?.isMembership() == true
 
 private fun ReferralCode.toReferralShareInfo(
     referralResponse: ReferralResponse,
