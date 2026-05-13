@@ -345,7 +345,7 @@ fun OpenPositionPage(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = stringResource(R.string.Margin),
+                            text = stringResource(R.string.Amount),
                             fontSize = 14.sp,
                             color = MixinAppTheme.colors.textPrimary
                         )
@@ -905,7 +905,11 @@ private fun PerpsActionRow(
                 tint = MixinAppTheme.colors.textAssist,
                 modifier = Modifier
                     .size(16.dp)
-                    .clickable(onClick = onTipClick),
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = onTipClick,
+                    ),
             )
         }
         Row(verticalAlignment = Alignment.CenterVertically) {

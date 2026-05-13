@@ -2324,6 +2324,7 @@
     <string name="Short">做空</string>
     <string name="Direction">方向</string>
     <string name="Entry_Price">开仓价格</string>
+    <string name="Trigger_Price">触发价格</string>
     <string name="Mark_Price">价格</string>
     <string name="perps_current_price">最新价格</string>
     <string name="Close_Price">平仓价格</string>

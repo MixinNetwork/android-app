@@ -2390,6 +2390,7 @@
     <string name="Short">Short</string>
     <string name="Direction">Direction</string>
     <string name="Entry_Price">Entry Price</string>
+    <string name="Trigger_Price">Trigger Price</string>
     <string name="Mark_Price">Mark Price</string>
     <string name="perps_current_price">Current Price</string>
     <string name="Close_Price">Close Price</string>

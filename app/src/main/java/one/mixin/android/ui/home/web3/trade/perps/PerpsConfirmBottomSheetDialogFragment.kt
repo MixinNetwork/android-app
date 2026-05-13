@@ -397,6 +397,8 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                             title = stringResource(R.string.Take_Profit).uppercase(),
                             value = takeProfit,
                             subValueAnnotated = tpSubValue,
+                            info = true,
+                            guideTab = PerpetualGuideBottomSheetDialogFragment.TAB_TP_SL,
                         )
                         Box(modifier = Modifier.height(20.dp))
                     }
@@ -414,6 +416,8 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                             title = stringResource(R.string.Stop_Loss).uppercase(),
                             value = stopLoss,
                             subValueAnnotated = slSubValue,
+                            info = true,
+                            guideTab = PerpetualGuideBottomSheetDialogFragment.TAB_TP_SL,
                         )
                         Box(modifier = Modifier.height(20.dp))
                     }
