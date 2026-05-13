@@ -214,12 +214,22 @@ open class MixinApplication :
             }
         }, this)
         AppsFlyerLib.getInstance().start(this)
-        FirebaseAnalytics.getInstance(this).appInstanceId.addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val additionalData = mapOf("app_instance_id" to task.result)
-                AppsFlyerLib.getInstance().setAdditionalData(additionalData)
+        val firebaseAnalytics = FirebaseAnalytics.getInstance(this)
+        val appInstanceIdTask = firebaseAnalytics.appInstanceId
+        val sessionIdTask = firebaseAnalytics.sessionId
+        com.google.android.gms.tasks.Tasks.whenAllComplete(appInstanceIdTask, sessionIdTask)
+            .addOnCompleteListener {
+                val additionalData = mutableMapOf<String, Any>()
+                if (appInstanceIdTask.isSuccessful) {
+                    additionalData["app_instance_id"] = appInstanceIdTask.result
+                }
+                if (sessionIdTask.isSuccessful && sessionIdTask.result != null) {
+                    additionalData["ga_session_id"] = sessionIdTask.result
+                }
+                if (additionalData.isNotEmpty()) {
+                    AppsFlyerLib.getInstance().setAdditionalData(additionalData)
+                }
             }
-        }
     }
 
     override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
