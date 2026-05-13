@@ -261,7 +261,7 @@ fun OpenPositionPage(
             currentPrice = currentMarket.last,
             isLong = isLong,
             marketIconUrl = currentMarket.iconUrl,
-            marketSymbol = currentMarket.displaySymbol,
+            marketSymbol = currentMarket.tokenSymbol,
             marginAmount = usdtAmount,
             leverage = leverage.toInt(),
             entryPrice = null,
