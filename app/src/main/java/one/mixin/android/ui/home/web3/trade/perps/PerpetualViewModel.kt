@@ -369,8 +369,8 @@ class PerpetualViewModel @Inject constructor(
 
     fun setPositionTpSl(
         positionId: String,
-        takeProfitPrice: String?,
-        stopLossPrice: String?,
+        takeProfitPrice: String? = null,
+        stopLossPrice: String? = null,
         onSuccess: (PerpsPosition) -> Unit,
         onError: (Int, String) -> Unit,
     ) {
