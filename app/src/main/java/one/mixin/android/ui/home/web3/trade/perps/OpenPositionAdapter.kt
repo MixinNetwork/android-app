@@ -135,15 +135,11 @@ class OpenPositionAdapter(
         }
 
         private fun formatUsd(amount: BigDecimal): String {
-            val fiatRate = BigDecimal(Fiats.getRate())
-            val fiatSymbol = Fiats.getSymbol()
-            return formatPerpsFiatDecimal(amount.multiply(fiatRate), fiatSymbol)
+            return formatPerpsUsdDecimal(amount)
         }
 
         private fun formatSignedUsd(amount: BigDecimal): String {
-            val fiatRate = BigDecimal(Fiats.getRate())
-            val fiatSymbol = Fiats.getSymbol()
-            return formatPerpsSignedFiatDecimal(amount.multiply(fiatRate), fiatSymbol)
+            return formatPerpsSignedRawUsdDecimal(amount)
         }
 
         private fun resolveAttrColor(view: View, @AttrRes attr: Int): Int {
