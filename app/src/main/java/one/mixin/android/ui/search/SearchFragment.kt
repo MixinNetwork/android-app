@@ -38,6 +38,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.common.showUserBottom
@@ -181,7 +182,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
                                             )
                                         } else {
                                             searchViewModel.insertUser(user = data)
-                                            showUserBottom(parentFragmentManager, data)
+                                            showUserBottom(parentFragmentManager, data, botEntrySource = AnalyticsTracker.BotSource.SEARCH)
                                         }
                                     }
                                 r.errorCode == ErrorHandler.NOT_FOUND -> toast(R.string.User_not_found)

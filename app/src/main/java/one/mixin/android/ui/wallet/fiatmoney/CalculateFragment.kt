@@ -375,6 +375,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                                 VerifyMobileReminderBottomSheetDialogFragment.showSafely(
                                     parentFragmentManager,
                                     enableSnooze = false,
+                                    addPhoneSource = AnalyticsTracker.AddPhoneSource.BUY_GUIDE,
                                 )
                                 setLoading(false)
                                 return@launch

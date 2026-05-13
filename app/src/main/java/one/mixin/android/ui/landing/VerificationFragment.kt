@@ -77,6 +77,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
         const val TAG: String = "VerificationFragment"
         private const val ARGS_ID = "args_id"
         const val ARGS_HAS_EMERGENCY_CONTACT = "args_has_emergency_contact"
+        private const val ARGS_ADD_PHONE_SOURCE = "args_add_phone_source"
 
         fun newInstance(
             id: String,
@@ -84,6 +85,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
             pin: String? = null,
             hasEmergencyContact: Boolean = false,
             from: Int = FROM_LANDING,
+            addPhoneSource: String? = null,
         ): VerificationFragment =
             VerificationFragment().apply {
                 arguments =
@@ -93,6 +95,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                         ARGS_PIN to pin,
                         ARGS_HAS_EMERGENCY_CONTACT to hasEmergencyContact,
                         ARGS_FROM to from,
+                        ARGS_ADD_PHONE_SOURCE to addPhoneSource,
                     )
             }
     }
@@ -114,6 +117,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
         requireArguments().getInt(ARGS_FROM, FROM_LANDING)
     }
     private val phoneNum by lazy { requireArguments().getString(ARGS_PHONE_NUM)!! }
+    private val addPhoneSource by lazy { requireArguments().getString(ARGS_ADD_PHONE_SOURCE) }
 
     private var captchaView: CaptchaView? = null
 
@@ -145,6 +149,8 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
             AnalyticsTracker.trackSignUpSmsVerify()
         } else if (from == FROM_LOGIN) {
             AnalyticsTracker.trackLoginSmsVerify()
+        } else if (isAddPhoneFlow()) {
+            AnalyticsTracker.trackAddPhoneSmsVerify()
         }
 
         startCountDown()
@@ -277,6 +283,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                         )
                     )
                         .setPositiveButton(android.R.string.ok) { dialog, _ ->
+                            AnalyticsTracker.trackAddPhoneEnd()
                             dialog.dismiss()
                             if (activity !is MainActivity) {
                                 activity?.finish()
@@ -356,6 +363,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                         getString(R.string.verification_successful)
                     )
                         .setPositiveButton(android.R.string.ok) { dialog, _ ->
+                            AnalyticsTracker.trackAddPhoneEnd()
                             dialog.dismiss()
                             activity?.finish()
                             MainActivity.show(requireActivity())
@@ -445,6 +453,9 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                     )
                 (view as ViewGroup).addView(captchaView?.webView, MATCH_PARENT, MATCH_PARENT)
             }
+            if (isAddPhoneFlow()) {
+                AnalyticsTracker.trackAddPhoneCaptcha("sms")
+            }
             captchaView?.loadCaptcha(
                 if (errorDescription.containsIgnoreCase(gtCAPTCHA)) CaptchaView.CaptchaType.GTCaptcha
                 else if (errorDescription.containsIgnoreCase(hCAPTCHA)) CaptchaView.CaptchaType.HCaptcha
@@ -478,5 +489,9 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
             binding.verificationResendTv.setTextColor(ContextCompat.getColor(it, R.color.colorBlue))
         }
         binding.verificationNeedHelpTv.isVisible = true
+    }
+
+    private fun isAddPhoneFlow(): Boolean {
+        return from == FROM_CHANGE_PHONE_ACCOUNT || from == FROM_VERIFY_MOBILE_REMINDER
     }
 }

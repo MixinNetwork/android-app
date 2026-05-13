@@ -33,6 +33,7 @@ import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.search.SearchFragment.Companion.SEARCH_DEBOUNCE
 import one.mixin.android.ui.wallet.WalletActivity
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.ui.wallet.WalletActivity.Destination
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.viewBinding
@@ -144,7 +145,12 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
                 override fun onMarketClick(market: Market) {
                     lifecycleScope.launch {
                         searchViewModel.findMarketItemByCoinId(market.coinId)?.let { marketItem ->
-                            WalletActivity.showWithMarket(requireActivity(), marketItem, Destination.Market)
+                            WalletActivity.showWithMarket(
+                                requireActivity(),
+                                marketItem,
+                                Destination.Market,
+                                AnalyticsTracker.MarketSource.MORE_SEARCH,
+                            )
                         }
                     }
                 }
@@ -156,7 +162,10 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
                 }
 
                 override fun onBotClick(bot: SearchBot) {
-                    val f = UserBottomSheetDialogFragment.newInstance(bot.toUser())
+                    val f = UserBottomSheetDialogFragment.newInstance(
+                        bot.toUser(),
+                        botEntrySource = AnalyticsTracker.BotSource.SEARCH,
+                    )
                     searchViewModel.saveRecentSearch(requireContext().defaultSharedPreferences, RecentSearch(RecentSearchType.BOT, iconUrl = bot.avatarUrl, title = bot.fullName, subTitle = bot.identityNumber, primaryKey = bot.appId))
                     RxBus.publish(SearchEvent())
                     f?.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)

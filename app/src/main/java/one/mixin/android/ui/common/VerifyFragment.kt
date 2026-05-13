@@ -25,6 +25,7 @@ import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.ui.landing.MobileFragment
 import one.mixin.android.ui.setting.FriendsNoBotFragment
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
@@ -41,16 +42,19 @@ class VerifyFragment : BaseFragment(R.layout.fragment_verify_pin), PinView.OnPin
 
         const val ARGS_FROM = "args_from"
         private const val ARGS_PHONE_NUMBER = "args_phone_number"
+        private const val ARGS_ADD_PHONE_SOURCE = "args_add_phone_source"
 
         fun newInstance(
             from: Int,
             phoneNumber: String? = null,
+            addPhoneSource: String? = null,
         ) =
             VerifyFragment().withArgs {
                 putInt(ARGS_FROM, from)
                 if (!phoneNumber.isNullOrBlank()) {
                     putString(ARGS_PHONE_NUMBER, phoneNumber)
                 }
+                addPhoneSource?.let { putString(ARGS_ADD_PHONE_SOURCE, it) }
             }
     }
 
@@ -58,6 +62,9 @@ class VerifyFragment : BaseFragment(R.layout.fragment_verify_pin), PinView.OnPin
 
     private val phoneNumber: String? by lazy {
         requireArguments().getString(ARGS_PHONE_NUMBER)
+    }
+    private val addPhoneSource: String? by lazy {
+        requireArguments().getString(ARGS_ADD_PHONE_SOURCE)
     }
 
     @Inject
@@ -131,7 +138,13 @@ class VerifyFragment : BaseFragment(R.layout.fragment_verify_pin), PinView.OnPin
                     }
                     when (from) {
                         FROM_PHONE -> {
-                            val fragment = MobileFragment.newInstance(pin = pinCode, from = if (phoneNumber.isNullOrBlank().not()) MobileFragment.FROM_VERIFY_MOBILE_REMINDER else MobileFragment.FROM_CHANGE_PHONE_ACCOUNT, phoneNumber = phoneNumber)
+                            AnalyticsTracker.trackAddPhoneVerifyPin()
+                            val fragment = MobileFragment.newInstance(
+                                pin = pinCode,
+                                from = if (phoneNumber.isNullOrBlank().not()) MobileFragment.FROM_VERIFY_MOBILE_REMINDER else MobileFragment.FROM_CHANGE_PHONE_ACCOUNT,
+                                phoneNumber = phoneNumber,
+                                addPhoneSource = addPhoneSource,
+                            )
                             activity?.addFragment(this@VerifyFragment, fragment, MobileFragment.TAG)
                         }
                         FROM_EMERGENCY -> {

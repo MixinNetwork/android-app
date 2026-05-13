@@ -38,6 +38,7 @@ import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.search.components.RecentSearchPage
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.WalletActivity.Destination
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.ChatMinimal
@@ -161,7 +162,10 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
                 }
 
                 override fun onBotClick(bot: SearchBot) {
-                    val f = UserBottomSheetDialogFragment.newInstance(bot.toUser())
+                    val f = UserBottomSheetDialogFragment.newInstance(
+                        bot.toUser(),
+                        botEntrySource = AnalyticsTracker.BotSource.SEARCH,
+                    )
                     searchViewModel.saveRecentSearch(requireContext().defaultSharedPreferences, RecentSearch(RecentSearchType.BOT, iconUrl = bot.avatarUrl, title = bot.fullName, subTitle = bot.identityNumber, primaryKey = bot.appId))
                     f?.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                 }
@@ -201,7 +205,12 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
                     lifecycleScope.launch {
                         searchViewModel.findMarketItemByCoinId(market.coinId)?.let { marketItem ->
                             searchViewModel.saveRecentSearch(requireContext().defaultSharedPreferences, RecentSearch(RecentSearchType.MARKET, iconUrl = marketItem.iconUrl, title = marketItem.symbol, primaryKey = marketItem.coinId))
-                            WalletActivity.showWithMarket(requireActivity(), marketItem, Destination.Market)
+                            WalletActivity.showWithMarket(
+                                requireActivity(),
+                                marketItem,
+                                Destination.Market,
+                                AnalyticsTracker.MarketSource.MORE_SEARCH,
+                            )
                         }
                     }
                 }
@@ -236,7 +245,10 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
                         RecentSearchType.BOT-> {
                             lifecycleScope.launch {
                                 searchViewModel.findUserByAppId(search.primaryKey!!)?.let { user ->
-                                    val f = UserBottomSheetDialogFragment.newInstance(user)
+                                    val f = UserBottomSheetDialogFragment.newInstance(
+                                        user,
+                                        botEntrySource = AnalyticsTracker.BotSource.SEARCH,
+                                    )
                                     f?.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                                 }
                             }
@@ -257,7 +269,12 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
                         RecentSearchType.MARKET->{
                             lifecycleScope.launch {
                                 searchViewModel.findMarketItemByCoinId(search.primaryKey!!)?.let { marketItem ->
-                                    WalletActivity.showWithMarket(requireActivity(), marketItem, Destination.Market)
+                                    WalletActivity.showWithMarket(
+                                        requireActivity(),
+                                        marketItem,
+                                        Destination.Market,
+                                        AnalyticsTracker.MarketSource.MORE_SEARCH,
+                                    )
                                 }
                             }
                         }

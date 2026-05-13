@@ -97,7 +97,9 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     }
 
     private val adapter by lazy {
-        SwapTokenAdapter(selectUnique)
+        SwapTokenAdapter(selectUnique).apply {
+            tradeType = spotType()
+        }
     }
 
     private var isLoading = false
@@ -279,6 +281,12 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                         setContent {
                             RecentSwapTokens(key) {
                                 AnalyticsTracker.trackTradeTokenSelect(AnalyticsTracker.TradeTokenSelectMethod.RECENT_CLICK)
+                                AnalyticsTracker.trackSpotTokenSelect(
+                                    method = AnalyticsTracker.TradeTokenSelectMethod.RECENT_CLICK,
+                                    type = spotType(),
+                                    chain = it.chain.name,
+                                    assetSymbol = it.symbol,
+                                )
                                 adapter.onClick(it)
                             }
                         }
@@ -366,6 +374,14 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             } else {
                 binding.assetRv.scrollToPosition(0)
             }
+        }
+    }
+
+    private fun spotType(): String {
+        return if (key.contains("LIMIT", ignoreCase = true)) {
+            AnalyticsTracker.SpotTradeType.ADVANCED
+        } else {
+            AnalyticsTracker.SpotTradeType.SIMPLE
         }
     }
 

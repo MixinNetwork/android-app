@@ -59,6 +59,7 @@ import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.WalletActivity.Destination
 import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.market.GlobalMarket
@@ -152,6 +153,7 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
             titleLayout.updatePadding(horizontalPadding)
             titleLayout.setOnSortChangedListener { sortOrder ->
                 currentOrder = sortOrder
+                AnalyticsTracker.trackMarketListOrder(sortOrder.analyticsColumn())
                 bindData()
                 lifecycleScope.launch {
                     delay(100)
@@ -357,7 +359,12 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
     private val watchlistAdapter by lazy {
         Web3MarketAdapter(true, { marketItem ->
             lifecycleScope.launch {
-                WalletActivity.showWithMarket(requireActivity(), marketItem, Destination.Market)
+                WalletActivity.showWithMarket(
+                    requireActivity(),
+                    marketItem,
+                    Destination.Market,
+                    AnalyticsTracker.MarketSource.MORE_FAVORITES,
+                )
             }
         }, { symbol, coinId, isFavored ->
             jobManager.addJobInBackground(UpdateFavoriteJob(symbol, coinId, isFavored))
@@ -367,7 +374,12 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
     private val marketsAdapter by lazy {
         Web3MarketAdapter(false, { marketItem ->
             lifecycleScope.launch {
-                WalletActivity.showWithMarket(requireActivity(), marketItem, Destination.Market)
+                WalletActivity.showWithMarket(
+                    requireActivity(),
+                    marketItem,
+                    Destination.Market,
+                    AnalyticsTracker.MarketSource.MORE_MARKET_CAP,
+                )
             }
         }, { symbol, coinId, isFavored ->
             jobManager.addJobInBackground(UpdateFavoriteJob(symbol, coinId, isFavored))
@@ -385,6 +397,13 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
             setAdapter(menuAdapter)
             setOnItemClickListener { _, _, position, _ ->
                 top = position
+                AnalyticsTracker.trackMarketListRange(
+                    when (position) {
+                        1 -> 200
+                        2 -> 500
+                        else -> 100
+                    }
+                )
                 dismiss()
             }
             width = 130.dp
@@ -431,6 +450,7 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
             setAdapter(percentageMenuAdapter)
             setOnItemClickListener { _, _, position, _ ->
                 topPercentage = position
+                AnalyticsTracker.trackMarketListPriceChange()
                 dismiss()
             }
             width = 130.dp
@@ -466,4 +486,16 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
                 bindData()
             }
         }
+
+    private fun MarketSort.analyticsColumn(): String {
+        return when (this) {
+            MarketSort.RANK_ASCENDING, MarketSort.RANK_DESCENDING -> "market_cap"
+            MarketSort.PRICE_ASCENDING, MarketSort.PRICE_DESCENDING -> "price"
+            MarketSort.SEVEN_DAYS_PERCENTAGE_ASCENDING,
+            MarketSort.SEVEN_DAYS_PERCENTAGE_DESCENDING,
+            MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_ASCENDING,
+            MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_DESCENDING,
+            -> "price_change"
+        }
+    }
 }

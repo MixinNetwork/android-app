@@ -66,6 +66,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
         const val TAG: String = "MobileFragment"
         const val ARGS_PHONE_NUM = "args_phone_num"
         const val ARGS_FROM = "args_from"
+        const val ARGS_ADD_PHONE_SOURCE = "args_add_phone_source"
         const val FROM_LANDING = 0
         const val FROM_LANDING_CREATE = 1
         const val FROM_CHANGE_PHONE_ACCOUNT = 2
@@ -76,6 +77,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             pin: String? = null,
             from: Int = FROM_LANDING,
             phoneNumber: String? = null,
+            addPhoneSource: String? = null,
         ): MobileFragment =
             MobileFragment().apply {
                 val b =
@@ -87,6 +89,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                         if (!phoneNumber.isNullOrBlank()) {
                             putString(ARGS_PHONE_NUM, phoneNumber)
                         }
+                        addPhoneSource?.let { putString(ARGS_ADD_PHONE_SOURCE, it) }
                     }
                 arguments = b
             }
@@ -108,6 +111,9 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
 
     private val presetPhoneNumber: String? by lazy {
         requireArguments().getString(ARGS_PHONE_NUM)
+    }
+    private val addPhoneSource: String? by lazy {
+        requireArguments().getString(ARGS_ADD_PHONE_SOURCE)
     }
 
     private var captchaView: CaptchaView? = null
@@ -145,6 +151,9 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             }
             binding.titleView.leftIb.setOnClickListener { requireActivity().onBackPressedDispatcher.onBackPressed() }
             binding.titleView.rightIb.setOnClickListener {
+                if (isAddPhoneFlow()) {
+                    AnalyticsTracker.trackCustomerServiceDialog(AnalyticsTracker.CustomerServiceSource.ADD_PHONE_MOBILE)
+                }
                 openCustomerService()
             }
             val policy: String = requireContext().getString(R.string.Privacy_Policy)
@@ -164,6 +173,9 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             countryCodeEt.addTextChangedListener(countryCodeWatcher)
             countryCodeEt.showSoftInputOnFocus = false
             continueBn.setOnClickListener {
+                if (isAddPhoneFlow()) {
+                    AnalyticsTracker.trackAddPhoneInputPhone()
+                }
                 if (from == FROM_VERIFY_MOBILE_REMINDER
                     && presetPhoneNumber != null
                 ) {
@@ -180,6 +192,9 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             mobileCover.isClickable = true
             countryPicker = CountryPicker.newInstance()
             countryPicker.setListener { _: String, code: String, dialCode: String, flagResId: Int ->
+                if (isAddPhoneFlow()) {
+                    AnalyticsTracker.trackAddPhoneInputPhoneCountry()
+                }
                 mCountry = Country()
                 mCountry?.code = code
                 mCountry?.dialCode = dialCode
@@ -304,6 +319,8 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             .setPositiveButton(R.string.Confirm) { dialog, _ ->
                 if (from == FROM_LANDING) {
                     AnalyticsTracker.trackLoginSmsSendConfirmed()
+                } else if (isAddPhoneFlow()) {
+                    AnalyticsTracker.trackAddPhoneSmsSendConfirmed()
                 }
                 requestSend()
                 dialog.dismiss()
@@ -387,6 +404,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                                         pin,
                                         verificationResponse.hasEmergencyContact,
                                         from,
+                                        addPhoneSource,
                                     ),
                                     VerificationFragment.TAG,
                                 )
@@ -400,6 +418,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                                 pin,
                                 verificationResponse.hasEmergencyContact,
                                 from,
+                                addPhoneSource,
                             ),
                             VerificationFragment.TAG,
                         )
@@ -440,6 +459,8 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                 AnalyticsTracker.trackSignUpCaptcha()
             } else if (from == FROM_LANDING) {
                 AnalyticsTracker.trackLoginCaptcha("phone_number")
+            } else if (isAddPhoneFlow()) {
+                AnalyticsTracker.trackAddPhoneCaptcha("phone_number")
             }
             captchaView?.loadCaptcha(
                 if (errorDescription.containsIgnoreCase(gtCAPTCHA)) CaptchaView.CaptchaType.GTCaptcha
@@ -454,6 +475,10 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
         binding.continueBn.displayedChild = 0
         binding.mobileCover.isVisible = false
         captchaView?.hide()
+    }
+
+    private fun isAddPhoneFlow(): Boolean {
+        return from == FROM_CHANGE_PHONE_ACCOUNT || from == FROM_VERIFY_MOBILE_REMINDER
     }
 
     private fun handleEditView() {

@@ -140,7 +140,9 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                                 requireActivity(),
                                 inMixin = true,
                                 input = asset.assetId,
-                                output = output
+                                output = output,
+                                entrySource = TradeSource.ASSET_DETAIL,
+                                entryType = AnalyticsTracker.SpotTradeType.SIMPLE,
                             )
                         }
                     }
@@ -158,7 +160,9 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                         requireActivity(),
                         inMixin = true,
                         input = asset.assetId,
-                        output = output
+                        output = output,
+                        entrySource = TradeSource.ASSET_DETAIL,
+                        entryType = AnalyticsTracker.SpotTradeType.SIMPLE,
                     )
                 }
             }

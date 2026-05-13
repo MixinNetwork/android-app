@@ -79,6 +79,7 @@ import one.mixin.android.ui.home.web3.components.PriceInfo
 import one.mixin.android.ui.home.web3.components.TradeLayout
 import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.web3.isNativeSolAsset
@@ -225,6 +226,7 @@ fun SwapContent(
                                     .clip(CircleShape)
                                     .background(MixinAppTheme.colors.accent)
                                     .clickable {
+                                        AnalyticsTracker.trackSpotSwitchSendReceive()
                                         isLoading = true
                                         isReverse = !isReverse
                                         invalidFlag = !invalidFlag
@@ -267,6 +269,7 @@ fun SwapContent(
                                 onDeposit = onDeposit,
                                 displayBalanceOverride = if (from.isNativeSolAsset()) fromBalance else null,
                                 onMax = {
+                                    AnalyticsTracker.trackSpotSendInputBalance()
                                     val balance = availableFromBalanceValue
                                     if (balance > BigDecimal.ZERO) {
                                         inputText = balance.stripTrailingZeros().toPlainString()
@@ -336,6 +339,7 @@ fun SwapContent(
                 val balance = availableFromBalanceValue
 
                 InputAction("25%", showBorder = true) {
+                    AnalyticsTracker.trackSpotSendInputPercent("25%")
                     if (balance > BigDecimal.ZERO) {
                         inputText = (balance * BigDecimal("0.25")).stripTrailingZeros().toPlainString()
                     } else {
@@ -343,6 +347,7 @@ fun SwapContent(
                     }
                 }
                 InputAction("50%", showBorder = true) {
+                    AnalyticsTracker.trackSpotSendInputPercent("50%")
                     if (balance > BigDecimal.ZERO) {
                         inputText = (balance * BigDecimal("0.5")).stripTrailingZeros().toPlainString()
                     } else {
@@ -350,6 +355,7 @@ fun SwapContent(
                     }
                 }
                 InputAction(stringResource(R.string.Max), showBorder = true) {
+                    AnalyticsTracker.trackSpotSendInputBalance()
                     if (balance > BigDecimal.ZERO) {
                         inputText = balance.stripTrailingZeros().toPlainString()
                     } else {

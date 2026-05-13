@@ -12,82 +12,87 @@ import java.math.BigDecimal
 object AnalyticsTracker {
     private val firebaseAnalytics by lazy { FirebaseAnalytics.getInstance(MixinApplication.get()) }
 
+    private fun logEvent(name: String) {
+        firebaseAnalytics.logEvent(name, null)
+    }
+
+    private inline fun logEvent(name: String, block: Bundle.() -> Unit) {
+        firebaseAnalytics.logEvent(name, Bundle().apply(block))
+    }
+
     fun trackSignUpStart() {
-        firebaseAnalytics.logEvent("sign_up_start", null)
+        logEvent("sign_up_start")
     }
 
 
     fun trackSignUpCaptcha() {
-        firebaseAnalytics.logEvent("sign_up_captcha", null)
+        logEvent("sign_up_captcha")
     }
 
     fun trackSignUpSmsVerify() {
-        firebaseAnalytics.logEvent("sign_up_sms_verify", null)
+        logEvent("sign_up_sms_verify")
     }
 
     fun trackSignUpFullName() {
-        firebaseAnalytics.logEvent("sign_up_fullname", null)
+        logEvent("sign_up_fullname")
     }
 
     fun trackSignUpSignalInit() {
-        firebaseAnalytics.logEvent("sign_up_signal_init", null)
+        logEvent("sign_up_signal_init")
     }
 
     fun trackSignUpPinSet() {
-        firebaseAnalytics.logEvent("sign_up_pin_set", null)
+        logEvent("sign_up_pin_set")
     }
 
     fun trackSignUpPinQuiz() {
-        firebaseAnalytics.logEvent("sign_up_pin_quiz", null)
+        logEvent("sign_up_pin_quiz")
     }
 
     fun trackSignUpEnd() {
-        firebaseAnalytics.logEvent("sign_up_end", null)
+        logEvent("sign_up_end")
     }
 
     fun trackLoginStart() {
-        firebaseAnalytics.logEvent("login_start", null)
+        logEvent("login_start")
     }
 
     fun trackLoginSmsSendConfirmed() {
-        firebaseAnalytics.logEvent("login_sms_send_confirmed", null)
+        logEvent("login_sms_send_confirmed")
     }
 
     fun trackLoginMnemonicPhrase() {
-        firebaseAnalytics.logEvent("login_mnemonic_phrase", null)
+        logEvent("login_mnemonic_phrase")
     }
 
     fun trackLoginCaptcha(type: String) {
-        val params = Bundle().apply {
+        logEvent("login_captcha") {
             putString("type", type)
         }
-        firebaseAnalytics.logEvent("login_captcha", params)
     }
 
     fun trackLoginSmsVerify() {
-        firebaseAnalytics.logEvent("login_sms_verify", null)
+        logEvent("login_sms_verify")
     }
 
     fun trackLoginSignalInit() {
-        firebaseAnalytics.logEvent("login_signal_init", null)
+        logEvent("login_signal_init")
     }
 
     fun trackLoginRestore(type: String) {
-        val params = Bundle().apply {
+        logEvent("login_restore") {
             putString("type", type)
         }
-        firebaseAnalytics.logEvent("login_restore", params)
     }
 
     fun trackLoginPinVerify(type: String) {
-        val params = Bundle().apply {
+        logEvent("login_pin_verify") {
             putString("type", type)
         }
-        firebaseAnalytics.logEvent("login_pin_verify", params)
     }
 
     fun trackLoginEnd() {
-        firebaseAnalytics.logEvent("login_end", null)
+        logEvent("login_end")
     }
 
     fun setHasEmergencyContact(account: Account) {
@@ -120,10 +125,9 @@ object AnalyticsTracker {
     }
 
     fun trackTradeTokenSelect(method: String) {
-        val params = Bundle().apply {
+        logEvent("trade_token_select") {
             putString("method", method)
         }
-        firebaseAnalytics.logEvent("trade_token_select", params)
     }
 
     object TradeTokenSelectMethod {
@@ -134,12 +138,11 @@ object AnalyticsTracker {
     }
 
     fun trackTradeQuote(result: String, type: String, reason: String? = null) {
-        val params = Bundle().apply {
+        logEvent("trade_quote") {
             putString("result", result)
             putString("type", type)
             reason?.let { putString("reason", it) }
         }
-        firebaseAnalytics.logEvent("trade_quote", params)
     }
 
     object TradeQuoteResult {
@@ -160,11 +163,10 @@ object AnalyticsTracker {
     }
 
     fun trackTradeStart(wallet: String, source: String) {
-        val params = Bundle().apply {
+        logEvent("trade_start") {
             putString("wallet", wallet)
             putString("source", source)
         }
-        firebaseAnalytics.logEvent("trade_start", params)
     }
 
     object TradeWallet {
@@ -184,8 +186,80 @@ object AnalyticsTracker {
         const val BALANCE = "balance"
     }
 
+    object SpotTradeType {
+        const val SIMPLE = "simple"
+        const val ADVANCED = "advanced"
+    }
+
+    object SpotExpiryMethod {
+        const val NEVER = "never"
+        const val MIN_10 = "10m"
+        const val HOUR_1 = "1h"
+        const val DAY_1 = "1d"
+        const val DAY_3 = "3d"
+        const val WEEK_1 = "1w"
+        const val MONTH_1 = "1m"
+        const val YEAR_1 = "1y"
+    }
+
+    object CustomerServiceSource {
+        const val PERPS_OPEN_POSITION = "perps_open_position"
+        const val PERPS_MARKET_DETAIL = "perps_market_detail"
+        const val PERPS_ALL_POSITIONS = "perps_all_positions"
+        const val PERPS_ACTIVITY_DETAIL = "perps_activity_detail"
+        const val SPOT_TRADE = "spot_trade"
+        const val ADD_PHONE_BEFORE = "add_phone_before"
+        const val ADD_PHONE = "add_phone"
+        const val ADD_PHONE_MOBILE = "add_phone_mobile"
+    }
+
+    object AddPhoneSource {
+        const val SETTINGS = "settings"
+        const val RECOVERY_KEY_GUIDE = "recovery_key_guide"
+        const val BUY_GUIDE = "buy_guide"
+    }
+
+    object BotSource {
+        const val SEARCH = "search"
+        const val MORE_EXPLORE = "more_explore"
+    }
+
+    object MarketSource {
+        const val MORE_MARKET_CAP = "more_market_cap"
+        const val MORE_FAVORITES = "more_favorites"
+        const val MORE_SEARCH = "more_search"
+        const val SCHEMA = "schema"
+        const val MARKET_DETAIL = "market_detail"
+        const val PRICE_ALERT_LIST = "price_alert_list"
+    }
+
+    object MarketShareType {
+        const val SHARE = "share"
+        const val COPY = "copy"
+        const val SAVE = "save"
+    }
+
+    object MarketAlertsType {
+        const val ONE = "one"
+        const val ALL = "all"
+    }
+
+    object PerpsSource {
+        const val WALLET_HOME = TradeSource.WALLET_HOME
+        const val MORE_EXPLORE = "more_explore"
+        const val APP_CARD = TradeSource.APP_CARD
+        const val PERPS_MARKET_DETAIL = "perps_market_detail"
+        const val PERPS_ALL_POSITIONS = "perps_all_positions"
+        const val PERPS_ACTIVITY_DETAIL = "perps_activity_detail"
+    }
+
+    object PerpsDirection {
+        const val LONG = "long"
+        const val SHORT = "short"
+    }
+
     fun trackTradePreview() {
-        firebaseAnalytics.logEvent("trade_preview", null)
+        logEvent("trade_preview")
     }
 
     fun trackTradeEnd(wallet: String, amountValue: BigDecimal, price: String?) {
@@ -196,11 +270,10 @@ object AnalyticsTracker {
         
         val tradeAssetLevel = getTradeAssetLevel(amountUsd)
         
-        val params = Bundle().apply {
+        logEvent("trade_end") {
             putString("wallet", wallet)
             putString("trade_asset_level", tradeAssetLevel)
         }
-        firebaseAnalytics.logEvent("trade_end", params)
     }
 
     private fun getTradeAssetLevel(amountUsd: Double): String {
@@ -215,30 +288,338 @@ object AnalyticsTracker {
     }
 
     fun trackTradeTransactions() {
-        firebaseAnalytics.logEvent("trade_transactions", null)
+        logEvent("trade_transactions")
     }
 
     fun trackTradeDetail() {
-        firebaseAnalytics.logEvent("trade_detail", null)
+        logEvent("trade_detail")
     }
 
     fun trackBuyStart(wallet: String, source: String) {
-        val params = Bundle().apply {
+        logEvent("buy_start") {
             putString("wallet", wallet)
             putString("source", source)
         }
-        firebaseAnalytics.logEvent("buy_start", params)
     }
 
     fun trackBuyTokenSelect() {
-        firebaseAnalytics.logEvent("buy_token_select", null)
+        logEvent("buy_token_select")
     }
 
     fun trackBuyFiatSelect() {
-        firebaseAnalytics.logEvent("buy_fiat_select", null)
+        logEvent("buy_fiat_select")
     }
 
     fun trackBuyPreview() {
-        firebaseAnalytics.logEvent("buy_preview", null)
+        logEvent("buy_preview")
+    }
+
+    fun trackPerpsOpenPositionStart(direction: String, source: String) {
+        logEvent("trade_perps_open_position_start") {
+            putString("direction", direction)
+            putString("source", source)
+        }
+    }
+
+    fun trackPerpsMarginTokenSelect(chain: String?, assetSymbol: String?) {
+        logEvent("trade_perps_margin_token_select") {
+            putString("chain", chain)
+            putString("asset_symbol", assetSymbol)
+        }
+    }
+
+    fun trackPerpsAmountInputPercent(percent: String) {
+        logEvent("trade_perps_amount_input_percent") {
+            putString("percent", percent)
+        }
+    }
+
+    fun trackPerpsAmountInputBalance() {
+        logEvent("trade_perps_amount_input_balance")
+    }
+
+    fun trackPerpsLeverageSelect(leverage: Int) {
+        logEvent("trade_perps_leverage_select") {
+            putString("leverage", leverage.toString())
+        }
+    }
+
+    fun trackPerpsPreview() {
+        logEvent("trade_perps_preview")
+    }
+
+    fun trackPerpsPreviewConfirm() {
+        logEvent("trade_perps_preview_confirm")
+    }
+
+    fun trackPerpsPreviewCancel() {
+        logEvent("trade_perps_preview_cancel")
+    }
+
+    fun trackPerpsOpenPositionEnd(leverage: Int, amountValue: BigDecimal, price: String?) {
+        val amountUsd = runCatching {
+            val priceValue = price?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+            amountValue.multiply(priceValue).toDouble()
+        }.getOrDefault(0.0)
+        logEvent("trade_perps_open_position_end") {
+            putString("leverage", leverage.toString())
+            putString("trade_asset_level", getTradeAssetLevel(amountUsd))
+        }
+    }
+
+    fun trackPerpsClosePositionStart() {
+        logEvent("trade_perps_close_position_start")
+    }
+
+    fun trackPerpsClosePositionPreview() {
+        logEvent("trade_perps_close_position_preview")
+    }
+
+    fun trackPerpsClosePositionPreviewConfirm() {
+        logEvent("trade_perps_close_position_preview_confirm")
+    }
+
+    fun trackPerpsClosePositionPreviewCancel() {
+        logEvent("trade_perps_close_position_preview_cancel")
+    }
+
+    fun trackPerpsClosePositionEnd() {
+        logEvent("trade_perps_close_position_end")
+    }
+
+    fun trackPerpsAllPositions(source: String) {
+        logEvent("trade_perps_all_positions") {
+            putString("source", source)
+        }
+    }
+
+    fun trackPerpsActivity(source: String) {
+        logEvent("trade_perps_activity") {
+            putString("source", source)
+        }
+    }
+
+    fun trackPerpsActivityDetail(source: String) {
+        logEvent("trade_perps_activity_detail") {
+            putString("source", source)
+        }
+    }
+
+    fun trackPerpsGuide(source: String) {
+        logEvent("trade_perps_guide") {
+            putString("source", source)
+        }
+    }
+
+    fun trackSpotStart(wallet: String, type: String, source: String) {
+        logEvent("trade_spot_start") {
+            putString("wallet", wallet)
+            putString("type", type)
+            putString("source", source)
+        }
+    }
+
+    fun trackSpotSwitchSendReceive() {
+        logEvent("trade_spot_switch_send_receive")
+    }
+
+    fun trackSpotSwitchQuoteDirection() {
+        logEvent("trade_spot_switch_quote_direction")
+    }
+
+    fun trackSpotPreview(sendChain: String?, sendAssetSymbol: String?, receiveChain: String?, receiveAssetSymbol: String?) {
+        logEvent("trade_spot_preview") {
+            putString("send_chain", sendChain)
+            putString("send_asset_symbol", sendAssetSymbol)
+            putString("receive_chain", receiveChain)
+            putString("receive_asset_symbol", receiveAssetSymbol)
+        }
+    }
+
+    fun trackSpotPreviewConfirm() {
+        logEvent("trade_spot_preview_confirm")
+    }
+
+    fun trackSpotPreviewCancel() {
+        logEvent("trade_spot_preview_cancel")
+    }
+
+    fun trackSpotSendInputPercent(percent: String) {
+        logEvent("trade_spot_send_input_percent") {
+            putString("percent", percent)
+        }
+    }
+
+    fun trackSpotSendInputBalance() {
+        logEvent("trade_spot_send_input_balance")
+    }
+
+    fun trackSpotPriceInputPercent(percent: String) {
+        logEvent("trade_spot_price_input_percent") {
+            putString("percent", percent)
+        }
+    }
+
+    fun trackSpotTokenSelect(method: String, type: String, chain: String?, assetSymbol: String?) {
+        logEvent("trade_spot_token_select") {
+            putString("method", method)
+            putString("type", type)
+            putString("chain", chain)
+            putString("asset_symbol", assetSymbol)
+        }
+    }
+
+    fun trackSpotExpirySelect(method: String) {
+        logEvent("trade_spot_expiry_select") {
+            putString("method", method)
+        }
+    }
+
+    fun trackSpotQuote(result: String, type: String, reason: String? = null) {
+        logEvent("trade_spot_quote") {
+            putString("result", result)
+            putString("type", type)
+            reason?.let { putString("reason", it) }
+        }
+    }
+
+    fun trackSpotEnd(wallet: String, amountValue: BigDecimal, price: String?) {
+        val amountUsd = runCatching {
+            val priceValue = price?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+            amountValue.multiply(priceValue).toDouble()
+        }.getOrDefault(0.0)
+        logEvent("trade_spot_end") {
+            putString("wallet", wallet)
+            putString("trade_asset_level", getTradeAssetLevel(amountUsd))
+        }
+    }
+
+    fun trackTradeTypeSelect(type: String) {
+        logEvent("trade_type_select") {
+            putString("type", type)
+        }
+    }
+
+    fun trackSpotTransactions(type: String) {
+        logEvent("trade_spot_transactions") {
+            putString("type", type)
+        }
+    }
+
+    fun trackSpotDetail(type: String) {
+        logEvent("trade_spot_detail") {
+            putString("type", type)
+        }
+    }
+
+    fun trackSpotGuide(type: String, source: String) {
+        logEvent("trade_spot_guide") {
+            putString("type", type)
+            putString("source", source)
+        }
+    }
+
+    fun trackCustomerServiceDialog(source: String) {
+        logEvent("customer_service_dialog") {
+            putString("source", source)
+        }
+    }
+
+    fun trackAddPhoneStart(source: String) {
+        logEvent("add_phone_start") {
+            putString("source", source)
+        }
+    }
+
+    fun trackAddPhoneVerifyPin() {
+        logEvent("add_phone_verify_pin")
+    }
+
+    fun trackAddPhoneInputPhone() {
+        logEvent("add_phone_input_phone")
+    }
+
+    fun trackAddPhoneInputPhoneCountry() {
+        logEvent("add_phone_input_phone_country")
+    }
+
+    fun trackAddPhoneSmsSendConfirmed() {
+        logEvent("add_phone_sms_send_confirmed")
+    }
+
+    fun trackAddPhoneCaptcha(type: String) {
+        logEvent("add_phone_captcha") {
+            putString("type", type)
+        }
+    }
+
+    fun trackAddPhoneSmsVerify() {
+        logEvent("add_phone_sms_verify")
+    }
+
+    fun trackAddPhoneEnd() {
+        logEvent("add_phone_end")
+    }
+
+    fun trackOpenBotHomePage(source: String, identityNumber: String?) {
+        logEvent("open_bot_home_page") {
+            putString("source", source)
+            putString("identity_number", identityNumber)
+        }
+    }
+
+    fun trackOpenBotConversation(source: String, identityNumber: String?) {
+        logEvent("open_bot_conversation") {
+            putString("source", source)
+            putString("identity_number", identityNumber)
+        }
+    }
+
+    fun trackMarketListRange(rangeTop: Int) {
+        logEvent("market_list_range") {
+            putString("range_top", rangeTop.toString())
+        }
+    }
+
+    fun trackMarketListPriceChange() {
+        logEvent("market_list_price_change")
+    }
+
+    fun trackMarketListOrder(column: String) {
+        logEvent("market_list_order") {
+            putString("column", column)
+        }
+    }
+
+    fun trackMarketDetail(source: String) {
+        logEvent("market_detail") {
+            putString("source", source)
+        }
+    }
+
+    fun trackMarketDetailShare(type: String) {
+        logEvent("market_detail_share") {
+            putString("type", type)
+        }
+    }
+
+    fun trackMarketFavoriteAdd(source: String) {
+        logEvent("market_favorite_add") {
+            putString("source", source)
+        }
+    }
+
+    fun trackMarketPriceAlerts(type: String) {
+        logEvent("market_price_alerts") {
+            putString("type", type)
+        }
+    }
+
+    fun trackMarketPriceAlertAdd(source: String, frequency: String, type: String) {
+        logEvent("market_price_alert_add") {
+            putString("source", source)
+            putString("frequency", frequency)
+            putString("type", type)
+        }
     }
 }

@@ -261,7 +261,7 @@ class ExploreFragment : BaseFragment() {
         }, { bot ->
             lifecycleScope.launch {
                 botManagerViewModel.findUserByAppId(bot.getBotId())?.let { user ->
-                    showUserBottom(parentFragmentManager, user)
+                    showUserBottom(parentFragmentManager, user, botEntrySource = AnalyticsTracker.BotSource.MORE_EXPLORE)
                 }
             }
         })
@@ -340,11 +340,27 @@ class ExploreFragment : BaseFragment() {
                 INTERNAL_SWAP_ID -> {
                     val shown = RecoveryReminderBottomSheetDialogFragment.showForRiskAction(parentFragmentManager) {
                         AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, AnalyticsTracker.TradeSource.EXPLORE)
-                        SwapActivity.show(requireActivity(), null, null, null, null)
+                        SwapActivity.show(
+                            requireActivity(),
+                            null,
+                            null,
+                            null,
+                            null,
+                            entrySource = AnalyticsTracker.TradeSource.EXPLORE,
+                            entryType = AnalyticsTracker.SpotTradeType.SIMPLE,
+                        )
                     }
                     if (!shown) {
                         AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, AnalyticsTracker.TradeSource.EXPLORE)
-                        SwapActivity.show(requireActivity(), null, null, null, null)
+                        SwapActivity.show(
+                            requireActivity(),
+                            null,
+                            null,
+                            null,
+                            null,
+                            entrySource = AnalyticsTracker.TradeSource.EXPLORE,
+                            entryType = AnalyticsTracker.SpotTradeType.SIMPLE,
+                        )
                     }
                 }
                 INTERNAL_MEMBER_ID -> {

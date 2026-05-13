@@ -166,7 +166,12 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                         if (
                             showRecoveryReminderForRiskAction {
                                 AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.WALLET_HOME)
-                                SwapActivity.show(requireActivity(), inMixin = true)
+                                SwapActivity.show(
+                                    requireActivity(),
+                                    inMixin = true,
+                                    entrySource = TradeSource.WALLET_HOME,
+                                    entryType = AnalyticsTracker.SpotTradeType.SIMPLE,
+                                )
                                 defaultSharedPreferences.putBoolean(PREF_HAS_USED_SWAP, false)
                                 RxBus.publish(BadgeEvent(PREF_HAS_USED_SWAP))
                                 sendReceiveView.swapBadge.isVisible = false
@@ -175,7 +180,12 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                             return@setOnClickListener
                         }
                         AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.WALLET_HOME)
-                        SwapActivity.show(requireActivity(), inMixin = true)
+                        SwapActivity.show(
+                            requireActivity(),
+                            inMixin = true,
+                            entrySource = TradeSource.WALLET_HOME,
+                            entryType = AnalyticsTracker.SpotTradeType.SIMPLE,
+                        )
                         defaultSharedPreferences.putBoolean(PREF_HAS_USED_SWAP, false)
                         RxBus.publish(BadgeEvent(PREF_HAS_USED_SWAP))
                         sendReceiveView.swapBadge.isVisible = false

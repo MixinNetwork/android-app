@@ -82,6 +82,7 @@ import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.handleMixinError
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.route.Order
 import one.mixin.android.vo.route.OrderState
@@ -145,7 +146,7 @@ fun LimitOrderContent(
     onLimitReview: (SwapToken, SwapToken, CreateLimitOrderResponse) -> Unit,
     onDeposit: (SwapToken) -> Unit,
     onLimitOrderClick: (String) -> Unit,
-    onOrderList: (String, Boolean) -> Unit,
+    onOrderList: (String, Boolean, String) -> Unit,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -270,6 +271,7 @@ fun LimitOrderContent(
                                     .clip(CircleShape)
                                     .background(MixinAppTheme.colors.accent)
                                     .clickable {
+                                        AnalyticsTracker.trackSpotSwitchSendReceive()
                                         isReverse = !isReverse
                                         inputText = outputText
 
@@ -326,6 +328,7 @@ fun LimitOrderContent(
                                     }
                                 }
                             }, onDeposit = onDeposit, displayBalanceOverride = if (it.isNativeSolAsset()) fromBalance else null, onMax = {
+                                AnalyticsTracker.trackSpotSendInputBalance()
                                 inputText = formatBalanceInput(availableFromBalance, fromToken?.isWeb3 == true)
                                 if (inputText.isNotBlank()) {
                                     val fromAmount = inputText.toBigDecimalOrNull()
@@ -396,13 +399,19 @@ fun LimitOrderContent(
                                     lastOrderTime = marketPriceClickTime,
                                     priceMultiplier = priceMultiplier,
                                     isPriceInverted = isPriceInverted,
-                                    onPriceInvertedChange = { isPriceInverted = it },
+                                    onPriceInvertedChange = {
+                                        AnalyticsTracker.trackSpotSwitchQuoteDirection()
+                                        isPriceInverted = it
+                                    },
                                     onStandardPriceChanged = { limitPriceText = it },
                                 )
                                 Spacer(modifier = Modifier.height(10.dp))
                                 ExpirySelector(
                                     expiryOption = expiryOption,
-                                    onExpiryChange = { option -> expiryOption = option }
+                                    onExpiryChange = { option ->
+                                        expiryOption = option
+                                        AnalyticsTracker.trackSpotExpirySelect(option.analyticsMethod())
+                                    }
                                 )
                             }
                         },
@@ -527,12 +536,12 @@ fun LimitOrderContent(
                                 .padding(vertical = 16.dp),
                         ) {
                             Row(modifier = Modifier
-                                .padding(horizontal = 16.dp)
-                                .clickable {
-                                    keyboardController?.hide()
-                                    focusManager.clearFocus()
-                                    onOrderList(walletId, true)
-                                }) {
+                                    .padding(horizontal = 16.dp)
+                                    .clickable {
+                                        keyboardController?.hide()
+                                        focusManager.clearFocus()
+                                        onOrderList(walletId, true, AnalyticsTracker.SpotTradeType.ADVANCED)
+                                    }) {
                                 Text(text = "${stringResource(id = R.string.open_orders)} (${limitOrders.size})", color = MixinAppTheme.colors.textPrimary)
                                 Spacer(modifier = Modifier.weight(1f))
                                 Icon(
@@ -557,7 +566,7 @@ fun LimitOrderContent(
                                         .clickable {
                                             keyboardController?.hide()
                                             focusManager.clearFocus()
-                                            onOrderList(walletId, true)
+                                            onOrderList(walletId, true, AnalyticsTracker.SpotTradeType.ADVANCED)
                                         },
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
@@ -615,7 +624,18 @@ fun LimitOrderContent(
                 fromToken = fromToken,
                 toToken = toToken,
                 isPriceInverted = isPriceInverted,
-                onSetPriceMultiplier = { priceMultiplier = it },
+                onSetPriceMultiplier = {
+                    priceMultiplier = it
+                    val percent = when (it) {
+                        0.001f -> "0.1%"
+                        0.005f -> "0.5%"
+                        0.01f -> "1%"
+                        0.05f -> "5%"
+                        0.1f -> "10%"
+                        else -> null
+                    }
+                    percent?.let(AnalyticsTracker::trackSpotPriceInputPercent)
+                },
                 onSetInput = {
                     inputText = it
                     val fromAmount = it.toBigDecimalOrNull()
@@ -638,6 +658,19 @@ fun LimitOrderContent(
         })
     } ?: run {
         Loading()
+    }
+}
+
+private fun ExpiryOption.analyticsMethod(): String {
+    return when (this) {
+        ExpiryOption.NEVER -> AnalyticsTracker.SpotExpiryMethod.NEVER
+        ExpiryOption.MIN_10 -> AnalyticsTracker.SpotExpiryMethod.MIN_10
+        ExpiryOption.HOUR_1 -> AnalyticsTracker.SpotExpiryMethod.HOUR_1
+        ExpiryOption.DAY_1 -> AnalyticsTracker.SpotExpiryMethod.DAY_1
+        ExpiryOption.DAY_3 -> AnalyticsTracker.SpotExpiryMethod.DAY_3
+        ExpiryOption.WEEK_1 -> AnalyticsTracker.SpotExpiryMethod.WEEK_1
+        ExpiryOption.MONTH_1 -> AnalyticsTracker.SpotExpiryMethod.MONTH_1
+        ExpiryOption.YEAR_1 -> AnalyticsTracker.SpotExpiryMethod.YEAR_1
     }
 }
 
