@@ -1087,6 +1087,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
             entrySource = if (activity is ConversationActivity) TradeSource.APP_CARD else TradeSource.SCHEMA,
             entryType = AnalyticsTracker.SpotTradeType.SIMPLE,
         )
+        closeSourceWebActivityIfNeeded()
         dismiss()
     }
 
@@ -1114,6 +1115,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                 market.tokenSymbol,
                 AnalyticsTracker.PerpsSource.APP_CARD,
             )
+            closeSourceWebActivityIfNeeded()
             dismiss()
             return
         }
@@ -1145,7 +1147,12 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
             entrySource = if (activity is ConversationActivity) TradeSource.APP_CARD else TradeSource.SCHEMA,
             entryType = if (openLimit) AnalyticsTracker.SpotTradeType.ADVANCED else AnalyticsTracker.SpotTradeType.SIMPLE,
         )
+        closeSourceWebActivityIfNeeded()
         dismiss()
+    }
+
+    private fun closeSourceWebActivityIfNeeded() {
+        (activity as? WebActivity)?.finish()
     }
 
     private fun handleTipScheme(uri: Uri) {
