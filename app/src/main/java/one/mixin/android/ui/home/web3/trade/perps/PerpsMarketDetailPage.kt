@@ -1036,7 +1036,8 @@ private fun OpenPositionCard(
                         tpSlLoadingMode = PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT
                         viewModel.setPositionTpSl(
                             positionId = position.positionId,
-                            stopLossPrice = position.stopLossPrice,
+                            takeProfitPrice = "",
+                            stopLossPrice = null,
                             onSuccess = {
                                 tpSlLoadingMode = null
                                 toast(context.getString(R.string.Successful))
@@ -1062,7 +1063,8 @@ private fun OpenPositionCard(
                         tpSlLoadingMode = PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS
                         viewModel.setPositionTpSl(
                             positionId = position.positionId,
-                            takeProfitPrice = position.takeProfitPrice,
+                            takeProfitPrice = null,
+                            stopLossPrice = "",
                             onSuccess = {
                                 tpSlLoadingMode = null
                                 toast(context.getString(R.string.Successful))
