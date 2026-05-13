@@ -444,7 +444,10 @@ class TradeFragment : BaseFragment() {
                                         }
                                         tabIndex == 1 || tabIndex == 0 -> {
                                             if (!defaultSharedPreferences.getBoolean(PREF_TRADE_SPOT_GUIDE_SHOWN, false)) {
-                                                AnalyticsTracker.trackSpotGuide(currentSpotType(tabIndex), getEntrySource())
+                                                AnalyticsTracker.trackSpotGuide(
+                                                    currentSpotType(tabIndex),
+                                                    AnalyticsTracker.SpotGuideSource.FIRST_GUIDE,
+                                                )
                                                 val initialGuideTab = if (tabIndex == 1) {
                                                     SpotTradeGuideBottomSheetDialogFragment.TAB_LIMIT
                                                 } else {
@@ -464,13 +467,19 @@ class TradeFragment : BaseFragment() {
                                                 .show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
                                         }
                                         tabIndex == 1 -> {
-                                            AnalyticsTracker.trackSpotGuide(AnalyticsTracker.SpotTradeType.ADVANCED, getEntrySource())
+                                            AnalyticsTracker.trackSpotGuide(
+                                                AnalyticsTracker.SpotTradeType.ADVANCED,
+                                                AnalyticsTracker.SpotGuideSource.MENU,
+                                            )
                                             SpotTradeGuideBottomSheetDialogFragment.newInstance(
                                                 SpotTradeGuideBottomSheetDialogFragment.TAB_LIMIT
                                             ).show(parentFragmentManager, SpotTradeGuideBottomSheetDialogFragment.TAG)
                                         }
                                         tabIndex == 0 -> {
-                                            AnalyticsTracker.trackSpotGuide(AnalyticsTracker.SpotTradeType.SIMPLE, getEntrySource())
+                                            AnalyticsTracker.trackSpotGuide(
+                                                AnalyticsTracker.SpotTradeType.SIMPLE,
+                                                AnalyticsTracker.SpotGuideSource.MENU,
+                                            )
                                             SpotTradeGuideBottomSheetDialogFragment.newInstance(
                                                 SpotTradeGuideBottomSheetDialogFragment.TAB_SWAP
                                             ).show(parentFragmentManager, SpotTradeGuideBottomSheetDialogFragment.TAG)

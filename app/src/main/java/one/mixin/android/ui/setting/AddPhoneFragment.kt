@@ -49,7 +49,7 @@ class AddPhoneFragment : BaseFragment(R.layout.fragment_compose) {
                     navTo(AddPhoneBeforeFragment.newInstance(source), AddPhoneBeforeFragment.TAG)
                 },
                 onCustomerService = {
-                    AnalyticsTracker.trackCustomerServiceDialog(AnalyticsTracker.CustomerServiceSource.ADD_PHONE)
+                    AnalyticsTracker.trackCustomerServiceDialog(AnalyticsTracker.CustomerServiceSource.ADD_PHONE_NOTICE)
                 }
             )
         }

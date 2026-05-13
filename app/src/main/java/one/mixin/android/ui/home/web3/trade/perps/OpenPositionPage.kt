@@ -480,7 +480,6 @@ fun OpenPositionPage(
                             ).setOnLeverageSelected { newLeverage ->
                                 leverage = newLeverage
                                 context.defaultSharedPreferences.putInt(getLeveragePrefKey(marketId), newLeverage.toInt())
-                                AnalyticsTracker.trackPerpsLeverageSelect(newLeverage.toInt())
                             }.show(activity.supportFragmentManager, LeverageBottomSheetDialogFragment.TAG)
                         },
                         text = "${leverage.toInt()}x",
@@ -528,6 +527,7 @@ fun OpenPositionPage(
                                     )
                                     .clickable {
                                         if (lev == -1) {
+                                            AnalyticsTracker.trackPerpsLeverageSelect(PERPS_LEVERAGE_CUSTOM_TAB)
                                             val activity = context as? FragmentActivity ?: return@clickable
                                             LeverageBottomSheetDialogFragment.newInstance(
                                                 currentLeverage = leverage,
@@ -537,12 +537,17 @@ fun OpenPositionPage(
                                             ).setOnLeverageSelected { newLeverage ->
                                                 leverage = newLeverage
                                                 context.defaultSharedPreferences.putInt(getLeveragePrefKey(marketId), newLeverage.toInt())
-                                                AnalyticsTracker.trackPerpsLeverageSelect(newLeverage.toInt())
                                             }.show(activity.supportFragmentManager, LeverageBottomSheetDialogFragment.TAG)
                                         } else {
                                             leverage = lev.toFloat()
                                             context.defaultSharedPreferences.putInt(getLeveragePrefKey(marketId), lev)
-                                            AnalyticsTracker.trackPerpsLeverageSelect(lev)
+                                            AnalyticsTracker.trackPerpsLeverageSelect(
+                                                if (lev == maxLeverage) {
+                                                    PERPS_LEVERAGE_MAX
+                                                } else {
+                                                    lev.toPerpsLeverageValue()
+                                                }
+                                            )
                                         }
                                     },
                                 contentAlignment = Alignment.Center
@@ -655,7 +660,7 @@ fun OpenPositionPage(
                         .fillMaxWidth()
                         .height(48.dp),
                     onClick = {
-                        AnalyticsTracker.trackPerpsPreview()
+                        AnalyticsTracker.trackPerpsPreview(leverage.toInt().toPerpsLeverageValue())
                         errorInfo = null
                         val token = currentToken ?: return@MixinButton
                         val amount = usdtAmount.toBigDecimalOrNull() ?: return@MixinButton
@@ -779,7 +784,7 @@ fun OpenPositionPage(
                             applyBalancePercent(BigDecimal("0.5"))
                         }
                         InputAction("100%", showBorder = true) {
-                            AnalyticsTracker.trackPerpsAmountInputPercent("100%")
+                            AnalyticsTracker.trackPerpsAmountInputPercent("max")
                             applyBalancePercent(BigDecimal.ONE)
                         }
                         InputAction(stringResource(R.string.Done), showBorder = false) {
@@ -806,6 +811,11 @@ private fun generateLeverageOptions(maxLeverage: Int): List<Int> {
 
     return options.distinct()
 }
+
+private const val PERPS_LEVERAGE_MAX = "max"
+private const val PERPS_LEVERAGE_CUSTOM_TAB = "custom_tab"
+
+private fun Int.toPerpsLeverageValue(): String = "${this}x"
 
 @Composable
 private fun calculateProfitInfo(

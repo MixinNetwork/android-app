@@ -85,6 +85,9 @@ class VerifyFragment : BaseFragment(R.layout.fragment_verify_pin), PinView.OnPin
             keyboard.setOnClickKeyboardListener(keyboardListener)
             keyboard.animate().translationY(0f).start()
         }
+        if (from == FROM_PHONE) {
+            AnalyticsTracker.trackAddPhoneVerifyPin()
+        }
     }
 
     override fun onDestroy() {
@@ -138,7 +141,6 @@ class VerifyFragment : BaseFragment(R.layout.fragment_verify_pin), PinView.OnPin
                     }
                     when (from) {
                         FROM_PHONE -> {
-                            AnalyticsTracker.trackAddPhoneVerifyPin()
                             val fragment = MobileFragment.newInstance(
                                 pin = pinCode,
                                 from = if (phoneNumber.isNullOrBlank().not()) MobileFragment.FROM_VERIFY_MOBILE_REMINDER else MobileFragment.FROM_CHANGE_PHONE_ACCOUNT,

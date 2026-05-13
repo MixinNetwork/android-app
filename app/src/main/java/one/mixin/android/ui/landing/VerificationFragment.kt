@@ -71,6 +71,14 @@ import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Provider
 
+private fun CaptchaView.CaptchaType.analyticsName(): String {
+    return when (this) {
+        CaptchaView.CaptchaType.GTCaptcha -> AnalyticsTracker.CaptchaType.GEETEST
+        CaptchaView.CaptchaType.HCaptcha -> AnalyticsTracker.CaptchaType.HCAPTCHA
+        CaptchaView.CaptchaType.GCaptcha -> AnalyticsTracker.CaptchaType.RECAPTCHA
+    }
+}
+
 @AndroidEntryPoint
 class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
     companion object {
@@ -143,7 +151,12 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
             true
         }
         binding.verificationResendTv.setOnClickListener { sendVerification() }
-        binding.verificationNeedHelpTv.setOnClickListener { showBottom() }
+        binding.verificationNeedHelpTv.setOnClickListener {
+            if (isAddPhoneFlow()) {
+                AnalyticsTracker.trackCustomerServiceDialog(AnalyticsTracker.CustomerServiceSource.ADD_PHONE_SMS_VERIFY)
+            }
+            showBottom()
+        }
 
         if (from == FROM_LANDING_CREATE) {
             AnalyticsTracker.trackSignUpSmsVerify()
@@ -453,14 +466,17 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                     )
                 (view as ViewGroup).addView(captchaView?.webView, MATCH_PARENT, MATCH_PARENT)
             }
-            if (isAddPhoneFlow()) {
-                AnalyticsTracker.trackAddPhoneCaptcha("sms")
+            val captchaType = if (errorDescription.containsIgnoreCase(gtCAPTCHA)) {
+                CaptchaView.CaptchaType.GTCaptcha
+            } else if (errorDescription.containsIgnoreCase(hCAPTCHA)) {
+                CaptchaView.CaptchaType.HCaptcha
+            } else {
+                CaptchaView.CaptchaType.GCaptcha
             }
-            captchaView?.loadCaptcha(
-                if (errorDescription.containsIgnoreCase(gtCAPTCHA)) CaptchaView.CaptchaType.GTCaptcha
-                else if (errorDescription.containsIgnoreCase(hCAPTCHA)) CaptchaView.CaptchaType.HCaptcha
-                else CaptchaView.CaptchaType.GCaptcha
-            )
+            if (isAddPhoneFlow()) {
+                AnalyticsTracker.trackAddPhoneCaptcha(captchaType.analyticsName())
+            }
+            captchaView?.loadCaptcha(captchaType)
         }
 
     private fun startCountDown() {

@@ -50,7 +50,7 @@ class AddPhoneBeforeFragment : BaseFragment(R.layout.fragment_compose) {
                     navTo(VerifyFragment.newInstance(VerifyFragment.FROM_PHONE, addPhoneSource = source), VerifyFragment.TAG)
                 },
                 onCustomerService = {
-                    AnalyticsTracker.trackCustomerServiceDialog(AnalyticsTracker.CustomerServiceSource.ADD_PHONE_BEFORE)
+                    AnalyticsTracker.trackCustomerServiceDialog(AnalyticsTracker.CustomerServiceSource.ADD_PHONE_NOTICE)
                 }
             )
         }

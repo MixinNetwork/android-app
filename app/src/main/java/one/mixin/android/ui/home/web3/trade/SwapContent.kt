@@ -355,7 +355,7 @@ fun SwapContent(
                     }
                 }
                 InputAction(stringResource(R.string.Max), showBorder = true) {
-                    AnalyticsTracker.trackSpotSendInputBalance()
+                    AnalyticsTracker.trackSpotSendInputPercent("max")
                     if (balance > BigDecimal.ZERO) {
                         inputText = balance.stripTrailingZeros().toPlainString()
                     } else {

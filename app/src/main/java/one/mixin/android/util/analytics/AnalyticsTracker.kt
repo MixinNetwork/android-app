@@ -179,7 +179,7 @@ object AnalyticsTracker {
         const val MARKET_DETAIL = "market_detail"
         const val APP_CARD = "app_card"
         const val TRADE_DETAIL = "trade_detail"
-        const val SCHEMA = "schema"
+        const val SCHEMA = "scheme"
         const val ASSET_DETAIL = "asset_detail"
         const val EXPLORE = "explore"
         const val FEE = "fee"
@@ -189,6 +189,17 @@ object AnalyticsTracker {
     object SpotTradeType {
         const val SIMPLE = "simple"
         const val ADVANCED = "advanced"
+        const val PERPETUAL = "perpetual"
+    }
+
+    object SpotTokenType {
+        const val SEND = "send"
+        const val RECEIVE = "receive"
+    }
+
+    object SpotGuideSource {
+        const val FIRST_GUIDE = "first_guide"
+        const val MENU = "menu"
     }
 
     object SpotExpiryMethod {
@@ -207,10 +218,12 @@ object AnalyticsTracker {
         const val PERPS_MARKET_DETAIL = "perps_market_detail"
         const val PERPS_ALL_POSITIONS = "perps_all_positions"
         const val PERPS_ACTIVITY_DETAIL = "perps_activity_detail"
-        const val SPOT_TRADE = "spot_trade"
-        const val ADD_PHONE_BEFORE = "add_phone_before"
-        const val ADD_PHONE = "add_phone"
-        const val ADD_PHONE_MOBILE = "add_phone_mobile"
+        const val TRADE_SIMPLE_HOME_MENU = "trade_simple_home_menu"
+        const val TRADE_ADVANCED_HOME_MENU = "trade_advanced_home_menu"
+        const val ADD_PHONE_NOTICE = "add_phone_notice"
+        const val ADD_PHONE_VERIFY_PIN = "add_phone_verify_pin"
+        const val ADD_PHONE_INPUT_PHONE = "add_phone_input_phone"
+        const val ADD_PHONE_SMS_VERIFY = "add_phone_sms_verify"
     }
 
     object AddPhoneSource {
@@ -219,24 +232,42 @@ object AnalyticsTracker {
         const val BUY_GUIDE = "buy_guide"
     }
 
+    object CaptchaType {
+        const val GEETEST = "geetest"
+        const val HCAPTCHA = "hcaptcha"
+        const val RECAPTCHA = "recaptcha"
+    }
+
     object BotSource {
-        const val SEARCH = "search"
-        const val MORE_EXPLORE = "more_explore"
+        const val MORE_EXPLORE_DIALOG = "more_explore_dialog"
+        const val MORE_EXPLORE_FAVORITE = "more_explore_favorite"
+        const val CHAT_AVATAR_DIALOG = "chat_avatar_dialog"
+        const val CHAT_BOTTOM_MENU = "chat_bottom_menu"
+        const val CHAT_MORE_MENU = "chat_more_menu"
+        const val CHAT_MESSAGE_CONTACT = "chat_message_contact"
+        const val SEARCH_MAO_NAME = "search_mao_name"
+        const val SEARCH_RECENT = "search_recent"
+        const val SEARCH_KEY_CONTACT = "search_key_contact"
+        const val SEARCH_KEY_CONVERSATION = "search_key_conversation"
+        const val SEARCH_KEY_MESSAGE = "search_key_message"
+        const val SCHEME = TradeSource.SCHEMA
     }
 
     object MarketSource {
         const val MORE_MARKET_CAP = "more_market_cap"
         const val MORE_FAVORITES = "more_favorites"
         const val MORE_SEARCH = "more_search"
+        const val TOKEN_DETAIL = "token_detal"
+        const val APP_CARD = "app_card"
         const val SCHEMA = "schema"
         const val MARKET_DETAIL = "market_detail"
         const val PRICE_ALERT_LIST = "price_alert_list"
     }
 
     object MarketShareType {
-        const val SHARE = "share"
-        const val COPY = "copy"
-        const val SAVE = "save"
+        const val SHARE_IMAGE = "share_image"
+        const val COPY_LINK = "copy_link"
+        const val SAVE_TO_ALBUM = "save_to_album"
     }
 
     object MarketAlertsType {
@@ -338,14 +369,16 @@ object AnalyticsTracker {
         logEvent("trade_perps_amount_input_balance")
     }
 
-    fun trackPerpsLeverageSelect(leverage: Int) {
+    fun trackPerpsLeverageSelect(leverage: String) {
         logEvent("trade_perps_leverage_select") {
-            putString("leverage", leverage.toString())
+            putString("leverage", leverage)
         }
     }
 
-    fun trackPerpsPreview() {
-        logEvent("trade_perps_preview")
+    fun trackPerpsPreview(leverage: String) {
+        logEvent("trade_perps_preview") {
+            putString("leverage", leverage)
+        }
     }
 
     fun trackPerpsPreviewConfirm() {

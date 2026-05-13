@@ -15,6 +15,14 @@ fun PerpsMarket.changePercent(): BigDecimal {
     }
 }
 
+fun formatPerpsDisplayDecimal(value: BigDecimal?): String {
+    val safeValue = value ?: BigDecimal.ZERO
+    val absValue = safeValue.abs()
+    return when {
+        absValue > BigDecimal.ZERO && absValue < BigDecimal("0.01") -> "<0.01"
+        else -> safeValue.setScale(2, RoundingMode.HALF_UP).toPlainString()
+    }
+}
 
 fun formatPerpsFiatDecimal(value: BigDecimal?, fiatSymbol: String): String {
     val safeValue = value ?: BigDecimal.ZERO

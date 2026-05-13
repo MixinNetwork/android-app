@@ -118,17 +118,17 @@ class MarketShareActivity : BaseActivity() {
         binding.apply {
             share.setOnClickListener {
                 if (isLoading) return@setOnClickListener
-                AnalyticsTracker.trackMarketDetailShare(AnalyticsTracker.MarketShareType.SHARE)
+                AnalyticsTracker.trackMarketDetailShare(AnalyticsTracker.MarketShareType.SHARE_IMAGE)
                 onShare()
             }
             copy.setOnClickListener {
                 if (isLoading) return@setOnClickListener
-                AnalyticsTracker.trackMarketDetailShare(AnalyticsTracker.MarketShareType.COPY)
+                AnalyticsTracker.trackMarketDetailShare(AnalyticsTracker.MarketShareType.COPY_LINK)
                 onCopy()
             }
             save.setOnClickListener {
                 if (isLoading) return@setOnClickListener
-                AnalyticsTracker.trackMarketDetailShare(AnalyticsTracker.MarketShareType.SAVE)
+                AnalyticsTracker.trackMarketDetailShare(AnalyticsTracker.MarketShareType.SAVE_TO_ALBUM)
                 onSave()
             }
             container.setOnClickListener {

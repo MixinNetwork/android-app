@@ -252,13 +252,14 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                                     } catch (e: Exception) {
                                         app.homeUri
                                     }
+                                AnalyticsTracker.trackOpenBotHomePage(AnalyticsTracker.BotSource.SCHEME, app.appNumber)
                                 WebActivity.show(requireActivity(), url, null, app)
                             } else {
-                                showUserBottom(parentFragmentManager, user)
+                                showUserBottom(parentFragmentManager, user, botEntrySource = AnalyticsTracker.BotSource.SCHEME)
                             }
                         }
                     } else {
-                        showUserBottom(parentFragmentManager, user)
+                        showUserBottom(parentFragmentManager, user, botEntrySource = AnalyticsTracker.BotSource.SCHEME)
                     }
                     dismiss()
                 }

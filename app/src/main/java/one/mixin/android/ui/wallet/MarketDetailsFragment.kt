@@ -82,6 +82,12 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
     private val marketSource by lazy {
         requireArguments().getString(ARGS_MARKET_SOURCE) ?: AnalyticsTracker.MarketSource.MORE_MARKET_CAP
     }
+    private fun marketFavoriteSource(): String =
+        if (marketSource == AnalyticsTracker.MarketSource.MORE_MARKET_CAP) {
+            AnalyticsTracker.MarketSource.MORE_MARKET_CAP
+        } else {
+            AnalyticsTracker.MarketSource.MARKET_DETAIL
+        }
 
     @SuppressLint("SetTextI18n", "DefaultLocale")
     override fun onViewCreated(
@@ -102,7 +108,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     walletViewModel.updateMarketFavored(marketItem.symbol, marketItem.coinId, marketItem.isFavored)
                     marketItem.isFavored = marketItem.isFavored != true
                     if (addingFavorite) {
-                        AnalyticsTracker.trackMarketFavoriteAdd(marketSource)
+                        AnalyticsTracker.trackMarketFavoriteAdd(marketFavoriteSource())
                     }
                     rightExtraIb.setImageResource(if (marketItem.isFavored == true) R.drawable.ic_title_favorites_checked else R.drawable.ic_title_favorites)
                 }

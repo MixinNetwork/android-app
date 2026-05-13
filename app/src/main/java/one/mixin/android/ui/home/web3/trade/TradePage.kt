@@ -224,12 +224,22 @@ fun TradePage(
         return if (page == 1) AnalyticsTracker.SpotTradeType.ADVANCED else AnalyticsTracker.SpotTradeType.SIMPLE
     }
 
+    fun tradeTypeForPage(page: Int): String {
+        return if (perpetualTabIndex != null && page == perpetualTabIndex) {
+            AnalyticsTracker.SpotTradeType.PERPETUAL
+        } else {
+            spotTypeForPage(page)
+        }
+    }
+
     LaunchedEffect(initialTabIndex, tradeWallet, entrySource) {
-        AnalyticsTracker.trackSpotStart(
-            wallet = tradeWallet,
-            type = spotTypeForPage(initialTabIndex),
-            source = entrySource,
-        )
+        if (perpetualTabIndex == null || initialTabIndex != perpetualTabIndex) {
+            AnalyticsTracker.trackSpotStart(
+                wallet = tradeWallet,
+                type = spotTypeForPage(initialTabIndex),
+                source = entrySource,
+            )
+        }
     }
 
     LaunchedEffect(Unit) {
@@ -355,7 +365,12 @@ fun TradePage(
             IconButton(onClick = {
                 onShowHelpBottomSheet(
                     {
-                        AnalyticsTracker.trackCustomerServiceDialog(AnalyticsTracker.CustomerServiceSource.SPOT_TRADE)
+                        val source = if (pagerState.currentPage == 1) {
+                            AnalyticsTracker.CustomerServiceSource.TRADE_ADVANCED_HOME_MENU
+                        } else {
+                            AnalyticsTracker.CustomerServiceSource.TRADE_SIMPLE_HOME_MENU
+                        }
+                        AnalyticsTracker.trackCustomerServiceDialog(source)
                         context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
                     },
                     { onShowTradingGuide(pagerState.currentPage) }
@@ -397,9 +412,7 @@ fun TradePage(
                         if (isPerpetualTab && !isPerpetualTabBadgeDismissed) {
                             onDismissPerpetualTabBadge()
                         }
-                        if (!isPerpetualTab) {
-                            AnalyticsTracker.trackTradeTypeSelect(spotTypeForPage(index))
-                        }
+                        AnalyticsTracker.trackTradeTypeSelect(tradeTypeForPage(index))
                         onShowTradingGuideIfNeeded(index)
                         onTabChanged(index)
                     },

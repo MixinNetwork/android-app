@@ -164,7 +164,7 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
                 override fun onBotClick(bot: SearchBot) {
                     val f = UserBottomSheetDialogFragment.newInstance(
                         bot.toUser(),
-                        botEntrySource = AnalyticsTracker.BotSource.SEARCH,
+                        botEntrySource = AnalyticsTracker.BotSource.SEARCH_KEY_CONTACT,
                     )
                     searchViewModel.saveRecentSearch(requireContext().defaultSharedPreferences, RecentSearch(RecentSearchType.BOT, iconUrl = bot.avatarUrl, title = bot.fullName, subTitle = bot.identityNumber, primaryKey = bot.appId))
                     RxBus.publish(SearchEvent())
@@ -179,6 +179,9 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
 
                 override fun onChatClick(chatMinimal: ChatMinimal) {
                     binding.searchRv.hideKeyboard()
+                    if (chatMinimal.isBot()) {
+                        AnalyticsTracker.trackOpenBotConversation(AnalyticsTracker.BotSource.SEARCH_KEY_CONVERSATION, chatMinimal.ownerIdentityNumber)
+                    }
                     context?.let { ctx -> ConversationActivity.show(ctx, chatMinimal.conversationId) }
                 }
 

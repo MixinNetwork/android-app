@@ -624,17 +624,12 @@ fun LimitOrderContent(
                 fromToken = fromToken,
                 toToken = toToken,
                 isPriceInverted = isPriceInverted,
-                onSetPriceMultiplier = {
-                    priceMultiplier = it
-                    val percent = when (it) {
-                        0.001f -> "0.1%"
-                        0.005f -> "0.5%"
-                        0.01f -> "1%"
-                        0.05f -> "5%"
-                        0.1f -> "10%"
-                        else -> null
-                    }
-                    percent?.let(AnalyticsTracker::trackSpotPriceInputPercent)
+                onInputQuickAction = {
+                    AnalyticsTracker.trackSpotSendInputPercent(it)
+                },
+                onSetPriceMultiplier = { label, multiplier ->
+                    priceMultiplier = multiplier
+                    AnalyticsTracker.trackSpotPriceInputPercent(label)
                 },
                 onSetInput = {
                     inputText = it

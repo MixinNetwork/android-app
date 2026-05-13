@@ -164,7 +164,7 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
                 override fun onBotClick(bot: SearchBot) {
                     val f = UserBottomSheetDialogFragment.newInstance(
                         bot.toUser(),
-                        botEntrySource = AnalyticsTracker.BotSource.SEARCH,
+                        botEntrySource = AnalyticsTracker.BotSource.SEARCH_KEY_CONTACT,
                     )
                     searchViewModel.saveRecentSearch(requireContext().defaultSharedPreferences, RecentSearch(RecentSearchType.BOT, iconUrl = bot.avatarUrl, title = bot.fullName, subTitle = bot.identityNumber, primaryKey = bot.appId))
                     f?.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
@@ -247,7 +247,7 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
                                 searchViewModel.findUserByAppId(search.primaryKey!!)?.let { user ->
                                     val f = UserBottomSheetDialogFragment.newInstance(
                                         user,
-                                        botEntrySource = AnalyticsTracker.BotSource.SEARCH,
+                                        botEntrySource = AnalyticsTracker.BotSource.SEARCH_RECENT,
                                     )
                                     f?.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                                 }

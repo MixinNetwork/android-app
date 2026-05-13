@@ -98,7 +98,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
     private val adapter by lazy {
         SwapTokenAdapter(selectUnique).apply {
-            tradeType = spotType()
+            tokenType = spotTokenType()
         }
     }
 
@@ -283,7 +283,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                                 AnalyticsTracker.trackTradeTokenSelect(AnalyticsTracker.TradeTokenSelectMethod.RECENT_CLICK)
                                 AnalyticsTracker.trackSpotTokenSelect(
                                     method = AnalyticsTracker.TradeTokenSelectMethod.RECENT_CLICK,
-                                    type = spotType(),
+                                    type = spotTokenType(),
                                     chain = it.chain.name,
                                     assetSymbol = it.symbol,
                                 )
@@ -377,11 +377,11 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         }
     }
 
-    private fun spotType(): String {
-        return if (key.contains("LIMIT", ignoreCase = true)) {
-            AnalyticsTracker.SpotTradeType.ADVANCED
+    private fun spotTokenType(): String {
+        return if (isFrom) {
+            AnalyticsTracker.SpotTokenType.SEND
         } else {
-            AnalyticsTracker.SpotTradeType.SIMPLE
+            AnalyticsTracker.SpotTokenType.RECEIVE
         }
     }
 

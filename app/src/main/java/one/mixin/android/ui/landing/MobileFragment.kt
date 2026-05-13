@@ -60,6 +60,14 @@ import one.mixin.android.widget.countrypicker.Country
 import one.mixin.android.widget.countrypicker.CountryPicker
 import timber.log.Timber
 
+private fun CaptchaView.CaptchaType.analyticsName(): String {
+    return when (this) {
+        CaptchaView.CaptchaType.GTCaptcha -> AnalyticsTracker.CaptchaType.GEETEST
+        CaptchaView.CaptchaType.HCaptcha -> AnalyticsTracker.CaptchaType.HCAPTCHA
+        CaptchaView.CaptchaType.GCaptcha -> AnalyticsTracker.CaptchaType.RECAPTCHA
+    }
+}
+
 @AndroidEntryPoint
 class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
     companion object {
@@ -140,6 +148,9 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
         if (from == FROM_LANDING) {
             AnalyticsTracker.trackLoginStart()
         }
+        if (isAddPhoneFlow()) {
+            AnalyticsTracker.trackAddPhoneInputPhone()
+        }
         binding.apply {
             pin = requireArguments().getString(ARGS_PIN)
             if (pin != null) {
@@ -152,7 +163,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             binding.titleView.leftIb.setOnClickListener { requireActivity().onBackPressedDispatcher.onBackPressed() }
             binding.titleView.rightIb.setOnClickListener {
                 if (isAddPhoneFlow()) {
-                    AnalyticsTracker.trackCustomerServiceDialog(AnalyticsTracker.CustomerServiceSource.ADD_PHONE_MOBILE)
+                    AnalyticsTracker.trackCustomerServiceDialog(AnalyticsTracker.CustomerServiceSource.ADD_PHONE_INPUT_PHONE)
                 }
                 openCustomerService()
             }
@@ -173,9 +184,6 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             countryCodeEt.addTextChangedListener(countryCodeWatcher)
             countryCodeEt.showSoftInputOnFocus = false
             continueBn.setOnClickListener {
-                if (isAddPhoneFlow()) {
-                    AnalyticsTracker.trackAddPhoneInputPhone()
-                }
                 if (from == FROM_VERIFY_MOBILE_REMINDER
                     && presetPhoneNumber != null
                 ) {
@@ -192,9 +200,6 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             mobileCover.isClickable = true
             countryPicker = CountryPicker.newInstance()
             countryPicker.setListener { _: String, code: String, dialCode: String, flagResId: Int ->
-                if (isAddPhoneFlow()) {
-                    AnalyticsTracker.trackAddPhoneInputPhoneCountry()
-                }
                 mCountry = Country()
                 mCountry?.code = code
                 mCountry?.dialCode = dialCode
@@ -455,18 +460,21 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                     )
                 (view as ViewGroup).addView(captchaView?.webView, MATCH_PARENT, MATCH_PARENT)
             }
+            val captchaType = if (errorDescription.containsIgnoreCase(gtCAPTCHA)) {
+                CaptchaView.CaptchaType.GTCaptcha
+            } else if (errorDescription.containsIgnoreCase(hCAPTCHA)) {
+                CaptchaView.CaptchaType.HCaptcha
+            } else {
+                CaptchaView.CaptchaType.GCaptcha
+            }
             if (from == FROM_LANDING_CREATE) {
                 AnalyticsTracker.trackSignUpCaptcha()
             } else if (from == FROM_LANDING) {
                 AnalyticsTracker.trackLoginCaptcha("phone_number")
             } else if (isAddPhoneFlow()) {
-                AnalyticsTracker.trackAddPhoneCaptcha("phone_number")
+                AnalyticsTracker.trackAddPhoneCaptcha(captchaType.analyticsName())
             }
-            captchaView?.loadCaptcha(
-                if (errorDescription.containsIgnoreCase(gtCAPTCHA)) CaptchaView.CaptchaType.GTCaptcha
-                else if (errorDescription.containsIgnoreCase(hCAPTCHA)) CaptchaView.CaptchaType.HCaptcha
-                else CaptchaView.CaptchaType.GCaptcha
-            )
+            captchaView?.loadCaptcha(captchaType)
         }
 
     private fun hideLoading() {
@@ -523,6 +531,9 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
 
     private fun showCountry() {
         try {
+            if (isAddPhoneFlow()) {
+                AnalyticsTracker.trackAddPhoneInputPhoneCountry()
+            }
             activity?.supportFragmentManager?.inTransaction {
                 setCustomAnimations(R.anim.slide_in_bottom, 0, 0, R.anim.slide_out_bottom)
                     .add(R.id.container, countryPicker).addToBackStack(null)
