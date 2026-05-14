@@ -2360,6 +2360,7 @@
     <string name="Take_Profit_When">Take Profit When</string>
     <string name="Stop_Loss_When">Stop Loss When</string>
     <string name="profit_reaches_percent">Profit reaches %</string>
+    <string name="loss_reaches_percent">Loss reaches %</string>
     <string name="price_reaches_dollar">Price reaches $</string>
     <string name="auto_close_description">Auto-close when target is reached</string>
     <string name="take_profit_intro_title">What\'s the Take Profit?</string>

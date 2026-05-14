@@ -2294,6 +2294,7 @@
     <string name="Take_Profit_When">止盈条件</string>
     <string name="Stop_Loss_When">止损条件</string>
     <string name="profit_reaches_percent">盈利达到 %</string>
+    <string name="loss_reaches_percent">损失达到 %</string>
     <string name="price_reaches_dollar">价格达到 $</string>
     <string name="auto_close_description">达到目标时自动平仓</string>
     <string name="take_profit_intro_title">什么是止盈？</string>

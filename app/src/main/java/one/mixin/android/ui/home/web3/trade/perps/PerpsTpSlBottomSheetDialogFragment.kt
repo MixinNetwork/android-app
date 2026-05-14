@@ -956,7 +956,7 @@ private fun TpSlInputField(
                                             if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
                                                 R.string.profit_reaches_percent
                                             } else {
-                                                R.string.profit_reaches_percent
+                                                R.string.loss_reaches_percent
                                             }
                                         ),
                                         fontSize = 18.sp,

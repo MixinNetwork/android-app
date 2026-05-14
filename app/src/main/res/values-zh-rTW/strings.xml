@@ -1093,6 +1093,7 @@
     <string name="perps_tpsl_entry_label">開倉價</string>
     <string name="perps_tpsl_current_label">當前價</string>
     <string name="profit_reaches_percent">盈利達到 %</string>
+    <string name="loss_reaches_percent">損失達到 %</string>
     <string name="price_reaches_dollar">價格達到 $</string>
     <string name="take_profit_stop_loss_label">止盈止損</string>
 </resources>
