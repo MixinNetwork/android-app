@@ -47,9 +47,9 @@ abstract class PerpsDatabase : RoomDatabase() {
                 override fun migrate(db: SupportSQLiteDatabase) {
                     db.execSQL("ALTER TABLE positions ADD COLUMN take_profit_price TEXT")
                     db.execSQL("ALTER TABLE positions ADD COLUMN stop_loss_price TEXT")
+                    db.execSQL("ALTER TABLE markets ADD COLUMN price_scale INTEGER DEFAULT 2")
                 }
             }
-
         fun getDatabase(
             context: Context,
             identityNumber: String,

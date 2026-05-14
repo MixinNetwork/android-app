@@ -2035,6 +2035,7 @@
     <string name="View_Document">View Document</string>
     <string name="Total_Balance">Total Balance</string>
     <string name="total_balance_tip">Hidden assets are not included in the statistics.</string>
+    <string name="Reset_TpSl_Guide">Reset TP/SL Guide Card</string>
     <string name="Delete_Web3_Transactions">Delete Web3 Transaction Data</string>
     <string name="Delete_Web3_Transactions_Confirmation">Are you sure you want to delete all Web3 transaction data? This action cannot be undone. The data will be re-synchronized after deletion.</string>
     <string name="Preview_Verify_Mobile_Reminder">Preview verify mobile reminder</string>
@@ -2379,6 +2380,10 @@
     <string name="Select_Leverage">Select Leverage</string>
     <string name="Take_Profit">Take Profit</string>
     <string name="Stop_Loss">Stop Loss</string>
+    <string name="take_profit_for_long">Take Profit for Long %1$s</string>
+    <string name="take_profit_for_short">Take Profit for Short %1$s</string>
+    <string name="stop_loss_for_long">Stop Loss for Long %1$s</string>
+    <string name="stop_loss_for_short">Stop Loss for Short %1$s</string>
     <string name="take_profit_stop_loss_label">TP/SL</string>
     <string name="tp_label">TP</string>
     <string name="sl_label">SL</string>
@@ -2390,6 +2395,7 @@
     <string name="Short">Short</string>
     <string name="Direction">Direction</string>
     <string name="Entry_Price">Entry Price</string>
+    <string name="Trigger_Price">Trigger Price</string>
     <string name="Mark_Price">Mark Price</string>
     <string name="perps_current_price">Current Price</string>
     <string name="Close_Price">Close Price</string>

@@ -1079,6 +1079,10 @@
     <string name="create_account_confirm_action_create">創建賬戶</string>
     <string name="Take_Profit">止盈</string>
     <string name="Stop_Loss">止損</string>
+    <string name="take_profit_for_long">%1$s 做多止盈</string>
+    <string name="take_profit_for_short">%1$s 做空止盈</string>
+    <string name="stop_loss_for_long">%1$s 做多止損</string>
+    <string name="stop_loss_for_short">%1$s 做空止損</string>
     <string name="Take_Profit_When">止盈條件</string>
     <string name="Stop_Loss_When">止損條件</string>
     <string name="auto_close_description">達到目標時自動平倉</string>

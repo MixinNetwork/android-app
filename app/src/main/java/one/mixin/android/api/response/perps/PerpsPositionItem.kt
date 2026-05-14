@@ -72,4 +72,6 @@ data class PerpsPositionItem(
     val iconUrl: String? = null,
     @ColumnInfo(name = "token_symbol")
     val tokenSymbol: String? = null,
+    @ColumnInfo(name = "price_scale")
+    val priceScale: Int? = null,
 ) : Parcelable

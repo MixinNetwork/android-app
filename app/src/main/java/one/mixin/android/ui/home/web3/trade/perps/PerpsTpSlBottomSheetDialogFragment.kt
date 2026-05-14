@@ -81,7 +81,6 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.openUrl
-import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.screenHeight
@@ -114,6 +113,7 @@ class PerpsTpSlBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment
         private const val ARGS_LEVERAGE = "args_leverage"
         private const val ARGS_ENTRY_PRICE = "args_entry_price"
         private const val ARGS_MARKET_ID = "args_market_id"
+        private const val ARGS_PRICE_SCALE = "args_price_scale"
 
         fun newInstance(
             mode: Mode,
@@ -126,6 +126,7 @@ class PerpsTpSlBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment
             leverage: Int,
             entryPrice: String? = null,
             marketId: String? = null,
+            priceScale: Int = DEFAULT_PERPS_PRICE_SCALE,
         ): PerpsTpSlBottomSheetDialogFragment {
             return PerpsTpSlBottomSheetDialogFragment().withArgs {
                 putString(ARGS_MODE, mode.name)
@@ -138,6 +139,7 @@ class PerpsTpSlBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment
                 putInt(ARGS_LEVERAGE, leverage)
                 putString(ARGS_ENTRY_PRICE, entryPrice)
                 putString(ARGS_MARKET_ID, marketId)
+                putInt(ARGS_PRICE_SCALE, priceScale)
             }
         }
     }
@@ -154,6 +156,7 @@ class PerpsTpSlBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment
     private val leverage by lazy { requireArguments().getInt(ARGS_LEVERAGE, 1) }
     private val entryPrice by lazy { requireArguments().getString(ARGS_ENTRY_PRICE).orEmpty() }
     private val marketId by lazy { requireArguments().getString(ARGS_MARKET_ID).orEmpty() }
+    private val priceScale by lazy { requireArguments().getInt(ARGS_PRICE_SCALE, DEFAULT_PERPS_PRICE_SCALE) }
 
     private var onApply: ((String?) -> Unit)? = null
 
@@ -209,6 +212,7 @@ class PerpsTpSlBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment
                 leverage = leverage,
                 entryPrice = entryPrice,
                 marketId = marketId,
+                priceScale = priceScale,
                 onCancel = { dismiss() },
                 onApply = { value ->
                     onApply?.invoke(value)
@@ -241,12 +245,14 @@ private fun PerpsTpSlContent(
     leverage: Int,
     entryPrice: String,
     marketId: String,
+    priceScale: Int,
     onCancel: () -> Unit,
     onApply: (String?) -> Unit,
 ) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<PerpetualViewModel>()
     val preferences = remember(context) { context.defaultSharedPreferences }
+    val safePriceScale = remember(priceScale) { priceScale.coerceAtLeast(0) }
     var latestCurrentPrice by rememberSaveable(marketId, currentPrice) { mutableStateOf(currentPrice) }
     LaunchedEffect(marketId) {
         if (marketId.isBlank()) return@LaunchedEffect
@@ -328,9 +334,9 @@ private fun PerpsTpSlContent(
         mode = mode,
     )
     val errorText = if (inputType == InputType.PNL) percentErrorText else priceErrorText
-    val currentPriceText = "$PERPS_USD_SYMBOL${currentPriceValue.priceFormat()}"
+    val currentPriceText = formatPerpsPrice(currentPriceValue, safePriceScale)
     val entryPriceText = remember(entryPriceValue) {
-        entryPriceValue?.let { "$PERPS_USD_SYMBOL${it.priceFormat()}" }
+        entryPriceValue?.let { formatPerpsPrice(it, safePriceScale) }
     }
     val entryLabel = stringResource(R.string.perps_tpsl_entry_label)
     val currentLabel = stringResource(R.string.perps_tpsl_current_label)
@@ -399,6 +405,7 @@ private fun PerpsTpSlContent(
             leverage = leverageValue,
             isLong = isLong,
             mode = mode,
+            priceScale = safePriceScale,
         )
         if (priceFieldValue.text != recalculatedPrice) {
             priceFieldValue = textFieldValueAtEnd(recalculatedPrice)
@@ -441,11 +448,13 @@ private fun PerpsTpSlContent(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = stringResource(
-                            if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
-                                R.string.Take_Profit
-                            } else {
-                                R.string.Stop_Loss
-                            }
+                            when {
+                                mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT && isLong -> R.string.take_profit_for_long
+                                mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT && !isLong -> R.string.take_profit_for_short
+                                mode == PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS && isLong -> R.string.stop_loss_for_long
+                                else -> R.string.stop_loss_for_short
+                            },
+                            marketSymbol,
                         ),
                         fontSize = 16.sp,
                         lineHeight = 20.sp,
@@ -560,11 +569,12 @@ private fun PerpsTpSlContent(
                                     leverage = leverageValue,
                                     isLong = isLong,
                                     mode = mode,
+                                    priceScale = safePriceScale,
                                 )
                             )
                         },
                         onPriceFieldValueChange = { fieldValue ->
-                            val normalized = normalizeDecimalInput(fieldValue.text)
+                            val normalized = normalizePriceInput(fieldValue.text, safePriceScale)
                             priceFieldValue = fieldValue.copy(
                                 text = normalized,
                                 selection = TextRange(normalized.length),
@@ -581,6 +591,7 @@ private fun PerpsTpSlContent(
                                 )
                             )
                         },
+                        priceScale = safePriceScale,
                     )
                 }
 
@@ -606,6 +617,7 @@ private fun PerpsTpSlContent(
                                         leverage = leverageValue,
                                         isLong = isLong,
                                         mode = mode,
+                                        priceScale = safePriceScale,
                                     )
                                 )
                             },
@@ -743,8 +755,9 @@ private fun PerpsTpSlContent(
                                 leverage = leverageValue,
                                 isLong = isLong,
                                 mode = mode,
+                                priceScale = safePriceScale,
                             )
-                            InputType.PRICE -> priceInput.trim()
+                            InputType.PRICE -> normalizePriceInput(priceInput.trim(), safePriceScale)
                         }.takeIf { it.isNotEmpty() }
                         onApply(value)
                     }
@@ -846,6 +859,7 @@ private fun TpSlInputField(
     onPercentFieldValueChange: (TextFieldValue) -> Unit,
     onPriceFieldValueChange: (TextFieldValue) -> Unit,
     focusRequester: FocusRequester,
+    priceScale: Int,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
 
@@ -979,7 +993,15 @@ private fun TpSlInputField(
                 }
                 BasicTextField(
                     value = priceFieldValue,
-                    onValueChange = onPriceFieldValueChange,
+                    onValueChange = { newValue ->
+                        val normalized = normalizePriceInput(newValue.text, priceScale)
+                        onPriceFieldValueChange(
+                            newValue.copy(
+                                text = normalized,
+                                selection = TextRange(newValue.selection.end.coerceAtMost(normalized.length)),
+                            )
+                        )
+                    },
                     modifier = Modifier.focusRequester(focusRequester),
                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Decimal),
                     singleLine = true,
@@ -1027,6 +1049,23 @@ private fun normalizeDecimalInput(value: String): String {
     return if (filtered == ".") "" else filtered
 }
 
+private fun normalizePriceInput(value: String, priceScale: Int): String {
+    val normalized = normalizeDecimalInput(value)
+    if (normalized.isBlank()) {
+        return normalized
+    }
+    val dotIndex = normalized.indexOf('.')
+    if (dotIndex < 0) {
+        return normalized
+    }
+    val safeScale = priceScale.coerceAtLeast(0)
+    return if (safeScale == 0) {
+        normalized.take(dotIndex)
+    } else {
+        normalized.take(dotIndex + safeScale + 1)
+    }
+}
+
 private fun normalizePercentInput(value: String): String {
     val normalized = normalizeDecimalInput(value)
     if (normalized.isBlank()) {
@@ -1047,6 +1086,7 @@ private fun percentToPriceInput(
     leverage: Int,
     isLong: Boolean,
     mode: PerpsTpSlBottomSheetDialogFragment.Mode,
+    priceScale: Int = DEFAULT_PERPS_PRICE_SCALE,
 ): String {
     val magnitude = percentMagnitudeInput.toBigDecimalOrNull() ?: return ""
     if (percentBasePrice <= BigDecimal.ZERO || leverage <= 0) {
@@ -1066,7 +1106,7 @@ private fun percentToPriceInput(
     if (multiplier <= BigDecimal.ZERO) {
         return ""
     }
-    return percentBasePrice.multiply(multiplier).stripTrailingZeros().toPlainString()
+    return formatPerpsPriceInput(percentBasePrice.multiply(multiplier), priceScale)
 }
 
 private fun derivePercentMagnitudeInput(
@@ -1308,5 +1348,6 @@ private fun TpSlInputFieldPreviewCase(
         onPercentFieldValueChange = { percentValue = it },
         onPriceFieldValueChange = { priceValue = it },
         focusRequester = focusRequester,
+        priceScale = 2,
     )
 }
