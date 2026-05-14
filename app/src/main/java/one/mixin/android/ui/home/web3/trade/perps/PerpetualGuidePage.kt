@@ -536,7 +536,12 @@ private fun TpSlContent() {
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
-                Text(text = "SOL - USD", fontSize = 14.sp, color = MixinAppTheme.colors.textPrimary)
+                Text(
+                    text = "SOL - USD",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.W500,
+                    color = MixinAppTheme.colors.textPrimary
+                )
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
@@ -548,15 +553,15 @@ private fun TpSlContent() {
         }
         Spacer(modifier = Modifier.height(16.dp))
         GuideValueRow(title = stringResource(R.string.Leverage)) {
-            Text(text = "10x", fontSize = 14.sp, color = MixinAppTheme.colors.textPrimary)
+            Text(text = "10x", fontSize = 14.sp, fontWeight = FontWeight.W500, color = MixinAppTheme.colors.textPrimary)
         }
         Spacer(modifier = Modifier.height(16.dp))
         GuideValueRow(title = stringResource(R.string.example_amount)) {
-            Text(text = "1,000 USDT", fontSize = 14.sp, color = MixinAppTheme.colors.textPrimary)
+            Text(text = "1,000 USDT", fontSize = 14.sp, fontWeight = FontWeight.W500, color = MixinAppTheme.colors.textPrimary)
         }
         Spacer(modifier = Modifier.height(16.dp))
         GuideValueRow(title = stringResource(R.string.Entry_Price)) {
-            Text(text = "${PERPS_USD_SYMBOL}100", fontSize = 14.sp, color = MixinAppTheme.colors.textPrimary)
+            Text(text = "${PERPS_USD_SYMBOL}100", fontSize = 14.sp, fontWeight = FontWeight.W500, color = MixinAppTheme.colors.textPrimary)
         }
         Spacer(modifier = Modifier.height(16.dp))
         Box(
@@ -574,7 +579,7 @@ private fun TpSlContent() {
         )
         Spacer(modifier = Modifier.height(12.dp))
         GuideValueRow(title = stringResource(R.string.Trigger_Price)) {
-            Text(text = "${PERPS_USD_SYMBOL}110", fontSize = 14.sp, color = MixinAppTheme.colors.textPrimary)
+            Text(text = "${PERPS_USD_SYMBOL}110", fontSize = 14.sp, fontWeight = FontWeight.W500, color = MixinAppTheme.colors.textPrimary)
         }
         Spacer(modifier = Modifier.height(16.dp))
         GuideValueRow(title = stringResource(R.string.PnL)) {
@@ -596,7 +601,7 @@ private fun TpSlContent() {
         )
         Spacer(modifier = Modifier.height(12.dp))
         GuideValueRow(title = stringResource(R.string.Trigger_Price)) {
-            Text(text = "${PERPS_USD_SYMBOL}95", fontSize = 14.sp, color = MixinAppTheme.colors.textPrimary)
+            Text(text = "${PERPS_USD_SYMBOL}95", fontSize = 14.sp, fontWeight = FontWeight.W500, color = MixinAppTheme.colors.textPrimary)
         }
         Spacer(modifier = Modifier.height(16.dp))
         GuideValueRow(title = stringResource(R.string.PnL)) {
@@ -758,6 +763,7 @@ private fun LiquidationExampleCard(
                 Text(
                     text = "SOL - USD",
                     fontSize = 14.sp,
+                    fontWeight = FontWeight.W500,
                     color = MixinAppTheme.colors.textPrimary
                 )
             }
@@ -791,6 +797,7 @@ private fun LiquidationExampleCard(
             Text(
                 text = "$PERPS_USD_SYMBOL${marketPrice.priceFormat()}",
                 fontSize = 14.sp,
+                fontWeight = FontWeight.W500,
                 color = MixinAppTheme.colors.textPrimary
             )
         }
@@ -799,6 +806,7 @@ private fun LiquidationExampleCard(
             Text(
                 text = "$PERPS_USD_SYMBOL${liquidationPrice.priceFormat()}",
                 fontSize = 14.sp,
+                fontWeight = FontWeight.W500,
                 color = MixinAppTheme.colors.textPrimary
             )
         }
@@ -1023,6 +1031,7 @@ private fun ExampleWithScenariosCard(
                         Text(
                             text = value,
                             fontSize = 14.sp,
+                            fontWeight = FontWeight.W500,
                             color = MixinAppTheme.colors.textPrimary
                         )
                     }
@@ -1104,7 +1113,7 @@ private fun ExampleWithScenariosCard(
                             Text(
                                 text = scenario.formatChangePercent(percent),
                                 fontSize = 14.sp,
-                                fontWeight = FontWeight.Medium,
+                                fontWeight = FontWeight.W500,
                                 color = priceChangeColor,
                                 modifier = Modifier.padding(horizontal = 8.dp),
                             )
@@ -1135,7 +1144,7 @@ private fun ExampleWithScenariosCard(
                             Text(
                                 text = scenario.formatChangePercent(percent),
                                 fontSize = 14.sp,
-                                fontWeight = FontWeight.Medium,
+                                fontWeight = FontWeight.W500,
                                 color = priceChangeColor,
                             )
                         }
