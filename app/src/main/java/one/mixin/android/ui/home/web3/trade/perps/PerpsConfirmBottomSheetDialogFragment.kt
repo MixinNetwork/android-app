@@ -803,8 +803,8 @@ private fun calculateTpSlSubValue(
             append("$pricePrefix → $maxProfitLabel ")
             pushStyle(SpanStyle(color = profitColor))
             append(amountText)
-            pop()
             append(" ($pnlPercentStr%)")
+            pop()
         }
     } else {
         val amountText = "-${formatPerpsRawUsdDecimal(pnlAmount)}"
