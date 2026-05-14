@@ -607,7 +607,12 @@ fun OpenPositionPage(
                     Spacer(modifier = Modifier.height(16.dp))
                     PerpsInfoRow(
                         title = stringResource(R.string.position_size),
-                        value = "${calculateOrderValue(usdtAmount, leverage, currentMarket.last)} ${currentMarket.tokenSymbol}",
+                        value = formatPositionSizeValue(
+                            amount = usdtAmount,
+                            leverage = leverage,
+                            price = currentMarket.last,
+                            tokenSymbol = currentMarket.tokenSymbol,
+                        ),
                         onTipClick = {
                             showPerpsGuide(PerpetualGuideBottomSheetDialogFragment.TAB_POSITION)
                         }
@@ -859,19 +864,35 @@ private fun calculateProfitInfo(
     }
 }
 
-private fun calculateOrderValue(amount: String, leverage: Float, price: String): String {
+private fun calculateOrderValue(amount: String, leverage: Float, price: String): BigDecimal {
     val amountValue = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val priceValue = price.toBigDecimalOrNull() ?: BigDecimal.ZERO
 
-
     if (priceValue == BigDecimal.ZERO) {
-        return "0"
+        return BigDecimal.ZERO
     }
 
-    val orderValue = (amountValue * BigDecimal(leverage.toDouble())).divide(priceValue, 8, RoundingMode.HALF_UP)
-    val result = orderValue.stripTrailingZeros().toPlainString()
+    return (amountValue * BigDecimal(leverage.toDouble()))
+        .divide(priceValue, 8, RoundingMode.HALF_UP)
+}
 
-    return result
+private fun formatPositionSizeValue(
+    amount: String,
+    leverage: Float,
+    price: String,
+    tokenSymbol: String,
+): String {
+    val amountValue = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val orderValue = calculateOrderValue(amount, leverage, price)
+    val quantityText = orderValue
+        .setScale(2, RoundingMode.HALF_UP)
+        .stripTrailingZeros()
+        .toPlainString()
+    val usdValue = formatPerpsUsdDecimal(amountValue.multiply(BigDecimal(leverage.toDouble())))
+    return listOf(quantityText, tokenSymbol)
+        .filter { it.isNotBlank() }
+        .joinToString(" ")
+        .let { "$it ($usdValue)" }
 }
 
 private fun calculateLiquidationPrice(

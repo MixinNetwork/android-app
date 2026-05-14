@@ -541,14 +541,9 @@ private fun TpSlContent() {
         }
         Spacer(modifier = Modifier.height(16.dp))
         GuideValueRow(title = stringResource(R.string.Direction)) {
-            Text(
+            GuideDirectionTag(
                 text = stringResource(R.string.Long),
-                fontSize = 13.sp,
-                color = Color.White,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(6.dp))
-                    .background(profitColor)
-                    .padding(horizontal = 8.dp, vertical = 1.dp),
+                backgroundColor = profitColor,
             )
         }
         Spacer(modifier = Modifier.height(16.dp))
@@ -583,7 +578,7 @@ private fun TpSlContent() {
         }
         Spacer(modifier = Modifier.height(16.dp))
         GuideValueRow(title = stringResource(R.string.PnL)) {
-            Text(text = "+1,000 USDT (+100%)", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = profitColor)
+            Text(text = "+1,000 USDT (+100%)", fontSize = 14.sp, fontWeight = FontWeight.W500, color = profitColor)
         }
         Spacer(modifier = Modifier.height(16.dp))
         Box(
@@ -605,7 +600,7 @@ private fun TpSlContent() {
         }
         Spacer(modifier = Modifier.height(16.dp))
         GuideValueRow(title = stringResource(R.string.PnL)) {
-            Text(text = "-500 USDT", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = lossColor)
+            Text(text = "-500 USDT", fontSize = 14.sp, fontWeight = FontWeight.W500, color = lossColor)
         }
     }
     Spacer(modifier = Modifier.height(16.dp))
@@ -983,23 +978,12 @@ private fun ExampleWithScenariosCard(
             if (index > 0) {
                 Spacer(modifier = Modifier.height(16.dp))
             }
-            Row(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = label,
-                    fontSize = 14.sp,
-                    color = MixinAppTheme.colors.textAssist,
-                    modifier = Modifier.weight(1f)
-                )
+            GuideValueRow(title = label) {
                 if (label == directionLabel && (value == longDirection || value == shortDirection)) {
                     val directionColor = if (value == longDirection) risingColor else fallingColor
-                    Text(
+                    GuideDirectionTag(
                         text = value,
-                        fontSize = 14.sp,
-                        color = Color.White,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(directionColor)
-                            .padding(horizontal = 8.dp, vertical = 1.dp),
+                        backgroundColor = directionColor,
                     )
                 } else if (label == leverageLabel && leverageValue != null && onLeverageChange != null) {
                     GuideNumberAdjuster(
@@ -1168,7 +1152,7 @@ private fun ExampleWithScenariosCard(
                     Text(
                         text = scenario.formatPnl(changePercents[index]),
                         fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
+                        fontWeight = FontWeight.W500,
                         color = pnlColor
                     )
                 }
@@ -1231,6 +1215,26 @@ private fun GuideNumberAdjuster(
 }
 
 @Composable
+private fun GuideDirectionTag(
+    text: String,
+    backgroundColor: Color,
+    modifier: Modifier = Modifier,
+    textColor: Color = Color.White,
+) {
+    Text(
+        text = text,
+        fontSize = 13.sp,
+        lineHeight = 18.sp,
+        fontWeight = FontWeight.W500,
+        color = textColor,
+        modifier = modifier
+            .clip(RoundedCornerShape(6.dp))
+            .background(backgroundColor)
+            .padding(horizontal = 8.dp, vertical = 1.dp),
+    )
+}
+
+@Composable
 private fun GuideValueRow(
     title: String,
     value: @Composable () -> Unit,
@@ -1271,27 +1275,16 @@ private fun GuideDirectionToggle(
     ) {
         listOf(true, false).forEach { itemIsLong ->
             val selected = itemIsLong == isLong
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(6.dp))
-                    .background(
-                        if (selected) {
-                            if (itemIsLong) longColor else shortColor
-                        } else {
-                            Color.Transparent
-                        }
-                    )
-                    .clickable { onDirectionChange(itemIsLong) }
-                    .padding(horizontal = 8.dp, vertical = 2.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = stringResource(if (itemIsLong) R.string.Long else R.string.Short),
-                    color = if (selected) Color.White else MixinAppTheme.colors.textAssist,
-                    fontSize = 13.sp,
-                    lineHeight = 18.sp,
-                )
-            }
+            GuideDirectionTag(
+                text = stringResource(if (itemIsLong) R.string.Long else R.string.Short),
+                backgroundColor = if (selected) {
+                    if (itemIsLong) longColor else shortColor
+                } else {
+                    Color.Transparent
+                },
+                textColor = if (selected) Color.White else MixinAppTheme.colors.textAssist,
+                modifier = Modifier.clickable { onDirectionChange(itemIsLong) },
+            )
         }
     }
 }
