@@ -1154,7 +1154,7 @@ private fun signedPercentFromPrice(
     }
 }
 
-private fun validateTpSlPrice(
+internal fun validateTpSlPrice(
     rawValue: String,
     currentPrice: BigDecimal,
     liquidationBasePrice: BigDecimal,

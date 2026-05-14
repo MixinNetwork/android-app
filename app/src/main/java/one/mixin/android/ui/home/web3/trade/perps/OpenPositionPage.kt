@@ -201,7 +201,7 @@ fun OpenPositionPage(
         onCurrentTokenChange(currentToken)
     }
     val maxLeverage = currentMarket.leverage.coerceAtLeast(1)
-    LaunchedEffect(usdtAmount, leverage, currentToken?.assetId) {
+    LaunchedEffect(usdtAmount, leverage, currentToken?.assetId, takeProfitPrice, stopLossPrice) {
         errorInfo = null
     }
     LaunchedEffect(maxLeverage, marketId) {
@@ -671,6 +671,31 @@ fun OpenPositionPage(
 
                         val price = m.last.toBigDecimalOrNull() ?: BigDecimal.ZERO
                         if (price == BigDecimal.ZERO) return@MixinButton
+                        val leverageInt = leverage.toInt()
+
+                        validateTpSlPrice(
+                            rawValue = takeProfitPrice,
+                            currentPrice = price,
+                            liquidationBasePrice = price,
+                            leverage = leverageInt,
+                            isLong = isLong,
+                            isTakeProfit = true,
+                        )?.let { error ->
+                            errorInfo = error
+                            return@MixinButton
+                        }
+
+                        validateTpSlPrice(
+                            rawValue = stopLossPrice,
+                            currentPrice = price,
+                            liquidationBasePrice = price,
+                            leverage = leverageInt,
+                            isLong = isLong,
+                            isTakeProfit = false,
+                        )?.let { error ->
+                            errorInfo = error
+                            return@MixinButton
+                        }
 
 
                         scope.launch {
