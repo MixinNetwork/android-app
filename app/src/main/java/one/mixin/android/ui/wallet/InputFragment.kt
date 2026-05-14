@@ -2045,8 +2045,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         }.getOrNull() ?: return
         if (!response.isSuccess || response.data == null) return
 
+        val walletTokensByAssetId = web3ViewModel.findWeb3TokenItems(t.walletId)
+            .associateBy(Web3TokenItem::assetId)
         val feeItems = response.data!!.fees.mapNotNull { estimate ->
-            val asset = web3ViewModel.findOrSyncAsset(estimate.assetId) ?: return@mapNotNull null
+            val asset = walletTokensByAssetId[estimate.assetId]?.toTokenItem() ?: return@mapNotNull null
             NetworkFee(
                 token = asset,
                 fee = estimate.amount,
