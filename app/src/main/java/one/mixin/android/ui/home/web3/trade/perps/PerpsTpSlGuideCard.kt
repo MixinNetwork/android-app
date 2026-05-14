@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
+import android.content.SharedPreferences
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,11 +27,11 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.putLong
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import java.math.BigDecimal
 
 internal const val HIDE_TPSL_GUIDE_DURATION_MS = 14L * 24 * 60 * 60 * 1000
-internal const val PREF_HIDE_TPSL_GUIDE_UNTIL = "pref_hide_tpsl_guide_until"
 internal const val PREF_HIDE_TP_GUIDE_UNTIL = "pref_hide_tp_guide_until"
 internal const val PREF_HIDE_SL_GUIDE_UNTIL = "pref_hide_sl_guide_until"
 
@@ -44,18 +45,35 @@ internal enum class PerpsTpSlGuideCardLayout {
     BOTTOM_SHEET,
 }
 
+internal fun getTpSlGuidePreferenceKey(guideType: TpSlGuideType): String {
+    return if (guideType == TpSlGuideType.TAKE_PROFIT) {
+        PREF_HIDE_TP_GUIDE_UNTIL
+    } else {
+        PREF_HIDE_SL_GUIDE_UNTIL
+    }
+}
+
+internal fun SharedPreferences.getTpSlGuideHideUntil(guideType: TpSlGuideType): Long {
+    return getLong(getTpSlGuidePreferenceKey(guideType), 0L)
+}
+
+internal fun SharedPreferences.hideTpSlGuide(guideType: TpSlGuideType): Long {
+    val until = System.currentTimeMillis() + HIDE_TPSL_GUIDE_DURATION_MS
+    putLong(getTpSlGuidePreferenceKey(guideType), until)
+    return until
+}
+
 internal fun resolveTpSlGuideType(
     pnl: BigDecimal,
     hasTakeProfit: Boolean,
     hasStopLoss: Boolean,
-    hideGuideUntil: Long,
+    hideTakeProfitGuideUntil: Long,
+    hideStopLossGuideUntil: Long,
     now: Long,
 ): TpSlGuideType? {
-    if (now < hideGuideUntil) return null
-
     return when {
-        !hasTakeProfit && pnl > BigDecimal.ZERO -> TpSlGuideType.TAKE_PROFIT
-        !hasStopLoss && pnl < BigDecimal.ZERO -> TpSlGuideType.STOP_LOSS
+        !hasTakeProfit && pnl > BigDecimal.ZERO && now >= hideTakeProfitGuideUntil -> TpSlGuideType.TAKE_PROFIT
+        !hasStopLoss && pnl < BigDecimal.ZERO && now >= hideStopLossGuideUntil -> TpSlGuideType.STOP_LOSS
         else -> null
     }
 }

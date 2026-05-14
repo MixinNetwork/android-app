@@ -46,7 +46,6 @@ import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.putLong
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.tip.wc.compose.ItemWalletContent
@@ -108,7 +107,12 @@ fun PositionDetailPage(
     val fiatSymbol = Fiats.getSymbol()
     val hasTakeProfit = !position.takeProfitPrice.isNullOrBlank()
     val hasStopLoss = !position.stopLossPrice.isNullOrBlank()
-    var hideGuideUntil by remember(preferences) { mutableStateOf(preferences.getLong(PREF_HIDE_TPSL_GUIDE_UNTIL, 0L)) }
+    var hideTakeProfitGuideUntil by remember(preferences) {
+        mutableStateOf(preferences.getTpSlGuideHideUntil(TpSlGuideType.TAKE_PROFIT))
+    }
+    var hideStopLossGuideUntil by remember(preferences) {
+        mutableStateOf(preferences.getTpSlGuideHideUntil(TpSlGuideType.STOP_LOSS))
+    }
     val viewModel = hiltViewModel<PerpetualViewModel>()
 
     fun showTpSlBottomSheetFromGuide(mode: PerpsTpSlBottomSheetDialogFragment.Mode) {
@@ -320,7 +324,8 @@ fun PositionDetailPage(
                     pnl = pnl,
                     hasTakeProfit = hasTakeProfit,
                     hasStopLoss = hasStopLoss,
-                    hideGuideUntil = hideGuideUntil,
+                    hideTakeProfitGuideUntil = hideTakeProfitGuideUntil,
+                    hideStopLossGuideUntil = hideStopLossGuideUntil,
                     now = System.currentTimeMillis(),
                 )
                 guideType?.let { currentGuideType ->
@@ -328,9 +333,12 @@ fun PositionDetailPage(
                     PerpsTpSlGuideCard(
                         guideType = currentGuideType,
                         onClose = {
-                            val until = System.currentTimeMillis() + HIDE_TPSL_GUIDE_DURATION_MS
-                            hideGuideUntil = until
-                            preferences.putLong(PREF_HIDE_TPSL_GUIDE_UNTIL, until)
+                            val until = preferences.hideTpSlGuide(currentGuideType)
+                            if (currentGuideType == TpSlGuideType.TAKE_PROFIT) {
+                                hideTakeProfitGuideUntil = until
+                            } else {
+                                hideStopLossGuideUntil = until
+                            }
                         },
                         actionText = stringResource(
                             if (currentGuideType == TpSlGuideType.TAKE_PROFIT) R.string.Take_Profit else R.string.Stop_Loss

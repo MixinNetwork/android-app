@@ -81,7 +81,6 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.openUrl
-import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.withArgs
@@ -393,8 +392,12 @@ private fun PerpsTpSlContent(
         listOf("5", "10", "25", "50")
     }
     var showInfoCard by rememberSaveable(mode.name) {
-        val prefKey = if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) PREF_HIDE_TP_GUIDE_UNTIL else PREF_HIDE_SL_GUIDE_UNTIL
-        mutableStateOf(System.currentTimeMillis() >= preferences.getLong(prefKey, 0L))
+        val guideType = if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
+            TpSlGuideType.TAKE_PROFIT
+        } else {
+            TpSlGuideType.STOP_LOSS
+        }
+        mutableStateOf(System.currentTimeMillis() >= preferences.getTpSlGuideHideUntil(guideType))
     }
 
     LaunchedEffect(latestCurrentPrice, inputType, hasEntryPrice, percentMagnitudeInput, leverageValue, isLong, mode) {
@@ -701,10 +704,8 @@ private fun PerpsTpSlContent(
                     },
                     onClose = {
                         showInfoCard = false
-                        val prefKey = if (isTakeProfit) PREF_HIDE_TP_GUIDE_UNTIL else PREF_HIDE_SL_GUIDE_UNTIL
-                        preferences.putLong(
-                            prefKey,
-                            System.currentTimeMillis() + HIDE_TPSL_GUIDE_DURATION_MS,
+                        preferences.hideTpSlGuide(
+                            if (isTakeProfit) TpSlGuideType.TAKE_PROFIT else TpSlGuideType.STOP_LOSS,
                         )
                     },
                     actionText = stringResource(R.string.Learn_More),
