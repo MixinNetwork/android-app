@@ -173,46 +173,47 @@ fun PerpetualContent(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp)
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            Column(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                        .clip(RoundedCornerShape(8.dp))
-                        .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
-                        .padding(16.dp),
-            ) {
-                Text(
-                    text = stringResource(R.string.Total_Position_Value),
-                    fontSize = 14.sp,
-                    color = MixinAppTheme.colors.textAssist,
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = totalPositionValueFiatText,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.W600,
-                    color = MixinAppTheme.colors.textPrimary,
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
+            if (openPositionsCount > 0) {
+                Column(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                            .clip(RoundedCornerShape(8.dp))
+                            .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
+                            .padding(16.dp),
+                ) {
                     Text(
-                        text = totalPnlFiatText,
+                        text = stringResource(R.string.Total_Position_Value),
                         fontSize = 14.sp,
-                        color = if (totalPnl >= 0) risingColor else fallingColor,
+                        color = MixinAppTheme.colors.textAssist,
                     )
+                    Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        text = "(${formatPerpsSignedPercent(totalPnlPercent, withSign = false)})",
-                        fontSize = 14.sp,
-                        color = if (totalPnl >= 0) risingColor else fallingColor,
+                        text = totalPositionValueFiatText,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.W600,
+                        color = MixinAppTheme.colors.textPrimary,
                     )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = totalPnlFiatText,
+                            fontSize = 14.sp,
+                            color = if (totalPnl >= 0) risingColor else fallingColor,
+                        )
+                        Text(
+                            text = "(${formatPerpsSignedPercent(totalPnlPercent, withSign = false)})",
+                            fontSize = 14.sp,
+                            color = if (totalPnl >= 0) risingColor else fallingColor,
+                        )
+                    }
                 }
             }
 
             if (openPositionsCount == 0) {
-                Spacer(modifier = Modifier.height(16.dp))
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
