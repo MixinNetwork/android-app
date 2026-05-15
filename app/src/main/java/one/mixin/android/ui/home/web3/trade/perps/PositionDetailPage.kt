@@ -21,6 +21,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -116,7 +117,27 @@ fun PositionDetailPage(
     var hideStopLossGuideUntil by remember(preferences) {
         mutableStateOf(preferences.getTpSlGuideHideUntil(TpSlGuideType.STOP_LOSS))
     }
+    var guideType by remember(position.positionId) {
+        mutableStateOf(
+            resolveTpSlGuideType(
+                pnl = pnl,
+                hasTakeProfit = hasTakeProfit,
+                hasStopLoss = hasStopLoss,
+                hideTakeProfitGuideUntil = hideTakeProfitGuideUntil,
+                hideStopLossGuideUntil = hideStopLossGuideUntil,
+                now = System.currentTimeMillis(),
+            )
+        )
+    }
     val viewModel = hiltViewModel<PerpetualViewModel>()
+
+    LaunchedEffect(hasTakeProfit, hasStopLoss, guideType) {
+        if ((guideType == TpSlGuideType.TAKE_PROFIT && hasTakeProfit) ||
+            (guideType == TpSlGuideType.STOP_LOSS && hasStopLoss)
+        ) {
+            guideType = null
+        }
+    }
 
     fun showTpSlBottomSheetFromGuide(mode: PerpsTpSlBottomSheetDialogFragment.Mode) {
         val activity = context as? FragmentActivity ?: return
@@ -326,14 +347,6 @@ fun PositionDetailPage(
                     subtitle = formatSignedPercent(roe),
                 )
 
-                val guideType = resolveTpSlGuideType(
-                    pnl = pnl,
-                    hasTakeProfit = hasTakeProfit,
-                    hasStopLoss = hasStopLoss,
-                    hideTakeProfitGuideUntil = hideTakeProfitGuideUntil,
-                    hideStopLossGuideUntil = hideStopLossGuideUntil,
-                    now = System.currentTimeMillis(),
-                )
                 guideType?.let { currentGuideType ->
                     Spacer(modifier = Modifier.height(16.dp))
                     PerpsTpSlGuideCard(
@@ -345,6 +358,7 @@ fun PositionDetailPage(
                             } else {
                                 hideStopLossGuideUntil = until
                             }
+                            guideType = null
                         },
                         actionText = stringResource(
                             if (currentGuideType == TpSlGuideType.TAKE_PROFIT) R.string.Take_Profit else R.string.Stop_Loss

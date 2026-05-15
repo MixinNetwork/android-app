@@ -229,6 +229,26 @@ fun PerpsMarketDetailPage(
                     var hideStopLossGuideUntil by remember(preferences) {
                         mutableStateOf(preferences.getTpSlGuideHideUntil(TpSlGuideType.STOP_LOSS))
                     }
+                    var guideType by remember(currentPosition.positionId) {
+                        mutableStateOf(
+                            resolveTpSlGuideType(
+                                pnl = pnl,
+                                hasTakeProfit = hasTakeProfit,
+                                hasStopLoss = hasStopLoss,
+                                hideTakeProfitGuideUntil = hideTakeProfitGuideUntil,
+                                hideStopLossGuideUntil = hideStopLossGuideUntil,
+                                now = System.currentTimeMillis(),
+                            )
+                        )
+                    }
+
+                    LaunchedEffect(hasTakeProfit, hasStopLoss, guideType) {
+                        if ((guideType == TpSlGuideType.TAKE_PROFIT && hasTakeProfit) ||
+                            (guideType == TpSlGuideType.STOP_LOSS && hasStopLoss)
+                        ) {
+                            guideType = null
+                        }
+                    }
 
                     fun showTpSlBottomSheetFromGuide(mode: PerpsTpSlBottomSheetDialogFragment.Mode) {
                         val activity = context as? FragmentActivity ?: return
@@ -276,14 +296,6 @@ fun PerpsMarketDetailPage(
                         }.show(activity.supportFragmentManager, PerpsTpSlBottomSheetDialogFragment.TAG)
                     }
 
-                    val guideType = resolveTpSlGuideType(
-                        pnl = pnl,
-                        hasTakeProfit = hasTakeProfit,
-                        hasStopLoss = hasStopLoss,
-                        hideTakeProfitGuideUntil = hideTakeProfitGuideUntil,
-                        hideStopLossGuideUntil = hideStopLossGuideUntil,
-                        now = System.currentTimeMillis(),
-                    )
                     guideType?.let { currentGuideType ->
                         PerpsTpSlGuideCard(
                             guideType = currentGuideType,
@@ -294,6 +306,7 @@ fun PerpsMarketDetailPage(
                                 } else {
                                     hideStopLossGuideUntil = until
                                 }
+                                guideType = null
                             },
                             actionText = stringResource(
                                 if (currentGuideType == TpSlGuideType.TAKE_PROFIT) {
