@@ -1131,10 +1131,17 @@ private fun calculateTpSlPnlPreview(
             leverage = leverage,
         )
     } ?: return null
+    val exactPnlAmount = marginValue.multiply(exactPnlPercent).divide(BigDecimal(100), 8, RoundingMode.HALF_UP)
+    if (exactPnlAmount <= BigDecimal.ZERO) {
+        return null
+    }
+    if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS && exactPnlAmount > marginValue) {
+        return null
+    }
 
     return TpSlPnlPreview(
         percent = exactPnlPercent,
-        amount = marginValue.multiply(exactPnlPercent).divide(BigDecimal(100), 8, RoundingMode.HALF_UP),
+        amount = exactPnlAmount,
     )
 }
 
