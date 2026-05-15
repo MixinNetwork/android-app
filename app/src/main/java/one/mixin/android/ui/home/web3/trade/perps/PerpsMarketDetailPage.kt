@@ -730,7 +730,10 @@ private fun OpenPositionCard(
     }
 
     val entryPrice = position.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    val liquidationPrice = calculateLiquidationPriceValue(entryPrice, position.leverage, isLong)
+    val liquidationPriceText = position.liquidationPrice
+        ?.takeIf { it.isNotBlank() }
+        ?.let { formatPerpsPrice(it, position.priceScale ?: DEFAULT_PERPS_PRICE_SCALE) }
+        ?: "--"
     val compactTextStyle = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false))
 
     fun showTpSlGuide() {
@@ -761,6 +764,7 @@ private fun OpenPositionCard(
             entryPrice = position.entryPrice,
             marketId = position.marketId,
             priceScale = position.priceScale ?: DEFAULT_PERPS_PRICE_SCALE,
+            liquidationPrice = position.liquidationPrice,
         ).setOnApply { value ->
             val normalizedValue = value?.trim().orEmpty()
             if (normalizedValue == existingPrice) {
@@ -1004,7 +1008,7 @@ private fun OpenPositionCard(
                     color = MixinAppTheme.colors.textPrimary
                 )
                 Text(
-                    text = formatPerpsPrice(liquidationPrice, position.priceScale ?: DEFAULT_PERPS_PRICE_SCALE),
+                    text = liquidationPriceText,
                     fontSize = 14.sp,
                     lineHeight = 17.sp,
                     style = compactTextStyle,
@@ -1242,24 +1246,5 @@ private fun ClosedPositionsSection(
                 Spacer(modifier = Modifier.height(8.dp))
             }
         }
-    }
-}
-
-private fun calculateLiquidationPriceValue(
-    entryPrice: BigDecimal,
-    leverage: Int,
-    isLong: Boolean,
-): BigDecimal {
-    if (entryPrice == BigDecimal.ZERO || leverage == 0) {
-        return BigDecimal.ZERO
-    }
-
-    val liquidationPercent = BigDecimal(100.0 / leverage)
-    val liquidationRatio = liquidationPercent.divide(BigDecimal(100), 8, java.math.RoundingMode.HALF_UP)
-
-    return if (isLong) {
-        entryPrice.multiply(BigDecimal.ONE.subtract(liquidationRatio))
-    } else {
-        entryPrice.multiply(BigDecimal.ONE.add(liquidationRatio))
     }
 }

@@ -102,7 +102,10 @@ fun PositionDetailPage(
     val pnl = position.unrealizedPnl?.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val roe = (position.roe?.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(BigDecimal(100))
     val pnlColor = if (pnl >= BigDecimal.ZERO) risingColor else fallingColor
-    val liquidationPrice = calculateLiquidationPriceValue(entryPrice, position.leverage, isLong)
+    val liquidationPriceText = position.liquidationPrice
+        ?.takeIf { it.isNotBlank() }
+        ?.let { formatPriceUsd(it.toBigDecimalOrNull() ?: BigDecimal.ZERO) }
+        ?: "--"
     val fiatRate = BigDecimal(Fiats.getRate())
     val fiatSymbol = Fiats.getSymbol()
     val hasTakeProfit = !position.takeProfitPrice.isNullOrBlank()
@@ -134,6 +137,7 @@ fun PositionDetailPage(
             leverage = position.leverage,
             entryPrice = position.entryPrice,
             marketId = position.marketId,
+            liquidationPrice = position.liquidationPrice,
         ).setOnApply { value ->
             val normalizedValue = value?.trim().orEmpty()
             if (normalizedValue == existingPrice) return@setOnApply
@@ -365,7 +369,7 @@ fun PositionDetailPage(
 
                 PositionDetailItem(
                     label = stringResource(R.string.Liquidation_Price).uppercase(),
-                    value = formatPriceUsd(liquidationPrice)
+                    value = liquidationPriceText
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -386,25 +390,6 @@ fun PositionDetailPage(
 
             Spacer(modifier = Modifier.height(40.dp))
         }
-    }
-}
-
-private fun calculateLiquidationPriceValue(
-    entryPrice: BigDecimal,
-    leverage: Int,
-    isLong: Boolean,
-): BigDecimal {
-    if (entryPrice == BigDecimal.ZERO || leverage <= 0) {
-        return BigDecimal.ZERO
-    }
-
-    val liquidationPercent = BigDecimal(100.0 / leverage)
-    val liquidationRatio = liquidationPercent.divide(BigDecimal(100), 8, RoundingMode.HALF_UP)
-
-    return if (isLong) {
-        entryPrice.multiply(BigDecimal.ONE.subtract(liquidationRatio))
-    } else {
-        entryPrice.multiply(BigDecimal.ONE.add(liquidationRatio))
     }
 }
 

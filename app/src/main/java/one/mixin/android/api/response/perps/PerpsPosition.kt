@@ -59,6 +59,9 @@ data class PerpsPosition(
     @SerializedName("stop_loss_price")
     @ColumnInfo(name = "stop_loss_price")
     val stopLossPrice: String? = null,
+    @SerializedName("liquidation_price")
+    @ColumnInfo(name = "liquidation_price")
+    val liquidationPrice: String? = null,
     @SerializedName("bot_id")
     @ColumnInfo(name = "bot_id")
     val botId: String,

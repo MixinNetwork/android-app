@@ -335,6 +335,7 @@ class PerpetualViewModel @Inject constructor(
                         openPayAssetId = assetId,
                         takeProfitPrice = takeProfitPrice,
                         stopLossPrice = stopLossPrice,
+                        liquidationPrice = null,
                         leverage = leverage,
                         state = "opening",
                         markPrice = entryPrice,
