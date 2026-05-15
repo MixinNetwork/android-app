@@ -269,7 +269,7 @@ fun PerpsMarketDetailPage(
                             leverage = currentPosition.leverage,
                             entryPrice = currentPosition.entryPrice,
                             marketId = currentPosition.marketId,
-                            priceScale = currentPosition.priceScale ?: DEFAULT_PERPS_PRICE_SCALE,
+                            priceScale = currentPosition.priceScale,
                         ).setOnApply { value ->
                             val normalizedValue = value?.trim().orEmpty()
                             if (normalizedValue == existingPrice) return@setOnApply
@@ -745,7 +745,7 @@ private fun OpenPositionCard(
     val entryPrice = position.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val liquidationPriceText = position.liquidationPrice
         ?.takeIf { it.isNotBlank() }
-        ?.let { formatPerpsPrice(it, position.priceScale ?: DEFAULT_PERPS_PRICE_SCALE) }
+        ?.let { formatPerpsPrice(it, position.priceScale) }
         ?: "--"
     val compactTextStyle = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false))
 
@@ -776,7 +776,7 @@ private fun OpenPositionCard(
             leverage = position.leverage,
             entryPrice = position.entryPrice,
             marketId = position.marketId,
-            priceScale = position.priceScale ?: DEFAULT_PERPS_PRICE_SCALE,
+            priceScale = position.priceScale,
             liquidationPrice = position.liquidationPrice,
         ).setOnApply { value ->
             val normalizedValue = value?.trim().orEmpty()
@@ -1014,7 +1014,7 @@ private fun OpenPositionCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = formatPerpsPrice(entryPrice, position.priceScale ?: DEFAULT_PERPS_PRICE_SCALE),
+                    text = formatPerpsPrice(entryPrice, position.priceScale),
                     fontSize = 14.sp,
                     lineHeight = 17.sp,
                     style = compactTextStyle,
@@ -1057,7 +1057,7 @@ private fun OpenPositionCard(
             ) {
                 TpSlActionCell(
                     modifier = Modifier.weight(1f),
-                    value = formatMarketTpSlDisplayValue(position.takeProfitPrice, position.priceScale ?: DEFAULT_PERPS_PRICE_SCALE),
+                    value = formatMarketTpSlDisplayValue(position.takeProfitPrice, position.priceScale),
                     loading = tpSlLoadingMode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT,
                     compactTextStyle = compactTextStyle,
                     onClick = {
@@ -1083,7 +1083,7 @@ private fun OpenPositionCard(
                 Spacer(modifier = Modifier.width(12.dp))
                 TpSlActionCell(
                     modifier = Modifier.weight(1f),
-                    value = formatMarketTpSlDisplayValue(position.stopLossPrice, position.priceScale ?: DEFAULT_PERPS_PRICE_SCALE),
+                    value = formatMarketTpSlDisplayValue(position.stopLossPrice, position.priceScale),
                     loading = tpSlLoadingMode == PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS,
                     compactTextStyle = compactTextStyle,
                     alignment = Alignment.End,
