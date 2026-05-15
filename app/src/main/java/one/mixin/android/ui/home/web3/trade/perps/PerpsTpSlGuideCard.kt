@@ -156,6 +156,7 @@ internal fun PerpsTpSlGuideCard(
                             Text(
                                 text = actionText,
                                 fontSize = 13.sp,
+                                fontWeight = FontWeight.W500,
                                 color = MixinAppTheme.colors.accent,
                                 modifier = Modifier.clickable(onClick = onActionClick),
                             )
