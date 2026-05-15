@@ -14,6 +14,7 @@ import one.mixin.android.api.request.perps.CloseOrderRequest
 import one.mixin.android.api.request.perps.CloseOrderResponse
 import one.mixin.android.api.request.perps.OpenOrderRequest
 import one.mixin.android.api.request.perps.OpenOrderResponse
+import one.mixin.android.api.request.perps.PositionTpSlRequest
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.web3.EstimateFeeResponse
 import one.mixin.android.api.request.web3.GaslessFeeRequest
@@ -415,6 +416,11 @@ interface RouteService {
     @GET("perps/positions/{id}")
     suspend fun getPerpsPosition(
         @Path("id") positionId: String
+    ): MixinResponse<PerpsPosition>
+
+    @POST("perps/positions/tpsl")
+    suspend fun setPerpsPositionTpSl(
+        @Body request: PositionTpSlRequest
     ): MixinResponse<PerpsPosition>
 
     @GET("perps/positions/history")

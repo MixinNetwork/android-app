@@ -38,9 +38,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -98,6 +102,8 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         private const val ARGS_LEVERAGE = "args_leverage"
         private const val ARGS_ENTRY_PRICE = "args_entry_price"
         private const val ARGS_TOKEN_SYMBOL = "args_token_symbol"
+        private const val ARGS_TAKE_PROFIT_PRICE = "args_take_profit_price"
+        private const val ARGS_STOP_LOSS_PRICE = "args_stop_loss_price"
         private const val ARGS_PAY_URL = "args_pay_url"
 
         fun newInstance(
@@ -108,6 +114,8 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
             leverage: Int,
             entryPrice: String,
             tokenSymbol: String,
+            takeProfitPrice: String? = null,
+            stopLossPrice: String? = null,
             payUrl: String?,
         ): PerpsConfirmBottomSheetDialogFragment {
             return PerpsConfirmBottomSheetDialogFragment().withArgs {
@@ -118,6 +126,8 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                 putInt(ARGS_LEVERAGE, leverage)
                 putString(ARGS_ENTRY_PRICE, entryPrice)
                 putString(ARGS_TOKEN_SYMBOL, tokenSymbol)
+                putString(ARGS_TAKE_PROFIT_PRICE, takeProfitPrice)
+                putString(ARGS_STOP_LOSS_PRICE, stopLossPrice)
                 putString(ARGS_PAY_URL, payUrl)
             }
         }
@@ -164,6 +174,8 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     private val leverage by lazy { requireArguments().getInt(ARGS_LEVERAGE) }
     private val entryPrice by lazy { requireNotNull(requireArguments().getString(ARGS_ENTRY_PRICE)) }
     private val tokenSymbol by lazy { requireNotNull(requireArguments().getString(ARGS_TOKEN_SYMBOL)) }
+    private val takeProfitPrice by lazy { requireArguments().getString(ARGS_TAKE_PROFIT_PRICE).orEmpty() }
+    private val stopLossPrice by lazy { requireArguments().getString(ARGS_STOP_LOSS_PRICE).orEmpty() }
     private val fiatRate by lazy { BigDecimal(Fiats.getRate()) }
     private val fiatSymbol by lazy { Fiats.getSymbol() }
 
@@ -172,6 +184,8 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         val price = entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
         "$PERPS_USD_SYMBOL${price.priceFormat()}"
     }
+    private val takeProfitFiatPrice by lazy { formatOptionalPerpsPrice(takeProfitPrice) }
+    private val stopLossFiatPrice by lazy { formatOptionalPerpsPrice(stopLossPrice) }
 
     private val liquidationPrice by lazy {
         try {
@@ -370,6 +384,44 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                     )
                     Box(modifier = Modifier.height(20.dp))
 
+                    takeProfitFiatPrice?.let { takeProfit ->
+                        val tpSubValue = calculateTpSlSubValue(
+                            targetPrice = takeProfitPrice,
+                            entryPrice = entryPrice,
+                            leverage = leverage,
+                            amount = amount,
+                            isLong = isLong,
+                            isTakeProfit = true,
+                        )
+                        PerpsInfoItem(
+                            title = stringResource(R.string.Take_Profit).uppercase(),
+                            value = takeProfit,
+                            subValueAnnotated = tpSubValue,
+                            info = true,
+                            guideTab = PerpetualGuideBottomSheetDialogFragment.TAB_TP_SL,
+                        )
+                        Box(modifier = Modifier.height(20.dp))
+                    }
+
+                    stopLossFiatPrice?.let { stopLoss ->
+                        val slSubValue = calculateTpSlSubValue(
+                            targetPrice = stopLossPrice,
+                            entryPrice = entryPrice,
+                            leverage = leverage,
+                            amount = amount,
+                            isLong = isLong,
+                            isTakeProfit = false,
+                        )
+                        PerpsInfoItem(
+                            title = stringResource(R.string.Stop_Loss).uppercase(),
+                            value = stopLoss,
+                            subValueAnnotated = slSubValue,
+                            info = true,
+                            guideTab = PerpetualGuideBottomSheetDialogFragment.TAB_TP_SL,
+                        )
+                        Box(modifier = Modifier.height(20.dp))
+                    }
+
                     val lossPercent = remember(leverage) {
                         val percent = String.format("%.2f", 100.0 / leverage)
                         Timber.d("LossPercent - leverage: $leverage, lossPercent: $percent")
@@ -399,7 +451,9 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                     PerpsInfoItem(
                         title = stringResource(R.string.Estimated_Liquidation_Price).uppercase(),
                         value = liquidationPrice,
-                        subValue = lossSubValue
+                        subValue = lossSubValue,
+                        info = true,
+                        guideTab = PerpetualGuideBottomSheetDialogFragment.TAB_LIQUIDATION,
                     )
 
                     Box(modifier = Modifier.height(20.dp))
@@ -468,7 +522,9 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         title: String,
         value: String,
         subValue: String? = null,
+        subValueAnnotated: AnnotatedString? = null,
         info: Boolean = false,
+        guideTab: Int = PerpetualGuideBottomSheetDialogFragment.TAB_POSITION,
     ) {
         Column(
             modifier = Modifier
@@ -492,7 +548,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                             .size(12.dp)
                             .clickable {
                                 PerpetualGuideBottomSheetDialogFragment.newInstance(
-                                    PerpetualGuideBottomSheetDialogFragment.TAB_POSITION
+                                    guideTab
                                 ).show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
                             },
                         tint = MixinAppTheme.colors.textAssist
@@ -506,13 +562,22 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                 fontSize = 16.sp,
                 fontWeight = FontWeight.W400
             )
-            subValue?.let {
+            if (subValueAnnotated != null) {
                 Box(modifier = Modifier.height(4.dp))
                 Text(
-                    text = it,
+                    text = subValueAnnotated,
                     color = MixinAppTheme.colors.textAssist,
                     fontSize = 14.sp,
                 )
+            } else {
+                subValue?.let {
+                    Box(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = it,
+                        color = MixinAppTheme.colors.textAssist,
+                        fontSize = 14.sp,
+                    )
+                }
             }
         }
     }
@@ -686,5 +751,79 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     override fun showError(error: String) {
         errorInfo = error
         step = Step.Error
+    }
+}
+
+private fun formatOptionalPerpsPrice(rawPrice: String): String? {
+    val value = rawPrice.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: return null
+    return "$PERPS_USD_SYMBOL${value.priceFormat()}"
+}
+
+@Composable
+private fun calculateTpSlSubValue(
+    targetPrice: String,
+    entryPrice: String,
+    leverage: Int,
+    amount: String,
+    isLong: Boolean,
+    isTakeProfit: Boolean,
+): AnnotatedString? {
+    val target = targetPrice.toBigDecimalOrNull() ?: return null
+    val entry = entryPrice.toBigDecimalOrNull() ?: return null
+    val margin = amount.toBigDecimalOrNull() ?: return null
+    if (entry <= BigDecimal.ZERO || target <= BigDecimal.ZERO) return null
+
+    val priceChangePercent = target.subtract(entry)
+        .multiply(BigDecimal(100))
+        .divide(entry, 2, RoundingMode.HALF_UP)
+
+    val absPriceChange = priceChangePercent.abs()
+    val pnlPercent = absPriceChange.multiply(BigDecimal(leverage))
+    val pnlAmount = margin.multiply(pnlPercent).divide(BigDecimal(100), 2, RoundingMode.HALF_UP)
+    val priceChangeStr = absPriceChange.setScale(2, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
+
+    val context = LocalContext.current
+    val quoteColorReversed = context.defaultSharedPreferences
+        .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
+    val profitColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+    val lossColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+
+    val isPriceUp = if (isLong) isTakeProfit else !isTakeProfit
+    val priceChangeText = if (isPriceUp) {
+        "+$priceChangeStr%"
+    } else {
+        "-$priceChangeStr%"
+    }
+
+    return if (isTakeProfit) {
+        val amountText = "+${formatPerpsRawUsdDecimal(pnlAmount)}"
+        val pnlPercentStr = pnlPercent.setScale(2, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
+        val outcomeText = "$amountText ($pnlPercentStr%)"
+        val fullText = stringResource(R.string.price_change_take_profit, priceChangeText, outcomeText)
+        buildAnnotatedString {
+            append(fullText)
+            val outcomeStart = fullText.indexOf(outcomeText)
+            if (outcomeStart >= 0) {
+                addStyle(
+                    style = SpanStyle(color = profitColor),
+                    start = outcomeStart,
+                    end = outcomeStart + outcomeText.length,
+                )
+            }
+        }
+    } else {
+        val amountText = "-${formatPerpsRawUsdDecimal(pnlAmount)}"
+        val fullText = stringResource(R.string.price_change_stop_loss, priceChangeText, amountText)
+        buildAnnotatedString {
+            append(fullText)
+            val outcomeStart = fullText.indexOf(amountText)
+            if (outcomeStart >= 0) {
+                addStyle(
+                    style = SpanStyle(color = lossColor),
+                    start = outcomeStart,
+                    end = outcomeStart + amountText.length,
+                )
+            }
+        }
     }
 }

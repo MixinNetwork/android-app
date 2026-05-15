@@ -1,12 +1,12 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 2,
-    "identityHash": "4423b2cbe0ba53b8f8a4190b84e04883",
+    "version": 3,
+    "identityHash": "7eacf037326a2a5b7d343699b2e0a7c4",
     "entities": [
       {
         "tableName": "positions",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`position_id` TEXT NOT NULL, `market_id` TEXT NOT NULL, `side` TEXT NOT NULL, `quantity` TEXT NOT NULL, `entry_price` TEXT NOT NULL, `margin` TEXT NOT NULL, `leverage` INTEGER NOT NULL, `state` TEXT NOT NULL, `mark_price` TEXT NOT NULL, `unrealized_pnl` TEXT NOT NULL, `roe` TEXT NOT NULL, `settle_asset_id` TEXT NOT NULL, `open_pay_amount` TEXT NOT NULL, `open_pay_asset_id` TEXT NOT NULL, `bot_id` TEXT NOT NULL, `wallet_id` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`position_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`position_id` TEXT NOT NULL, `market_id` TEXT NOT NULL, `side` TEXT NOT NULL, `quantity` TEXT NOT NULL, `entry_price` TEXT NOT NULL, `margin` TEXT NOT NULL, `leverage` INTEGER NOT NULL, `state` TEXT NOT NULL, `mark_price` TEXT NOT NULL, `unrealized_pnl` TEXT NOT NULL, `roe` TEXT NOT NULL, `settle_asset_id` TEXT NOT NULL, `open_pay_amount` TEXT NOT NULL, `open_pay_asset_id` TEXT NOT NULL, `take_profit_price` TEXT, `stop_loss_price` TEXT, `bot_id` TEXT NOT NULL, `wallet_id` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`position_id`))",
         "fields": [
           {
             "fieldPath": "positionId",
@@ -91,6 +91,16 @@
             "columnName": "open_pay_asset_id",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "takeProfitPrice",
+            "columnName": "take_profit_price",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "stopLossPrice",
+            "columnName": "stop_loss_price",
+            "affinity": "TEXT"
           },
           {
             "fieldPath": "botId",
@@ -210,7 +220,7 @@
       },
       {
         "tableName": "markets",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`market_id` TEXT NOT NULL, `display_symbol` TEXT NOT NULL, `token_symbol` TEXT NOT NULL, `quote_symbol` TEXT NOT NULL, `mark_price` TEXT NOT NULL, `leverage` INTEGER NOT NULL, `icon_url` TEXT NOT NULL, `category` TEXT NOT NULL, `tags` TEXT NOT NULL, `funding_rate` TEXT NOT NULL, `min_amount` TEXT NOT NULL, `max_amount` TEXT NOT NULL, `last` TEXT NOT NULL, `volume` TEXT NOT NULL, `high` TEXT NOT NULL, `low` TEXT NOT NULL, `open` TEXT NOT NULL, `change` TEXT NOT NULL, `bid_price` TEXT NOT NULL, `ask_price` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`market_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`market_id` TEXT NOT NULL, `display_symbol` TEXT NOT NULL, `token_symbol` TEXT NOT NULL, `quote_symbol` TEXT NOT NULL, `mark_price` TEXT NOT NULL, `price_scale` INTEGER NOT NULL DEFAULT 2, `leverage` INTEGER NOT NULL, `icon_url` TEXT NOT NULL, `category` TEXT NOT NULL, `tags` TEXT NOT NULL, `funding_rate` TEXT NOT NULL, `min_amount` TEXT NOT NULL, `max_amount` TEXT NOT NULL, `last` TEXT NOT NULL, `volume` TEXT NOT NULL, `high` TEXT NOT NULL, `low` TEXT NOT NULL, `open` TEXT NOT NULL, `change` TEXT NOT NULL, `bid_price` TEXT NOT NULL, `ask_price` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`market_id`))",
         "fields": [
           {
             "fieldPath": "marketId",
@@ -241,6 +251,13 @@
             "columnName": "mark_price",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "priceScale",
+            "columnName": "price_scale",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "2"
           },
           {
             "fieldPath": "leverage",
@@ -355,7 +372,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4423b2cbe0ba53b8f8a4190b84e04883')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7eacf037326a2a5b7d343699b2e0a7c4')"
     ]
   }
 }

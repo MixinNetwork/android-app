@@ -15,6 +15,10 @@ data class OpenOrderRequest(
     val leverage: Int,
     @SerializedName("wallet_id")
     val walletId: String,
+    @SerializedName("take_profit_price")
+    val takeProfitPrice: String? = null,
+    @SerializedName("stop_loss_price")
+    val stopLossPrice: String? = null,
     @SerializedName("destination")
     val destination: String? = null
 )
@@ -40,4 +44,13 @@ data class CloseOrderRequest(
 data class CloseOrderResponse(
     @SerializedName("order_id")
     val orderId: String
+)
+
+data class PositionTpSlRequest(
+    @SerializedName("position_id")
+    val positionId: String,
+    @SerializedName("take_profit_price")
+    val takeProfitPrice: String? = null,
+    @SerializedName("stop_loss_price")
+    val stopLossPrice: String? = null,
 )

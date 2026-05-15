@@ -65,12 +65,13 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.priceFormat
+import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.home.web3.trade.CandleChart
 import one.mixin.android.ui.home.web3.trade.ClosedPositionItem
 import one.mixin.android.ui.wallet.alert.components.cardBackground
-import one.mixin.android.vo.Fiats
+import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.widget.components.MixinButton
 import java.math.BigDecimal
 
@@ -89,6 +90,7 @@ fun PerpsMarketDetailPage(
 ) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<PerpetualViewModel>()
+    val preferences = remember(context) { context.defaultSharedPreferences }
     val lifecycleOwner = LocalLifecycleOwner.current
     var market by remember(marketId, initialMarket) { mutableStateOf(initialMarket) }
     var isLoading by remember(marketId, initialMarket) { mutableStateOf(initialMarket == null) }
@@ -218,6 +220,101 @@ fun PerpsMarketDetailPage(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 if (currentPosition != null && market != null) {
+                    val pnl = currentPosition.unrealizedPnl?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                    val hasTakeProfit = !currentPosition.takeProfitPrice.isNullOrBlank()
+                    val hasStopLoss = !currentPosition.stopLossPrice.isNullOrBlank()
+                    var hideTakeProfitGuideUntil by remember(preferences) {
+                        mutableStateOf(preferences.getTpSlGuideHideUntil(TpSlGuideType.TAKE_PROFIT))
+                    }
+                    var hideStopLossGuideUntil by remember(preferences) {
+                        mutableStateOf(preferences.getTpSlGuideHideUntil(TpSlGuideType.STOP_LOSS))
+                    }
+
+                    fun showTpSlBottomSheetFromGuide(mode: PerpsTpSlBottomSheetDialogFragment.Mode) {
+                        val activity = context as? FragmentActivity ?: return
+                        val existingPrice = when (mode) {
+                            PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT -> currentPosition.takeProfitPrice.orEmpty()
+                            PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS -> currentPosition.stopLossPrice.orEmpty()
+                        }
+                        val currentPrice = currentPosition.markPrice.orEmpty().ifBlank { currentPosition.entryPrice }
+                        val requestMarginAmount = currentPosition.margin ?: currentPosition.openPayAmount.orEmpty()
+                        PerpsTpSlBottomSheetDialogFragment.newInstance(
+                            mode = mode,
+                            price = existingPrice,
+                            currentPrice = currentPrice,
+                            isLong = currentPosition.side.equals("long", ignoreCase = true),
+                            marketIconUrl = currentPosition.iconUrl.orEmpty(),
+                            marketSymbol = currentPosition.tokenSymbol ?: "",
+                            marginAmount = requestMarginAmount,
+                            leverage = currentPosition.leverage,
+                            entryPrice = currentPosition.entryPrice,
+                            marketId = currentPosition.marketId,
+                            priceScale = currentPosition.priceScale ?: DEFAULT_PERPS_PRICE_SCALE,
+                        ).setOnApply { value ->
+                            val normalizedValue = value?.trim().orEmpty()
+                            if (normalizedValue == existingPrice) return@setOnApply
+                            if (normalizedValue.isEmpty() && existingPrice.isEmpty()) return@setOnApply
+                            val requestedValue = normalizedValue.ifEmpty { "" }
+                            // TP/SL update API treats null as "keep existing value" and empty string as "clear this side".
+                            viewModel.setPositionTpSl(
+                                positionId = currentPosition.positionId,
+                                takeProfitPrice = when (mode) {
+                                    PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT -> requestedValue
+                                    PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS -> null
+                                },
+                                stopLossPrice = when (mode) {
+                                    PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT -> null
+                                    PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS -> requestedValue
+                                },
+                                onSuccess = {
+                                    toast(context.getString(R.string.Successful))
+                                },
+                                onError = { errorCode, errorMessage ->
+                                    toast(context.getMixinErrorStringByCode(errorCode, errorMessage))
+                                },
+                            )
+                        }.show(activity.supportFragmentManager, PerpsTpSlBottomSheetDialogFragment.TAG)
+                    }
+
+                    val guideType = resolveTpSlGuideType(
+                        pnl = pnl,
+                        hasTakeProfit = hasTakeProfit,
+                        hasStopLoss = hasStopLoss,
+                        hideTakeProfitGuideUntil = hideTakeProfitGuideUntil,
+                        hideStopLossGuideUntil = hideStopLossGuideUntil,
+                        now = System.currentTimeMillis(),
+                    )
+                    guideType?.let { currentGuideType ->
+                        PerpsTpSlGuideCard(
+                            guideType = currentGuideType,
+                            onClose = {
+                                val until = preferences.hideTpSlGuide(currentGuideType)
+                                if (currentGuideType == TpSlGuideType.TAKE_PROFIT) {
+                                    hideTakeProfitGuideUntil = until
+                                } else {
+                                    hideStopLossGuideUntil = until
+                                }
+                            },
+                            actionText = stringResource(
+                                if (currentGuideType == TpSlGuideType.TAKE_PROFIT) {
+                                    R.string.Take_Profit
+                                } else {
+                                    R.string.Stop_Loss
+                                }
+                            ),
+                            onActionClick = {
+                                showTpSlBottomSheetFromGuide(
+                                    if (currentGuideType == TpSlGuideType.TAKE_PROFIT) {
+                                        PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT
+                                    } else {
+                                        PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS
+                                    }
+                                )
+                            },
+                            layout = PerpsTpSlGuideCardLayout.DETAIL,
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
                     OpenPositionCard(
                         position = currentPosition,
                         viewModel = viewModel,
@@ -229,14 +326,19 @@ fun PerpsMarketDetailPage(
                 }
 
                 if (market != null) {
+                    if (currentPosition == null) {
+                        HowPerpsWorksCard(
+                            onLearnClick = {
+                                val activity = context as? FragmentActivity ?: return@HowPerpsWorksCard
+                                PerpetualGuideBottomSheetDialogFragment.newInstance(
+                                    PerpetualGuideBottomSheetDialogFragment.TAB_OVERVIEW
+                                ).show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
+                            }
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
                     MarketInfoCard(
                         market = market!!,
-                        onLearnClick = {
-                            val activity = context as? FragmentActivity ?: return@MarketInfoCard
-                            PerpetualGuideBottomSheetDialogFragment.newInstance(
-                                PerpetualGuideBottomSheetDialogFragment.TAB_OVERVIEW
-                            ).show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
-                        }
                     )
                 }
 
@@ -273,6 +375,18 @@ fun PerpsMarketDetailPage(
                                 )
                                 .addToBackStack(null)
                                 .commit()
+                        }
+                    )
+                }
+
+                if (currentPosition != null && market != null) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    HowPerpsWorksCard(
+                        onLearnClick = {
+                            val activity = context as? FragmentActivity ?: return@HowPerpsWorksCard
+                            PerpetualGuideBottomSheetDialogFragment.newInstance(
+                                PerpetualGuideBottomSheetDialogFragment.TAB_OVERVIEW
+                            ).show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
                         }
                     )
                 }
@@ -373,8 +487,7 @@ fun PerpsMarketDetailPage(
 }
 
 @Composable
-private fun MarketInfoCard(
-    market: PerpsMarket,
+private fun HowPerpsWorksCard(
     onLearnClick: () -> Unit,
 ) {
     Column(
@@ -407,9 +520,12 @@ private fun MarketInfoCard(
             }
         }
     }
+}
 
-    Spacer(modifier = Modifier.height(16.dp))
-
+@Composable
+private fun MarketInfoCard(
+    market: PerpsMarket,
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -594,9 +710,6 @@ private fun OpenPositionCard(
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
     val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
-    val fiatRate = BigDecimal(Fiats.getRate())
-    val fiatSymbol = Fiats.getSymbol()
-
     val pnl = position.unrealizedPnl?.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val roe = (position.roe?.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(BigDecimal(100))
     val isProfit = pnl >= BigDecimal.ZERO
@@ -608,10 +721,79 @@ private fun OpenPositionCard(
     val quantity = position.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val marginAmount = position.margin?.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val amountValue = marginAmount
+    val currentPrice = position.markPrice.orEmpty()
+        .ifBlank { position.entryPrice }
+        .toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val positionValue = quantity.abs().multiply(currentPrice)
+    var tpSlLoadingMode by remember(position.positionId) {
+        mutableStateOf<PerpsTpSlBottomSheetDialogFragment.Mode?>(null)
+    }
 
     val entryPrice = position.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val liquidationPrice = calculateLiquidationPriceValue(entryPrice, position.leverage, isLong)
     val compactTextStyle = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false))
+
+    fun showTpSlGuide() {
+        val activity = context as? FragmentActivity ?: return
+        PerpetualGuideBottomSheetDialogFragment.newInstance(
+            PerpetualGuideBottomSheetDialogFragment.TAB_TP_SL
+        ).show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
+    }
+
+    fun showTpSlBottomSheet(mode: PerpsTpSlBottomSheetDialogFragment.Mode) {
+        val activity = context as? FragmentActivity ?: return
+        val existingPrice = when (mode) {
+            PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT -> position.takeProfitPrice.orEmpty()
+            PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS -> position.stopLossPrice.orEmpty()
+        }
+        val currentPrice = position.markPrice.orEmpty().ifBlank { position.entryPrice }
+        val requestMarginAmount = position.margin ?: position.openPayAmount.orEmpty()
+
+        PerpsTpSlBottomSheetDialogFragment.newInstance(
+            mode = mode,
+            price = existingPrice,
+            currentPrice = currentPrice,
+            isLong = isLong,
+            marketIconUrl = position.iconUrl.orEmpty(),
+            marketSymbol = position.tokenSymbol ?: "",
+            marginAmount = requestMarginAmount,
+            leverage = position.leverage,
+            entryPrice = position.entryPrice,
+            marketId = position.marketId,
+            priceScale = position.priceScale ?: DEFAULT_PERPS_PRICE_SCALE,
+        ).setOnApply { value ->
+            val normalizedValue = value?.trim().orEmpty()
+            if (normalizedValue == existingPrice) {
+                return@setOnApply
+            }
+            if (normalizedValue.isEmpty() && existingPrice.isEmpty()) {
+                return@setOnApply
+            }
+
+            tpSlLoadingMode = mode
+            val requestedValue = normalizedValue.ifEmpty { "" }
+            // TP/SL update API treats null as "keep existing value" and empty string as "clear this side".
+            viewModel.setPositionTpSl(
+                positionId = position.positionId,
+                takeProfitPrice = when (mode) {
+                    PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT -> requestedValue
+                    PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS -> null
+                },
+                stopLossPrice = when (mode) {
+                    PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT -> null
+                    PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS -> requestedValue
+                },
+                onSuccess = {
+                    tpSlLoadingMode = null
+                    toast(context.getString(R.string.Successful))
+                },
+                onError = { errorCode, errorMessage ->
+                    tpSlLoadingMode = null
+                    toast(context.getMixinErrorStringByCode(errorCode, errorMessage))
+                },
+            )
+        }.show(activity.supportFragmentManager, PerpsTpSlBottomSheetDialogFragment.TAG)
+    }
 
     Column(
         modifier = Modifier
@@ -723,7 +905,7 @@ private fun OpenPositionCard(
                         style = compactTextStyle,
                         color = MixinAppTheme.colors.textAssist
                     )
-                    Spacer(modifier = Modifier.width(9.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
                     Icon(
                         painter = painterResource(id = R.drawable.ic_tip),
                         contentDescription = null,
@@ -753,7 +935,7 @@ private fun OpenPositionCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "${quantity.stripTrailingZeros().toPlainString()} ${position.tokenSymbol}",
+                    text = "${formatPerpsQuantity(quantity.abs())} ${position.tokenSymbol} (${formatPerpsUsdDecimal(positionValue)})",
                     fontSize = 14.sp,
                     lineHeight = 17.sp,
                     style = compactTextStyle,
@@ -784,13 +966,29 @@ private fun OpenPositionCard(
                     style = compactTextStyle,
                     color = MixinAppTheme.colors.textAssist
                 )
-                Text(
-                    text = stringResource(R.string.Liquidation_Price).uppercase(),
-                    fontSize = 12.sp,
-                    lineHeight = 14.sp,
-                    style = compactTextStyle,
-                    color = MixinAppTheme.colors.textAssist
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = stringResource(R.string.Liquidation_Price).uppercase(),
+                        fontSize = 12.sp,
+                        lineHeight = 14.sp,
+                        style = compactTextStyle,
+                        color = MixinAppTheme.colors.textAssist
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_tip),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(12.dp)
+                            .clickable {
+                                val activity = context as? FragmentActivity ?: return@clickable
+                                PerpetualGuideBottomSheetDialogFragment.newInstance(
+                                    PerpetualGuideBottomSheetDialogFragment.TAB_LIQUIDATION
+                                ).show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
+                            },
+                        tint = MixinAppTheme.colors.textAssist
+                    )
+                }
             }
             Spacer(modifier = Modifier.height(10.dp))
             Row(
@@ -799,14 +997,14 @@ private fun OpenPositionCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "$PERPS_USD_SYMBOL${entryPrice.priceFormat()}",
+                    text = formatPerpsPrice(entryPrice, position.priceScale ?: DEFAULT_PERPS_PRICE_SCALE),
                     fontSize = 14.sp,
                     lineHeight = 17.sp,
                     style = compactTextStyle,
                     color = MixinAppTheme.colors.textPrimary
                 )
                 Text(
-                    text = formatPerpsUsdDecimal(liquidationPrice),
+                    text = formatPerpsPrice(liquidationPrice, position.priceScale ?: DEFAULT_PERPS_PRICE_SCALE),
                     fontSize = 14.sp,
                     lineHeight = 17.sp,
                     style = compactTextStyle,
@@ -814,7 +1012,185 @@ private fun OpenPositionCard(
                 )
             }
         }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        Column {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TpSlLabel(
+                    text = stringResource(R.string.Take_Profit).uppercase(),
+                    compactTextStyle = compactTextStyle,
+                    onTipClick = ::showTpSlGuide,
+                )
+                TpSlLabel(
+                    text = stringResource(R.string.Stop_Loss).uppercase(),
+                    compactTextStyle = compactTextStyle,
+                    onTipClick = ::showTpSlGuide,
+                )
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TpSlActionCell(
+                    modifier = Modifier.weight(1f),
+                    value = formatMarketTpSlDisplayValue(position.takeProfitPrice, position.priceScale ?: DEFAULT_PERPS_PRICE_SCALE),
+                    loading = tpSlLoadingMode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT,
+                    compactTextStyle = compactTextStyle,
+                    onClick = {
+                        showTpSlBottomSheet(PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT)
+                    },
+                    onDelete = {
+                        tpSlLoadingMode = PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT
+                        viewModel.setPositionTpSl(
+                            positionId = position.positionId,
+                            takeProfitPrice = "",
+                            stopLossPrice = null,
+                            onSuccess = {
+                                tpSlLoadingMode = null
+                                toast(context.getString(R.string.Successful))
+                            },
+                            onError = { errorCode, errorMessage ->
+                                tpSlLoadingMode = null
+                                toast(context.getMixinErrorStringByCode(errorCode, errorMessage))
+                            },
+                        )
+                    },
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                TpSlActionCell(
+                    modifier = Modifier.weight(1f),
+                    value = formatMarketTpSlDisplayValue(position.stopLossPrice, position.priceScale ?: DEFAULT_PERPS_PRICE_SCALE),
+                    loading = tpSlLoadingMode == PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS,
+                    compactTextStyle = compactTextStyle,
+                    alignment = Alignment.End,
+                    onClick = {
+                        showTpSlBottomSheet(PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS)
+                    },
+                    onDelete = {
+                        tpSlLoadingMode = PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS
+                        viewModel.setPositionTpSl(
+                            positionId = position.positionId,
+                            takeProfitPrice = null,
+                            stopLossPrice = "",
+                            onSuccess = {
+                                tpSlLoadingMode = null
+                                toast(context.getString(R.string.Successful))
+                            },
+                            onError = { errorCode, errorMessage ->
+                                tpSlLoadingMode = null
+                                toast(context.getMixinErrorStringByCode(errorCode, errorMessage))
+                            },
+                        )
+                    },
+                )
+            }
+        }
     }
+}
+
+@Composable
+private fun TpSlLabel(
+    text: String,
+    compactTextStyle: TextStyle,
+    onTipClick: () -> Unit,
+) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            text = text,
+            fontSize = 12.sp,
+            lineHeight = 14.sp,
+            style = compactTextStyle,
+            color = MixinAppTheme.colors.textAssist
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        Icon(
+            painter = painterResource(id = R.drawable.ic_tip),
+            contentDescription = null,
+            modifier = Modifier
+                .size(12.dp)
+                .clickable(onClick = onTipClick),
+            tint = MixinAppTheme.colors.textAssist
+        )
+    }
+}
+
+@Composable
+private fun TpSlActionCell(
+    modifier: Modifier = Modifier,
+    value: String?,
+    loading: Boolean,
+    compactTextStyle: TextStyle,
+    alignment: Alignment.Horizontal = Alignment.Start,
+    onClick: () -> Unit,
+    onDelete: (() -> Unit)? = null,
+) {
+    val hasValue = value != null
+    Box(
+        modifier = modifier.fillMaxWidth(),
+        contentAlignment = if (alignment == Alignment.End) Alignment.CenterEnd else Alignment.CenterStart,
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (!hasValue && loading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(16.dp),
+                    strokeWidth = 2.dp,
+                    color = MixinAppTheme.colors.accent
+                )
+            } else {
+                Text(
+                    text = value ?: stringResource(R.string.Add),
+                    fontSize = 14.sp,
+                    lineHeight = 17.sp,
+                    style = compactTextStyle,
+                    color = if (hasValue) MixinAppTheme.colors.textPrimary else MixinAppTheme.colors.accent,
+                    modifier = if (!hasValue) Modifier.clickable(enabled = !loading, onClick = onClick) else Modifier,
+                )
+            }
+            if (hasValue && loading) {
+                Spacer(modifier = Modifier.width(4.dp))
+                CircularProgressIndicator(
+                    modifier = Modifier.size(16.dp),
+                    strokeWidth = 2.dp,
+                    color = MixinAppTheme.colors.accent
+                )
+            } else if (hasValue) {
+                Spacer(modifier = Modifier.width(4.dp))
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_action_delete),
+                    contentDescription = null,
+                    tint = MixinAppTheme.colors.textAssist,
+                    modifier = Modifier
+                        .size(16.dp)
+                        .clickable(enabled = !loading && onDelete != null) { onDelete?.invoke() }
+                )
+            } else if (!loading) {
+                Spacer(modifier = Modifier.width(4.dp))
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_arrow_right),
+                    contentDescription = null,
+                    tint = MixinAppTheme.colors.textAssist,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+        }
+    }
+}
+
+private fun formatMarketTpSlDisplayValue(rawValue: String?, priceScale: Int = DEFAULT_PERPS_PRICE_SCALE): String? {
+    val normalized = rawValue?.trim().orEmpty()
+    if (normalized.isEmpty()) {
+        return null
+    }
+    return normalized.toBigDecimalOrNull()?.let { formatPerpsPrice(it, priceScale) } ?: normalized
 }
 
 @Composable

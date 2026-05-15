@@ -13,6 +13,8 @@ fun PerpsPositionItem.toPosition(): PerpsPosition {
         margin = margin ?: "0",
         openPayAmount = openPayAmount ?: "0",
         openPayAssetId = openPayAssetId ?: "",
+        takeProfitPrice = takeProfitPrice,
+        stopLossPrice = stopLossPrice,
         state = state ?: "open",
         markPrice = markPrice ?: "0",
         unrealizedPnl = unrealizedPnl ?: "0",

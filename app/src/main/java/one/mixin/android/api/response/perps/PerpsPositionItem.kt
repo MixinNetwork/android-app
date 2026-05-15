@@ -40,6 +40,12 @@ data class PerpsPositionItem(
     @SerializedName("open_pay_asset_id")
     @ColumnInfo(name = "open_pay_asset_id")
     val openPayAssetId: String? = null,
+    @SerializedName("take_profit_price")
+    @ColumnInfo(name = "take_profit_price")
+    val takeProfitPrice: String? = null,
+    @SerializedName("stop_loss_price")
+    @ColumnInfo(name = "stop_loss_price")
+    val stopLossPrice: String? = null,
     @SerializedName("state")
     @ColumnInfo(name = "state")
     val state: String? = null,
@@ -66,4 +72,6 @@ data class PerpsPositionItem(
     val iconUrl: String? = null,
     @ColumnInfo(name = "token_symbol")
     val tokenSymbol: String? = null,
+    @ColumnInfo(name = "price_scale")
+    val priceScale: Int? = null,
 ) : Parcelable
