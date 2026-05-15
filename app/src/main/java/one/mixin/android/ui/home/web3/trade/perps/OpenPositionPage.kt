@@ -676,33 +676,6 @@ fun OpenPositionPage(
 
                         val price = m.last.toBigDecimalOrNull() ?: BigDecimal.ZERO
                         if (price == BigDecimal.ZERO) return@MixinButton
-                        val leverageInt = leverage.toInt()
-
-                        validateTpSlPrice(
-                            rawValue = takeProfitPrice,
-                            currentPrice = price,
-                            liquidationBasePrice = price,
-                            leverage = leverageInt,
-                            isLong = isLong,
-                            isTakeProfit = true,
-                        )?.let { error ->
-                            errorInfo = error
-                            return@MixinButton
-                        }
-
-                        validateTpSlPrice(
-                            rawValue = stopLossPrice,
-                            currentPrice = price,
-                            liquidationBasePrice = price,
-                            leverage = leverageInt,
-                            isLong = isLong,
-                            isTakeProfit = false,
-                        )?.let { error ->
-                            errorInfo = error
-                            return@MixinButton
-                        }
-
-
                         scope.launch {
                             val hasOpeningPosition = viewModel.getOpenPositionsFromDb(walletId)
                                 .any { it.marketId == m.marketId }
@@ -884,10 +857,7 @@ private fun formatPositionSizeValue(
 ): String {
     val amountValue = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val orderValue = calculateOrderValue(amount, leverage, price)
-    val quantityText = orderValue
-        .setScale(2, RoundingMode.HALF_UP)
-        .stripTrailingZeros()
-        .toPlainString()
+    val quantityText = formatPerpsQuantity(orderValue)
     val usdValue = formatPerpsUsdDecimal(amountValue.multiply(BigDecimal(leverage.toDouble())))
     return listOf(quantityText, tokenSymbol)
         .filter { it.isNotBlank() }

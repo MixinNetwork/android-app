@@ -720,6 +720,10 @@ private fun OpenPositionCard(
     val quantity = position.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val marginAmount = position.margin?.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val amountValue = marginAmount
+    val currentPrice = position.markPrice.orEmpty()
+        .ifBlank { position.entryPrice }
+        .toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val positionValue = quantity.abs().multiply(currentPrice)
     var tpSlLoadingMode by remember(position.positionId) {
         mutableStateOf<PerpsTpSlBottomSheetDialogFragment.Mode?>(null)
     }
@@ -929,7 +933,7 @@ private fun OpenPositionCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "${quantity.stripTrailingZeros().toPlainString()} ${position.tokenSymbol}",
+                    text = "${formatPerpsQuantity(quantity.abs())} ${position.tokenSymbol} (${formatPerpsUsdDecimal(positionValue)})",
                     fontSize = 14.sp,
                     lineHeight = 17.sp,
                     style = compactTextStyle,

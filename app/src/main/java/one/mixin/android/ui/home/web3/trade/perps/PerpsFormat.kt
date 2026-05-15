@@ -78,6 +78,15 @@ fun formatPerpsSignedRawUsdDecimal(value: BigDecimal?): String {
     }
 }
 
+fun formatPerpsQuantity(value: BigDecimal?): String {
+    val safeValue = value ?: BigDecimal.ZERO
+    return if (safeValue.compareTo(BigDecimal.ZERO) == 0) {
+        "0"
+    } else {
+        safeValue.stripTrailingZeros().toPlainString()
+    }
+}
+
 fun calculateClosedRoe(
     entryPrice: String?,
     closePrice: String?,
