@@ -225,8 +225,8 @@
     <string name="Price_Up_Loss">价格上涨 %1$s%% → 亏损 -%2$s %3$s</string>
     <string name="Max_Profit">最大盈利</string>
     <string name="Max_Loss">最大亏损</string>
-    <string name="price_change_up">价格 +%1$s%%</string>
-    <string name="price_change_down">价格 -%1$s%%</string>
+    <string name="price_change_take_profit">价格 %1$s → 最多盈利 %2$s</string>
+    <string name="price_change_stop_loss">价格 %1$s → 最多亏损 %2$s</string>
     <string name="Choose_Network">选择网络</string>
     <string name="Wallet_Name">钱包名称</string>
     <string name="Choose_network_tip">请选择 Mixin 支持的网络进行充值，否则您的充值将不会到账。</string>
@@ -2285,8 +2285,8 @@
     <string name="perps_position_size_pnl_1">仓位越大，盈亏金额越大</string>
     <string name="perps_position_size_pnl_2">仓位越小，盈亏金额越小</string>
     <string name="perps_tpsl_overview">止盈和止损是预先设定的自动平仓指令，帮助你在不盯盘的情况下管理风险。</string>
-    <string name="perps_tpsl_key_point_1">触发止盈：锁定利润</string>
-    <string name="perps_tpsl_key_point_2">触发止损：控制亏损</string>
+    <string name="perps_scene_tp_triggered">触发止盈：锁定利润</string>
+    <string name="perps_scene_sl_triggered">触发止损：控制亏损</string>
     <string name="perps_liquidation_price_overview">强平价格是保证金不足时系统自动平仓的价格。触发后亏损不超过保证金。</string>
     <string name="perps_liquidation_price_key_point_1">强平触发价格为标记价格</string>
     <string name="perps_liquidation_price_key_point_2">强平不会影响钱包其他资产</string>
@@ -2305,8 +2305,8 @@
     <string name="lock_in_profits_description">价格达到目标时自动平仓以锁定利润。</string>
     <string name="prevent_further_loss">防止进一步亏损</string>
     <string name="prevent_further_loss_description">价格下跌至目标时自动平仓以限制亏损。</string>
-    <string name="perps_tpsl_entry_label">开仓价</string>
-    <string name="perps_tpsl_current_label">当前价</string>
+    <string name="auto_close_subtitle_before_open">当前 %1$s</string>
+    <string name="auto_close_subtitle_after_open">开仓 %1$s  ·  当前 %2$s</string>
     <string name="Perpetual">永续合约</string>
     <string name="Open_Position">开仓</string>
     <string name="Leverage">杠杆</string>

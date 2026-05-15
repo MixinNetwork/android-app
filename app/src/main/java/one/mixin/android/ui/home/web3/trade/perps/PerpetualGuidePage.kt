@@ -613,8 +613,8 @@ private fun TpSlContent() {
         description = stringResource(R.string.perps_tpsl_overview),
         infoTitle = stringResource(R.string.PnL),
         infoContents = listOf(
-            stringResource(R.string.perps_tpsl_key_point_1),
-            stringResource(R.string.perps_tpsl_key_point_2),
+            stringResource(R.string.perps_scene_tp_triggered),
+            stringResource(R.string.perps_scene_sl_triggered),
         ),
         riskContents = emptyList(),
     )

@@ -2329,8 +2329,8 @@
     <string name="Price_Up_Loss">Price rise %1$s%% → Loss -%2$s %3$s</string>
     <string name="Max_Profit">Max Profit</string>
     <string name="Max_Loss">Max Loss</string>
-    <string name="price_change_up">Price +%1$s%%</string>
-    <string name="price_change_down">Price -%1$s%%</string>
+    <string name="price_change_take_profit">Price %1$s → Max profit %2$s</string>
+    <string name="price_change_stop_loss">Price %1$s → Max loss %2$s</string>
     <string name="example_amount">Amount</string>
     <string name="example_scene1_decreasing">Scenario 1: Price Falls</string>
     <string name="example_scene1_increasing">Scenario 1: Price Rises</string>
@@ -2351,8 +2351,8 @@
     <string name="perps_position_size_pnl_1">Larger size, larger PnL</string>
     <string name="perps_position_size_pnl_2">Smaller size, smaller PnL</string>
     <string name="perps_tpsl_overview">Take-profit and stop-loss are conditional orders that execute automatically when the trigger price is reached.</string>
-    <string name="perps_tpsl_key_point_1">Trigger take-profit: Lock in profits</string>
-    <string name="perps_tpsl_key_point_2">Trigger stop-loss: Control losses</string>
+    <string name="perps_scene_tp_triggered">Trigger take-profit: Lock in profits</string>
+    <string name="perps_scene_sl_triggered">Trigger stop-loss: Control losses</string>
     <string name="perps_liquidation_price_overview">Liquidation price is the price at which the system auto-closes your position when margin is insufficient. Losses capped at margin.</string>
     <string name="perps_liquidation_price_key_point_1">Liquidation is triggered by mark price</string>
     <string name="perps_liquidation_price_key_point_2">Liquidation does not affect other assets in your wallet</string>
@@ -2371,8 +2371,8 @@
     <string name="lock_in_profits_description">Auto-close when price hits target to lock profit.</string>
     <string name="prevent_further_loss">Prevent further loss</string>
     <string name="prevent_further_loss_description">Auto-close when price falls to target to limit loss.</string>
-    <string name="perps_tpsl_entry_label">Entry</string>
-    <string name="perps_tpsl_current_label">Current</string>
+    <string name="auto_close_subtitle_before_open">Current %1$s</string>
+    <string name="auto_close_subtitle_after_open">Entry %1$s  ·  Current %2$s</string>
     <string name="Perpetual">Perpetual</string>
     <string name="Open_Position">Open Position</string>
     <string name="Leverage">Leverage</string>

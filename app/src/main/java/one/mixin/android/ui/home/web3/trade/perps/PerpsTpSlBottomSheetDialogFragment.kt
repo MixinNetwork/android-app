@@ -337,45 +337,44 @@ private fun PerpsTpSlContent(
     val entryPriceText = remember(entryPriceValue) {
         entryPriceValue?.let { formatPerpsPrice(it, safePriceScale) }
     }
-    val entryLabel = stringResource(R.string.perps_tpsl_entry_label)
-    val currentLabel = stringResource(R.string.perps_tpsl_current_label)
     val subtitleLabelColor = MixinAppTheme.colors.textRemarks
     val subtitleValueColor = MixinAppTheme.colors.textAssist
+    val subtitleRawText = if (entryPriceText != null) {
+        stringResource(R.string.auto_close_subtitle_after_open, entryPriceText, currentPriceText)
+    } else {
+        stringResource(R.string.auto_close_subtitle_before_open, currentPriceText)
+    }
+    val subtitleValues = if (entryPriceText != null) {
+        listOf(entryPriceText, currentPriceText)
+    } else {
+        listOf(currentPriceText)
+    }
     val subtitleText = remember(
-        entryLabel,
-        currentLabel,
-        entryPriceText,
-        currentPriceText,
+        subtitleRawText,
+        subtitleValues,
         subtitleLabelColor,
         subtitleValueColor,
     ) {
         buildAnnotatedString {
-            val labelStyle = SpanStyle(color = subtitleLabelColor)
-            val valueStyle = SpanStyle(color = subtitleValueColor)
+            append(subtitleRawText)
+            addStyle(
+                style = SpanStyle(color = subtitleLabelColor),
+                start = 0,
+                end = subtitleRawText.length,
+            )
 
-            if (entryPriceText != null) {
-                pushStyle(labelStyle)
-                append(entryLabel)
-                append(" ")
-                pop()
-
-                pushStyle(valueStyle)
-                append(entryPriceText)
-                pop()
-
-                pushStyle(labelStyle)
-                append("  ·  ")
-                pop()
+            var searchStartIndex = 0
+            subtitleValues.forEach { value ->
+                val startIndex = subtitleRawText.indexOf(value, startIndex = searchStartIndex)
+                if (startIndex >= 0) {
+                    addStyle(
+                        style = SpanStyle(color = subtitleValueColor),
+                        start = startIndex,
+                        end = startIndex + value.length,
+                    )
+                    searchStartIndex = startIndex + value.length
+                }
             }
-
-            pushStyle(labelStyle)
-            append(currentLabel)
-            append(" ")
-            pop()
-
-            pushStyle(valueStyle)
-            append(currentPriceText)
-            pop()
         }
     }
     val activePercentText = percentMagnitudeInput.takeIf { it.isNotBlank() }

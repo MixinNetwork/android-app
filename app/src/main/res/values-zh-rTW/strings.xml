@@ -1090,14 +1090,16 @@
     <string name="take_profit_intro_description">止盈會在達到目標收益時自動平倉，幫助你鎖定利潤。</string>
     <string name="stop_loss_intro_title">什麼是止損？</string>
     <string name="stop_loss_intro_description">止損會在價格走勢不利時自動平倉，幫助你控制虧損。</string>
-    <string name="perps_tpsl_entry_label">開倉價</string>
-    <string name="perps_tpsl_current_label">當前價</string>
+    <string name="auto_close_subtitle_before_open">當前 %1$s</string>
+    <string name="auto_close_subtitle_after_open">開倉 %1$s  ·  當前 %2$s</string>
     <string name="profit_reaches_percent">盈利達到 %</string>
     <string name="loss_reaches_percent">損失達到 %</string>
     <string name="price_reaches_dollar">價格達到 $</string>
     <string name="take_profit_stop_loss_label">止盈止損</string>
     <string name="lock_in_profits">鎖定盈利</string>
     <string name="prevent_further_loss">防止進一步虧損</string>
+    <string name="perps_scene_tp_triggered">觸發止盈：鎖定利潤</string>
+    <string name="perps_scene_sl_triggered">觸發止損：控制虧損</string>
     <string name="take_profit_label">止盈</string>
     <string name="stop_loss_label">止損</string>
 </resources>
