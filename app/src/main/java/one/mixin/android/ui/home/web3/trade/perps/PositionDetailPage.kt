@@ -104,7 +104,7 @@ fun PositionDetailPage(
     val pnlColor = if (pnl >= BigDecimal.ZERO) risingColor else fallingColor
     val liquidationPriceText = position.liquidationPrice
         ?.takeIf { it.isNotBlank() }
-        ?.let { formatPriceUsd(it.toBigDecimalOrNull() ?: BigDecimal.ZERO) }
+        ?.let { formatPerpsUsdDecimal(it.toBigDecimalOrNull() ?: BigDecimal.ZERO) }
         ?: "--"
     val fiatRate = BigDecimal(Fiats.getRate())
     val fiatSymbol = Fiats.getSymbol()

@@ -28,7 +28,7 @@ import kotlin.math.min
         PerpsPositionHistory::class,
         PerpsMarket::class,
     ],
-    version = 4,
+    version = 3,
 )
 abstract class PerpsDatabase : RoomDatabase() {
     companion object {
@@ -47,13 +47,8 @@ abstract class PerpsDatabase : RoomDatabase() {
                 override fun migrate(db: SupportSQLiteDatabase) {
                     db.execSQL("ALTER TABLE positions ADD COLUMN take_profit_price TEXT")
                     db.execSQL("ALTER TABLE positions ADD COLUMN stop_loss_price TEXT")
-                    db.execSQL("ALTER TABLE markets ADD COLUMN price_scale INTEGER DEFAULT 2")
-                }
-            }
-        private val MIGRATION_3_4 =
-            object : Migration(3, 4) {
-                override fun migrate(db: SupportSQLiteDatabase) {
                     db.execSQL("ALTER TABLE positions ADD COLUMN liquidation_price TEXT")
+                    db.execSQL("ALTER TABLE markets ADD COLUMN price_scale INTEGER NOT NULL DEFAULT 2")
                 }
             }
         fun getDatabase(
@@ -78,8 +73,8 @@ abstract class PerpsDatabase : RoomDatabase() {
                             FrameworkSQLiteOpenHelperFactory(),
                             listOf(
                                 object : MixinCorruptionCallback {
-                            override fun onCorruption(database: SupportSQLiteDatabase) {
-                                        val e = IllegalStateException("Perps database is corrupted, current DB version: 4")
+                                    override fun onCorruption(database: SupportSQLiteDatabase) {
+                                        val e = IllegalStateException("Perps database is corrupted, current DB version: 3")
                                         reportException(e)
                                     }
                                 },
@@ -92,7 +87,7 @@ abstract class PerpsDatabase : RoomDatabase() {
                                 db.execSQL("PRAGMA synchronous = NORMAL")
                             }
                         },
-                    ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+                    ).addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                         .fallbackToDestructiveMigration()
                         .enableMultiInstanceInvalidation()
                         .setQueryExecutor(

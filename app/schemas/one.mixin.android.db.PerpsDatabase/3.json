@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 3,
-    "identityHash": "7eacf037326a2a5b7d343699b2e0a7c4",
+    "identityHash": "9e8cb86e29aea40ac477a894bfbca617",
     "entities": [
       {
         "tableName": "positions",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`position_id` TEXT NOT NULL, `market_id` TEXT NOT NULL, `side` TEXT NOT NULL, `quantity` TEXT NOT NULL, `entry_price` TEXT NOT NULL, `margin` TEXT NOT NULL, `leverage` INTEGER NOT NULL, `state` TEXT NOT NULL, `mark_price` TEXT NOT NULL, `unrealized_pnl` TEXT NOT NULL, `roe` TEXT NOT NULL, `settle_asset_id` TEXT NOT NULL, `open_pay_amount` TEXT NOT NULL, `open_pay_asset_id` TEXT NOT NULL, `take_profit_price` TEXT, `stop_loss_price` TEXT, `bot_id` TEXT NOT NULL, `wallet_id` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`position_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`position_id` TEXT NOT NULL, `market_id` TEXT NOT NULL, `side` TEXT NOT NULL, `quantity` TEXT NOT NULL, `entry_price` TEXT NOT NULL, `margin` TEXT NOT NULL, `leverage` INTEGER NOT NULL, `state` TEXT NOT NULL, `mark_price` TEXT NOT NULL, `unrealized_pnl` TEXT NOT NULL, `roe` TEXT NOT NULL, `settle_asset_id` TEXT NOT NULL, `open_pay_amount` TEXT NOT NULL, `open_pay_asset_id` TEXT NOT NULL, `take_profit_price` TEXT, `stop_loss_price` TEXT, `liquidation_price` TEXT, `bot_id` TEXT NOT NULL, `wallet_id` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`position_id`))",
         "fields": [
           {
             "fieldPath": "positionId",
@@ -100,6 +100,11 @@
           {
             "fieldPath": "stopLossPrice",
             "columnName": "stop_loss_price",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "liquidationPrice",
+            "columnName": "liquidation_price",
             "affinity": "TEXT"
           },
           {
@@ -372,7 +377,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7eacf037326a2a5b7d343699b2e0a7c4')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '9e8cb86e29aea40ac477a894bfbca617')"
     ]
   }
 }
