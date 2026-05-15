@@ -159,7 +159,7 @@ class PerpsTpSlBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment
     private val entryPrice by lazy { requireArguments().getString(ARGS_ENTRY_PRICE).orEmpty() }
     private val marketId by lazy { requireArguments().getString(ARGS_MARKET_ID).orEmpty() }
     private val priceScale by lazy { requireArguments().getInt(ARGS_PRICE_SCALE, DEFAULT_PERPS_PRICE_SCALE) }
-    private val liquidationPrice by lazy { requireArguments().getString(ARGS_LIQUIDATION_PRICE).orEmpty() }
+    private val liquidationPrice by lazy { requireArguments().getString(ARGS_LIQUIDATION_PRICE) }
 
     private var onApply: ((String?) -> Unit)? = null
 
@@ -250,7 +250,7 @@ private fun PerpsTpSlContent(
     entryPrice: String,
     marketId: String,
     priceScale: Int,
-    liquidationPrice: String,
+    liquidationPrice: String?,
     onCancel: () -> Unit,
     onApply: (String?) -> Unit,
 ) {
@@ -280,7 +280,7 @@ private fun PerpsTpSlContent(
         entryPrice.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO }
     }
     val liquidationPriceValue = remember(liquidationPrice) {
-        liquidationPrice.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO }
+        liquidationPrice?.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO }
     }
     val percentBasePrice = remember(entryPriceValue, validationCurrentPrice) {
         entryPriceValue ?: validationCurrentPrice
