@@ -13,6 +13,8 @@ import one.mixin.android.Constants.Scheme.SEND
 import one.mixin.android.crypto.Base64
 import one.mixin.android.extension.isMixinUrl
 import one.mixin.android.extension.toDrawable
+import one.mixin.android.util.GsonHelper
+import timber.log.Timber
 import kotlin.math.max
 
 @Parcelize
@@ -53,7 +55,22 @@ data class AppCardData(
                 })
             }
         }
+
+    val hasValidCoverSize: Boolean
+        get() {
+            return cover?.let { it.width in APP_CARD_COVER_MIN_SIZE..APP_CARD_COVER_MAX_SIZE && it.height in APP_CARD_COVER_MIN_SIZE..APP_CARD_COVER_MAX_SIZE } ?: true
+        }
 }
+
+fun String.toAppCardDataOrNull(): AppCardData? =
+    runCatching {
+        GsonHelper.customGson.fromJson(this, AppCardData::class.java)
+    }.onFailure {
+        Timber.e(it, "Failed to parse AppCardData from JSON: $this")
+    }.getOrNull()
+
+private const val APP_CARD_COVER_MIN_SIZE = 64
+private const val APP_CARD_COVER_MAX_SIZE = 1024
 
 private fun String.isValidShareUrl(): Boolean {
     return isValidSendUrl() || ((startsWith("HTTPS://", true) || startsWith("HTTP://", true)) && !startsWith(HTTPS_SEND, true))
