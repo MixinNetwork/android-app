@@ -110,7 +110,6 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
                         }
 
                         nameEt.hideKeyboard()
-                        initializeBots()
                         val context = requireContext()
                         if (!PrivacyPreference.getIsLoaded(requireContext(), false) ||
                             !PrivacyPreference.getIsSyncSession(context, false)
@@ -151,9 +150,6 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
     }
 
     private fun Int.dpToPx(): Int = (this * resources.displayMetrics.density).toInt()
-
-    private fun initializeBots() {
-    }
 
     private fun setSubmitting(
         submitting: Boolean,
