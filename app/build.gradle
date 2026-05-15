@@ -14,8 +14,8 @@ plugins {
 
 def versionMajor = 4
 def versionMinor = 1
-def versionPatch = 5
-def versionBuild = 2
+def versionPatch = 6
+def versionBuild = 1
 
 def includeDebugX86_64 = project.findProperty("includeDebugX86_64")?.toString()?.toBoolean() ?: false // Enable debug package for x86_64
 
