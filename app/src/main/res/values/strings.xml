@@ -1846,8 +1846,8 @@
     <string name="error_below_min_price">The price is below the minimum allowed value.</string>
     <string name="error_must_be_less_than_current_price">The price must be less than the current price.</string>
     <string name="error_must_be_greater_than_current_price">The price must be greater than the current price.</string>
-    <string name="error_price_must_be_greater_than_value">The price must be greater than %1$s.</string>
-    <string name="error_price_must_be_less_than_value">The price must be less than %1$s.</string>
+    <string name="the_price_must_higher_than">The price must be greater than %1$s.</string>
+    <string name="the_price_must_lower_than">The price must be less than %1$s.</string>
     <string name="error_percentage_must_be_greater_than_value">The percentage must be greater than %1$s.</string>
     <string name="error_percentage_must_be_less_than_value">The percentage must be less than %1$s.</string>
     <string name="error_increase_too_high">The increase percentage cannot exceed 1000%.</string>
@@ -1952,8 +1952,8 @@
     <string name="mixin_dial_code" translatable="false">+XIN</string>
     <string name="ask_me_anything">Ask me anything</string>
     <string name="help_link">https://support.mixin.one/en/category/mixin-messenger-epr6vk</string>
-    <string name="take_profit_help_url">https://support.mixin.one/en/article/how-to-set-take-profit-and-stop-loss-1eoepxc/#1-take-profit</string>
-    <string name="stop_loss_help_url">https://support.mixin.one/en/article/how-to-set-take-profit-and-stop-loss-1eoepxc/#1-stop-loss</string>
+    <string name="url_perps_take_profit">https://support.mixin.one/en/article/how-to-set-take-profit-and-stop-loss-1eoepxc/#1-take-profit</string>
+    <string name="url_perps_stop_loss">https://support.mixin.one/en/article/how-to-set-take-profit-and-stop-loss-1eoepxc/#1-stop-loss</string>
     <string name="deposit_url">https://support.mixin.one/en/article/how-to-deposit-assets-to-mixin-messenger-1usvjod</string>
     <string name="emergency_url">https://support.mixin.one/en/article/how-to-set-up-an-emergency-contact-1kvd6g8</string>
     <string name="Deposit_Pending_Confirmation">%1$s Pending Confirmation</string>
@@ -2368,9 +2368,9 @@
     <string name="stop_loss_intro_title">What\'s the Stop Loss?</string>
     <string name="stop_loss_intro_description">Stop loss (SL) limits your losses by closing your position if the price moves against you.</string>
     <string name="lock_in_profits">Lock in profits</string>
-    <string name="perps_tpsl_detail_take_profit_description">Auto-close when price hits target to lock profit.</string>
+    <string name="lock_in_profits_description">Auto-close when price hits target to lock profit.</string>
     <string name="prevent_further_loss">Prevent further loss</string>
-    <string name="perps_tpsl_detail_stop_loss_description">Auto-close when price falls to target to limit loss.</string>
+    <string name="prevent_further_loss_description">Auto-close when price falls to target to limit loss.</string>
     <string name="perps_tpsl_entry_label">Entry</string>
     <string name="perps_tpsl_current_label">Current</string>
     <string name="Perpetual">Perpetual</string>
@@ -2384,9 +2384,9 @@
     <string name="take_profit_for_short">Take Profit for Short %1$s</string>
     <string name="stop_loss_for_long">Stop Loss for Long %1$s</string>
     <string name="stop_loss_for_short">Stop Loss for Short %1$s</string>
-    <string name="Take_Profit_Stop_Loss">TP/SL</string>
-    <string name="tp_label">TP</string>
-    <string name="sl_label">SL</string>
+    <string name="take_profit_stop_loss_label">TP/SL</string>
+    <string name="take_profit_label">TP</string>
+    <string name="stop_loss_label">SL</string>
     <string name="position_size">Size</string>
     <string name="Liquidation_Price">Liquidation Price</string>
     <string name="Price_Change_Profit">Price %1$s %2$s%% → Profit %3$s%4$s%% (%5$s%6$s)</string>
@@ -2472,7 +2472,7 @@
     <string name="Spot_Trade_Guide_Exchange_Price">Exchange Price</string>
     <string name="Spot_Trade_Guide_Strategy">Strategy</string>
     <string name="Spot_Trade_Guide_Limit_Price">Limit Price</string>
-    <string name="Spot_Trade_Guide_Market_Price">Market Price</string>
+    <string name="Trade_Guide_Market_Price">Market Price</string>
     <string name="Spot_Trade_Guide_Use_Cases">Use Cases</string>
     <string name="Spot_Trade_Guide_Pricing">Pricing</string>
     <string name="Spot_Trade_Guide_Swap_Desc">Simple mode enables instant swaps at the best available market price.</string>

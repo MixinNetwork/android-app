@@ -1095,7 +1095,9 @@
     <string name="profit_reaches_percent">盈利達到 %</string>
     <string name="loss_reaches_percent">損失達到 %</string>
     <string name="price_reaches_dollar">價格達到 $</string>
-    <string name="Take_Profit_Stop_Loss">止盈止損</string>
+    <string name="take_profit_stop_loss_label">止盈止損</string>
     <string name="lock_in_profits">鎖定盈利</string>
     <string name="prevent_further_loss">防止進一步虧損</string>
+    <string name="take_profit_label">止盈</string>
+    <string name="stop_loss_label">止損</string>
 </resources>

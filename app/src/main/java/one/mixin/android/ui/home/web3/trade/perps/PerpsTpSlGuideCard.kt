@@ -103,9 +103,9 @@ internal fun PerpsTpSlGuideCard(
     }
     val infoDescRes = when (layout) {
         PerpsTpSlGuideCardLayout.DETAIL -> if (guideType == TpSlGuideType.TAKE_PROFIT) {
-            R.string.perps_tpsl_detail_take_profit_description
+            R.string.lock_in_profits_description
         } else {
-            R.string.perps_tpsl_detail_stop_loss_description
+            R.string.prevent_further_loss_description
         }
         PerpsTpSlGuideCardLayout.BOTTOM_SHEET -> if (guideType == TpSlGuideType.TAKE_PROFIT) {
             R.string.take_profit_intro_description

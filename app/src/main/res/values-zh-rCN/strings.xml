@@ -1804,8 +1804,8 @@
     <string name="error_below_min_price">价格低于允许的最小值。</string>
     <string name="error_must_be_less_than_current_price">价格必须低于当前价格。</string>
     <string name="error_must_be_greater_than_current_price">价格必须高于当前价格。</string>
-    <string name="error_price_must_be_greater_than_value">价格必须高于 %1$s。</string>
-    <string name="error_price_must_be_less_than_value">价格必须低于 %1$s。</string>
+    <string name="the_price_must_higher_than">价格必须高于 %1$s。</string>
+    <string name="the_price_must_lower_than">价格必须低于 %1$s。</string>
     <string name="error_percentage_must_be_greater_than_value">百分比必须高于 %1$s。</string>
     <string name="error_percentage_must_be_less_than_value">百分比必须低于 %1$s。</string>
     <string name="error_increase_too_high">涨幅不能超过1000%。</string>
@@ -1911,8 +1911,8 @@
     <string name="mixin_support">Mixin 客服</string>
     <string name="ask_me_anything">向我提问</string>
     <string name="help_link">https://support.mixin.one/zh/category/mixin-messenger-1hmc388</string>
-    <string name="take_profit_help_url">https://support.mixin.one/zh/article/mixin-1ftc7wn/#1-5q2i55ui</string>
-    <string name="stop_loss_help_url">https://support.mixin.one/zh/article/mixin-1ftc7wn/#1-5q2i5o2f</string>
+    <string name="url_perps_take_profit">https://support.mixin.one/zh/article/mixin-1ftc7wn/#1-5q2i55ui</string>
+    <string name="url_perps_stop_loss">https://support.mixin.one/zh/article/mixin-1ftc7wn/#1-5q2i5o2f</string>
     <string name="deposit_url">https://support.mixin.one/zh/article/mixin-messenger-5ynqjm</string>
     <string name="emergency_url">https://support.mixin.one/zh/article/5aac5l2v6k6572u57sn5ocl6igu57o75lq6-d2nssy</string>
     <string name="Deposit_Pending_Confirmation">%1$s 充值确认中</string>
@@ -2302,9 +2302,9 @@
     <string name="stop_loss_intro_title">什么是止损？</string>
     <string name="stop_loss_intro_description">止损会在价格走势不利时自动平仓，帮助你控制亏损。</string>
     <string name="lock_in_profits">锁定盈利</string>
-    <string name="perps_tpsl_detail_take_profit_description">价格达到目标时自动平仓以锁定利润。</string>
+    <string name="lock_in_profits_description">价格达到目标时自动平仓以锁定利润。</string>
     <string name="prevent_further_loss">防止进一步亏损</string>
-    <string name="perps_tpsl_detail_stop_loss_description">价格下跌至目标时自动平仓以限制亏损。</string>
+    <string name="prevent_further_loss_description">价格下跌至目标时自动平仓以限制亏损。</string>
     <string name="perps_tpsl_entry_label">开仓价</string>
     <string name="perps_tpsl_current_label">当前价</string>
     <string name="Perpetual">永续合约</string>
@@ -2318,9 +2318,9 @@
     <string name="take_profit_for_short">%1$s 做空止盈</string>
     <string name="stop_loss_for_long">%1$s 做多止损</string>
     <string name="stop_loss_for_short">%1$s 做空止损</string>
-    <string name="Take_Profit_Stop_Loss">止盈止损</string>
-    <string name="tp_label">止盈</string>
-    <string name="sl_label">止损</string>
+    <string name="take_profit_stop_loss_label">止盈止损</string>
+    <string name="take_profit_label">止盈</string>
+    <string name="stop_loss_label">止损</string>
     <string name="position_size">仓位规模</string>
     <string name="Liquidation_Price">强平价格</string>
     <string name="Price_Change_Profit">价格%1$s %2$s%% → 盈利 %3$s%4$s%% (%5$s%6$s)</string>
@@ -2401,7 +2401,7 @@
     <string name="Spot_Trade_Guide_Exchange_Price">兑换价格</string>
     <string name="Spot_Trade_Guide_Strategy">交易策略</string>
     <string name="Spot_Trade_Guide_Limit_Price">成交价格</string>
-    <string name="Spot_Trade_Guide_Market_Price">市场价格</string>
+    <string name="Trade_Guide_Market_Price">市场价格</string>
     <string name="Spot_Trade_Guide_Use_Cases">适合场景</string>
     <string name="Spot_Trade_Guide_Pricing">报价说明</string>
     <string name="Spot_Trade_Guide_Swap_Desc">闪兑是一种按当前最优市场价格立即成交的兑换方式。</string>

@@ -728,9 +728,9 @@ private fun PerpsTpSlContent(
                     actionText = stringResource(R.string.Learn_More),
                     onActionClick = {
                         val url = if (isTakeProfit) {
-                            context.getString(R.string.take_profit_help_url)
+                            context.getString(R.string.url_perps_take_profit)
                         } else {
-                            context.getString(R.string.stop_loss_help_url)
+                            context.getString(R.string.url_perps_stop_loss)
                         }
                         context.openUrl(url)
                     },
@@ -1251,7 +1251,7 @@ internal fun validateTpSlPrice(
 
     val price = trimmed.toBigDecimalOrNull() ?: return MixinApplicationHolder.getString(R.string.error_invalid_number)
     if (price <= BigDecimal.ZERO) {
-        return MixinApplicationHolder.getString(R.string.error_price_must_be_greater_than_value, "${PERPS_USD_SYMBOL}0")
+        return MixinApplicationHolder.getString(R.string.the_price_must_higher_than, "${PERPS_USD_SYMBOL}0")
     }
     if (currentPrice <= BigDecimal.ZERO) {
         return null
@@ -1268,7 +1268,7 @@ internal fun validateTpSlPrice(
         isLong && isTakeProfit -> {
             if (price <= currentPrice) {
                 MixinApplicationHolder.getString(
-                    R.string.error_price_must_be_greater_than_value,
+                    R.string.the_price_must_higher_than,
                     "$PERPS_USD_SYMBOL${currentPrice.stripTrailingZeros().toPlainString()}",
                 )
             } else null
@@ -1276,11 +1276,11 @@ internal fun validateTpSlPrice(
         isLong && !isTakeProfit -> {
             when {
                 price >= currentPrice -> MixinApplicationHolder.getString(
-                    R.string.error_price_must_be_less_than_value,
+                    R.string.the_price_must_lower_than,
                     "$PERPS_USD_SYMBOL${currentPrice.stripTrailingZeros().toPlainString()}",
                 )
                 price < liquidationPriceLong -> MixinApplicationHolder.getString(
-                    R.string.error_price_must_be_greater_than_value,
+                    R.string.the_price_must_higher_than,
                     "$PERPS_USD_SYMBOL${liquidationPriceLong.stripTrailingZeros().toPlainString()}",
                 )
                 else -> null
@@ -1289,7 +1289,7 @@ internal fun validateTpSlPrice(
         !isLong && isTakeProfit -> {
             when {
                 price >= currentPrice -> MixinApplicationHolder.getString(
-                    R.string.error_price_must_be_less_than_value,
+                    R.string.the_price_must_lower_than,
                     "$PERPS_USD_SYMBOL${currentPrice.stripTrailingZeros().toPlainString()}",
                 )
                 else -> null
@@ -1299,11 +1299,11 @@ internal fun validateTpSlPrice(
             // !isLong && !isTakeProfit (short stop loss)
             when {
                 price <= currentPrice -> MixinApplicationHolder.getString(
-                    R.string.error_price_must_be_greater_than_value,
+                    R.string.the_price_must_higher_than,
                     "$PERPS_USD_SYMBOL${currentPrice.stripTrailingZeros().toPlainString()}",
                 )
                 price > liquidationPriceShort -> MixinApplicationHolder.getString(
-                    R.string.error_price_must_be_less_than_value,
+                    R.string.the_price_must_lower_than,
                     "$PERPS_USD_SYMBOL${liquidationPriceShort.stripTrailingZeros().toPlainString()}",
                 )
                 else -> null

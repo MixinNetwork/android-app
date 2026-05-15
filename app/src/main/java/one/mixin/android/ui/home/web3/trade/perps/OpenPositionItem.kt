@@ -74,9 +74,9 @@ fun OpenPositionItem(
     val hasTakeProfit = !position.takeProfitPrice.isNullOrBlank()
     val hasStopLoss = !position.stopLossPrice.isNullOrBlank()
     val tpSlTagText = when {
-        hasTakeProfit && hasStopLoss -> stringResource(R.string.Take_Profit_Stop_Loss)
-        hasTakeProfit -> stringResource(R.string.tp_label)
-        hasStopLoss -> stringResource(R.string.sl_label)
+        hasTakeProfit && hasStopLoss -> stringResource(R.string.take_profit_stop_loss_label)
+        hasTakeProfit -> stringResource(R.string.take_profit_label)
+        hasStopLoss -> stringResource(R.string.stop_loss_label)
         else -> null
     }
 

@@ -101,7 +101,7 @@ fun PerpetualGuidePage(
         stringResource(R.string.Short),
         stringResource(R.string.Leverage),
         stringResource(R.string.position_size),
-        stringResource(R.string.Take_Profit_Stop_Loss),
+        stringResource(R.string.take_profit_stop_loss_label),
         stringResource(R.string.Liquidation_Price),
     )
     val safeInitialTab = initialTab.coerceIn(0, tabs.lastIndex)
