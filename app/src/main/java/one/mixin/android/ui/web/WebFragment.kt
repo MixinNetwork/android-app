@@ -1758,6 +1758,10 @@ class WebFragment : BaseFragment() {
             JsInjectorClient()
         }
 
+        private fun closeWebContainer() {
+            fragment.activity?.finish()
+        }
+
         override fun onPageStarted(
             view: WebView?,
             url: String?,
@@ -1843,6 +1847,9 @@ class WebFragment : BaseFragment() {
                 if (wcUrl != null) {
                     // handle wallet connect url
                     UrlInterpreterActivity.show(view.context, wcUrl)
+                    if (request.isForMainFrame) {
+                        closeWebContainer()
+                    }
                 }
                 // ignore wallet connect data url
                 return true
@@ -1887,6 +1894,9 @@ class WebFragment : BaseFragment() {
                     }
                     try {
                         context.startActivity(intent)
+                        if (request.isForMainFrame) {
+                            closeWebContainer()
+                        }
                     } catch (e: ActivityNotFoundException) {
                         val fallbackUrl = intent.extras?.getString("browser_fallback_url")
                         if (fallbackUrl != null && isFallbackUrlValid(fallbackUrl)) {

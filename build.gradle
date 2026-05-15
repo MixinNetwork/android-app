@@ -18,7 +18,7 @@ buildscript {
         ext.recyclerViewVersion = '1.4.0'
         ext.browserVersion = '1.10.0'
         ext.biometricVersion = '1.4.0-alpha07'
-        ext.mdcVersion = '1.13.0'
+        ext.mdcVersion = '1.14.0'
         ext.exifinterfaceVersion = '1.4.2'
         ext.preferenceVersion = '1.2.1'
         ext.hiltVersion = '2.59.2'
@@ -62,7 +62,7 @@ buildscript {
         ext.reboundVersion = '0.3.8'
         ext.shimmerVersion = '0.5.0'
         ext.composeShimmerVersion = '1.4.0'
-        ext.media3Version = '1.10.0'
+        ext.media3Version = '1.10.1'
         ext.perfVersion = '19.0.10'
         ext.markwonVersion = '4.6.2'
         ext.prism4jVersion = '2.0.0'
@@ -164,7 +164,7 @@ plugins {
     id "de.undercouch.download" version "5.5.0" apply false
     id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin' version '2.0.1' apply false
     id 'org.jetbrains.kotlin.plugin.serialization' version "${kotlinVersion}" apply false
-    id "com.google.devtools.ksp" version "2.3.7" apply false
+    id "com.google.devtools.ksp" version "2.3.8" apply false
     id "org.jetbrains.kotlin.plugin.compose" version "${kotlinVersion}" apply false
     id 'com.google.firebase.firebase-perf' version '2.0.2' apply false
 }
