@@ -1171,7 +1171,7 @@ private fun TpSlActionCell(
                 Icon(
                     painter = painterResource(id = R.drawable.ic_action_delete),
                     contentDescription = null,
-                    tint = MixinAppTheme.colors.textAssist,
+                    tint = MixinAppTheme.colors.textBlue,
                     modifier = Modifier
                         .size(16.dp)
                         .clickable(enabled = !loading && onDelete != null) { onDelete?.invoke() }
