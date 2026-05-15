@@ -255,14 +255,15 @@ fun PerpsMarketDetailPage(
                             if (normalizedValue == existingPrice) return@setOnApply
                             if (normalizedValue.isEmpty() && existingPrice.isEmpty()) return@setOnApply
                             val requestedValue = normalizedValue.ifEmpty { "" }
+                            // TP/SL update API treats null as "keep existing value" and empty string as "clear this side".
                             viewModel.setPositionTpSl(
                                 positionId = currentPosition.positionId,
                                 takeProfitPrice = when (mode) {
                                     PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT -> requestedValue
-                                    PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS -> currentPosition.takeProfitPrice
+                                    PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS -> null
                                 },
                                 stopLossPrice = when (mode) {
-                                    PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT -> currentPosition.stopLossPrice
+                                    PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT -> null
                                     PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS -> requestedValue
                                 },
                                 onSuccess = {
@@ -771,14 +772,15 @@ private fun OpenPositionCard(
 
             tpSlLoadingMode = mode
             val requestedValue = normalizedValue.ifEmpty { "" }
+            // TP/SL update API treats null as "keep existing value" and empty string as "clear this side".
             viewModel.setPositionTpSl(
                 positionId = position.positionId,
                 takeProfitPrice = when (mode) {
                     PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT -> requestedValue
-                    PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS -> position.takeProfitPrice
+                    PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS -> null
                 },
                 stopLossPrice = when (mode) {
-                    PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT -> position.stopLossPrice
+                    PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT -> null
                     PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS -> requestedValue
                 },
                 onSuccess = {

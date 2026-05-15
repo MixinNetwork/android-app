@@ -562,7 +562,7 @@ private fun PerpsTpSlContent(
                             val normalized = normalizePercentInput(fieldValue.text)
                             percentFieldValue = fieldValue.copy(
                                 text = normalized,
-                                selection = TextRange(normalized.length),
+                                selection = TextRange(fieldValue.selection.end.coerceAtMost(normalized.length)),
                             )
                             priceFieldValue = textFieldValueAtEnd(
                                 percentToPriceInput(
@@ -900,39 +900,7 @@ private fun TpSlInputField(
                 }
                 BasicTextField(
                     value = percentFieldValue,
-                    onValueChange = { newValue ->
-                        val raw = newValue.text
-
-                        val filtered = buildString {
-                            var dotSeen = false
-                            var intCount = 0
-                            var decCount = 0
-                            for (ch in raw) {
-                                when {
-                                    ch == '.' && !dotSeen -> {
-                                        dotSeen = true
-                                        append(ch)
-                                    }
-                                    ch.isDigit() && !dotSeen && intCount < 8 -> {
-                                        intCount++
-                                        append(ch)
-                                    }
-                                    ch.isDigit() && dotSeen && decCount < 2 -> {
-                                        decCount++
-                                        append(ch)
-                                    }
-                                }
-                            }
-                        }
-
-                        val cursorPos = newValue.selection.end.coerceAtMost(filtered.length)
-                        onPercentFieldValueChange(
-                            newValue.copy(
-                                text = filtered,
-                                selection = TextRange(cursorPos),
-                            )
-                        )
-                    },
+                    onValueChange = onPercentFieldValueChange,
                     modifier = Modifier
                         .focusRequester(focusRequester)
                         .widthIn(min = 1.dp),
@@ -1089,12 +1057,17 @@ private fun normalizePercentInput(value: String): String {
         return normalized
     }
     val dotIndex = normalized.indexOf('.')
-    val limitedDecimals = if (dotIndex >= 0) {
-        normalized.take(dotIndex + 3)
+    return if (dotIndex < 0) {
+        normalized.take(8)
     } else {
-        normalized
+        val integerPart = normalized.substring(0, dotIndex).take(8)
+        val decimalPart = normalized.substring(dotIndex + 1).take(2)
+        if (decimalPart.isEmpty()) {
+            "$integerPart."
+        } else {
+            "$integerPart.$decimalPart"
+        }
     }
-    return limitedDecimals.take(8)
 }
 
 private fun formatTpSlPnlAmount(value: BigDecimal): String {

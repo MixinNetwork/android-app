@@ -691,6 +691,7 @@ fun OpenPositionPage(
                                 amount = amount.stripTrailingZeros().toPlainString(),
                                 leverage = leverage.toInt(),
                                 walletId = walletId,
+                                // Null means "leave TP/SL unset" when creating a new position.
                                 takeProfitPrice = takeProfitPrice.takeIf { it.isNotBlank() },
                                 stopLossPrice = stopLossPrice.takeIf { it.isNotBlank() },
                                 entryPrice = m.last,
