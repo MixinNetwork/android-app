@@ -2367,13 +2367,12 @@
     <string name="take_profit_intro_description">Take profit (TP) automatically closes your position when you reach your target profit.</string>
     <string name="stop_loss_intro_title">What\'s the Stop Loss?</string>
     <string name="stop_loss_intro_description">Stop loss (SL) limits your losses by closing your position if the price moves against you.</string>
-    <string name="perps_tpsl_detail_take_profit_title">Lock in profits</string>
+    <string name="lock_in_profits">Lock in profits</string>
     <string name="perps_tpsl_detail_take_profit_description">Auto-close when price hits target to lock profit.</string>
-    <string name="perps_tpsl_detail_stop_loss_title">Prevent further loss</string>
+    <string name="prevent_further_loss">Prevent further loss</string>
     <string name="perps_tpsl_detail_stop_loss_description">Auto-close when price falls to target to limit loss.</string>
     <string name="perps_tpsl_entry_label">Entry</string>
     <string name="perps_tpsl_current_label">Current</string>
-    <string name="perps_scene_tp_triggered">Trigger take-profit</string>
     <string name="Perpetual">Perpetual</string>
     <string name="Open_Position">Open Position</string>
     <string name="Leverage">Leverage</string>
@@ -2385,10 +2384,9 @@
     <string name="take_profit_for_short">Take Profit for Short %1$s</string>
     <string name="stop_loss_for_long">Stop Loss for Long %1$s</string>
     <string name="stop_loss_for_short">Stop Loss for Short %1$s</string>
-    <string name="take_profit_stop_loss_label">TP/SL</string>
+    <string name="Take_Profit_Stop_Loss">TP/SL</string>
     <string name="tp_label">TP</string>
     <string name="sl_label">SL</string>
-    <string name="perps_guide_liquidation_tab">Liquidation</string>
     <string name="position_size">Size</string>
     <string name="Liquidation_Price">Liquidation Price</string>
     <string name="Price_Change_Profit">Price %1$s %2$s%% → Profit %3$s%4$s%% (%5$s%6$s)</string>

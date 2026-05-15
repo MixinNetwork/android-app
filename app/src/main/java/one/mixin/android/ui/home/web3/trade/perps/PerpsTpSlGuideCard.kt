@@ -91,9 +91,9 @@ internal fun PerpsTpSlGuideCard(
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     val infoTitleRes = when (layout) {
         PerpsTpSlGuideCardLayout.DETAIL -> if (guideType == TpSlGuideType.TAKE_PROFIT) {
-            R.string.perps_tpsl_detail_take_profit_title
+            R.string.lock_in_profits
         } else {
-            R.string.perps_tpsl_detail_stop_loss_title
+            R.string.prevent_further_loss
         }
         PerpsTpSlGuideCardLayout.BOTTOM_SHEET -> if (guideType == TpSlGuideType.TAKE_PROFIT) {
             R.string.take_profit_intro_title

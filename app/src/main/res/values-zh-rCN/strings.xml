@@ -2301,13 +2301,12 @@
     <string name="take_profit_intro_description">止盈会在达到目标收益时自动平仓，帮助你锁定利润。</string>
     <string name="stop_loss_intro_title">什么是止损？</string>
     <string name="stop_loss_intro_description">止损会在价格走势不利时自动平仓，帮助你控制亏损。</string>
-    <string name="perps_tpsl_detail_take_profit_title">锁定盈利</string>
+    <string name="lock_in_profits">锁定盈利</string>
     <string name="perps_tpsl_detail_take_profit_description">价格达到目标时自动平仓以锁定利润。</string>
-    <string name="perps_tpsl_detail_stop_loss_title">防止进一步亏损</string>
+    <string name="prevent_further_loss">防止进一步亏损</string>
     <string name="perps_tpsl_detail_stop_loss_description">价格下跌至目标时自动平仓以限制亏损。</string>
     <string name="perps_tpsl_entry_label">开仓价</string>
     <string name="perps_tpsl_current_label">当前价</string>
-    <string name="perps_scene_tp_triggered">触发止盈</string>
     <string name="Perpetual">永续合约</string>
     <string name="Open_Position">开仓</string>
     <string name="Leverage">杠杆</string>
@@ -2319,10 +2318,9 @@
     <string name="take_profit_for_short">%1$s 做空止盈</string>
     <string name="stop_loss_for_long">%1$s 做多止损</string>
     <string name="stop_loss_for_short">%1$s 做空止损</string>
-    <string name="take_profit_stop_loss_label">止盈止损</string>
+    <string name="Take_Profit_Stop_Loss">止盈止损</string>
     <string name="tp_label">止盈</string>
     <string name="sl_label">止损</string>
-    <string name="perps_guide_liquidation_tab">强平价格</string>
     <string name="position_size">仓位规模</string>
     <string name="Liquidation_Price">强平价格</string>
     <string name="Price_Change_Profit">价格%1$s %2$s%% → 盈利 %3$s%4$s%% (%5$s%6$s)</string>
