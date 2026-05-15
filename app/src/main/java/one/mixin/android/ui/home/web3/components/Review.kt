@@ -17,7 +17,10 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -153,7 +156,7 @@ fun TokenTransactionPreview(
             modifier =
                 Modifier
                     .fillMaxWidth(),
-            verticalAlignment = Alignment.Bottom,
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             CoilImage(
                 model = token.iconUrl,
@@ -168,13 +171,28 @@ fun TokenTransactionPreview(
                 text = token.name,
                 color = MixinAppTheme.colors.textPrimary,
                 fontSize = 16.sp,
-                fontWeight = FontWeight.W600
+                fontWeight = FontWeight.W600,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.widthIn(max = 140.dp)
             )
-            Box(modifier = Modifier.weight(1f))
-            Text(
+            Box(modifier = Modifier.width(8.dp))
+            BasicText(
                 text = "-${amount} ${token.symbol}",
-                color = MixinAppTheme.colors.red,
-                fontSize = 14.sp,
+                modifier = Modifier.weight(1f),
+                style = TextStyle(
+                    color = MixinAppTheme.colors.red,
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.End,
+                ),
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Ellipsis,
+                autoSize = TextAutoSize.StepBased(
+                    minFontSize = 8.sp,
+                    maxFontSize = 14.sp,
+                    stepSize = 0.5.sp
+                )
             )
         }
         Box(modifier = Modifier.height(4.dp))
