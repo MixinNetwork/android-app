@@ -1098,8 +1098,10 @@
     <string name="take_profit_stop_loss_label">止盈止損</string>
     <string name="lock_in_profits">鎖定盈利</string>
     <string name="prevent_further_loss">防止進一步虧損</string>
-    <string name="perps_scene_tp_triggered">觸發止盈：鎖定利潤</string>
-    <string name="perps_scene_sl_triggered">觸發止損：控制虧損</string>
+    <string name="perps_scene_tp_triggered">觸發止盈</string>
+    <string name="perps_scene_sl_triggered">觸發止損</string>
+    <string name="perps_tpsl_key_point_1">觸發止盈：鎖定利潤</string>
+    <string name="perps_tpsl_key_point_2">觸發止損：控制虧損</string>
     <string name="take_profit_label">止盈</string>
     <string name="stop_loss_label">止損</string>
 </resources>

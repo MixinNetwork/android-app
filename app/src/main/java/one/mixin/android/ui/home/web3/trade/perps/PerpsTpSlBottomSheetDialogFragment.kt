@@ -657,7 +657,7 @@ private fun PerpsTpSlContent(
                             modifier = Modifier.padding(horizontal = 16.dp),
                         ) {
                             Text(
-                                text = "${stringResource(R.string.Max_Profit)} ",
+                                text = "${stringResource(R.string.Max_Profit, "").trimEnd()} ",
                                 fontSize = 13.sp,
                                 color = MixinAppTheme.colors.textAssist,
                             )
@@ -678,7 +678,7 @@ private fun PerpsTpSlContent(
                             modifier = Modifier.padding(horizontal = 16.dp),
                         ) {
                             Text(
-                                text = "${stringResource(R.string.Max_Loss)} ",
+                                text = "${stringResource(R.string.Max_Loss, "").trimEnd()} ",
                                 fontSize = 13.sp,
                                 color = MixinAppTheme.colors.textAssist,
                             )
