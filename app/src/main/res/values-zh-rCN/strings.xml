@@ -2192,7 +2192,7 @@
     <string name="referral_program_introduction_1">最高 60% 交易手续费分佣。</string>
     <string name="referral_program_introduction_2">会员返佣单比最高 1000 USD。</string>
     <string name="referral_program_introduction_3">返佣资格终生有效。</string>
-    <string name="referral_code_applied_introduction_1">最高 50%% 交易手续费返现</string>
+    <string name="referral_code_applied_introduction_1">最高 50% 交易手续费返现</string>
     <string name="referral_code_applied_introduction_2">升级会员返现单笔最高 1000 USD</string>
     <string name="referral_code_applied_introduction_3">自动获得后续所有新权益</string>
     <string name="apply_referral_code">绑定邀请码</string>
@@ -2295,8 +2295,8 @@
     <string name="perps_liquidation_price_key_point_3">高杠杆会增加被强制平仓的风险</string>
     <string name="Take_Profit_When">止盈条件</string>
     <string name="Stop_Loss_When">止损条件</string>
-    <string name="profit_reaches_percent">盈利达到 %%</string>
-    <string name="loss_reaches_percent">亏损达到 %%</string>
+    <string name="profit_reaches_percent">盈利达到 %</string>
+    <string name="loss_reaches_percent">亏损达到 %</string>
     <string name="price_reaches_dollar">价格达到 $</string>
     <string name="auto_close_description">达到设定触发价时自动平仓</string>
     <string name="take_profit_intro_title">什么是止盈？</string>

@@ -521,7 +521,7 @@
     <string name="error_withdrawal_suspend">ERROR 20137: Withdrawal suspend.</string>
     <string name="error_invalid_utxo">ERROR 10106: You have unconfirmed transactions, please try again later.</string>
     <string name="Everybody">Everybody</string>
-    <string name="Exchanging_data">Synchronization key shards in progress %1$s%%…</string>
+    <string name="Exchanging_data">Synchronization key shards in progress %1$s%…</string>
     <string name="Exit">Exit</string>
     <string name="Exit_Group">Exit Group</string>
     <string name="exit_without_save">Exit without save?</string>
@@ -1791,9 +1791,9 @@
     <string name="volume_24h">24h Volume</string>
     <string name="Watchlist">Watchlist</string>
     <string name="top_count">Top %1$d</string>
-    <string name="change_percent_period_day">%1$dD %%</string>
-    <string name="change_percent_period_hour">%1$dh %%</string>
-    <string name="change_24h">%1$dH %%</string>
+    <string name="change_percent_period_day">%1$dD %</string>
+    <string name="change_percent_period_hour">%1$dh %</string>
+    <string name="change_24h">%1$dH %</string>
     <string name="Choose_Token">Choose %1$s Network</string>
     <string name="choose_token_desc">%1$s is issued on multiple networks</string>
     <string name="watchlist_add_desc">%1$s is now on your watchlist</string>
@@ -2256,7 +2256,7 @@
     <string name="referral_program_introduction_1">Up to 60% commission on trading fees</string>
     <string name="referral_program_introduction_2">Membership commission rebate up to 1,000 USD per order</string>
     <string name="referral_program_introduction_3">Rebate eligibility is valid for life</string>
-    <string name="referral_code_applied_introduction_1">Up to 50%% cashback on trading fees</string>
+    <string name="referral_code_applied_introduction_1">Up to 50% cashback on trading fees</string>
     <string name="referral_code_applied_introduction_2">Up to 1,000 USD cashback per transaction when upgrading membership</string>
     <string name="referral_code_applied_introduction_3">Automatic access to all future new benefits</string>
     <string name="referral_program_introduction_footer">* Referral rewards are available only to paid Mixin One members. Learn more</string>
@@ -2323,10 +2323,10 @@
     <string name="perps_intro_risk_notice_2">Positions may be liquidated if margin requirements are not maintained</string>
     <string name="perps_intro_risk_notice_3">Manage leverage and position size carefully</string>
     <string name="Example">Example</string>
-    <string name="Price_Up_Profit">Price rise %1$s%% → Profit %2$s%% (+%3$s)</string>
-    <string name="Price_Down_Profit">Price fall %1$s%% → Profit %2$s%% (+%3$s)</string>
-    <string name="Price_Down_Loss">Price fall %1$s%% → Loss -%2$s %3$s</string>
-    <string name="Price_Up_Loss">Price rise %1$s%% → Loss -%2$s %3$s</string>
+    <string name="Price_Up_Profit">Price rise %1$s% → Profit %2$s% (+%3$s)</string>
+    <string name="Price_Down_Profit">Price fall %1$s% → Profit %2$s% (+%3$s)</string>
+    <string name="Price_Down_Loss">Price fall %1$s% → Loss -%2$s %3$s</string>
+    <string name="Price_Up_Loss">Price rise %1$s% → Loss -%2$s %3$s</string>
     <string name="Max_Profit">Max Profit %1$s</string>
     <string name="Max_Loss">Max Loss %1$s</string>
     <string name="price_change_take_profit">Price %1$s → Max Profit %2$s</string>
@@ -2361,8 +2361,8 @@
     <string name="perps_liquidation_price_key_point_3">Higher leverage increases the risk of liquidation</string>
     <string name="Take_Profit_When">Take Profit When</string>
     <string name="Stop_Loss_When">Stop Loss When</string>
-    <string name="profit_reaches_percent">Profit reaches %%</string>
-    <string name="loss_reaches_percent">Loss reaches %%</string>
+    <string name="profit_reaches_percent">Profit reaches %</string>
+    <string name="loss_reaches_percent">Loss reaches %</string>
     <string name="price_reaches_dollar">Price reaches $</string>
     <string name="auto_close_description">Auto-close when target is reached</string>
     <string name="take_profit_intro_title">What’s the Take Profit?</string>
@@ -2391,7 +2391,7 @@
     <string name="stop_loss_label">SL</string>
     <string name="position_size">Size</string>
     <string name="Liquidation_Price">Liquidation Price</string>
-    <string name="Price_Change_Profit">Price %1$s %2$s%% → Profit %3$s%4$s%% (%5$s%6$s)</string>
+    <string name="Price_Change_Profit">Price %1$s %2$s% → Profit %3$s%4$s% (%5$s%6$s)</string>
     <string name="Long">Long</string>
     <string name="Short">Short</string>
     <string name="Direction">Direction</string>
@@ -2431,7 +2431,7 @@
     <string name="Perpetual_Leverage_Format">%1$dx</string>
     <string name="Perpetual_Usd_Amount" translatable="false">$%1$f</string>
     <string name="Perpetual_Usd_Amount_Signed" translatable="false">%1$s$%2$f</string>
-    <string name="Perpetual_Amount_Percent_Format" translatable="false">%1$s(%2$.2f%%)</string>
+    <string name="Perpetual_Amount_Percent_Format" translatable="false">%1$s(%2$.2f%)</string>
     <string name="positions_count">Positions(%d)</string>
     <string name="perps_positions">Positions</string>
     <string name="perps_position">Position</string>
