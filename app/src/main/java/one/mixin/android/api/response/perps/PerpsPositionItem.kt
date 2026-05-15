@@ -46,6 +46,9 @@ data class PerpsPositionItem(
     @SerializedName("stop_loss_price")
     @ColumnInfo(name = "stop_loss_price")
     val stopLossPrice: String? = null,
+    @SerializedName("liquidation_price")
+    @ColumnInfo(name = "liquidation_price")
+    val liquidationPrice: String? = null,
     @SerializedName("state")
     @ColumnInfo(name = "state")
     val state: String? = null,
@@ -73,5 +76,5 @@ data class PerpsPositionItem(
     @ColumnInfo(name = "token_symbol")
     val tokenSymbol: String? = null,
     @ColumnInfo(name = "price_scale")
-    val priceScale: Int? = null,
+    val priceScale: Int = 2,
 ) : Parcelable

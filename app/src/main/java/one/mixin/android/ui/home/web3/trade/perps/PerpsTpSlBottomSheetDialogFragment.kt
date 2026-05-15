@@ -113,6 +113,7 @@ class PerpsTpSlBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment
         private const val ARGS_ENTRY_PRICE = "args_entry_price"
         private const val ARGS_MARKET_ID = "args_market_id"
         private const val ARGS_PRICE_SCALE = "args_price_scale"
+        private const val ARGS_LIQUIDATION_PRICE = "args_liquidation_price"
 
         fun newInstance(
             mode: Mode,
@@ -126,6 +127,7 @@ class PerpsTpSlBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment
             entryPrice: String? = null,
             marketId: String? = null,
             priceScale: Int = DEFAULT_PERPS_PRICE_SCALE,
+            liquidationPrice: String? = null,
         ): PerpsTpSlBottomSheetDialogFragment {
             return PerpsTpSlBottomSheetDialogFragment().withArgs {
                 putString(ARGS_MODE, mode.name)
@@ -139,6 +141,7 @@ class PerpsTpSlBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment
                 putString(ARGS_ENTRY_PRICE, entryPrice)
                 putString(ARGS_MARKET_ID, marketId)
                 putInt(ARGS_PRICE_SCALE, priceScale)
+                putString(ARGS_LIQUIDATION_PRICE, liquidationPrice)
             }
         }
     }
@@ -156,6 +159,7 @@ class PerpsTpSlBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment
     private val entryPrice by lazy { requireArguments().getString(ARGS_ENTRY_PRICE).orEmpty() }
     private val marketId by lazy { requireArguments().getString(ARGS_MARKET_ID).orEmpty() }
     private val priceScale by lazy { requireArguments().getInt(ARGS_PRICE_SCALE, DEFAULT_PERPS_PRICE_SCALE) }
+    private val liquidationPrice by lazy { requireArguments().getString(ARGS_LIQUIDATION_PRICE) }
 
     private var onApply: ((String?) -> Unit)? = null
 
@@ -212,6 +216,7 @@ class PerpsTpSlBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment
                 entryPrice = entryPrice,
                 marketId = marketId,
                 priceScale = priceScale,
+                liquidationPrice = liquidationPrice,
                 onCancel = { dismiss() },
                 onApply = { value ->
                     onApply?.invoke(value)
@@ -245,6 +250,7 @@ private fun PerpsTpSlContent(
     entryPrice: String,
     marketId: String,
     priceScale: Int,
+    liquidationPrice: String?,
     onCancel: () -> Unit,
     onApply: (String?) -> Unit,
 ) {
@@ -273,11 +279,15 @@ private fun PerpsTpSlContent(
     val entryPriceValue = remember(entryPrice) {
         entryPrice.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO }
     }
+    val liquidationPriceValue = remember(liquidationPrice) {
+        liquidationPrice?.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO }
+    }
     val percentBasePrice = remember(entryPriceValue, validationCurrentPrice) {
         entryPriceValue ?: validationCurrentPrice
     }
     val liquidationBasePrice = remember(entryPriceValue, validationCurrentPrice) {
-        entryPriceValue
+        liquidationPriceValue
+            ?: entryPriceValue
             ?: validationCurrentPrice.takeIf { it > BigDecimal.ZERO }
             ?: BigDecimal.ZERO
     }
@@ -657,7 +667,7 @@ private fun PerpsTpSlContent(
                             modifier = Modifier.padding(horizontal = 16.dp),
                         ) {
                             Text(
-                                text = "${stringResource(R.string.Max_Profit)} ",
+                                text = "${stringResource(R.string.Max_Profit, "").trimEnd()} ",
                                 fontSize = 13.sp,
                                 color = MixinAppTheme.colors.textAssist,
                             )
@@ -678,7 +688,7 @@ private fun PerpsTpSlContent(
                             modifier = Modifier.padding(horizontal = 16.dp),
                         ) {
                             Text(
-                                text = "${stringResource(R.string.Max_Loss)} ",
+                                text = "${stringResource(R.string.Max_Loss, "").trimEnd()} ",
                                 fontSize = 13.sp,
                                 color = MixinAppTheme.colors.textAssist,
                             )

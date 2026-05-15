@@ -176,7 +176,7 @@ fun PerpetualGuidePage(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
                 Column(
                     modifier = Modifier
@@ -280,7 +280,7 @@ private fun LongContent() {
         showScenarioTitle = false,
         showRowsDivider = true,
     )
-    Spacer(modifier = Modifier.height(16.dp))
+    Spacer(modifier = Modifier.height(14.dp))
     DescriptionWithRulesCard(
         description = stringResource(R.string.perps_long_overview),
         rules = listOf(
@@ -338,7 +338,7 @@ private fun ShortContent() {
         showScenarioTitle = false,
         showRowsDivider = true,
     )
-    Spacer(modifier = Modifier.height(16.dp))
+    Spacer(modifier = Modifier.height(14.dp))
     DescriptionWithRulesCard(
         description = stringResource(R.string.perps_short_overview),
         rules = listOf(
@@ -409,7 +409,7 @@ private fun LeverageContent() {
         showScenarioTitle = false,
         showRowsDivider = true,
     )
-    Spacer(modifier = Modifier.height(16.dp))
+    Spacer(modifier = Modifier.height(14.dp))
     DescriptionWithInfoAndRiskCard(
         description = stringResource(R.string.perps_leverage_overview),
         infoTitle = stringResource(R.string.PnL),
@@ -494,7 +494,7 @@ private fun PositionContent() {
         showScenarioTitle = false,
         showRowsDivider = true,
     )
-    Spacer(modifier = Modifier.height(16.dp))
+    Spacer(modifier = Modifier.height(14.dp))
     DescriptionWithInfoAndRiskCard(
         description = stringResource(R.string.perps_position_size_overview),
         infoTitle = stringResource(R.string.PnL),
@@ -544,33 +544,33 @@ private fun TpSlContent() {
                 )
             }
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(14.dp))
         GuideValueRow(title = stringResource(R.string.Direction)) {
             GuideDirectionTag(
                 text = stringResource(R.string.Long),
                 backgroundColor = profitColor,
             )
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(14.dp))
         GuideValueRow(title = stringResource(R.string.Leverage)) {
             Text(text = "10x", fontSize = 14.sp, fontWeight = FontWeight.W500, color = MixinAppTheme.colors.textPrimary)
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(14.dp))
         GuideValueRow(title = stringResource(R.string.example_amount)) {
             Text(text = "1,000 USDT", fontSize = 14.sp, fontWeight = FontWeight.W500, color = MixinAppTheme.colors.textPrimary)
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(14.dp))
         GuideValueRow(title = stringResource(R.string.Entry_Price)) {
             Text(text = "${PERPS_USD_SYMBOL}100", fontSize = 14.sp, fontWeight = FontWeight.W500, color = MixinAppTheme.colors.textPrimary)
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(14.dp))
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(1.dp)
                 .background(MixinAppTheme.colors.backgroundWindow)
         )
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(14.dp))
         Text(
             text = stringResource(R.string.Take_Profit),
             fontSize = 14.sp,
@@ -581,18 +581,18 @@ private fun TpSlContent() {
         GuideValueRow(title = stringResource(R.string.Trigger_Price)) {
             Text(text = "${PERPS_USD_SYMBOL}110", fontSize = 14.sp, fontWeight = FontWeight.W500, color = MixinAppTheme.colors.textPrimary)
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(14.dp))
         GuideValueRow(title = stringResource(R.string.PnL)) {
             Text(text = "+1,000 USDT (+100%)", fontSize = 14.sp, fontWeight = FontWeight.W500, color = profitColor)
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(14.dp))
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(1.dp)
                 .background(MixinAppTheme.colors.backgroundWindow)
         )
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(14.dp))
         Text(
             text = stringResource(R.string.Stop_Loss),
             fontSize = 14.sp,
@@ -603,18 +603,18 @@ private fun TpSlContent() {
         GuideValueRow(title = stringResource(R.string.Trigger_Price)) {
             Text(text = "${PERPS_USD_SYMBOL}95", fontSize = 14.sp, fontWeight = FontWeight.W500, color = MixinAppTheme.colors.textPrimary)
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(14.dp))
         GuideValueRow(title = stringResource(R.string.PnL)) {
             Text(text = "-500 USDT", fontSize = 14.sp, fontWeight = FontWeight.W500, color = lossColor)
         }
     }
-    Spacer(modifier = Modifier.height(16.dp))
+    Spacer(modifier = Modifier.height(14.dp))
     DescriptionWithInfoAndRiskCard(
         description = stringResource(R.string.perps_tpsl_overview),
         infoTitle = stringResource(R.string.PnL),
         infoContents = listOf(
-            stringResource(R.string.perps_scene_tp_triggered),
-            stringResource(R.string.perps_scene_sl_triggered),
+            stringResource(R.string.perps_tpsl_key_point_1),
+            stringResource(R.string.perps_tpsl_key_point_2),
         ),
         riskContents = emptyList(),
     )
@@ -642,7 +642,7 @@ private fun LiquidationContent() {
         marketPrice = marketPrice,
         liquidationPrice = liquidationPrice,
     )
-    Spacer(modifier = Modifier.height(16.dp))
+    Spacer(modifier = Modifier.height(14.dp))
     DescriptionWithInfoAndRiskCard(
         description = stringResource(R.string.perps_liquidation_price_overview),
         infoTitle = stringResource(R.string.Spot_Trade_Guide_Additional_Notes),
@@ -768,14 +768,14 @@ private fun LiquidationExampleCard(
                 )
             }
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(14.dp))
         GuideValueRow(title = stringResource(R.string.Direction)) {
             GuideDirectionToggle(
                 isLong = isLong,
                 onDirectionChange = onDirectionChange,
             )
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(14.dp))
         GuideValueRow(title = stringResource(R.string.Leverage)) {
             GuideNumberAdjuster(
                 valueText = "${leverage}x",
@@ -785,14 +785,14 @@ private fun LiquidationExampleCard(
                 onIncrease = { onLeverageChange(leverage + 1) },
             )
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(14.dp))
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(1.dp)
                 .background(MixinAppTheme.colors.backgroundWindow)
         )
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(14.dp))
         GuideValueRow(title = stringResource(R.string.Entry_Price)) {
             Text(
                 text = "$PERPS_USD_SYMBOL${marketPrice.priceFormat()}",
@@ -801,7 +801,7 @@ private fun LiquidationExampleCard(
                 color = MixinAppTheme.colors.textPrimary
             )
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(14.dp))
         GuideValueRow(title = stringResource(R.string.Liquidation_Price)) {
             Text(
                 text = "$PERPS_USD_SYMBOL${liquidationPrice.priceFormat()}",
@@ -984,7 +984,7 @@ private fun ExampleWithScenariosCard(
             val label = row.label
             val value = row.value
             if (index > 0) {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(14.dp))
             }
             GuideValueRow(title = label) {
                 if (label == directionLabel && (value == longDirection || value == shortDirection)) {
@@ -1040,7 +1040,7 @@ private fun ExampleWithScenariosCard(
         }
 
         if (showRowsDivider) {
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(14.dp))
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1049,11 +1049,11 @@ private fun ExampleWithScenariosCard(
             )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(14.dp))
 
         orderedScenarios.forEachIndexed { index, scenario ->
             if (index > 0) {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(14.dp))
             }
             val priceChangeColor = if (scenario.isPriceIncrease) risingColor else fallingColor
             val pnlColor = if (scenario.isProfit) risingColor else fallingColor
@@ -1069,8 +1069,8 @@ private fun ExampleWithScenariosCard(
                         color = MixinAppTheme.colors.textPrimary
                     )
                     Spacer(modifier = Modifier.height(6.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
                 }
-                Spacer(modifier = Modifier.height(16.dp))
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Text(
                         text = scenario.change,
@@ -1150,7 +1150,7 @@ private fun ExampleWithScenariosCard(
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(14.dp))
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Text(
                         text = stringResource(R.string.PnL),
@@ -1392,7 +1392,7 @@ private fun DescriptionWithRulesCard(
             color = MixinAppTheme.colors.textPrimary
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(14.dp))
 
         Text(
             text = stringResource(R.string.PnL),
@@ -1438,7 +1438,7 @@ private fun DescriptionWithInfoAndRiskCard(
             color = MixinAppTheme.colors.textPrimary
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(14.dp))
 
         Column(
             modifier = Modifier

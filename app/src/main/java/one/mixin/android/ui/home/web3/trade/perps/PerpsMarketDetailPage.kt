@@ -229,6 +229,26 @@ fun PerpsMarketDetailPage(
                     var hideStopLossGuideUntil by remember(preferences) {
                         mutableStateOf(preferences.getTpSlGuideHideUntil(TpSlGuideType.STOP_LOSS))
                     }
+                    var guideType by remember(currentPosition.positionId) {
+                        mutableStateOf(
+                            resolveTpSlGuideType(
+                                pnl = pnl,
+                                hasTakeProfit = hasTakeProfit,
+                                hasStopLoss = hasStopLoss,
+                                hideTakeProfitGuideUntil = hideTakeProfitGuideUntil,
+                                hideStopLossGuideUntil = hideStopLossGuideUntil,
+                                now = System.currentTimeMillis(),
+                            )
+                        )
+                    }
+
+                    LaunchedEffect(hasTakeProfit, hasStopLoss, guideType) {
+                        if ((guideType == TpSlGuideType.TAKE_PROFIT && hasTakeProfit) ||
+                            (guideType == TpSlGuideType.STOP_LOSS && hasStopLoss)
+                        ) {
+                            guideType = null
+                        }
+                    }
 
                     fun showTpSlBottomSheetFromGuide(mode: PerpsTpSlBottomSheetDialogFragment.Mode) {
                         val activity = context as? FragmentActivity ?: return
@@ -249,7 +269,7 @@ fun PerpsMarketDetailPage(
                             leverage = currentPosition.leverage,
                             entryPrice = currentPosition.entryPrice,
                             marketId = currentPosition.marketId,
-                            priceScale = currentPosition.priceScale ?: DEFAULT_PERPS_PRICE_SCALE,
+                            priceScale = currentPosition.priceScale,
                         ).setOnApply { value ->
                             val normalizedValue = value?.trim().orEmpty()
                             if (normalizedValue == existingPrice) return@setOnApply
@@ -276,14 +296,6 @@ fun PerpsMarketDetailPage(
                         }.show(activity.supportFragmentManager, PerpsTpSlBottomSheetDialogFragment.TAG)
                     }
 
-                    val guideType = resolveTpSlGuideType(
-                        pnl = pnl,
-                        hasTakeProfit = hasTakeProfit,
-                        hasStopLoss = hasStopLoss,
-                        hideTakeProfitGuideUntil = hideTakeProfitGuideUntil,
-                        hideStopLossGuideUntil = hideStopLossGuideUntil,
-                        now = System.currentTimeMillis(),
-                    )
                     guideType?.let { currentGuideType ->
                         PerpsTpSlGuideCard(
                             guideType = currentGuideType,
@@ -294,6 +306,7 @@ fun PerpsMarketDetailPage(
                                 } else {
                                     hideStopLossGuideUntil = until
                                 }
+                                guideType = null
                             },
                             actionText = stringResource(
                                 if (currentGuideType == TpSlGuideType.TAKE_PROFIT) {
@@ -730,7 +743,10 @@ private fun OpenPositionCard(
     }
 
     val entryPrice = position.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    val liquidationPrice = calculateLiquidationPriceValue(entryPrice, position.leverage, isLong)
+    val liquidationPriceText = position.liquidationPrice
+        ?.takeIf { it.isNotBlank() }
+        ?.let { formatPerpsPrice(it, position.priceScale) }
+        ?: "--"
     val compactTextStyle = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false))
 
     fun showTpSlGuide() {
@@ -760,7 +776,8 @@ private fun OpenPositionCard(
             leverage = position.leverage,
             entryPrice = position.entryPrice,
             marketId = position.marketId,
-            priceScale = position.priceScale ?: DEFAULT_PERPS_PRICE_SCALE,
+            priceScale = position.priceScale,
+            liquidationPrice = position.liquidationPrice,
         ).setOnApply { value ->
             val normalizedValue = value?.trim().orEmpty()
             if (normalizedValue == existingPrice) {
@@ -997,14 +1014,14 @@ private fun OpenPositionCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = formatPerpsPrice(entryPrice, position.priceScale ?: DEFAULT_PERPS_PRICE_SCALE),
+                    text = formatPerpsPrice(entryPrice, position.priceScale),
                     fontSize = 14.sp,
                     lineHeight = 17.sp,
                     style = compactTextStyle,
                     color = MixinAppTheme.colors.textPrimary
                 )
                 Text(
-                    text = formatPerpsPrice(liquidationPrice, position.priceScale ?: DEFAULT_PERPS_PRICE_SCALE),
+                    text = liquidationPriceText,
                     fontSize = 14.sp,
                     lineHeight = 17.sp,
                     style = compactTextStyle,
@@ -1040,7 +1057,7 @@ private fun OpenPositionCard(
             ) {
                 TpSlActionCell(
                     modifier = Modifier.weight(1f),
-                    value = formatMarketTpSlDisplayValue(position.takeProfitPrice, position.priceScale ?: DEFAULT_PERPS_PRICE_SCALE),
+                    value = formatMarketTpSlDisplayValue(position.takeProfitPrice, position.priceScale),
                     loading = tpSlLoadingMode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT,
                     compactTextStyle = compactTextStyle,
                     onClick = {
@@ -1066,7 +1083,7 @@ private fun OpenPositionCard(
                 Spacer(modifier = Modifier.width(12.dp))
                 TpSlActionCell(
                     modifier = Modifier.weight(1f),
-                    value = formatMarketTpSlDisplayValue(position.stopLossPrice, position.priceScale ?: DEFAULT_PERPS_PRICE_SCALE),
+                    value = formatMarketTpSlDisplayValue(position.stopLossPrice, position.priceScale),
                     loading = tpSlLoadingMode == PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS,
                     compactTextStyle = compactTextStyle,
                     alignment = Alignment.End,
@@ -1167,7 +1184,7 @@ private fun TpSlActionCell(
                 Icon(
                     painter = painterResource(id = R.drawable.ic_action_delete),
                     contentDescription = null,
-                    tint = MixinAppTheme.colors.textAssist,
+                    tint = MixinAppTheme.colors.textBlue,
                     modifier = Modifier
                         .size(16.dp)
                         .clickable(enabled = !loading && onDelete != null) { onDelete?.invoke() }
@@ -1242,24 +1259,5 @@ private fun ClosedPositionsSection(
                 Spacer(modifier = Modifier.height(8.dp))
             }
         }
-    }
-}
-
-private fun calculateLiquidationPriceValue(
-    entryPrice: BigDecimal,
-    leverage: Int,
-    isLong: Boolean,
-): BigDecimal {
-    if (entryPrice == BigDecimal.ZERO || leverage == 0) {
-        return BigDecimal.ZERO
-    }
-
-    val liquidationPercent = BigDecimal(100.0 / leverage)
-    val liquidationRatio = liquidationPercent.divide(BigDecimal(100), 8, java.math.RoundingMode.HALF_UP)
-
-    return if (isLong) {
-        entryPrice.multiply(BigDecimal.ONE.subtract(liquidationRatio))
-    } else {
-        entryPrice.multiply(BigDecimal.ONE.add(liquidationRatio))
     }
 }
