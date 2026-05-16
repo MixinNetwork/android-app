@@ -807,35 +807,29 @@ private fun calculateProfitInfo(
     isLong: Boolean,
     priceChangePercent: Double,
 ): String {
+    val context = LocalContext.current
     val amountValue = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val leverageInt = leverage.roundToInt()
+    val priceChangeText = abs(priceChangePercent).roundToInt().toString()
     if (amountValue == BigDecimal.ZERO) {
-        return if (isLong) {
-            stringResource(R.string.Price_Up_Profit, "1", leverageInt.toString(), formatPerpsRawUsdDecimal(BigDecimal.ZERO))
-        } else {
-            stringResource(R.string.Price_Down_Profit, "1", leverageInt.toString(), formatPerpsRawUsdDecimal(BigDecimal.ZERO))
-        }
+        return context.formatPerpsProfitPreview(
+            isLong = isLong,
+            priceChangeText = "1",
+            profitPercentText = leverageInt.toString(),
+            profitAmountText = formatPerpsRawUsdDecimal(BigDecimal.ZERO),
+        )
     }
 
     val profitPercent = leverageInt
     val profitAmount = amountValue
         .multiply(BigDecimal(profitPercent).divide(BigDecimal(100)))
 
-    return if (isLong) {
-        stringResource(
-            R.string.Price_Up_Profit,
-            String.format("%.0f", abs(priceChangePercent)),
-            profitPercent.toString(),
-            formatPerpsRawUsdDecimal(profitAmount)
-        )
-    } else {
-        stringResource(
-            R.string.Price_Down_Profit,
-            String.format("%.0f", abs(priceChangePercent)),
-            profitPercent.toString(),
-            formatPerpsRawUsdDecimal(profitAmount)
-        )
-    }
+    return context.formatPerpsProfitPreview(
+        isLong = isLong,
+        priceChangeText = priceChangeText,
+        profitPercentText = profitPercent.toString(),
+        profitAmountText = formatPerpsRawUsdDecimal(profitAmount),
+    )
 }
 
 private fun calculateOrderValue(amount: String, leverage: Float, price: String): BigDecimal {
