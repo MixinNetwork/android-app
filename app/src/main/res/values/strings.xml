@@ -2256,9 +2256,6 @@
     <string name="referral_program_introduction_1">Up to 60% commission on trading fees</string>
     <string name="referral_program_introduction_2">Membership commission rebate up to 1,000 USD per order</string>
     <string name="referral_program_introduction_3">Rebate eligibility is valid for life</string>
-    <string name="referral_code_applied_introduction_1">Up to 50%% cashback on trading fees</string>
-    <string name="referral_code_applied_introduction_2">Up to 1,000 USD cashback per transaction when upgrading membership</string>
-    <string name="referral_code_applied_introduction_3">Automatic access to all future new benefits</string>
     <string name="referral_program_introduction_footer">* Referral rewards are available only to paid Mixin One members. Learn more</string>
     <string name="referral_code_applied_footer">All cashback will be settled monthly to your Mixin privacy wallet. Learn more</string>
     <string name="bind_referral_footer">Fees are refunded monthly by actual consumed fee currency and amount to your Mixin privacy wallet. Learn more</string>
