@@ -9,7 +9,6 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 
 const val PERPS_USD_SYMBOL = "\$"
-const val DEFAULT_PERPS_PRICE_SCALE = 2
 
 fun PerpsMarket.changePercent(): BigDecimal {
     return try {
@@ -38,7 +37,7 @@ fun formatPerpsUsdDecimal(value: BigDecimal?): String = formatPerpsFiatDecimal(v
 
 fun formatPerpsSignedUsdDecimal(value: BigDecimal?): String = formatPerpsSignedFiatDecimal(value, PERPS_USD_SYMBOL)
 
-fun formatPerpsPrice(value: BigDecimal?, priceScale: Int = DEFAULT_PERPS_PRICE_SCALE): String {
+fun formatPerpsPrice(value: BigDecimal?, priceScale: Int): String {
     val safeValue = value ?: BigDecimal.ZERO
     val safeScale = priceScale.coerceAtLeast(0)
     val scaledValue = safeValue.setScale(safeScale, RoundingMode.HALF_UP)
@@ -50,11 +49,11 @@ fun formatPerpsPrice(value: BigDecimal?, priceScale: Int = DEFAULT_PERPS_PRICE_S
     return "$PERPS_USD_SYMBOL${DecimalFormat(pattern).format(scaledValue)}"
 }
 
-fun formatPerpsPrice(rawPrice: String?, priceScale: Int = DEFAULT_PERPS_PRICE_SCALE): String {
+fun formatPerpsPrice(rawPrice: String?, priceScale: Int): String {
     return formatPerpsPrice(rawPrice?.toBigDecimalOrNull(), priceScale)
 }
 
-fun formatPerpsPriceInput(value: BigDecimal, priceScale: Int = DEFAULT_PERPS_PRICE_SCALE): String {
+fun formatPerpsPriceInput(value: BigDecimal, priceScale: Int): String {
     return value
         .setScale(priceScale.coerceAtLeast(0), RoundingMode.HALF_UP)
         .stripTrailingZeros()

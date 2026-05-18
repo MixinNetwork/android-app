@@ -88,6 +88,7 @@ import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.widget.components.MixinButton
+import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -345,6 +346,7 @@ private fun PerpsTpSlContent(
         leverage = leverageValue,
         isLong = isLong,
         mode = mode,
+        priceScale = safePriceScale,
     )
     val errorText = if (inputType == InputType.PNL) percentErrorText else priceErrorText
     val currentPriceText = formatPerpsPrice(currentPriceValue, safePriceScale)
@@ -1155,7 +1157,7 @@ private fun percentToPriceInput(
     leverage: Int,
     isLong: Boolean,
     mode: PerpsTpSlBottomSheetDialogFragment.Mode,
-    priceScale: Int = DEFAULT_PERPS_PRICE_SCALE,
+    priceScale: Int,
 ): String {
     val magnitude = percentMagnitudeInput.toBigDecimalOrNull() ?: return ""
     if (percentBasePrice <= BigDecimal.ZERO || leverage <= 0) {
@@ -1250,6 +1252,7 @@ internal fun validateTpSlPrice(
     val liquidationPriceLong = liquidationBasePrice.multiply(BigDecimal.ONE.subtract(liquidationOffset))
     val liquidationPriceShort = liquidationBasePrice.multiply(BigDecimal.ONE.add(liquidationOffset))
 
+    Timber.e("---$isLong $isTakeProfit $price $currentPrice $liquidationPriceShort $liquidationPriceLong")
     return when {
         isLong && isTakeProfit -> {
             if (price <= currentPrice) {
@@ -1306,6 +1309,7 @@ private fun validateTpSlPercent(
     leverage: Int,
     isLong: Boolean,
     mode: PerpsTpSlBottomSheetDialogFragment.Mode,
+    priceScale: Int,
 ): String? {
     val trimmed = rawValue.trim()
     if (trimmed.isEmpty()) {
@@ -1322,11 +1326,13 @@ private fun validateTpSlPercent(
         leverage = leverage,
         isLong = isLong,
         mode = mode,
+        priceScale = priceScale,
     )
     if (derivedPrice.isBlank()) {
         val maxPercent = (leverage * 100).toBigDecimal().stripTrailingZeros().toPlainString()
         return MixinApplicationHolder.getString(R.string.error_percentage_must_be_less_than_value, "$maxPercent%")
     }
+    Timber.e("--- $rawValue $derivedPrice $currentPrice $liquidationBasePrice $leverage $isLong")
     return validateTpSlPrice(
         rawValue = derivedPrice,
         currentPrice = currentPrice,
