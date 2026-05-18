@@ -1202,7 +1202,7 @@ private fun TpSlActionCell(
     }
 }
 
-private fun formatMarketTpSlDisplayValue(rawValue: String?, priceScale: Int = DEFAULT_PERPS_PRICE_SCALE): String? {
+private fun formatMarketTpSlDisplayValue(rawValue: String?, priceScale: Int): String? {
     val normalized = rawValue?.trim().orEmpty()
     if (normalized.isEmpty()) {
         return null

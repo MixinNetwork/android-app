@@ -324,7 +324,7 @@ fun OpenPositionPage(
                         Text(
                             text = stringResource(
                                 R.string.Current_price,
-                                formatPerpsPrice(currentMarket.last)
+                                formatPerpsPrice(currentMarket.last, currentMarket.priceScale)
                             ),
                             fontSize = 13.sp,
                             color = MixinAppTheme.colors.textAssist
