@@ -162,10 +162,17 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             }
             binding.titleView.leftIb.setOnClickListener { requireActivity().onBackPressedDispatcher.onBackPressed() }
             binding.titleView.rightIb.setOnClickListener {
-                if (isAddPhoneFlow()) {
-                    AnalyticsTracker.trackCustomerServiceDialog(AnalyticsTracker.CustomerServiceSource.ADD_PHONE_INPUT_PHONE)
+                val source = if (isAddPhoneFlow()) {
+                    AnalyticsTracker.CustomerServiceSource.ADD_PHONE_INPUT_PHONE
+                } else {
+                    when (from) {
+                        FROM_LANDING_CREATE -> AnalyticsTracker.CustomerServiceSource.SIGN_UP_PHONE_NUMBER
+                        FROM_CHANGE_PHONE_ACCOUNT -> AnalyticsTracker.CustomerServiceSource.PHONE_NUMBER_CHANGE
+                        FROM_VERIFY_MOBILE_REMINDER -> AnalyticsTracker.CustomerServiceSource.PHONE_NUMBER_CHANGE_SMS_VERIFY
+                        else -> AnalyticsTracker.CustomerServiceSource.LOGIN_PHONE_NUMER
+                    }
                 }
-                openCustomerService()
+                openCustomerService(source = source)
             }
             val policy: String = requireContext().getString(R.string.Privacy_Policy)
             val termsService: String = requireContext().getString(R.string.Terms_of_Service)
@@ -233,6 +240,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                 )
             }
             noAccount.setOnClickListener {
+                AnalyticsTracker.trackSignUpStart(AnalyticsTracker.SignUpStartSource.LOGIN_START)
                 CreateAccountConfirmBottomSheetDialogFragment.newInstance()
                     .setOnCreateAccount {
                         activity?.addFragment(

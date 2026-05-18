@@ -226,7 +226,10 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     activity?.onBackPressedDispatcher?.onBackPressed()
                 }
                 titleView.rightIb.setOnClickListener {
-                    openCustomerService()
+                    openCustomerService(
+                        source = AnalyticsTracker.CustomerServiceSource.DEPOSIT,
+                        wallet = if (isWeb3) AnalyticsTracker.TradeWallet.WEB3 else AnalyticsTracker.TradeWallet.MAIN,
+                    )
                 }
                 if (isWeb3) {
                     val wallet = walletIdForCalculate?.let { web3ViewModel.findWalletById(it) }

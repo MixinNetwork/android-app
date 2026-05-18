@@ -77,8 +77,11 @@ class AllPositionsFragment : BaseFragment() {
                             activity?.onBackPressedDispatcher?.onBackPressed()
                         },
                         onSupport = {
-                            AnalyticsTracker.trackCustomerServiceDialog(AnalyticsTracker.CustomerServiceSource.PERPS_ALL_POSITIONS)
-                            context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                            context.openUrl(
+                                Constants.HelpLink.CUSTOMER_SERVICE,
+                                source = AnalyticsTracker.CustomerServiceSource.PERPS_ALL_POSITIONS,
+                                wallet = AnalyticsTracker.TradeWallet.WEB3,
+                            )
                         },
                         onShowTradingGuide = {
                             AnalyticsTracker.trackPerpsGuide(AnalyticsTracker.PerpsSource.PERPS_ALL_POSITIONS)

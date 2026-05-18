@@ -115,8 +115,11 @@ class PositionDetailFragment : BaseFragment() {
                                 sharePosition(currentPosition)
                             },
                             onSupport = {
-                                AnalyticsTracker.trackCustomerServiceDialog(AnalyticsTracker.CustomerServiceSource.PERPS_ACTIVITY_DETAIL)
-                                context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                                context?.openUrl(
+                                    Constants.HelpLink.CUSTOMER_SERVICE,
+                                    source = AnalyticsTracker.CustomerServiceSource.PERPS_ACTIVITY_DETAIL,
+                                    wallet = AnalyticsTracker.TradeWallet.WEB3,
+                                )
                             }
                         )
                     } else if (positionHistory != null) {
@@ -133,8 +136,11 @@ class PositionDetailFragment : BaseFragment() {
                                 sharePosition(positionHistory)
                             },
                             onSupport = {
-                                AnalyticsTracker.trackCustomerServiceDialog(AnalyticsTracker.CustomerServiceSource.PERPS_ACTIVITY_DETAIL)
-                                context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                                context?.openUrl(
+                                    Constants.HelpLink.CUSTOMER_SERVICE,
+                                    source = AnalyticsTracker.CustomerServiceSource.PERPS_ACTIVITY_DETAIL,
+                                    wallet = AnalyticsTracker.TradeWallet.WEB3,
+                                )
                             }
                         )
                     }

@@ -42,6 +42,7 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.openUrl
+import one.mixin.android.util.analytics.AnalyticsTracker
 
 @Composable
 fun QuizPage(
@@ -61,7 +62,10 @@ fun QuizPage(
             onTopBarLongClick = onTopBarLongClick,
             actions = {
                 IconButton(onClick = {
-                    context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                    context.openUrl(
+                        Constants.HelpLink.CUSTOMER_SERVICE,
+                        source = AnalyticsTracker.CustomerServiceSource.SIGN_UP_MNEMONIC_PHRASE_CREATING,
+                    )
                 }) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_support),

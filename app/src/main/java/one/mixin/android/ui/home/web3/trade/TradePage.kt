@@ -370,8 +370,11 @@ fun TradePage(
                         } else {
                             AnalyticsTracker.CustomerServiceSource.TRADE_SIMPLE_HOME_MENU
                         }
-                        AnalyticsTracker.trackCustomerServiceDialog(source)
-                        context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                        context.openUrl(
+                            Constants.HelpLink.CUSTOMER_SERVICE,
+                            source = source,
+                            wallet = AnalyticsTracker.TradeWallet.WEB3,
+                        )
                     },
                     { onShowTradingGuide(pagerState.currentPage) }
                 )

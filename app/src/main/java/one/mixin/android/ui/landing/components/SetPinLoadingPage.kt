@@ -43,6 +43,7 @@ import one.mixin.android.ui.tip.RetryConnect
 import one.mixin.android.ui.tip.RetryProcess
 import one.mixin.android.ui.tip.RetryRegister
 import one.mixin.android.ui.tip.TryConnecting
+import one.mixin.android.util.analytics.AnalyticsTracker
 
 @Composable
 fun SetPinLoadingPage(
@@ -106,7 +107,10 @@ fun SetPinLoadingPage(
         onTopBarLongClick = onTopBarLongClick,
         actions = {
             IconButton(onClick = {
-                context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                context.openUrl(
+                    Constants.HelpLink.CUSTOMER_SERVICE,
+                    source = AnalyticsTracker.CustomerServiceSource.SIGN_UP_MNEMONIC_PHRASE_CREATING,
+                )
             }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_support),

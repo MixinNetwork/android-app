@@ -52,7 +52,10 @@ class RestoreFragment : BaseFragment(R.layout.fragment_restore) {
                 true
             }
             support.setOnClickListener {
-                context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                context?.openUrl(
+                    Constants.HelpLink.CUSTOMER_SERVICE,
+                    source = AnalyticsTracker.CustomerServiceSource.RECOVERY_KIT,
+                )
             }
             fromAnotherCl.setOnClickListener {
                 AnalyticsTracker.trackLoginRestore("another_phone")

@@ -285,8 +285,11 @@ fun OpenPositionPage(
             pop = onBack,
             actions = {
                 IconButton(onClick = {
-                    AnalyticsTracker.trackCustomerServiceDialog(AnalyticsTracker.CustomerServiceSource.PERPS_OPEN_POSITION)
-                    context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                    context.openUrl(
+                        Constants.HelpLink.CUSTOMER_SERVICE,
+                        source = AnalyticsTracker.CustomerServiceSource.PERPS_OPEN_POSITION,
+                        wallet = AnalyticsTracker.TradeWallet.WEB3,
+                    )
                 }) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_support),

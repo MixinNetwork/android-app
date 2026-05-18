@@ -20,8 +20,10 @@ object AnalyticsTracker {
         firebaseAnalytics.logEvent(name, Bundle().apply(block))
     }
 
-    fun trackSignUpStart() {
-        logEvent("sign_up_start")
+    fun trackSignUpStart(source: String) {
+        logEvent("sign_up_start") {
+            putString("source", source)
+        }
     }
 
 
@@ -214,6 +216,37 @@ object AnalyticsTracker {
     }
 
     object CustomerServiceSource {
+        const val SIGN_UP = "sign_up"
+        const val SIGN_UP_MNEMONIC_PHRASE = "sign_up_mnemonic_phrase"
+        const val SIGN_UP_MNEMONIC_PHRASE_CREATING = "sign_up_mnemonic_phrase_creating"
+        const val SIGN_UP_PHONE_NUMBER = "sign_up_phone_number"
+        const val SIGN_UP_SMS_VERIFY = "sign_up_sms_verify"
+        const val SIGN_UP_FULL_NAME = "sign_up_full_name"
+        const val LOGIN_PHONE_NUMER = "login_phone_numer"
+        const val LOGIN_MNEMONIC_PHRASE = "login_mnemonic_phrase"
+        const val LOGIN_MNEMONIC_PHRASE_SIGNING = "login_mnemonic_phrase_signing"
+        const val LOGIN_SMS_VERIFY = "login_sms_verify"
+        const val LOGIN_PIN_VERIFY = "login_pin_verify"
+        const val PHONE_NUMBER_ADD = "phone_number_add"
+        const val PHONE_NUMBER_ADD_SMS_VERIFY = "phone_number_add_sms_verify"
+        const val PHONE_NUMBER_CHANGE = "phone_number_change"
+        const val PHONE_NUMBER_CHANGE_SMS_VERIFY = "phone_number_change_sms_verify"
+        const val TRADE_HOME = "trade_home"
+        const val TRADE_DETAIL = "trade_detail"
+        const val DEPOSIT = "deposit"
+        const val SEND_RECIPIENT = "send_recipient"
+        const val SEND_AMOUNT = "send_amount"
+        const val ADDRESS_BOOK_ADD_ADDRESS = "address_book_add_address"
+        const val ADDRESS_BOOK_ADD_MEMO = "address_book_add_memo"
+        const val ADDRESS_BOOK_ADD_TAG = "address_book_add_tag"
+        const val ADDRESS_BOOK_ADD_LABEL = "address_book_add_label"
+        const val RECOVERY_KIT = "recovery_kit"
+        const val MARKET_DETAIL = "market_detail"
+        const val PRICE_ALERT_ADD = "price_alert_add"
+        const val MORE_BOTS = "more_bots"
+        const val TRANSACTION_DETAIL = "transaction_detail"
+        const val ASSET_DETAIL = "asset_detail"
+        const val COLLECTIBLE_DETAIL = "collectible_detail"
         const val PERPS_OPEN_POSITION = "perps_open_position"
         const val PERPS_MARKET_DETAIL = "perps_market_detail"
         const val PERPS_ALL_POSITIONS = "perps_all_positions"
@@ -552,9 +585,10 @@ object AnalyticsTracker {
         }
     }
 
-    fun trackCustomerServiceDialog(source: String) {
+    fun trackCustomerServiceDialog(source: String, wallet: String = TradeWallet.MAIN) {
         logEvent("customer_service_dialog") {
             putString("source", source)
+            putString("wallet", wallet)
         }
     }
 
@@ -654,5 +688,11 @@ object AnalyticsTracker {
             putString("frequency", frequency)
             putString("type", type)
         }
+    }
+
+    object SignUpStartSource {
+        const val LANDING = "landing"
+        const val LOGIN_MNEMONIC_PHRASE = "login_mnemonic_phrase"
+        const val LOGIN_START = "login_start"
     }
 }

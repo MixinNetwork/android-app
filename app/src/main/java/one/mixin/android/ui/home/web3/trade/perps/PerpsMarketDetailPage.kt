@@ -70,8 +70,8 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.home.web3.trade.CandleChart
 import one.mixin.android.ui.home.web3.trade.ClosedPositionItem
-import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.widget.components.MixinButton
 import java.math.BigDecimal
@@ -169,8 +169,11 @@ fun PerpsMarketDetailPage(
         pop = onBack,
         actions = {
             IconButton(onClick = {
-                AnalyticsTracker.trackCustomerServiceDialog(AnalyticsTracker.CustomerServiceSource.PERPS_MARKET_DETAIL)
-                context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                context.openUrl(
+                    Constants.HelpLink.CUSTOMER_SERVICE,
+                    source = AnalyticsTracker.CustomerServiceSource.PERPS_MARKET_DETAIL,
+                    wallet = AnalyticsTracker.TradeWallet.WEB3,
+                )
             }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_support),
