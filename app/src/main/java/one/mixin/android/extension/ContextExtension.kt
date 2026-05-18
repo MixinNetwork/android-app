@@ -863,8 +863,12 @@ fun Fragment.openGalleryFromSticker() {
         .forResult(REQUEST_GALLERY)
 }
 
-fun Context.openUrl(url: String) {
-    if (openCustomerServiceIfMatched(url)) {
+fun Context.openUrl(
+    url: String,
+    source: String? = null,
+    wallet: String = one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet.MAIN,
+) {
+    if (openCustomerServiceIfMatched(url, source, wallet)) {
         return
     }
     var uri = url.toUri()

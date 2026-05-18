@@ -17,6 +17,7 @@ import one.mixin.android.util.getChainNetwork
 
 class SwapTokenAdapter(private val selectUnique: String? = null) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     fun isEmpty() = getFilteredTokens().isEmpty()
+    var tokenType: String = AnalyticsTracker.SpotTokenType.SEND
 
     var tokens: List<SwapToken> = ArrayList(0)
         @SuppressLint("NotifyDataSetChanged")
@@ -99,15 +100,15 @@ class SwapTokenAdapter(private val selectUnique: String? = null) : RecyclerView.
         position: Int,
     ) {
         (holder as Web3Holder).bind(getFilteredTokens()[position], selectUnique) { token, isAlert ->
-            AnalyticsTracker.trackTradeTokenSelect(
-                if (isSearch) {
-                    AnalyticsTracker.TradeTokenSelectMethod.SEARCH_ITEM_CLICK
-                } else if (all) {
-                    AnalyticsTracker.TradeTokenSelectMethod.ALL_ITEM_CLICK
-                } else {
-                    AnalyticsTracker.TradeTokenSelectMethod.CHAIN_ITEM_CLICK
-                }
-            )
+            val method = if (isSearch) {
+                AnalyticsTracker.TradeTokenSelectMethod.SEARCH_ITEM_CLICK
+            } else if (all) {
+                AnalyticsTracker.TradeTokenSelectMethod.ALL_ITEM_CLICK
+            } else {
+                AnalyticsTracker.TradeTokenSelectMethod.CHAIN_ITEM_CLICK
+            }
+            AnalyticsTracker.trackTradeTokenSelect(method)
+            AnalyticsTracker.trackSpotTokenSelect(method, tokenType, token.chain.name, token.symbol)
 
             onClickListener?.invoke(token, isAlert)
         }

@@ -66,6 +66,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.pxToDp
 import one.mixin.android.extension.tickVibrate
+import one.mixin.android.util.analytics.AnalyticsTracker
 
 @Composable
 fun SetupPinPage(
@@ -123,7 +124,10 @@ fun SetupPinPage(
         onTopBarLongClick = onTopBarLongClick,
         actions = {
             IconButton(onClick = {
-                context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                context.openUrl(
+                    Constants.HelpLink.CUSTOMER_SERVICE,
+                    source = AnalyticsTracker.CustomerServiceSource.SIGN_UP_MNEMONIC_PHRASE_CREATING,
+                )
             }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_support),

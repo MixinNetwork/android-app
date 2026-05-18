@@ -28,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -280,6 +281,7 @@ private fun ProfitLossInfo(
     leverage: Int,
     isLong: Boolean
 ) {
+    val context = LocalContext.current
     val amountValue = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val priceChangePercent = 1
     val profitPercent = leverage
@@ -292,11 +294,12 @@ private fun ProfitLossInfo(
                 .padding(horizontal = 4.dp)
         ) {
             Text(
-                text = if (isLong) {
-                    stringResource(R.string.Price_Up_Profit, priceChangePercent.toString(), profitPercent.toString(), formatPerpsRawUsdDecimal(BigDecimal.ZERO))
-                } else {
-                    stringResource(R.string.Price_Down_Profit, priceChangePercent.toString(), profitPercent.toString(), formatPerpsRawUsdDecimal(BigDecimal.ZERO))
-                },
+                text = context.formatPerpsProfitPreview(
+                    isLong = isLong,
+                    priceChangeText = priceChangePercent.toString(),
+                    profitPercentText = profitPercent.toString(),
+                    profitAmountText = formatPerpsRawUsdDecimal(BigDecimal.ZERO),
+                ),
                 fontSize = 13.sp,
                 color = MixinAppTheme.colors.textAssist
             )
@@ -323,21 +326,12 @@ private fun ProfitLossInfo(
             .padding(horizontal = 4.dp)
     ) {
         Text(
-            text = if (isLong) {
-                stringResource(
-                    R.string.Price_Up_Profit,
-                    priceChangePercent.toString(),
-                    profitPercent.toString(),
-                    formatPerpsRawUsdDecimal(profitAmount)
-                )
-            } else {
-                stringResource(
-                    R.string.Price_Down_Profit,
-                    priceChangePercent.toString(),
-                    profitPercent.toString(),
-                    formatPerpsRawUsdDecimal(profitAmount)
-                )
-            },
+            text = context.formatPerpsProfitPreview(
+                isLong = isLong,
+                priceChangeText = priceChangePercent.toString(),
+                profitPercentText = profitPercent.toString(),
+                profitAmountText = formatPerpsRawUsdDecimal(profitAmount),
+            ),
             fontSize = 13.sp,
             color = MixinAppTheme.colors.textAssist
         )

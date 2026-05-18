@@ -478,9 +478,13 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                                 modifier = Modifier.align(Alignment.BottomCenter),
                                 cancelTitle = stringResource(R.string.Cancel),
                                 confirmTitle = stringResource(id = R.string.Retry),
-                                cancelAction = { dismiss() },
+                                cancelAction = {
+                                    AnalyticsTracker.trackSpotPreviewCancel()
+                                    dismiss()
+                                },
                                 confirmAction = {
                                     errorInfo = null
+                                    AnalyticsTracker.trackSpotPreviewConfirm()
                                     showPin()
                                 },
                             )
@@ -491,8 +495,14 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                                 modifier = Modifier.align(Alignment.BottomCenter),
                                 cancelTitle = stringResource(R.string.Cancel),
                                 confirmTitle = stringResource(id = R.string.Continue),
-                                cancelAction = { dismiss() },
-                                confirmAction = { showPin() },
+                                cancelAction = {
+                                    AnalyticsTracker.trackSpotPreviewCancel()
+                                    dismiss()
+                                },
+                                confirmAction = {
+                                    AnalyticsTracker.trackSpotPreviewConfirm()
+                                    showPin()
+                                },
                             )
                         }
                         Step.Sending -> {}
@@ -535,8 +545,7 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                             defaultSharedPreferences.putLong(Constants.BIOMETRIC_PIN_CHECK, System.currentTimeMillis())
                             context?.updatePinCheck()
                             step = Step.Done
-                            val wallet = if (inAsset.isWeb3) AnalyticsTracker.TradeWallet.WEB3 else AnalyticsTracker.TradeWallet.MAIN
-                            AnalyticsTracker.trackTradeEnd(wallet, inAmount, inAsset.price)
+                            trackLimitSuccess()
                         }
 
                         JsSignMessage.TYPE_RAW_TRANSACTION -> {
@@ -552,8 +561,7 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                             defaultSharedPreferences.putLong(Constants.BIOMETRIC_PIN_CHECK, System.currentTimeMillis())
                             context?.updatePinCheck()
                             step = Step.Done
-                            val wallet = if (inAsset.isWeb3) AnalyticsTracker.TradeWallet.WEB3 else AnalyticsTracker.TradeWallet.MAIN
-                            AnalyticsTracker.trackTradeEnd(wallet, inAmount, inAsset.price)
+                            trackLimitSuccess()
                         }
 
                         JsSignMessage.TYPE_TRANSACTION -> {
@@ -567,8 +575,7 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                             defaultSharedPreferences.putLong(Constants.BIOMETRIC_PIN_CHECK, System.currentTimeMillis())
                             context?.updatePinCheck()
                             step = Step.Done
-                            val wallet = if (inAsset.isWeb3) AnalyticsTracker.TradeWallet.WEB3 else AnalyticsTracker.TradeWallet.MAIN
-                            AnalyticsTracker.trackTradeEnd(wallet, inAmount, inAsset.price)
+                            trackLimitSuccess()
                         }
 
                         else -> {
@@ -604,12 +611,17 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         if (response.isSuccess) {
             context?.updatePinCheck()
             step = Step.Done
-            val wallet = if (inAsset.isWeb3) AnalyticsTracker.TradeWallet.WEB3 else AnalyticsTracker.TradeWallet.MAIN
-            AnalyticsTracker.trackTradeEnd(wallet, inAmount, inAsset.price)
+            trackLimitSuccess()
         } else {
             errorInfo = handleError(response.error) ?: response.errorDescription
             step = Step.Error
         }
+    }
+
+    private fun trackLimitSuccess() {
+        val wallet = if (inAsset.isWeb3) AnalyticsTracker.TradeWallet.WEB3 else AnalyticsTracker.TradeWallet.MAIN
+        AnalyticsTracker.trackTradeEnd(wallet, inAmount, inAsset.price)
+        AnalyticsTracker.trackSpotEnd(wallet, inAmount, inAsset.price)
     }
 
     private suspend fun handleError(error: ResponseError?): String? {

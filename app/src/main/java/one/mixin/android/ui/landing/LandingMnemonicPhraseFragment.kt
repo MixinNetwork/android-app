@@ -52,7 +52,7 @@ class LandingMnemonicPhraseFragment : BaseFragment(R.layout.fragment_landing_mne
         binding.titleView.rightAnimator.visibility = View.VISIBLE
         binding.titleView.rightAnimator.displayedChild = 0
         binding.titleView.rightIb.setOnClickListener {
-            openCustomerService()
+            openCustomerService(source = AnalyticsTracker.CustomerServiceSource.LOGIN_MNEMONIC_PHRASE)
         }
         binding.titleView.setOnLongClickListener {
             LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
@@ -68,6 +68,7 @@ class LandingMnemonicPhraseFragment : BaseFragment(R.layout.fragment_landing_mne
                     toast(R.string.invalid_mnemonic_phrase)
                 }
             }, onCreate = {
+                AnalyticsTracker.trackSignUpStart(AnalyticsTracker.SignUpStartSource.LOGIN_MNEMONIC_PHRASE)
                 CreateAccountConfirmBottomSheetDialogFragment.newInstance()
                     .setOnCreateAccount {
                         activity?.addFragment(

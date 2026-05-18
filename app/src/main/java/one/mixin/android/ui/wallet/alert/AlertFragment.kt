@@ -32,6 +32,7 @@ import one.mixin.android.job.RefreshAlertsJob
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.MultiSelectCoinListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.MultiSelectTokenListBottomSheetDialogFragment
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.ui.wallet.alert.vo.Alert
 import one.mixin.android.ui.wallet.alert.vo.CoinItem
 import javax.inject.Inject
@@ -46,6 +47,7 @@ class AlertFragment : BaseFragment(), MultiSelectCoinListBottomSheetDialogFragme
 
         const val ARGS_COIN = "args_coin"
         const val ARGS_GO_ALERT = "args_go_alert"
+        const val ARGS_SOURCE = "args_source"
 
         fun newInstance(): AlertFragment {
             return AlertFragment()
@@ -60,6 +62,9 @@ class AlertFragment : BaseFragment(), MultiSelectCoinListBottomSheetDialogFragme
 
     private val goAlert by lazy { requireArguments().getBoolean(ARGS_GO_ALERT, false) }
     private val coin by lazy { requireArguments().getParcelableCompat(ARGS_COIN, CoinItem::class.java)!! }
+    private val alertSource by lazy {
+        requireArguments().getString(ARGS_SOURCE) ?: AnalyticsTracker.MarketSource.MARKET_DETAIL
+    }
     private var coins by mutableStateOf<Set<CoinItem>>(emptySet())
     private var selectCoin by mutableStateOf<CoinItem?>(null)
     private var currentAlert by mutableStateOf<Alert?>(null)
@@ -113,6 +118,11 @@ class AlertFragment : BaseFragment(), MultiSelectCoinListBottomSheetDialogFragme
                         },
                     ) {
                         composable(AlertDestination.All.name) {
+                            LaunchedEffect(Unit) {
+                                AnalyticsTracker.trackMarketPriceAlerts(
+                                    if (goAlert) AnalyticsTracker.MarketAlertsType.ONE else AnalyticsTracker.MarketAlertsType.ALL
+                                )
+                            }
                             AllAlertPage(coins = coins, openFilter = { openFilter() }, pop = { requireActivity().onBackPressedDispatcher.onBackPressed() }, to = { onAddAlert(navController, coins.singleOrNull()) }, onEdit = { alert ->
                                 lifecycleScope.launch {
                                     val coin = alertViewModel.simpleCoinItem(alert.coinId)
@@ -135,7 +145,10 @@ class AlertFragment : BaseFragment(), MultiSelectCoinListBottomSheetDialogFragme
                                     }
                                 },
                                 pop = { navigateUp(navController) },
-                                onSaved = { created ->
+                                onSaved = { created, frequency, type ->
+                                    if (created) {
+                                        AnalyticsTracker.trackMarketPriceAlertAdd(alertSource, frequency, type)
+                                    }
                                     if (created && goAlert) {
                                         navController.navigate(AlertDestination.All.name) {
                                             popUpTo(AlertDestination.Edit.name) {

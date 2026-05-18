@@ -65,6 +65,7 @@ import one.mixin.android.ui.address.component.DestinationMenu
 import one.mixin.android.ui.address.component.TokenInfoHeader
 import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.safe.TokenItem
@@ -158,7 +159,10 @@ fun TransferDestinationInputPage(
         pop = pop,
         actions = {
             IconButton(onClick = {
-                context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                context.openUrl(
+                    Constants.HelpLink.CUSTOMER_SERVICE,
+                    source = AnalyticsTracker.CustomerServiceSource.SEND_RECIPIENT,
+                )
             }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_support),

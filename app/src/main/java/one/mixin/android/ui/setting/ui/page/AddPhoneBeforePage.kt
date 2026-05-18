@@ -30,7 +30,7 @@ import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 import one.mixin.android.ui.landing.components.NumberedText
 
 @Composable
-fun AddPhoneBeforePage(hasPhone: Boolean, pop: () -> Unit, next: () -> Unit) {
+fun AddPhoneBeforePage(hasPhone: Boolean, pop: () -> Unit, next: () -> Unit, onCustomerService: () -> Unit = {}) {
     val context = LocalContext.current
     MixinAppTheme {
         Column {
@@ -39,6 +39,7 @@ fun AddPhoneBeforePage(hasPhone: Boolean, pop: () -> Unit, next: () -> Unit) {
                 },
                 actions = {
                     IconButton(onClick = {
+                        onCustomerService()
                         context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
                     }) {
                         Icon(
