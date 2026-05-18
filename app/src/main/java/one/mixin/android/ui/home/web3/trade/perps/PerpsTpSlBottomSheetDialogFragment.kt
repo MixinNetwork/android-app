@@ -88,7 +88,6 @@ import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.widget.components.MixinButton
-import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -1252,7 +1251,6 @@ internal fun validateTpSlPrice(
     val liquidationPriceLong = liquidationBasePrice.multiply(BigDecimal.ONE.subtract(liquidationOffset))
     val liquidationPriceShort = liquidationBasePrice.multiply(BigDecimal.ONE.add(liquidationOffset))
 
-    Timber.e("---$isLong $isTakeProfit $price $currentPrice $liquidationPriceShort $liquidationPriceLong")
     return when {
         isLong && isTakeProfit -> {
             if (price <= currentPrice) {
@@ -1332,7 +1330,6 @@ private fun validateTpSlPercent(
         val maxPercent = (leverage * 100).toBigDecimal().stripTrailingZeros().toPlainString()
         return MixinApplicationHolder.getString(R.string.error_percentage_must_be_less_than_value, "$maxPercent%")
     }
-    Timber.e("--- $rawValue $derivedPrice $currentPrice $liquidationBasePrice $leverage $isLong")
     return validateTpSlPrice(
         rawValue = derivedPrice,
         currentPrice = currentPrice,
