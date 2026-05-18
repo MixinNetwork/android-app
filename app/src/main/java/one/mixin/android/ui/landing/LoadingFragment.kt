@@ -153,18 +153,6 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
         }
     }
 
-    private fun defaultBotName(botId: String): String =
-        when (botId) {
-            TEAM_MIXIN_USER_ID -> TEAM_MIXIN_USER_NAME
-            ROUTE_BOT_USER_ID -> "Route Bot"
-            MIXIN_ALERT_USER_ID -> "Mixin Alerts"
-            MIXIN_COMMUNITY_USER_ID -> "Mixin Community"
-            MIXIN_DISCOURSE_USER_ID -> "Mixin Discourse"
-            MIXIN_REWARD_USER_ID -> "Mixin Reward"
-            MIXIN_CARD_USER_ID -> "Mixin Card"
-            else -> ""
-        }
-
     private suspend fun updateRsa2EdDsa() {
         val sessionKey = generateEd25519KeyPair()
         val publicKey = sessionKey.publicKey
