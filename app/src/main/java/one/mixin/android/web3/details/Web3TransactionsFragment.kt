@@ -68,6 +68,7 @@ import one.mixin.android.ui.wallet.AllWeb3TransactionsFragment
 import one.mixin.android.ui.wallet.ImportKeyBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_ASSET_ID
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET
+import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET_SOURCE
 import one.mixin.android.ui.wallet.Web3FilterParams
 import one.mixin.android.ui.wallet.Web3FilterParams.Companion.FILTER_GOOD_AND_SPAM
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
@@ -360,6 +361,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                             Bundle().apply {
                                 putParcelable(ARGS_MARKET, market)
                                 putString(ARGS_ASSET_ID, token.assetId)
+                                putString(ARGS_MARKET_SOURCE, AnalyticsTracker.MarketSource.TOKEN_DETAIL)
                             },
                         )
                     }

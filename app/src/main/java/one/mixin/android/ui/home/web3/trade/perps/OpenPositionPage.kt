@@ -484,6 +484,7 @@ fun OpenPositionPage(
                             ).setOnLeverageSelected { newLeverage ->
                                 leverage = newLeverage
                                 context.defaultSharedPreferences.putInt(getLeveragePrefKey(marketId), newLeverage.toInt())
+                                AnalyticsTracker.trackPerpsLeverageSelect(PERPS_LEVERAGE_CUSTOM_INPUT)
                             }.show(activity.supportFragmentManager, LeverageBottomSheetDialogFragment.TAG)
                         },
                         text = "${leverage.toInt()}x",
@@ -541,6 +542,7 @@ fun OpenPositionPage(
                                             ).setOnLeverageSelected { newLeverage ->
                                                 leverage = newLeverage
                                                 context.defaultSharedPreferences.putInt(getLeveragePrefKey(marketId), newLeverage.toInt())
+                                                AnalyticsTracker.trackPerpsLeverageSelect(PERPS_LEVERAGE_CUSTOM_INPUT)
                                             }.show(activity.supportFragmentManager, LeverageBottomSheetDialogFragment.TAG)
                                         } else {
                                             leverage = lev.toFloat()
@@ -630,6 +632,7 @@ fun OpenPositionPage(
                             tokenSymbol = currentMarket.tokenSymbol,
                         ),
                         onTipClick = {
+                            AnalyticsTracker.trackPerpsGuide(AnalyticsTracker.PerpsSource.PERPS_OPEN_POSITION_SIZE)
                             showPerpsGuide(PerpetualGuideBottomSheetDialogFragment.TAB_POSITION)
                         }
                     )
@@ -822,6 +825,7 @@ private fun generateLeverageOptions(maxLeverage: Int): List<Int> {
 
 private const val PERPS_LEVERAGE_MAX = "max"
 private const val PERPS_LEVERAGE_CUSTOM_TAB = "custom_tab"
+private const val PERPS_LEVERAGE_CUSTOM_INPUT = "custom_input"
 
 private fun Int.toPerpsLeverageValue(): String = "${this}x"
 

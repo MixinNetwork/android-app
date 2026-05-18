@@ -438,6 +438,7 @@ class TradeFragment : BaseFragment() {
                                             if (!defaultSharedPreferences.getBoolean(PREF_TRADE_PERPETUAL_GUIDE_SHOWN, false)) {
                                                 isPerpetualTabBadgeDismissed = true
                                                 defaultSharedPreferences.putBoolean(perpetualBadgePrefKey, true)
+                                                AnalyticsTracker.trackPerpsGuide(AnalyticsTracker.PerpsSource.FIRST_GUIDE)
                                                 PerpetualGuideBottomSheetDialogFragment.newInstance()
                                                     .show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
                                             }
@@ -463,6 +464,7 @@ class TradeFragment : BaseFragment() {
                                     this@apply.hideKeyboard()
                                     when {
                                         walletId == null && tabIndex >= SpotTradeGuideBottomSheetDialogFragment.TAB_LIMIT -> {
+                                            AnalyticsTracker.trackPerpsGuide(AnalyticsTracker.PerpsSource.PERPS_HOME_MENU)
                                             PerpetualGuideBottomSheetDialogFragment.newInstance()
                                                 .show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
                                         }

@@ -489,13 +489,13 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
 
     private fun MarketSort.analyticsColumn(): String {
         return when (this) {
-            MarketSort.RANK_ASCENDING, MarketSort.RANK_DESCENDING -> "market_cap"
+            MarketSort.RANK_ASCENDING, MarketSort.RANK_DESCENDING -> "value"
             MarketSort.PRICE_ASCENDING, MarketSort.PRICE_DESCENDING -> "price"
             MarketSort.SEVEN_DAYS_PERCENTAGE_ASCENDING,
             MarketSort.SEVEN_DAYS_PERCENTAGE_DESCENDING,
             MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_ASCENDING,
             MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_DESCENDING,
-            -> "price_change"
+            -> "change"
         }
     }
 }

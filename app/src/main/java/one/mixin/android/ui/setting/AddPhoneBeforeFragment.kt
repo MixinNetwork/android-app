@@ -39,7 +39,6 @@ class AddPhoneBeforeFragment : BaseFragment(R.layout.fragment_compose) {
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.isVisible = false
         val source = requireArguments().getString(ARGS_SOURCE) ?: AnalyticsTracker.AddPhoneSource.SETTINGS
-        AnalyticsTracker.trackAddPhoneStart(source)
         binding.compose.setContent {
             AddPhoneBeforePage(
                 Session.hasPhone(),

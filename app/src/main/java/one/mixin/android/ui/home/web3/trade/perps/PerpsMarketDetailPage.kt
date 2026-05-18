@@ -158,10 +158,6 @@ fun PerpsMarketDetailPage(
         previousOpenPositionsCount = currentCount
     }
 
-    LaunchedEffect(marketId, source) {
-        AnalyticsTracker.trackPerpsActivity(source)
-    }
-
     PageScaffold(
         title = displaySymbol,
         subtitleText = stringResource(R.string.Perpetual),
@@ -352,7 +348,7 @@ fun PerpsMarketDetailPage(
                     if (currentPosition == null) {
                         HowPerpsWorksCard(
                             onLearnClick = {
-                                AnalyticsTracker.trackPerpsGuide(AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL)
+                                AnalyticsTracker.trackPerpsGuide(AnalyticsTracker.PerpsSource.PERPS_DETAIL_CARD)
                                 val activity = context as? FragmentActivity ?: return@HowPerpsWorksCard
                                 PerpetualGuideBottomSheetDialogFragment.newInstance(
                                     PerpetualGuideBottomSheetDialogFragment.TAB_OVERVIEW
@@ -407,7 +403,7 @@ fun PerpsMarketDetailPage(
                     Spacer(modifier = Modifier.height(16.dp))
                     HowPerpsWorksCard(
                         onLearnClick = {
-                            AnalyticsTracker.trackPerpsGuide(AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL)
+                            AnalyticsTracker.trackPerpsGuide(AnalyticsTracker.PerpsSource.PERPS_DETAIL_CARD)
                             val activity = context as? FragmentActivity ?: return@HowPerpsWorksCard
                             PerpetualGuideBottomSheetDialogFragment.newInstance(
                                 PerpetualGuideBottomSheetDialogFragment.TAB_OVERVIEW

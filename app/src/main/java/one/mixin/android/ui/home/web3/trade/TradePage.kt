@@ -365,10 +365,13 @@ fun TradePage(
             IconButton(onClick = {
                 onShowHelpBottomSheet(
                     {
-                        val source = if (pagerState.currentPage == 1) {
-                            AnalyticsTracker.CustomerServiceSource.TRADE_ADVANCED_HOME_MENU
-                        } else {
-                            AnalyticsTracker.CustomerServiceSource.TRADE_SIMPLE_HOME_MENU
+                        val source = when {
+                            perpetualTabIndex != null && pagerState.currentPage == perpetualTabIndex ->
+                                AnalyticsTracker.CustomerServiceSource.TRADE_PERPS_HOME_MENU
+                            pagerState.currentPage == 1 ->
+                                AnalyticsTracker.CustomerServiceSource.TRADE_ADVANCED_HOME_MENU
+                            else ->
+                                AnalyticsTracker.CustomerServiceSource.TRADE_SIMPLE_HOME_MENU
                         }
                         context.openUrl(
                             Constants.HelpLink.CUSTOMER_SERVICE,

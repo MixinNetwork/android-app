@@ -56,6 +56,7 @@ import one.mixin.android.extension.putString
 import one.mixin.android.session.Session
 import one.mixin.android.ui.home.web3.trade.ClosedPositionItem
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.widget.components.MixinButton
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -218,7 +219,10 @@ fun PerpetualContent(
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp))
                         .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
-                        .clickable { onShowTradingGuide() }
+                        .clickable {
+                            AnalyticsTracker.trackPerpsGuide(AnalyticsTracker.PerpsSource.PERPS_HOME_CARD)
+                            onShowTradingGuide()
+                        }
                         .padding(16.dp)
                 ) {
                     Row(
@@ -475,7 +479,10 @@ fun PerpetualContent(
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp))
                         .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
-                        .clickable { onShowTradingGuide() }
+                        .clickable {
+                            AnalyticsTracker.trackPerpsGuide(AnalyticsTracker.PerpsSource.PERPS_HOME_CARD)
+                            onShowTradingGuide()
+                        }
                         .padding(16.dp)
                 ) {
                     Row(

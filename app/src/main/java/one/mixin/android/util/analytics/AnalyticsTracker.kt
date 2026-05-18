@@ -251,6 +251,7 @@ object AnalyticsTracker {
         const val PERPS_MARKET_DETAIL = "perps_market_detail"
         const val PERPS_ALL_POSITIONS = "perps_all_positions"
         const val PERPS_ACTIVITY_DETAIL = "perps_activity_detail"
+        const val TRADE_PERPS_HOME_MENU = "trade_perps_home_menu"
         const val TRADE_SIMPLE_HOME_MENU = "trade_simple_home_menu"
         const val TRADE_ADVANCED_HOME_MENU = "trade_advanced_home_menu"
         const val ADD_PHONE_NOTICE = "add_phone_notice"
@@ -312,6 +313,11 @@ object AnalyticsTracker {
         const val WALLET_HOME = TradeSource.WALLET_HOME
         const val MORE_EXPLORE = "more_explore"
         const val APP_CARD = TradeSource.APP_CARD
+        const val FIRST_GUIDE = SpotGuideSource.FIRST_GUIDE
+        const val PERPS_HOME_MENU = "perps_home_menu"
+        const val PERPS_HOME_CARD = "perps_home_card"
+        const val PERPS_DETAIL_CARD = "perps_detail_card"
+        const val PERPS_OPEN_POSITION_SIZE = "perps_open_position_size"
         const val PERPS_MARKET_DETAIL = "perps_market_detail"
         const val PERPS_ALL_POSITIONS = "perps_all_positions"
         const val PERPS_ACTIVITY_DETAIL = "perps_activity_detail"

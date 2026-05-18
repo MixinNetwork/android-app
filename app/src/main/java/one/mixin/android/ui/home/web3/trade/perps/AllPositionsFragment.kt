@@ -64,6 +64,9 @@ class AllPositionsFragment : BaseFragment() {
         }
         val source = arguments?.getString(ARGS_SOURCE) ?: AnalyticsTracker.PerpsSource.PERPS_ALL_POSITIONS
         AnalyticsTracker.trackPerpsAllPositions(source)
+        if (positionType == AllPositionsType.CLOSED) {
+            AnalyticsTracker.trackPerpsActivity(source)
+        }
 
         return ComposeView(inflater.context).apply {
             setContent {
