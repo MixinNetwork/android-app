@@ -126,7 +126,6 @@ class LogAndDebugFragment : BaseFragment(R.layout.fragment_log_debug) {
 
                 resetTpslGuide.setOnClickListener {
                     defaultSharedPreferences.edit()
-                        .remove(one.mixin.android.ui.home.web3.trade.perps.PREF_HIDE_TPSL_GUIDE_UNTIL)
                         .remove(one.mixin.android.ui.home.web3.trade.perps.PREF_HIDE_TP_GUIDE_UNTIL)
                         .remove(one.mixin.android.ui.home.web3.trade.perps.PREF_HIDE_SL_GUIDE_UNTIL)
                         .apply()

@@ -15,6 +15,7 @@ fun PerpsPositionItem.toPosition(): PerpsPosition {
         openPayAssetId = openPayAssetId ?: "",
         takeProfitPrice = takeProfitPrice,
         stopLossPrice = stopLossPrice,
+        liquidationPrice = liquidationPrice,
         state = state ?: "open",
         markPrice = markPrice ?: "0",
         unrealizedPnl = unrealizedPnl ?: "0",

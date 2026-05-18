@@ -203,7 +203,7 @@ fun OpenPositionPage(
         onCurrentTokenChange(currentToken)
     }
     val maxLeverage = currentMarket.leverage.coerceAtLeast(1)
-    LaunchedEffect(usdtAmount, leverage, currentToken?.assetId) {
+    LaunchedEffect(usdtAmount, leverage, currentToken?.assetId, takeProfitPrice, stopLossPrice) {
         errorInfo = null
     }
     LaunchedEffect(maxLeverage, marketId) {
@@ -327,7 +327,7 @@ fun OpenPositionPage(
                         Text(
                             text = stringResource(
                                 R.string.Current_price,
-                                formatPerpsPrice(currentMarket.last)
+                                formatPerpsPrice(currentMarket.last, currentMarket.priceScale)
                             ),
                             fontSize = 13.sp,
                             color = MixinAppTheme.colors.textAssist
@@ -620,7 +620,12 @@ fun OpenPositionPage(
                     Spacer(modifier = Modifier.height(16.dp))
                     PerpsInfoRow(
                         title = stringResource(R.string.position_size),
-                        value = "${calculateOrderValue(usdtAmount, leverage, currentMarket.last)} ${currentMarket.tokenSymbol}",
+                        value = formatPositionSizeValue(
+                            amount = usdtAmount,
+                            leverage = leverage,
+                            price = currentMarket.last,
+                            tokenSymbol = currentMarket.tokenSymbol,
+                        ),
                         onTipClick = {
                             showPerpsGuide(PerpetualGuideBottomSheetDialogFragment.TAB_POSITION)
                         }
@@ -685,8 +690,6 @@ fun OpenPositionPage(
 
                         val price = m.last.toBigDecimalOrNull() ?: BigDecimal.ZERO
                         if (price == BigDecimal.ZERO) return@MixinButton
-
-
                         scope.launch {
                             val hasOpeningPosition = viewModel.getOpenPositionsFromDb(walletId)
                                 .any { it.marketId == m.marketId }
@@ -702,6 +705,7 @@ fun OpenPositionPage(
                                 amount = amount.stripTrailingZeros().toPlainString(),
                                 leverage = leverage.toInt(),
                                 walletId = walletId,
+                                // Null means "leave TP/SL unset" when creating a new position.
                                 takeProfitPrice = takeProfitPrice.takeIf { it.isNotBlank() },
                                 stopLossPrice = stopLossPrice.takeIf { it.isNotBlank() },
                                 entryPrice = m.last,
@@ -716,7 +720,7 @@ fun OpenPositionPage(
                                         tokenSymbol = token.symbol,
                                         takeProfitPrice = takeProfitPrice.takeIf { it.isNotBlank() },
                                         stopLossPrice = stopLossPrice.takeIf { it.isNotBlank() },
-                                        payUrl = response.paymentUrl,
+                                        payUrl = response.paymentUrl
                                     ).setOnDone {
                                             onOpenSuccess(m.marketId)
                                         }.show(activity.supportFragmentManager, PerpsConfirmBottomSheetDialogFragment.TAG)
@@ -856,19 +860,32 @@ private fun calculateProfitInfo(
     }
 }
 
-private fun calculateOrderValue(amount: String, leverage: Float, price: String): String {
+private fun calculateOrderValue(amount: String, leverage: Float, price: String): BigDecimal {
     val amountValue = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val priceValue = price.toBigDecimalOrNull() ?: BigDecimal.ZERO
 
-
     if (priceValue == BigDecimal.ZERO) {
-        return "0"
+        return BigDecimal.ZERO
     }
 
-    val orderValue = (amountValue * BigDecimal(leverage.toDouble())).divide(priceValue, 8, RoundingMode.HALF_UP)
-    val result = orderValue.stripTrailingZeros().toPlainString()
+    return (amountValue * BigDecimal(leverage.toDouble()))
+        .divide(priceValue, 8, RoundingMode.HALF_UP)
+}
 
-    return result
+private fun formatPositionSizeValue(
+    amount: String,
+    leverage: Float,
+    price: String,
+    tokenSymbol: String,
+): String {
+    val amountValue = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val orderValue = calculateOrderValue(amount, leverage, price)
+    val quantityText = formatPerpsQuantity(orderValue)
+    val usdValue = formatPerpsUsdDecimal(amountValue.multiply(BigDecimal(leverage.toDouble())))
+    return listOf(quantityText, tokenSymbol)
+        .filter { it.isNotBlank() }
+        .joinToString(" ")
+        .let { "$it ($usdValue)" }
 }
 
 private fun calculateLiquidationPrice(

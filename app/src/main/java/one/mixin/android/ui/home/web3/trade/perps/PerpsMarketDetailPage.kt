@@ -64,7 +64,6 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.openUrl
-import one.mixin.android.extension.putLong
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
@@ -231,7 +230,32 @@ fun PerpsMarketDetailPage(
                     val pnl = currentPosition.unrealizedPnl?.toBigDecimalOrNull() ?: BigDecimal.ZERO
                     val hasTakeProfit = !currentPosition.takeProfitPrice.isNullOrBlank()
                     val hasStopLoss = !currentPosition.stopLossPrice.isNullOrBlank()
-                    var hideGuideUntil by remember(preferences) { mutableStateOf(preferences.getLong(PREF_HIDE_TPSL_GUIDE_UNTIL, 0L)) }
+                    var hideTakeProfitGuideUntil by remember(preferences) {
+                        mutableStateOf(preferences.getTpSlGuideHideUntil(TpSlGuideType.TAKE_PROFIT))
+                    }
+                    var hideStopLossGuideUntil by remember(preferences) {
+                        mutableStateOf(preferences.getTpSlGuideHideUntil(TpSlGuideType.STOP_LOSS))
+                    }
+                    var guideType by remember(currentPosition.positionId) {
+                        mutableStateOf(
+                            resolveTpSlGuideType(
+                                pnl = pnl,
+                                hasTakeProfit = hasTakeProfit,
+                                hasStopLoss = hasStopLoss,
+                                hideTakeProfitGuideUntil = hideTakeProfitGuideUntil,
+                                hideStopLossGuideUntil = hideStopLossGuideUntil,
+                                now = System.currentTimeMillis(),
+                            )
+                        )
+                    }
+
+                    LaunchedEffect(hasTakeProfit, hasStopLoss, guideType) {
+                        if ((guideType == TpSlGuideType.TAKE_PROFIT && hasTakeProfit) ||
+                            (guideType == TpSlGuideType.STOP_LOSS && hasStopLoss)
+                        ) {
+                            guideType = null
+                        }
+                    }
 
                     fun showTpSlBottomSheetFromGuide(mode: PerpsTpSlBottomSheetDialogFragment.Mode) {
                         val activity = context as? FragmentActivity ?: return
@@ -252,20 +276,21 @@ fun PerpsMarketDetailPage(
                             leverage = currentPosition.leverage,
                             entryPrice = currentPosition.entryPrice,
                             marketId = currentPosition.marketId,
-                            priceScale = currentPosition.priceScale ?: DEFAULT_PERPS_PRICE_SCALE,
+                            priceScale = currentPosition.priceScale,
                         ).setOnApply { value ->
                             val normalizedValue = value?.trim().orEmpty()
                             if (normalizedValue == existingPrice) return@setOnApply
                             if (normalizedValue.isEmpty() && existingPrice.isEmpty()) return@setOnApply
                             val requestedValue = normalizedValue.ifEmpty { "" }
+                            // TP/SL update API treats null as "keep existing value" and empty string as "clear this side".
                             viewModel.setPositionTpSl(
                                 positionId = currentPosition.positionId,
                                 takeProfitPrice = when (mode) {
                                     PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT -> requestedValue
-                                    PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS -> currentPosition.takeProfitPrice
+                                    PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS -> null
                                 },
                                 stopLossPrice = when (mode) {
-                                    PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT -> currentPosition.stopLossPrice
+                                    PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT -> null
                                     PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS -> requestedValue
                                 },
                                 onSuccess = {
@@ -278,20 +303,17 @@ fun PerpsMarketDetailPage(
                         }.show(activity.supportFragmentManager, PerpsTpSlBottomSheetDialogFragment.TAG)
                     }
 
-                    val guideType = resolveTpSlGuideType(
-                        pnl = pnl,
-                        hasTakeProfit = hasTakeProfit,
-                        hasStopLoss = hasStopLoss,
-                        hideGuideUntil = hideGuideUntil,
-                        now = System.currentTimeMillis(),
-                    )
                     guideType?.let { currentGuideType ->
                         PerpsTpSlGuideCard(
                             guideType = currentGuideType,
                             onClose = {
-                                val until = System.currentTimeMillis() + HIDE_TPSL_GUIDE_DURATION_MS
-                                hideGuideUntil = until
-                                preferences.putLong(PREF_HIDE_TPSL_GUIDE_UNTIL, until)
+                                val until = preferences.hideTpSlGuide(currentGuideType)
+                                if (currentGuideType == TpSlGuideType.TAKE_PROFIT) {
+                                    hideTakeProfitGuideUntil = until
+                                } else {
+                                    hideStopLossGuideUntil = until
+                                }
+                                guideType = null
                             },
                             actionText = stringResource(
                                 if (currentGuideType == TpSlGuideType.TAKE_PROFIT) {
@@ -723,12 +745,19 @@ private fun OpenPositionCard(
     val quantity = position.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val marginAmount = position.margin?.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val amountValue = marginAmount
+    val currentPrice = position.markPrice.orEmpty()
+        .ifBlank { position.entryPrice }
+        .toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val positionValue = quantity.abs().multiply(currentPrice)
     var tpSlLoadingMode by remember(position.positionId) {
         mutableStateOf<PerpsTpSlBottomSheetDialogFragment.Mode?>(null)
     }
 
     val entryPrice = position.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    val liquidationPrice = calculateLiquidationPriceValue(entryPrice, position.leverage, isLong)
+    val liquidationPriceText = position.liquidationPrice
+        ?.takeIf { it.isNotBlank() }
+        ?.let { formatPerpsPrice(it, position.priceScale) }
+        ?: "--"
     val compactTextStyle = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false))
 
     fun showTpSlGuide() {
@@ -758,7 +787,8 @@ private fun OpenPositionCard(
             leverage = position.leverage,
             entryPrice = position.entryPrice,
             marketId = position.marketId,
-            priceScale = position.priceScale ?: DEFAULT_PERPS_PRICE_SCALE,
+            priceScale = position.priceScale,
+            liquidationPrice = position.liquidationPrice,
         ).setOnApply { value ->
             val normalizedValue = value?.trim().orEmpty()
             if (normalizedValue == existingPrice) {
@@ -770,14 +800,15 @@ private fun OpenPositionCard(
 
             tpSlLoadingMode = mode
             val requestedValue = normalizedValue.ifEmpty { "" }
+            // TP/SL update API treats null as "keep existing value" and empty string as "clear this side".
             viewModel.setPositionTpSl(
                 positionId = position.positionId,
                 takeProfitPrice = when (mode) {
                     PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT -> requestedValue
-                    PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS -> position.takeProfitPrice
+                    PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS -> null
                 },
                 stopLossPrice = when (mode) {
-                    PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT -> position.stopLossPrice
+                    PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT -> null
                     PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS -> requestedValue
                 },
                 onSuccess = {
@@ -932,7 +963,7 @@ private fun OpenPositionCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "${quantity.stripTrailingZeros().toPlainString()} ${position.tokenSymbol}",
+                    text = "${formatPerpsQuantity(quantity.abs())} ${position.tokenSymbol} (${formatPerpsUsdDecimal(positionValue)})",
                     fontSize = 14.sp,
                     lineHeight = 17.sp,
                     style = compactTextStyle,
@@ -994,14 +1025,14 @@ private fun OpenPositionCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = formatPerpsPrice(entryPrice, position.priceScale ?: DEFAULT_PERPS_PRICE_SCALE),
+                    text = formatPerpsPrice(entryPrice, position.priceScale),
                     fontSize = 14.sp,
                     lineHeight = 17.sp,
                     style = compactTextStyle,
                     color = MixinAppTheme.colors.textPrimary
                 )
                 Text(
-                    text = formatPerpsPrice(liquidationPrice, position.priceScale ?: DEFAULT_PERPS_PRICE_SCALE),
+                    text = liquidationPriceText,
                     fontSize = 14.sp,
                     lineHeight = 17.sp,
                     style = compactTextStyle,
@@ -1037,7 +1068,7 @@ private fun OpenPositionCard(
             ) {
                 TpSlActionCell(
                     modifier = Modifier.weight(1f),
-                    value = formatMarketTpSlDisplayValue(position.takeProfitPrice, position.priceScale ?: DEFAULT_PERPS_PRICE_SCALE),
+                    value = formatMarketTpSlDisplayValue(position.takeProfitPrice, position.priceScale),
                     loading = tpSlLoadingMode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT,
                     compactTextStyle = compactTextStyle,
                     onClick = {
@@ -1063,7 +1094,7 @@ private fun OpenPositionCard(
                 Spacer(modifier = Modifier.width(12.dp))
                 TpSlActionCell(
                     modifier = Modifier.weight(1f),
-                    value = formatMarketTpSlDisplayValue(position.stopLossPrice, position.priceScale ?: DEFAULT_PERPS_PRICE_SCALE),
+                    value = formatMarketTpSlDisplayValue(position.stopLossPrice, position.priceScale),
                     loading = tpSlLoadingMode == PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS,
                     compactTextStyle = compactTextStyle,
                     alignment = Alignment.End,
@@ -1164,7 +1195,7 @@ private fun TpSlActionCell(
                 Icon(
                     painter = painterResource(id = R.drawable.ic_action_delete),
                     contentDescription = null,
-                    tint = MixinAppTheme.colors.textAssist,
+                    tint = MixinAppTheme.colors.textBlue,
                     modifier = Modifier
                         .size(16.dp)
                         .clickable(enabled = !loading && onDelete != null) { onDelete?.invoke() }
@@ -1182,7 +1213,7 @@ private fun TpSlActionCell(
     }
 }
 
-private fun formatMarketTpSlDisplayValue(rawValue: String?, priceScale: Int = DEFAULT_PERPS_PRICE_SCALE): String? {
+private fun formatMarketTpSlDisplayValue(rawValue: String?, priceScale: Int): String? {
     val normalized = rawValue?.trim().orEmpty()
     if (normalized.isEmpty()) {
         return null
@@ -1239,24 +1270,5 @@ private fun ClosedPositionsSection(
                 Spacer(modifier = Modifier.height(8.dp))
             }
         }
-    }
-}
-
-private fun calculateLiquidationPriceValue(
-    entryPrice: BigDecimal,
-    leverage: Int,
-    isLong: Boolean,
-): BigDecimal {
-    if (entryPrice == BigDecimal.ZERO || leverage == 0) {
-        return BigDecimal.ZERO
-    }
-
-    val liquidationPercent = BigDecimal(100.0 / leverage)
-    val liquidationRatio = liquidationPercent.divide(BigDecimal(100), 8, java.math.RoundingMode.HALF_UP)
-
-    return if (isLong) {
-        entryPrice.multiply(BigDecimal.ONE.subtract(liquidationRatio))
-    } else {
-        entryPrice.multiply(BigDecimal.ONE.add(liquidationRatio))
     }
 }

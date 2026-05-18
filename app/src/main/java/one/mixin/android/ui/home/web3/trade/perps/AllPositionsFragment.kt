@@ -41,9 +41,11 @@ class AllPositionsFragment : BaseFragment() {
             }
         }
 
-        fun newOpenInstance(source: String = AnalyticsTracker.PerpsSource.PERPS_ALL_POSITIONS) = newInstance(showOpenPositions = true, source = source)
+        fun newOpenInstance(source: String = AnalyticsTracker.PerpsSource.PERPS_ALL_POSITIONS) =
+            newInstance(showOpenPositions = true, source = source)
 
-        fun newClosedInstance(source: String = AnalyticsTracker.PerpsSource.PERPS_ALL_POSITIONS) = newInstance(showOpenPositions = false, source = source)
+        fun newClosedInstance(source: String = AnalyticsTracker.PerpsSource.PERPS_ALL_POSITIONS) =
+            newInstance(showOpenPositions = false, source = source)
     }
 
     @Inject

@@ -604,7 +604,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         val amountValue = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
         val profitPercent = 1.0 * leverage
         val profitAmount = amountValue * BigDecimal(profitPercent / 100)
-        val formattedProfitAmount = formatPerpsRawUsdDecimal(profitAmount)
+        val formattedProfitAmount = formatPerpsUsdDecimal(profitAmount)
 
         Timber.d("ProfitLossInfo - amount: $amount, amountValue: $amountValue, leverage: $leverage, isLong: $isLong, profitPercent: $profitPercent, profitAmount: $profitAmount")
 
@@ -812,31 +812,41 @@ private fun calculateTpSlSubValue(
     val lossColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
 
     val isPriceUp = if (isLong) isTakeProfit else !isTakeProfit
-    val pricePrefix = if (isPriceUp) {
-        stringResource(R.string.price_change_up, priceChangeStr)
+    val priceChangeText = if (isPriceUp) {
+        "+$priceChangeStr%"
     } else {
-        stringResource(R.string.price_change_down, priceChangeStr)
+        "-$priceChangeStr%"
     }
 
     return if (isTakeProfit) {
         val amountText = "+${formatPerpsRawUsdDecimal(pnlAmount)}"
         val pnlPercentStr = pnlPercent.setScale(2, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
-        val maxProfitLabel = stringResource(R.string.Max_Profit)
+        val outcomeText = "$amountText ($pnlPercentStr%)"
+        val fullText = stringResource(R.string.price_change_take_profit, priceChangeText, outcomeText)
         buildAnnotatedString {
-            append("$pricePrefix → $maxProfitLabel ")
-            pushStyle(SpanStyle(color = profitColor))
-            append(amountText)
-            pop()
-            append(" ($pnlPercentStr%)")
+            append(fullText)
+            val outcomeStart = fullText.indexOf(outcomeText)
+            if (outcomeStart >= 0) {
+                addStyle(
+                    style = SpanStyle(color = profitColor),
+                    start = outcomeStart,
+                    end = outcomeStart + outcomeText.length,
+                )
+            }
         }
     } else {
         val amountText = "-${formatPerpsRawUsdDecimal(pnlAmount)}"
-        val maxLossLabel = stringResource(R.string.Max_Loss)
+        val fullText = stringResource(R.string.price_change_stop_loss, priceChangeText, amountText)
         buildAnnotatedString {
-            append("$pricePrefix → $maxLossLabel ")
-            pushStyle(SpanStyle(color = lossColor))
-            append(amountText)
-            pop()
+            append(fullText)
+            val outcomeStart = fullText.indexOf(amountText)
+            if (outcomeStart >= 0) {
+                addStyle(
+                    style = SpanStyle(color = lossColor),
+                    start = outcomeStart,
+                    end = outcomeStart + amountText.length,
+                )
+            }
         }
     }
 }

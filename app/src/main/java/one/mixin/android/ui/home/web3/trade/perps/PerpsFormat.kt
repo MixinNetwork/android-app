@@ -7,22 +7,12 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 
 const val PERPS_USD_SYMBOL = "\$"
-const val DEFAULT_PERPS_PRICE_SCALE = 2
 
 fun PerpsMarket.changePercent(): BigDecimal {
     return try {
         BigDecimal(change).multiply(BigDecimal(100))
     } catch (e: Exception) {
         BigDecimal.ZERO
-    }
-}
-
-fun formatPerpsDisplayDecimal(value: BigDecimal?): String {
-    val safeValue = value ?: BigDecimal.ZERO
-    val absValue = safeValue.abs()
-    return when {
-        absValue > BigDecimal.ZERO && absValue < BigDecimal("0.01") -> "<0.01"
-        else -> safeValue.setScale(2, RoundingMode.HALF_UP).toPlainString()
     }
 }
 
@@ -45,7 +35,7 @@ fun formatPerpsUsdDecimal(value: BigDecimal?): String = formatPerpsFiatDecimal(v
 
 fun formatPerpsSignedUsdDecimal(value: BigDecimal?): String = formatPerpsSignedFiatDecimal(value, PERPS_USD_SYMBOL)
 
-fun formatPerpsPrice(value: BigDecimal?, priceScale: Int = DEFAULT_PERPS_PRICE_SCALE): String {
+fun formatPerpsPrice(value: BigDecimal?, priceScale: Int): String {
     val safeValue = value ?: BigDecimal.ZERO
     val safeScale = priceScale.coerceAtLeast(0)
     val scaledValue = safeValue.setScale(safeScale, RoundingMode.HALF_UP)
@@ -57,11 +47,11 @@ fun formatPerpsPrice(value: BigDecimal?, priceScale: Int = DEFAULT_PERPS_PRICE_S
     return "$PERPS_USD_SYMBOL${DecimalFormat(pattern).format(scaledValue)}"
 }
 
-fun formatPerpsPrice(rawPrice: String?, priceScale: Int = DEFAULT_PERPS_PRICE_SCALE): String {
+fun formatPerpsPrice(rawPrice: String?, priceScale: Int): String {
     return formatPerpsPrice(rawPrice?.toBigDecimalOrNull(), priceScale)
 }
 
-fun formatPerpsPriceInput(value: BigDecimal, priceScale: Int = DEFAULT_PERPS_PRICE_SCALE): String {
+fun formatPerpsPriceInput(value: BigDecimal, priceScale: Int): String {
     return value
         .setScale(priceScale.coerceAtLeast(0), RoundingMode.HALF_UP)
         .stripTrailingZeros()
@@ -84,6 +74,15 @@ fun formatPerpsSignedRawUsdDecimal(value: BigDecimal?): String {
         safeValue > BigDecimal.ZERO -> "+${formatPerpsRawUsdDecimal(safeValue)}"
         safeValue < BigDecimal.ZERO -> "-${formatPerpsRawUsdDecimal(safeValue.abs())}"
         else -> formatPerpsRawUsdDecimal(BigDecimal.ZERO)
+    }
+}
+
+fun formatPerpsQuantity(value: BigDecimal?): String {
+    val safeValue = value ?: BigDecimal.ZERO
+    return if (safeValue.compareTo(BigDecimal.ZERO) == 0) {
+        "0"
+    } else {
+        safeValue.stripTrailingZeros().toPlainString()
     }
 }
 

@@ -35,19 +35,20 @@ abstract class PerpsDatabase : RoomDatabase() {
         private var INSTANCE: PerpsDatabase? = null
         private val lock = Any()
         private var currentIdentityNumber: String? = null
-        private val MIGRATION_1_2 =
+        val MIGRATION_1_2 =
             object : Migration(1, 2) {
                 override fun migrate(db: SupportSQLiteDatabase) {
                     db.execSQL("ALTER TABLE markets ADD COLUMN category TEXT NOT NULL DEFAULT ''")
                     db.execSQL("ALTER TABLE markets ADD COLUMN tags TEXT NOT NULL DEFAULT '[]'")
                 }
             }
-        private val MIGRATION_2_3 =
+        val MIGRATION_2_3 =
             object : Migration(2, 3) {
                 override fun migrate(db: SupportSQLiteDatabase) {
                     db.execSQL("ALTER TABLE positions ADD COLUMN take_profit_price TEXT")
                     db.execSQL("ALTER TABLE positions ADD COLUMN stop_loss_price TEXT")
-                    db.execSQL("ALTER TABLE markets ADD COLUMN price_scale INTEGER DEFAULT 2")
+                    db.execSQL("ALTER TABLE positions ADD COLUMN liquidation_price TEXT")
+                    db.execSQL("ALTER TABLE markets ADD COLUMN price_scale INTEGER NOT NULL DEFAULT 2")
                 }
             }
         fun getDatabase(
