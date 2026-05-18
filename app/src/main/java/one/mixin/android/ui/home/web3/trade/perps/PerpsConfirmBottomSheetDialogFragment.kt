@@ -588,6 +588,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         leverage: Int,
         isLong: Boolean,
     ) {
+        val context = LocalContext.current
         val amountValue = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
         val profitPercent = 1.0 * leverage
         val profitAmount = amountValue * BigDecimal(profitPercent / 100)
@@ -599,21 +600,12 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp),
-            text = if (isLong) {
-                stringResource(
-                    R.string.Price_Up_Profit,
-                    "1",
-                    String.format("%.1f", profitPercent),
-                    formattedProfitAmount
-                )
-            } else {
-                stringResource(
-                    R.string.Price_Down_Profit,
-                    "1",
-                    String.format("%.1f", profitPercent),
-                    formattedProfitAmount
-                )
-            },
+            text = context.formatPerpsProfitPreview(
+                isLong = isLong,
+                priceChangeText = "1",
+                profitPercentText = String.format("%.1f", profitPercent),
+                profitAmountText = formattedProfitAmount,
+            ),
             color = MixinAppTheme.colors.textAssist,
             fontSize = 14.sp,
         )
