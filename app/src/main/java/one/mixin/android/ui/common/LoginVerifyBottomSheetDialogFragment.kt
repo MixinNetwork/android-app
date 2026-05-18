@@ -97,7 +97,10 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
             showMoreMenu()
         }
         binding.support.setOnClickListener {
-            context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+            context?.openUrl(
+                Constants.HelpLink.CUSTOMER_SERVICE,
+                source = AnalyticsTracker.CustomerServiceSource.LOGIN_PIN_VERIFY,
+            )
         }
         lifecycleScope.launch {
             checkTipCounter(Session.getAccount()!!)

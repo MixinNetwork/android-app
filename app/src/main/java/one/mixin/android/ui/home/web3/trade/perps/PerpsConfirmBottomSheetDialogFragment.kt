@@ -81,6 +81,7 @@ import one.mixin.android.ui.tip.wc.compose.ItemWalletContent
 import one.mixin.android.ui.wallet.ItemUserContent
 import one.mixin.android.ui.wallet.components.WalletLabel
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
@@ -494,8 +495,14 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                 modifier = Modifier.align(Alignment.BottomCenter),
                                 cancelTitle = stringResource(R.string.Cancel),
                                 confirmTitle = stringResource(id = R.string.Retry),
-                                cancelAction = { dismiss() },
-                                confirmAction = { showPin() },
+                                cancelAction = {
+                                    AnalyticsTracker.trackPerpsPreviewCancel()
+                                    dismiss()
+                                },
+                                confirmAction = {
+                                    AnalyticsTracker.trackPerpsPreviewConfirm()
+                                    showPin()
+                                },
                             )
                         }
 
@@ -504,8 +511,14 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                 modifier = Modifier.align(Alignment.BottomCenter),
                                 cancelTitle = stringResource(R.string.Cancel),
                                 confirmTitle = stringResource(id = R.string.Confirm),
-                                cancelAction = { dismiss() },
-                                confirmAction = { showPin() },
+                                cancelAction = {
+                                    AnalyticsTracker.trackPerpsPreviewCancel()
+                                    dismiss()
+                                },
+                                confirmAction = {
+                                    AnalyticsTracker.trackPerpsPreviewConfirm()
+                                    showPin()
+                                },
                             )
                         }
 
@@ -660,6 +673,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                 )
                 context?.updatePinCheck()
                 step = Step.Done
+                trackOpenPositionSuccess()
             }
         } catch (e: Exception) {
             handleException(e)
@@ -727,6 +741,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                 )
                 context?.updatePinCheck()
                 step = Step.Done
+                trackOpenPositionSuccess()
             } else {
                 errorInfo = paymentResponse.errorDescription
                 step = Step.Error
@@ -743,6 +758,14 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     override fun showError(error: String) {
         errorInfo = error
         step = Step.Error
+    }
+
+    private fun trackOpenPositionSuccess() {
+        AnalyticsTracker.trackPerpsOpenPositionEnd(
+            leverage = leverage,
+            amountValue = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO,
+            price = entryPrice,
+        )
     }
 }
 

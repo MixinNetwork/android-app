@@ -73,6 +73,7 @@ import one.mixin.android.ui.home.web3.trade.TradeFragment
 import one.mixin.android.ui.wallet.AddFeeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.components.MixinButton
@@ -122,6 +123,7 @@ private fun resolveCurrentToken(
 fun OpenPositionPage(
     market: PerpsMarket,
     isLong: Boolean,
+    source: String,
     onBack: () -> Unit,
     onOpenSuccess: (String) -> Unit = { onBack() },
     selectedToken: TokenItem?,
@@ -283,7 +285,11 @@ fun OpenPositionPage(
             pop = onBack,
             actions = {
                 IconButton(onClick = {
-                    context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                    context.openUrl(
+                        Constants.HelpLink.CUSTOMER_SERVICE,
+                        source = AnalyticsTracker.CustomerServiceSource.PERPS_OPEN_POSITION,
+                        wallet = AnalyticsTracker.TradeWallet.WEB3,
+                    )
                 }) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_support),
@@ -367,6 +373,7 @@ fun OpenPositionPage(
                         token = currentToken?.toSwapToken(),
                         text = usdtAmount,
                         selectClick = {
+                            AnalyticsTracker.trackPerpsMarginTokenSelect(currentToken?.chainName, currentToken?.symbol)
                             onTokenSelect()
                         },
                         onInputChanged = { usdtAmount = it },
@@ -392,6 +399,7 @@ fun OpenPositionPage(
                                 textAlign = TextAlign.Start,
                             ),
                             modifier = Modifier.clickable {
+                                AnalyticsTracker.trackPerpsAmountInputBalance()
                                 usdtAmount = currentToken?.balance ?: "0"
                             }
                         )
@@ -476,6 +484,7 @@ fun OpenPositionPage(
                             ).setOnLeverageSelected { newLeverage ->
                                 leverage = newLeverage
                                 context.defaultSharedPreferences.putInt(getLeveragePrefKey(marketId), newLeverage.toInt())
+                                AnalyticsTracker.trackPerpsLeverageSelect(PERPS_LEVERAGE_CUSTOM_INPUT)
                             }.show(activity.supportFragmentManager, LeverageBottomSheetDialogFragment.TAG)
                         },
                         text = "${leverage.toInt()}x",
@@ -523,6 +532,7 @@ fun OpenPositionPage(
                                     )
                                     .clickable {
                                         if (lev == -1) {
+                                            AnalyticsTracker.trackPerpsLeverageSelect(PERPS_LEVERAGE_CUSTOM_TAB)
                                             val activity = context as? FragmentActivity ?: return@clickable
                                             LeverageBottomSheetDialogFragment.newInstance(
                                                 currentLeverage = leverage,
@@ -532,10 +542,18 @@ fun OpenPositionPage(
                                             ).setOnLeverageSelected { newLeverage ->
                                                 leverage = newLeverage
                                                 context.defaultSharedPreferences.putInt(getLeveragePrefKey(marketId), newLeverage.toInt())
+                                                AnalyticsTracker.trackPerpsLeverageSelect(PERPS_LEVERAGE_CUSTOM_INPUT)
                                             }.show(activity.supportFragmentManager, LeverageBottomSheetDialogFragment.TAG)
                                         } else {
                                             leverage = lev.toFloat()
                                             context.defaultSharedPreferences.putInt(getLeveragePrefKey(marketId), lev)
+                                            AnalyticsTracker.trackPerpsLeverageSelect(
+                                                if (lev == maxLeverage) {
+                                                    PERPS_LEVERAGE_MAX
+                                                } else {
+                                                    lev.toPerpsLeverageValue()
+                                                }
+                                            )
                                         }
                                     },
                                 contentAlignment = Alignment.Center
@@ -614,6 +632,7 @@ fun OpenPositionPage(
                             tokenSymbol = currentMarket.tokenSymbol,
                         ),
                         onTipClick = {
+                            AnalyticsTracker.trackPerpsGuide(AnalyticsTracker.PerpsSource.PERPS_OPEN_POSITION_SIZE)
                             showPerpsGuide(PerpetualGuideBottomSheetDialogFragment.TAB_POSITION)
                         }
                     )
@@ -653,6 +672,7 @@ fun OpenPositionPage(
                         .fillMaxWidth()
                         .height(48.dp),
                     onClick = {
+                        AnalyticsTracker.trackPerpsPreview(leverage.toInt().toPerpsLeverageValue())
                         errorInfo = null
                         val token = currentToken ?: return@MixinButton
                         val amount = usdtAmount.toBigDecimalOrNull() ?: return@MixinButton
@@ -767,12 +787,15 @@ fun OpenPositionPage(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         InputAction("25%", showBorder = true) {
+                            AnalyticsTracker.trackPerpsAmountInputPercent("25%")
                             applyBalancePercent(BigDecimal("0.25"))
                         }
                         InputAction("50%", showBorder = true) {
+                            AnalyticsTracker.trackPerpsAmountInputPercent("50%")
                             applyBalancePercent(BigDecimal("0.5"))
                         }
                         InputAction("100%", showBorder = true) {
+                            AnalyticsTracker.trackPerpsAmountInputPercent("max")
                             applyBalancePercent(BigDecimal.ONE)
                         }
                         InputAction(stringResource(R.string.Done), showBorder = false) {
@@ -799,6 +822,12 @@ private fun generateLeverageOptions(maxLeverage: Int): List<Int> {
 
     return options.distinct()
 }
+
+private const val PERPS_LEVERAGE_MAX = "max"
+private const val PERPS_LEVERAGE_CUSTOM_TAB = "custom_tab"
+private const val PERPS_LEVERAGE_CUSTOM_INPUT = "custom_input"
+
+private fun Int.toPerpsLeverageValue(): String = "${this}x"
 
 @Composable
 private fun calculateProfitInfo(

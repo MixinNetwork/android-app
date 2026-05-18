@@ -17,6 +17,7 @@ import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.common.biometric.BiometricItem
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET
+import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET_SOURCE
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_FROM_MARKET
 import one.mixin.android.ui.wallet.fiatmoney.CalculateFragment
@@ -138,6 +139,9 @@ class WalletActivity : BlazeBaseActivity() {
                     marketItem?.let {
                         putParcelable(ARGS_MARKET, it)
                     }
+                    intent.getStringExtra(ARGS_MARKET_SOURCE)?.let {
+                        putString(ARGS_MARKET_SOURCE, it)
+                    }
                 })
             }
             is Destination.Address -> {
@@ -224,6 +228,7 @@ class WalletActivity : BlazeBaseActivity() {
         const val WEB3_TOKEN = "web3_token"
         const val PENDING_TYPE = "pending_type"
         const val ARGS_WALLET_ID = "args_wallet_id"
+        const val ARGS_MARKET_SOURCE = "args_market_source"
 
         fun navigateToWalletActivity(activity: Activity, address: String?, token: Web3TokenItem, chain: Web3TokenItem, wallet: Web3Wallet) {
             val intent = Intent(activity, WalletActivity::class.java).apply {
@@ -303,11 +308,13 @@ class WalletActivity : BlazeBaseActivity() {
             activity: Activity,
             marketItem: MarketItem,
             destination: Destination,
+            source: String? = null,
         ) {
             activity.startActivity(
                 Intent(activity, WalletActivity::class.java).apply {
                     putExtra(DESTINATION, destination)
                     putExtra(ARGS_MARKET, marketItem)
+                    source?.let { putExtra(ARGS_MARKET_SOURCE, it) }
                 },
             )
         }

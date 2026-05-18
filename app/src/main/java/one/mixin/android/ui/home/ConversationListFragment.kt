@@ -766,6 +766,7 @@ class ConversationListFragment : LinkFragment() {
                 if (VerifyMobileReminderBottomSheetDialogFragment.shouldShow(requireContext())) {
                     if (VerifyMobileReminderBottomSheetDialogFragment.showSafely(
                         parentFragmentManager,
+                        addPhoneSource = AnalyticsTracker.AddPhoneSource.SETTINGS,
                     )) {
                         return@launch
                     }
