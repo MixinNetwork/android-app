@@ -2390,6 +2390,8 @@
     <string name="take_profit_label">TP</string>
     <string name="stop_loss_label">SL</string>
     <string name="position_size">Size</string>
+    <string name="add_size">Add Size</string>
+    <string name="total_size">Total Size</string>
     <string name="Liquidation_Price">Liquidation Price</string>
     <string name="Price_Change_Profit">Price %1$s %2$s%% → Profit %3$s%4$s%% (%5$s%6$s)</string>
     <string name="Long">Long</string>

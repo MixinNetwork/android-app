@@ -2324,6 +2324,8 @@
     <string name="take_profit_label">止盈</string>
     <string name="stop_loss_label">止损</string>
     <string name="position_size">仓位规模</string>
+    <string name="add_size">加仓规模</string>
+    <string name="total_size">总仓位规模</string>
     <string name="Liquidation_Price">强平价格</string>
     <string name="Price_Change_Profit">价格%1$s %2$s%% → 盈利 %3$s%4$s%% (%5$s%6$s)</string>
     <string name="Long">做多</string>

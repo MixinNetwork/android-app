@@ -7,6 +7,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -417,27 +419,74 @@ fun PerpsMarketDetailPage(
                         .padding(bottom = 20.dp, top = 20.dp)
                 ) {
                     if (currentPosition != null) {
-                        MixinButton(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(48.dp),
-                            enabled = currentPosition.state == "open",
-                            onClick = {
-                                val activity = context as? FragmentActivity ?: return@MixinButton
-                                val position = currentPosition.toPosition()
+                        val isOpen = currentPosition.state == "open"
+                        val isAdding = currentPosition.state == "adding"
+                        if (isOpen || isAdding) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            ) {
+                                MixinButton(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(48.dp),
+                                    enabled = isOpen,
+                                    onClick = {
+                                        val activity = context as? FragmentActivity ?: return@MixinButton
+                                        PerpsAddBottomSheetDialogFragment.newInstance(currentPosition)
+                                            .show(activity.supportFragmentManager, PerpsAddBottomSheetDialogFragment.TAG)
+                                    },
+                                    backgroundColor = if (isOpen) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundWindow,
+                                    contentColor = if (isOpen) Color.White else MixinAppTheme.colors.textAssist,
+                                    shape = RoundedCornerShape(32.dp),
+                                ) {
+                                    Text(
+                                        fontSize = 16.sp,
+                                        text = stringResource(if (isAdding) R.string.Adding else R.string.Add),
+                                    )
+                                }
 
-                                PerpsCloseBottomSheetDialogFragment.newInstance(
-                                    position = position,
-                                ).show(activity.supportFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)
-                            },
-                            backgroundColor = if (currentPosition.state == "open") MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundWindow,
-                            contentColor = if (currentPosition.state == "open") Color.White else MixinAppTheme.colors.textAssist,
-                            shape = RoundedCornerShape(32.dp),
-                        ) {
-                            Text(
-                                fontSize = 16.sp,
-                                text = stringResource(if(currentPosition.state == "open") R.string.Close_Position else R.string.Opening),
-                            )
+                                MixinButton(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(48.dp),
+                                    enabled = isOpen,
+                                    onClick = {
+                                        val activity = context as? FragmentActivity ?: return@MixinButton
+                                        val position = currentPosition.toPosition()
+
+                                        PerpsCloseBottomSheetDialogFragment.newInstance(
+                                            position = position,
+                                        ).show(activity.supportFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)
+                                    },
+                                    backgroundColor = if (isOpen) MixinAppTheme.colors.backgroundGrayLight else MixinAppTheme.colors.backgroundWindow,
+                                    contentColor = if (isOpen) MixinAppTheme.colors.textPrimary else MixinAppTheme.colors.textAssist,
+                                    shape = RoundedCornerShape(32.dp),
+                                ) {
+                                    Text(
+                                        fontSize = 16.sp,
+                                        text = stringResource(R.string.Close),
+                                    )
+                                }
+                            }
+                        } else {
+                            MixinButton(
+                                modifier = Modifier
+                                    .align(Alignment.CenterHorizontally)
+                                    .wrapContentWidth()
+                                    .height(48.dp),
+                                enabled = false,
+                                onClick = {},
+                                backgroundColor = MixinAppTheme.colors.backgroundWindow,
+                                contentColor = MixinAppTheme.colors.textAssist,
+                                shape = RoundedCornerShape(32.dp),
+                                contentPadding = PaddingValues(horizontal = 32.dp, vertical = 12.dp),
+                            ) {
+                                Text(
+                                    fontSize = 16.sp,
+                                    text = stringResource(R.string.Opening),
+                                )
+                            }
                         }
                     } else {
                         Row(
