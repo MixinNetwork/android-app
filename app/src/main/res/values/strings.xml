@@ -2088,7 +2088,7 @@
     <string name="close">Close</string>
     <string name="Upgrade_Plan_for">Upgrade for %1$s</string>
     <string name="membership_advance">Advance</string>
-    <string name="membership_elite">Elite</string>
+    <string name="membership_elite">Expansion</string>
     <string name="membership_prosperity">Prosperity</string>
     <string name="member_title_mixin_safe" translatable="false">Mixin Safe</string>
     <string name="membership_benefit_create_safe">Create %1$d Safes</string>

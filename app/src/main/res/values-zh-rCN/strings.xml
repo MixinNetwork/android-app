@@ -2043,7 +2043,7 @@
     <string name="swap_usdt_hint">当前钱包有其他链的 %1$s，是否马上兑换？</string>
     <string name="membership_plan">级别</string>
     <string name="membership_advance">进阶版</string>
-    <string name="membership_elite">精英版</string>
+    <string name="membership_elite">开拓版</string>
     <string name="membership_prosperity">传世版</string>
     <string name="membership_advance_description">在多设备上使用多个密钥，避免单点故障，并在密钥丢失时获得去中心化的恢复服务。</string>
     <string name="membership_elite_description">与家人、朋友或同事一起使用 Mixin Safe 管理大量资产，从而规避盗窃、意外和托管风险。</string>
