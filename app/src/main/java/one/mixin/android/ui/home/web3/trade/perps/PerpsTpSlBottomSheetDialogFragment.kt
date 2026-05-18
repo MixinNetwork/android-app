@@ -126,7 +126,7 @@ class PerpsTpSlBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment
             leverage: Int,
             entryPrice: String? = null,
             marketId: String? = null,
-            priceScale: Int = DEFAULT_PERPS_PRICE_SCALE,
+            priceScale: Int,
             liquidationPrice: String? = null,
         ): PerpsTpSlBottomSheetDialogFragment {
             return PerpsTpSlBottomSheetDialogFragment().withArgs {
@@ -158,7 +158,11 @@ class PerpsTpSlBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment
     private val leverage by lazy { requireArguments().getInt(ARGS_LEVERAGE, 1) }
     private val entryPrice by lazy { requireArguments().getString(ARGS_ENTRY_PRICE).orEmpty() }
     private val marketId by lazy { requireArguments().getString(ARGS_MARKET_ID).orEmpty() }
-    private val priceScale by lazy { requireArguments().getInt(ARGS_PRICE_SCALE, DEFAULT_PERPS_PRICE_SCALE) }
+    private val priceScale by lazy {
+        val args = requireArguments()
+        require(args.containsKey(ARGS_PRICE_SCALE)) { "priceScale is required" }
+        args.getInt(ARGS_PRICE_SCALE)
+    }
     private val liquidationPrice by lazy { requireArguments().getString(ARGS_LIQUIDATION_PRICE) }
 
     private var onApply: ((String?) -> Unit)? = null
