@@ -940,6 +940,18 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
             lifecycleScope.launch(errorHandler) {
                 handleTradeScheme(url.toUri())
             }
+        } else if (WalletConnect.isEnabled() && WalletConnect.isPaymentLink(url)) {
+            if (MixinApplication.get().topActivity is WebActivity) {
+                WalletConnect.connect(url)
+            } else {
+                startActivity(
+                    Intent(requireContext(), MainActivity::class.java).apply {
+                        putExtra(MainActivity.WALLET_CONNECT, url)
+                        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
+                    },
+                )
+            }
+            dismiss()
         } else if (url.startsWith(Scheme.HTTPS_MIXIN_WC) || url.startsWith(Scheme.MIXIN_WC) ||
             url.startsWith(Scheme.WALLET_CONNECT_PREFIX)
         ) {

@@ -1,6 +1,7 @@
 package one.mixin.android.tip.wc
 
 import com.reown.walletkit.client.Wallet
+import com.reown.walletkit.client.WalletKit
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import one.mixin.android.BuildConfig
@@ -30,10 +31,22 @@ abstract class WalletConnect {
         fun isEnabled(): Boolean =
             Session.getAccount()?.hasPin == true && !Session.getTipPub().isNullOrBlank()
 
+        fun isPaymentLink(url: String): Boolean =
+            try {
+                WalletKit.Pay.isPaymentLink(url)
+            } catch (e: Exception) {
+                false
+            }
+
         fun connect(
             url: String,
             afterConnect: (() -> Unit)? = null,
         ) {
+            if (isPaymentLink(url)) {
+                RxBus.publish(WCEvent.Pay(Version.V2, RequestType.Pay, url))
+                afterConnect?.invoke()
+                return
+            }
             if (!url.startsWith("wc:")) return
 
             val uri =
@@ -66,6 +79,7 @@ abstract class WalletConnect {
         Connect,
         SessionProposal,
         SessionRequest,
+        Pay,
     }
 
     sealed class WCSignData<T>(

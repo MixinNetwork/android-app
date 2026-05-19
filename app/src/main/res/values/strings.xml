@@ -2245,6 +2245,10 @@
     <string name="mixin_payment_title">📣 Mixin Payment</string>
     <string name="payment_details">💰 Amount：%1$s\n🌐 Network：%2$s\n🤝 Receiver：%3$s</string>
     <string name="pay_now">Pay Now</string>
+    <string name="wc_payment">WalletConnect Payment</string>
+    <string name="select_payment_option">Select payment option</string>
+    <string name="payment_success">Payment Successful</string>
+    <string name="payment_failed">Payment Failed</string>
     <string name="Referral">Referral</string>
     <string name="referral_hint">Referral Code</string>
     <string name="referral_banner">Invite friends and earn up to 60% of their trading fees!</string>
