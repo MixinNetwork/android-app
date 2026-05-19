@@ -13,9 +13,9 @@ plugins {
 }
 
 def versionMajor = 4
-def versionMinor = 1
-def versionPatch = 5
-def versionBuild = 2
+def versionMinor = 2
+def versionPatch = 0
+def versionBuild = 5
 
 def includeDebugX86_64 = project.findProperty("includeDebugX86_64")?.toString()?.toBoolean() ?: false // Enable debug package for x86_64
 
@@ -23,7 +23,7 @@ apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
 
 android {
-    compileSdk = 36
+    compileSdk = 37
     ndkVersion = "27.0.12077973"
     namespace = "one.mixin.android"
     defaultConfig {
@@ -421,6 +421,7 @@ dependencies {
     implementation "androidx.compose.runtime:runtime-livedata:${composeVersion}"
     implementation "androidx.compose.runtime:runtime-rxjava2:${composeVersion}"
     implementation "androidx.compose.foundation:foundation:${composeVersion}"
+    implementation "androidx.paging:paging-compose:${pagingVersion}"
     implementation platform("androidx.compose:compose-bom:${composeBomVersion}")
     implementation "androidx.constraintlayout:constraintlayout-compose:${constraintLayoutComposeVersion}"
     implementation "androidx.activity:activity-compose:${activityComposeVersion}"
@@ -552,4 +553,3 @@ task syncStrings {
         }
     }
 }
-

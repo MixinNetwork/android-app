@@ -49,6 +49,7 @@ import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.ShareImageData
+import one.mixin.android.vo.toAppCardDataOrNull
 import one.mixin.android.websocket.ContactMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.websocket.StickerMessagePayload
@@ -114,18 +115,12 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         binding.close.setOnClickListener {
             dismiss()
         }
-        try {
-            contentView.doOnPreDraw {
+        contentView.doOnPreDraw {
+            try {
                 loadData()
+            } catch (e: Exception) {
+                handleLoadError(e)
             }
-        } catch (e: Exception) {
-            Timber.e("Load \"${shareMessage.content}\" ERROR!!!")
-            if (app != null || host != null) {
-                reportException(IllegalArgumentException("app:${app?.appNumber} host:$host ${e.message}"))
-            }
-            toast(getString(R.string.error_unknown_with_message, "${e.javaClass.name} ${shareMessage.content}"))
-            dismiss()
-            return
         }
         when {
             app != null -> {
@@ -163,8 +158,12 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     sendMessage()
                 }
             } else if (shareMessage.category == ShareCategory.AppCard) {
-                val appCardData = GsonHelper.customGson.fromJson(shareMessage.content, AppCardData::class.java)
-                if (appCardData.title?.length in 1..36 && appCardData.description?.length in 1..128) {
+                val appCardData = shareMessage.content.toAppCardDataOrNull()
+                if (appCardData != null &&
+                    appCardData.hasValidCoverSize &&
+                    appCardData.title?.length in 1..36 &&
+                    appCardData.description?.length in 1..128
+                ) {
                     sendMessage()
                 } else {
                     toast(R.string.Data_error)
@@ -299,15 +298,21 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun loadAppCard(content: String) {
-        val appCardData = GsonHelper.customGson.fromJson(content, AppCardData::class.java)
+        val appCardData =
+            content.toAppCardDataOrNull() ?: run {
+                toast(R.string.Data_error)
+                dismiss()
+                return
+            }
         if (appCardData.oldVersion) {
             val renderer = ShareAppCardRenderer(requireContext())
             binding.contentLayout.addView(renderer.contentView, generateLayoutParams())
             renderer.render(appCardData, requireContext().isNightMode())
         } else {
-            if (appCardData.cover != null && ((appCardData.cover.width < 64 || appCardData.cover.width > 104) || (appCardData.cover.height < 64 || appCardData.cover.height > 104))) {
+            if (!appCardData.hasValidCoverSize) {
                 toast(getString(R.string.error_unknown_with_message, "Illegal size"))
                 dismiss()
+                return
             }
             val renderer = ShareAppActionsCardRenderer(requireContext(), binding.contentLayout.measuredWidth)
             (binding.contentLayout.layoutParams as ConstraintLayout.LayoutParams).apply {
@@ -336,6 +341,15 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         return FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
             gravity = Gravity.CENTER
         }
+    }
+
+    private fun handleLoadError(e: Exception) {
+        Timber.e(e, "Load \"${shareMessage.content}\" ERROR!!!")
+        if (app != null || host != null) {
+            reportException(IllegalArgumentException("app:${app?.appNumber} host:$host ${e.message}"))
+        }
+        toast(getString(R.string.error_unknown_with_message, "${e.javaClass.name} ${shareMessage.content}"))
+        dismiss()
     }
 
     override fun onDetach() {

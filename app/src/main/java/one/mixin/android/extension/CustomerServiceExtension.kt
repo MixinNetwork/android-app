@@ -7,6 +7,7 @@ import androidx.fragment.app.FragmentActivity
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.ui.common.WebBottomSheetDialogFragment
+import one.mixin.android.util.analytics.AnalyticsTracker
 
 fun Context.openWebBottomSheet(
     url: String,
@@ -46,15 +47,22 @@ fun isCustomerServiceUrl(url: String): Boolean {
         (currentWebsiteId.isNullOrBlank() || currentWebsiteId == targetWebsiteId)
 }
 
-fun Context.openCustomerServiceIfMatched(url: String): Boolean {
+fun Context.openCustomerServiceIfMatched(
+    url: String,
+    source: String? = null,
+    wallet: String = AnalyticsTracker.TradeWallet.MAIN,
+): Boolean {
     if (!isCustomerServiceUrl(url)) {
         return false
     }
-    openCustomerService()
+    openCustomerService(source = source, wallet = wallet)
     return true
 }
 
-fun Context.openCustomerService() {
+fun Context.openCustomerService(
+    source: String? = null,
+    wallet: String = AnalyticsTracker.TradeWallet.MAIN,
+) {
     if (
         openWebBottomSheet(
             Constants.HelpLink.CUSTOMER_SERVICE,
@@ -62,17 +70,17 @@ fun Context.openCustomerService() {
             getString(R.string.ask_me_anything),
         )
     ) {
+        source?.let { AnalyticsTracker.trackCustomerServiceDialog(source = it, wallet = wallet) }
         return
     }
     openExternalUrl(Constants.HelpLink.CUSTOMER_SERVICE)
 }
 
-fun Fragment.openCustomerService() {
-    openWebBottomSheet(
-        Constants.HelpLink.CUSTOMER_SERVICE,
-        getString(R.string.mixin_support),
-        getString(R.string.ask_me_anything),
-    )
+fun Fragment.openCustomerService(
+    source: String? = null,
+    wallet: String = AnalyticsTracker.TradeWallet.MAIN,
+) {
+    context?.openCustomerService(source = source, wallet = wallet)
 }
 
 private fun FragmentActivity.showWebBottomSheet(

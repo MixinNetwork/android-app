@@ -44,6 +44,7 @@ class VerifyMobileReminderBottomSheetDialogFragment : MixinComposeBottomSheetDia
         private const val PREF_VERIFY_MOBILE_REMINDER_DEBUG_ALLOW_ONCE = "pref_verify_mobile_reminder_debug_allow_once"
         private const val ARGS_SUBTITLE_RES_ID = "args_subtitle_res_id"
         private const val ARGS_ENABLE_SNOOZE = "args_enable_snooze"
+        private const val ARGS_ADD_PHONE_SOURCE = "args_add_phone_source"
 
         @Volatile
         private var isShowing = false
@@ -52,6 +53,7 @@ class VerifyMobileReminderBottomSheetDialogFragment : MixinComposeBottomSheetDia
             fragmentManager: FragmentManager,
             subtitleResId: Int = R.string.verify_mobile_reminder_desc,
             enableSnooze: Boolean = true,
+            addPhoneSource: String = one.mixin.android.util.analytics.AnalyticsTracker.AddPhoneSource.SETTINGS,
         ): Boolean {
             if (isShowing) return false
 
@@ -59,6 +61,7 @@ class VerifyMobileReminderBottomSheetDialogFragment : MixinComposeBottomSheetDia
                 arguments = Bundle().apply {
                     putInt(ARGS_SUBTITLE_RES_ID, subtitleResId)
                     putBoolean(ARGS_ENABLE_SNOOZE, enableSnooze)
+                    putString(ARGS_ADD_PHONE_SOURCE, addPhoneSource)
                 }
             }
 
@@ -160,6 +163,8 @@ class VerifyMobileReminderBottomSheetDialogFragment : MixinComposeBottomSheetDia
     @Composable
     override fun ComposeContent() {
         val enableSnooze = arguments?.getBoolean(ARGS_ENABLE_SNOOZE, true) ?: true
+        val addPhoneSource = arguments?.getString(ARGS_ADD_PHONE_SOURCE)
+            ?: one.mixin.android.util.analytics.AnalyticsTracker.AddPhoneSource.SETTINGS
         val phoneNumber = if (Session.hasPhone()) Session.getAccount()?.phone else null
         val hasPhoneNumber = !phoneNumber.isNullOrBlank()
         val titleResId = if (hasPhoneNumber) R.string.Verify_Mobile_Number else R.string.verify_mobile_reminder_title
@@ -178,9 +183,9 @@ class VerifyMobileReminderBottomSheetDialogFragment : MixinComposeBottomSheetDia
                 action = {
                     dismissAllowingStateLoss()
                     if (phoneNumber.isNullOrBlank()) {
-                        navTo(AddPhoneBeforeFragment.newInstance(), AddPhoneBeforeFragment.TAG)
+                        navTo(AddPhoneBeforeFragment.newInstance(addPhoneSource), AddPhoneBeforeFragment.TAG)
                     } else {
-                        navTo(VerifyFragment.newInstance(VerifyFragment.FROM_PHONE, phoneNumber), VerifyFragment.TAG)
+                        navTo(VerifyFragment.newInstance(VerifyFragment.FROM_PHONE, phoneNumber, addPhoneSource), VerifyFragment.TAG)
                     }
                 },
                 dismiss = {

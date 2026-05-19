@@ -255,7 +255,11 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     activity?.onBackPressedDispatcher?.onBackPressed()
                 }
                 titleView.rightIb.setOnClickListener {
-                    requireContext().openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                    requireContext().openUrl(
+                        Constants.HelpLink.CUSTOMER_SERVICE,
+                        source = AnalyticsTracker.CustomerServiceSource.SEND_AMOUNT,
+                        wallet = if (transferType == TransferType.WEB3) TradeWallet.WEB3 else TradeWallet.MAIN,
+                    )
                 }
                 binding.insufficientFeeBalance.text = getString(R.string.insufficient_gas, getString(R.string.Token))
                 binding.insufficientFunds.text =
@@ -919,14 +923,26 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         return currentSolanaTransferRange()?.minAmount ?: BigDecimal.ZERO
     }
 
+    private fun isCurrentWeb3SolanaTransfer(): Boolean {
+        return transferType == TransferType.WEB3 && web3Token?.chainId == Constants.ChainId.SOLANA_CHAIN_ID
+    }
+
     private fun isBelowCurrentSolanaMinimum(amount: String): Boolean {
         val inputAmount = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
         val minimumAmount = currentSolanaMinimumAmount()
         return minimumAmount > BigDecimal.ZERO && inputAmount < minimumAmount
     }
 
+    private fun hasCurrentSolanaRentIssue(amount: String): Boolean {
+        return isCurrentWeb3SolanaTransfer() && isBelowCurrentSolanaMinimum(amount)
+    }
+
     private fun updateSolanaMinimumAmountHint() {
-        val minimumAmount = currentSolanaMinimumAmount().takeIf { it > BigDecimal.ZERO } ?: SOLANA_RENT_EXEMPTION
+        val minimumAmount = if (isCurrentWeb3SolanaTransfer()) {
+            currentSolanaMinimumAmount().takeIf { it > BigDecimal.ZERO } ?: SOLANA_RENT_EXEMPTION
+        } else {
+            SOLANA_RENT_EXEMPTION
+        }
         binding.insufficientFunds.text =
             getString(
                 R.string.send_sol_for_rent,
@@ -1315,7 +1331,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     continueVa.isEnabled = false
                     addTv.text = "${getString(R.string.Add)} ${currentFee?.token?.symbol ?: ""}"
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
-                } else if (isBelowCurrentSolanaMinimum(v)) {
+                } else if (hasCurrentSolanaRentIssue(v)) {
                     insufficientFeeBalance.isVisible = false
                     insufficientBalance.isVisible = false
                     insufficientFunds.isVisible = true
@@ -1461,7 +1477,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private fun updateAddText() {
         val binding = bindingOrNull() ?: return
-        if (isBelowCurrentSolanaMinimum(currentInputAmount())) {
+        if (hasCurrentSolanaRentIssue(currentInputAmount())) {
             binding.addTv.text = ""
             return
         }
@@ -2045,8 +2061,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         }.getOrNull() ?: return
         if (!response.isSuccess || response.data == null) return
 
+        val walletTokensByAssetId = web3ViewModel.findWeb3TokenItems(t.walletId)
+            .associateBy(Web3TokenItem::assetId)
         val feeItems = response.data!!.fees.mapNotNull { estimate ->
-            val asset = web3ViewModel.findOrSyncAsset(estimate.assetId) ?: return@mapNotNull null
+            val asset = walletTokensByAssetId[estimate.assetId]?.toTokenItem() ?: return@mapNotNull null
             NetworkFee(
                 token = asset,
                 fee = estimate.amount,

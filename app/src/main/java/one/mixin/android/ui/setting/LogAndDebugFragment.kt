@@ -124,6 +124,14 @@ class LogAndDebugFragment : BaseFragment(R.layout.fragment_log_debug) {
                     toast(R.string.New_Update_Reminder_Will_Show_Once)
                 }
 
+                resetTpslGuide.setOnClickListener {
+                    defaultSharedPreferences.edit()
+                        .remove(one.mixin.android.ui.home.web3.trade.perps.PREF_HIDE_TP_GUIDE_UNTIL)
+                        .remove(one.mixin.android.ui.home.web3.trade.perps.PREF_HIDE_SL_GUIDE_UNTIL)
+                        .apply()
+                    toast(R.string.Reset_TpSl_Guide)
+                }
+
                 deleteWeb3Transactions.setOnClickListener {
                     context?.let { ctx ->
                         alertDialogBuilder()

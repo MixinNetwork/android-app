@@ -24,6 +24,7 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.util.analytics.AnalyticsTracker
 
 @AndroidEntryPoint
 class PositionDetailFragment : BaseFragment() {
@@ -31,20 +32,23 @@ class PositionDetailFragment : BaseFragment() {
         const val TAG = "PositionDetailFragment"
         private const val ARGS_POSITION = "args_position"
         private const val ARGS_POSITION_HISTORY = "args_position_history"
+        private const val ARGS_SOURCE = "args_source"
         private const val POSITION_REFRESH_INTERVAL_MS = 10_000L
 
-        fun newInstance(position: PerpsPositionItem): PositionDetailFragment {
+        fun newInstance(position: PerpsPositionItem, source: String = AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_DETAIL): PositionDetailFragment {
             return PositionDetailFragment().apply {
                 arguments = Bundle().apply {
                     putParcelable(ARGS_POSITION, position)
+                    putString(ARGS_SOURCE, source)
                 }
             }
         }
 
-        fun newInstance(position: PerpsPositionHistoryItem): PositionDetailFragment {
+        fun newInstance(position: PerpsPositionHistoryItem, source: String = AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_DETAIL): PositionDetailFragment {
             return PositionDetailFragment().apply {
                 arguments = Bundle().apply {
                     putParcelable(ARGS_POSITION_HISTORY, position)
+                    putString(ARGS_SOURCE, source)
                 }
             }
         }
@@ -63,6 +67,8 @@ class PositionDetailFragment : BaseFragment() {
     ): View {
         val position = arguments?.getParcelableCompat(ARGS_POSITION, PerpsPositionItem::class.java)
         val positionHistory = arguments?.getParcelableCompat(ARGS_POSITION_HISTORY, PerpsPositionHistoryItem::class.java)
+        val source = arguments?.getString(ARGS_SOURCE) ?: AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_DETAIL
+        AnalyticsTracker.trackPerpsActivityDetail(source)
 
         return ComposeView(inflater.context).apply {
             setContent {
@@ -109,7 +115,11 @@ class PositionDetailFragment : BaseFragment() {
                                 sharePosition(currentPosition)
                             },
                             onSupport = {
-                                context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                                context?.openUrl(
+                                    Constants.HelpLink.CUSTOMER_SERVICE,
+                                    source = AnalyticsTracker.CustomerServiceSource.PERPS_ACTIVITY_DETAIL,
+                                    wallet = AnalyticsTracker.TradeWallet.WEB3,
+                                )
                             }
                         )
                     } else if (positionHistory != null) {
@@ -126,7 +136,11 @@ class PositionDetailFragment : BaseFragment() {
                                 sharePosition(positionHistory)
                             },
                             onSupport = {
-                                context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                                context?.openUrl(
+                                    Constants.HelpLink.CUSTOMER_SERVICE,
+                                    source = AnalyticsTracker.CustomerServiceSource.PERPS_ACTIVITY_DETAIL,
+                                    wallet = AnalyticsTracker.TradeWallet.WEB3,
+                                )
                             }
                         )
                     }
@@ -137,6 +151,7 @@ class PositionDetailFragment : BaseFragment() {
 
     private fun showCloseDialog(position: PerpsPositionItem) {
         val perpsPosition = position.toPosition()
+        AnalyticsTracker.trackPerpsClosePositionStart()
         PerpsCloseBottomSheetDialogFragment.newInstance(perpsPosition)
             .setOnDone {
                 PerpsActivity.showDetail(
@@ -144,7 +159,8 @@ class PositionDetailFragment : BaseFragment() {
                     position.marketId,
                     position.displaySymbol.orEmpty(),
                     position.displaySymbol.orEmpty(),
-                    position.tokenSymbol.orEmpty()
+                    position.tokenSymbol.orEmpty(),
+                    AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_DETAIL,
                 )
             }
             .showNow(parentFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)
@@ -156,7 +172,8 @@ class PositionDetailFragment : BaseFragment() {
             marketId = positionHistory.marketId,
             marketSymbol = positionHistory.displaySymbol.orEmpty(),
             marketDisplaySymbol = positionHistory.displaySymbol.orEmpty(),
-            marketTokenSymbol = positionHistory.tokenSymbol.orEmpty()
+            marketTokenSymbol = positionHistory.tokenSymbol.orEmpty(),
+            source = AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_DETAIL,
         )
     }
 

@@ -12,6 +12,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
 import one.mixin.android.ui.home.reminder.VerifyMobileReminderBottomSheetDialogFragment
 import one.mixin.android.ui.setting.ui.page.RecoveryKitPage
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
@@ -46,7 +47,7 @@ class RecoveryFragment : BaseFragment(R.layout.fragment_compose) {
         binding.compose.setContent {
             RecoveryKitPage({ activity?.onBackPressedDispatcher?.onBackPressed() },
                 {
-                    navTo(AddPhoneFragment.newInstance(), AddPhoneFragment.TAG)
+                    navTo(AddPhoneFragment.newInstance(AnalyticsTracker.AddPhoneSource.RECOVERY_KEY_GUIDE), AddPhoneFragment.TAG)
                 }, {
                     navTo(MnemonicPhraseBackupFragment.newInstance(), MnemonicPhraseBackupFragment.TAG)
                 }, {
@@ -55,6 +56,7 @@ class RecoveryFragment : BaseFragment(R.layout.fragment_compose) {
                             parentFragmentManager,
                             subtitleResId = R.string.verify_mobile_reminder_desc_recovery_contact,
                             enableSnooze = false,
+                            addPhoneSource = AnalyticsTracker.AddPhoneSource.RECOVERY_KEY_GUIDE,
                         )
                     } else if (Session.isAnonymous() && !Session.saltExported()) {
                         val shown = RecoveryReminderBottomSheetDialogFragment.showForRiskAction(parentFragmentManager) {

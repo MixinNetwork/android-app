@@ -17,6 +17,7 @@ import one.mixin.android.extension.replaceFragment
 import one.mixin.android.session.Session
 import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
 import one.mixin.android.ui.home.reminder.VerifyMobileReminderBottomSheetDialogFragment
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.App
 import one.mixin.android.widget.theme.ThemeActivity
@@ -134,6 +135,7 @@ class SettingActivity : ThemeActivity() {
                         VerifyMobileReminderBottomSheetDialogFragment.showSafely(
                             supportFragmentManager,
                             enableSnooze = false,
+                            addPhoneSource = AnalyticsTracker.AddPhoneSource.SETTINGS,
                         )
                     }
                 } else if (Session.isAnonymous() && !Session.saltExported()) {

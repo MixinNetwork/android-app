@@ -28,21 +28,29 @@ import kotlin.math.min
         PerpsPositionHistory::class,
         PerpsMarket::class,
     ],
-    version = 2,
+    version = 3,
 )
 abstract class PerpsDatabase : RoomDatabase() {
     companion object {
         private var INSTANCE: PerpsDatabase? = null
         private val lock = Any()
         private var currentIdentityNumber: String? = null
-        private val MIGRATION_1_2 =
+        val MIGRATION_1_2 =
             object : Migration(1, 2) {
                 override fun migrate(db: SupportSQLiteDatabase) {
                     db.execSQL("ALTER TABLE markets ADD COLUMN category TEXT NOT NULL DEFAULT ''")
                     db.execSQL("ALTER TABLE markets ADD COLUMN tags TEXT NOT NULL DEFAULT '[]'")
                 }
             }
-
+        val MIGRATION_2_3 =
+            object : Migration(2, 3) {
+                override fun migrate(db: SupportSQLiteDatabase) {
+                    db.execSQL("ALTER TABLE positions ADD COLUMN take_profit_price TEXT")
+                    db.execSQL("ALTER TABLE positions ADD COLUMN stop_loss_price TEXT")
+                    db.execSQL("ALTER TABLE positions ADD COLUMN liquidation_price TEXT")
+                    db.execSQL("ALTER TABLE markets ADD COLUMN price_scale INTEGER NOT NULL DEFAULT 2")
+                }
+            }
         fun getDatabase(
             context: Context,
             identityNumber: String,
@@ -66,7 +74,7 @@ abstract class PerpsDatabase : RoomDatabase() {
                             listOf(
                                 object : MixinCorruptionCallback {
                                     override fun onCorruption(database: SupportSQLiteDatabase) {
-                                        val e = IllegalStateException("Perps database is corrupted, current DB version: 2")
+                                        val e = IllegalStateException("Perps database is corrupted, current DB version: 3")
                                         reportException(e)
                                     }
                                 },
@@ -79,7 +87,7 @@ abstract class PerpsDatabase : RoomDatabase() {
                                 db.execSQL("PRAGMA synchronous = NORMAL")
                             }
                         },
-                    ).addMigrations(MIGRATION_1_2)
+                    ).addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                         .fallbackToDestructiveMigration()
                         .enableMultiInstanceInvalidation()
                         .setQueryExecutor(

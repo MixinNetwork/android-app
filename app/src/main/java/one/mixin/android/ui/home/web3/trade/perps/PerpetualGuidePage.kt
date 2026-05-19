@@ -3,10 +3,12 @@ package one.mixin.android.ui.home.web3.trade.perps
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.gestures.animateScrollBy
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,7 +17,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,9 +28,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -38,6 +45,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -47,6 +55,7 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.priceFormat
 import one.mixin.android.ui.home.web3.components.OutlinedTab
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.widget.components.DotText
@@ -85,15 +94,33 @@ fun PerpetualGuidePage(
     pop: () -> Unit,
 ) {
     val coroutineScope = rememberCoroutineScope()
+    val tabListState = rememberLazyListState()
     val tabs = listOf(
         stringResource(R.string.Brief_Introduction),
         stringResource(R.string.Long),
         stringResource(R.string.Short),
         stringResource(R.string.Leverage),
-        stringResource(R.string.position_size)
+        stringResource(R.string.position_size),
+        stringResource(R.string.take_profit_stop_loss_label),
+        stringResource(R.string.Liquidation_Price),
     )
     val safeInitialTab = initialTab.coerceIn(0, tabs.lastIndex)
     var selectedTab by remember(safeInitialTab) { mutableIntStateOf(safeInitialTab) }
+    var hasCenteredInitialTab by remember { mutableStateOf(false) }
+
+    LaunchedEffect(selectedTab) {
+        if (!hasCenteredInitialTab) {
+            tabListState.scrollToItem(selectedTab)
+            tabListState.centerVisibleTab(selectedTab, animate = false)
+            hasCenteredInitialTab = true
+        } else {
+            val isVisible = tabListState.layoutInfo.visibleItemsInfo.any { it.index == selectedTab }
+            if (!isVisible) {
+                tabListState.animateScrollToItem(selectedTab)
+            }
+            tabListState.centerVisibleTab(selectedTab, animate = true)
+        }
+    }
 
     MixinAppTheme {
         Column(
@@ -130,23 +157,26 @@ fun PerpetualGuidePage(
                     .fillMaxSize()
                     .padding(horizontal = 16.dp)
             ) {
-                Row(
+                LazyRow(
+                    state = tabListState,
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState())
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    tabs.forEachIndexed { index, tab ->
+                    itemsIndexed(
+                        items = tabs,
+                        key = { index, tab -> "$tab-$index" }
+                    ) { index, tab ->
                         OutlinedTab(
                             text = tab,
                             selected = selectedTab == index,
                             showBadge = false,
                             onClick = { coroutineScope.launch { selectedTab = index } }
                         )
-                        if (index < tabs.size - 1) Spacer(modifier = Modifier.width(10.dp))
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
                 Column(
                     modifier = Modifier
@@ -160,6 +190,8 @@ fun PerpetualGuidePage(
                         2 -> ShortContent()
                         3 -> LeverageContent()
                         4 -> PositionContent()
+                        5 -> TpSlContent()
+                        6 -> LiquidationContent()
                     }
                     Spacer(modifier = Modifier.height(24.dp))
                 }
@@ -178,6 +210,19 @@ fun PerpetualGuidePage(
     }
 }
 
+private suspend fun LazyListState.centerVisibleTab(index: Int, animate: Boolean) {
+    val itemInfo = layoutInfo.visibleItemsInfo.firstOrNull { it.index == index } ?: return
+    val viewportCenter = (layoutInfo.viewportStartOffset + layoutInfo.viewportEndOffset) / 2
+    val itemCenter = itemInfo.offset + (itemInfo.size / 2)
+    val delta = itemCenter - viewportCenter
+    if (delta == 0) return
+    if (animate) {
+        animateScrollBy(delta.toFloat())
+    } else {
+        scrollBy(delta.toFloat())
+    }
+}
+
 
 @Composable
 private fun OverviewContent() {
@@ -189,8 +234,16 @@ private fun OverviewContent() {
 
 @Composable
 private fun LongContent() {
+    val viewModel = hiltViewModel<PerpetualViewModel>()
     val leverage = 10
+    val investment = 1000
     val maxLossPercent = 100f / leverage
+    val btcToken by remember {
+        viewModel.observeTokenByChainAndSymbol(
+            chainId = Constants.ChainId.BITCOIN_CHAIN_ID,
+            symbol = "BTC",
+        )
+    }.collectAsStateWithLifecycle(initialValue = null)
     ExampleWithScenariosCard(
         title = stringResource(R.string.Example),
         rows = listOf(
@@ -209,7 +262,7 @@ private fun LongContent() {
             ),
             GuideRowData(
                 label = stringResource(R.string.example_amount),
-                value = "1,000 USDT"
+                value = "${formatGuideInt(investment)} USDT"
             )
         ),
         scenarios = listOf(
@@ -222,20 +275,12 @@ private fun LongContent() {
                 isProfit = true,
                 isPriceIncrease = true,
                 maxPercent = null
-            ),
-            ScenarioData(
-                scenario = stringResource(R.string.example_scene2_decreasing),
-                change = stringResource(R.string.Price_Change),
-                initialPercent = maxLossPercent,
-                basePnlAmount = 1000,
-                basePnlPercent = 100,
-                isProfit = false,
-                isPriceIncrease = false,
-                maxPercent = maxLossPercent,
             )
-        )
+        ),
+        showScenarioTitle = false,
+        showRowsDivider = true,
     )
-    Spacer(modifier = Modifier.height(16.dp))
+    Spacer(modifier = Modifier.height(14.dp))
     DescriptionWithRulesCard(
         description = stringResource(R.string.perps_long_overview),
         rules = listOf(
@@ -247,8 +292,16 @@ private fun LongContent() {
 
 @Composable
 private fun ShortContent() {
+    val viewModel = hiltViewModel<PerpetualViewModel>()
     val leverage = 10
+    val investment = 1000
     val maxLossPercent = 100f / leverage
+    val ethToken by remember {
+        viewModel.observeTokenByChainAndSymbol(
+            chainId = Constants.ChainId.ETHEREUM_CHAIN_ID,
+            symbol = "ETH",
+        )
+    }.collectAsStateWithLifecycle(initialValue = null)
     ExampleWithScenariosCard(
         title = stringResource(R.string.Example),
         rows = listOf(
@@ -267,7 +320,7 @@ private fun ShortContent() {
             ),
             GuideRowData(
                 label = stringResource(R.string.example_amount),
-                value = "1,000 USDT"
+                value = "${formatGuideInt(investment)} USDT"
             )
         ),
         scenarios = listOf(
@@ -280,20 +333,12 @@ private fun ShortContent() {
                 isProfit = true,
                 isPriceIncrease = false,
                 maxPercent = null,
-            ),
-            ScenarioData(
-                scenario = stringResource(R.string.example_scene2_increasing),
-                change = stringResource(R.string.Price_Change),
-                initialPercent = maxLossPercent,
-                basePnlAmount = 1000,
-                basePnlPercent = 100,
-                isProfit = false,
-                isPriceIncrease = true,
-                maxPercent = maxLossPercent,
             )
-        )
+        ),
+        showScenarioTitle = false,
+        showRowsDivider = true,
     )
-    Spacer(modifier = Modifier.height(16.dp))
+    Spacer(modifier = Modifier.height(14.dp))
     DescriptionWithRulesCard(
         description = stringResource(R.string.perps_short_overview),
         rules = listOf(
@@ -305,9 +350,20 @@ private fun ShortContent() {
 
 @Composable
 private fun LeverageContent() {
+    val viewModel = hiltViewModel<PerpetualViewModel>()
     var leverage by remember { mutableIntStateOf(10) }
+    val investment = 1000
     val fixedProfitPercent = 10f
     val liquidationPercent = if (leverage > 0) 100f / leverage else 100f
+    val solToken by remember {
+        viewModel.observeTokenByChainAndSymbol(
+            chainId = Constants.ChainId.Solana,
+            symbol = "SOL",
+        )
+    }.collectAsStateWithLifecycle(initialValue = null)
+    val localSolPrice = solToken?.priceUsd?.toBigDecimalOrNull()
+    val orderValueUsdt = leverage * investment
+    val orderValueText = buildOrderValueText(orderValueUsdt, localSolPrice, "SOL")
     val profitPnlAmount = leverage * 100
     val profitPnlPercent = leverage * 10
     ExampleWithScenariosCard(
@@ -328,7 +384,11 @@ private fun LeverageContent() {
             ),
             GuideRowData(
                 label = stringResource(R.string.example_amount),
-                value = "1,000 USDT"
+                value = "${formatGuideInt(investment)} USDT"
+            ),
+            GuideRowData(
+                label = stringResource(R.string.position_size),
+                value = orderValueText,
             )
         ),
         scenarios = listOf(
@@ -341,23 +401,15 @@ private fun LeverageContent() {
                 isProfit = true,
                 isPriceIncrease = true,
                 maxPercent = null
-            ),
-            ScenarioData(
-                scenario = stringResource(R.string.example_scene2_decreasing),
-                change = stringResource(R.string.Price_Change),
-                initialPercent = liquidationPercent,
-                basePnlAmount = 1000,
-                basePnlPercent = 100,
-                isProfit = false,
-                isPriceIncrease = false,
-                maxPercent = liquidationPercent,
             )
         ),
         leverageValue = leverage,
         onLeverageChange = { leverage = it.coerceIn(1, 200) },
         isScenarioChangeAdjustable = false,
+        showScenarioTitle = false,
+        showRowsDivider = true,
     )
-    Spacer(modifier = Modifier.height(16.dp))
+    Spacer(modifier = Modifier.height(14.dp))
     DescriptionWithInfoAndRiskCard(
         description = stringResource(R.string.perps_leverage_overview),
         infoTitle = stringResource(R.string.PnL),
@@ -387,7 +439,8 @@ private fun PositionContent() {
     val orderValueUsdt = leverage * investment
     val orderValueText = buildOrderValueText(
         orderValueUsdt = orderValueUsdt,
-        localSolPrice = localSolPrice
+        localPrice = localSolPrice,
+        symbol = "SOL",
     )
     val profitPnlAmount = (orderValueUsdt * fixedProfitPercent / 100).roundToInt()
     val profitPnlPercent = (leverage * fixedProfitPercent).roundToInt()
@@ -429,16 +482,6 @@ private fun PositionContent() {
                 isProfit = true,
                 isPriceIncrease = true,
                 maxPercent = null
-            ),
-            ScenarioData(
-                scenario = stringResource(R.string.example_scene2_decreasing),
-                change = stringResource(R.string.Price_Change),
-                initialPercent = maxLossPercent,
-                basePnlAmount = lossPnlAmount,
-                basePnlPercent = lossPnlPercent,
-                isProfit = false,
-                isPriceIncrease = false,
-                maxPercent = maxLossPercent,
             )
         ),
         leverageValue = leverage,
@@ -448,16 +491,167 @@ private fun PositionContent() {
         onInvestmentChange = { investment = it.coerceIn(100, 100000) },
         investmentConfig = AdjusterConfig(min = 100, max = 100000, step = 100),
         isScenarioChangeAdjustable = false,
+        showScenarioTitle = false,
+        showRowsDivider = true,
     )
-    Spacer(modifier = Modifier.height(16.dp))
+    Spacer(modifier = Modifier.height(14.dp))
     DescriptionWithInfoAndRiskCard(
         description = stringResource(R.string.perps_position_size_overview),
         infoTitle = stringResource(R.string.PnL),
         infoContents = listOf(
-            stringResource(R.string.perps_position_size_notice_1),
-            stringResource(R.string.perps_position_size_notice_2)
+            stringResource(R.string.perps_position_size_pnl_1),
+            stringResource(R.string.perps_position_size_pnl_2)
         ),
         riskContents = emptyList()
+    )
+}
+
+@Composable
+private fun TpSlContent() {
+    val context = LocalContext.current
+    val quoteColorReversed = context.defaultSharedPreferences
+        .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
+    val profitColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+    val lossColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
+            .padding(16.dp)
+    ) {
+        Text(
+            text = stringResource(R.string.Example),
+            fontSize = 16.sp,
+            fontWeight = FontWeight.W500,
+            color = MixinAppTheme.colors.textPrimary
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        GuideValueRow(title = stringResource(R.string.perps_market)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_chain_sol),
+                    contentDescription = null,
+                    tint = Color.Unspecified,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = "SOL - USD",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.W500,
+                    color = MixinAppTheme.colors.textPrimary
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(14.dp))
+        GuideValueRow(title = stringResource(R.string.Direction)) {
+            GuideDirectionTag(
+                text = stringResource(R.string.Long),
+                backgroundColor = profitColor,
+            )
+        }
+        Spacer(modifier = Modifier.height(14.dp))
+        GuideValueRow(title = stringResource(R.string.Leverage)) {
+            Text(text = "10x", fontSize = 14.sp, fontWeight = FontWeight.W500, color = MixinAppTheme.colors.textPrimary)
+        }
+        Spacer(modifier = Modifier.height(14.dp))
+        GuideValueRow(title = stringResource(R.string.example_amount)) {
+            Text(text = "1,000 USDT", fontSize = 14.sp, fontWeight = FontWeight.W500, color = MixinAppTheme.colors.textPrimary)
+        }
+        Spacer(modifier = Modifier.height(14.dp))
+        GuideValueRow(title = stringResource(R.string.Entry_Price)) {
+            Text(text = "${PERPS_USD_SYMBOL}100", fontSize = 14.sp, fontWeight = FontWeight.W500, color = MixinAppTheme.colors.textPrimary)
+        }
+        Spacer(modifier = Modifier.height(14.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(MixinAppTheme.colors.backgroundWindow)
+        )
+        Spacer(modifier = Modifier.height(14.dp))
+        Text(
+            text = stringResource(R.string.Take_Profit),
+            fontSize = 14.sp,
+            fontWeight = FontWeight.W500,
+            color = MixinAppTheme.colors.textPrimary
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        GuideValueRow(title = stringResource(R.string.Trigger_Price)) {
+            Text(text = "${PERPS_USD_SYMBOL}110", fontSize = 14.sp, fontWeight = FontWeight.W500, color = MixinAppTheme.colors.textPrimary)
+        }
+        Spacer(modifier = Modifier.height(14.dp))
+        GuideValueRow(title = stringResource(R.string.PnL)) {
+            Text(text = "+1,000 USDT (+100%)", fontSize = 14.sp, fontWeight = FontWeight.W500, color = profitColor)
+        }
+        Spacer(modifier = Modifier.height(14.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(MixinAppTheme.colors.backgroundWindow)
+        )
+        Spacer(modifier = Modifier.height(14.dp))
+        Text(
+            text = stringResource(R.string.Stop_Loss),
+            fontSize = 14.sp,
+            fontWeight = FontWeight.W500,
+            color = MixinAppTheme.colors.textPrimary
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        GuideValueRow(title = stringResource(R.string.Trigger_Price)) {
+            Text(text = "${PERPS_USD_SYMBOL}95", fontSize = 14.sp, fontWeight = FontWeight.W500, color = MixinAppTheme.colors.textPrimary)
+        }
+        Spacer(modifier = Modifier.height(14.dp))
+        GuideValueRow(title = stringResource(R.string.PnL)) {
+            Text(text = "-500 USDT", fontSize = 14.sp, fontWeight = FontWeight.W500, color = lossColor)
+        }
+    }
+    Spacer(modifier = Modifier.height(14.dp))
+    DescriptionWithInfoAndRiskCard(
+        description = stringResource(R.string.perps_tpsl_overview),
+        infoTitle = stringResource(R.string.PnL),
+        infoContents = listOf(
+            stringResource(R.string.perps_tpsl_key_point_1),
+            stringResource(R.string.perps_tpsl_key_point_2),
+        ),
+        riskContents = emptyList(),
+    )
+}
+
+@Composable
+private fun LiquidationContent() {
+    var isLong by remember { mutableStateOf(true) }
+    var leverage by remember { mutableIntStateOf(10) }
+    val marketPrice = BigDecimal("100.00")
+    val liquidationPrice = remember(marketPrice, leverage, isLong) {
+        calculateGuideLiquidationPrice(
+            marketPrice = marketPrice,
+            leverage = leverage,
+            isLong = isLong,
+        )
+    }
+
+    LiquidationExampleCard(
+        title = stringResource(R.string.Example),
+        isLong = isLong,
+        onDirectionChange = { isLong = it },
+        leverage = leverage,
+        onLeverageChange = { leverage = it.coerceIn(1, 200) },
+        marketPrice = marketPrice,
+        liquidationPrice = liquidationPrice,
+    )
+    Spacer(modifier = Modifier.height(14.dp))
+    DescriptionWithInfoAndRiskCard(
+        description = stringResource(R.string.perps_liquidation_price_overview),
+        infoTitle = stringResource(R.string.Spot_Trade_Guide_Additional_Notes),
+        infoContents = listOf(
+            stringResource(R.string.perps_liquidation_price_key_point_1),
+            stringResource(R.string.perps_liquidation_price_key_point_2),
+            stringResource(R.string.perps_liquidation_price_key_point_3),
+        ),
+        riskContents = emptyList(),
     )
 }
 
@@ -535,6 +729,91 @@ private fun GuideBottomNavigation(
 }
 
 @Composable
+private fun LiquidationExampleCard(
+    title: String,
+    isLong: Boolean,
+    onDirectionChange: (Boolean) -> Unit,
+    leverage: Int,
+    onLeverageChange: (Int) -> Unit,
+    marketPrice: BigDecimal,
+    liquidationPrice: BigDecimal,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
+            .padding(16.dp)
+    ) {
+        Text(
+            text = title,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.W500,
+            color = MixinAppTheme.colors.textPrimary
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        GuideValueRow(title = stringResource(R.string.perps_market)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_chain_sol),
+                    contentDescription = null,
+                    tint = Color.Unspecified,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = "SOL - USD",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.W500,
+                    color = MixinAppTheme.colors.textPrimary
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(14.dp))
+        GuideValueRow(title = stringResource(R.string.Direction)) {
+            GuideDirectionToggle(
+                isLong = isLong,
+                onDirectionChange = onDirectionChange,
+            )
+        }
+        Spacer(modifier = Modifier.height(14.dp))
+        GuideValueRow(title = stringResource(R.string.Leverage)) {
+            GuideNumberAdjuster(
+                valueText = "${leverage}x",
+                canDecrease = leverage > 1,
+                canIncrease = leverage < 200,
+                onDecrease = { onLeverageChange(leverage - 1) },
+                onIncrease = { onLeverageChange(leverage + 1) },
+            )
+        }
+        Spacer(modifier = Modifier.height(14.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(MixinAppTheme.colors.backgroundWindow)
+        )
+        Spacer(modifier = Modifier.height(14.dp))
+        GuideValueRow(title = stringResource(R.string.Entry_Price)) {
+            Text(
+                text = "$PERPS_USD_SYMBOL${marketPrice.priceFormat()}",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.W500,
+                color = MixinAppTheme.colors.textPrimary
+            )
+        }
+        Spacer(modifier = Modifier.height(14.dp))
+        GuideValueRow(title = stringResource(R.string.Liquidation_Price)) {
+            Text(
+                text = "$PERPS_USD_SYMBOL${liquidationPrice.priceFormat()}",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.W500,
+                color = MixinAppTheme.colors.textPrimary
+            )
+        }
+    }
+}
+
+@Composable
 fun GuideNavigationButton(
     text: String,
     isPrevious: Boolean,
@@ -542,11 +821,13 @@ fun GuideNavigationButton(
     onClick: () -> Unit,
 ) {
     MixinButton(
-        modifier = modifier.wrapContentSize(),
+        modifier = modifier,
         onClick = onClick,
         shape = RoundedCornerShape(32.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
     ) {
         Row(
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
         ) {
@@ -563,6 +844,9 @@ fun GuideNavigationButton(
                 fontSize = 14.sp,
                 fontWeight = FontWeight.W500,
                 color = Color.White,
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Ellipsis,
             )
             if (!isPrevious) {
                 Spacer(modifier = Modifier.width(4.dp))
@@ -657,6 +941,8 @@ private fun ExampleWithScenariosCard(
     onInvestmentChange: ((Int) -> Unit)? = null,
     investmentConfig: AdjusterConfig = AdjusterConfig(min = 10, max = 1000, step = 10),
     isScenarioChangeAdjustable: Boolean = true,
+    showScenarioTitle: Boolean = true,
+    showRowsDivider: Boolean = false,
 ) {
     val context = LocalContext.current
     val quoteColorReversed = context.defaultSharedPreferences
@@ -698,25 +984,14 @@ private fun ExampleWithScenariosCard(
             val label = row.label
             val value = row.value
             if (index > 0) {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(14.dp))
             }
-            Row(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = label,
-                    fontSize = 14.sp,
-                    color = MixinAppTheme.colors.textAssist,
-                    modifier = Modifier.weight(1f)
-                )
+            GuideValueRow(title = label) {
                 if (label == directionLabel && (value == longDirection || value == shortDirection)) {
                     val directionColor = if (value == longDirection) risingColor else fallingColor
-                    Text(
+                    GuideDirectionTag(
                         text = value,
-                        fontSize = 14.sp,
-                        color = Color.White,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(directionColor)
-                            .padding(horizontal = 8.dp, vertical = 1.dp),
+                        backgroundColor = directionColor,
                     )
                 } else if (label == leverageLabel && leverageValue != null && onLeverageChange != null) {
                     GuideNumberAdjuster(
@@ -756,6 +1031,7 @@ private fun ExampleWithScenariosCard(
                         Text(
                             text = value,
                             fontSize = 14.sp,
+                            fontWeight = FontWeight.W500,
                             color = MixinAppTheme.colors.textPrimary
                         )
                     }
@@ -763,11 +1039,21 @@ private fun ExampleWithScenariosCard(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        if (showRowsDivider) {
+            Spacer(modifier = Modifier.height(14.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(MixinAppTheme.colors.backgroundWindow)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
 
         orderedScenarios.forEachIndexed { index, scenario ->
             if (index > 0) {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(14.dp))
             }
             val priceChangeColor = if (scenario.isPriceIncrease) risingColor else fallingColor
             val pnlColor = if (scenario.isProfit) risingColor else fallingColor
@@ -775,14 +1061,16 @@ private fun ExampleWithScenariosCard(
                 modifier = Modifier
                     .fillMaxWidth()
             ) {
-                Text(
-                    text = scenario.scenario,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.W500,
-                    color = MixinAppTheme.colors.textPrimary
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                Spacer(modifier = Modifier.height(16.dp))
+                if (showScenarioTitle) {
+                    Text(
+                        text = scenario.scenario,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.W500,
+                        color = MixinAppTheme.colors.textPrimary
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
+                }
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Text(
                         text = scenario.change,
@@ -825,7 +1113,7 @@ private fun ExampleWithScenariosCard(
                             Text(
                                 text = scenario.formatChangePercent(percent),
                                 fontSize = 14.sp,
-                                fontWeight = FontWeight.Medium,
+                                fontWeight = FontWeight.W500,
                                 color = priceChangeColor,
                                 modifier = Modifier.padding(horizontal = 8.dp),
                             )
@@ -856,13 +1144,13 @@ private fun ExampleWithScenariosCard(
                             Text(
                                 text = scenario.formatChangePercent(percent),
                                 fontSize = 14.sp,
-                                fontWeight = FontWeight.Medium,
+                                fontWeight = FontWeight.W500,
                                 color = priceChangeColor,
                             )
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(14.dp))
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Text(
                         text = stringResource(R.string.PnL),
@@ -873,7 +1161,7 @@ private fun ExampleWithScenariosCard(
                     Text(
                         text = scenario.formatPnl(changePercents[index]),
                         fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
+                        fontWeight = FontWeight.W500,
                         color = pnlColor
                     )
                 }
@@ -935,23 +1223,118 @@ private fun GuideNumberAdjuster(
     }
 }
 
+@Composable
+private fun GuideDirectionTag(
+    text: String,
+    backgroundColor: Color,
+    modifier: Modifier = Modifier,
+    textColor: Color = Color.White,
+) {
+    Text(
+        text = text,
+        fontSize = 13.sp,
+        lineHeight = 18.sp,
+        fontWeight = FontWeight.W500,
+        color = textColor,
+        modifier = modifier
+            .clip(RoundedCornerShape(6.dp))
+            .background(backgroundColor)
+            .padding(horizontal = 8.dp, vertical = 1.dp),
+    )
+}
+
+@Composable
+private fun GuideValueRow(
+    title: String,
+    value: @Composable () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = title,
+            fontSize = 14.sp,
+            color = MixinAppTheme.colors.textAssist,
+            modifier = Modifier.weight(1f)
+        )
+        Box(contentAlignment = Alignment.CenterEnd) {
+            value()
+        }
+    }
+}
+
+@Composable
+private fun GuideDirectionToggle(
+    isLong: Boolean,
+    onDirectionChange: (Boolean) -> Unit,
+) {
+    val context = LocalContext.current
+    val quoteColorReversed = context.defaultSharedPreferences
+        .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
+    val longColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+    val shortColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+    Row(
+        modifier = Modifier
+            .clip(RoundedCornerShape(6.dp))
+            .background(MixinAppTheme.colors.backgroundWindow)
+            .padding(2.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        listOf(true, false).forEach { itemIsLong ->
+            val selected = itemIsLong == isLong
+            GuideDirectionTag(
+                text = stringResource(if (itemIsLong) R.string.Long else R.string.Short),
+                backgroundColor = if (selected) {
+                    if (itemIsLong) longColor else shortColor
+                } else {
+                    Color.Transparent
+                },
+                textColor = if (selected) Color.White else MixinAppTheme.colors.textAssist,
+                modifier = Modifier.clickable { onDirectionChange(itemIsLong) },
+            )
+        }
+    }
+}
+
 private fun formatGuideInt(value: Int): String {
     return String.format("%,d", value)
 }
 
+private fun calculateGuideLiquidationPrice(
+    marketPrice: BigDecimal,
+    leverage: Int,
+    isLong: Boolean,
+): BigDecimal {
+    val safeLeverage = leverage.coerceAtLeast(1)
+    val liquidationOffset = BigDecimal.ONE.divide(
+        safeLeverage.toBigDecimal(),
+        8,
+        RoundingMode.HALF_UP,
+    )
+    val multiplier = if (isLong) {
+        BigDecimal.ONE.subtract(liquidationOffset)
+    } else {
+        BigDecimal.ONE.add(liquidationOffset)
+    }
+    return marketPrice.multiply(multiplier).setScale(2, RoundingMode.HALF_UP)
+}
+
 private fun buildOrderValueText(
     orderValueUsdt: Int,
-    localSolPrice: BigDecimal?,
+    localPrice: BigDecimal?,
+    symbol: String,
 ): String {
-    val solPrice = localSolPrice ?: return "-- SOL"
-    if (solPrice <= BigDecimal.ZERO) {
-        return "-- SOL"
+    val price = localPrice ?: return "-- $symbol"
+    if (price <= BigDecimal.ZERO) {
+        return "-- $symbol"
     }
-    val solAmount = BigDecimal(orderValueUsdt.toString())
-        .divide(solPrice, 2, RoundingMode.HALF_UP)
+    val amount = BigDecimal(orderValueUsdt.toString())
+        .divide(price, 2, RoundingMode.HALF_UP)
         .stripTrailingZeros()
         .toPlainString()
-    return "$solAmount SOL"
+    return "$amount $symbol"
 }
 
 private fun formatPercent(percent: Float): String {
@@ -1009,7 +1392,7 @@ private fun DescriptionWithRulesCard(
             color = MixinAppTheme.colors.textPrimary
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(14.dp))
 
         Text(
             text = stringResource(R.string.PnL),
@@ -1055,7 +1438,7 @@ private fun DescriptionWithInfoAndRiskCard(
             color = MixinAppTheme.colors.textPrimary
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(14.dp))
 
         Column(
             modifier = Modifier

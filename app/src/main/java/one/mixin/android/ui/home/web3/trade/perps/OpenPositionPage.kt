@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -72,8 +73,8 @@ import one.mixin.android.ui.home.web3.trade.TradeFragment
 import one.mixin.android.ui.wallet.AddFeeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getMixinErrorStringByCode
-import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.components.MixinButton
 import java.math.BigDecimal
@@ -122,6 +123,7 @@ private fun resolveCurrentToken(
 fun OpenPositionPage(
     market: PerpsMarket,
     isLong: Boolean,
+    source: String,
     onBack: () -> Unit,
     onOpenSuccess: (String) -> Unit = { onBack() },
     selectedToken: TokenItem?,
@@ -142,6 +144,8 @@ fun OpenPositionPage(
     var currentToken by remember { mutableStateOf<TokenItem?>(selectedToken) }
     var availableTokens by remember { mutableStateOf<List<TokenItem>>(emptyList()) }
     var usdtAmount by remember { mutableStateOf("") }
+    var takeProfitPrice by remember { mutableStateOf("") }
+    var stopLossPrice by remember { mutableStateOf("") }
     var errorInfo by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
 
@@ -199,7 +203,7 @@ fun OpenPositionPage(
         onCurrentTokenChange(currentToken)
     }
     val maxLeverage = currentMarket.leverage.coerceAtLeast(1)
-    LaunchedEffect(usdtAmount, leverage, currentToken?.assetId) {
+    LaunchedEffect(usdtAmount, leverage, currentToken?.assetId, takeProfitPrice, stopLossPrice) {
         errorInfo = null
     }
     LaunchedEffect(maxLeverage, marketId) {
@@ -211,8 +215,6 @@ fun OpenPositionPage(
     }
 
     val leverageOptions = generateLeverageOptions(maxLeverage)
-    val fiatRate = BigDecimal(Fiats.getRate())
-    val fiatSymbol = Fiats.getSymbol()
     val inputAmount = usdtAmount.toBigDecimalOrNull()
     val tokenBalance = currentToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val minimumMargin = currentMarket.minAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
@@ -243,6 +245,39 @@ fun OpenPositionPage(
             ?.takeIf { it.isNotBlank() }
             ?: ""
 
+    fun showPerpsGuide(tab: Int) {
+        val activity = context as? FragmentActivity ?: return
+        PerpetualGuideBottomSheetDialogFragment.newInstance(tab)
+            .show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
+    }
+
+    fun showTpSlBottomSheet(mode: PerpsTpSlBottomSheetDialogFragment.Mode) {
+        val activity = context as? FragmentActivity ?: return
+        PerpsTpSlBottomSheetDialogFragment.newInstance(
+            mode = mode,
+            price = if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
+                takeProfitPrice
+            } else {
+                stopLossPrice
+            },
+            currentPrice = currentMarket.last,
+            isLong = isLong,
+            marketIconUrl = currentMarket.iconUrl,
+            marketSymbol = currentMarket.tokenSymbol,
+            marginAmount = usdtAmount,
+            leverage = leverage.toInt(),
+            entryPrice = null,
+            marketId = currentMarket.marketId,
+            priceScale = currentMarket.priceScale,
+        ).setOnApply { value ->
+            if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
+                takeProfitPrice = value.orEmpty()
+            } else {
+                stopLossPrice = value.orEmpty()
+            }
+        }.show(activity.supportFragmentManager, PerpsTpSlBottomSheetDialogFragment.TAG)
+    }
+
     MixinAppTheme {
         PageScaffold(
             title = stringResource(R.string.Open_Position),
@@ -250,7 +285,11 @@ fun OpenPositionPage(
             pop = onBack,
             actions = {
                 IconButton(onClick = {
-                    context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                    context.openUrl(
+                        Constants.HelpLink.CUSTOMER_SERVICE,
+                        source = AnalyticsTracker.CustomerServiceSource.PERPS_OPEN_POSITION,
+                        wallet = AnalyticsTracker.TradeWallet.WEB3,
+                    )
                 }) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_support),
@@ -291,7 +330,7 @@ fun OpenPositionPage(
                         Text(
                             text = stringResource(
                                 R.string.Current_price,
-                                formatFiatPrice(currentMarket.last)
+                                formatPerpsPrice(currentMarket.last, currentMarket.priceScale)
                             ),
                             fontSize = 13.sp,
                             color = MixinAppTheme.colors.textAssist
@@ -334,6 +373,7 @@ fun OpenPositionPage(
                         token = currentToken?.toSwapToken(),
                         text = usdtAmount,
                         selectClick = {
+                            AnalyticsTracker.trackPerpsMarginTokenSelect(currentToken?.chainName, currentToken?.symbol)
                             onTokenSelect()
                         },
                         onInputChanged = { usdtAmount = it },
@@ -359,6 +399,7 @@ fun OpenPositionPage(
                                 textAlign = TextAlign.Start,
                             ),
                             modifier = Modifier.clickable {
+                                AnalyticsTracker.trackPerpsAmountInputBalance()
                                 usdtAmount = currentToken?.balance ?: "0"
                             }
                         )
@@ -443,6 +484,7 @@ fun OpenPositionPage(
                             ).setOnLeverageSelected { newLeverage ->
                                 leverage = newLeverage
                                 context.defaultSharedPreferences.putInt(getLeveragePrefKey(marketId), newLeverage.toInt())
+                                AnalyticsTracker.trackPerpsLeverageSelect(PERPS_LEVERAGE_CUSTOM_INPUT)
                             }.show(activity.supportFragmentManager, LeverageBottomSheetDialogFragment.TAG)
                         },
                         text = "${leverage.toInt()}x",
@@ -490,6 +532,7 @@ fun OpenPositionPage(
                                     )
                                     .clickable {
                                         if (lev == -1) {
+                                            AnalyticsTracker.trackPerpsLeverageSelect(PERPS_LEVERAGE_CUSTOM_TAB)
                                             val activity = context as? FragmentActivity ?: return@clickable
                                             LeverageBottomSheetDialogFragment.newInstance(
                                                 currentLeverage = leverage,
@@ -499,10 +542,18 @@ fun OpenPositionPage(
                                             ).setOnLeverageSelected { newLeverage ->
                                                 leverage = newLeverage
                                                 context.defaultSharedPreferences.putInt(getLeveragePrefKey(marketId), newLeverage.toInt())
+                                                AnalyticsTracker.trackPerpsLeverageSelect(PERPS_LEVERAGE_CUSTOM_INPUT)
                                             }.show(activity.supportFragmentManager, LeverageBottomSheetDialogFragment.TAG)
                                         } else {
                                             leverage = lev.toFloat()
                                             context.defaultSharedPreferences.putInt(getLeveragePrefKey(marketId), lev)
+                                            AnalyticsTracker.trackPerpsLeverageSelect(
+                                                if (lev == maxLeverage) {
+                                                    PERPS_LEVERAGE_MAX
+                                                } else {
+                                                    lev.toPerpsLeverageValue()
+                                                }
+                                            )
                                         }
                                     },
                                 contentAlignment = Alignment.Center
@@ -526,8 +577,6 @@ fun OpenPositionPage(
                         leverage = leverage,
                         isLong = isLong,
                         priceChangePercent = 1.0,
-                        fiatRate = fiatRate,
-                        fiatSymbol = fiatSymbol,
                     )
 
                     Text(
@@ -544,55 +593,61 @@ fun OpenPositionPage(
 
                 Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
+                        .fillMaxWidth().padding(horizontal = 16.dp),
                 ) {
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Row (verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = stringResource(R.string.position_size),
-                                fontSize = 14.sp,
-                                color = MixinAppTheme.colors.textAssist
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_tip),
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .size(12.dp)
-                                    .clickable {
-                                        val activity = context as? FragmentActivity ?: return@clickable
-                                        PerpetualGuideBottomSheetDialogFragment.newInstance(PerpetualGuideBottomSheetDialogFragment.TAB_POSITION)
-                                            .show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
-                                    },
-                                tint = MixinAppTheme.colors.textAssist
-                            )
-                        }
-                        Text(
-                            text = "${calculateOrderValue(usdtAmount, leverage, currentMarket.last)} ${currentMarket.tokenSymbol}",
-                            fontSize = 14.sp,
-                            color = MixinAppTheme.colors.textAssist
-                        )
-                    }
+                    val quoteColorReversed = context.defaultSharedPreferences
+                        .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
+                    val tpColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+                    val slColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+                    PerpsActionRow(
+                        title = stringResource(R.string.Take_Profit),
+                        value = takeProfitPrice.takeIf { it.isNotBlank() }?.let(::formatPerpsPrice),
+                        valueColor = tpColor,
+                        onClick = {
+                            showTpSlBottomSheet(PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT)
+                        },
+                        onTipClick = {
+                            showPerpsGuide(PerpetualGuideBottomSheetDialogFragment.TAB_TP_SL)
+                        },
+                    )
                     Spacer(modifier = Modifier.height(16.dp))
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Row (verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = stringResource(R.string.Liquidation_Price),
-                                fontSize = 14.sp,
-                                color = MixinAppTheme.colors.textAssist
-                            )
+                    PerpsActionRow(
+                        title = stringResource(R.string.Stop_Loss),
+                        value = stopLossPrice.takeIf { it.isNotBlank() }?.let(::formatPerpsPrice),
+                        valueColor = slColor,
+                        onClick = {
+                            showTpSlBottomSheet(PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS)
+                        },
+                        onTipClick = {
+                            showPerpsGuide(PerpetualGuideBottomSheetDialogFragment.TAB_TP_SL)
+                        },
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    PerpsInfoRow(
+                        title = stringResource(R.string.position_size),
+                        value = formatPositionSizeValue(
+                            amount = usdtAmount,
+                            leverage = leverage,
+                            price = currentMarket.last,
+                            tokenSymbol = currentMarket.tokenSymbol,
+                        ),
+                        onTipClick = {
+                            AnalyticsTracker.trackPerpsGuide(AnalyticsTracker.PerpsSource.PERPS_OPEN_POSITION_SIZE)
+                            showPerpsGuide(PerpetualGuideBottomSheetDialogFragment.TAB_POSITION)
                         }
-                        Text(
-                            text = calculateLiquidationPrice(
-                                currentMarket.last,
-                                leverage,
-                                isLong,
-                            ),
-                            fontSize = 14.sp,
-                            color = MixinAppTheme.colors.textAssist
-                        )
-                    }
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    PerpsInfoRow(
+                        title = stringResource(R.string.Liquidation_Price),
+                        value = calculateLiquidationPrice(
+                            currentMarket.last,
+                            leverage,
+                            isLong,
+                        ),
+                        onTipClick = {
+                            showPerpsGuide(PerpetualGuideBottomSheetDialogFragment.TAB_LIQUIDATION)
+                        },
+                    )
                 }
 
                 Spacer(modifier = Modifier.weight(1f))
@@ -617,6 +672,7 @@ fun OpenPositionPage(
                         .fillMaxWidth()
                         .height(48.dp),
                     onClick = {
+                        AnalyticsTracker.trackPerpsPreview(leverage.toInt().toPerpsLeverageValue())
                         errorInfo = null
                         val token = currentToken ?: return@MixinButton
                         val amount = usdtAmount.toBigDecimalOrNull() ?: return@MixinButton
@@ -640,8 +696,6 @@ fun OpenPositionPage(
 
                         val price = m.last.toBigDecimalOrNull() ?: BigDecimal.ZERO
                         if (price == BigDecimal.ZERO) return@MixinButton
-
-
                         scope.launch {
                             val hasOpeningPosition = viewModel.getOpenPositionsFromDb(walletId)
                                 .any { it.marketId == m.marketId }
@@ -657,6 +711,9 @@ fun OpenPositionPage(
                                 amount = amount.stripTrailingZeros().toPlainString(),
                                 leverage = leverage.toInt(),
                                 walletId = walletId,
+                                // Null means "leave TP/SL unset" when creating a new position.
+                                takeProfitPrice = takeProfitPrice.takeIf { it.isNotBlank() },
+                                stopLossPrice = stopLossPrice.takeIf { it.isNotBlank() },
                                 entryPrice = m.last,
                                 onSuccess = { response ->
                                     PerpsConfirmBottomSheetDialogFragment.newInstance(
@@ -667,6 +724,8 @@ fun OpenPositionPage(
                                         leverage = leverage.toInt(),
                                         entryPrice = m.last,
                                         tokenSymbol = token.symbol,
+                                        takeProfitPrice = takeProfitPrice.takeIf { it.isNotBlank() },
+                                        stopLossPrice = stopLossPrice.takeIf { it.isNotBlank() },
                                         payUrl = response.paymentUrl
                                     ).setOnDone {
                                             onOpenSuccess(m.marketId)
@@ -728,12 +787,15 @@ fun OpenPositionPage(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         InputAction("25%", showBorder = true) {
+                            AnalyticsTracker.trackPerpsAmountInputPercent("25%")
                             applyBalancePercent(BigDecimal("0.25"))
                         }
                         InputAction("50%", showBorder = true) {
+                            AnalyticsTracker.trackPerpsAmountInputPercent("50%")
                             applyBalancePercent(BigDecimal("0.5"))
                         }
                         InputAction("100%", showBorder = true) {
+                            AnalyticsTracker.trackPerpsAmountInputPercent("max")
                             applyBalancePercent(BigDecimal.ONE)
                         }
                         InputAction(stringResource(R.string.Done), showBorder = false) {
@@ -761,59 +823,70 @@ private fun generateLeverageOptions(maxLeverage: Int): List<Int> {
     return options.distinct()
 }
 
+private const val PERPS_LEVERAGE_MAX = "max"
+private const val PERPS_LEVERAGE_CUSTOM_TAB = "custom_tab"
+private const val PERPS_LEVERAGE_CUSTOM_INPUT = "custom_input"
+
+private fun Int.toPerpsLeverageValue(): String = "${this}x"
+
 @Composable
 private fun calculateProfitInfo(
     amount: String,
     leverage: Float,
     isLong: Boolean,
     priceChangePercent: Double,
-    fiatRate: BigDecimal,
-    fiatSymbol: String,
 ): String {
+    val context = LocalContext.current
     val amountValue = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val leverageInt = leverage.roundToInt()
+    val priceChangeText = abs(priceChangePercent).roundToInt().toString()
     if (amountValue == BigDecimal.ZERO) {
-        return if (isLong) {
-            stringResource(R.string.Price_Up_Profit, "1", leverageInt.toString(), formatPerpsRawUsdDecimal(BigDecimal.ZERO))
-        } else {
-            stringResource(R.string.Price_Down_Profit, "1", leverageInt.toString(), formatPerpsRawUsdDecimal(BigDecimal.ZERO))
-        }
+        return context.formatPerpsProfitPreview(
+            isLong = isLong,
+            priceChangeText = "1",
+            profitPercentText = leverageInt.toString(),
+            profitAmountText = formatPerpsRawUsdDecimal(BigDecimal.ZERO),
+        )
     }
 
     val profitPercent = leverageInt
     val profitAmount = amountValue
         .multiply(BigDecimal(profitPercent).divide(BigDecimal(100)))
 
-    return if (isLong) {
-        stringResource(
-            R.string.Price_Up_Profit,
-            String.format("%.0f", abs(priceChangePercent)),
-            profitPercent.toString(),
-            formatPerpsRawUsdDecimal(profitAmount)
-        )
-    } else {
-        stringResource(
-            R.string.Price_Down_Profit,
-            String.format("%.0f", abs(priceChangePercent)),
-            profitPercent.toString(),
-            formatPerpsRawUsdDecimal(profitAmount)
-        )
-    }
+    return context.formatPerpsProfitPreview(
+        isLong = isLong,
+        priceChangeText = priceChangeText,
+        profitPercentText = profitPercent.toString(),
+        profitAmountText = formatPerpsRawUsdDecimal(profitAmount),
+    )
 }
 
-private fun calculateOrderValue(amount: String, leverage: Float, price: String): String {
+private fun calculateOrderValue(amount: String, leverage: Float, price: String): BigDecimal {
     val amountValue = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val priceValue = price.toBigDecimalOrNull() ?: BigDecimal.ZERO
 
-
     if (priceValue == BigDecimal.ZERO) {
-        return "0"
+        return BigDecimal.ZERO
     }
 
-    val orderValue = (amountValue * BigDecimal(leverage.toDouble())).divide(priceValue, 8, RoundingMode.HALF_UP)
-    val result = orderValue.stripTrailingZeros().toPlainString()
+    return (amountValue * BigDecimal(leverage.toDouble()))
+        .divide(priceValue, 8, RoundingMode.HALF_UP)
+}
 
-    return result
+private fun formatPositionSizeValue(
+    amount: String,
+    leverage: Float,
+    price: String,
+    tokenSymbol: String,
+): String {
+    val amountValue = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val orderValue = calculateOrderValue(amount, leverage, price)
+    val quantityText = formatPerpsQuantity(orderValue)
+    val usdValue = formatPerpsUsdDecimal(amountValue.multiply(BigDecimal(leverage.toDouble())))
+    return listOf(quantityText, tokenSymbol)
+        .filter { it.isNotBlank() }
+        .joinToString(" ")
+        .let { "$it ($usdValue)" }
 }
 
 private fun calculateLiquidationPrice(
@@ -825,7 +898,7 @@ private fun calculateLiquidationPrice(
 
 
     if (price == BigDecimal.ZERO) {
-        return "0"
+        return formatPerpsUsdDecimal(BigDecimal.ZERO)
     }
 
     val liquidationPercent = BigDecimal(100.0 / leverage)
@@ -838,8 +911,103 @@ private fun calculateLiquidationPrice(
     return formatPerpsUsdDecimal(liquidationPrice)
 }
 
-private fun formatFiatPrice(
+private fun formatPerpsPrice(
     rawPrice: String,
 ): String {
-    return "$PERPS_USD_SYMBOL$rawPrice"
+    val price = rawPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    return "$PERPS_USD_SYMBOL${price.priceFormat()}"
+}
+
+@Composable
+private fun PerpsActionRow(
+    title: String,
+    value: String?,
+    valueColor: Color? = null,
+    onClick: () -> Unit,
+    onTipClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = title,
+                fontSize = 14.sp,
+                color = MixinAppTheme.colors.textAssist,
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Icon(
+                painter = painterResource(id = R.drawable.ic_tip),
+                contentDescription = null,
+                tint = MixinAppTheme.colors.textAssist,
+                modifier = Modifier
+                    .size(16.dp)
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = onTipClick,
+                    ),
+            )
+        }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = value ?: stringResource(R.string.Add),
+                fontSize = 14.sp,
+                color = if (value == null) MixinAppTheme.colors.accent else (valueColor ?: MixinAppTheme.colors.textPrimary),
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Icon(
+                painter = painterResource(id = R.drawable.ic_arrow_right),
+                contentDescription = null,
+                tint = MixinAppTheme.colors.textAssist,
+                modifier = Modifier.size(16.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun PerpsInfoRow(
+    title: String,
+    value: String,
+    onTipClick: (() -> Unit)? = null,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = title,
+                fontSize = 14.sp,
+                color = MixinAppTheme.colors.textAssist,
+            )
+            if (onTipClick != null) {
+                Spacer(modifier = Modifier.width(4.dp))
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_tip),
+                    contentDescription = null,
+                    tint = MixinAppTheme.colors.textAssist,
+                    modifier = Modifier
+                        .size(16.dp)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = onTipClick,
+                        ),
+                )
+            }
+        }
+        Text(
+            text = value,
+            fontSize = 14.sp,
+            color = MixinAppTheme.colors.textAssist,
+            textAlign = TextAlign.End,
+        )
+    }
 }

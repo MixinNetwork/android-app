@@ -49,6 +49,7 @@ import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.wallet.AllTransactionsFragment.Companion.ARGS_TOKEN
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_ASSET_ID
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET
+import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET_SOURCE
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
@@ -140,7 +141,9 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                                 requireActivity(),
                                 inMixin = true,
                                 input = asset.assetId,
-                                output = output
+                                output = output,
+                                entrySource = TradeSource.ASSET_DETAIL,
+                                entryType = AnalyticsTracker.SpotTradeType.SIMPLE,
                             )
                         }
                     }
@@ -158,7 +161,9 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                         requireActivity(),
                         inMixin = true,
                         input = asset.assetId,
-                        output = output
+                        output = output,
+                        entrySource = TradeSource.ASSET_DETAIL,
+                        entryType = AnalyticsTracker.SpotTradeType.SIMPLE,
                     )
                 }
             }
@@ -234,6 +239,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                         Bundle().apply {
                             putParcelable(ARGS_MARKET, market)
                             putString(ARGS_ASSET_ID, asset.assetId)
+                            putString(ARGS_MARKET_SOURCE, AnalyticsTracker.MarketSource.TOKEN_DETAIL)
                         },
                     )
                 }

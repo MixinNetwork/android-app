@@ -34,6 +34,7 @@ import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.web.WebActivity
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ForwardAction
@@ -269,6 +270,7 @@ fun String.checkUserOrApp(
                         } catch (e: Exception) {
                             app.homeUri
                         }
+                    AnalyticsTracker.trackOpenBotHomePage(AnalyticsTracker.BotSource.SCHEME, app.appNumber)
                     WebActivity.show(context, url, null, app)
                     if (context is UrlInterpreterActivity) {
                         context.finish()
@@ -276,7 +278,7 @@ fun String.checkUserOrApp(
                     return@launch
                 }
             }
-            showUserBottom(supportFragmentManager, user)
+            showUserBottom(supportFragmentManager, user, botEntrySource = AnalyticsTracker.BotSource.SCHEME)
         }
     }
 }

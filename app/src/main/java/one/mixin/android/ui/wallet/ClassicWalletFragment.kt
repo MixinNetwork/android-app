@@ -270,14 +270,26 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                                         val chainIdResume = web3ViewModel.getAddresses(walletId).first().chainId
                                         if (showImportKeyReminderIfNeeded(walletResume?.toWeb3Wallet(), chainIdResume)) return@launch
                                         AnalyticsTracker.trackTradeStart(TradeWallet.WEB3, TradeSource.WALLET_HOME)
-                                        SwapActivity.show(requireActivity(), inMixin = false, walletId = walletId)
+                                        SwapActivity.show(
+                                            requireActivity(),
+                                            inMixin = false,
+                                            walletId = walletId,
+                                            entrySource = TradeSource.WALLET_HOME,
+                                            entryType = AnalyticsTracker.SpotTradeType.SIMPLE,
+                                        )
                                     }
                                 }
                             ) {
                                 return@launch
                             }
                             AnalyticsTracker.trackTradeStart(TradeWallet.WEB3, TradeSource.WALLET_HOME)
-                            SwapActivity.show(requireActivity(), inMixin = false, walletId = walletId)
+                            SwapActivity.show(
+                                requireActivity(),
+                                inMixin = false,
+                                walletId = walletId,
+                                entrySource = TradeSource.WALLET_HOME,
+                                entryType = AnalyticsTracker.SpotTradeType.SIMPLE,
+                            )
                         }
                     }
                 }
