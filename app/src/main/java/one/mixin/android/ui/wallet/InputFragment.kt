@@ -255,7 +255,11 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     activity?.onBackPressedDispatcher?.onBackPressed()
                 }
                 titleView.rightIb.setOnClickListener {
-                    requireContext().openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                    requireContext().openUrl(
+                        Constants.HelpLink.CUSTOMER_SERVICE,
+                        source = AnalyticsTracker.CustomerServiceSource.SEND_AMOUNT,
+                        wallet = if (transferType == TransferType.WEB3) TradeWallet.WEB3 else TradeWallet.MAIN,
+                    )
                 }
                 binding.insufficientFeeBalance.text = getString(R.string.insufficient_gas, getString(R.string.Token))
                 binding.insufficientFunds.text =

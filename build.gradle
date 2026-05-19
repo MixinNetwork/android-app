@@ -1,7 +1,7 @@
 buildscript {
 
     ext {
-        ext.bitcoinVersion ='0.17'
+        ext.bitcoinVersion ='0.17.1'
         ext.fragmentVersion = '1.8.9'
         ext.activity_version = '1.13.0'
         ext.lifecycleVersion = '2.10.0'
@@ -125,7 +125,7 @@ buildscript {
         ext.lottieComposeVersion = '6.7.1'
         ext.composeBomVersion = '2026.05.00'
         ext.activityComposeVersion = '1.13.0'
-        ext.reownBomVersion = '1.6.12'
+        ext.reownBomVersion = '1.6.13'
         ext.kotsonVersion = '2.5.0'
         ext.playServicesMapsVersion = '20.0.0'
         ext.playServicesLocationVersion = '21.3.0'
@@ -146,7 +146,7 @@ buildscript {
         maven { url = "https://maven.sumsub.com/repository/maven-public/" }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:9.1.1'
+        classpath 'com.android.tools.build:gradle:9.2.1'
         classpath 'com.android.tools.build.jetifier:jetifier-processor:1.0.0-beta10'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}"
         classpath 'com.google.gms:google-services:4.4.4'
@@ -157,8 +157,8 @@ buildscript {
 }
 
 plugins {
-    id 'com.android.application' version '9.1.1' apply false
-    id 'com.android.library' version '9.1.1' apply false
+    id 'com.android.application' version '9.2.1' apply false
+    id 'com.android.library' version '9.2.1' apply false
     id 'com.google.dagger.hilt.android' version '2.59.2' apply false
     id "org.jetbrains.kotlin.plugin.parcelize" version "${kotlinVersion}" apply false
     id "de.undercouch.download" version "5.5.0" apply false

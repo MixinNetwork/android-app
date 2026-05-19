@@ -68,6 +68,7 @@ import one.mixin.android.ui.tip.wc.compose.ItemWalletContent
 import one.mixin.android.ui.wallet.ItemUserContent
 import one.mixin.android.ui.wallet.components.WalletLabel
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.components.MixinButton
@@ -172,6 +173,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
             .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
 
         LaunchedEffect(Unit) {
+            AnalyticsTracker.trackPerpsClosePositionPreview()
             latestMarkPrice = markPrice
             latestUnrealizedPnl = unrealizedPnl
         }
@@ -488,8 +490,14 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                                 modifier = Modifier.align(Alignment.BottomCenter),
                                 cancelTitle = stringResource(R.string.Cancel),
                                 confirmTitle = stringResource(id = R.string.Retry),
-                                cancelAction = { dismiss() },
-                                confirmAction = { showVerifyPinThenClose() },
+                                cancelAction = {
+                                    AnalyticsTracker.trackPerpsClosePositionPreviewCancel()
+                                    dismiss()
+                                },
+                                confirmAction = {
+                                    AnalyticsTracker.trackPerpsClosePositionPreviewConfirm()
+                                    showVerifyPinThenClose()
+                                },
                             )
                         }
 
@@ -498,8 +506,14 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                                 modifier = Modifier.align(Alignment.BottomCenter),
                                 cancelTitle = stringResource(R.string.Cancel),
                                 confirmTitle = stringResource(id = R.string.Confirm),
-                                cancelAction = { dismiss() },
-                                confirmAction = { showVerifyPinThenClose() },
+                                cancelAction = {
+                                    AnalyticsTracker.trackPerpsClosePositionPreviewCancel()
+                                    dismiss()
+                                },
+                                confirmAction = {
+                                    AnalyticsTracker.trackPerpsClosePositionPreviewConfirm()
+                                    showVerifyPinThenClose()
+                                },
                             )
                         }
 
@@ -543,6 +557,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
             positionId = positionId,
             onSuccess = {
                 step = Step.Done
+                AnalyticsTracker.trackPerpsClosePositionEnd()
             },
             onError = { error ->
                 errorInfo = error

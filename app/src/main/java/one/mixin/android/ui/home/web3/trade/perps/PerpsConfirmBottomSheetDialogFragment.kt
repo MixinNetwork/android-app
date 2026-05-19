@@ -81,6 +81,7 @@ import one.mixin.android.ui.tip.wc.compose.ItemWalletContent
 import one.mixin.android.ui.wallet.ItemUserContent
 import one.mixin.android.ui.wallet.components.WalletLabel
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
@@ -494,8 +495,14 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                 modifier = Modifier.align(Alignment.BottomCenter),
                                 cancelTitle = stringResource(R.string.Cancel),
                                 confirmTitle = stringResource(id = R.string.Retry),
-                                cancelAction = { dismiss() },
-                                confirmAction = { showPin() },
+                                cancelAction = {
+                                    AnalyticsTracker.trackPerpsPreviewCancel()
+                                    dismiss()
+                                },
+                                confirmAction = {
+                                    AnalyticsTracker.trackPerpsPreviewConfirm()
+                                    showPin()
+                                },
                             )
                         }
 
@@ -504,8 +511,14 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                 modifier = Modifier.align(Alignment.BottomCenter),
                                 cancelTitle = stringResource(R.string.Cancel),
                                 confirmTitle = stringResource(id = R.string.Confirm),
-                                cancelAction = { dismiss() },
-                                confirmAction = { showPin() },
+                                cancelAction = {
+                                    AnalyticsTracker.trackPerpsPreviewCancel()
+                                    dismiss()
+                                },
+                                confirmAction = {
+                                    AnalyticsTracker.trackPerpsPreviewConfirm()
+                                    showPin()
+                                },
                             )
                         }
 
@@ -588,6 +601,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         leverage: Int,
         isLong: Boolean,
     ) {
+        val context = LocalContext.current
         val amountValue = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
         val profitPercent = 1.0 * leverage
         val profitAmount = amountValue * BigDecimal(profitPercent / 100)
@@ -599,21 +613,12 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp),
-            text = if (isLong) {
-                stringResource(
-                    R.string.Price_Up_Profit,
-                    "1",
-                    String.format("%.1f", profitPercent),
-                    formattedProfitAmount
-                )
-            } else {
-                stringResource(
-                    R.string.Price_Down_Profit,
-                    "1",
-                    String.format("%.1f", profitPercent),
-                    formattedProfitAmount
-                )
-            },
+            text = context.formatPerpsProfitPreview(
+                isLong = isLong,
+                priceChangeText = "1",
+                profitPercentText = String.format("%.1f", profitPercent),
+                profitAmountText = formattedProfitAmount,
+            ),
             color = MixinAppTheme.colors.textAssist,
             fontSize = 14.sp,
         )
@@ -668,6 +673,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                 )
                 context?.updatePinCheck()
                 step = Step.Done
+                trackOpenPositionSuccess()
             }
         } catch (e: Exception) {
             handleException(e)
@@ -735,6 +741,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                 )
                 context?.updatePinCheck()
                 step = Step.Done
+                trackOpenPositionSuccess()
             } else {
                 errorInfo = paymentResponse.errorDescription
                 step = Step.Error
@@ -751,6 +758,14 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     override fun showError(error: String) {
         errorInfo = error
         step = Step.Error
+    }
+
+    private fun trackOpenPositionSuccess() {
+        AnalyticsTracker.trackPerpsOpenPositionEnd(
+            leverage = leverage,
+            amountValue = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO,
+            price = entryPrice,
+        )
     }
 }
 

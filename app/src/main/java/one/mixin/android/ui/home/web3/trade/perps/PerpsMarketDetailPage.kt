@@ -73,6 +73,7 @@ import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.home.web3.trade.CandleChart
 import one.mixin.android.ui.home.web3.trade.ClosedPositionItem
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.widget.components.MixinButton
 import java.math.BigDecimal
@@ -89,6 +90,7 @@ fun PerpsMarketDetailPage(
     initialMarket: PerpsMarket? = null,
     onBack: () -> Unit,
     onSharePosition: (PerpsPositionItem) -> Unit,
+    source: String,
 ) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<PerpetualViewModel>()
@@ -165,7 +167,11 @@ fun PerpsMarketDetailPage(
         pop = onBack,
         actions = {
             IconButton(onClick = {
-                context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                context.openUrl(
+                    Constants.HelpLink.CUSTOMER_SERVICE,
+                    source = AnalyticsTracker.CustomerServiceSource.PERPS_MARKET_DETAIL,
+                    wallet = AnalyticsTracker.TradeWallet.WEB3,
+                )
             }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_support),
@@ -344,6 +350,7 @@ fun PerpsMarketDetailPage(
                     if (currentPosition == null) {
                         HowPerpsWorksCard(
                             onLearnClick = {
+                                AnalyticsTracker.trackPerpsGuide(AnalyticsTracker.PerpsSource.PERPS_DETAIL_CARD)
                                 val activity = context as? FragmentActivity ?: return@HowPerpsWorksCard
                                 PerpetualGuideBottomSheetDialogFragment.newInstance(
                                     PerpetualGuideBottomSheetDialogFragment.TAB_OVERVIEW
@@ -367,7 +374,7 @@ fun PerpsMarketDetailPage(
                                 .beginTransaction()
                                 .add(
                                     android.R.id.content,
-                                    AllPositionsFragment.newClosedInstance(),
+                                    AllPositionsFragment.newClosedInstance(AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL),
                                     AllPositionsFragment.TAG
                                 )
                                 .addToBackStack(null)
@@ -385,7 +392,7 @@ fun PerpsMarketDetailPage(
                                 )
                                 .add(
                                     android.R.id.content,
-                                    PositionDetailFragment.newInstance(position),
+                                    PositionDetailFragment.newInstance(position, AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL),
                                     PositionDetailFragment.TAG
                                 )
                                 .addToBackStack(null)
@@ -398,6 +405,7 @@ fun PerpsMarketDetailPage(
                     Spacer(modifier = Modifier.height(16.dp))
                     HowPerpsWorksCard(
                         onLearnClick = {
+                            AnalyticsTracker.trackPerpsGuide(AnalyticsTracker.PerpsSource.PERPS_DETAIL_CARD)
                             val activity = context as? FragmentActivity ?: return@HowPerpsWorksCard
                             PerpetualGuideBottomSheetDialogFragment.newInstance(
                                 PerpetualGuideBottomSheetDialogFragment.TAB_OVERVIEW
@@ -454,6 +462,7 @@ fun PerpsMarketDetailPage(
                                     onClick = {
                                         val activity = context as? FragmentActivity ?: return@MixinButton
                                         val position = currentPosition.toPosition()
+                                        AnalyticsTracker.trackPerpsClosePositionStart()
 
                                         PerpsCloseBottomSheetDialogFragment.newInstance(
                                             position = position,
@@ -504,7 +513,8 @@ fun PerpsMarketDetailPage(
                                         marketSymbol = marketSymbol,
                                         marketDisplaySymbol = market?.displaySymbol ?: marketSymbol,
                                         marketTokenSymbol = market?.tokenSymbol ?: "",
-                                        isLong = true
+                                        isLong = true,
+                                        source = AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL,
                                     )
                                 },
                                 backgroundColor = risingColor,
@@ -528,7 +538,8 @@ fun PerpsMarketDetailPage(
                                         marketSymbol = marketSymbol,
                                         marketDisplaySymbol = market?.displaySymbol ?: marketSymbol,
                                         marketTokenSymbol = market?.tokenSymbol ?: "",
-                                        isLong = false
+                                        isLong = false,
+                                        source = AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL,
                                     )
                                 },
                                 backgroundColor = fallingColor,

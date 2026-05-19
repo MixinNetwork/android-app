@@ -53,6 +53,7 @@ import one.mixin.android.ui.common.roundQrBackground
 import one.mixin.android.ui.web.getScreenshot
 import one.mixin.android.ui.web.refreshScreenshot
 import one.mixin.android.repository.ReferralRepository
+import one.mixin.android.util.analytics.AnalyticsTracker
 
 @AndroidEntryPoint
 class MarketShareActivity : BaseActivity() {
@@ -117,14 +118,17 @@ class MarketShareActivity : BaseActivity() {
         binding.apply {
             share.setOnClickListener {
                 if (isLoading) return@setOnClickListener
+                AnalyticsTracker.trackMarketDetailShare(AnalyticsTracker.MarketShareType.SHARE_IMAGE)
                 onShare()
             }
             copy.setOnClickListener {
                 if (isLoading) return@setOnClickListener
+                AnalyticsTracker.trackMarketDetailShare(AnalyticsTracker.MarketShareType.COPY_LINK)
                 onCopy()
             }
             save.setOnClickListener {
                 if (isLoading) return@setOnClickListener
+                AnalyticsTracker.trackMarketDetailShare(AnalyticsTracker.MarketShareType.SAVE_TO_ALBUM)
                 onSave()
             }
             container.setOnClickListener {

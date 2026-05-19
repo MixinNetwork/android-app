@@ -1,6 +1,8 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
+import android.content.Context
 import one.mixin.android.api.response.perps.PerpsMarket
+import one.mixin.android.R
 import one.mixin.android.extension.priceFormat
 import java.text.DecimalFormat
 import java.math.BigDecimal
@@ -74,6 +76,21 @@ fun formatPerpsSignedRawUsdDecimal(value: BigDecimal?): String {
         safeValue > BigDecimal.ZERO -> "+${formatPerpsRawUsdDecimal(safeValue)}"
         safeValue < BigDecimal.ZERO -> "-${formatPerpsRawUsdDecimal(safeValue.abs())}"
         else -> formatPerpsRawUsdDecimal(BigDecimal.ZERO)
+    }
+}
+
+fun Context.formatPerpsProfitPreview(
+    isLong: Boolean,
+    priceChangeText: String,
+    profitPercentText: String,
+    profitAmountText: String,
+): String {
+    val resId = if (isLong) R.string.Price_Up_Profit else R.string.Price_Down_Profit
+    return runCatching {
+        getString(resId, priceChangeText, profitPercentText, profitAmountText)
+    }.getOrElse {
+        val direction = if (isLong) "↑" else "↓"
+        "$direction $priceChangeText% → $profitPercentText% (+$profitAmountText)"
     }
 }
 

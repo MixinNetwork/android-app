@@ -23,7 +23,7 @@ apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
 
 android {
-    compileSdk = 36
+    compileSdk = 37
     ndkVersion = "27.0.12077973"
     namespace = "one.mixin.android"
     defaultConfig {
