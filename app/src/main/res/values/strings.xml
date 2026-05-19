@@ -2266,7 +2266,7 @@
     <string name="input_referral_code_hint">Invited by a friend?</string>
     <string name="referral_description">Invite friends, earn crypto</string>
     <string name="Address_not_found">This user has not registered a common wallet</string>
-    <string name="limit_price">Price</string>
+    <string name="limit_price">Limit Price</string>
     <string name="Order_Type">Order Type</string>
     <string name="Forever">Forever</string>
     <string name="Trade_Simple">Simple</string>
@@ -2387,8 +2387,11 @@
     <string name="take_profit_label">TP</string>
     <string name="stop_loss_label">SL</string>
     <string name="position_size">Size</string>
-    <string name="add_size">Add Size</string>
-    <string name="total_size">Total Size</string>
+    <string name="add_position">Add</string>
+    <string name="adding_position">Add</string>
+    <string name="add_position_title">Add to %1$s %2$s</string>
+    <string name="add_position_add_size">Add Size</string>
+    <string name="add_position_total_size">Total Size</string>
     <string name="Liquidation_Price">Liquidation Price</string>
     <string name="Price_Change_Profit">Price %1$s %2$s%% → Profit %3$s%4$s%% (%5$s%6$s)</string>
     <string name="Long">Long</string>

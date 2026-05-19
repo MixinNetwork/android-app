@@ -11,16 +11,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -46,7 +43,9 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -226,6 +225,33 @@ private fun PerpsAddContent(
     val marketSymbol = position.displaySymbol ?: position.tokenSymbol.orEmpty()
     val currentPrice = position.markPrice.orEmpty().ifBlank { position.entryPrice }
     val currentPriceText = formatPerpsPrice(currentPrice, position.priceScale)
+    val entryPriceText = position.entryPrice
+        .takeIf { it.isNotBlank() }
+        ?.let { formatPerpsPrice(it, position.priceScale) }
+        ?: "--"
+    val subtitleRawText = stringResource(R.string.auto_close_subtitle_after_open, entryPriceText, currentPriceText)
+    val subtitleLabelColor = MixinAppTheme.colors.textRemarks
+    val subtitleValueColor = MixinAppTheme.colors.textAssist
+    val subtitleText = remember(subtitleRawText, entryPriceText, currentPriceText, subtitleLabelColor, subtitleValueColor) {
+        buildAnnotatedString {
+            append(subtitleRawText)
+            addStyle(
+                style = SpanStyle(color = subtitleLabelColor),
+                start = 0,
+                end = subtitleRawText.length,
+            )
+            listOf(entryPriceText, currentPriceText).forEach { value ->
+                val start = subtitleRawText.indexOf(value)
+                if (start >= 0) {
+                    addStyle(
+                        style = SpanStyle(color = subtitleValueColor),
+                        start = start,
+                        end = start + value.length,
+                    )
+                }
+            }
+        }
+    }
     val tokenNetworkName = selectedToken?.chainName
         ?.takeIf { it.isNotBlank() }
         ?: selectedToken?.chainSymbol
@@ -244,14 +270,23 @@ private fun PerpsAddContent(
                 color = MixinAppTheme.colors.background,
                 shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp),
             ),
-        content = {
-            Box(modifier = Modifier.fillMaxSize()) {
+        content = { availableHeight ->
+            Column(
+                modifier = if (availableHeight != null) {
+                    Modifier
+                        .fillMaxWidth()
+                        .height(availableHeight)
+                } else {
+                    Modifier.fillMaxSize()
+                },
+            ) {
                 Column(
                     modifier = Modifier
-                        .fillMaxHeight()
+                        .weight(1f)
+                        .fillMaxWidth()
                         .verticalScroll(rememberScrollState())
                         .padding(start = 16.dp, end = 16.dp, top = 16.dp)
-                        .padding(bottom = 108.dp),
+                        .padding(bottom = 24.dp)
                 ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -276,10 +311,9 @@ private fun PerpsAddContent(
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = stringResource(R.string.Current_price, currentPriceText),
+                            text = subtitleText,
                             fontSize = 12.sp,
                             lineHeight = 16.sp,
-                            color = MixinAppTheme.colors.textAssist,
                         )
                     }
                     Icon(
@@ -411,15 +445,7 @@ private fun PerpsAddContent(
                         .padding(horizontal = 16.dp),
                 ) {
                     PerpsAddInfoRow(
-                        title = stringResource(R.string.Entry_Price),
-                        value = position.entryPrice
-                            .takeIf { it.isNotBlank() }
-                            ?.let { formatPerpsPrice(it, position.priceScale) }
-                            ?: "--",
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    PerpsAddInfoRow(
-                        title = stringResource(R.string.add_size),
+                        title = stringResource(R.string.add_position_add_size),
                         value = formatAddSizeValue(
                             amount = amount,
                             leverage = position.leverage,
@@ -432,7 +458,7 @@ private fun PerpsAddContent(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     PerpsAddInfoRow(
-                        title = stringResource(R.string.total_size),
+                        title = stringResource(R.string.add_position_total_size),
                         value = formatTotalSizeValue(
                             currentQuantity = position.quantity,
                             amount = amount,
@@ -460,7 +486,6 @@ private fun PerpsAddContent(
                 }
                 Column(
                     modifier = Modifier
-                        .align(Alignment.BottomCenter)
                         .fillMaxWidth()
                         .background(MixinAppTheme.colors.background),
                 ) {
@@ -490,6 +515,9 @@ private fun PerpsAddContent(
                     },
                 )
                 }
+                if (availableHeight != null) {
+                    Spacer(modifier = Modifier.height(108.dp))
+                }
             }
         },
         floating = {
@@ -505,8 +533,7 @@ private fun PerpsAddContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(MixinAppTheme.colors.backgroundWindow)
-                    .padding(horizontal = 12.dp, vertical = 8.dp)
-                    .padding(bottom = 84.dp),
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 InputAction("25%", showBorder = true) {
@@ -537,8 +564,7 @@ private fun BottomActions(
     Row(
         modifier = modifier
             .background(MixinAppTheme.colors.background)
-            .padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 20.dp)
-            .imePadding(),
+            .padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 20.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         MixinButton(
