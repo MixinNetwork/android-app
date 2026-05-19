@@ -114,12 +114,11 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                 }
                 rightIb.setOnClickListener {
                     if (!isLoading || marketItem.coinId.isBlank()) {
-                        MarketShareActivity.show(
-                            requireContext(),
+                        MarketShareBottomFragment.newInstance(
                             captureMarketShareBitmap(),
                             marketItem.symbol,
                             marketItem.coinId,
-                        )
+                        ).show(parentFragmentManager, MarketShareBottomFragment.TAG)
                     } else toast(R.string.Please_wait_a_bit)
                 }
             }

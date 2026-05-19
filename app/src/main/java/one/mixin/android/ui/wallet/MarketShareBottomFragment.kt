@@ -1,25 +1,22 @@
 package one.mixin.android.ui.wallet
 
+import android.annotation.SuppressLint
+import android.app.Dialog
 import android.content.ClipData
-import android.content.Context
-import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapShader
+import android.graphics.Shader
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
-import android.graphics.RenderEffect
-import android.graphics.Shader
 import android.media.MediaScannerConnection
 import android.os.Bundle
 import android.view.View
-import android.view.ViewGroup.MarginLayoutParams
 import androidx.core.content.FileProvider
-import androidx.core.graphics.drawable.toDrawable
+import androidx.core.net.toUri
 import androidx.core.view.drawToBitmap
 import androidx.core.view.isVisible
-import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
@@ -32,111 +29,105 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.Scheme.HTTPS_MARKET
 import one.mixin.android.R
-import one.mixin.android.api.referral.buildReferralCopyUrl
 import one.mixin.android.api.referral.ReferralShareInfo
+import one.mixin.android.api.referral.buildReferralCopyUrl
 import one.mixin.android.api.referral.buildReferralShareUrl
-import one.mixin.android.databinding.ActivityMarketShareBinding
-import one.mixin.android.extension.blurBitmap
+import one.mixin.android.databinding.FragmentMarketShareBottomBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getPublicDownloadPath
 import one.mixin.android.extension.round
-import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.withArgs
+import one.mixin.android.repository.ReferralRepository
 import one.mixin.android.session.Session
-import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.applyReferralTitleTypeface
 import one.mixin.android.ui.common.buildReferralDescription
 import one.mixin.android.ui.common.isZeroPercent
 import one.mixin.android.ui.common.roundQrBackground
-import one.mixin.android.ui.web.getScreenshot
-import one.mixin.android.ui.web.refreshScreenshot
-import one.mixin.android.repository.ReferralRepository
+import one.mixin.android.ui.forward.ForwardActivity
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.ForwardAction
+import one.mixin.android.vo.ForwardMessage
+import one.mixin.android.vo.ShareCategory
+import one.mixin.android.vo.ShareImageData
+import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
-class MarketShareActivity : BaseActivity() {
+class MarketShareBottomFragment : MixinBottomSheetDialogFragment() {
     companion object {
+        const val TAG = "MarketShareBottomFragment"
         private const val ARGS_NAME = "name"
         private const val ARGS_COIN = "coin"
         private const val SHARE_QR_URL = "https://mixin.one/mm"
 
-        private var cover: Bitmap? = null
-
-        fun show(
-            context: Context,
+        fun newInstance(
             cover: Bitmap,
             name: String,
             coinId: String,
-        ) {
-            refreshScreenshot(context, 0x33000000)
-            this.cover = cover
-            context.startActivity(Intent(context, MarketShareActivity::class.java).apply {
-                putExtra(ARGS_NAME, name)
-                putExtra(ARGS_COIN, coinId)
-            })
+        ) = MarketShareBottomFragment().withArgs {
+            putParcelable(ARGS_COVER, cover)
+            putString(ARGS_NAME, name)
+            putString(ARGS_COIN, coinId)
         }
+
+        private const val ARGS_COVER = "cover"
     }
 
-    override fun getNightThemeId(): Int = R.style.AppTheme_Night_Blur
-
-    override fun getDefaultThemeId(): Int = R.style.AppTheme_Blur
-
-    private lateinit var binding: ActivityMarketShareBinding
     @Inject
     lateinit var referralRepository: ReferralRepository
-    private val loadingDialog by lazy { LoadingProgressDialogFragment() }
-    private val name by lazy {
-        intent.getStringExtra(ARGS_NAME)
+
+    private val binding by viewBinding(FragmentMarketShareBottomBinding::inflate)
+    private val cover: Bitmap? by lazy {
+        arguments?.getParcelable(ARGS_COVER)
     }
-    private val coinId by lazy {
-        intent.getStringExtra(ARGS_COIN)
+    private val name: String? by lazy {
+        arguments?.getString(ARGS_NAME)
     }
-    private var referralShareInfo: ReferralShareInfo? = null
+    private val coinId: String? by lazy {
+        arguments?.getString(ARGS_COIN)
+    }
     private val referralCode: String?
         get() = referralShareInfo?.code?.takeIf { it.isNotBlank() }
+
+    private var referralShareInfo: ReferralShareInfo? = null
     private var isLoading = false
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        skipSystemUi = true
-        super.onCreate(savedInstanceState)
-        binding = ActivityMarketShareBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        getScreenshot()?.let {
-            supportsS({
-                binding.background.background = it.toDrawable(resources)
-                binding.background.setRenderEffect(RenderEffect.createBlurEffect(25f, 25f, Shader.TileMode.MIRROR))
-            }, {
-                binding.container.background = it.blurBitmap(25).toDrawable(resources)
-            })
-        }
+    @SuppressLint("RestrictedApi")
+    override fun setupDialog(dialog: Dialog, style: Int) {
+        super.setupDialog(dialog, style)
+        contentView = binding.root
+        (dialog as BottomSheet).setCustomView(contentView)
         binding.llMarketShare.round(8.dp)
-        binding.content.updateLayoutParams<MarginLayoutParams> {
-            topMargin = 20.dp
-        }
+        bindMixinContact()
+
         binding.apply {
+            close.setOnClickListener { dismiss() }
             share.setOnClickListener {
                 if (isLoading) return@setOnClickListener
                 AnalyticsTracker.trackMarketDetailShare(AnalyticsTracker.MarketShareType.SHARE_IMAGE)
-                onShare()
+                shareToSystem()
+            }
+            mixinContact.setOnClickListener {
+                if (isLoading) return@setOnClickListener
+                shareToMixinContact()
             }
             copy.setOnClickListener {
                 if (isLoading) return@setOnClickListener
                 AnalyticsTracker.trackMarketDetailShare(AnalyticsTracker.MarketShareType.COPY_LINK)
-                onCopy()
+                copyLink()
             }
             save.setOnClickListener {
                 if (isLoading) return@setOnClickListener
                 AnalyticsTracker.trackMarketDetailShare(AnalyticsTracker.MarketShareType.SAVE_TO_ALBUM)
-                onSave()
-            }
-            container.setOnClickListener {
-                if (isLoading) return@setOnClickListener
-                onBackPressed()
+                saveToAlbum()
             }
         }
-        syncActionContainerVisibility()
+
         lifecycleScope.launch {
             showLoading(true)
             try {
@@ -152,11 +143,11 @@ class MarketShareActivity : BaseActivity() {
                 }
                 val qrCode = withContext(Dispatchers.Default) {
                     val qrPadding = 8.dp
-                    currentQrUrl().generateQRCode(72.dp, qrPadding).first.roundQrBackground(qrPadding, 6.dp.toFloat())
+                    currentQrUrl().generateQRCode(58.dp, qrPadding).first.roundQrBackground(qrPadding, 6.dp.toFloat())
                 }
                 preparedCover?.let(binding.image::setImageBitmap)
                 bindFooter(qrCode)
-                applyFadeInAnimation(binding.content)
+                bindMixinContact()
             } finally {
                 showLoading(false)
             }
@@ -165,16 +156,8 @@ class MarketShareActivity : BaseActivity() {
 
     private fun showLoading(show: Boolean) {
         isLoading = show
-        binding.content.isVisible = !show
-        if (show) {
-            if (!loadingDialog.isAdded) {
-                runCatching {
-                    loadingDialog.show(supportFragmentManager, LoadingProgressDialogFragment.TAG)
-                }
-            }
-        } else if (loadingDialog.isAdded) {
-            loadingDialog.dismissAllowingStateLoss()
-        }
+        binding.llMarketShare.visibility = if (show) View.INVISIBLE else View.VISIBLE
+        binding.shareCardLoading.isVisible = show
     }
 
     private fun bindFooter(qrCode: Bitmap) {
@@ -189,7 +172,7 @@ class MarketShareActivity : BaseActivity() {
             } else {
                 binding.shareDesc.isVisible = true
                 binding.shareDesc.minLines = if (rebatePercent.isZeroPercent()) 2 else 1
-                binding.shareDesc.text = buildReferralDescription(this, rebatePercent)
+                binding.shareDesc.text = buildReferralDescription(requireContext(), rebatePercent)
             }
         } else {
             binding.shareDesc.isVisible = true
@@ -200,23 +183,16 @@ class MarketShareActivity : BaseActivity() {
         binding.qr.setImageBitmap(qrCode)
     }
 
-    private fun currentQrUrl(): String = referralCode?.let(::buildReferralShareUrl) ?: SHARE_QR_URL
-
-    private fun syncActionContainerVisibility() {
-        val hasVisibleAction = binding.share.isVisible || binding.copy.isVisible || binding.save.isVisible
-        binding.bottom.isVisible = hasVisibleAction
-        binding.bottom.updateLayoutParams<MarginLayoutParams> {
-            topMargin = if (hasVisibleAction) 10.dp else 0
+    private fun bindMixinContact() {
+        val rebatePercent = referralShareInfo?.rebatePercent
+        binding.mixinContactDesc.text = if (!rebatePercent.isNullOrBlank() && !rebatePercent.isZeroPercent()) {
+            getString(R.string.perps_share_mixin_contact_desc_with_percent, rebatePercent)
+        } else {
+            getString(R.string.perps_share_mixin_contact_desc)
         }
     }
 
-    private fun applyFadeInAnimation(view: View) {
-        view.alpha = 0f
-        view.animate()
-            .alpha(1f)
-            .setDuration(500)
-            .setListener(null)
-    }
+    private fun currentQrUrl(): String = referralCode?.let(::buildReferralShareUrl) ?: SHARE_QR_URL
 
     private fun trimTransparentPadding(bitmap: Bitmap): Bitmap {
         val width = bitmap.width
@@ -274,64 +250,66 @@ class MarketShareActivity : BaseActivity() {
         return output
     }
 
-    private fun createShareBitmap(): Bitmap {
-        val closeVisibility = binding.close.visibility
-        binding.close.visibility = View.INVISIBLE
-        return try {
-            binding.llMarketShare.drawToBitmap()
-        } finally {
-            binding.close.visibility = closeVisibility
-        }
-    }
+    private fun createShareBitmap(): Bitmap = binding.llMarketShare.drawToBitmap()
 
-    private val onShare: () -> Unit = {
+    private fun shareToSystem() {
         lifecycleScope.launch {
-            val bitmap = createShareBitmap()
-            showLoading(true)
-            try {
-                val file = File(cacheDir, "$name.png")
-                saveBitmapToFile(file, bitmap)
-                val uri = FileProvider.getUriForFile(this@MarketShareActivity, BuildConfig.APPLICATION_ID + ".provider", file)
-                val share = Intent()
-                share.action = Intent.ACTION_SEND
-                share.type = "image/png"
-                share.putExtra(Intent.EXTRA_STREAM, uri)
-                finish()
-                startActivity(Intent.createChooser(share, getString(R.string.Share)))
-            } finally {
-                showLoading(false)
+            val file = createShareFile()
+            val uri = FileProvider.getUriForFile(requireContext(), BuildConfig.APPLICATION_ID + ".provider", file)
+            val share = android.content.Intent().apply {
+                action = android.content.Intent.ACTION_SEND
+                type = "image/png"
+                putExtra(android.content.Intent.EXTRA_STREAM, uri)
             }
+            dismiss()
+            startActivity(android.content.Intent.createChooser(share, getString(R.string.Share)))
         }
     }
 
-    private val onCopy: () -> Unit = {
+    private fun shareToMixinContact() {
+        lifecycleScope.launch {
+            val file = createShareFile()
+            val message = ForwardMessage(
+                ShareCategory.Image,
+                GsonHelper.customGson.toJson(ShareImageData(file.toUri().toString())),
+            )
+            dismiss()
+            ForwardActivity.show(requireContext(), arrayListOf(message), ForwardAction.App.Resultless())
+        }
+    }
+
+    private suspend fun createShareFile(): File {
+        val bitmap = createShareBitmap()
+        val file = File(requireContext().cacheDir, "${buildFileName()}.png")
+        withContext(Dispatchers.IO) {
+            saveBitmapToFile(file, bitmap)
+        }
+        return file
+    }
+
+    private fun copyLink() {
         val marketLink = "$HTTPS_MARKET/$coinId"
         val link = buildReferralCopyUrl(
             referralCode = referralCode,
             defaultUrl = marketLink,
             legacyReferralUrl = Session.getAccount()?.identityNumber?.let { "$marketLink?ref=$it" },
         )
-        getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, link))
-        finish()
+        requireContext().getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, link))
+        dismiss()
         toast(R.string.copied_to_clipboard)
     }
 
-    private val onSave: () -> Unit = {
+    private fun saveToAlbum() {
         lifecycleScope.launch {
             delay(100)
             val bitmap = createShareBitmap()
-            showLoading(true)
-            try {
-                val dir = getPublicDownloadPath()
-                dir.mkdirs()
-                val file = File(dir, "$name.png")
-                saveBitmapToFile(file, bitmap)
-                MediaScannerConnection.scanFile(this@MarketShareActivity, arrayOf(file.toString()), null, null)
-                finish()
-                toast(getString(R.string.Save_to, dir.path))
-            } finally {
-                showLoading(false)
-            }
+            val dir = requireContext().getPublicDownloadPath()
+            dir.mkdirs()
+            val file = File(dir, "${buildFileName()}.png")
+            saveBitmapToFile(file, bitmap)
+            MediaScannerConnection.scanFile(requireContext(), arrayOf(file.toString()), null, null)
+            dismiss()
+            toast(getString(R.string.Save_to, dir.path))
         }
     }
 
@@ -340,4 +318,6 @@ class MarketShareActivity : BaseActivity() {
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
         }
     }
+
+    private fun buildFileName(): String = name?.replace("[^A-Za-z0-9._-]".toRegex(), "_") ?: "market"
 }
