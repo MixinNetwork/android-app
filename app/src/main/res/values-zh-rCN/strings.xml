@@ -2267,6 +2267,7 @@
     <string name="example_scene2_decreasing">场景二：价格下跌</string>
     <string name="example_scene2_increasing">场景二：价格上涨</string>
     <string name="PnL">盈亏</string>
+    <string name="RoE">收益率</string>
     <string name="perps_long_overview">做多是指在预期价格上涨时建立仓位，价格上涨可获得盈利，价格下跌则产生亏损。</string>
     <string name="perps_short_overview">做空是指在预期价格下跌时建立仓位，价格下跌可获得盈利，价格上涨则产生亏损。</string>
     <string name="pnl_rule_price_fall_loss">价格下跌：产生亏损</string>
@@ -2474,4 +2475,7 @@
     <string name="pin_log_subtitle_recovery_contact_changed">✅ 恢复联系人已修改</string>
     <string name="pin_log_subtitle_mnemonic_phrase_exported">✅ 助记词已导出</string>
     <string name="pin_log_subtitle_mobile_number_changed">✅ 手机号已修改</string>
+    <string name="perps_share_to_mixin_contact">分享到 Mixin 联系人</string>
+    <string name="perps_share_mixin_contact_desc">邀请好友一起交易</string>
+    <string name="perps_share_mixin_contact_desc_with_percent">通过此链接赚取 %1$s 分佣</string>
 </resources>

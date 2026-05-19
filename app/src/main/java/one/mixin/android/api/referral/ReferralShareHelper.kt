@@ -25,13 +25,15 @@ internal fun calculateReferralRebatePercentOrNull(
     val inviterRatio = inviterPercent?.trim()?.toBigDecimalOrNull()
     if (tradingRatio == null || inviterRatio == null) return null
 
-    // rebate = trading commission ratio * (1 - inviter ratio), and inviter ratio above 100% is clamped to 0 rebate.
+    // The displayed invitee rebate is half of the trading commission ratio.
+    // inviterPercent is still parsed so malformed code-level data does not produce a misleading display.
     val percent = tradingRatio
-        .multiply((BigDecimal.ONE - inviterRatio).coerceAtLeast(BigDecimal.ZERO))
+        .multiply(HALF)
         .multiply(HUNDRED)
         .stripTrailingZeros()
         .toPlainString()
     return "$percent%"
 }
 
+private val HALF = BigDecimal("0.5")
 private val HUNDRED = BigDecimal("100")

@@ -2334,6 +2334,7 @@
     <string name="example_scene2_decreasing">Scenario 2: Price Falls</string>
     <string name="example_scene2_increasing">Scenario 2: Price Rises</string>
     <string name="PnL">PnL</string>
+    <string name="RoE">RoE</string>
     <string name="perps_long_overview">You open a long position when you expect the price to rise. If the price rises, you profit; if the price falls, you incur a loss.</string>
     <string name="perps_short_overview">You open a short position when you expect the price to fall. If the price falls, you profit; if the price rises, you incur a loss.</string>
     <string name="pnl_rule_price_fall_loss">Price falls, loss</string>
@@ -2545,4 +2546,7 @@
     <string name="pin_log_subtitle_recovery_contact_changed">✅ Recovery Contact changed</string>
     <string name="pin_log_subtitle_mnemonic_phrase_exported">✅ Mnemonic Phrase exported</string>
     <string name="pin_log_subtitle_mobile_number_changed">✅ Mobile Number changed</string>
+    <string name="perps_share_to_mixin_contact">Share to Mixin Contact</string>
+    <string name="perps_share_mixin_contact_desc">Bring your friends on board</string>
+    <string name="perps_share_mixin_contact_desc_with_percent">Earn %1$s commission via this link</string>
 </resources>
