@@ -9,6 +9,7 @@ plugins {
     id "org.jetbrains.kotlin.plugin.compose" version "${kotlinVersion}"
     id 'com.google.firebase.firebase-perf'
     id 'com.bugsnag.android.gradle'
+    id 'androidx.room'
 
 }
 
@@ -229,9 +230,8 @@ bugsnag {
     uploadNdkMappings = false
 }
 
-ksp {
-    arg("room.schemaLocation", "$projectDir/schemas")
-    arg("room.incremental", "true")
+room {
+    schemaDirectory "$projectDir/schemas"
 }
 
 dependencies {
