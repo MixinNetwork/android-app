@@ -15,6 +15,7 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.UserItem
 
 @Dao
+@SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
 interface UserDao : BaseDao<User> {
 
     @Transaction
