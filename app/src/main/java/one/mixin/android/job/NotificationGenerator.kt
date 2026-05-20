@@ -512,7 +512,7 @@ object NotificationGenerator : Injector() {
             notificationBuilder.setGroup(conversation.conversationId)
 
             buildBubble(context, conversation, notificationBuilder, message, resource, person)
-            notificationManager.notify(message.messageId.hashCode(), notificationBuilder.build())
+            notificationManager.notify(conversation.conversationId.hashCode(), notificationBuilder.build())
 
             supportsNougat {
                 val summaryNotification =
@@ -527,7 +527,8 @@ object NotificationGenerator : Injector() {
                         .setGroup(conversation.conversationId)
                         .setGroupSummary(true)
                         .build()
-                notificationManager.notify(conversation.conversationId.hashCode(), summaryNotification)
+                val summaryId = ("summary_" + conversation.conversationId).hashCode()
+                notificationManager.notify(summaryId, summaryNotification)
             }
         }
     }
