@@ -2209,7 +2209,7 @@
     <string name="input_referral_code_hint">输入邀请码？</string>
     <string name="referral_description">邀请好友赚币</string>
     <string name="Address_not_found">该联系人还没有注册普通钱包</string>
-    <string name="limit_price">价格</string>
+    <string name="limit_price">限定价格</string>
     <string name="Order_Type">订单类型</string>
     <string name="Forever">永久</string>
     <string name="Trade_Simple">闪兑</string>
@@ -2267,6 +2267,7 @@
     <string name="example_scene2_decreasing">场景二：价格下跌</string>
     <string name="example_scene2_increasing">场景二：价格上涨</string>
     <string name="PnL">盈亏</string>
+    <string name="RoE">收益率</string>
     <string name="perps_long_overview">做多是指在预期价格上涨时建立仓位，价格上涨可获得盈利，价格下跌则产生亏损。</string>
     <string name="perps_short_overview">做空是指在预期价格下跌时建立仓位，价格下跌可获得盈利，价格上涨则产生亏损。</string>
     <string name="pnl_rule_price_fall_loss">价格下跌：产生亏损</string>
@@ -2321,6 +2322,11 @@
     <string name="take_profit_label">止盈</string>
     <string name="stop_loss_label">止损</string>
     <string name="position_size">仓位规模</string>
+    <string name="add_position">加仓</string>
+    <string name="adding_position">正在加仓</string>
+    <string name="add_position_title">%1$s %2$s 加仓</string>
+    <string name="add_position_add_size">加仓规模</string>
+    <string name="add_position_total_size">总体规模</string>
     <string name="Liquidation_Price">强平价格</string>
     <string name="Price_Change_Profit">价格%1$s %2$s%% → 盈利 %3$s%4$s%% (%5$s%6$s)</string>
     <string name="Long">做多</string>
@@ -2469,4 +2475,7 @@
     <string name="pin_log_subtitle_recovery_contact_changed">✅ 恢复联系人已修改</string>
     <string name="pin_log_subtitle_mnemonic_phrase_exported">✅ 助记词已导出</string>
     <string name="pin_log_subtitle_mobile_number_changed">✅ 手机号已修改</string>
+    <string name="perps_share_to_mixin_contact">分享到 Mixin 联系人</string>
+    <string name="perps_share_mixin_contact_desc">邀请好友一起交易</string>
+    <string name="perps_share_mixin_contact_desc_with_percent">通过此链接赚取 %1$s 分佣</string>
 </resources>
