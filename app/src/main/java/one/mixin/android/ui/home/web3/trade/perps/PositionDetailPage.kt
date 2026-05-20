@@ -42,7 +42,7 @@ import androidx.compose.ui.unit.sp
 import androidx.fragment.app.FragmentActivity
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import one.mixin.android.R
-import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
+import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -466,7 +466,8 @@ private fun PositionDetailItem(
 
 @Composable
 fun PositionDetailPage(
-    positionHistory: PerpsPositionHistoryItem,
+    closeOrder: PerpsOrderItem,
+    leverage: Int?,
     quoteColorReversed: Boolean = false,
     pop: () -> Unit,
     onTradeAgain: (() -> Unit)? = null,
@@ -486,7 +487,7 @@ fun PositionDetailPage(
     }
 
     val pnl = try {
-        BigDecimal(positionHistory.realizedPnl)
+        BigDecimal(closeOrder.realizedPnl)
     } catch (e: Exception) {
         BigDecimal.ZERO
     }
@@ -495,7 +496,7 @@ fun PositionDetailPage(
     val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
     val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
     val pnlColor = if (isProfit) risingColor else fallingColor
-    val isLong = positionHistory.side.equals("long", ignoreCase = true)
+    val isLong = closeOrder.side.equals("long", ignoreCase = true)
     val sideColor = if (isLong) risingColor else fallingColor
 
     val sideText = if (isLong) {
@@ -509,15 +510,16 @@ fun PositionDetailPage(
         stringResource(R.string.Closed_Short)
     }
 
-    val quantity = positionHistory.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val quantity = closeOrder.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val absQuantity = quantity.abs()
     val fiatRate = BigDecimal(Fiats.getRate())
     val fiatSymbol = Fiats.getSymbol()
+    val effectiveLeverage = leverage ?: 0
     val roe = calculateClosedRoe(
-        entryPrice = positionHistory.entryPrice,
-        closePrice = positionHistory.closePrice,
-        side = positionHistory.side,
-        leverage = positionHistory.leverage,
+        entryPrice = closeOrder.entryPrice,
+        closePrice = closeOrder.price,
+        side = closeOrder.side,
+        leverage = effectiveLeverage,
     )
 
     fun formatFiat(value: BigDecimal): String {
@@ -563,7 +565,7 @@ fun PositionDetailPage(
                 Spacer(modifier = Modifier.height(30.dp))
 
                 CoilImage(
-                    model = positionHistory.iconUrl,
+                    model = closeOrder.iconUrl,
                     placeholder = R.drawable.ic_avatar_place_holder,
                     modifier = Modifier
                         .size(70.dp)
@@ -584,7 +586,7 @@ fun PositionDetailPage(
                         fontFamily = FontFamily(Font(R.font.mixin_font)),
                         color = MixinAppTheme.colors.textPrimary,
                     )
-                    val symbol = positionHistory.tokenSymbol?.takeIf { it.isNotBlank() }
+                    val symbol = closeOrder.tokenSymbol?.takeIf { it.isNotBlank() }
                     if (symbol != null) {
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
@@ -606,7 +608,7 @@ fun PositionDetailPage(
                         .align(Alignment.CenterHorizontally)
                 ) {
                     Text(
-                        text = "$sideText ${positionHistory.leverage}x",
+                        text = if (effectiveLeverage > 0) "$sideText ${effectiveLeverage}x" else sideText,
                         color = sideColor,
                         fontSize = 14.sp
                     )
@@ -669,8 +671,8 @@ fun PositionDetailPage(
             ) {
                 PositionDetailItem(
                     label = stringResource(R.string.Perpetual).uppercase(),
-                    value = positionHistory.displaySymbol ?: positionHistory.tokenSymbol ?: "Unknown",
-                    icon = positionHistory.iconUrl
+                    value = closeOrder.displaySymbol ?: closeOrder.tokenSymbol ?: "Unknown",
+                    icon = closeOrder.iconUrl
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -685,16 +687,16 @@ fun PositionDetailPage(
 
                 PositionDetailItem(
                     label = stringResource(R.string.Entry_Price).uppercase(),
-                    value = formatPriceUsd(positionHistory.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+                    value = formatPriceUsd(closeOrder.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO)
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
 
                 PositionDetailItem(
                     label = stringResource(R.string.Close_Price).uppercase(),
-                    value = formatPriceUsd(positionHistory.closePrice.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+                    value = formatPriceUsd(closeOrder.price.toBigDecimalOrNull() ?: BigDecimal.ZERO)
                 )
-                
+
                 Spacer(modifier = Modifier.height(20.dp))
 
                 ItemWalletContent(
@@ -702,12 +704,12 @@ fun PositionDetailPage(
                     fontSize = 16.sp,
                     padding = 0.dp
                 )
-                
+
                 Spacer(modifier = Modifier.height(20.dp))
-                
+
                 PositionDetailItem(
                     label = stringResource(R.string.Close_Time).uppercase(),
-                    value = formatDate(positionHistory.closedAt)
+                    value = formatDate(closeOrder.updatedAt)
                 )
             }
             

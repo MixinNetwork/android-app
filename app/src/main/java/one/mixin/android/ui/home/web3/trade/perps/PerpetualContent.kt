@@ -48,7 +48,7 @@ import kotlinx.coroutines.isActive
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
-import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
+import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
@@ -73,7 +73,7 @@ fun PerpetualContent(
     onShowAllClosedPositions: () -> Unit,
     onOpenPositionClick: (PerpsPositionItem) -> Unit,
     onMarketItemClick: (PerpsMarket) -> Unit,
-    onClosedPositionClick: (PerpsPositionHistoryItem) -> Unit,
+    onClosedPositionClick: (PerpsOrderItem) -> Unit,
 ) {
     val context = LocalContext.current
     val walletId = Session.getAccountId()!!
@@ -96,7 +96,7 @@ fun PerpetualContent(
         viewModel.observeTotalUnrealizedPnl(walletId)
     }.collectAsStateWithLifecycle(initialValue = 0.0)
     val closedPositions by remember(walletId) {
-        viewModel.observeClosedPositions(walletId, CLOSED_POSITION_PREVIEW_LIMIT)
+        viewModel.observeOrders(walletId, CLOSED_POSITION_PREVIEW_LIMIT)
     }.collectAsStateWithLifecycle(initialValue = emptyList())
     var previousOpenPositionsCount by remember(walletId) { mutableStateOf<Int?>(null) }
     val openPositionsCount = openPositions.size
@@ -144,7 +144,7 @@ fun PerpetualContent(
                     )
                 }
             )
-            viewModel.refreshPositionHistory(walletId, limit = CLOSED_POSITION_PREVIEW_LIMIT)
+            viewModel.refreshOrders(walletId, limit = CLOSED_POSITION_PREVIEW_LIMIT)
             while (isActive) {
                 viewModel.refreshMarkets(
                     onError = { error ->
@@ -160,7 +160,7 @@ fun PerpetualContent(
     LaunchedEffect(walletId, openPositionsCount) {
         val lastCount = previousOpenPositionsCount
         if (lastCount != null && openPositionsCount < lastCount) {
-            viewModel.refreshPositionHistory(walletId, limit = CLOSED_POSITION_PREVIEW_LIMIT)
+            viewModel.refreshOrders(walletId, limit = CLOSED_POSITION_PREVIEW_LIMIT)
         }
         previousOpenPositionsCount = openPositionsCount
     }
@@ -458,10 +458,11 @@ fun PerpetualContent(
                         )
                     }
                 } else {
-                    closedPositionsPreview.forEach { position ->
+                    closedPositionsPreview.forEach { order ->
                         ClosedPositionItem(
-                            position = position,
-                            onClick = { onClosedPositionClick(position) })
+                            order = order,
+                            onClick = { onClosedPositionClick(order) },
+                        )
                         Spacer(modifier = Modifier.height(12.dp))
                     }
 

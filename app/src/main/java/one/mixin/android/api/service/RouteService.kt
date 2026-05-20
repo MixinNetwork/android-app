@@ -12,6 +12,7 @@ import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.RouteTokenRequest
 import one.mixin.android.api.request.perps.CloseOrderRequest
 import one.mixin.android.api.request.perps.CloseOrderResponse
+import one.mixin.android.api.request.perps.IncreaseOrderRequest
 import one.mixin.android.api.request.perps.OpenOrderRequest
 import one.mixin.android.api.request.perps.OpenOrderResponse
 import one.mixin.android.api.request.perps.PositionTpSlRequest
@@ -34,8 +35,8 @@ import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.api.response.UserAddressView
 import one.mixin.android.api.response.perps.CandleView
 import one.mixin.android.api.response.perps.PerpsMarket
+import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsPosition
-import one.mixin.android.api.response.perps.PerpsPositionHistory
 import one.mixin.android.api.response.web3.GaslessFeeResponse
 import one.mixin.android.api.response.web3.GaslessSponsorTransactionResponse
 import one.mixin.android.api.response.web3.GaslessTxResponse
@@ -423,10 +424,16 @@ interface RouteService {
         @Body request: PositionTpSlRequest
     ): MixinResponse<PerpsPosition>
 
-    @GET("perps/positions/history")
-    suspend fun getPerpsPositionHistory(
+    @POST("perps/positions/{id}/increase")
+    suspend fun increasePerpsPosition(
+        @Path("id") positionId: String,
+        @Body request: IncreaseOrderRequest,
+    ): MixinResponse<OpenOrderResponse>
+
+    @GET("perps/orders")
+    suspend fun getPerpsOrders(
         @Query("offset") offset: String? = null,
         @Query("limit") limit: Int = 100,
-        @Query("wallet_id") walletId: String
-    ): MixinResponse<List<PerpsPositionHistory>>
+        @Query("wallet_id") walletId: String,
+    ): MixinResponse<List<PerpsOrder>>
 }

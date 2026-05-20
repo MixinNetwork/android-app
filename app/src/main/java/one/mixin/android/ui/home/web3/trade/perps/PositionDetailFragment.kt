@@ -15,7 +15,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import one.mixin.android.Constants
-import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
+import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.api.response.perps.toPosition
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -31,7 +31,7 @@ class PositionDetailFragment : BaseFragment() {
     companion object {
         const val TAG = "PositionDetailFragment"
         private const val ARGS_POSITION = "args_position"
-        private const val ARGS_POSITION_HISTORY = "args_position_history"
+        private const val ARGS_CLOSE_ORDER = "args_close_order"
         private const val ARGS_SOURCE = "args_source"
         private const val POSITION_REFRESH_INTERVAL_MS = 10_000L
 
@@ -44,10 +44,10 @@ class PositionDetailFragment : BaseFragment() {
             }
         }
 
-        fun newInstance(position: PerpsPositionHistoryItem, source: String = AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_DETAIL): PositionDetailFragment {
+        fun newInstance(order: PerpsOrderItem, source: String = AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_DETAIL): PositionDetailFragment {
             return PositionDetailFragment().apply {
                 arguments = Bundle().apply {
-                    putParcelable(ARGS_POSITION_HISTORY, position)
+                    putParcelable(ARGS_CLOSE_ORDER, order)
                     putString(ARGS_SOURCE, source)
                 }
             }
@@ -66,7 +66,7 @@ class PositionDetailFragment : BaseFragment() {
         savedInstanceState: Bundle?,
     ): View {
         val position = arguments?.getParcelableCompat(ARGS_POSITION, PerpsPositionItem::class.java)
-        val positionHistory = arguments?.getParcelableCompat(ARGS_POSITION_HISTORY, PerpsPositionHistoryItem::class.java)
+        val closeOrder = arguments?.getParcelableCompat(ARGS_CLOSE_ORDER, PerpsOrderItem::class.java)
         val source = arguments?.getString(ARGS_SOURCE) ?: AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_DETAIL
         AnalyticsTracker.trackPerpsActivityDetail(source)
 
@@ -122,18 +122,25 @@ class PositionDetailFragment : BaseFragment() {
                                 )
                             }
                         )
-                    } else if (positionHistory != null) {
+                    } else if (closeOrder != null) {
+                        val cachedPositionFlow = remember(closeOrder.positionId) {
+                            viewModel.observePosition(closeOrder.positionId)
+                        }
+                        val cachedPosition = cachedPositionFlow
+                            .collectAsStateWithLifecycle(initialValue = null)
+                        val leverage = cachedPosition.value?.leverage
                         PositionDetailPage(
-                            positionHistory = positionHistory,
+                            closeOrder = closeOrder,
+                            leverage = leverage,
                             quoteColorReversed = quoteColorReversed,
                             pop = {
                                 activity?.onBackPressedDispatcher?.onBackPressed()
                             },
                             onTradeAgain = {
-                                openTradeAgain(positionHistory)
+                                openTradeAgain(closeOrder)
                             },
                             onShare = {
-                                sharePosition(positionHistory)
+                                sharePosition(closeOrder, leverage ?: 0)
                             },
                             onSupport = {
                                 context?.openUrl(
@@ -166,22 +173,24 @@ class PositionDetailFragment : BaseFragment() {
             .showNow(parentFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)
     }
 
-    private fun openTradeAgain(positionHistory: PerpsPositionHistoryItem) {
+    private fun openTradeAgain(order: PerpsOrderItem) {
         PerpsActivity.showDetail(
             context = requireContext(),
-            marketId = positionHistory.marketId,
-            marketSymbol = positionHistory.displaySymbol.orEmpty(),
-            marketDisplaySymbol = positionHistory.displaySymbol.orEmpty(),
-            marketTokenSymbol = positionHistory.tokenSymbol.orEmpty(),
+            marketId = order.marketId,
+            marketSymbol = order.displaySymbol.orEmpty(),
+            marketDisplaySymbol = order.displaySymbol.orEmpty(),
+            marketTokenSymbol = order.tokenSymbol.orEmpty(),
             source = AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_DETAIL,
         )
     }
 
     private fun sharePosition(position: PerpsPositionItem) {
-        PerpsPositionShareActivity.show(requireContext(), position)
+        PerpsPositionShareBottomFragment.newInstance(position)
+            .show(parentFragmentManager, PerpsPositionShareBottomFragment.TAG)
     }
 
-    private fun sharePosition(positionHistory: PerpsPositionHistoryItem) {
-        PerpsPositionShareActivity.show(requireContext(), positionHistory)
+    private fun sharePosition(order: PerpsOrderItem, leverage: Int) {
+        PerpsPositionShareBottomFragment.newInstance(order, leverage)
+            .show(parentFragmentManager, PerpsPositionShareBottomFragment.TAG)
     }
 }
