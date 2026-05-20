@@ -130,7 +130,7 @@ buildscript {
         ext.playServicesMapsVersion = '20.0.0'
         ext.playServicesLocationVersion = '21.3.0'
         firebaseBomVersion = "34.13.0"
-        billingKtxVersion = "8.3.0"
+        billingKtxVersion = "9.0.0"
         webpdecoderVersion = "2.7.4.16.0"
 
         ext.tweetnaclVersion = '0.1.6'
