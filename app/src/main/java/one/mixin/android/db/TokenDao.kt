@@ -18,6 +18,7 @@ import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.UnifiedAssetItem
 
 @Dao
+@SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
 interface TokenDao : BaseDao<Token> {
     companion object {
         const val PREFIX_ASSET_ITEM =

@@ -67,6 +67,7 @@ abstract class PerpsDatabase : RoomDatabase() {
                             quantity TEXT NOT NULL,
                             price TEXT NOT NULL,
                             entry_price TEXT NOT NULL,
+                            leverage INTEGER NOT NULL DEFAULT 0,
                             realized_pnl TEXT NOT NULL,
                             close_reason TEXT,
                             trigger_price TEXT,

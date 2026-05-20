@@ -6,6 +6,7 @@ import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RawQuery
+import androidx.room.RoomWarnings
 import androidx.room.Transaction
 import androidx.sqlite.db.SupportSQLiteQuery
 import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
@@ -18,6 +19,7 @@ import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.Token
 
 @Dao
+@SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
 interface SafeSnapshotDao : BaseDao<SafeSnapshot> {
     companion object {
         const val SNAPSHOT_ITEM_PREFIX =

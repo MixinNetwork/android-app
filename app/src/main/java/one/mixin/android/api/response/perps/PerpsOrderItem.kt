@@ -34,6 +34,9 @@ data class PerpsOrderItem(
     @SerializedName("entry_price")
     @ColumnInfo(name = "entry_price")
     val entryPrice: String,
+    @SerializedName("leverage")
+    @ColumnInfo(name = "leverage")
+    val leverage: Int,
     @SerializedName("realized_pnl")
     @ColumnInfo(name = "realized_pnl")
     val realizedPnl: String,

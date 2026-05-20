@@ -28,6 +28,7 @@ import one.mixin.android.vo.QuoteMinimal
 import one.mixin.android.vo.SearchMessageDetailItem
 
 @Dao
+@SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
 interface MessageDao : BaseDao<Message> {
     companion object {
         const val PREFIX_MESSAGE_ITEM = """
@@ -423,7 +424,7 @@ interface MessageDao : BaseDao<Message> {
     fun findUnreadMessagesSync(
         conversationId: String,
         userId: String,
-    ): List<MessageMinimal>?
+    ): List<MessageMinimal>
 
     @Query("SELECT id FROM messages WHERE conversation_id = :conversationId AND user_id = :userId AND status = 'FAILED' ORDER BY created_at DESC LIMIT 1000")
     fun findFailedMessages(
@@ -443,7 +444,7 @@ interface MessageDao : BaseDao<Message> {
         signalCategory: String,
         plainCategory: String,
         encryptedCategory: String,
-    ): List<MediaMessageMinimal>?
+    ): List<MediaMessageMinimal>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(

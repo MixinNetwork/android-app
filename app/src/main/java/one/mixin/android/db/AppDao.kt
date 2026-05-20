@@ -11,6 +11,7 @@ import one.mixin.android.vo.ExploreApp
 import one.mixin.android.vo.RecentUsedApp
 
 @Dao
+@SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
 interface AppDao : BaseDao<App> {
     companion object {
         const val PREFIX_APP_ITEM =

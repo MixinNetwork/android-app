@@ -12,6 +12,7 @@ import one.mixin.android.vo.ParticipantSessionKey
 import one.mixin.android.vo.ParticipantSessionSent
 
 @Dao
+@SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
 interface ParticipantSessionDao : BaseDao<ParticipantSession> {
     @Query("SELECT * FROM participant_session WHERE conversation_id = :conversationId AND user_id = :userId AND session_id = :sessionId")
     fun getParticipantSession(
