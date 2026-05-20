@@ -2550,7 +2550,7 @@
     <string name="pin_log_subtitle_recovery_contact_changed">✅ Recovery Contact changed</string>
     <string name="pin_log_subtitle_mnemonic_phrase_exported">✅ Mnemonic Phrase exported</string>
     <string name="pin_log_subtitle_mobile_number_changed">✅ Mobile Number changed</string>
-    <string name="perps_share_to_mixin_contact">Share to Mixin Contact</string>
+    <string name="perps_share_to_mixin_contact">Send to Mixin Contact</string>
     <string name="perps_share_mixin_contact_desc">Bring your friends on board</string>
     <string name="perps_share_mixin_contact_desc_with_percent">Earn %1$s commission via this link</string>
 </resources>
