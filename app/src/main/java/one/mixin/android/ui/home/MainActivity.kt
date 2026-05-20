@@ -132,6 +132,7 @@ import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.common.BlazeBaseActivity
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.ui.common.LoginVerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.NavigationController
 import one.mixin.android.ui.common.PinCodeFragment.Companion.FROM_EMERGENCY
@@ -442,7 +443,9 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                 .request(Manifest.permission.POST_NOTIFICATIONS)
                 .autoDispose(stopScope)
                 .subscribe(
-                    { _ -> },
+                    { _ -> 
+                        AnalyticsTracker.setNotificationAuthStatus(this)
+                    },
                     {},
                 )
         }

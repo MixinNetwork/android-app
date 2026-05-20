@@ -97,8 +97,8 @@ object AnalyticsTracker {
         logEvent("login_end")
     }
 
-    fun setHasEmergencyContact(account: Account) {
-        firebaseAnalytics.setUserProperty("has_emergency_contact", account.hasEmergencyContact.toString())
+    fun setHasRecoveryContact(account: Account) {
+        firebaseAnalytics.setUserProperty("has_recovery_contact", account.hasEmergencyContact.toString())
     }
 
     fun setMembership(account: Account) {
@@ -106,19 +106,21 @@ object AnalyticsTracker {
     }
 
     fun setNotificationAuthStatus(context: Context) {
-        firebaseAnalytics.setUserProperty(
-            "notification_auth_status", if (NotificationManagerCompat.from(context).areNotificationsEnabled()) {
-                "authorized"
-            } else {
-                "denied"
-            }
-        )
+        val status = if (NotificationManagerCompat.from(context).areNotificationsEnabled()) {
+            "authorized"
+        } else {
+            "denied"
+        }
+        firebaseAnalytics.setUserProperty("notification_auth_status", status)
     }
 
     fun setAssetLevel(totalUsd: Int) {
         val level = when {
-            totalUsd >= 10000 -> "v10000"
-            totalUsd >= 1000 -> "v1000"
+            totalUsd >= 10000000 -> "v10,000,000"
+            totalUsd >= 1000000 -> "v1,000,000"
+            totalUsd >= 100000 -> "v100,000"
+            totalUsd >= 10000 -> "v10,000"
+            totalUsd >= 1000 -> "v1,000"
             totalUsd >= 100 -> "v100"
             totalUsd >= 1 -> "v1"
             else -> "v0"
