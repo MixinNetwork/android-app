@@ -3,6 +3,7 @@ package one.mixin.android.db.web3
 import android.content.Context
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.RoomWarnings
 import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
 import one.mixin.android.crypto.CryptoWalletHelper
@@ -12,6 +13,7 @@ import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.vo.WalletCategory
 
 @Dao
+@SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
 interface Web3WalletDao : BaseDao<Web3Wallet> {
 
     companion object {
@@ -22,7 +24,7 @@ interface Web3WalletDao : BaseDao<Web3Wallet> {
             UNION ALL
             SELECT wallet_id AS id, 'mixin_safe' AS category, name, created_at AS createdAt, updated_at AS updatedAt,
                    role AS safeRole, chain_id AS safeChainId, address AS safeAddress, url AS safeUrl
-            FROM `safe_wallets`"""
+            FROM safe_wallets"""
     }
 
     @Query("""
