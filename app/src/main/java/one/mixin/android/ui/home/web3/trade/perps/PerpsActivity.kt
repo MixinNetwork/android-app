@@ -220,6 +220,7 @@ class PerpsActivity : BaseActivity() {
     }
 
     private fun showSharePosition(position: PerpsPositionItem) {
-        PerpsPositionShareActivity.show(this@PerpsActivity, position)
+        PerpsPositionShareBottomFragment.newInstance(position)
+            .show(supportFragmentManager, PerpsPositionShareBottomFragment.TAG)
     }
 }
