@@ -43,14 +43,14 @@
         android:layout_height="wrap_content"
         android:clipChildren="false"
         android:clipToPadding="false"
-        android:orientation="vertical"
-        android:paddingStart="28dp"
-        android:paddingEnd="28dp">
+        android:orientation="vertical">
 
         <HorizontalScrollView
             android:id="@+id/radio"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginStart="28dp"
+            android:layout_marginEnd="28dp"
             android:background="?attr/bg_white"
             android:scrollbars="none">
 
@@ -117,7 +117,9 @@
             android:id="@+id/mixin_contact"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginStart="28dp"
             android:layout_marginTop="14dp"
+            android:layout_marginEnd="28dp"
             android:background="?attr/bg_market_card"
             android:clickable="true"
             android:focusable="true"

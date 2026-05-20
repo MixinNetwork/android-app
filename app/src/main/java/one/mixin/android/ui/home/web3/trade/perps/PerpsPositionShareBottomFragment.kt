@@ -52,13 +52,11 @@ import one.mixin.android.repository.ReferralRepository
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.applyReferralTitleTypeface
-import one.mixin.android.ui.common.buildReferralDescription
 import one.mixin.android.ui.common.isZeroPercent
 import one.mixin.android.ui.common.roundQrBackground
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.ShareImageData
@@ -329,7 +327,7 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
             offscreenPageLimit = 1
             clipToPadding = false
             clipChildren = false
-            setPadding(0, 0, 28.dp, 0)
+            setPadding(28.dp, 0, 28.dp, 0)
             (getChildAt(0) as? RecyclerView)?.clipToPadding = false
             setPageTransformer { page, position ->
                 val factor = (1f - position.absoluteValue).coerceIn(0f, 1f)
@@ -360,7 +358,9 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
     private fun updatePosterPagerHeight(force: Boolean = false) {
         val recyclerView = binding.posterPager.getChildAt(0) as? RecyclerView ?: return
         val itemView = recyclerView.findViewHolderForAdapterPosition(binding.posterPager.currentItem)?.itemView ?: return
-        val width = (binding.posterPager.width - binding.posterPager.paddingStart - binding.posterPager.paddingEnd).takeIf { it > 0 } ?: return
+        val width = itemView.width.takeIf { it > 0 }
+            ?: (binding.posterPager.width - binding.posterPager.paddingStart - binding.posterPager.paddingEnd).takeIf { it > 0 }
+            ?: return
         itemView.measure(
             View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
             View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
@@ -389,6 +389,12 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
+    private val forwardLauncher = registerForActivityResult(ForwardActivity.ForwardContract()) { result ->
+        if (result != null) {
+            dismiss()
+        }
+    }
+
     private fun shareToMixinContact() {
         lifecycleScope.launch {
             val file = createShareFile()
@@ -396,8 +402,7 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
                 ShareCategory.Image,
                 GsonHelper.customGson.toJson(ShareImageData(file.toUri().toString())),
             )
-            dismiss()
-            ForwardActivity.show(requireContext(), arrayListOf(message), ForwardAction.App.Resultless())
+            forwardLauncher.launch(arrayListOf(message) to null)
         }
     }
 
@@ -560,26 +565,45 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
         private fun bindPosterFooter(itemBinding: ItemPerpsPositionSharePosterBinding) {
             val info = referralShareInfo
             if (info != null) {
-                itemBinding.referralTitle.text = info.code
-                itemBinding.referralTitle.applyReferralTitleTypeface()
                 val rebatePercent = info.rebatePercent
-                if (rebatePercent.isNullOrBlank()) {
-                    itemBinding.shareDescTv.isVisible = false
-                    itemBinding.shareDescTv.minLines = 1
+                if (rebatePercent.isNullOrBlank() || rebatePercent.isZeroPercent()) {
+                    bindDefaultPosterFooter(itemBinding)
                 } else {
+                    itemBinding.referralTitle.text = info.code
+                    itemBinding.referralTitle.applyReferralTitleTypeface()
                     itemBinding.shareDescTv.isVisible = true
-                    itemBinding.shareDescTv.minLines = if (rebatePercent.isZeroPercent()) 2 else 1
-                    itemBinding.shareDescTv.text = buildReferralDescription(requireContext(), rebatePercent)
+                    itemBinding.shareDescTv.minLines = 1
+                    itemBinding.shareDescTv.text = buildPerpsReferralDescription(rebatePercent)
                 }
             } else {
-                itemBinding.shareDescTv.isVisible = true
-                itemBinding.shareDescTv.minLines = 1
-                itemBinding.referralTitle.text = getString(R.string.mixin_messenger)
-                itemBinding.shareDescTv.text = getString(R.string.share_desc)
+                bindDefaultPosterFooter(itemBinding)
             }
             val qrPadding = 8.dp
             val qrCode = currentQrUrl().generateQRCode(58.dp, qrPadding).first.roundQrBackground(qrPadding, 6.dp.toFloat())
             itemBinding.qr.setImageBitmap(qrCode)
+        }
+    }
+
+    private fun bindDefaultPosterFooter(itemBinding: ItemPerpsPositionSharePosterBinding) {
+        itemBinding.shareDescTv.isVisible = true
+        itemBinding.shareDescTv.minLines = 1
+        itemBinding.referralTitle.text = getString(R.string.mixin_messenger)
+        itemBinding.shareDescTv.text = getString(R.string.perps_share_mixin_contact_desc)
+    }
+
+    private fun buildPerpsReferralDescription(rebatePercent: String): CharSequence {
+        val text = getString(R.string.referral_share_desc, rebatePercent)
+        val start = text.indexOf(rebatePercent)
+        if (start < 0) return text
+        return SpannableString(text).apply {
+            val end = start + rebatePercent.length
+            setSpan(
+                ForegroundColorSpan(android.graphics.Color.parseColor("#FFEE70")),
+                start,
+                end,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+            )
+            setSpan(StyleSpan(Typeface.BOLD), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
     }
 }

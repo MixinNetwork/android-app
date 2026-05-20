@@ -301,7 +301,7 @@ class TradeFragment : BaseFragment() {
                             val perpetualOrderBadgePrefKey = remember(currentWalletId) {
                                 perpetualOrderBadgeDismissedPrefKey(currentWalletId)
                             }
-                            val initialTabIndex = remember(currentWalletId, arguments?.getString(ARGS_ENTRY_TYPE)) {
+                            val initialTabIndex = remember(currentWalletId) {
                                 getInitialTabIndex(currentWalletId)
                             }
                             var isLimitOrderTabBadgeDismissed by remember(currentWalletId) {
@@ -1456,14 +1456,8 @@ class TradeFragment : BaseFragment() {
     }
 
     private fun getInitialTabIndex(currentWalletId: String): Int {
-        return when (arguments?.getString(ARGS_ENTRY_TYPE)) {
-            AnalyticsTracker.SpotTradeType.ADVANCED -> 1
-            AnalyticsTracker.SpotTradeType.SIMPLE -> 0
-            else -> {
-                val preferenceKey = "$PREF_TRADE_SELECTED_TAB_PREFIX$currentWalletId"
-                defaultSharedPreferences.getInt(preferenceKey, 0)
-            }
-        }
+        val preferenceKey = "$PREF_TRADE_SELECTED_TAB_PREFIX$currentWalletId"
+        return defaultSharedPreferences.getInt(preferenceKey, 0)
     }
 
     private fun currentSpotType(tabIndex: Int): String {

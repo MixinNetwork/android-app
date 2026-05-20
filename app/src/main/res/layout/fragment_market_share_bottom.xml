@@ -179,6 +179,15 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
                                 android:visibility="gone" />
+
+                            <ProgressBar
+                                android:id="@+id/share_card_loading"
+                                style="?android:attr/progressBarStyleLarge"
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                android:layout_gravity="center"
+                                android:visibility="gone"
+                                tools:visibility="visible" />
                         </FrameLayout>
 
                         <RadioGroup
@@ -232,10 +241,10 @@
 
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
+                        android:layout_height="wrap_content"
                         android:layout_alignParentStart="true"
+                        android:layout_centerVertical="true"
                         android:layout_toStartOf="@id/icon_fl"
-                        android:gravity="center_vertical"
                         android:orientation="vertical">
 
                         <TextView
@@ -283,15 +292,6 @@
                     </FrameLayout>
                 </RelativeLayout>
             </LinearLayout>
-
-            <ProgressBar
-                android:id="@+id/share_card_loading"
-                style="?android:attr/progressBarStyleLarge"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_gravity="center"
-                android:visibility="gone"
-                tools:visibility="visible" />
         </FrameLayout>
 
         <LinearLayout

@@ -60,7 +60,6 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
-import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.ShareImageData
@@ -282,20 +281,21 @@ class MarketShareBottomFragment : MixinBottomSheetDialogFragment() {
 
     private fun showLoading(show: Boolean) {
         isLoading = show
-        binding.llMarketShare.visibility = if (show) View.INVISIBLE else View.VISIBLE
         binding.shareCardLoading.isVisible = show
     }
 
     private fun bindFooter(qrCode: Bitmap) {
         val info = referralShareInfo
         if (info != null) {
-            binding.title.text = info.code
-            binding.title.applyReferralTitleTypeface()
             val rebatePercent = info.rebatePercent
             if (rebatePercent.isNullOrBlank()) {
-                binding.shareDesc.isVisible = false
+                binding.shareDesc.isVisible = true
                 binding.shareDesc.minLines = 1
+                binding.title.text = getString(R.string.mixin_messenger)
+                binding.shareDesc.text = getString(R.string.share_desc)
             } else {
+                binding.title.text = info.code
+                binding.title.applyReferralTitleTypeface()
                 binding.shareDesc.isVisible = true
                 binding.shareDesc.minLines = if (rebatePercent.isZeroPercent()) 2 else 1
                 binding.shareDesc.text = buildReferralDescription(requireContext(), rebatePercent)
@@ -351,6 +351,12 @@ class MarketShareBottomFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
+    private val forwardLauncher = registerForActivityResult(ForwardActivity.ForwardContract()) { result ->
+        if (result != null) {
+            dismiss()
+        }
+    }
+
     private fun shareToMixinContact() {
         lifecycleScope.launch {
             val file = createShareFile()
@@ -358,8 +364,7 @@ class MarketShareBottomFragment : MixinBottomSheetDialogFragment() {
                 ShareCategory.Image,
                 GsonHelper.customGson.toJson(ShareImageData(file.toUri().toString())),
             )
-            dismiss()
-            ForwardActivity.show(requireContext(), arrayListOf(message), ForwardAction.App.Resultless())
+            forwardLauncher.launch(arrayListOf(message) to null)
         }
     }
 
