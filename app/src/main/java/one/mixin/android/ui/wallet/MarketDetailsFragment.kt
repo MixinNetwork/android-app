@@ -6,7 +6,6 @@ import android.view.View
 import android.view.View.VISIBLE
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.view.drawToBitmap
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
@@ -114,12 +113,10 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                 }
                 rightIb.setOnClickListener {
                     if (!isLoading || marketItem.coinId.isBlank()) {
-                        MarketShareActivity.show(
-                            requireContext(),
-                            captureMarketShareBitmap(),
-                            marketItem.symbol,
-                            marketItem.coinId,
-                        )
+                        MarketShareBottomFragment.newInstance(
+                            marketItem,
+                            typeState.value,
+                        ).show(parentFragmentManager, MarketShareBottomFragment.TAG)
                     } else toast(R.string.Please_wait_a_bit)
                 }
             }
@@ -542,13 +539,4 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
     private var currentPrice: String? = null
     private var currentRise: String? = null
 
-    private fun captureMarketShareBitmap() = with(binding.swapAlert) {
-        val originalInvisible = isInvisible
-        isInvisible = true
-        try {
-            binding.marketLl.drawToBitmap()
-        } finally {
-            isInvisible = originalInvisible
-        }
-    }
 }
