@@ -293,7 +293,7 @@ object AnalyticsTracker {
         const val MORE_MARKET_CAP = "more_market_cap"
         const val MORE_FAVORITES = "more_favorites"
         const val MORE_SEARCH = "more_search"
-        const val TOKEN_DETAIL = "token_detal"
+        const val TOKEN_DETAIL = "token_detail"
         const val APP_CARD = "app_card"
         const val SCHEMA = "schema"
         const val MARKET_DETAIL = "market_detail"
