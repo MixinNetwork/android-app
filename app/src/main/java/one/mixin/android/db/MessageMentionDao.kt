@@ -8,6 +8,7 @@ import one.mixin.android.ui.transfer.vo.compatible.TransferMessageMention
 import one.mixin.android.vo.MessageMention
 
 @Dao
+@SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
 interface MessageMentionDao : BaseDao<MessageMention> {
     @Query("SELECT count(1) FROM message_mentions WHERE conversation_id = :conversationId AND has_read = 0")
     fun countUnreadMentionMessageByConversationId(conversationId: String): LiveData<Int>
