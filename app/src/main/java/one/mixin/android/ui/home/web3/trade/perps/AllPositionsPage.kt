@@ -50,7 +50,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.isActive
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
+import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
@@ -78,7 +78,7 @@ fun AllPositionsPage(
     onSupport: () -> Unit,
     onShowTradingGuide: () -> Unit,
     onOpenPositionClick: (PerpsPositionItem) -> Unit,
-    onClosedPositionClick: (PerpsPositionHistoryItem) -> Unit,
+    onClosedPositionClick: (PerpsOrderItem) -> Unit,
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -109,9 +109,9 @@ fun AllPositionsPage(
     }.collectAsLazyPagingItems()
     val closedPositionsPaging = remember(walletId) {
         if (walletId.isNotEmpty()) {
-            viewModel.getClosedPositionsPaged(walletId)
+            viewModel.getOrdersPaged(walletId)
         } else {
-            flowOf(PagingData.empty<PerpsPositionHistoryItem>())
+            flowOf(PagingData.empty<PerpsOrderItem>())
         }
     }.collectAsLazyPagingItems()
     var previousOpenPositionsCount by remember(walletId) { mutableStateOf<Int?>(null) }
@@ -119,7 +119,7 @@ fun AllPositionsPage(
     LaunchedEffect(walletId, lifecycleOwner) {
         if (walletId.isEmpty()) return@LaunchedEffect
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-            viewModel.refreshPositionHistory(walletId, limit = CLOSED_POSITION_REFRESH_LIMIT)
+            viewModel.refreshOrders(walletId, limit = CLOSED_POSITION_REFRESH_LIMIT)
             while (isActive) {
                 viewModel.refreshPositions(walletId)
                 delay(POSITION_REFRESH_INTERVAL_MS)
@@ -132,7 +132,7 @@ fun AllPositionsPage(
         val currentCount = openPositionsSnapshot.size
         val lastCount = previousOpenPositionsCount
         if (lastCount != null && currentCount < lastCount) {
-            viewModel.refreshPositionHistory(walletId, limit = CLOSED_POSITION_REFRESH_LIMIT)
+            viewModel.refreshOrders(walletId, limit = CLOSED_POSITION_REFRESH_LIMIT)
         }
         previousOpenPositionsCount = currentCount
     }
@@ -251,8 +251,8 @@ private fun OpenPositionsContent(
 
 @Composable
 private fun ClosedPositionsContent(
-    positions: LazyPagingItems<PerpsPositionHistoryItem>,
-    onPositionClick: (PerpsPositionHistoryItem) -> Unit,
+    positions: LazyPagingItems<PerpsOrderItem>,
+    onPositionClick: (PerpsOrderItem) -> Unit,
 ) {
     val refreshState = positions.loadState.refresh
     val isEmpty = refreshState is LoadState.NotLoading && positions.itemCount == 0
@@ -326,14 +326,14 @@ private fun LazyListScope.openPositionItems(
 }
 
 private fun LazyListScope.closedPositionItems(
-    positions: LazyPagingItems<PerpsPositionHistoryItem>,
-    onPositionClick: (PerpsPositionHistoryItem) -> Unit,
+    positions: LazyPagingItems<PerpsOrderItem>,
+    onPositionClick: (PerpsOrderItem) -> Unit,
 ) {
     items(count = positions.itemCount) { index ->
-        val position = positions[index] ?: return@items
+        val order = positions[index] ?: return@items
         ClosedPositionItem(
-            position = position,
-            onClick = { onPositionClick(position) },
+            order = order,
+            onClick = { onPositionClick(order) },
         )
     }
 }

@@ -54,3 +54,18 @@ data class PositionTpSlRequest(
     @SerializedName("stop_loss_price")
     val stopLossPrice: String? = null,
 )
+
+data class IncreaseOrderRequest(
+    @SerializedName("asset_id")
+    val assetId: String,
+    @SerializedName("amount")
+    val amount: String,
+    @SerializedName("destination")
+    val destination: String? = null,
+    @SerializedName("price")
+    val price: String? = null,
+    @SerializedName("take_profit_price")
+    val takeProfitPrice: String? = null,
+    @SerializedName("stop_loss_price")
+    val stopLossPrice: String? = null,
+)

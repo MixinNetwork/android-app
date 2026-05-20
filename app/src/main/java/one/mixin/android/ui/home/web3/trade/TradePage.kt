@@ -51,7 +51,7 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.CreateLimitOrderResponse
 import one.mixin.android.api.response.perps.PerpsMarket
-import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
+import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapToken
@@ -108,7 +108,7 @@ fun TradePage(
     onShowAllClosedPositions: () -> Unit,
     onOpenPositionClick: (PerpsPositionItem) -> Unit,
     onMarketItemClick: (PerpsMarket) -> Unit,
-    onClosedPositionClick: (PerpsPositionHistoryItem) -> Unit,
+    onClosedPositionClick: (PerpsOrderItem) -> Unit,
 ) {
     val context = LocalContext.current
     val keyboardController = LocalSoftwareKeyboardController.current

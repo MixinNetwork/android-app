@@ -7,6 +7,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -56,7 +58,8 @@ import kotlinx.coroutines.isActive
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
-import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
+import one.mixin.android.api.response.perps.PerpsOrder
+import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.api.response.perps.toPosition
 import one.mixin.android.compose.CoilImage
@@ -107,7 +110,7 @@ fun PerpsMarketDetailPage(
     }.collectAsStateWithLifecycle(initialValue = emptyList())
     val allClosedPositions by remember(walletId) {
         if (walletId.isNotEmpty()) {
-            viewModel.observeClosedPositions(walletId, CLOSED_POSITION_PREVIEW_LIMIT)
+            viewModel.observeOrders(walletId, CLOSED_POSITION_PREVIEW_LIMIT)
         } else {
             flowOf(emptyList())
         }
@@ -153,7 +156,7 @@ fun PerpsMarketDetailPage(
         val lastCount = previousOpenPositionsCount
         val currentCount = openPositions.size
         if (lastCount != null && currentCount < lastCount) {
-            viewModel.refreshPositionHistory(walletId, limit = CLOSED_POSITION_PREVIEW_LIMIT)
+            viewModel.refreshOrders(walletId, limit = CLOSED_POSITION_PREVIEW_LIMIT)
         }
         previousOpenPositionsCount = currentCount
     }
@@ -425,27 +428,115 @@ fun PerpsMarketDetailPage(
                         .padding(bottom = 20.dp, top = 20.dp)
                 ) {
                     if (currentPosition != null) {
-                        MixinButton(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(48.dp),
-                            enabled = currentPosition.state == "open",
-                            onClick = {
-                                val activity = context as? FragmentActivity ?: return@MixinButton
-                                val position = currentPosition.toPosition()
-                                AnalyticsTracker.trackPerpsClosePositionStart()
-                                PerpsCloseBottomSheetDialogFragment.newInstance(
-                                    position = position,
-                                ).show(activity.supportFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)
-                            },
-                            backgroundColor = if (currentPosition.state == "open") MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundWindow,
-                            contentColor = if (currentPosition.state == "open") Color.White else MixinAppTheme.colors.textAssist,
-                            shape = RoundedCornerShape(32.dp),
-                        ) {
-                            Text(
-                                fontSize = 16.sp,
-                                text = stringResource(if(currentPosition.state == "open") R.string.Close_Position else R.string.Opening),
-                            )
+                        val isOpen = currentPosition.state == "open"
+                        val isAdding = currentPosition.state == "adding"
+                        if (isOpen || isAdding) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            ) {
+                                MixinButton(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(48.dp),
+                                    enabled = isOpen,
+                                    onClick = {
+                                        val activity = context as? FragmentActivity ?: return@MixinButton
+                                        val positionForAdd = currentPosition
+                                        PerpsAddBottomSheetDialogFragment.newInstance(positionForAdd)
+                                            .setOnAdd { token, amount ->
+                                                val referencePrice = market?.last
+                                                    ?: positionForAdd.markPrice
+                                                    ?: positionForAdd.entryPrice
+                                                viewModel.increasePerpsPosition(
+                                                    positionId = positionForAdd.positionId,
+                                                    assetId = token.assetId,
+                                                    amount = amount,
+                                                    price = referencePrice.takeIf { it.isNotBlank() },
+                                                    onSuccess = { response ->
+                                                        val isLong = positionForAdd.side.equals("long", ignoreCase = true)
+                                                        val symbol = positionForAdd.displaySymbol
+                                                            ?: market?.displaySymbol
+                                                            ?: positionForAdd.tokenSymbol.orEmpty()
+                                                        val iconUrl = positionForAdd.iconUrl
+                                                            ?: market?.iconUrl.orEmpty()
+                                                        val confirmEntryPrice = referencePrice.ifBlank { positionForAdd.entryPrice }
+                                                        PerpsConfirmBottomSheetDialogFragment.newInstance(
+                                                            marketSymbol = symbol,
+                                                            marketIcon = iconUrl,
+                                                            isLong = isLong,
+                                                            amount = response.payAmount,
+                                                            leverage = positionForAdd.leverage,
+                                                            entryPrice = confirmEntryPrice,
+                                                            tokenSymbol = token.symbol,
+                                                            takeProfitPrice = null,
+                                                            stopLossPrice = null,
+                                                            payUrl = response.paymentUrl,
+                                                        ).show(activity.supportFragmentManager, PerpsConfirmBottomSheetDialogFragment.TAG)
+                                                    },
+                                                    onError = { errorCode, errorMessage ->
+                                                        val message = if (errorCode > 0) {
+                                                            context.getMixinErrorStringByCode(errorCode, errorMessage)
+                                                        } else {
+                                                            errorMessage
+                                                        }
+                                                        toast(message)
+                                                    },
+                                                )
+                                            }
+                                            .show(activity.supportFragmentManager, PerpsAddBottomSheetDialogFragment.TAG)
+                                    },
+                                    backgroundColor = if (isOpen) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundWindow,
+                                    contentColor = if (isOpen) Color.White else MixinAppTheme.colors.textAssist,
+                                    shape = RoundedCornerShape(32.dp),
+                                ) {
+                                    Text(
+                                        fontSize = 16.sp,
+                                        text = stringResource(if (isAdding) R.string.Adding else R.string.Add),
+                                    )
+                                }
+
+                                MixinButton(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(48.dp),
+                                    enabled = isOpen,
+                                    onClick = {
+                                        val activity = context as? FragmentActivity ?: return@MixinButton
+                                        val position = currentPosition.toPosition()
+                                        AnalyticsTracker.trackPerpsClosePositionStart()
+                                        PerpsCloseBottomSheetDialogFragment.newInstance(
+                                            position = position,
+                                        ).show(activity.supportFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)
+                                    },
+                                    backgroundColor = if (isOpen) MixinAppTheme.colors.backgroundGrayLight else MixinAppTheme.colors.backgroundWindow,
+                                    contentColor = if (isOpen) MixinAppTheme.colors.textPrimary else MixinAppTheme.colors.textAssist,
+                                    shape = RoundedCornerShape(32.dp),
+                                ) {
+                                    Text(
+                                        fontSize = 16.sp,
+                                        text = stringResource(R.string.Close),
+                                    )
+                                }
+                            }
+                        } else {
+                            MixinButton(
+                                modifier = Modifier
+                                    .align(Alignment.CenterHorizontally)
+                                    .wrapContentWidth()
+                                    .height(48.dp),
+                                enabled = false,
+                                onClick = {},
+                                backgroundColor = MixinAppTheme.colors.backgroundWindow,
+                                contentColor = MixinAppTheme.colors.textAssist,
+                                shape = RoundedCornerShape(32.dp),
+                                contentPadding = PaddingValues(horizontal = 32.dp, vertical = 12.dp),
+                            ) {
+                                Text(
+                                    fontSize = 16.sp,
+                                    text = stringResource(R.string.Opening),
+                                )
+                            }
                         }
                     } else {
                         Row(
@@ -1222,9 +1313,9 @@ private fun formatMarketTpSlDisplayValue(rawValue: String?, priceScale: Int): St
 
 @Composable
 private fun ClosedPositionsSection(
-    positions: List<PerpsPositionHistoryItem>,
+    positions: List<PerpsOrderItem>,
     onViewAll: () -> Unit,
-    onPositionClick: (PerpsPositionHistoryItem) -> Unit,
+    onPositionClick: (PerpsOrderItem) -> Unit,
 ) {
     val displayPositions = positions.take(3)
 
@@ -1260,12 +1351,12 @@ private fun ClosedPositionsSection(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        displayPositions.forEach { position ->
+        displayPositions.forEach { order ->
             ClosedPositionItem(
-                position = position,
-                onClick = { onPositionClick(position) }
+                order = order,
+                onClick = { onPositionClick(order) },
             )
-            if (position != displayPositions.last()) {
+            if (order != displayPositions.last()) {
                 Spacer(modifier = Modifier.height(8.dp))
             }
         }

@@ -9,11 +9,11 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import one.mixin.android.Constants
 import one.mixin.android.api.response.perps.PerpsMarket
+import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsPosition
-import one.mixin.android.api.response.perps.PerpsPositionHistory
 import one.mixin.android.db.perps.PerpsMarketDao
+import one.mixin.android.db.perps.PerpsOrderDao
 import one.mixin.android.db.perps.PerpsPositionDao
-import one.mixin.android.db.perps.PerpsPositionHistoryDao
 import one.mixin.android.util.SINGLE_DB_EXECUTOR
 import one.mixin.android.util.database.dbDir
 import one.mixin.android.util.reportException
@@ -25,10 +25,10 @@ import kotlin.math.min
 @Database(
     entities = [
         PerpsPosition::class,
-        PerpsPositionHistory::class,
+        PerpsOrder::class,
         PerpsMarket::class,
     ],
-    version = 3,
+    version = 4,
 )
 abstract class PerpsDatabase : RoomDatabase() {
     companion object {
@@ -51,6 +51,33 @@ abstract class PerpsDatabase : RoomDatabase() {
                     db.execSQL("ALTER TABLE markets ADD COLUMN price_scale INTEGER NOT NULL DEFAULT 2")
                 }
             }
+        val MIGRATION_3_4 =
+            object : Migration(3, 4) {
+                override fun migrate(db: SupportSQLiteDatabase) {
+                    db.execSQL("DROP TABLE IF EXISTS position_histories")
+                    db.execSQL(
+                        """
+                        CREATE TABLE IF NOT EXISTS perps_orders (
+                            order_id TEXT NOT NULL PRIMARY KEY,
+                            position_id TEXT NOT NULL,
+                            market_id TEXT NOT NULL,
+                            side TEXT NOT NULL,
+                            order_type TEXT NOT NULL,
+                            status TEXT NOT NULL,
+                            quantity TEXT NOT NULL,
+                            price TEXT NOT NULL,
+                            entry_price TEXT NOT NULL,
+                            realized_pnl TEXT NOT NULL,
+                            close_reason TEXT,
+                            trigger_price TEXT,
+                            created_at TEXT NOT NULL,
+                            updated_at TEXT NOT NULL
+                        )
+                        """
+                    )
+                }
+            }
+
         fun getDatabase(
             context: Context,
             identityNumber: String,
@@ -74,7 +101,7 @@ abstract class PerpsDatabase : RoomDatabase() {
                             listOf(
                                 object : MixinCorruptionCallback {
                                     override fun onCorruption(database: SupportSQLiteDatabase) {
-                                        val e = IllegalStateException("Perps database is corrupted, current DB version: 3")
+                                        val e = IllegalStateException("Perps database is corrupted, current DB version: 4")
                                         reportException(e)
                                     }
                                 },
@@ -87,7 +114,7 @@ abstract class PerpsDatabase : RoomDatabase() {
                                 db.execSQL("PRAGMA synchronous = NORMAL")
                             }
                         },
-                    ).addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                    ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                         .fallbackToDestructiveMigration()
                         .enableMultiInstanceInvalidation()
                         .setQueryExecutor(
@@ -105,7 +132,7 @@ abstract class PerpsDatabase : RoomDatabase() {
     }
 
     abstract fun perpsPositionDao(): PerpsPositionDao
-    abstract fun perpsPositionHistoryDao(): PerpsPositionHistoryDao
+    abstract fun perpsOrderDao(): PerpsOrderDao
     abstract fun perpsMarketDao(): PerpsMarketDao
 
     override fun close() {
