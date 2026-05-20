@@ -51,6 +51,9 @@ fun AppAuthSettingPage() {
         }
 
         val context = LocalContext.current
+        val confirmFingerprint = stringResource(R.string.Confirm_fingerprint)
+        val cancel = stringResource(R.string.Cancel)
+        val unlockWithFingerprint = stringResource(R.string.Unlock_with_fingerprint)
 
         var fingerPrintEnabled by remember {
             context.defaultSharedPreferences
@@ -116,9 +119,10 @@ fun AppAuthSettingPage() {
                 val activity = context.findFragmentActivityOrNull() ?: return@SettingTile
                 showAppAuthPrompt(
                     activity,
-                    context.getString(R.string.Confirm_fingerprint),
-                    context.getString(R.string.Cancel),
+                    confirmFingerprint,
+                    cancel,
                     authCallback,
+                    unlockWithFingerprint,
                 )
             }
         }

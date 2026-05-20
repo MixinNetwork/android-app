@@ -283,7 +283,6 @@
     <string name="delete_account_hint_2">Локальные сообщения и резервные копии не будут удаляться автоматически</string>
     <string name="delete_account_hint_3">Транзакции НЕ МОГУТ быть удалены</string>
     <string name="Delete_address">Удалить адрес</string>
-    <string name="Delete_emergency_contact">Удалить экстренный контакт</string>
     <string name="Delete_for_everyone">Удалить для всех</string>
     <string name="Delete_for_me">Удалить для меня</string>
     <string name="Delete_Group">Удалить группу</string>
@@ -671,16 +670,13 @@
     <string name="Phone_Contact">Телефонные контакты</string>
     <string name="Phone_Contacts">Телефонные контакты</string>
     <string name="Phone_Number">Номер телефона</string>
-    <string name="Phone_number_change">Изменение номера телефона</string>
     <string name="phone_number_privacy">Кто может найти меня по моему номеру</string>
     <string name="Photo">Фото</string>
     <string name="Photos">Фото</string>
     <string name="PIN">PIN</string>
-    <string name="PIN_change">изменение PIN-кода</string>
     <string name="pin_check_tip">Вас будут периодически спрашивать об этом, чтобы помочь вам запомнить его.</string>
     <string name="pin_confirm_again_hint">Пожалуйста, подтвердите свой 6-значный PIN-код еще раз</string>
     <string name="pin_confirm_hint">Пожалуйста, подтвердите 6-значный PIN-код и запомните его.</string>
-    <string name="pin_creation">создание PIN-кода</string>
     <string name="PIN_incorrect">PIN-код неверный</string>
     <string name="pin_lost_hint">В случае утери кошелек невозможно восстановить.</string>
     <string name="pin_title">Закрепить</string>
@@ -863,10 +859,6 @@
     <string name="Show">Показать</string>
     <string name="Show_in_chat">Показать в чате</string>
     <string name="Shown">Показано</string>
-    <string name="Sign_in">Войти</string>
-    <string name="Sign_in_desktop_app">Войти в настольное приложение</string>
-    <string name="Sign_with_emergency_contact">Войти через контакт для экстренных случаев</string>
-    <string name="Sign_with_mobile_number">Войти через номер телефона</string>
     <string name="Silence_Notification">Беззвучное уведомление</string>
     <string name="Size">Размер</string>
     <string name="Skip">Пропустить</string>
@@ -959,7 +951,6 @@
     <string name="User_not_found">Пользователь не найден</string>
     <string name="value_now">значение сейчас %1$s</string>
     <string name="value_then">значение затем %1$s</string>
-    <string name="Verify">Проверить</string>
     <string name="Verify_by_Biometric">Подтвердить по биометрии</string>
     <string name="Verify_PIN">Подтвердить PIN-код</string>
     <string name="Verifying">Проверка…</string>
@@ -1030,6 +1021,5 @@
     <string name="You">Вы</string>
     <string name="You_deleted_this_message">Вы удалили это сообщение</string>
     <string name="You_have_left_the_group">Вы вышли из группы</string>
-    <string name="your_pin_has_been_created">Ваш PIN-код был создан</string>
     <string name="Receivers">Получатели</string>
 </resources>

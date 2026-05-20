@@ -14,6 +14,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -40,23 +41,15 @@ fun BiometricTimePage() {
 
         val context = LocalContext.current
 
-        val values: ArrayList<String> =
-            remember {
-                val strings = arrayListOf<String>()
-                presetDurations.forEach { v ->
-                    if (v < 1) {
-                        strings.add(
-                            context.resources.getQuantityString(
-                                R.plurals.Minute,
-                                (v * 60).toInt(),
-                                (v * 60).toInt(),
-                            ),
-                        )
-                    } else {
-                        strings.add(context.resources.getQuantityString(R.plurals.Hour, v.toInt(), v.toInt()))
-                    }
+        val values =
+            presetDurations.map { v ->
+                if (v < 1) {
+                    val minutes = (v * 60).toInt()
+                    pluralStringResource(R.plurals.Minute, minutes, minutes)
+                } else {
+                    val hours = v.toInt()
+                    pluralStringResource(R.plurals.Hour, hours, hours)
                 }
-                strings
             }
 
         var biometricInterval by remember {

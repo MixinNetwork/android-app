@@ -34,6 +34,7 @@ import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.web.WebActivity
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ForwardAction
@@ -244,7 +245,13 @@ fun String.checkUserOrApp(
         return
     }
 
-    val db = MixinDatabase.getDatabase(ctx)
+    val identityNumber = Session.getAccount()?.identityNumber
+    if (identityNumber.isNullOrBlank()) {
+        val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString())
+        bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
+        return
+    }
+    val db = MixinDatabase.getDatabase(ctx, identityNumber)
     val userDao = db.userDao()
     val appDao = db.appDao()
     scope.launch {
@@ -263,6 +270,7 @@ fun String.checkUserOrApp(
                         } catch (e: Exception) {
                             app.homeUri
                         }
+                    AnalyticsTracker.trackOpenBotHomePage(AnalyticsTracker.BotSource.SCHEME, app.appNumber)
                     WebActivity.show(context, url, null, app)
                     if (context is UrlInterpreterActivity) {
                         context.finish()
@@ -270,7 +278,7 @@ fun String.checkUserOrApp(
                     return@launch
                 }
             }
-            showUserBottom(supportFragmentManager, user)
+            showUserBottom(supportFragmentManager, user, botEntrySource = AnalyticsTracker.BotSource.SCHEME)
         }
     }
 }
@@ -284,7 +292,11 @@ fun String.checkConversation(
     val segments = uri.pathSegments
     if (segments.isEmpty()) return
     scope.launch {
-        val db = MixinDatabase.getDatabase(context)
+        val identityNumber = Session.getAccount()?.identityNumber ?: run {
+            elseAction.invoke()
+            return@launch
+        }
+        val db = MixinDatabase.getDatabase(context, identityNumber)
         val conversationDao = db.conversationDao()
         val conversationId = segments[0]
         if (!conversationId.isNullOrBlank() && conversationId.isUUID()) { // Judge in advance before displaying the interface
@@ -356,7 +368,8 @@ fun Uri.handleSchemeSend(
     if (text != null) {
         if (userId != null) {
             scope.launch {
-                val db = MixinDatabase.getDatabase(context)
+                val identityNumber = Session.getAccount()?.identityNumber ?: return@launch
+                val db = MixinDatabase.getDatabase(context, identityNumber)
                 val userDao = db.userDao()
                 val user = userDao.suspendFindUserById(userId)
                 if (user == null) {
@@ -389,7 +402,8 @@ fun Uri.handleSchemeSend(
         if (shareCategory != null && data != null) {
             if (userId != null) {
                 scope.launch {
-                    val db = MixinDatabase.getDatabase(context)
+                    val identityNumber = Session.getAccount()?.identityNumber ?: return@launch
+                    val db = MixinDatabase.getDatabase(context, identityNumber)
                     val userDao = db.userDao()
                     val user = userDao.suspendFindUserById(userId)
                     if (user == null) {

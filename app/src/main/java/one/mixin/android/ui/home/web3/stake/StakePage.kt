@@ -1,6 +1,5 @@
 package one.mixin.android.ui.home.web3.stake
 
-import PageScaffold
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -39,6 +38,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -53,6 +53,7 @@ import one.mixin.android.R
 import one.mixin.android.api.response.web3.Validator
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.home.web3.trade.checkBalance
 
 @Composable
@@ -123,7 +124,7 @@ fun StakePage(
                 Spacer(modifier = Modifier.weight(1f))
                 val checkBalance = checkBalance(amountText, balance)
                 val keyboardController =
-                    androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
+                    LocalSoftwareKeyboardController.current
                 val focusManager = LocalFocusManager.current
                 if (amountText.isNotEmpty()) {
                     Button(

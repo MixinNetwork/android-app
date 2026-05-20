@@ -56,9 +56,7 @@ import one.mixin.android.vo.StickerAlbumOrder
 import one.mixin.android.vo.StickerRelationship
 import one.mixin.android.vo.User
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 class AccountRepository
     @Inject
     constructor(

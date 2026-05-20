@@ -1,5 +1,6 @@
 package one.mixin.android.ui.wallet
 
+import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.Context
 import android.content.Intent
@@ -25,7 +26,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
-import one.mixin.android.Constants.Scheme.HTTPS_MARKET
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityDepositShareBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
@@ -60,6 +60,7 @@ class DepositShareActivity : BaseActivity() {
         private const val ARGS_AMOUNT = "amount"
         private const val ARGS_AMOUNT_URL = "amount_url"
         private const val ARGS_USER = "user"
+        private const val SHARE_QR_URL = "https://mixin.one/mm"
 
         fun show(context: Context, token: TokenItem?, address: String? = null, amountUrl: String? = null, amount: String? = null, user: User? = null) {
             refreshScreenshot(context, 0x33000000)
@@ -124,10 +125,11 @@ class DepositShareActivity : BaseActivity() {
     private val tokenChainName: String?
         get() = token?.chainName ?: web3Token?.chainName
 
-    private val tokenDust: String?
+    private val tokenDust: String
         get() = token?.dust ?: "0" // Web3TokenItem doesn't have dust, use default
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        skipSystemUi = true
         super.onCreate(savedInstanceState)
         binding = ActivityDepositShareBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -140,14 +142,8 @@ class DepositShareActivity : BaseActivity() {
                 binding.background.setImageBitmap(it.blurBitmap(25))
             })
         }
-
-        window.decorView.systemUiVisibility = (
-                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                )
-        window.statusBarColor = android.graphics.Color.TRANSPARENT
-
         binding.iconFl.round(6.dp)
+        binding.qr.post { binding.qr.round(4.dp) }
         binding.content.updateLayoutParams<MarginLayoutParams> {
             topMargin = 20.dp
         }
@@ -172,13 +168,13 @@ class DepositShareActivity : BaseActivity() {
             }
         }
         Session.getAccount()?.identityNumber.let {
-            val qrcodeContent = "$HTTPS_MARKET/${tokenAssetId}?ref=$it"
-            val qrCode = qrcodeContent.generateQRCode(200.dp, 8.dp).first
+            val qrCode = SHARE_QR_URL.generateQRCode(200.dp, 8.dp).first
             binding.qr.setImageBitmap(qrCode)
         }
         applyFadeInAnimation(binding.root)
     }
 
+    @SuppressLint("SetTextI18n")
     private fun setupUI() {
         val hasToken = token != null || web3Token != null
         if (user != null || !hasToken) {
@@ -225,7 +221,7 @@ class DepositShareActivity : BaseActivity() {
                 spannable.setSpan(boldStyle, 0, 8, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
 
                 spannable.setSpan(ForegroundColorSpan(black), addr.length - 6, addr.length, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                spannable.setSpan(StyleSpan(android.graphics.Typeface.BOLD), addr.length - 6, addr.length, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                spannable.setSpan(StyleSpan(Typeface.BOLD), addr.length - 6, addr.length, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
 
                 binding.addressText.text = spannable
             } else {
@@ -238,7 +234,7 @@ class DepositShareActivity : BaseActivity() {
                 binding.minimumDepositTitle.setText(R.string.Amount)
                 binding.minimumDepositText.text = "$amount"
             } else if (token != null) {
-                binding.minimumDepositText.text = "${tokenDust} ${tokenSymbol}"
+                binding.minimumDepositText.text = "$tokenDust $tokenSymbol"
             } else {
                 binding.minimumDepositTitle.isInvisible = true
                 binding.minimumDepositText.isInvisible = true

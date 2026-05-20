@@ -1,7 +1,7 @@
 package one.mixin.android.db
 
 import androidx.lifecycle.LiveData
-import androidx.paging.DataSource
+import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
@@ -53,14 +53,14 @@ interface ParticipantDao : BaseDao<Participant> {
             ORDER BY p.created_at DESC
         """,
     )
-    fun observeGroupParticipants(conversationId: String): DataSource.Factory<Int, ParticipantItem>
+    fun observeGroupParticipants(conversationId: String): PagingSource<Int, ParticipantItem>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """
             $PREFIX_PARTICIPANT_ITEM
             FROM participants p, users u
-            WHERE p.conversation_id = :conversationId 
+            WHERE p.conversation_id = :conversationId
             AND p.user_id = u.user_id
             AND (u.full_name LIKE '%' || :username || '%' ${BaseDao.ESCAPE_SUFFIX} OR u.identity_number like '%' || :identityNumber || '%' ${BaseDao.ESCAPE_SUFFIX})
             ORDER BY p.created_at DESC
@@ -70,7 +70,7 @@ interface ParticipantDao : BaseDao<Participant> {
         conversationId: String,
         username: String,
         identityNumber: String,
-    ): DataSource.Factory<Int, ParticipantItem>
+    ): PagingSource<Int, ParticipantItem>
 
     @Query("UPDATE participants SET role = :role where conversation_id = :conversationId AND user_id = :userId")
     fun updateParticipantRole(

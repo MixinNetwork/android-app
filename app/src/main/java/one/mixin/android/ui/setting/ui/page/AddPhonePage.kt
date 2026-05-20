@@ -28,7 +28,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 
 @Composable
-fun AddPhonePage(hasPhone: Boolean, pop: () -> Unit, next: () -> Unit) {
+fun AddPhonePage(hasPhone: Boolean, pop: () -> Unit, next: () -> Unit, onCustomerService: () -> Unit = {}) {
     val context = LocalContext.current
     MixinAppTheme {
         Column {
@@ -62,6 +62,7 @@ fun AddPhonePage(hasPhone: Boolean, pop: () -> Unit, next: () -> Unit) {
                         fontSize = 14.sp,
                         lineHeight = 21.sp
                     ) {
+                        onCustomerService()
                         context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
                     }
                 } else {

@@ -54,6 +54,7 @@ import one.mixin.android.ui.common.LoginVerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
 import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.components.AssetDashboardScreen
 import one.mixin.android.ui.wallet.components.WalletDestination
@@ -292,8 +293,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             .autoDispose(destroyScope)
             .subscribe { event ->
                 if (event.type != WalletOperationType.RENAME) return@subscribe
-                val currentDestination = selectedWalletDestination
-                when (currentDestination) {
+                when (val currentDestination = selectedWalletDestination) {
                     is WalletDestination.Classic -> {
                         if (currentDestination.walletId == event.walletId) {
                             updateUi(currentDestination)
@@ -421,15 +421,13 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         }
 
         if (!Session.saltExported() && Session.isAnonymous()) {
-            BackupMnemonicPhraseWarningBottomSheetDialogFragment.newInstance().apply {
-                laterCallback = {
-                    if (this@WalletFragment.isAdded) {
-                        val dialog = AddWalletBottomSheetDialogFragment.newInstance()
-                        dialog.callback = callback
-                        dialog.show(this@WalletFragment.parentFragmentManager, AddWalletBottomSheetDialogFragment.TAG)
-                    }
+            RecoveryReminderBottomSheetDialogFragment.showForRiskAction(parentFragmentManager) {
+                if (this@WalletFragment.isAdded) {
+                    val dialog = AddWalletBottomSheetDialogFragment.newInstance()
+                    dialog.callback = callback
+                    dialog.show(this@WalletFragment.parentFragmentManager, AddWalletBottomSheetDialogFragment.TAG)
                 }
-            }.show(parentFragmentManager, BackupMnemonicPhraseWarningBottomSheetDialogFragment.TAG)
+            }
         } else {
             val dialog = AddWalletBottomSheetDialogFragment.newInstance()
             dialog.callback = callback
@@ -520,12 +518,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     }
 
     override fun onBackPressed(): Boolean {
-        return if (binding.compose.isVisible) {
-            closeMenu()
-            true
-        } else {
-            false
-        }
+        return false
     }
 
     private var _importBottomBinding: ViewImportWalletBottomBinding? = null

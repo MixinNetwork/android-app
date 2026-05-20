@@ -1,5 +1,7 @@
 package one.mixin.android.compose
 
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -18,6 +20,8 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -44,20 +48,33 @@ fun MixinBackButton() {
 }
 
 @Composable
+@OptIn(ExperimentalFoundationApi::class)
 fun MixinTopAppBar(
     title: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     navigationIcon: @Composable (() -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},
+    onLongClick: (() -> Unit)? = null,
     backgroundColor: Color = MixinAppTheme.colors.background,
     contentColor: Color = MixinAppTheme.colors.textPrimary,
 ) {
+    val longClickModifier =
+        if (onLongClick != null) {
+            Modifier.combinedClickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = {},
+                onLongClick = onLongClick,
+            )
+        } else {
+            Modifier
+        }
     Surface(
         color = backgroundColor,
         contentColor = contentColor,
         elevation = 0.dp,
         shape = RectangleShape,
-        modifier = modifier,
+        modifier = modifier.then(longClickModifier),
     ) {
         CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
             Box(

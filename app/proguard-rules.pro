@@ -77,8 +77,13 @@
 
 # web3j
 -keep class org.web3j.protocol.** { *; }
--keep class org.web3j.crypto.** { *; }
 -keep class org.web3j.abi.** { *; }
+-keep class org.web3j.crypto.** { *; }
+-dontwarn org.web3j.crypto.**
+-dontwarn jnr.unixsocket.**
+-dontwarn org.web3j.protocol.ipc.**
+-dontwarn org.java_websocket.**
+-dontwarn org.web3j.protocol.websocket.**
 
 -dontwarn com.fasterxml.jackson.databind.**
 -keep class com.fasterxml.jackson.core.** { *; }
@@ -107,4 +112,8 @@
 -keep interface com.yalantis.ucrop** { *; }
 
 -keep class com.appsflyer.** { *; }
+-dontwarn com.appsflyer.**
+-keepclassmembers class com.appsflyer.** {
+    *;
+}
 -keep class kotlin.jvm.internal.** { *; }

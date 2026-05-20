@@ -54,12 +54,14 @@ class OrderDetailFragment : BaseFragment() {
         const val TAG: String = "OrderDetailFragment"
         private const val ARGS_ORDER_ID: String = "args_order_id"
         private const val ARGS_WALLET_ID: String = "args_wallet_id"
+        private const val ARGS_SPOT_TYPE: String = "args_spot_type"
 
-        fun newInstance(orderId: String, walletId: String? = null): OrderDetailFragment {
+        fun newInstance(orderId: String, walletId: String? = null, spotType: String? = null): OrderDetailFragment {
             return OrderDetailFragment().apply {
                 arguments = Bundle().apply {
                     putString(ARGS_ORDER_ID, orderId)
                     walletId?.let { putString(ARGS_WALLET_ID, it) }
+                    spotType?.let { putString(ARGS_SPOT_TYPE, it) }
                 }
             }
         }
@@ -91,6 +93,8 @@ class OrderDetailFragment : BaseFragment() {
         savedInstanceState: Bundle?,
     ): View {
         AnalyticsTracker.trackTradeDetail()
+        val spotTypeArg = arguments?.getString(ARGS_SPOT_TYPE)
+        spotTypeArg?.let(AnalyticsTracker::trackSpotDetail)
         val orderId: String = arguments?.getString(ARGS_ORDER_ID) ?: ""
         val walletId: String? = arguments?.getString(ARGS_WALLET_ID)
         return ComposeView(inflater.context).apply {
@@ -102,10 +106,15 @@ class OrderDetailFragment : BaseFragment() {
                         walletId = walletId,
                         orderId = orderId,
                         onShare = { payAssetId: String, receiveAssetId: String, type: String ->
-                            viewLifecycleOwner.lifecycleScope.launch { shareOrder(payAssetId, receiveAssetId, type) }
+                            viewLifecycleOwner.lifecycleScope.launch(ErrorHandler.errorHandler) { shareOrder(payAssetId, receiveAssetId, type) }
                         },
                         onTryAgain = {walletId, type, payAssetId, receiveAssetId ->
                             val inMixin = walletId == null || walletId == Session.getAccountId()
+                            val tradeType = if (type.equals("limit", true)) {
+                                AnalyticsTracker.SpotTradeType.ADVANCED
+                            } else {
+                                AnalyticsTracker.SpotTradeType.SIMPLE
+                            }
                             if (type.equals("limit", true)) {
                                 defaultSharedPreferences.putInt("$PREF_TRADE_SELECTED_TAB_PREFIX${walletId ?: Session.getAccountId() ?: ""}", 1)
                             } else {
@@ -115,9 +124,25 @@ class OrderDetailFragment : BaseFragment() {
                             activity?.finish()
                             AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.TRADE_DETAIL)
                             if (inMixin) {
-                                SwapActivity.show(requireContext(), input = payAssetId, output = receiveAssetId, inMixin = true, walletId = null)
+                                SwapActivity.show(
+                                    requireContext(),
+                                    input = payAssetId,
+                                    output = receiveAssetId,
+                                    inMixin = true,
+                                    walletId = null,
+                                    entrySource = TradeSource.TRADE_DETAIL,
+                                    entryType = tradeType,
+                                )
                             } else {
-                                SwapActivity.show(requireContext(), input = payAssetId, output = receiveAssetId, inMixin = false, walletId = walletId)
+                                SwapActivity.show(
+                                    requireContext(),
+                                    input = payAssetId,
+                                    output = receiveAssetId,
+                                    inMixin = false,
+                                    walletId = walletId,
+                                    entrySource = TradeSource.TRADE_DETAIL,
+                                    entryType = tradeType,
+                                )
                             }
                         },
                         pop = {
@@ -142,7 +167,7 @@ class OrderDetailFragment : BaseFragment() {
 
     private fun startOrderPolling(orderId: String) {
         refreshJob?.cancel()
-        refreshJob = viewLifecycleOwner.lifecycleScope.launch {
+        refreshJob = viewLifecycleOwner.lifecycleScope.launch(ErrorHandler.errorHandler) {
             while (isActive) {
                 val local = withContext(Dispatchers.IO) { walletDatabase.orderDao().observeOrder(orderId).first() }
 
@@ -184,9 +209,9 @@ class OrderDetailFragment : BaseFragment() {
                 // Fallback: share plain URL when token not found
                 val isLimit = type.equals("limit", true)
                 val url = if (isLimit) {
-                    "${Constants.Scheme.MIXIN_TRADE}?type=limit&input=$payId&output=$receiveId"
+                    "${Constants.Scheme.HTTPS_TRADE}?type=limit&input=$payId&output=$receiveId"
                 } else {
-                    "${Constants.Scheme.MIXIN_SWAP}?input=$payId&output=$receiveId"
+                    "${Constants.Scheme.HTTPS_SWAP}?input=$payId&output=$receiveId"
                 }
                 ForwardMessage(ShareCategory.Text, url)
             }

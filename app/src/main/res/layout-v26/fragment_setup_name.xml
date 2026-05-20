@@ -90,8 +90,7 @@
 
     </LinearLayout>
 
-    <Button
-        style="@style/AppTheme.MaterialButton"
+    <ViewAnimator
         android:id="@+id/continue_btn"
         android:layout_width="match_parent"
         android:layout_height="48dp"
@@ -99,11 +98,27 @@
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"
         android:layout_marginBottom="32dp"
-        android:text="@string/Continue"
-        android:textColor="@android:color/white"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:enabled="false" />
+        android:background="@drawable/bg_round_blue_btn"
+        android:enabled="false"
+        android:stateListAnimator="@animator/selector_animator">
+
+        <TextView
+            android:id="@+id/continue_tv"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="@string/Continue"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <ProgressBar
+            style="?android:attr/progressBarStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:theme="@style/AppTheme.WhiteAccent" />
+    </ViewAnimator>
 
     <View
         android:id="@+id/name_cover"

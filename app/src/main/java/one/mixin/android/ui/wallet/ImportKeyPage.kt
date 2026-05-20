@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
@@ -28,6 +26,7 @@ import one.mixin.android.R
 
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.landing.components.HighlightedTextWithClick
+import one.mixin.android.widget.components.MixinButton
 
 @Composable
 fun ImportKeyPage(
@@ -69,25 +68,14 @@ fun ImportKeyPage(
             }
             Spacer(modifier = Modifier.height(50.dp))
             Spacer(modifier = Modifier.height(24.dp))
-            Button(
+            MixinButton(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp),
                 onClick = action,
-                colors =
-                    ButtonDefaults.outlinedButtonColors(
-                        backgroundColor = MixinAppTheme.colors.accent
-                    ),
                 shape = RoundedCornerShape(32.dp),
-                elevation =
-                    ButtonDefaults.elevation(
-                        pressedElevation = 0.dp,
-                        defaultElevation = 0.dp,
-                        hoveredElevation = 0.dp,
-                        focusedElevation = 0.dp,
-                    ),
             ) {
-                Text(text = stringResource(id = R.string.Import), color = Color.White)
+                Text(text = stringResource(id = R.string.Import), fontSize = 16.sp, color = Color.White)
             }
             Spacer(modifier = Modifier.height(8.dp))
             TextButton(

@@ -7,14 +7,18 @@ import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentComposeBinding
 import one.mixin.android.extension.navTo
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
+import one.mixin.android.ui.home.reminder.VerifyMobileReminderBottomSheetDialogFragment
 import one.mixin.android.ui.setting.ui.page.RecoveryKitPage
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
 class RecoveryFragment : BaseFragment(R.layout.fragment_compose) {
     companion object {
-        const val TAG: String = "MnemonicPhraseFragment"
+        const val TAG: String = "RecoveryFragment"
 
         fun newInstance(
         ): RecoveryFragment =
@@ -31,14 +35,39 @@ class RecoveryFragment : BaseFragment(R.layout.fragment_compose) {
     ) {
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.isVisible = false
+        renderPage()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        renderPage()
+    }
+
+    private fun renderPage() {
         binding.compose.setContent {
             RecoveryKitPage({ activity?.onBackPressedDispatcher?.onBackPressed() },
                 {
-                    navTo(AddPhoneFragment.newInstance(), AddPhoneFragment.TAG)
+                    navTo(AddPhoneFragment.newInstance(AnalyticsTracker.AddPhoneSource.RECOVERY_KEY_GUIDE), AddPhoneFragment.TAG)
                 }, {
                     navTo(MnemonicPhraseBackupFragment.newInstance(), MnemonicPhraseBackupFragment.TAG)
                 }, {
-                    navTo(EmergencyContactFragment.newInstance(), EmergencyContactFragment.TAG)
+                    if (!Session.hasPhone()) {
+                        VerifyMobileReminderBottomSheetDialogFragment.showSafely(
+                            parentFragmentManager,
+                            subtitleResId = R.string.verify_mobile_reminder_desc_recovery_contact,
+                            enableSnooze = false,
+                            addPhoneSource = AnalyticsTracker.AddPhoneSource.RECOVERY_KEY_GUIDE,
+                        )
+                    } else if (Session.isAnonymous() && !Session.saltExported()) {
+                        val shown = RecoveryReminderBottomSheetDialogFragment.showForRiskAction(parentFragmentManager) {
+                            navTo(EmergencyContactFragment.newInstance(), EmergencyContactFragment.TAG)
+                        }
+                        if (!shown) {
+                            navTo(EmergencyContactFragment.newInstance(), EmergencyContactFragment.TAG)
+                        }
+                    } else {
+                        navTo(EmergencyContactFragment.newInstance(), EmergencyContactFragment.TAG)
+                    }
                 })
         }
     }

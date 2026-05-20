@@ -5,6 +5,5 @@
         android:bottomRightRadius="6dp" />
     <gradient
         android:startColor="?attr/bg_market_gradient_start"
-        android:endColor="?attr/bg_market_gradient_end"
-        android:angle="180" />
+        android:endColor="?attr/bg_market_gradient_end" />
 </shape>

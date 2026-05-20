@@ -214,6 +214,7 @@ import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MusicPlayer
 import one.mixin.android.util.SINGLE_DB_THREAD
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.debug.debugLongClick
 import one.mixin.android.util.markdown.MarkwonUtil.Companion.getMiniMarkwon
 import one.mixin.android.util.mention.mentionDisplay
@@ -874,6 +875,7 @@ class ConversationFragment() :
                                 } else {
                                     null
                                 },
+                                botEntrySource = AnalyticsTracker.BotSource.CHAT_MESSAGE_CONTACT,
                             )
                         }
                     },
@@ -1220,8 +1222,8 @@ class ConversationFragment() :
     private var lastReadMessage: String? = null
 
     override fun onPause() {
-        // don't stop audio player if triggered by screen off
-        if (powerManager.isInteractive) {
+        // don't stop audio player if triggered by screen off or app lock overlay
+        if (powerManager.isInteractive && !MixinApplication.get().isAppAuthShown()) {
             AudioPlayer.pause()
         }
         sensorManager.unregisterListener(this)
@@ -2454,6 +2456,7 @@ class ConversationFragment() :
                 } else {
                     null
                 },
+                botEntrySource = AnalyticsTracker.BotSource.CHAT_AVATAR_DIALOG,
             )
         }
         binding.bottomUnblock.setOnClickListener {
@@ -2687,6 +2690,7 @@ class ConversationFragment() :
                         MenuType.App -> {
                             menu.app?.let { app ->
                                 binding.chatControl.chatEt.hideKeyboard()
+                                AnalyticsTracker.trackOpenBotHomePage(AnalyticsTracker.BotSource.CHAT_BOTTOM_MENU, app.appNumber)
                                 WebActivity.show(
                                     requireActivity(),
                                     app.homeUri,
@@ -3009,12 +3013,13 @@ class ConversationFragment() :
         audioSwitch.selectSpeakerphone()
     }
 
-    private fun openBotHome() {
+    private fun openBotHome(source: String = AnalyticsTracker.BotSource.CHAT_MORE_MENU) {
         hideIfShowBottomSheet()
         recipient?.userId?.let { id ->
             chatViewModel.refreshUser(id, true)
         }
         app?.let {
+            AnalyticsTracker.trackOpenBotHomePage(source, it.appNumber)
             open(it.homeUri, it, null)
         }
     }
@@ -3100,7 +3105,7 @@ class ConversationFragment() :
             }
 
             override fun onBotClick() {
-                openBotHome()
+                openBotHome(AnalyticsTracker.BotSource.CHAT_BOTTOM_MENU)
             }
 
             override fun onGalleryClick() {

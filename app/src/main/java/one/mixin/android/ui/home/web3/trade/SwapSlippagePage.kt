@@ -22,6 +22,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,6 +46,7 @@ import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.tickVibrate
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -121,8 +123,7 @@ private fun Auto(
     originAuto: Boolean,
     originBps: Int,
 ) {
-    val context = LocalContext.current
-    val text = context.getString(R.string.slippage_auto) + if (originAuto) " (${originBps.slippageBpsDisplay()}%)" else ""
+    val text = stringResource(R.string.slippage_auto) + if (originAuto) " (${originBps.slippageBpsDisplay()}%)" else ""
     Column(
         modifier =
             Modifier
@@ -146,7 +147,7 @@ private fun Auto(
         )
         Spacer(modifier = Modifier.height(10.dp))
         Text(
-            text = context.getString(R.string.slippage_auto_desc),
+            text = stringResource(R.string.slippage_auto_desc),
             style =
                 TextStyle(
                     fontSize = 14.sp,
@@ -161,6 +162,12 @@ private fun Custom(
     bps: MutableState<String>,
 ) {
     val context = LocalContext.current
+    val isInvalid = !bps.value.isSlippageValid()
+    LaunchedEffect(isInvalid) {
+        if (isInvalid) {
+            context.tickVibrate()
+        }
+    }
     Column(
         modifier =
             Modifier
@@ -172,7 +179,7 @@ private fun Custom(
         horizontalAlignment = Alignment.Start,
     ) {
         Text(
-            text = context.getString(R.string.slippage_custom),
+            text = stringResource(R.string.Custom),
             style =
                 TextStyle(
                     fontSize = 18.sp,
@@ -181,7 +188,7 @@ private fun Custom(
         )
         Spacer(modifier = Modifier.height(10.dp))
         Text(
-            text = context.getString(R.string.slippage_custom_desc),
+            text = stringResource(R.string.slippage_custom_desc),
             style =
                 TextStyle(
                     fontSize = 14.sp,
@@ -246,10 +253,10 @@ private fun Custom(
                 )
             }
         }
-        if (!bps.value.isSlippageValid()) {
+        if (isInvalid) {
             Spacer(modifier = Modifier.height(10.dp))
             Text(
-                text = context.getString(R.string.slippage_invalid),
+                text = stringResource(R.string.slippage_invalid),
                 style =
                     TextStyle(
                         fontSize = 14.sp,

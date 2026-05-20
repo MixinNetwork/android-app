@@ -46,6 +46,7 @@ import one.mixin.android.ui.setting.EmergencyViewModel
 import one.mixin.android.ui.setting.LocalSettingNav
 import one.mixin.android.ui.setting.PinEmergencyBottomSheetDialog
 import one.mixin.android.vo.Account
+import one.mixin.android.vo.User
 import timber.log.Timber
 
 @Composable
@@ -54,8 +55,9 @@ fun EmergencyContactPage() {
         title = stringResource(id = R.string.Emergency_Contact),
         titleBarActions = {
             val context = LocalContext.current
+            val emergencyUrl = stringResource(R.string.emergency_url)
             IconButton(onClick = {
-                context.openUrl(context.getString(R.string.emergency_url))
+                context.openUrl(emergencyUrl)
             }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_help_outline),
@@ -259,7 +261,7 @@ private fun ShowEmergencyButton() {
                     handleMixinResponse(
                         invokeNetwork = { viewModel.showEmergency(pinCode) },
                         successBlock = { response ->
-                            val user = response.data as one.mixin.android.vo.User
+                            val user = response.data as User
                             navigator.viewEmergencyContact(user)
                         },
                         exceptionBlock = {

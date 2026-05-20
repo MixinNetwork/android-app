@@ -30,6 +30,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.putLong
@@ -185,6 +186,7 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     showPin = { showPin() },
                 )
             }
+            RequestType.Pay -> {}
         }
     }
 
@@ -195,11 +197,15 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                 RequestType.Connect -> Step.Connecting
                 RequestType.SessionProposal -> Step.Input
                 RequestType.SessionRequest -> Step.Sign
+                RequestType.Pay -> Step.Done
             }
         checkV2ChainAndParseSignData()
     }
 
     override fun getBottomSheetHeight(view: View): Int {
+        if (requestType == RequestType.Connect) {
+            return 200.dp
+        }
         return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
     }
 
@@ -442,6 +448,7 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                             return@approveRequest nonce
                         })
                     }
+                    RequestType.Pay -> {}
                 }
             }
             WalletConnect.Version.TIP -> {
@@ -462,6 +469,7 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     RequestType.SessionRequest -> {
                         WalletConnectV2.rejectRequest(topic = topic)
                     }
+                    RequestType.Pay -> {}
                 }
             }
             WalletConnect.Version.TIP -> {

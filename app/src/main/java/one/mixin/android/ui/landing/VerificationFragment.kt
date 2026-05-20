@@ -41,6 +41,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putInt
+import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.exception.TipNetworkException
@@ -68,6 +69,15 @@ import one.mixin.android.widget.CaptchaView.Companion.gtCAPTCHA
 import one.mixin.android.widget.CaptchaView.Companion.hCAPTCHA
 import timber.log.Timber
 import javax.inject.Inject
+import javax.inject.Provider
+
+private fun CaptchaView.CaptchaType.analyticsName(): String {
+    return when (this) {
+        CaptchaView.CaptchaType.GTCaptcha -> AnalyticsTracker.CaptchaType.GEETEST
+        CaptchaView.CaptchaType.HCaptcha -> AnalyticsTracker.CaptchaType.HCAPTCHA
+        CaptchaView.CaptchaType.GCaptcha -> AnalyticsTracker.CaptchaType.RECAPTCHA
+    }
+}
 
 @AndroidEntryPoint
 class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
@@ -75,6 +85,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
         const val TAG: String = "VerificationFragment"
         private const val ARGS_ID = "args_id"
         const val ARGS_HAS_EMERGENCY_CONTACT = "args_has_emergency_contact"
+        private const val ARGS_ADD_PHONE_SOURCE = "args_add_phone_source"
 
         fun newInstance(
             id: String,
@@ -82,6 +93,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
             pin: String? = null,
             hasEmergencyContact: Boolean = false,
             from: Int = FROM_LANDING,
+            addPhoneSource: String? = null,
         ): VerificationFragment =
             VerificationFragment().apply {
                 arguments =
@@ -91,14 +103,18 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                         ARGS_PIN to pin,
                         ARGS_HAS_EMERGENCY_CONTACT to hasEmergencyContact,
                         ARGS_FROM to from,
+                        ARGS_ADD_PHONE_SOURCE to addPhoneSource,
                     )
             }
     }
 
-    private val viewModel by viewModels<MobileViewModel>()
+    private val viewModel by viewModels<LandingViewModel>()
 
     @Inject
     lateinit var tip: Tip
+
+    @Inject
+    lateinit var userRepositoryProvider: Provider<UserRepository>
 
     private var mCountDownTimer: CountDownTimer? = null
 
@@ -109,6 +125,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
         requireArguments().getInt(ARGS_FROM, FROM_LANDING)
     }
     private val phoneNum by lazy { requireArguments().getString(ARGS_PHONE_NUM)!! }
+    private val addPhoneSource by lazy { requireArguments().getString(ARGS_ADD_PHONE_SOURCE) }
 
     private var captchaView: CaptchaView? = null
 
@@ -134,12 +151,19 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
             true
         }
         binding.verificationResendTv.setOnClickListener { sendVerification() }
-        binding.verificationNeedHelpTv.setOnClickListener { showBottom() }
+        binding.verificationNeedHelpTv.setOnClickListener {
+            if (isAddPhoneFlow()) {
+                AnalyticsTracker.trackCustomerServiceDialog(AnalyticsTracker.CustomerServiceSource.ADD_PHONE_SMS_VERIFY)
+            }
+            showBottom()
+        }
 
         if (from == FROM_LANDING_CREATE) {
             AnalyticsTracker.trackSignUpSmsVerify()
         } else if (from == FROM_LOGIN) {
             AnalyticsTracker.trackLoginSmsVerify()
+        } else if (isAddPhoneFlow()) {
+            AnalyticsTracker.trackAddPhoneSmsVerify()
         }
 
         startCountDown()
@@ -173,12 +197,15 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
             FROM_CHANGE_PHONE_ACCOUNT -> {
                 handlePhoneModification()
             }
+
             FROM_DELETE_ACCOUNT -> {
                 handleDeleteAccount()
             }
+
             FROM_VERIFY_MOBILE_REMINDER -> {
                 handleVerifyMobileReminder()
             }
+
             else -> {
                 handleLogin()
             }
@@ -186,17 +213,19 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
     }
 
     override fun insertUser(u: User) {
-        viewModel.insertUser(u)
+        lifecycleScope.launch(Dispatchers.IO) {
+            userRepositoryProvider.get().insertUser(u)
+        }
     }
 
-    private fun isPhoneModification() = pin != null
+    private fun isChangePhoneFlow() = from == FROM_CHANGE_PHONE_ACCOUNT
 
     @SuppressLint("InflateParams")
     private fun showBottom() {
         val builder = BottomSheet.Builder(requireActivity())
         val view = View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_verification_bottom, null)
         val viewBinding = ViewVerificationBottomBinding.bind(view)
-        viewBinding.lostTv.isVisible = hasEmergencyContact && !isPhoneModification()
+        viewBinding.lostTv.isVisible = hasEmergencyContact && !isChangePhoneFlow()
         builder.setCustomView(view)
         val bottomSheet = builder.create()
         viewBinding.cantTv.setOnClickListener {
@@ -254,7 +283,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                     val hasPhone = Session.hasPhone()
                     withContext(Dispatchers.IO) {
                         r.data?.let { u ->
-                            viewModel.updatePhone(u.userId, u.phone)
+                            userRepositoryProvider.get().updatePhone(u.userId, u.phone)
                             removeValueFromEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC)
                             Session.storeAccount(u)
                         }
@@ -267,6 +296,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                         )
                     )
                         .setPositiveButton(android.R.string.ok) { dialog, _ ->
+                            AnalyticsTracker.trackAddPhoneEnd()
                             dialog.dismiss()
                             if (activity !is MainActivity) {
                                 activity?.finish()
@@ -343,8 +373,10 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                         }
                     }
                     alert(
-                        getString(R.string.verification_successful))
+                        getString(R.string.verification_successful)
+                    )
                         .setPositiveButton(android.R.string.ok) { dialog, _ ->
+                            AnalyticsTracker.trackAddPhoneEnd()
                             dialog.dismiss()
                             activity?.finish()
                             MainActivity.show(requireActivity())
@@ -373,8 +405,8 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                 requireArguments().getString(ARGS_PHONE_NUM),
                 when {
                     from == FROM_DELETE_ACCOUNT -> VerificationPurpose.DEACTIVATED.name
-                    isPhoneModification() -> VerificationPurpose.PHONE.name
                     from == FROM_VERIFY_MOBILE_REMINDER -> VerificationPurpose.NONE.name
+                    isChangePhoneFlow() -> VerificationPurpose.PHONE.name
                     else -> VerificationPurpose.SESSION.name
                 },
             )
@@ -434,11 +466,17 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                     )
                 (view as ViewGroup).addView(captchaView?.webView, MATCH_PARENT, MATCH_PARENT)
             }
-            captchaView?.loadCaptcha(
-                if (errorDescription.containsIgnoreCase(gtCAPTCHA)) CaptchaView.CaptchaType.GTCaptcha
-                else if (errorDescription.containsIgnoreCase(hCAPTCHA)) CaptchaView.CaptchaType.HCaptcha
-                else CaptchaView.CaptchaType.GCaptcha
-            )
+            val captchaType = if (errorDescription.containsIgnoreCase(gtCAPTCHA)) {
+                CaptchaView.CaptchaType.GTCaptcha
+            } else if (errorDescription.containsIgnoreCase(hCAPTCHA)) {
+                CaptchaView.CaptchaType.HCaptcha
+            } else {
+                CaptchaView.CaptchaType.GCaptcha
+            }
+            if (isAddPhoneFlow()) {
+                AnalyticsTracker.trackAddPhoneCaptcha(captchaType.analyticsName())
+            }
+            captchaView?.loadCaptcha(captchaType)
         }
 
     private fun startCountDown() {
@@ -467,5 +505,9 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
             binding.verificationResendTv.setTextColor(ContextCompat.getColor(it, R.color.colorBlue))
         }
         binding.verificationNeedHelpTv.isVisible = true
+    }
+
+    private fun isAddPhoneFlow(): Boolean {
+        return from == FROM_CHANGE_PHONE_ACCOUNT || from == FROM_VERIFY_MOBILE_REMINDER
     }
 }

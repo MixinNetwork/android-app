@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.content.res.Configuration
-import android.hardware.fingerprint.FingerprintManager
 import android.os.Bundle
 import android.widget.RelativeLayout
 import androidx.biometric.BiometricManager
@@ -129,6 +128,7 @@ class AppAuthActivity : BaseActivity() {
                 getString(R.string.Confirm_fingerprint),
                 getString(R.string.Cancel),
                 biometricCallback,
+                getString(R.string.Unlock_with_fingerprint)
             )
         }
     }
@@ -227,13 +227,13 @@ class AppAuthActivity : BaseActivity() {
                 errString: CharSequence,
             ) {
                 when (errorCode) {
-                    FingerprintManager.FINGERPRINT_ERROR_CANCELED, FingerprintManager.FINGERPRINT_ERROR_USER_CANCELED, 1010 -> {
+                    BiometricPrompt.ERROR_CANCELED, BiometricPrompt.ERROR_USER_CANCELED, 1010 -> {
                         moveTaskToBack(true)
                     }
-                    FingerprintManager.FINGERPRINT_ERROR_LOCKOUT, FingerprintManager.FINGERPRINT_ERROR_LOCKOUT_PERMANENT -> {
+                    BiometricPrompt.ERROR_LOCKOUT, BiometricPrompt.ERROR_LOCKOUT_PERMANENT -> {
                         showError(errString)
                     }
-                    FingerprintManager.FINGERPRINT_ERROR_NO_FINGERPRINTS, FingerprintManager.FINGERPRINT_ERROR_HW_NOT_PRESENT, FingerprintManager.FINGERPRINT_ERROR_HW_UNAVAILABLE -> {
+                    BiometricPrompt.ERROR_NO_BIOMETRICS, BiometricPrompt.ERROR_HW_NOT_PRESENT, BiometricPrompt.ERROR_HW_UNAVAILABLE -> {
                         clearWhenPinSuccess = true
                         showError(errString)
                     }

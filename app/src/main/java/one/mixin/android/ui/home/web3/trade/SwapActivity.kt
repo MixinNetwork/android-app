@@ -27,6 +27,8 @@ class SwapActivity : BaseActivity(){
             referral: String? = null,
             inMixin: Boolean = true,
             walletId: String? = null,
+            entrySource: String? = null,
+            entryType: String? = null,
         ) {
             context.startActivity(
                 Intent(context, SwapActivity::class.java).apply {
@@ -36,6 +38,8 @@ class SwapActivity : BaseActivity(){
                     referral?.let { putExtra(ARGS_REFERRAL, it) }
                     putExtra(ARGS_IN_MIXIN, inMixin)
                     walletId?.let { putExtra(TradeFragment.ARGS_WALLET_ID, it) }
+                    entrySource?.let { putExtra(TradeFragment.ARGS_ENTRY_SOURCE, it) }
+                    entryType?.let { putExtra(TradeFragment.ARGS_ENTRY_TYPE, it) }
                     flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
                 },
             )
@@ -47,13 +51,26 @@ class SwapActivity : BaseActivity(){
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
+        showTradeFragment(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        showTradeFragment(intent)
+    }
+
+    private fun showTradeFragment(intent: Intent) {
         val swapFragment = TradeFragment.newInstance<TokenItem>(
             intent.getStringExtra(ARGS_INPUT),
             intent.getStringExtra(ARGS_OUTPUT),
             intent.getStringExtra(ARGS_AMOUNT),
-            inMixin =  intent.getBooleanExtra(ARGS_IN_MIXIN, true),
+            inMixin = intent.getBooleanExtra(ARGS_IN_MIXIN, true),
             referral = intent.getStringExtra(ARGS_REFERRAL),
             walletId = intent.getStringExtra(TradeFragment.ARGS_WALLET_ID),
+            entrySource = intent.getStringExtra(TradeFragment.ARGS_ENTRY_SOURCE),
+            entryType = intent.getStringExtra(TradeFragment.ARGS_ENTRY_TYPE),
         )
-        replaceFragment(swapFragment, R.id.container, TradeFragment.TAG)}
+        replaceFragment(swapFragment, R.id.container, TradeFragment.TAG)
+    }
 }

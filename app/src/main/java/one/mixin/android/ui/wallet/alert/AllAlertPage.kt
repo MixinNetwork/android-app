@@ -1,6 +1,5 @@
 package one.mixin.android.ui.wallet.alert
 
-import PageScaffold
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -31,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.wallet.alert.components.AlertGroupItem
 import one.mixin.android.ui.wallet.alert.components.AssetFilter
 import one.mixin.android.ui.wallet.alert.vo.Alert
@@ -55,7 +55,7 @@ fun AllAlertPage(coins: Set<CoinItem>?, openFilter: () -> Unit, pop: () -> Unit,
     }
 
     PageScaffold(
-        title = stringResource(id = R.string.All_Alert),
+        title = stringResource(id = R.string.Price_Alerts),
         verticalScrollable = false,
         pop = pop,
     ) {

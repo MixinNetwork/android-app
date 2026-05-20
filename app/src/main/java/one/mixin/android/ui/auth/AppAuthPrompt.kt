@@ -10,11 +10,20 @@ fun showAppAuthPrompt(
     title: String,
     negativeBtnText: String,
     callback: BiometricPrompt.AuthenticationCallback,
+    subtitle: String = " ",
+    description: String = " ",
 ) {
     val biometricPromptInfo =
         BiometricPrompt.PromptInfo.Builder()
             .setTitle(title)
-            .setSubtitle("")
+            .apply {
+                if (subtitle.isNotEmpty()) {
+                    setSubtitle(subtitle)
+                }
+                if (description.isNotEmpty()) {
+                    setDescription(description)
+                }
+            }
             .setNegativeButtonText(negativeBtnText)
             .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_WEAK)
             .build()

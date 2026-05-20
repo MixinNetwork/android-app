@@ -25,10 +25,13 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.showConfirmDialog
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.logs.LogViewerBottomSheet
 import one.mixin.android.ui.transfer.TransferActivity
 import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.database.databaseFile
+import one.mixin.android.util.database.legacyDatabaseFile
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
 import timber.log.Timber
@@ -49,7 +52,10 @@ class RestoreFragment : BaseFragment(R.layout.fragment_restore) {
                 true
             }
             support.setOnClickListener {
-                context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                context?.openUrl(
+                    Constants.HelpLink.CUSTOMER_SERVICE,
+                    source = AnalyticsTracker.CustomerServiceSource.RECOVERY_KIT,
+                )
             }
             fromAnotherCl.setOnClickListener {
                 AnalyticsTracker.trackLoginRestore("another_phone")
@@ -117,7 +123,16 @@ class RestoreFragment : BaseFragment(R.layout.fragment_restore) {
 
     private suspend fun getLocalDataInfo(): Pair<Int?, String?>? =
         withContext(Dispatchers.IO) {
-            val dbFile = requireContext().getDatabasePath(Constants.DataBase.DB_NAME)
+            val dbFile =
+                Session.getAccount()?.identityNumber?.let { identityNumber ->
+                    val scopedDbFile = databaseFile(requireContext(), identityNumber)
+                    val legacyDbFile = legacyDatabaseFile(requireContext())
+                    if (scopedDbFile.exists() || !legacyDbFile.exists()) {
+                        scopedDbFile
+                    } else {
+                        legacyDbFile
+                    }
+                } ?: legacyDatabaseFile(requireContext())
             if (!dbFile.exists()) {
                 return@withContext null
             }

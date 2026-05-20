@@ -102,6 +102,7 @@
                 <data android:host="device-transfer" />
                 <data android:host="tip"/>
                 <data android:host="buy"/>
+                <data android:host="wc" />
                 <data android:host="referrals" />
             </intent-filter>
 
@@ -123,6 +124,7 @@
                 <data android:pathPrefix="/scheme" />
                 <data android:pathPrefix="/tip" />
                 <data android:pathPrefix="/swap" />
+                <data android:pathPrefix="/wc" />
                 <data android:pathPrefix="/referrals" />
             </intent-filter>
             <intent-filter>
@@ -160,6 +162,11 @@
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
         <activity
             android:name=".ui.home.inscription.CollectionActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
+        <activity
+            android:name=".ui.home.web3.trade.perps.PerpsActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
@@ -332,6 +339,11 @@
             android:theme="@style/AppTheme.Blur"
             android:windowSoftInputMode="stateAlwaysHidden|adjustResize" />
         <activity
+            android:name=".ui.home.web3.trade.perps.PerpsPositionShareActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:theme="@style/AppTheme.Blur"
+            android:windowSoftInputMode="stateAlwaysHidden|adjustResize" />
+        <activity
             android:name=".ui.player.MusicActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:launchMode="singleTask"
@@ -365,7 +377,7 @@
             android:name=".ui.tip.wc.WalletConnectActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:launchMode="singleTop"
-            android:theme="@style/AppTheme.Music" />
+            android:theme="@style/AppTheme.Transparent" />
 
         <activity
             android:name=".ui.home.inscription.InscriptionActivity"

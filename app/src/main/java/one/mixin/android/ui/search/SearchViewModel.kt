@@ -29,11 +29,9 @@ import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.deserialize
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.getList
 import one.mixin.android.extension.getStringList
-import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.pmap
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove

@@ -6,8 +6,8 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
 
-class InitializeJob(private val botId: String, private val botName: String) :
-    BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).requireWebSocketConnected().persist()) {
+class InitializeJob(private val botId: String, private val botName: String? = null) :
+    BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).requireNetwork().persist()) {
     companion object {
         private var serialVersionUID: Long = 2L
         private const val GROUP_ID = "InitializeJob"
@@ -23,7 +23,7 @@ class InitializeJob(private val botId: String, private val botName: String) :
 
     private suspend fun updateRelationship(
         botId: String,
-        botName: String,
+        botName: String?,
     ) {
         handleMixinResponse(
             invokeNetwork = {

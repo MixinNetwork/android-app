@@ -12,6 +12,7 @@ import one.mixin.android.Constants.Account.PREF_LOGIN_OR_SIGN_UP
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.ui.landing.vo.SetupState
+import one.mixin.android.ui.tip.RetryRegister
 import one.mixin.android.ui.tip.TipBundle
 import one.mixin.android.ui.tip.TipFlowInteractor
 import one.mixin.android.ui.tip.TipStep
@@ -30,9 +31,19 @@ class SetupPinViewModel @Inject internal constructor(
     private val _errorMessage: MutableLiveData<String> = MutableLiveData("")
     val errorMessage: LiveData<String> get() = _errorMessage
 
-    fun executeCreatePin(context: Context, pin: String) {
+    fun executeCreatePin(
+        context: Context,
+        pin: String,
+        preserveRetryRegisterStep: Boolean = false,
+    ) {
         _setupState.value = SetupState.Loading
-        _tipStep.value = TryConnecting
+        val tipStep =
+            if (preserveRetryRegisterStep) {
+                (_tipStep.value as? RetryRegister) ?: TryConnecting
+            } else {
+                TryConnecting
+            }
+        _tipStep.value = tipStep
         context.defaultSharedPreferences.putBoolean(PREF_LOGIN_OR_SIGN_UP, true)
         _errorMessage.value = ""
         viewModelScope.launch {
@@ -42,7 +53,7 @@ class SetupPinViewModel @Inject internal constructor(
             val tipBundle = TipBundle(
                 tipType = TipType.Create,
                 deviceId = deviceId,
-                tipStep = TryConnecting,
+                tipStep = tipStep,
                 pin = pin,
             )
             val success: Boolean = tipFlowInteractor.process(

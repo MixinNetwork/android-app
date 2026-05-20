@@ -62,8 +62,8 @@
 
                     <ImageView
                         android:id="@+id/qrCode"
-                        android:layout_width="200dp"
-                        android:layout_height="200dp"
+                        android:layout_width="180dp"
+                        android:layout_height="180dp"
                         android:layout_gravity="center" />
 
                     <one.mixin.android.widget.BadgeCircleImageView
@@ -175,7 +175,12 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:textColor="?attr/text_minor"
-                                android:textSize="14sp" />
+                                android:textSize="14sp"
+                                android:maxLines="1"
+                                app:autoSizeTextType="uniform"
+                                app:autoSizeMinTextSize="10sp"
+                                app:autoSizeMaxTextSize="14sp"
+                                app:autoSizeStepGranularity="1sp" />
 
                         </LinearLayout>
                     </LinearLayout>
@@ -231,8 +236,8 @@
                             android:layout_gravity="center" />
 
                         <ImageView
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
                             android:layout_gravity="center"
                             android:src="@drawable/ic_mixin_logo" />
                     </FrameLayout>

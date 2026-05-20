@@ -18,11 +18,9 @@ import one.mixin.android.Constants.API.WS_URL
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.ClientErrorException
 import one.mixin.android.api.service.AccountService
-import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.OffsetDao
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.db.makeMessageStatus
-import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.di.isNeedSwitch
 import one.mixin.android.extension.gzip
 import one.mixin.android.extension.networkConnected
@@ -31,6 +29,7 @@ import one.mixin.android.extension.ungzip
 import one.mixin.android.job.DecryptCallMessage.Companion.listPendingOfferHandled
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshOffsetJob
+import one.mixin.android.session.CurrentUserScopeManager
 import one.mixin.android.session.Session
 import one.mixin.android.util.ErrorHandler.Companion.AUTHENTICATION
 import one.mixin.android.util.FLOOD_THREAD
@@ -52,12 +51,13 @@ class ChatWebSocket(
     private var applicationScope: CoroutineScope,
     private val okHttpClient: OkHttpClient,
     private val accountService: AccountService,
-    private val mixinDatabase: MixinDatabase,
-    private val pendingDatabase: PendingDatabase,
+    private val currentUserScopeManager: CurrentUserScopeManager,
     private val jobManager: MixinJobManager,
     private val linkState: LinkState,
 ) : WebSocketListener() {
-    private val offsetDao: OffsetDao = mixinDatabase.offsetDao()
+    private fun mixinDatabase() = currentUserScopeManager.getMixinDatabase()
+    private fun pendingDatabase() = currentUserScopeManager.getPendingDatabase()
+    private fun offsetDao(): OffsetDao = mixinDatabase().offsetDao()
 
     private val failCode = 1000
     private val quitCode = 1001
@@ -65,7 +65,6 @@ class ChatWebSocket(
     private var client: WebSocket? = null
     private val transactions = ConcurrentHashMap<String, WebSocketTransaction>()
     private val gson = Gson()
-    private val accountId = Session.getAccountId()
     private var homeUrl = Mixin_WS_URL
 
     companion object {
@@ -139,7 +138,7 @@ class ChatWebSocket(
     }
 
     private fun sendPendingMessage() {
-        val blazeMessage = createListPendingMessage(pendingDatabase.getLastBlazeMessageCreatedAt())
+        val blazeMessage = createListPendingMessage(pendingDatabase().getLastBlazeMessageCreatedAt())
         val transaction =
             WebSocketTransaction(
                 blazeMessage.id,
@@ -289,6 +288,10 @@ class ChatWebSocket(
 
     private fun handleReceiveMessage(blazeMessage: BlazeMessage) {
         val data = gson.fromJson(blazeMessage.data, BlazeMessageData::class.java)
+        val mixinDatabase = mixinDatabase()
+        val pendingDatabase = pendingDatabase()
+        val offsetDao = offsetDao()
+        val accountId = Session.getAccountId()
         if (blazeMessage.action == ACKNOWLEDGE_MESSAGE_RECEIPT) {
             mixinDatabase.makeMessageStatus(data.status, data.messageId) // Ack of the server, conversationId is ""
             pendingDatabase.makeMessageStatus(data.status, data.messageId)
