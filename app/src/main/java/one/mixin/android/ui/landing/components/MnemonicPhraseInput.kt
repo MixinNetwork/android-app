@@ -496,7 +496,7 @@ fun MnemonicPhraseInput(
                                                                                 ExportRequest(
                                                                                     publicKey = edKey!!.publicKey.toHex(),
                                                                                     signature = initFromSeedAndSign(edKey.privateKey, selfId.toByteArray()).toHex(),
-                                                                                    pinBase64 = encryptedTipBody(selfId, pin!!),
+                                                                                    pinBase64 = encryptedTipBody(selfId, pin),
                                                                                 )
                                                                             )
                                                                             r.data?.let {
@@ -744,7 +744,7 @@ fun MnemonicPhraseInput(
                                                             ExportRequest(
                                                                 publicKey = edKey!!.publicKey.toHex(),
                                                                 signature = initFromSeedAndSign(edKey.privateKey, selfId.toByteArray()).toHex(),
-                                                                pinBase64 = encryptedTipBody(selfId, pin!!),
+                                                                pinBase64 = encryptedTipBody(selfId, pin),
                                                             )
                                                         )
                                                         r.data?.let {
