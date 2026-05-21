@@ -50,6 +50,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.isActive
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -57,6 +58,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.session.Session
 import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.home.web3.trade.ClosedPositionItem
+import one.mixin.android.ui.home.web3.trade.perps.OpenedOrderItem
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
@@ -331,10 +333,17 @@ private fun LazyListScope.closedPositionItems(
 ) {
     items(count = positions.itemCount) { index ->
         val order = positions[index] ?: return@items
-        ClosedPositionItem(
-            order = order,
-            onClick = { onPositionClick(order) },
-        )
+        if (order.orderType == PerpsOrder.TYPE_CLOSE) {
+            ClosedPositionItem(
+                order = order,
+                onClick = { onPositionClick(order) },
+            )
+        } else {
+            OpenedOrderItem(
+                order = order,
+                onClick = { onPositionClick(order) },
+            )
+        }
     }
 }
 

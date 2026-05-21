@@ -74,6 +74,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.home.web3.trade.CandleChart
 import one.mixin.android.ui.home.web3.trade.ClosedPositionItem
+import one.mixin.android.ui.home.web3.trade.perps.OpenedOrderItem
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getMixinErrorStringByCode
@@ -1354,10 +1355,17 @@ private fun ClosedPositionsSection(
         Spacer(modifier = Modifier.height(12.dp))
 
         displayPositions.forEach { order ->
-            ClosedPositionItem(
-                order = order,
-                onClick = { onPositionClick(order) },
-            )
+            if (order.orderType == PerpsOrder.TYPE_CLOSE) {
+                ClosedPositionItem(
+                    order = order,
+                    onClick = { onPositionClick(order) },
+                )
+            } else {
+                OpenedOrderItem(
+                    order = order,
+                    onClick = { onPositionClick(order) },
+                )
+            }
             if (order != displayPositions.last()) {
                 Spacer(modifier = Modifier.height(8.dp))
             }
