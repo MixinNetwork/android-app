@@ -314,7 +314,9 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 dismiss()
                 return
             }
-            val renderer = ShareAppActionsCardRenderer(requireContext(), binding.contentLayout.measuredWidth)
+            val contentPadding = 16.dp
+            binding.contentLayout.setPadding(contentPadding, contentPadding, contentPadding, contentPadding)
+            val renderer = ShareAppActionsCardRenderer(requireContext(), maxOf(1, binding.contentLayout.measuredWidth - contentPadding * 2))
             (binding.contentLayout.layoutParams as ConstraintLayout.LayoutParams).apply {
                 dimensionRatio = null
                 height = WRAP_CONTENT
