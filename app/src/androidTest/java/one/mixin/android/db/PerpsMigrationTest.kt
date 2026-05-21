@@ -97,19 +97,20 @@ class PerpsMigrationTest {
             """
             INSERT INTO perps_orders (
                 order_id, position_id, market_id, side, order_type, status, quantity, price,
-                entry_price, realized_pnl, close_reason, trigger_price, created_at, updated_at
+                entry_price, realized_pnl, roe, close_reason, trigger_price, created_at, updated_at
             ) VALUES (
                 'order-1', 'position-1', 'market-1', 'long', 'close', 'filled', '1', '100000',
-                '99000', '1000', 'take_profit', NULL, '2026-05-15T15:00:00Z', '2026-05-15T15:00:00Z'
+                '99000', '1000', '0.1', 'take_profit', NULL, '2026-05-15T15:00:00Z', '2026-05-15T15:00:00Z'
             )
             """.trimIndent(),
         )
 
         migratedDb.query(
-            "SELECT realized_pnl, close_reason FROM perps_orders WHERE order_id = 'order-1'",
+            "SELECT realized_pnl, roe, close_reason FROM perps_orders WHERE order_id = 'order-1'",
         ).use { cursor ->
             assertTrue(cursor.moveToFirst())
             assertEquals("1000", cursor.getString(cursor.getColumnIndexOrThrow("realized_pnl")))
+            assertEquals("0.1", cursor.getString(cursor.getColumnIndexOrThrow("roe")))
             assertEquals("take_profit", cursor.getString(cursor.getColumnIndexOrThrow("close_reason")))
         }
     }

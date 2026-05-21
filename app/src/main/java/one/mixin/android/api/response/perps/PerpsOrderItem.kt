@@ -37,6 +37,9 @@ data class PerpsOrderItem(
     @SerializedName("realized_pnl")
     @ColumnInfo(name = "realized_pnl")
     val realizedPnl: String,
+    @SerializedName("roe")
+    @ColumnInfo(name = "roe")
+    val roe: String,
     @SerializedName("close_reason")
     @ColumnInfo(name = "close_reason")
     val closeReason: String?,

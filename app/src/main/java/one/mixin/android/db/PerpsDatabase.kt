@@ -68,6 +68,7 @@ abstract class PerpsDatabase : RoomDatabase() {
                             price TEXT NOT NULL,
                             entry_price TEXT NOT NULL,
                             realized_pnl TEXT NOT NULL,
+                            roe TEXT NOT NULL,
                             close_reason TEXT,
                             trigger_price TEXT,
                             created_at TEXT NOT NULL,
