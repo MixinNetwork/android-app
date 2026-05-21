@@ -34,7 +34,6 @@ import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.ui.home.web3.trade.perps.calculateClosedRoe
 import one.mixin.android.ui.home.web3.trade.perps.formatPerpsSignedPercent
 import one.mixin.android.ui.home.web3.trade.perps.formatPerpsSignedRawUsdDecimal
 import java.math.BigDecimal
@@ -70,10 +69,7 @@ fun ClosedPositionItem(
     } else {
         if (quoteColorPref) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
     }
-    val pnlPercent = calculateClosedRoe(
-        realizedPnl = order.realizedPnl,
-        pnlBaseAmount = order.pnlBaseAmount,
-    ).takeIf { it != BigDecimal.ZERO || order.pnlBaseAmount.isNotBlank() }
+    val pnlPercent = order.roe.toBigDecimalOrNull()?.multiply(BigDecimal(100))
 
     Row(
         modifier = Modifier
