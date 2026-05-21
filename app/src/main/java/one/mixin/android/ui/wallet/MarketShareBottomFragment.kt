@@ -116,7 +116,6 @@ class MarketShareBottomFragment : MixinBottomSheetDialogFragment() {
         selectedType = arguments?.getString(ARGS_TYPE) ?: "1D"
         bindMarketCard()
         setupMarketChart()
-        setupChartTabs()
         bindMixinContact()
 
         binding.apply {
@@ -176,35 +175,6 @@ class MarketShareBottomFragment : MixinBottomSheetDialogFragment() {
         binding.marketChart.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
     }
 
-    private fun setupChartTabs() {
-        binding.chartRadio1d.text = getString(R.string.days_count_short, 1)
-        binding.chartRadio1w.text = getString(R.string.weeks_count_short, 1)
-        binding.chartRadio1m.text = getString(R.string.months_count_short, 1)
-        binding.chartRadioYtd.text = getString(R.string.ytd)
-        binding.chartRadioAll.text = getString(R.string.All).uppercase()
-        binding.chartRadioGroup.check(
-            when (selectedType) {
-                "1W" -> R.id.chart_radio_1w
-                "1M" -> R.id.chart_radio_1m
-                "1Y" -> R.id.chart_radio_ytd
-                "ALL" -> R.id.chart_radio_all
-                else -> R.id.chart_radio_1d
-            },
-        )
-        binding.chartRadioGroup.setOnCheckedChangeListener { _, checkedId ->
-            val nextType = when (checkedId) {
-                R.id.chart_radio_1w -> "1W"
-                R.id.chart_radio_1m -> "1M"
-                R.id.chart_radio_ytd -> "1Y"
-                R.id.chart_radio_all -> "ALL"
-                else -> "1D"
-            }
-            if (selectedType == nextType) return@setOnCheckedChangeListener
-            selectedType = nextType
-            reloadChartContent()
-        }
-    }
-
     override fun onStart() {
         super.onStart()
         binding.marketChart.doOnAttach {
@@ -250,12 +220,6 @@ class MarketShareBottomFragment : MixinBottomSheetDialogFragment() {
                 interactive = false,
             )
         }
-    }
-
-    private fun reloadChartContent() {
-        binding.priceValue.text = formatMarketPrice(marketItem.currentPrice)
-        isChartContentSet = false
-        setChartContent()
     }
 
     override fun onDestroyView() {
@@ -415,11 +379,7 @@ class MarketShareBottomFragment : MixinBottomSheetDialogFragment() {
                 ActionButtonData(
                     label = getString(R.string.market_share_card_market_button, marketItem.symbol),
                     color = "#3D75E3",
-                    action = buildReferralCopyUrl(
-                        referralCode = referralCode,
-                        defaultUrl = marketLink,
-                        legacyReferralUrl = referral?.let { "$marketLink?ref=$it" },
-                    ),
+                    action = marketLink,
                 ),
             ),
         )

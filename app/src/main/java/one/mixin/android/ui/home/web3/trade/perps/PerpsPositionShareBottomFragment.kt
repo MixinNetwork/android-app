@@ -178,6 +178,7 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
             val pnlAmount = open.unrealizedPnl.toBigDecimalSafely() ?: BigDecimal.ZERO
             val pnlPercent = (open.roe.toBigDecimalSafely() ?: BigDecimal.ZERO).multiply(BigDecimal(100))
             bindCardData(
+                marketId = open.marketId,
                 iconUrl = open.iconUrl,
                 side = open.side,
                 leverage = open.leverage,
@@ -195,6 +196,7 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
         val closed = positionHistory ?: return false
         val pnlAmount = closed.realizedPnl.toBigDecimalSafely() ?: BigDecimal.ZERO
         bindCardData(
+            marketId = closed.marketId,
             iconUrl = closed.iconUrl,
             side = closed.side,
             leverage = closed.leverage,
@@ -215,6 +217,7 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun bindCardData(
+        marketId: String,
         iconUrl: String?,
         side: String,
         leverage: Int,
@@ -227,6 +230,7 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
         latestPrice: String,
     ) {
         shareData = ShareCardData(
+            marketId = marketId,
             iconUrl = iconUrl,
             side = side,
             leverage = leverage,
@@ -402,11 +406,7 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun buildPerpsAppCardMessage(): ForwardMessage {
-        val action = buildReferralCopyUrl(
-            referralCode = referralCode,
-            defaultUrl = SHARE_QR_URL,
-            legacyReferralUrl = Session.getAccount()?.identityNumber?.let { "$SHARE_QR_URL&referral=$it" },
-        )
+        val action = "${Constants.Scheme.HTTPS_TRADE}?type=perpetual&market=${shareData.marketId}"
         val side = if (shareData.side.equals("long", ignoreCase = true)) getString(R.string.Long) else getString(R.string.Short)
         val market = shareData.displaySymbol.ifBlank { shareData.tokenSymbol }
         val title = getString(R.string.perps_share_card_title, shareData.tokenSymbol)
@@ -530,6 +530,7 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
     private fun String?.toBigDecimalSafely(): BigDecimal? = this?.toBigDecimalOrNull()
 
     private data class ShareCardData(
+        val marketId: String,
         val iconUrl: String?,
         val side: String,
         val leverage: Int,

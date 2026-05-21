@@ -71,8 +71,8 @@
 
                         <ImageView
                             android:id="@+id/logo"
-                            android:layout_width="22dp"
-                            android:layout_height="14dp"
+                            android:layout_width="12dp"
+                            android:layout_height="12dp"
                             android:contentDescription="@string/mixin_messenger"
                             android:src="@drawable/ic_mixin_blue" />
 
@@ -83,7 +83,7 @@
                             android:includeFontPadding="false"
                             android:text="@string/mixin_messenger"
                             android:textColor="?attr/text_primary"
-                            android:textSize="14sp"
+                            android:textSize="10sp"
                             android:textStyle="bold" />
                     </LinearLayout>
 
@@ -190,42 +190,6 @@
                                 tools:visibility="visible" />
                         </FrameLayout>
 
-                        <RadioGroup
-                            android:id="@+id/chart_radio_group"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_below="@id/market_chart_container"
-                            android:layout_marginTop="16dp"
-                            android:gravity="center"
-                            android:orientation="horizontal">
-
-                            <androidx.appcompat.widget.AppCompatRadioButton
-                                android:id="@+id/chart_radio_1d"
-                                style="@style/AppTheme.RadioButtonDateStyle"
-                                android:checked="true"
-                                android:text="1D" />
-
-                            <androidx.appcompat.widget.AppCompatRadioButton
-                                android:id="@+id/chart_radio_1w"
-                                style="@style/AppTheme.RadioButtonDateStyle"
-                                android:text="1W" />
-
-                            <androidx.appcompat.widget.AppCompatRadioButton
-                                android:id="@+id/chart_radio_1m"
-                                style="@style/AppTheme.RadioButtonDateStyle"
-                                android:text="1M" />
-
-                            <androidx.appcompat.widget.AppCompatRadioButton
-                                android:id="@+id/chart_radio_ytd"
-                                style="@style/AppTheme.RadioButtonDateStyle"
-                                android:text="1Y" />
-
-                            <androidx.appcompat.widget.AppCompatRadioButton
-                                android:id="@+id/chart_radio_all"
-                                style="@style/AppTheme.RadioButtonDateStyle"
-                                android:text="All" />
-
-                        </RadioGroup>
                     </RelativeLayout>
                 </LinearLayout>
 

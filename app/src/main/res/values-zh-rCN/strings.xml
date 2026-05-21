@@ -2384,8 +2384,8 @@
     <string name="perps_markets">市场</string>
     <string name="perps_market">合约</string>
     <string name="perps_share_card_title">🚀 合约 %1$s</string>
-    <string name="perps_share_card_market">📈 市场：%1$s</string>
-    <string name="perps_share_card_side">↕️ 方向：%1$s（%2$d倍）</string>
+    <string name="perps_share_card_market">- 📈 市场：%1$s</string>
+    <string name="perps_share_card_side">- ↕️ 方向：%1$s（%2$d倍）</string>
     <string name="perps_share_card_trade_now">💰 立即交易</string>
     <string name="market_share_card_title">交易 %1$s</string>
     <string name="market_share_card_asset">🔥 %1$s（%2$s）</string>

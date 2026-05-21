@@ -25,8 +25,6 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.margin
 import one.mixin.android.extension.openPermissionSetting
-import one.mixin.android.extension.screenHeight
-import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BottomSheetViewModel
@@ -113,12 +111,7 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
-        (dialog as BottomSheet).apply {
-            setCustomView(contentView)
-            if (shareMessage.category == ShareCategory.AppCard) {
-                setCustomViewHeightSync(requireContext().screenHeight() - requireContext().statusBarHeight())
-            }
-        }
+        (dialog as BottomSheet).setCustomView(contentView)
         binding.close.setOnClickListener {
             dismiss()
         }
@@ -324,7 +317,9 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             val renderer = ShareAppActionsCardRenderer(requireContext(), binding.contentLayout.measuredWidth)
             (binding.contentLayout.layoutParams as ConstraintLayout.LayoutParams).apply {
                 dimensionRatio = null
-                margin = 0
+                height = WRAP_CONTENT
+                margin = 32.dp
+                verticalBias = 0f
             }
             binding.contentLayout.addView(renderer.contentView, FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
                 gravity = Gravity.TOP
