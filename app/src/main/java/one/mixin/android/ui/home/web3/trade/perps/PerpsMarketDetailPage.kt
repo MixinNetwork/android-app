@@ -486,13 +486,13 @@ fun PerpsMarketDetailPage(
                                             }
                                             .show(activity.supportFragmentManager, PerpsAddBottomSheetDialogFragment.TAG)
                                     },
-                                    backgroundColor = if (isOpen) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundWindow,
+                                    backgroundColor = if (isOpen) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.backgroundWindow,
                                     contentColor = if (isOpen) Color.White else MixinAppTheme.colors.textAssist,
                                     shape = RoundedCornerShape(32.dp),
                                 ) {
                                     Text(
                                         fontSize = 16.sp,
-                                        text = stringResource(if (isAdding) R.string.Adding else R.string.Add),
+                                        text = stringResource(if (isAdding) R.string.adding_position else R.string.add_position),
                                     )
                                 }
 
@@ -509,8 +509,8 @@ fun PerpsMarketDetailPage(
                                             position = position,
                                         ).show(activity.supportFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)
                                     },
-                                    backgroundColor = if (isOpen) MixinAppTheme.colors.backgroundGrayLight else MixinAppTheme.colors.backgroundWindow,
-                                    contentColor = if (isOpen) MixinAppTheme.colors.textPrimary else MixinAppTheme.colors.textAssist,
+                                    backgroundColor = if (isOpen) MixinAppTheme.colors.walletBlue else MixinAppTheme.colors.backgroundWindow,
+                                    contentColor = if (isOpen) Color.White else MixinAppTheme.colors.textAssist,
                                     shape = RoundedCornerShape(32.dp),
                                 ) {
                                     Text(

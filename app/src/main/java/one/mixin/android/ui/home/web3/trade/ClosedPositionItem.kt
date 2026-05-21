@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
@@ -29,13 +30,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.ui.home.web3.trade.perps.calculateClosedRoe
+import one.mixin.android.ui.home.web3.trade.perps.formatPerpsSignedPercent
 import one.mixin.android.ui.home.web3.trade.perps.formatPerpsSignedRawUsdDecimal
-import one.mixin.android.ui.home.web3.trade.perps.formatPerpsUsdDecimal
 import java.math.BigDecimal
 
 @Composable
@@ -44,7 +45,7 @@ fun ClosedPositionItem(
     onClick: () -> Unit = {},
 ) {
     val context = LocalContext.current
-    val quoteColorReversed = context.defaultSharedPreferences
+    val quoteColorPref = context.defaultSharedPreferences
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
 
     val displaySymbol = order.displaySymbol ?: order.tokenSymbol ?: "Unknown"
@@ -57,26 +58,28 @@ fun ClosedPositionItem(
 
     val isLong = order.side.equals("long", ignoreCase = true)
     val sideColor = if (isLong) {
-        if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+        if (quoteColorPref) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
     } else {
-        if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+        if (quoteColorPref) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
     }
-
-    val isClose = order.orderType == PerpsOrder.TYPE_CLOSE
-    val rowModifier = Modifier
-        .fillMaxWidth()
-        .let { if (isClose) it.clickable(onClick = onClick) else it }
-        .padding(horizontal = 16.dp, vertical = 8.dp)
-
-    val title = when (order.orderType) {
-        PerpsOrder.TYPE_OPEN -> stringResource(if (isLong) R.string.Opened_Long else R.string.Opened_Short)
-        PerpsOrder.TYPE_INCREASE -> stringResource(R.string.Added)
-        PerpsOrder.TYPE_CLOSE -> stringResource(if (isLong) R.string.Closed_Long else R.string.Closed_Short)
-        else -> displaySymbol
+    val leverageBackgroundColor = sideColor.copy(alpha = 0.1f)
+    val pnl = order.realizedPnl.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val isProfit = pnl >= BigDecimal.ZERO
+    val pnlColor = if (isProfit) {
+        if (quoteColorPref) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+    } else {
+        if (quoteColorPref) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
     }
+    val pnlPercent = calculateClosedRoe(
+        realizedPnl = order.realizedPnl,
+        pnlBaseAmount = order.pnlBaseAmount,
+    ).takeIf { it != BigDecimal.ZERO || order.pnlBaseAmount.isNotBlank() }
 
     Row(
-        modifier = rowModifier,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -90,70 +93,75 @@ fun ClosedPositionItem(
 
         Spacer(modifier = Modifier.width(12.dp))
 
-        Row(
+        Column(
             modifier = Modifier.weight(1f),
-            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Column {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = title,
-                        fontSize = 16.sp,
-                        color = MixinAppTheme.colors.textPrimary,
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = displaySymbol,
-                        fontSize = 16.sp,
-                        color = MixinAppTheme.colors.textPrimary,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f, fill = false),
-                    )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                val sideText = if (isLong) {
+                    stringResource(R.string.Long)
+                } else {
+                    stringResource(R.string.Short)
                 }
-                Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "$quantity ${order.tokenSymbol ?: ""}",
-                    fontSize = 14.sp,
-                    color = MixinAppTheme.colors.textAssist,
+                    text = sideText,
+                    fontSize = 16.sp,
+                    color = MixinAppTheme.colors.textPrimary,
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = displaySymbol,
+                    fontSize = 16.sp,
+                    color = MixinAppTheme.colors.textPrimary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false),
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = "${order.leverage}x",
+                    fontSize = 12.sp,
+                    color = sideColor,
+                    lineHeight = 14.sp,
+                    maxLines = 1,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(leverageBackgroundColor)
+                        .padding(horizontal = 3.dp, vertical = 2.dp),
                 )
             }
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "$quantity ${order.tokenSymbol ?: ""}",
+                fontSize = 14.sp,
+                color = MixinAppTheme.colors.textAssist,
+            )
         }
 
-        if (isClose) {
-            val pnl = order.realizedPnl.toBigDecimalOrNull() ?: BigDecimal.ZERO
-            val isProfit = pnl >= BigDecimal.ZERO
-            val pnlColor = if (isProfit) {
-                if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
-            } else {
-                if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
-            }
-            BasicText(
-                text = formatPerpsSignedRawUsdDecimal(pnl),
-                modifier = Modifier.weight(0.85f),
-                style = TextStyle(
-                    fontSize = 14.sp,
-                    color = pnlColor,
-                    textAlign = TextAlign.End,
-                ),
-                maxLines = 1,
-                softWrap = false,
-                overflow = TextOverflow.Ellipsis,
-                autoSize = TextAutoSize.StepBased(
-                    minFontSize = 8.sp,
-                    maxFontSize = 14.sp,
-                    stepSize = 0.5.sp,
-                ),
-            )
-        } else {
-            val displayPrice = order.price.takeIf { it.isNotBlank() } ?: order.entryPrice
-            val priceBd = displayPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
-            Text(
-                text = formatPerpsUsdDecimal(priceBd),
+        Spacer(modifier = Modifier.width(8.dp))
+
+        BasicText(
+            text = buildString {
+                append(formatPerpsSignedRawUsdDecimal(pnl))
+                pnlPercent?.let {
+                    append(" (")
+                    append(formatPerpsSignedPercent(it, withSign = false))
+                    append(")")
+                }
+            },
+            modifier = Modifier.widthIn(max = 120.dp),
+            style = TextStyle(
                 fontSize = 14.sp,
-                color = sideColor,
+                color = pnlColor,
                 textAlign = TextAlign.End,
-            )
-        }
+            ),
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Ellipsis,
+            autoSize = TextAutoSize.StepBased(
+                minFontSize = 8.sp,
+                maxFontSize = 14.sp,
+                stepSize = 0.5.sp,
+            ),
+        )
     }
 }

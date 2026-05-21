@@ -202,17 +202,14 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
             side = closed.side,
             leverage = closeLeverage,
             pnlAmount = pnlAmount,
-            pnlPercent = closed.roe.toBigDecimalSafely()?.multiply(BigDecimal(100))
-                ?: calculateClosedRoe(
-                    entryPrice = closed.entryPrice,
-                    closePrice = closed.price,
-                    side = closed.side,
-                    leverage = closeLeverage,
-                ),
+            pnlPercent = calculateClosedRoe(
+                realizedPnl = closed.realizedPnl,
+                pnlBaseAmount = closed.pnlBaseAmount,
+            ),
             tokenSymbol = closed.tokenSymbol.orEmpty(),
             entryPrice = closed.entryPrice,
             latestLabel = getString(R.string.Close_Price),
-            latestPrice = closed.price,
+            latestPrice = closed.closePrice,
         )
         return true
     }

@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 4,
-    "identityHash": "2c5905210d158befe11c0074bd15618a",
+    "identityHash": "352578bf8f01c460557895ed10f09dc1",
     "entities": [
       {
         "tableName": "positions",
@@ -141,7 +141,7 @@
       },
       {
         "tableName": "perps_orders",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`order_id` TEXT NOT NULL, `position_id` TEXT NOT NULL, `market_id` TEXT NOT NULL, `side` TEXT NOT NULL, `order_type` TEXT NOT NULL, `status` TEXT NOT NULL, `quantity` TEXT NOT NULL, `price` TEXT NOT NULL, `entry_price` TEXT NOT NULL, `realized_pnl` TEXT NOT NULL, `roe` TEXT NOT NULL, `close_reason` TEXT, `trigger_price` TEXT, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`order_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`order_id` TEXT NOT NULL, `position_id` TEXT NOT NULL, `market_id` TEXT NOT NULL, `side` TEXT NOT NULL, `order_type` TEXT NOT NULL, `status` TEXT NOT NULL, `leverage` INTEGER NOT NULL, `quantity` TEXT NOT NULL, `entry_price` TEXT NOT NULL, `close_price` TEXT NOT NULL, `realized_pnl` TEXT NOT NULL, `pnl_base_amount` TEXT NOT NULL, `close_reason` TEXT, `trigger_price` TEXT, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`order_id`))",
         "fields": [
           {
             "fieldPath": "orderId",
@@ -180,14 +180,14 @@
             "notNull": true
           },
           {
-            "fieldPath": "quantity",
-            "columnName": "quantity",
-            "affinity": "TEXT",
+            "fieldPath": "leverage",
+            "columnName": "leverage",
+            "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "price",
-            "columnName": "price",
+            "fieldPath": "quantity",
+            "columnName": "quantity",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -198,14 +198,20 @@
             "notNull": true
           },
           {
+            "fieldPath": "closePrice",
+            "columnName": "close_price",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
             "fieldPath": "realizedPnl",
             "columnName": "realized_pnl",
             "affinity": "TEXT",
             "notNull": true
           },
           {
-            "fieldPath": "roe",
-            "columnName": "roe",
+            "fieldPath": "pnlBaseAmount",
+            "columnName": "pnl_base_amount",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -393,7 +399,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2c5905210d158befe11c0074bd15618a')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '352578bf8f01c460557895ed10f09dc1')"
     ]
   }
 }

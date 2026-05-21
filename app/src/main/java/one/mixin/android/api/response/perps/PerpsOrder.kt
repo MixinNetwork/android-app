@@ -29,21 +29,24 @@ data class PerpsOrder(
     @SerializedName("status")
     @ColumnInfo(name = "status")
     val status: String,
+    @SerializedName("leverage")
+    @ColumnInfo(name = "leverage")
+    val leverage: Int,
     @SerializedName("quantity")
     @ColumnInfo(name = "quantity")
     val quantity: String,
-    @SerializedName("price")
-    @ColumnInfo(name = "price")
-    val price: String,
     @SerializedName("entry_price")
     @ColumnInfo(name = "entry_price")
     val entryPrice: String,
+    @SerializedName("close_price")
+    @ColumnInfo(name = "close_price")
+    val closePrice: String,
     @SerializedName("realized_pnl")
     @ColumnInfo(name = "realized_pnl")
     val realizedPnl: String,
-    @SerializedName("roe")
-    @ColumnInfo(name = "roe")
-    val roe: String,
+    @SerializedName("pnl_base_amount")
+    @ColumnInfo(name = "pnl_base_amount")
+    val pnlBaseAmount: String,
     @SerializedName("close_reason")
     @ColumnInfo(name = "close_reason")
     val closeReason: String?,

@@ -515,13 +515,10 @@ fun PositionDetailPage(
     val fiatRate = BigDecimal(Fiats.getRate())
     val fiatSymbol = Fiats.getSymbol()
     val effectiveLeverage = leverage ?: 0
-    val roe = closeOrder.roe.toBigDecimalOrNull()?.multiply(BigDecimal(100))
-        ?: calculateClosedRoe(
-            entryPrice = closeOrder.entryPrice,
-            closePrice = closeOrder.price,
-            side = closeOrder.side,
-            leverage = effectiveLeverage,
-        )
+    val roe = calculateClosedRoe(
+        realizedPnl = closeOrder.realizedPnl,
+        pnlBaseAmount = closeOrder.pnlBaseAmount,
+    )
 
     fun formatFiat(value: BigDecimal): String {
         return formatPerpsUsdDecimal(value)
@@ -695,7 +692,7 @@ fun PositionDetailPage(
 
                 PositionDetailItem(
                     label = stringResource(R.string.Close_Price).uppercase(),
-                    value = formatPriceUsd(closeOrder.price.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+                    value = formatPriceUsd(closeOrder.closePrice.toBigDecimalOrNull() ?: BigDecimal.ZERO)
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))

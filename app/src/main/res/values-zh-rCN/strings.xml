@@ -2323,7 +2323,7 @@
     <string name="stop_loss_label">止损</string>
     <string name="position_size">仓位规模</string>
     <string name="add_position">加仓</string>
-    <string name="adding_position">正在加仓</string>
+    <string name="adding_position">加仓中</string>
     <string name="add_position_title">%1$s %2$s 加仓</string>
     <string name="add_position_add_size">加仓规模</string>
     <string name="add_position_total_size">总体规模</string>

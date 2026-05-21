@@ -303,7 +303,7 @@ private fun PerpsAddContent(
                     Spacer(modifier = Modifier.width(10.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "${stringResource(R.string.Add)} $marketSymbol",
+                            text = "${stringResource(R.string.add_position)} $marketSymbol",
                             fontSize = 16.sp,
                             lineHeight = 20.sp,
                             fontWeight = FontWeight.W600,
@@ -591,13 +591,13 @@ private fun BottomActions(
             shape = RoundedCornerShape(32.dp),
             contentPadding = PaddingValues(vertical = 12.dp),
             backgroundColor = if (canAdd) {
-                MixinAppTheme.colors.accent
+                MixinAppTheme.colors.walletGreen
             } else {
                 MixinAppTheme.colors.backgroundGrayLight
             },
         ) {
             Text(
-                text = stringResource(R.string.Add),
+                text = stringResource(R.string.add_position),
                 fontSize = 16.sp,
                 color = if (canAdd) Color.White else MixinAppTheme.colors.textAssist,
             )
