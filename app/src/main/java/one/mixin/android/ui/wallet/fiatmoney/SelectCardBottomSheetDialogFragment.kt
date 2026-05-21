@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package one.mixin.android.ui.wallet.fiatmoney
 
 import android.annotation.SuppressLint
