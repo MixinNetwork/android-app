@@ -54,6 +54,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -103,11 +104,11 @@ fun PerpsMarketDetailPage(
     val walletId = Session.getAccountId().orEmpty()
     val openPositions by remember(walletId) {
         if (walletId.isNotEmpty()) {
-            viewModel.observeOpenPositions(walletId)
+            viewModel.observeOpenPositions(walletId).map { it as List<PerpsPositionItem>? }
         } else {
-            flowOf(emptyList())
+            flowOf(emptyList<PerpsPositionItem>())
         }
-    }.collectAsStateWithLifecycle(initialValue = emptyList())
+    }.collectAsStateWithLifecycle(initialValue = null)
     val allClosedPositions by remember(walletId) {
         if (walletId.isNotEmpty()) {
             viewModel.observeOrders(walletId, CLOSED_POSITION_PREVIEW_LIMIT)
@@ -116,7 +117,8 @@ fun PerpsMarketDetailPage(
         }
     }.collectAsStateWithLifecycle(initialValue = emptyList())
     var previousOpenPositionsCount by remember(walletId) { mutableStateOf<Int?>(null) }
-    val currentPosition = openPositions.firstOrNull { it.marketId == marketId }
+    val currentPosition = openPositions?.firstOrNull { it.marketId == marketId }
+    val hasLoadedOpenPositions = openPositions != null
     val closedPositions = allClosedPositions.filter { it.marketId == marketId }
     val timeFrameValues = listOf("1m", "5m", "15m", "1h", "4h", "1d", "1w")
     val timeFrameLabels = listOf(
@@ -151,10 +153,10 @@ fun PerpsMarketDetailPage(
         }
     }
 
-    LaunchedEffect(walletId, openPositions.size) {
+    LaunchedEffect(walletId, openPositions?.size) {
         if (walletId.isEmpty()) return@LaunchedEffect
         val lastCount = previousOpenPositionsCount
-        val currentCount = openPositions.size
+        val currentCount = openPositions?.size ?: return@LaunchedEffect
         if (lastCount != null && currentCount < lastCount) {
             viewModel.refreshOrders(walletId, limit = CLOSED_POSITION_PREVIEW_LIMIT)
         }
@@ -418,7 +420,7 @@ fun PerpsMarketDetailPage(
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            if (market != null) {
+            if (market != null && hasLoadedOpenPositions) {
                 Column(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)

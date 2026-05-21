@@ -616,7 +616,16 @@ private fun PerpsAddInfoRow(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.clickable(
+                enabled = onTipClick != null,
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+            ) {
+                onTipClick?.invoke()
+            },
+        ) {
             Text(
                 text = title,
                 fontSize = 14.sp,
@@ -628,13 +637,7 @@ private fun PerpsAddInfoRow(
                     painter = painterResource(id = R.drawable.ic_tip),
                     contentDescription = null,
                     tint = MixinAppTheme.colors.textAssist,
-                    modifier = Modifier
-                        .size(16.dp)
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null,
-                            onClick = onTipClick,
-                        ),
+                    modifier = Modifier.size(16.dp),
                 )
             }
         }
