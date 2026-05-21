@@ -1,13 +1,13 @@
 package one.mixin.android.compose
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
@@ -27,7 +27,7 @@ fun HighlightStarLinkText(
     onClick: (link: String) -> Unit,
 ) {
     val annotatedString =
-        remember {
+        remember(source, links, highlightStyle) {
             buildAnnotatedString {
                 var start: Int
                 var end: Int
@@ -50,27 +50,28 @@ fun HighlightStarLinkText(
                 kotlin.runCatching {
                     for (i in targets.indices) {
                         val (highlightStart, highlightEnd) = targets[i]
-                        addStyle(
-                            highlightStyle,
-                            highlightStart,
-                            highlightEnd,
-                        )
-                        addStringAnnotation(TAG_URL, annotation = links[i], highlightStart, highlightEnd)
+                        val link = if (i < links.size) links[i] else ""
+                        if (link.isNotEmpty()) {
+                            addLink(
+                                LinkAnnotation.Url(
+                                    url = link,
+                                    styles = TextLinkStyles(style = highlightStyle),
+                                    linkInteractionListener = {
+                                        onClick(link)
+                                    }
+                                ),
+                                highlightStart,
+                                highlightEnd,
+                            )
+                        }
                     }
                 }
             }
         }
 
-    ClickableText(
+    Text(
         modifier = modifier,
         text = annotatedString,
-        onClick = { position ->
-            annotatedString.getStringAnnotations(position, position).firstOrNull()?.let {
-                if (it.tag == TAG_URL) {
-                    onClick(it.item)
-                }
-            }
-        },
         style = textStyle,
     )
 }
