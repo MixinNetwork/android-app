@@ -186,4 +186,9 @@ class StringExtensionTest {
     fun isMixinUrlRecognizesHttpsBuy() {
         assertTrue("https://mixin.one/buy".isMixinUrl())
     }
+
+    @Test
+    fun isMixinUrlRecognizesMixinBuy() {
+        assertTrue("mixin://mixin.one/buy".isMixinUrl())
+    }
 }

@@ -182,6 +182,7 @@ object Constants {
         const val MIXIN_TRADE = "mixin://mixin.one/trade"
         const val MIXIN_MARKET = "mixin://mixin.one/markets"
         const val MIXIN_REFERRALS = "mixin://mixin.one/referrals"
+        const val MIXIN_BUY = "mixin://mixin.one/buy"
         const val HTTPS_USERS = "https://mixin.one/users"
         const val HTTPS_ADDRESS = "https://mixin.one/address"
         const val HTTPS_INSCRIPTION = "https://mixin.one/inscriptions"
