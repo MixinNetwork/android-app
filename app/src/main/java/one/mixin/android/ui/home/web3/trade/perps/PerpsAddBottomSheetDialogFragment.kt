@@ -15,9 +15,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -39,6 +41,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
@@ -214,6 +217,7 @@ private fun PerpsAddContent(
     onAdd: (TokenItem, String) -> Unit,
 ) {
     val context = LocalContext.current
+    val density = LocalDensity.current
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
     var amount by remember(position.positionId) { mutableStateOf("") }
@@ -257,6 +261,8 @@ private fun PerpsAddContent(
         ?: selectedToken?.chainSymbol
             ?.takeIf { it.isNotBlank() }
             ?: ""
+    val navigationBottom = WindowInsets.navigationBars.getBottom(density)
+    val priceTabBottomPadding = if (navigationBottom in 1..with(density) { 32.dp.roundToPx() }) 24.dp else 8.dp
     fun showPerpsGuide(tab: Int) {
         val activity = context as? FragmentActivity ?: return
         PerpetualGuideBottomSheetDialogFragment.newInstance(tab)
@@ -272,13 +278,7 @@ private fun PerpsAddContent(
             ),
         content = { availableHeight ->
             Column(
-                modifier = if (availableHeight != null) {
-                    Modifier
-                        .fillMaxWidth()
-                        .height(availableHeight)
-                } else {
-                    Modifier.fillMaxSize()
-                },
+                modifier = Modifier.fillMaxSize(),
             ) {
                 Column(
                     modifier = Modifier
@@ -286,7 +286,6 @@ private fun PerpsAddContent(
                         .fillMaxWidth()
                         .verticalScroll(rememberScrollState())
                         .padding(start = 16.dp, end = 16.dp, top = 16.dp)
-                        .padding(bottom = 24.dp)
                 ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -484,39 +483,24 @@ private fun PerpsAddContent(
                     )
                 }
                 }
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MixinAppTheme.colors.background),
-                ) {
-                if (insufficientBalance) {
-                    Text(
-                        text = "${selectedToken?.symbol ?: ""} ${stringResource(R.string.insufficient_balance)}",
-                        fontSize = 14.sp,
-                        color = MixinAppTheme.colors.walletRed,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 24.dp, vertical = 4.dp),
-                        textAlign = TextAlign.Center,
+                if (availableHeight == null) {
+                    PerpsAddActionFooter(
+                        insufficientBalanceText = if (insufficientBalance) {
+                            "${selectedToken?.symbol ?: ""} ${stringResource(R.string.insufficient_balance)}"
+                        } else {
+                            null
+                        },
+                        canAdd = canAdd,
+                        onCancel = onCancel,
+                        onAdd = {
+                            val token = selectedToken ?: return@PerpsAddActionFooter
+                            val normalizedAmount = amount.toBigDecimalOrNull()
+                                ?.stripTrailingZeros()
+                                ?.toPlainString()
+                                ?: return@PerpsAddActionFooter
+                            onAdd(token, normalizedAmount)
+                        },
                     )
-                }
-
-                BottomActions(
-                    modifier = Modifier.fillMaxWidth(),
-                    canAdd = canAdd,
-                    onCancel = onCancel,
-                    onAdd = {
-                        val token = selectedToken ?: return@BottomActions
-                        val normalizedAmount = amount.toBigDecimalOrNull()
-                            ?.stripTrailingZeros()
-                            ?.toPlainString()
-                            ?: return@BottomActions
-                        onAdd(token, normalizedAmount)
-                    },
-                )
-                }
-                if (availableHeight != null) {
-                    Spacer(modifier = Modifier.height(108.dp))
                 }
             }
         },
@@ -529,29 +513,84 @@ private fun PerpsAddContent(
                 }
             }
 
-            Row(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(MixinAppTheme.colors.backgroundWindow)
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                    .background(MixinAppTheme.colors.background),
             ) {
-                InputAction("25%", showBorder = true) {
-                    applyBalancePercent(BigDecimal("0.25"))
-                }
-                InputAction("50%", showBorder = true) {
-                    applyBalancePercent(BigDecimal("0.5"))
-                }
-                InputAction("100%", showBorder = true) {
-                    applyBalancePercent(BigDecimal.ONE)
-                }
-                InputAction(stringResource(R.string.Done), showBorder = false) {
-                    keyboardController?.hide()
-                    focusManager.clearFocus()
+                PerpsAddActionFooter(
+                    insufficientBalanceText = if (insufficientBalance) {
+                        "${selectedToken?.symbol ?: ""} ${stringResource(R.string.insufficient_balance)}"
+                    } else {
+                        null
+                    },
+                    canAdd = canAdd,
+                    onCancel = onCancel,
+                    onAdd = {
+                        val token = selectedToken ?: return@PerpsAddActionFooter
+                        val normalizedAmount = amount.toBigDecimalOrNull()
+                            ?.stripTrailingZeros()
+                            ?.toPlainString()
+                            ?: return@PerpsAddActionFooter
+                        onAdd(token, normalizedAmount)
+                    },
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MixinAppTheme.colors.backgroundWindow)
+                        .padding(start = 12.dp, top = 8.dp, end = 12.dp, bottom = priceTabBottomPadding),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    InputAction("25%", showBorder = true) {
+                        applyBalancePercent(BigDecimal("0.25"))
+                    }
+                    InputAction("50%", showBorder = true) {
+                        applyBalancePercent(BigDecimal("0.5"))
+                    }
+                    InputAction("100%", showBorder = true) {
+                        applyBalancePercent(BigDecimal.ONE)
+                    }
+                    InputAction(stringResource(R.string.Done), showBorder = false) {
+                        keyboardController?.hide()
+                        focusManager.clearFocus()
+                    }
                 }
             }
         },
     )
+}
+
+@Composable
+private fun PerpsAddActionFooter(
+    insufficientBalanceText: String?,
+    canAdd: Boolean,
+    onCancel: () -> Unit,
+    onAdd: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MixinAppTheme.colors.background),
+    ) {
+        if (insufficientBalanceText != null) {
+            Text(
+                text = insufficientBalanceText,
+                fontSize = 14.sp,
+                color = MixinAppTheme.colors.walletRed,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 4.dp),
+                textAlign = TextAlign.Center,
+            )
+        }
+        BottomActions(
+            modifier = Modifier.fillMaxWidth(),
+            canAdd = canAdd,
+            onCancel = onCancel,
+            onAdd = onAdd,
+        )
+    }
 }
 
 @Composable
@@ -564,7 +603,8 @@ private fun BottomActions(
     Row(
         modifier = modifier
             .background(MixinAppTheme.colors.background)
-            .padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 20.dp),
+            .padding(horizontal = 16.dp)
+            .padding(bottom = 20.dp, top = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         MixinButton(
