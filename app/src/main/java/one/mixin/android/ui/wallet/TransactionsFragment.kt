@@ -255,7 +255,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                     lifecycleScope.launch(Dispatchers.IO) {
                         snapshotItems = list.map {
                             if (!it.withdrawal?.receiver.isNullOrBlank()) {
-                                val receiver = it.withdrawal!!.receiver
+                                val receiver = it.withdrawal.receiver
                                 val index: Int = receiver.indexOf(":")
                                 if (index == -1) {
                                     it.label = walletViewModel.findAddressByReceiver(receiver, "", asset.chainId)

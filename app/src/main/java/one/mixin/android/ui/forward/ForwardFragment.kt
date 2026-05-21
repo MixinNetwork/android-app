@@ -482,9 +482,6 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                         val contactData = GsonHelper.customGson.fromJson(content, ContactMessagePayload::class.java) ?: return@checkData
                         chatViewModel.sendContactMessage(conversationId, sender, contactData.userId, encryptCategory)
                     }
-                    ShareCategory.Post -> {
-                        chatViewModel.sendPostMessage(conversationId, sender, content, encryptCategory)
-                    }
                     ShareCategory.AppCard -> {
                         chatViewModel.sendAppCardMessage(conversationId, sender, content)
                     }
