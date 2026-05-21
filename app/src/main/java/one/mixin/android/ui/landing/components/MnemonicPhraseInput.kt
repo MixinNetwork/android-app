@@ -482,7 +482,6 @@ fun MnemonicPhraseInput(
                                                                                         (legacy && words.size == 12 && isMnemonicValid(words))
 
                                                                             MnemonicState.Verify -> mnemonicList == words
-                                                                            else -> false
                                                                         }
                                                                         if (!valid) {
                                                                             errorInfo = invalidMnemonicPhrase

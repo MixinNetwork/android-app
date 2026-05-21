@@ -37,7 +37,7 @@ fun MixinMemberNotificationPage(
     onClose: () -> Unit,
 ) {
     val viewModel: MemberViewModel = hiltViewModel()
-    val order = viewModel.getOrdersFlow("f54a28b3-934a-4128-b6da-4b7323204b8c").collectAsState(null)?.value ?: return
+    val order = viewModel.getOrdersFlow("f54a28b3-934a-4128-b6da-4b7323204b8c").collectAsState(null).value ?: return
 
     MixinAppTheme {
         Box(
