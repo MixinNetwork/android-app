@@ -398,10 +398,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                                 } else {
                                     value
                                 }
-                            if (amount == null) {
-                                toast(R.string.error_invalid_number)
-                            } else {
-                                viewLifecycleScope.launch inner@{
+                            viewLifecycleScope.launch inner@{
                                     if (viewDestroyed()) throw IllegalStateException("View has been destroyed")
                                     try {
                                         val asset = fiatMoneyViewModel.asset ?: throw IllegalStateException("Asset is null")
@@ -438,7 +435,6 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                                         ErrorHandler.handleError(e)
                                     }
                                 }
-                            }
                         }
                     }
                     proceedToBuy()

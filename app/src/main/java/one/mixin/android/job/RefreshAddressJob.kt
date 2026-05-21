@@ -14,7 +14,7 @@ class RefreshAddressJob(private val chainId: String) : BaseJob(
 
     override fun onRun() = runBlocking {
         val response = tokenService.addresses(chainId)
-        if (response != null && response.isSuccess && response.data != null) {
+        if (response.isSuccess && response.data != null) {
             response.data?.let {
                 addressDao.insertList(it)
             }

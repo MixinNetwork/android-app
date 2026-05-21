@@ -592,10 +592,8 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                             }
                         mixinMapView.addMarker(index, item)
 
-                        if (south != null && west != null && north != null && east != null) {
-                            val bound = MixinLatLngBounds(MixinLatLng(south, west), MixinLatLng(north, east))
-                            mixinMapView.moveBounds(bound)
-                        }
+                        val bound = MixinLatLngBounds(MixinLatLng(south, west), MixinLatLng(north, east))
+                        mixinMapView.moveBounds(bound)
                     }
                 }
             }

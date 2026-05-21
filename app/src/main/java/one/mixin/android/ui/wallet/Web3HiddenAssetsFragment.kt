@@ -17,7 +17,6 @@ import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.config
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.navigate
-import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.home.web3.Web3ViewModel
@@ -143,10 +142,6 @@ class Web3HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), 
     override fun <T> onNormalItemClick(item: T) {
         val token = item as Web3TokenItem
         lifecycleScope.launch {
-            if (walletId == null) {
-                toast(R.string.Data_error)
-                return@launch
-            }
             val address = web3ViewModel.getAddressesByChainId(walletId, token.chainId)
             view?.navigate(
                 R.id.action_web3_hidden_assets_to_web3_transactions,

@@ -337,10 +337,6 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         val tx = signData.signMessage
         if (tx !is WCEthereumTransaction) return
         val assetId = chain.getWeb3ChainId()
-        if (assetId == null) {
-            Timber.d("$TAG refreshEstimatedGasAndAsset assetId not support")
-            return
-        }
 
         tickerFlow(15.seconds)
             .onEach {
