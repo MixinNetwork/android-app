@@ -40,9 +40,6 @@ data class PerpsOrderItem(
     @SerializedName("realized_pnl")
     @ColumnInfo(name = "realized_pnl")
     val realizedPnl: String,
-    @SerializedName("pnl_base_amount")
-    @ColumnInfo(name = "pnl_base_amount")
-    val pnlBaseAmount: String,
     @SerializedName("roe")
     @ColumnInfo(name = "roe")
     val roe: String,
