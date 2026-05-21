@@ -542,7 +542,13 @@ class TradeFragment : BaseFragment() {
                                     )
                                 },
                                 onClosedPositionClick = { position ->
-                                    navTo(PositionDetailFragment.newInstance(position), PositionDetailFragment.TAG)
+                                    navTo(
+                                        PositionDetailFragment.newInstance(
+                                            position,
+                                            AnalyticsTracker.PerpsSource.PERPS_HOME_LIST,
+                                        ),
+                                        PositionDetailFragment.TAG,
+                                    )
                                 }
                             )
                         }

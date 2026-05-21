@@ -35,16 +35,15 @@ class PositionDetailFragment : BaseFragment() {
         private const val ARGS_SOURCE = "args_source"
         private const val POSITION_REFRESH_INTERVAL_MS = 10_000L
 
-        fun newInstance(position: PerpsPositionItem, source: String = AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_DETAIL): PositionDetailFragment {
+        fun newInstance(position: PerpsPositionItem): PositionDetailFragment {
             return PositionDetailFragment().apply {
                 arguments = Bundle().apply {
                     putParcelable(ARGS_POSITION, position)
-                    putString(ARGS_SOURCE, source)
                 }
             }
         }
 
-        fun newInstance(position: PerpsPositionHistoryItem, source: String = AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_DETAIL): PositionDetailFragment {
+        fun newInstance(position: PerpsPositionHistoryItem, source: String): PositionDetailFragment {
             return PositionDetailFragment().apply {
                 arguments = Bundle().apply {
                     putParcelable(ARGS_POSITION_HISTORY, position)
@@ -67,8 +66,10 @@ class PositionDetailFragment : BaseFragment() {
     ): View {
         val position = arguments?.getParcelableCompat(ARGS_POSITION, PerpsPositionItem::class.java)
         val positionHistory = arguments?.getParcelableCompat(ARGS_POSITION_HISTORY, PerpsPositionHistoryItem::class.java)
-        val source = arguments?.getString(ARGS_SOURCE) ?: AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_DETAIL
-        AnalyticsTracker.trackPerpsActivityDetail(source)
+        if (positionHistory != null) {
+            val source = arguments?.getString(ARGS_SOURCE) ?: AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_LIST
+            AnalyticsTracker.trackPerpsActivityDetail(source)
+        }
 
         return ComposeView(inflater.context).apply {
             setContent {

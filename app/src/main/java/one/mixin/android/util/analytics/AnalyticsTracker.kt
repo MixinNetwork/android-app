@@ -323,6 +323,8 @@ object AnalyticsTracker {
         const val PERPS_MARKET_DETAIL = "perps_market_detail"
         const val PERPS_ALL_POSITIONS = "perps_all_positions"
         const val PERPS_ACTIVITY_DETAIL = "perps_activity_detail"
+        const val PERPS_HOME_LIST = "perps_home_list"
+        const val PERPS_ACTIVITY_LIST = "perps_activity_list"
     }
 
     object PerpsDirection {

@@ -122,7 +122,7 @@ class AllPositionsFragment : BaseFragment() {
                                     )
                                     .add(
                                         android.R.id.content,
-                                        PositionDetailFragment.newInstance(position, AnalyticsTracker.PerpsSource.PERPS_ALL_POSITIONS),
+                                        PositionDetailFragment.newInstance(position, AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_LIST),
                                         PositionDetailFragment.TAG,
                                     )
                                     .addToBackStack(null)
