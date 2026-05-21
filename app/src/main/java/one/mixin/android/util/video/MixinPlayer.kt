@@ -1,4 +1,4 @@
-@file:Suppress("DEPRECATION")
+@file:Suppress("OVERRIDE_DEPRECATION", "DEPRECATION")
 
 package one.mixin.android.util.video
 
