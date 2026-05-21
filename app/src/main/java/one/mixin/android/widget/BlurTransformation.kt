@@ -22,23 +22,23 @@ class BlurTransformation(val context: Context, val radius: Int = 25) : Transform
     override val cacheKey: String = javaClass.name
 
     override suspend fun transform(
-        toTransform: Bitmap,
+        input: Bitmap,
         size: Size,
     ): Bitmap {
-        val width = toTransform.width
-        val height = toTransform.height
+        val width = input.width
+        val height = input.height
         val scaledWidth = width / DEFAULT_DOWN_SAMPLING
         val scaledHeight = height / DEFAULT_DOWN_SAMPLING
 
-        var bitmap = createBitmap(toTransform.width, toTransform.height, Bitmap.Config.ARGB_8888)
+        var bitmap = createBitmap(input.width, input.height, Bitmap.Config.ARGB_8888)
 
-        bitmap.density = toTransform.getDensity()
+        bitmap.density = input.getDensity()
 
         val canvas = Canvas(bitmap)
         canvas.scale(1 / DEFAULT_DOWN_SAMPLING.toFloat(), 1 / DEFAULT_DOWN_SAMPLING.toFloat())
         val paint = Paint()
         paint.flags = Paint.FILTER_BITMAP_FLAG
-        canvas.drawBitmap(toTransform, 0f, 0f, paint)
+        canvas.drawBitmap(input, 0f, 0f, paint)
 
         bitmap =
             try {
