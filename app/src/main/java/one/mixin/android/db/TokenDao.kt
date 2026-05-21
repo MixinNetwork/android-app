@@ -3,6 +3,7 @@ package one.mixin.android.db
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.RawQuery
 import androidx.room.RoomRawQuery
 import androidx.room.RoomWarnings
@@ -18,6 +19,7 @@ import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.UnifiedAssetItem
 
 @Dao
+@RewriteQueriesToDropUnusedColumns
 @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
 interface TokenDao : BaseDao<Token> {
     companion object {

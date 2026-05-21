@@ -3,6 +3,7 @@ package one.mixin.android.db
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.RoomWarnings
 import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.vo.App
@@ -11,6 +12,7 @@ import one.mixin.android.vo.ExploreApp
 import one.mixin.android.vo.RecentUsedApp
 
 @Dao
+@RewriteQueriesToDropUnusedColumns
 @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
 interface AppDao : BaseDao<App> {
     companion object {
@@ -23,7 +25,7 @@ interface AppDao : BaseDao<App> {
             """
     }
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """ 
             $PREFIX_APP_ITEM
