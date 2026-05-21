@@ -568,30 +568,30 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                             if (south == null) {
                                 item.location.lat
                             } else {
-                                min(south!!, item.location.lat)
+                                min(south, item.location.lat)
                             }
                         west =
                             if (west == null) {
                                 item.location.lng
                             } else {
-                                min(west!!, item.location.lng)
+                                min(west, item.location.lng)
                             }
                         north =
                             if (north == null) {
                                 item.location.lat
                             } else {
-                                max(north!!, item.location.lat)
+                                max(north, item.location.lat)
                             }
                         east =
                             if (east == null) {
                                 item.location.lng
                             } else {
-                                max(east!!, item.location.lng)
+                                max(east, item.location.lng)
                             }
                         mixinMapView.addMarker(index, item)
 
                         if (south != null && west != null && north != null && east != null) {
-                            val bound = MixinLatLngBounds(MixinLatLng(south!!, west!!), MixinLatLng(north!!, east!!))
+                            val bound = MixinLatLngBounds(MixinLatLng(south, west), MixinLatLng(north, east))
                             mixinMapView.moveBounds(bound)
                         }
                     }
