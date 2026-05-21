@@ -15,7 +15,6 @@ import android.view.View
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.content.FileProvider
 import androidx.core.content.ContextCompat
-import androidx.core.net.toUri
 import androidx.core.view.doOnAttach
 import androidx.core.view.drawToBitmap
 import androidx.core.view.isVisible
@@ -30,6 +29,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
+import one.mixin.android.Constants
 import one.mixin.android.Constants.Scheme.HTTPS_MARKET
 import one.mixin.android.R
 import one.mixin.android.api.referral.ReferralShareInfo
@@ -43,6 +43,8 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getPublicDownloadPath
 import one.mixin.android.extension.marketPriceFormat
 import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.numberFormatCompact
+import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.round
 import one.mixin.android.extension.setQuoteTextWithBackgroud
 import one.mixin.android.extension.toast
@@ -54,15 +56,16 @@ import one.mixin.android.ui.common.applyReferralTitleTypeface
 import one.mixin.android.ui.common.buildReferralDescription
 import one.mixin.android.ui.common.isZeroPercent
 import one.mixin.android.ui.common.roundQrBackground
-import one.mixin.android.ui.forward.ForwardActivity
+import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
 import one.mixin.android.ui.home.market.Market
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.ActionButtonData
+import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
-import one.mixin.android.vo.ShareImageData
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.widget.BottomSheet
 
@@ -73,6 +76,7 @@ class MarketShareBottomFragment : MixinBottomSheetDialogFragment() {
         private const val ARGS_MARKET = "market"
         private const val ARGS_TYPE = "type"
         private const val SHARE_QR_URL = "https://mixin.one/mm"
+        private const val SHARE_CARD_COVER_URL = "https://dl.mixinpay.com/share-market-card.png"
 
         fun newInstance(
             marketItem: MarketItem,
@@ -351,21 +355,75 @@ class MarketShareBottomFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    private val forwardLauncher = registerForActivityResult(ForwardActivity.ForwardContract()) { result ->
-        if (result != null) {
-            dismiss()
-        }
+    private fun shareToMixinContact() {
+        val manager = parentFragmentManager
+        dismiss()
+        ShareMessageBottomSheetDialogFragment.newInstance(buildMarketAppCardMessage(), null)
+            .show(manager, ShareMessageBottomSheetDialogFragment.TAG)
     }
 
-    private fun shareToMixinContact() {
-        lifecycleScope.launch {
-            val file = createShareFile()
-            val message = ForwardMessage(
-                ShareCategory.Image,
-                GsonHelper.customGson.toJson(ShareImageData(file.toUri().toString())),
-            )
-            forwardLauncher.launch(arrayListOf(message) to null)
+    private fun buildMarketAppCardMessage(): ForwardMessage {
+        val marketLink = "$HTTPS_MARKET/$coinId"
+        val referral = Session.getAccount()?.identityNumber
+        val buildTradeUrl = { input: String, output: String ->
+            "${Constants.Scheme.HTTPS_SWAP}?input=$input&output=$output&referral=$referral"
         }
+        val stableAssetId = Constants.AssetId.OMNI_USDT_ASSET_ID
+        val targetAssetId = marketItem.assetIds?.firstOrNull().orEmpty()
+        val marketCap = runCatching {
+            BigDecimal(marketItem.marketCap).multiply(BigDecimal(Fiats.getRate())).numberFormatCompact()
+        }.getOrDefault(marketItem.marketCap)
+        val price = runCatching {
+            BigDecimal(marketItem.currentPrice).multiply(BigDecimal(Fiats.getRate())).priceFormat()
+        }.getOrDefault(marketItem.currentPrice)
+        val changeText = runCatching {
+            "${BigDecimal(marketItem.priceChangePercentage24H).numberFormat2()}%"
+        }.getOrDefault("N/A")
+        val appCard = AppCardData(
+            appId = Constants.RouteConfig.ROUTE_BOT_USER_ID,
+            iconUrl = marketItem.iconUrl,
+            coverUrl = SHARE_CARD_COVER_URL,
+            cover = null,
+            title = getString(R.string.market_share_card_title, marketItem.symbol),
+            description = buildString {
+                append(getString(R.string.market_share_card_asset, marketItem.name, marketItem.symbol))
+                append('\n')
+                append(getString(R.string.market_share_card_market_cap, Fiats.getSymbol(), marketCap))
+                append('\n')
+                append(getString(R.string.market_share_card_price, Fiats.getSymbol(), price))
+                append('\n')
+                append(getString(R.string.market_share_card_price_change, changeText))
+            }.take(128),
+            action = null,
+            updatedAt = null,
+            shareable = true,
+            actions = listOfNotNull(
+                targetAssetId.takeIf { it.isNotBlank() }?.let {
+                    ActionButtonData(
+                        label = getString(R.string.buy_token, marketItem.symbol),
+                        color = "#50BD5C",
+                        action = buildTradeUrl(stableAssetId, it),
+                    )
+                },
+                targetAssetId.takeIf { it.isNotBlank() }?.let {
+                    ActionButtonData(
+                        label = getString(R.string.sell_token, marketItem.symbol),
+                        color = "#DB454F",
+                        action = buildTradeUrl(it, stableAssetId),
+                    )
+                },
+                ActionButtonData(
+                    label = getString(R.string.market_share_card_market_button, marketItem.symbol),
+                    color = "#3D75E3",
+                    action = buildReferralCopyUrl(
+                        referralCode = referralCode,
+                        defaultUrl = marketLink,
+                        legacyReferralUrl = referral?.let { "$marketLink?ref=$it" },
+                    ),
+                ),
+            ),
+        )
+        return ForwardMessage(ShareCategory.AppCard, GsonHelper.customGson.toJson(appCard))
     }
 
     private suspend fun createShareFile(): File {

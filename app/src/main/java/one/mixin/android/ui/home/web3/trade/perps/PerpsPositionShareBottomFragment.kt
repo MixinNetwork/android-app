@@ -16,7 +16,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.FileProvider
 import androidx.core.content.ContextCompat
-import androidx.core.net.toUri
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.drawToBitmap
 import androidx.core.view.isVisible
@@ -54,12 +53,13 @@ import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.applyReferralTitleTypeface
 import one.mixin.android.ui.common.isZeroPercent
 import one.mixin.android.ui.common.roundQrBackground
-import one.mixin.android.ui.forward.ForwardActivity
+import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.ActionButtonData
+import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
-import one.mixin.android.vo.ShareImageData
 import one.mixin.android.widget.BottomSheet
 import java.io.File
 import java.io.FileOutputStream
@@ -75,6 +75,7 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
         private const val ARGS_POSITION = "args_position"
         private const val ARGS_POSITION_HISTORY = "args_position_history"
         private const val SHARE_QR_URL = "https://mixin.one/mm"
+        private const val SHARE_CARD_COVER_URL = "https://dl.mixinpay.com/perps-share-card.png"
         private val MIN_DISPLAY_PNL_PERCENT = BigDecimal("-100")
 
         fun newInstance(position: PerpsPositionItem) = PerpsPositionShareBottomFragment().withArgs {
@@ -183,6 +184,7 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
                 pnlAmount = pnlAmount,
                 pnlPercent = pnlPercent,
                 tokenSymbol = open.tokenSymbol.orEmpty(),
+                displaySymbol = open.displaySymbol.orEmpty(),
                 entryPrice = open.entryPrice,
                 latestLabel = getString(R.string.perps_current_price),
                 latestPrice = open.markPrice ?: open.entryPrice,
@@ -204,6 +206,7 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
                 leverage = closed.leverage,
             ),
             tokenSymbol = closed.tokenSymbol.orEmpty(),
+            displaySymbol = closed.displaySymbol.orEmpty(),
             entryPrice = closed.entryPrice,
             latestLabel = getString(R.string.Close_Price),
             latestPrice = closed.closePrice,
@@ -218,6 +221,7 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
         pnlAmount: BigDecimal,
         pnlPercent: BigDecimal,
         tokenSymbol: String,
+        displaySymbol: String,
         entryPrice: String,
         latestLabel: String,
         latestPrice: String,
@@ -229,6 +233,7 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
             pnlAmount = pnlAmount,
             pnlPercent = pnlPercent,
             tokenSymbol = tokenSymbol,
+            displaySymbol = displaySymbol,
             entryPrice = entryPrice,
             latestLabel = latestLabel,
             latestPrice = latestPrice,
@@ -389,21 +394,46 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    private val forwardLauncher = registerForActivityResult(ForwardActivity.ForwardContract()) { result ->
-        if (result != null) {
-            dismiss()
-        }
+    private fun shareToMixinContact() {
+        val manager = parentFragmentManager
+        dismiss()
+        ShareMessageBottomSheetDialogFragment.newInstance(buildPerpsAppCardMessage(), null)
+            .show(manager, ShareMessageBottomSheetDialogFragment.TAG)
     }
 
-    private fun shareToMixinContact() {
-        lifecycleScope.launch {
-            val file = createShareFile()
-            val message = ForwardMessage(
-                ShareCategory.Image,
-                GsonHelper.customGson.toJson(ShareImageData(file.toUri().toString())),
-            )
-            forwardLauncher.launch(arrayListOf(message) to null)
-        }
+    private fun buildPerpsAppCardMessage(): ForwardMessage {
+        val action = buildReferralCopyUrl(
+            referralCode = referralCode,
+            defaultUrl = SHARE_QR_URL,
+            legacyReferralUrl = Session.getAccount()?.identityNumber?.let { "$SHARE_QR_URL&referral=$it" },
+        )
+        val side = if (shareData.side.equals("long", ignoreCase = true)) getString(R.string.Long) else getString(R.string.Short)
+        val market = shareData.displaySymbol.ifBlank { shareData.tokenSymbol }
+        val title = getString(R.string.perps_share_card_title, shareData.tokenSymbol)
+        val description = buildString {
+            append(getString(R.string.perps_share_card_market, market))
+            append('\n')
+            append(getString(R.string.perps_share_card_side, side, shareData.leverage))
+        }.take(128)
+        val appCard = AppCardData(
+            appId = Constants.RouteConfig.ROUTE_BOT_USER_ID,
+            iconUrl = shareData.iconUrl,
+            coverUrl = SHARE_CARD_COVER_URL,
+            cover = null,
+            title = title,
+            description = description,
+            action = null,
+            updatedAt = null,
+            shareable = true,
+            actions = listOf(
+                ActionButtonData(
+                    label = getString(R.string.perps_share_card_trade_now),
+                    color = "#3D75E3",
+                    action = action,
+                ),
+            ),
+        )
+        return ForwardMessage(ShareCategory.AppCard, GsonHelper.customGson.toJson(appCard))
     }
 
     private fun copyLink() {
@@ -506,6 +536,7 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
         val pnlAmount: BigDecimal,
         val pnlPercent: BigDecimal,
         val tokenSymbol: String,
+        val displaySymbol: String,
         val entryPrice: String,
         val latestLabel: String,
         val latestPrice: String,
