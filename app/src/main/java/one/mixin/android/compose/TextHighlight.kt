@@ -28,7 +28,7 @@ fun HighlightStarLinkText(
     onClick: (link: String) -> Unit,
 ) {
     val annotatedString =
-        remember(source, links, highlightStyle) {
+        remember(source, links, highlightStyle, onClick) {
             buildAnnotatedString {
                 var start: Int
                 var end: Int

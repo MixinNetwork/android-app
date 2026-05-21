@@ -33,15 +33,15 @@ data class Web3TransactionItem(
     @ColumnInfo(name = "fee")
     val fee: String,
     
-    @TypeConverters(AssetChangeListConverter::class)
+    @field:TypeConverters(AssetChangeListConverter::class)
     @ColumnInfo(name = "senders")
     val senders: List<AssetChange>,
 
-    @TypeConverters(AssetChangeListConverter::class)
+    @field:TypeConverters(AssetChangeListConverter::class)
     @ColumnInfo(name = "receivers")
     val receivers: List<AssetChange>,
 
-    @TypeConverters(AssetChangeListConverter::class)
+    @field:TypeConverters(AssetChangeListConverter::class)
     @ColumnInfo(name = "approvals")
     val approvals: List<AssetChange>? = null,
     
