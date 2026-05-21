@@ -718,3 +718,217 @@ private fun formatSignedPercent(value: BigDecimal): String {
     val number = if (scaled.compareTo(BigDecimal.ZERO) == 0) "0.0" else scaled.stripTrailingZeros().toPlainString()
     return "$number%"
 }
+
+@Composable
+fun OpenedOrderDetailPage(
+    openedOrder: PerpsOrderItem,
+    quoteColorReversed: Boolean = false,
+    pop: () -> Unit,
+    onViewMarket: (() -> Unit)? = null,
+    onShare: (() -> Unit)? = null,
+    onSupport: (() -> Unit)? = null,
+) {
+    val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault())
+
+    fun formatDate(dateStr: String?): String {
+        if (dateStr == null) return ""
+        return try {
+            val instant = Instant.parse(dateStr)
+            instant.atZone(ZoneId.systemDefault()).format(dateFormat)
+        } catch (e: Exception) {
+            dateStr
+        }
+    }
+
+    val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+    val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+    val isLong = openedOrder.side.equals("long", ignoreCase = true)
+    val sideColor = if (isLong) risingColor else fallingColor
+    val sideText = if (isLong) {
+        stringResource(R.string.Long)
+    } else {
+        stringResource(R.string.Short)
+    }
+    val title = if (isLong) {
+        stringResource(R.string.Opened_Long)
+    } else {
+        stringResource(R.string.Opened_Short)
+    }
+
+    val quantity = openedOrder.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val absQuantity = quantity.abs()
+    val entryPrice = openedOrder.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val leverage = openedOrder.leverage
+
+    fun formatPriceUsd(value: BigDecimal): String {
+        return formatPerpsUsdDecimal(value)
+    }
+
+    PageScaffold(
+        title = title,
+        verticalScrollable = false,
+        pop = pop,
+        actions = {
+            IconButton(onClick = { onSupport?.invoke() }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_support),
+                    contentDescription = null,
+                    tint = MixinAppTheme.colors.icon,
+                )
+            }
+        }
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .cardBackground(
+                        MixinAppTheme.colors.background,
+                        MixinAppTheme.colors.borderColor
+                    )
+            ) {
+                Spacer(modifier = Modifier.height(30.dp))
+
+                CoilImage(
+                    model = openedOrder.iconUrl,
+                    placeholder = R.drawable.ic_avatar_place_holder,
+                    modifier = Modifier
+                        .size(70.dp)
+                        .clip(CircleShape)
+                        .align(Alignment.CenterHorizontally)
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Row(
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    verticalAlignment = Alignment.Bottom,
+                ) {
+                    Text(
+                        text = absQuantity.stripTrailingZeros().toPlainString(),
+                        fontSize = 34.sp,
+                        fontWeight = FontWeight.W500,
+                        fontFamily = FontFamily(Font(R.font.mixin_font)),
+                        color = MixinAppTheme.colors.textPrimary,
+                    )
+                    val symbol = openedOrder.tokenSymbol?.takeIf { it.isNotBlank() }
+                    if (symbol != null) {
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = symbol,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.W500,
+                            color = MixinAppTheme.colors.textPrimary,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(sideColor.copy(alpha = 0.1f))
+                        .padding(horizontal = 8.dp, vertical = 2.5.dp)
+                        .align(Alignment.CenterHorizontally)
+                ) {
+                    Text(
+                        text = "$sideText ${leverage}x",
+                        color = sideColor,
+                        fontSize = 14.sp
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .padding(horizontal = 20.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MixinAppTheme.colors.backgroundWindow),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(R.string.View_Market),
+                        color = MixinAppTheme.colors.textPrimary,
+                        fontWeight = FontWeight.W500,
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable { onViewMarket?.invoke() }
+                            .padding(vertical = 10.dp),
+                        textAlign = TextAlign.Center
+                    )
+                    Box(
+                        modifier = Modifier
+                            .width(2.dp)
+                            .height(24.dp)
+                            .background(Color(0x0D000000))
+                    )
+                    Text(
+                        text = stringResource(R.string.Share),
+                        color = MixinAppTheme.colors.textPrimary,
+                        fontWeight = FontWeight.W500,
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable { onShare?.invoke() }
+                            .padding(vertical = 10.dp),
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(30.dp))
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .wrapContentHeight()
+                    .cardBackground(
+                        MixinAppTheme.colors.background,
+                        MixinAppTheme.colors.borderColor
+                    )
+                    .padding(horizontal = 16.dp, vertical = 16.dp)
+            ) {
+                PositionDetailItem(
+                    label = stringResource(R.string.Perpetual).uppercase(),
+                    value = openedOrder.displaySymbol ?: openedOrder.tokenSymbol ?: "Unknown",
+                    icon = openedOrder.iconUrl
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                PositionDetailItem(
+                    label = stringResource(R.string.Entry_Price).uppercase(),
+                    value = formatPriceUsd(entryPrice)
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                ItemWalletContent(
+                    title = stringResource(R.string.Wallet).uppercase(),
+                    fontSize = 16.sp,
+                    padding = 0.dp
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                PositionDetailItem(
+                    label = stringResource(R.string.Open_Time).uppercase(),
+                    value = formatDate(openedOrder.createdAt)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(40.dp))
+        }
+    }
+}

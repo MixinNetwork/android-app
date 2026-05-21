@@ -73,8 +73,6 @@ import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.home.web3.trade.CandleChart
-import one.mixin.android.ui.home.web3.trade.ClosedPositionItem
-import one.mixin.android.ui.home.web3.trade.perps.OpenedOrderItem
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getMixinErrorStringByCode
@@ -512,13 +510,13 @@ fun PerpsMarketDetailPage(
                                             position = position,
                                         ).show(activity.supportFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)
                                     },
-                                    backgroundColor = if (isOpen) MixinAppTheme.colors.walletBlue else MixinAppTheme.colors.backgroundWindow,
+                                    backgroundColor = if (isOpen) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundWindow,
                                     contentColor = if (isOpen) Color.White else MixinAppTheme.colors.textAssist,
                                     shape = RoundedCornerShape(32.dp),
                                 ) {
                                     Text(
                                         fontSize = 16.sp,
-                                        text = stringResource(R.string.Close),
+                                        text = stringResource(R.string.Close_Position),
                                     )
                                 }
                             }
@@ -1356,7 +1354,7 @@ private fun ClosedPositionsSection(
 
         displayPositions.forEach { order ->
             if (order.orderType == PerpsOrder.TYPE_CLOSE) {
-                ClosedPositionItem(
+                ClosedActivityItem(
                     order = order,
                     onClick = { onPositionClick(order) },
                 )

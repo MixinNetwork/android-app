@@ -15,6 +15,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import one.mixin.android.Constants
+import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.api.response.perps.toPosition
@@ -123,33 +124,66 @@ class PositionDetailFragment : BaseFragment() {
                             }
                         )
                     } else if (closeOrder != null) {
-                        val cachedPositionFlow = remember(closeOrder.positionId) {
-                            viewModel.observePosition(closeOrder.positionId)
-                        }
-                        val cachedPosition = cachedPositionFlow
-                            .collectAsStateWithLifecycle(initialValue = null)
-                        val leverage = cachedPosition.value?.leverage
-                        PositionDetailPage(
-                            closeOrder = closeOrder,
-                            leverage = leverage,
-                            quoteColorReversed = quoteColorReversed,
-                            pop = {
-                                activity?.onBackPressedDispatcher?.onBackPressed()
-                            },
-                            onTradeAgain = {
-                                openTradeAgain(closeOrder)
-                            },
-                            onShare = {
-                                sharePosition(closeOrder, leverage ?: 0)
-                            },
-                            onSupport = {
-                                context?.openUrl(
-                                    Constants.HelpLink.CUSTOMER_SERVICE,
-                                    source = AnalyticsTracker.CustomerServiceSource.PERPS_ACTIVITY_DETAIL,
-                                    wallet = AnalyticsTracker.TradeWallet.WEB3,
-                                )
+                        if (closeOrder.orderType == PerpsOrder.TYPE_CLOSE) {
+                            val cachedPositionFlow = remember(closeOrder.positionId) {
+                                viewModel.observePosition(closeOrder.positionId)
                             }
-                        )
+                            val cachedPosition = cachedPositionFlow
+                                .collectAsStateWithLifecycle(initialValue = null)
+                            val leverage = cachedPosition.value?.leverage
+                            PositionDetailPage(
+                                closeOrder = closeOrder,
+                                leverage = leverage,
+                                quoteColorReversed = quoteColorReversed,
+                                pop = {
+                                    activity?.onBackPressedDispatcher?.onBackPressed()
+                                },
+                                onTradeAgain = {
+                                    openTradeAgain(closeOrder)
+                                },
+                                onShare = {
+                                    sharePosition(closeOrder, leverage ?: 0)
+                                },
+                                onSupport = {
+                                    context?.openUrl(
+                                        Constants.HelpLink.CUSTOMER_SERVICE,
+                                        source = AnalyticsTracker.CustomerServiceSource.PERPS_ACTIVITY_DETAIL,
+                                        wallet = AnalyticsTracker.TradeWallet.WEB3,
+                                    )
+                                }
+                            )
+                        } else {
+                            val cachedPositionFlow = remember(closeOrder.positionId) {
+                                viewModel.observePosition(closeOrder.positionId)
+                            }
+                            val cachedPosition = cachedPositionFlow
+                                .collectAsStateWithLifecycle(initialValue = null)
+                            OpenedOrderDetailPage(
+                                openedOrder = closeOrder,
+                                quoteColorReversed = quoteColorReversed,
+                                pop = {
+                                    activity?.onBackPressedDispatcher?.onBackPressed()
+                                },
+                                onViewMarket = {
+                                    openViewMarket(closeOrder)
+                                },
+                                onShare = {
+                                    val active = cachedPosition.value
+                                    if (active != null) {
+                                        sharePosition(active)
+                                    } else {
+                                        sharePosition(closeOrder, closeOrder.leverage)
+                                    }
+                                },
+                                onSupport = {
+                                    context?.openUrl(
+                                        Constants.HelpLink.CUSTOMER_SERVICE,
+                                        source = AnalyticsTracker.CustomerServiceSource.PERPS_ACTIVITY_DETAIL,
+                                        wallet = AnalyticsTracker.TradeWallet.WEB3,
+                                    )
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -174,6 +208,17 @@ class PositionDetailFragment : BaseFragment() {
     }
 
     private fun openTradeAgain(order: PerpsOrderItem) {
+        PerpsActivity.showDetail(
+            context = requireContext(),
+            marketId = order.marketId,
+            marketSymbol = order.displaySymbol.orEmpty(),
+            marketDisplaySymbol = order.displaySymbol.orEmpty(),
+            marketTokenSymbol = order.tokenSymbol.orEmpty(),
+            source = AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_DETAIL,
+        )
+    }
+
+    private fun openViewMarket(order: PerpsOrderItem) {
         PerpsActivity.showDetail(
             context = requireContext(),
             marketId = order.marketId,

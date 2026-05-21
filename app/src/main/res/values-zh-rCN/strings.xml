@@ -2358,6 +2358,7 @@
     <string name="Opened_Short">持有空单</string>
     <string name="Closed_Long">历史多单</string>
     <string name="Closed_Short">历史空单</string>
+    <string name="View_Market">查看合约</string>
     <string name="Estimated_Liquidation_Price">预估强平价格</string>
     <string name="Total_Position_Value">仓位总价值</string>
     <string name="Margin">保证金</string>

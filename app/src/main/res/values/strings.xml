@@ -2434,6 +2434,7 @@
     <string name="Opened_Short">Opened Short</string>
     <string name="Closed_Long">Closed Long</string>
     <string name="Closed_Short">Closed Short</string>
+    <string name="View_Market">View Market</string>
     <string name="Estimated_Liquidation_Price">Estimated Liquidation Price</string>
     <string name="Total_Position_Value">Total Position Value</string>
     <string name="Perpetual_Side_Symbol_Title">%1$s %2$s</string>

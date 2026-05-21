@@ -57,8 +57,6 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.session.Session
 import one.mixin.android.ui.home.web3.components.PageScaffold
-import one.mixin.android.ui.home.web3.trade.ClosedPositionItem
-import one.mixin.android.ui.home.web3.trade.perps.OpenedOrderItem
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
@@ -334,7 +332,7 @@ private fun LazyListScope.closedPositionItems(
     items(count = positions.itemCount) { index ->
         val order = positions[index] ?: return@items
         if (order.orderType == PerpsOrder.TYPE_CLOSE) {
-            ClosedPositionItem(
+            ClosedActivityItem(
                 order = order,
                 onClick = { onPositionClick(order) },
             )

@@ -48,6 +48,7 @@ import kotlinx.coroutines.isActive
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
+import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -98,6 +99,7 @@ fun PerpetualContent(
     val closedPositions by remember(walletId) {
         viewModel.observeOrders(walletId, CLOSED_POSITION_PREVIEW_LIMIT)
     }.collectAsStateWithLifecycle(initialValue = emptyList())
+    val closedOnlyPositions = closedPositions.filter { it.orderType == PerpsOrder.TYPE_CLOSE }
     var previousOpenPositionsCount by remember(walletId) { mutableStateOf<Int?>(null) }
     val openPositionsCount = openPositions.size
     val openPositionsPreview = openPositions.take(3)
@@ -113,7 +115,7 @@ fun PerpetualContent(
         .sortedBy { sourceOrder[it.marketId] ?: Int.MAX_VALUE }
     val stocksMarketsPreview = stocksMarkets.take(3)
     val commoditiesMarketsPreview = commoditiesMarkets.take(3)
-    val closedPositionsPreview = closedPositions.take(3)
+    val closedPositionsPreview = closedOnlyPositions.take(3)
     val totalMargin = openPositions.fold(BigDecimal.ZERO) { total, position ->
         total + (position.margin?.toBigDecimalOrNull() ?: BigDecimal.ZERO)
     }
@@ -438,7 +440,7 @@ fun PerpetualContent(
                 }
                 Spacer(modifier = Modifier.height(12.dp))
 
-                if (closedPositions.isEmpty()) {
+                if (closedOnlyPositions.isEmpty()) {
                     Spacer(modifier = Modifier.height(16.dp))
                     Column(
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
@@ -466,7 +468,7 @@ fun PerpetualContent(
                         Spacer(modifier = Modifier.height(12.dp))
                     }
 
-                    if (closedPositions.size > closedPositionsPreview.size) {
+                    if (closedOnlyPositions.size > closedPositionsPreview.size) {
                         ViewAllAction(onClick = onShowAllClosedPositions)
                     }
                 }
