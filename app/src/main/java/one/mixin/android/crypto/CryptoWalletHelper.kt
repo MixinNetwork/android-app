@@ -323,6 +323,7 @@ object CryptoWalletHelper {
         encryptedPrefs?.remove(walletId)
     }
 
+    @Suppress("DEPRECATION")
     fun clear(context: Context) {
         context.deleteSharedPreferences(ENCRYPTED_WEB3_KEY)
     }

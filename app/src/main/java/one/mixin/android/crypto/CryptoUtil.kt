@@ -328,6 +328,7 @@ fun storeValueInEncryptedPreferences(context: Context, alias: String, entropy: B
     encryptedPrefs.edit(commit = true) { putString(alias, encodedKey) }
 }
 
+@Suppress("DEPRECATION")
 fun removeValueFromEncryptedPreferences(context: Context, alias: String) {
     runCatching {
         val encryptedPrefs = EncryptedSharedPreferences.create(
