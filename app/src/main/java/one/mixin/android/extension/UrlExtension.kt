@@ -102,6 +102,7 @@ fun String.isMixinUrl(): Boolean {
         startsWith(Constants.Scheme.HTTPS_SWAP, true) ||
         startsWith(Constants.Scheme.MIXIN_SWAP, true) ||
         startsWith(Constants.Scheme.HTTPS_TRADE, true) ||
+        startsWith(Constants.Scheme.HTTPS_BUY, true) ||
         startsWith(Constants.Scheme.MIXIN_TRADE, true) ||
         startsWith(Constants.Scheme.DEBUG, true)
     ) {
@@ -123,7 +124,7 @@ fun String.isMixinUrl(): Boolean {
         } else if (startsWith(Constants.Scheme.HTTPS_TRANSFER, true)) {
             segments.size >= 2 && segments[1].isUUID()
         } else {
-            startsWith(Constants.Scheme.HTTPS_ADDRESS, true) || startsWith(Constants.Scheme.HTTPS_INSCRIPTION, true) || startsWith(Constants.Scheme.MIXIN_MARKET, true) || startsWith(Constants.Scheme.HTTPS_MARKET, true) || startsWith(Constants.Scheme.MIXIN_REFERRALS, true) || startsWith(Constants.Scheme.HTTPS_REFERRALS, true)
+            startsWith(Constants.Scheme.HTTPS_ADDRESS, true) || startsWith(Constants.Scheme.HTTPS_INSCRIPTION, true) || startsWith(Constants.Scheme.MIXIN_MARKET, true) || startsWith(Constants.Scheme.HTTPS_MARKET, true) || startsWith(Constants.Scheme.HTTPS_BUY, true) || startsWith(Constants.Scheme.MIXIN_REFERRALS, true) || startsWith(Constants.Scheme.HTTPS_REFERRALS, true)
         }
     }
 }

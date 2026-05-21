@@ -181,4 +181,9 @@ class StringExtensionTest {
         assertTrue(inputUrlWithTrailingSlash.matchResourcePattern(listOf("https://example.com/a")))
         assertFalse(inputUrl.matchResourcePattern(listOf("https://example.com/a/")))
     }
+
+    @Test
+    fun isMixinUrlRecognizesHttpsBuy() {
+        assertTrue("https://mixin.one/buy".isMixinUrl())
+    }
 }

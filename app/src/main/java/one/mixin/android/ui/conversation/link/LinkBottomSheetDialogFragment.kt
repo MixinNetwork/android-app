@@ -920,7 +920,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                 ConfirmBottomFragment.show(requireContext(), parentFragmentManager, url)
                 dismiss()
             }
-        } else if (url.startsWith(Scheme.BUY, true)) {
+        } else if (url.startsWith(Scheme.HTTPS_BUY, true) || url.startsWith(Scheme.BUY, true)) {
             MainActivity.showWallet(requireContext(), buy = true)
             dismiss()
         } else if (url.startsWith(Scheme.TIP, true)) {
