@@ -164,7 +164,7 @@ class AvatarsView : ViewGroup {
     private fun getTextView(num: Int) =
         TextView(context).apply {
             text = "+$num"
-            setTextSize(TypedValue.COMPLEX_UNIT_PX, (avatarSize * 0.4f).toFloat())
+            setTextSize(TypedValue.COMPLEX_UNIT_PX, avatarSize * 0.4f)
             setTextColor(resources.getColor(R.color.wallet_pending_text_color, null))
             setBackgroundResource(R.drawable.bg_multisigs_gray)
             gravity = Gravity.CENTER

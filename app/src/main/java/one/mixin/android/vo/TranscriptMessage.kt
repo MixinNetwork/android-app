@@ -7,7 +7,7 @@ import androidx.core.net.toUri
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import com.google.gson.annotations.SerializedName
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.SerialName
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.getMediaPath
