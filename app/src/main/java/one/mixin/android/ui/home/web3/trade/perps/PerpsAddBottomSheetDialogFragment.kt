@@ -3,6 +3,7 @@ package one.mixin.android.ui.home.web3.trade.perps
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.DialogInterface
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -264,7 +265,13 @@ private fun PerpsAddContent(
     val navigationBottom = WindowInsets.navigationBars.getBottom(density)
     val priceTabBottomPadding = if (navigationBottom in 1..with(density) { 32.dp.roundToPx() }) 24.dp else 8.dp
     fun showPerpsGuide(tab: Int) {
-        val activity = context as? FragmentActivity ?: return
+        Log.d("PerpsAddGuide", "showPerpsGuide tab=$tab context=${context?.javaClass?.name}")
+        val activity = context as? FragmentActivity
+        if (activity == null) {
+            Log.d("PerpsAddGuide", "FAIL: context is not FragmentActivity, it is ${context?.javaClass?.name}")
+            return
+        }
+        Log.d("PerpsAddGuide", "SUCCESS: activity=$activity fm=$activity.supportFragmentManager")
         PerpetualGuideBottomSheetDialogFragment.newInstance(tab)
             .show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
     }
@@ -362,6 +369,7 @@ private fun PerpsAddContent(
                         selectClick = onTokenSelect,
                         onInputChanged = { amount = it },
                         tokenIconSize = 25.dp,
+                        autoFocus = true,
                     )
 
                     Row(
@@ -663,6 +671,7 @@ private fun PerpsAddInfoRow(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
             ) {
+                Log.d("PerpsAddGuide", "PerpsAddInfoRow click, onTipClick!=null=${onTipClick != null}")
                 onTipClick?.invoke()
             },
         ) {

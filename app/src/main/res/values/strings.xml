@@ -2458,7 +2458,7 @@
     <string name="no_sim_detected">No SIM card detected.</string>
     <string name="title">Choose a Country or Region</string>
     <string name="anonymous_number">Anonymous Number</string>
-    <string name="perps_markets">Markets</string>
+    <string name="perps_markets">Trending</string>
     <string name="perps_market">Market</string>
     <string name="perps_category_all">All</string>
     <string name="perps_category_crypto">Crypto</string>
