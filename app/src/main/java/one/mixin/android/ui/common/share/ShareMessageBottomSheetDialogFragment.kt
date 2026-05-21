@@ -314,13 +314,17 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 dismiss()
                 return
             }
-            val renderer = ShareAppActionsCardRenderer(requireContext(), binding.contentLayout.measuredWidth)
+            val contentPadding = 16.dp
+            binding.contentLayout.setPadding(contentPadding, contentPadding, contentPadding, contentPadding)
+            val renderer = ShareAppActionsCardRenderer(requireContext(), maxOf(1, binding.contentLayout.measuredWidth - contentPadding * 2))
             (binding.contentLayout.layoutParams as ConstraintLayout.LayoutParams).apply {
-                margin = 20.dp
+                dimensionRatio = null
+                height = WRAP_CONTENT
+                margin = 32.dp
+                verticalBias = 0f
             }
             binding.contentLayout.addView(renderer.contentView, FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
                 gravity = Gravity.TOP
-                topMargin = 20.dp
             })
             renderer.render(appCardData, requireContext().isNightMode())
         }
