@@ -195,17 +195,18 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
 
         val closed = positionHistory ?: return false
         val pnlAmount = closed.realizedPnl.toBigDecimalSafely() ?: BigDecimal.ZERO
+        val effectiveLeverage = if (closed.leverage > 0) closed.leverage else 1
         bindCardData(
             marketId = closed.marketId,
             iconUrl = closed.iconUrl,
             side = closed.side,
-            leverage = closed.leverage,
+            leverage = effectiveLeverage,
             pnlAmount = pnlAmount,
             pnlPercent = calculateClosedRoe(
                 entryPrice = closed.entryPrice,
                 closePrice = closed.closePrice,
                 side = closed.side,
-                leverage = closed.leverage,
+                leverage = effectiveLeverage,
             ),
             tokenSymbol = closed.tokenSymbol.orEmpty(),
             displaySymbol = closed.displaySymbol.orEmpty(),

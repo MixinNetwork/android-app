@@ -59,7 +59,21 @@ interface PerpsPositionHistoryDao : BaseDao<PerpsPositionHistory> {
     @Query("DELETE FROM position_histories")
     suspend fun deleteAll()
 
-    @Query("SELECT MAX(closed_at) FROM position_histories")
+    @Query(
+        """
+        SELECT leverage
+        FROM position_histories
+        WHERE position_id = :positionId AND leverage > 0
+        ORDER BY CASE WHEN history_id LIKE 'local_%' THEN 0 ELSE 1 END, closed_at DESC
+        LIMIT 1
+    """
+    )
+    suspend fun getCachedLeverage(positionId: String): Int?
+
+    @Query("DELETE FROM position_histories WHERE history_id LIKE 'local_%' AND position_id IN (:positionIds)")
+    suspend fun deleteLocalByPositionIds(positionIds: List<String>)
+
+    @Query("SELECT MAX(closed_at) FROM position_histories WHERE history_id NOT LIKE 'local_%'")
     suspend fun getLatestClosedAt(): String?
 
     @Query("SELECT SUM(CAST(realized_pnl AS REAL)) FROM position_histories")
@@ -73,4 +87,5 @@ interface PerpsPositionHistoryDao : BaseDao<PerpsPositionHistory> {
 
     @Query("SELECT COALESCE(SUM(CAST(entry_price AS REAL) * ABS(CAST(quantity AS REAL))), 0) FROM position_histories")
     fun observeTotalClosedEntryValue(): Flow<Double>
+
 }

@@ -155,6 +155,9 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
     private val unrealizedPnl by lazy {
         requireNotNull(requireArguments().getString(ARGS_UNREALIZED_PNL)) { "unrealizedPnl is null" }
     }
+    private val leverage by lazy {
+        requireArguments().getInt(ARGS_LEVERAGE)
+    }
     private var step by mutableStateOf(Step.Pending)
     private var errorInfo: String? by mutableStateOf(null)
 
@@ -555,6 +558,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
         step = Step.Sending
         viewModel.closePerpsOrder(
             positionId = positionId,
+            leverage = leverage,
             onSuccess = {
                 step = Step.Done
                 AnalyticsTracker.trackPerpsClosePositionEnd()
