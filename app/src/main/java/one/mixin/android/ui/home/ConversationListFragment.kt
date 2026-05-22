@@ -365,10 +365,14 @@ class ConversationListFragment : LinkFragment() {
     }
 
     private fun analytics() {
-        lifecycleScope.launch{
+        lifecycleScope.launch {
             val totalUsd = conversationListViewModel.findTotalUSDBalance()
             AnalyticsTracker.setAssetLevel(totalUsd)
             AnalyticsTracker.setNotificationAuthStatus(requireContext())
+            Session.getAccount()?.let {
+                AnalyticsTracker.setHasRecoveryContact(it)
+                AnalyticsTracker.setMembership(it)
+            }
         }
     }
 

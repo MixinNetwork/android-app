@@ -2691,6 +2691,7 @@ class ConversationFragment() :
                             menu.app?.let { app ->
                                 binding.chatControl.chatEt.hideKeyboard()
                                 AnalyticsTracker.trackOpenBotHomePage(AnalyticsTracker.BotSource.CHAT_BOTTOM_MENU, app.appNumber)
+                                AnalyticsTracker.trackOpenBotConversation(AnalyticsTracker.BotSource.CHAT_MORE_MENU, app.appNumber)
                                 WebActivity.show(
                                     requireActivity(),
                                     app.homeUri,

@@ -240,6 +240,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        AnalyticsTracker.trackAssetSendAmount()
         jobManager.addJobInBackground(SyncOutputJob())
         viewLifecycleOwner.lifecycleScope.launch {
             binding.apply {
@@ -1163,6 +1164,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private fun handleSuccessfulWeb3Transfer() {
         if (!isAdded) return
+        AnalyticsTracker.trackAssetSendEnd()
         val navController = findNavController()
         val backStackEntryCount = parentFragmentManager.backStackEntryCount
         val currentDestination = navController.currentDestination?.id
@@ -1882,6 +1884,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 val fee = requireNotNull(currentFee) { "withdrawal currentFee can not be null" }
                 t.fee = fee
             }
+            AnalyticsTracker.trackAssetSendPreview()
             TransferBottomSheetDialogFragment.newInstance(t).apply {
                 setCallback(object : TransferBottomSheetDialogFragment.Callback() {
                     override fun onDismiss(success: Boolean) {

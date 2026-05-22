@@ -189,7 +189,6 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                 swapAlert.setAlertTitle(R.string.Alert)
                 swapAlert.alertVa.setOnClickListener {
                     if (NotificationManagerCompat.from(requireContext()).areNotificationsEnabled()) {
-                        AnalyticsTracker.trackMarketPriceAlerts(AnalyticsTracker.MarketAlertsType.ONE)
                         viewLifecycleOwner.lifecycleScope.launch {
                             var coinItem = if (marketItem.coinId.isBlank()) {
                                 walletViewModel.simpleCoinItemByAssetId(marketItem.assetIds!!.first())

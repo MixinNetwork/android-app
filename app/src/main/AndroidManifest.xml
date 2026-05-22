@@ -126,6 +126,7 @@
                 <data android:pathPrefix="/swap" />
                 <data android:pathPrefix="/wc" />
                 <data android:pathPrefix="/referrals" />
+                <data android:pathPrefix="/buy" />
             </intent-filter>
             <intent-filter>
                 <data android:scheme="wc" />

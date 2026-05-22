@@ -442,7 +442,9 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                 .request(Manifest.permission.POST_NOTIFICATIONS)
                 .autoDispose(stopScope)
                 .subscribe(
-                    { _ -> },
+                    { _ -> 
+                        AnalyticsTracker.setNotificationAuthStatus(this)
+                    },
                     {},
                 )
         }
@@ -1122,11 +1124,13 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
     private fun handleNavigationItemSelected(itemId: Int) {
         when (itemId) {
             R.id.nav_chat -> {
+                AnalyticsTracker.trackHomeTabSwitch(AnalyticsTracker.HomeTabMethod.CHATS)
                 switchToDestination(NavigationController.ConversationList)
                 lastBottomNavItemId = itemId
             }
 
             R.id.nav_wallet -> {
+                AnalyticsTracker.trackHomeTabSwitch(AnalyticsTracker.HomeTabMethod.WALLETS)
                 Timber.e("nav_wallet: ${Session.getAccount()?.hasPin}")
                 if (Session.getAccount()?.hasPin == true) {
                     lifecycleScope.launch {
@@ -1148,6 +1152,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             }
 
             R.id.nav_market -> {
+                AnalyticsTracker.trackMoreTabSwitch(AnalyticsTracker.MoreTabMethod.MARKETS)
                 switchToDestination(NavigationController.Market)
                 lastBottomNavItemId = itemId
                 findFragmentByTagTyped<MarketFragment>(NavigationController.Market.tag)?.updateUI()
@@ -1156,6 +1161,8 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             }
 
             R.id.nav_more -> {
+                AnalyticsTracker.trackHomeTabSwitch(AnalyticsTracker.HomeTabMethod.MORE)
+                AnalyticsTracker.trackMoreTabSwitch(AnalyticsTracker.MoreTabMethod.BOTS)
                 if (!defaultSharedPreferences.getBoolean(Account.PREF_NAV_MORE_BADGE_DISMISSED, false)) {
                     defaultSharedPreferences.putBoolean(Account.PREF_NAV_MORE_BADGE_DISMISSED, true)
                     RxBus.publish(BadgeEvent(Account.PREF_NAV_MORE_BADGE_DISMISSED))

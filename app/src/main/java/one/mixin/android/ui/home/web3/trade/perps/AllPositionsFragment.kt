@@ -63,7 +63,9 @@ class AllPositionsFragment : BaseFragment() {
             else -> AllPositionsType.CLOSED
         }
         val source = arguments?.getString(ARGS_SOURCE) ?: AnalyticsTracker.PerpsSource.PERPS_ALL_POSITIONS
-        AnalyticsTracker.trackPerpsAllPositions(source)
+        if (positionType == AllPositionsType.OPEN) {
+            AnalyticsTracker.trackPerpsAllPositions(source)
+        }
         if (positionType == AllPositionsType.CLOSED) {
             AnalyticsTracker.trackPerpsActivity(source)
         }
@@ -120,7 +122,7 @@ class AllPositionsFragment : BaseFragment() {
                                     )
                                     .add(
                                         android.R.id.content,
-                                        PositionDetailFragment.newInstance(position, AnalyticsTracker.PerpsSource.PERPS_ALL_POSITIONS),
+                                        PositionDetailFragment.newInstance(position, AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_LIST),
                                         PositionDetailFragment.TAG,
                                     )
                                     .addToBackStack(null)
