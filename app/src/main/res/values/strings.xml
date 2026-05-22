@@ -2426,7 +2426,9 @@
     <string name="Open_Interest">Open Interest</string>
     <string name="Funding_Rate">Funding Rate</string>
     <string name="confirm_opening_position">Confirm Opening</string>
+    <string name="confirm_adding_position">Confirm Adding</string>
     <string name="Position_Submitted">Position Submitted</string>
+    <string name="Position_Add_Submitted">Add Submitted</string>
     <string name="Close_Position">Close</string>
     <string name="confirm_closing_position">Confirm Closing</string>
     <string name="Position_Closed">Position Closed</string>

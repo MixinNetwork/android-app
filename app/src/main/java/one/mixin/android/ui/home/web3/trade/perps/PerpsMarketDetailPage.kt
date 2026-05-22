@@ -473,6 +473,7 @@ fun PerpsMarketDetailPage(
                                                             takeProfitPrice = null,
                                                             stopLossPrice = null,
                                                             payUrl = response.paymentUrl,
+                                                            isAddPosition = true,
                                                         ).show(activity.supportFragmentManager, PerpsConfirmBottomSheetDialogFragment.TAG)
                                                     },
                                                     onError = { errorCode, errorMessage ->

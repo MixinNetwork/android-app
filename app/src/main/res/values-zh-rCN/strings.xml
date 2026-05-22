@@ -2350,7 +2350,9 @@
     <string name="Close_Time">平仓时间</string>
     <string name="Mixin_Futures">Mixin Futures</string>
     <string name="confirm_opening_position">确认开仓</string>
+    <string name="confirm_adding_position">确认加仓</string>
     <string name="Position_Submitted">开仓申请已提交</string>
+    <string name="Position_Add_Submitted">加仓申请已提交</string>
     <string name="confirm_closing_position">确认平仓</string>
     <string name="Position_Closed">平仓成功</string>
     <string name="Close_Position">平仓</string>

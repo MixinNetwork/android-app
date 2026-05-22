@@ -57,6 +57,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -77,6 +78,9 @@ import one.mixin.android.ui.home.web3.trade.InputContent
 import one.mixin.android.ui.home.web3.trade.KeyboardAwareBox
 import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.home.web3.trade.TradeFragment
+import one.mixin.android.ui.home.web3.trade.perps.formatPerpsPrice
+import one.mixin.android.ui.home.web3.trade.perps.formatPerpsQuantity
+import one.mixin.android.ui.home.web3.trade.perps.formatPerpsUsdDecimal
 import one.mixin.android.ui.wallet.AddFeeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletActivity
@@ -151,8 +155,10 @@ class PerpsAddBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
         val acceptedPerpAssetIdsOrdered = remember { readAcceptedPerpAssetIds(context) }
         val acceptedPerpAssetIds = remember(acceptedPerpAssetIdsOrdered) { acceptedPerpAssetIdsOrdered.toSet() }
         var selectedToken by remember { mutableStateOf<TokenItem?>(null) }
+        var market by remember { mutableStateOf<PerpsMarket?>(null) }
 
         LaunchedEffect(acceptedPerpAssetIds) {
+            market = viewModel.getMarketFromDb(position.marketId)
             viewModel.loadUsdTokens { tokens ->
                 val supportedTokens = if (acceptedPerpAssetIds.isEmpty()) {
                     tokens
@@ -177,6 +183,7 @@ class PerpsAddBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
         MixinAppTheme {
             PerpsAddContent(
                 position = position,
+                market = market,
                 selectedToken = selectedToken,
                 onTokenSelect = {
                     TokenListBottomSheetDialogFragment.newInstance(
@@ -211,6 +218,7 @@ class PerpsAddBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
 @Composable
 private fun PerpsAddContent(
     position: PerpsPositionItem,
+    market: PerpsMarket?,
     selectedToken: TokenItem?,
     onTokenSelect: () -> Unit,
     onCancel: () -> Unit,
@@ -224,10 +232,31 @@ private fun PerpsAddContent(
     val tokenBalance = selectedToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val amountValue = amount.toBigDecimalOrNull()
     val hasInputAmount = amountValue != null && amountValue > BigDecimal.ZERO
-    val insufficientBalance = hasInputAmount && amountValue > tokenBalance
-    val canAdd = selectedToken != null && hasInputAmount && !insufficientBalance
+
+    val minimumMargin = market?.minAmount?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val maximumMargin = market?.maxAmount?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val belowMinimumMargin = amountValue != null && minimumMargin > BigDecimal.ZERO && amountValue < minimumMargin
+    val aboveMaximumMargin = amountValue != null && maximumMargin > BigDecimal.ZERO && amountValue > maximumMargin
+
+    val insufficientBalance = amountValue != null && amountValue > BigDecimal.ZERO && amountValue > tokenBalance
+    val canAdd = selectedToken != null && hasInputAmount && !insufficientBalance && !belowMinimumMargin && !aboveMaximumMargin
     val marketSymbol = position.displaySymbol ?: position.tokenSymbol.orEmpty()
     val currentPrice = position.markPrice.orEmpty().ifBlank { position.entryPrice }
+
+    val minimumMarginError = stringResource(
+        R.string.perps_minimum_margin,
+        minimumMargin.stripTrailingZeros().toPlainString(),
+    )
+    val maximumMarginError = stringResource(
+        R.string.perps_maximum_margin,
+        maximumMargin.stripTrailingZeros().toPlainString(),
+    )
+    val marginLimitError = when {
+        belowMinimumMargin -> minimumMarginError
+        aboveMaximumMargin -> maximumMarginError
+        else -> null
+    }
+
     val currentPriceText = formatPerpsPrice(currentPrice, position.priceScale)
     val entryPriceText = position.entryPrice
         .takeIf { it.isNotBlank() }
@@ -301,8 +330,11 @@ private fun PerpsAddContent(
                     )
                     Spacer(modifier = Modifier.width(10.dp))
                     Column(modifier = Modifier.weight(1f)) {
+                        val sideText = stringResource(
+                            if (position.side.equals("short", ignoreCase = true)) R.string.Short else R.string.Long
+                        )
                         Text(
-                            text = "${stringResource(R.string.add_position)} $marketSymbol",
+                            text = stringResource(R.string.add_position_title, sideText, marketSymbol),
                             fontSize = 16.sp,
                             lineHeight = 20.sp,
                             fontWeight = FontWeight.W600,
@@ -486,10 +518,10 @@ private fun PerpsAddContent(
                 }
                 if (availableHeight == null) {
                     PerpsAddActionFooter(
-                        insufficientBalanceText = if (insufficientBalance) {
+                        errorText = if (insufficientBalance) {
                             "${selectedToken?.symbol ?: ""} ${stringResource(R.string.insufficient_balance)}"
                         } else {
-                            null
+                            marginLimitError
                         },
                         canAdd = canAdd,
                         onCancel = onCancel,
@@ -520,10 +552,10 @@ private fun PerpsAddContent(
                     .background(MixinAppTheme.colors.background),
             ) {
                 PerpsAddActionFooter(
-                    insufficientBalanceText = if (insufficientBalance) {
+                    errorText = if (insufficientBalance) {
                         "${selectedToken?.symbol ?: ""} ${stringResource(R.string.insufficient_balance)}"
                     } else {
-                        null
+                        marginLimitError
                     },
                     canAdd = canAdd,
                     onCancel = onCancel,
@@ -564,7 +596,7 @@ private fun PerpsAddContent(
 
 @Composable
 private fun PerpsAddActionFooter(
-    insufficientBalanceText: String?,
+    errorText: String?,
     canAdd: Boolean,
     onCancel: () -> Unit,
     onAdd: () -> Unit,
@@ -574,9 +606,9 @@ private fun PerpsAddActionFooter(
             .fillMaxWidth()
             .background(MixinAppTheme.colors.background),
     ) {
-        if (insufficientBalanceText != null) {
+        if (errorText != null) {
             Text(
-                text = insufficientBalanceText,
+                text = errorText,
                 fontSize = 14.sp,
                 color = MixinAppTheme.colors.walletRed,
                 modifier = Modifier
@@ -650,6 +682,7 @@ private fun BottomActions(
 private fun PerpsAddInfoRow(
     title: String,
     value: String,
+    valueColor: Color = MixinAppTheme.colors.textAssist,
     onTipClick: (() -> Unit)? = null,
 ) {
     Row(
@@ -685,7 +718,7 @@ private fun PerpsAddInfoRow(
         Text(
             text = value,
             fontSize = 14.sp,
-            color = MixinAppTheme.colors.textPrimary,
+            color = valueColor,
             textAlign = TextAlign.End,
         )
     }
