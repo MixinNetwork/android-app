@@ -73,15 +73,7 @@ class PerpetualViewModel @Inject constructor(
                 val data = response.data
                 if (response.isSuccess && data != null) {
                     withContext(Dispatchers.IO) {
-                        perpsOrderDao.insertAll(data)
-                        data.filter { it.orderType == PerpsOrder.TYPE_CLOSE }
-                            .forEach { closeOrder ->
-                                perpsPositionDao.updateStatus(
-                                    closeOrder.positionId,
-                                    "closed",
-                                    closeOrder.updatedAt,
-                                )
-                            }
+                        upsertSyncedOrders(data)
                     }
                     Timber.d("Perps orders refreshed: ${data.size} items")
                 } else {
@@ -688,6 +680,7 @@ class PerpetualViewModel @Inject constructor(
 
     fun closePerpsOrder(
         positionId: String,
+        leverage: Int,
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
@@ -704,7 +697,15 @@ class PerpetualViewModel @Inject constructor(
                 if (response.isSuccess) {
                     val now = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).format(Date())
                     withContext(Dispatchers.IO) {
-                        perpsPositionDao.updateStatus(positionId, "closing", now)
+                        perpsPositionDao.getPosition(positionId)?.let { position ->
+                            perpsOrderDao.insert(
+                                createCachedClosedOrder(
+                                    position = position,
+                                    leverage = leverage.takeIf { it > 0 } ?: position.leverage,
+                                )
+                            )
+                        }
+                        perpsPositionDao.deleteById(positionId)
                     }
                     Timber.d("Perps order closed: $positionId")
                     onSuccess()
@@ -815,15 +816,7 @@ class PerpetualViewModel @Inject constructor(
                 if (response.isSuccess && data != null) {
                     Timber.d("Perps orders loaded: ${data.size} items")
                     withContext(Dispatchers.IO) {
-                        perpsOrderDao.insertAll(data)
-                        data.filter { it.orderType == PerpsOrder.TYPE_CLOSE }
-                            .forEach { closeOrder ->
-                                perpsPositionDao.updateStatus(
-                                    closeOrder.positionId,
-                                    "closed",
-                                    closeOrder.updatedAt,
-                                )
-                            }
+                        upsertSyncedOrders(data)
                     }
 
                     val updated = withContext(Dispatchers.IO) {
@@ -855,5 +848,61 @@ class PerpetualViewModel @Inject constructor(
         return withContext(Dispatchers.IO) {
             perpsOrderDao.getOrder(orderId)
         }
+    }
+
+    private suspend fun upsertSyncedOrders(orders: List<PerpsOrder>) {
+        if (orders.isEmpty()) return
+
+        val updatedOrders = orders.map { order ->
+            val cachedLeverage = perpsOrderDao.getCachedLeverage(order.positionId)
+            if (order.leverage == 0 && cachedLeverage != null) {
+                order.copy(leverage = cachedLeverage)
+            } else {
+                order
+            }
+        }
+
+        perpsOrderDao.deleteLocalByPositionIds(updatedOrders.map { it.positionId }.distinct())
+        perpsOrderDao.insertAll(updatedOrders)
+
+        // Sync position status if it's a close order
+        updatedOrders.filter { it.orderType == PerpsOrder.TYPE_CLOSE && it.status == PerpsOrder.STATUS_FILLED }
+            .forEach { closeOrder ->
+                perpsPositionDao.updateStatus(
+                    closeOrder.positionId,
+                    "closed",
+                    closeOrder.updatedAt,
+                )
+            }
+    }
+
+    private fun createCachedClosedOrder(
+        position: PerpsPositionItem,
+        leverage: Int,
+    ): PerpsOrder {
+        val closedAt = position.updatedAt?.takeIf { it.isNotBlank() }
+            ?: position.createdAt?.takeIf { it.isNotBlank() }
+            ?: SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).format(Date())
+        val entryPrice = position.entryPrice
+        val closePrice = position.markPrice?.takeIf { it.isNotBlank() } ?: entryPrice
+
+        return PerpsOrder(
+            orderId = "local_${position.positionId}",
+            positionId = position.positionId,
+            marketId = position.marketId,
+            side = position.side,
+            orderType = PerpsOrder.TYPE_CLOSE,
+            status = PerpsOrder.STATUS_CLOSED,
+            leverage = leverage,
+            quantity = position.quantity,
+            entryPrice = entryPrice,
+            closePrice = closePrice,
+            realizedPnl = position.unrealizedPnl?.takeIf { it.isNotBlank() } ?: "0",
+            roe = position.roe ?: "0",
+            closeReason = null,
+            triggerPrice = null,
+            createdAt = position.createdAt?.takeIf { it.isNotBlank() } ?: closedAt,
+            updatedAt = closedAt,
+        )
     }
 }

@@ -63,6 +63,7 @@ fun String.generateQRCode(
     padding: Int = 32.dp,
     innerPadding: Int = 0.dp,
     foregroundColor: Int = Color.BLACK,
+    outputSize: Int? = null,
 ): Pair<Bitmap, Int> {
     require(isNotEmpty()) { "Found empty contents" }
     require(qrSize >= 0) { "Requested dimensions are too small: $qrSize" }
@@ -179,7 +180,14 @@ fun String.generateQRCode(
         outputY += multiple
     }
     canvas.setBitmap(null)
-    return Pair(bitmap, imageIgnore * multiple - 2.dp)
+    val outputBitmap = outputSize?.let { size ->
+        if (bitmap.width == size && bitmap.height == size) {
+            bitmap
+        } else {
+            Bitmap.createScaledBitmap(bitmap, size, size, false)
+        }
+    } ?: bitmap
+    return Pair(outputBitmap, imageIgnore * multiple - 2.dp)
 }
 
 private fun has(

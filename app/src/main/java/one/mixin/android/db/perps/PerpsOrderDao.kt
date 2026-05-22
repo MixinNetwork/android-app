@@ -74,6 +74,20 @@ interface PerpsOrderDao : BaseDao<PerpsOrder> {
     @Query("DELETE FROM perps_orders")
     suspend fun deleteAll()
 
+    @Query(
+        """
+        SELECT leverage
+        FROM perps_orders
+        WHERE position_id = :positionId AND leverage > 0
+        ORDER BY CASE WHEN order_id LIKE 'local_%' THEN 0 ELSE 1 END, updated_at DESC
+        LIMIT 1
+    """
+    )
+    suspend fun getCachedLeverage(positionId: String): Int?
+
+    @Query("DELETE FROM perps_orders WHERE order_id LIKE 'local_%' AND position_id IN (:positionIds)")
+    suspend fun deleteLocalByPositionIds(positionIds: List<String>)
+
     @Query("SELECT MAX(updated_at) FROM perps_orders")
     suspend fun getLatestUpdatedAt(): String?
 
