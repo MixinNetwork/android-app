@@ -134,8 +134,11 @@ fun PerpsMarketDetailPage(
     val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
     val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
 
-    LaunchedEffect(marketId, lifecycleOwner) {
+    LaunchedEffect(marketId, walletId, lifecycleOwner) {
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            if (walletId.isNotEmpty()) {
+                viewModel.refreshOrders(walletId, limit = CLOSED_POSITION_PREVIEW_LIMIT)
+            }
             while (isActive) {
                 viewModel.loadMarketDetail(
                     marketId = marketId,
