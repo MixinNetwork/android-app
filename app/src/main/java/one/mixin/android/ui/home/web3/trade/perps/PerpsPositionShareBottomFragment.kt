@@ -181,7 +181,13 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
         val open = position
         if (open != null) {
             val pnlAmount = open.unrealizedPnl.toBigDecimalSafely() ?: BigDecimal.ZERO
-            val pnlPercent = (open.roe.toBigDecimalSafely() ?: BigDecimal.ZERO).multiply(BigDecimal(100))
+            var pnlPercent = (open.roe.toBigDecimalSafely() ?: BigDecimal.ZERO).multiply(BigDecimal(100))
+            if (pnlPercent.compareTo(BigDecimal.ZERO) == 0 && pnlAmount.compareTo(BigDecimal.ZERO) != 0) {
+                val margin = open.margin.toBigDecimalSafely() ?: BigDecimal.ZERO
+                if (margin.compareTo(BigDecimal.ZERO) != 0) {
+                    pnlPercent = pnlAmount.divide(margin, 8, RoundingMode.HALF_UP).multiply(BigDecimal(100))
+                }
+            }
             bindCardData(
                 marketId = open.marketId,
                 iconUrl = open.iconUrl,
