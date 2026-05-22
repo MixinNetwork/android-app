@@ -179,10 +179,12 @@ class PositionDetailFragment : BaseFragment() {
     }
 
     private fun sharePosition(position: PerpsPositionItem) {
-        PerpsPositionShareActivity.show(requireContext(), position)
+        PerpsPositionShareBottomFragment.newInstance(position)
+            .show(parentFragmentManager, PerpsPositionShareBottomFragment.TAG)
     }
 
     private fun sharePosition(positionHistory: PerpsPositionHistoryItem) {
-        PerpsPositionShareActivity.show(requireContext(), positionHistory)
+        PerpsPositionShareBottomFragment.newInstance(positionHistory)
+            .show(parentFragmentManager, PerpsPositionShareBottomFragment.TAG)
     }
 }

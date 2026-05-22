@@ -66,7 +66,14 @@ fun Market(assetId: String) {
 }
 
 @Composable
-fun Market(type: String, assetId: String, dataChange: (Float?) -> Unit, onHighlightChange: (String?, Float?) -> Unit, onLoading: (Boolean) -> Unit) {
+fun Market(
+    type: String,
+    assetId: String,
+    dataChange: (Float?) -> Unit,
+    onHighlightChange: (String?, Float?) -> Unit,
+    onLoading: (Boolean) -> Unit,
+    interactive: Boolean = true,
+) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<WalletViewModel>()
     var responseState by remember { mutableStateOf<Result<List<Price>>>(Result.Loading) }
@@ -131,20 +138,25 @@ fun Market(type: String, assetId: String, dataChange: (Float?) -> Unit, onHighli
                 } else {
                     val prices = response.data.map { it.price.toFloat() }
                     val time = response.data.map { it.unix }
-                    LineChart(prices, time, type) { index ->
-                        if (index < 0 || index >= prices.size) {
-                            onHighlightChange.invoke(null, null)
-                            return@LineChart
+                    val highlightChange: ((Int) -> Unit)? = if (interactive) {
+                        { index ->
+                            if (index < 0 || index >= prices.size) {
+                                onHighlightChange.invoke(null, null)
+                            } else {
+                                val currentPrice = prices[index]
+                                val basePrice = prices.first()
+                                if (basePrice != 0f) {
+                                    val percentageChange = ((currentPrice - basePrice) / basePrice) * 100
+                                    onHighlightChange.invoke(currentPrice.toString(), percentageChange)
+                                } else {
+                                    onHighlightChange.invoke(currentPrice.toString(), null)
+                                }
+                            }
                         }
-                        val currentPrice = prices[index]
-                        val basePrice = prices.first()
-                        if (basePrice != 0f) {
-                            val percentageChange = ((currentPrice - basePrice) / basePrice) * 100
-                            onHighlightChange.invoke(currentPrice.toString(), percentageChange)
-                        } else {
-                            onHighlightChange.invoke(currentPrice.toString(), null)
-                        }
+                    } else {
+                        null
                     }
+                    LineChart(prices, time, type, highlightChange)
                 }
             }
 
@@ -166,4 +178,3 @@ fun Market(type: String, assetId: String, dataChange: (Float?) -> Unit, onHighli
         }
     }
 }
-

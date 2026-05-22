@@ -2270,7 +2270,7 @@
     <string name="input_referral_code_hint">Invited by a friend?</string>
     <string name="referral_description">Invite friends, earn crypto</string>
     <string name="Address_not_found">This user has not registered a common wallet</string>
-    <string name="limit_price">Price</string>
+    <string name="limit_price">Limit Price</string>
     <string name="Order_Type">Order Type</string>
     <string name="Forever">Forever</string>
     <string name="Trade_Simple">Simple</string>
@@ -2338,6 +2338,7 @@
     <string name="example_scene2_decreasing">Scenario 2: Price Falls</string>
     <string name="example_scene2_increasing">Scenario 2: Price Rises</string>
     <string name="PnL">PnL</string>
+    <string name="RoE">RoE</string>
     <string name="perps_long_overview">You open a long position when you expect the price to rise. If the price rises, you profit; if the price falls, you incur a loss.</string>
     <string name="perps_short_overview">You open a short position when you expect the price to fall. If the price falls, you profit; if the price rises, you incur a loss.</string>
     <string name="pnl_rule_price_fall_loss">Price falls, loss</string>
@@ -2391,6 +2392,11 @@
     <string name="take_profit_label">TP</string>
     <string name="stop_loss_label">SL</string>
     <string name="position_size">Size</string>
+    <string name="add_position">Add</string>
+    <string name="adding_position">Add</string>
+    <string name="add_position_title">Add to %1$s %2$s</string>
+    <string name="add_position_add_size">Add Size</string>
+    <string name="add_position_total_size">Total Size</string>
     <string name="Liquidation_Price">Liquidation Price</string>
     <string name="Price_Change_Profit">Price %1$s %2$s%% → Profit %3$s%4$s%% (%5$s%6$s)</string>
     <string name="Long">Long</string>
@@ -2452,6 +2458,16 @@
     <string name="anonymous_number">Anonymous Number</string>
     <string name="perps_markets">Markets</string>
     <string name="perps_market">Market</string>
+    <string name="perps_share_card_title">🚀 Perps %1$s</string>
+    <string name="perps_share_card_market">- 📈 Market: %1$s</string>
+    <string name="perps_share_card_side">- ↕️ Side: %1$s (%2$dx)</string>
+    <string name="perps_share_card_trade_now">💰 Trade Now</string>
+    <string name="market_share_card_title">Trade %1$s</string>
+    <string name="market_share_card_asset">🔥 %1$s (%2$s)</string>
+    <string name="market_share_card_market_cap">📈 Market Cap: %1$s%2$s</string>
+    <string name="market_share_card_price">🏷️ Price: %1$s%2$s</string>
+    <string name="market_share_card_price_change">💰 24h Price Change: %1$s</string>
+    <string name="market_share_card_market_button">%1$s Market</string>
     <string name="perps_category_all">All</string>
     <string name="perps_category_crypto">Crypto</string>
     <string name="perps_category_stocks">Stocks</string>
@@ -2544,4 +2560,7 @@
     <string name="pin_log_subtitle_recovery_contact_changed">✅ Recovery Contact changed</string>
     <string name="pin_log_subtitle_mnemonic_phrase_exported">✅ Mnemonic Phrase exported</string>
     <string name="pin_log_subtitle_mobile_number_changed">✅ Mobile Number changed</string>
+    <string name="perps_share_to_mixin_contact">Share to Mixin Contact</string>
+    <string name="perps_share_mixin_contact_desc">Bring your friends on board</string>
+    <string name="perps_share_mixin_contact_desc_with_percent">Earn %1$s commission via this link</string>
 </resources>
