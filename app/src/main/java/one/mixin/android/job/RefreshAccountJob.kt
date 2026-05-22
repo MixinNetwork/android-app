@@ -38,7 +38,7 @@ class RefreshAccountJob(
                     RxBus.publish(MembershipEvent())
                 }
                 if (checkTip) { // from home page
-                    AnalyticsTracker.setHasEmergencyContact(account)
+                    AnalyticsTracker.setHasRecoveryContact(account)
                     AnalyticsTracker.setMembership(account)
                 }
 

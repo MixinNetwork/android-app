@@ -367,6 +367,12 @@ class TradeFragment : BaseFragment() {
                                 },
                                 onReview = { quote, from, to, amount ->
                                     AnalyticsTracker.trackTradePreview()
+                                    AnalyticsTracker.trackSpotPreview(
+                                        sendChain = from.chain.name,
+                                        sendAssetSymbol = from.symbol,
+                                        receiveChain = to.chain.name,
+                                        receiveAssetSymbol = to.symbol,
+                                    )
                                     this@apply.hideKeyboard()
                                     reviewing = true
                                     lifecycleScope.launch {
@@ -380,6 +386,12 @@ class TradeFragment : BaseFragment() {
                                 },
                                 onLimitReview = { from, to, order ->
                                     AnalyticsTracker.trackTradePreview()
+                                    AnalyticsTracker.trackSpotPreview(
+                                        sendChain = from.chain.name,
+                                        sendAssetSymbol = from.symbol,
+                                        receiveChain = to.chain.name,
+                                        receiveAssetSymbol = to.symbol,
+                                    )
                                     this@apply.hideKeyboard()
                                     reviewing = true
                                     lifecycleScope.launch {
@@ -530,7 +542,13 @@ class TradeFragment : BaseFragment() {
                                     )
                                 },
                                 onClosedPositionClick = { position ->
-                                    navTo(PositionDetailFragment.newInstance(position), PositionDetailFragment.TAG)
+                                    navTo(
+                                        PositionDetailFragment.newInstance(
+                                            position,
+                                            AnalyticsTracker.PerpsSource.PERPS_HOME_LIST,
+                                        ),
+                                        PositionDetailFragment.TAG,
+                                    )
                                 }
                             )
                         }
@@ -815,13 +833,6 @@ class TradeFragment : BaseFragment() {
         to: SwapToken,
         previewData: SwapTransferPreviewData?,
     ) {
-        AnalyticsTracker.trackTradePreview()
-        AnalyticsTracker.trackSpotPreview(
-            sendChain = from.chain.name,
-            sendAssetSymbol = from.symbol,
-            receiveChain = to.chain.name,
-            receiveAssetSymbol = to.symbol,
-        )
         SwapTransferBottomSheetDialogFragment.newInstance(swapResult, from, to, previewData).apply {
             setOnDone {
                 initialAmount = null
@@ -834,13 +845,6 @@ class TradeFragment : BaseFragment() {
     }
 
     private suspend fun openLimitTransfer(from: SwapToken, to: SwapToken, order: CreateLimitOrderResponse) {
-        AnalyticsTracker.trackTradePreview()
-        AnalyticsTracker.trackSpotPreview(
-            sendChain = from.chain.name,
-            sendAssetSymbol = from.symbol,
-            receiveChain = to.chain.name,
-            receiveAssetSymbol = to.symbol,
-        )
         val senderWalletId = if (inMixin()) Session.getAccountId()!! else Web3Signer.currentWalletId
         if (!inMixin()) {
             val address = swapViewModel.getAddressesByChainId(Web3Signer.currentWalletId, to.chain.chainId)
