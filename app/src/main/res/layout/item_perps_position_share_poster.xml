@@ -210,7 +210,7 @@
         <RelativeLayout
             android:id="@+id/footer"
             android:layout_width="match_parent"
-            android:layout_height="96dp"
+            android:layout_height="wrap_content"
             android:background="@drawable/bg_perps_share_footer"
             android:paddingStart="20dp"
             android:paddingTop="12dp"
