@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -57,7 +58,10 @@ fun ClosedActivityItem(
     } else {
         if (quoteColorPref) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
     }
-    val leverageBackgroundColor = sideColor.copy(alpha = 0.1f)
+    val isFailed = order.status == PerpsOrder.STATUS_REJECTED
+    val leverageDimmed = isFailed || order.status == PerpsOrder.STATUS_PROCESSING
+    val leverageColor = if (leverageDimmed) MixinAppTheme.colors.textAssist else sideColor
+    val leverageBackgroundColor = leverageColor.copy(alpha = 0.1f)
     val pnl = order.realizedPnl.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val isProfit = pnl >= BigDecimal.ZERO
     val pnlColor = if (isProfit) {
@@ -66,7 +70,12 @@ fun ClosedActivityItem(
         if (quoteColorPref) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
     }
     val pnlPercent = order.roe.toBigDecimalOrNull()?.multiply(BigDecimal(100))
-    val titleRes = if (isLong) R.string.Closed_Long else R.string.Closed_Short
+    val titleRes = when {
+        isFailed && isLong -> R.string.Close_Long_Failed
+        isFailed -> R.string.Close_Short_Failed
+        isLong -> R.string.Closed_Long
+        else -> R.string.Closed_Short
+    }
 
     Row(
         modifier = Modifier
@@ -101,7 +110,7 @@ fun ClosedActivityItem(
                 Text(
                     text = "${order.leverage}x",
                     fontSize = 12.sp,
-                    color = sideColor,
+                    color = leverageColor,
                     lineHeight = 14.sp,
                     maxLines = 1,
                     modifier = Modifier

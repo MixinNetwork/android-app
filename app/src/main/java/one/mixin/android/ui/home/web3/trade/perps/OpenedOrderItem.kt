@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -51,8 +52,21 @@ fun OpenedOrderItem(
     } else {
         if (quoteColorPref) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
     }
-    val leverageBackgroundColor = sideColor.copy(alpha = 0.1f)
-    val titleRes = if (isLong) R.string.Opened_Long else R.string.Opened_Short
+    val isIncrease = order.orderType == PerpsOrder.TYPE_INCREASE
+    val isFailed = order.status == PerpsOrder.STATUS_REJECTED
+    val leverageDimmed = isFailed || order.status == PerpsOrder.STATUS_PROCESSING
+    val leverageColor = if (leverageDimmed) MixinAppTheme.colors.textAssist else sideColor
+    val leverageBackgroundColor = leverageColor.copy(alpha = 0.1f)
+    val title = when {
+        isIncrease && isFailed ->
+            stringResource(if (isLong) R.string.Add_Long_Failed else R.string.Add_Short_Failed)
+        isIncrease ->
+            stringResource(if (isLong) R.string.Added_Long else R.string.Added_Short)
+        isFailed ->
+            stringResource(if (isLong) R.string.Open_Long_Failed else R.string.Open_Short_Failed)
+        else ->
+            stringResource(if (isLong) R.string.Opened_Long else R.string.Opened_Short)
+    }
 
     Row(
         modifier = Modifier
@@ -77,7 +91,7 @@ fun OpenedOrderItem(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = stringResource(titleRes),
+                    text = title,
                     fontSize = 16.sp,
                     color = MixinAppTheme.colors.textPrimary,
                     maxLines = 1,
@@ -88,7 +102,7 @@ fun OpenedOrderItem(
                 Text(
                     text = "${order.leverage}x",
                     fontSize = 12.sp,
-                    color = sideColor,
+                    color = leverageColor,
                     lineHeight = 14.sp,
                     maxLines = 1,
                     modifier = Modifier

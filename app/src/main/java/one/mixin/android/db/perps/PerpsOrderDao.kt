@@ -23,7 +23,7 @@ interface PerpsOrderDao : BaseDao<PerpsOrder> {
         FROM perps_orders o
         LEFT JOIN markets m ON m.market_id = o.market_id
         WHERE o.order_type IN ('open', 'increase_position', 'close')
-        AND o.status != 'opening'
+        AND o.status != 'processing'
         AND (:offset IS NULL OR o.created_at < :offset)
         ORDER BY o.created_at DESC
         LIMIT :limit
@@ -35,7 +35,7 @@ interface PerpsOrderDao : BaseDao<PerpsOrder> {
         FROM perps_orders o
         LEFT JOIN markets m ON m.market_id = o.market_id
         WHERE o.order_type IN ('open', 'increase_position', 'close')
-        AND o.status != 'opening'
+        AND o.status != 'processing'
         ORDER BY o.created_at DESC
         LIMIT :limit
     """)
@@ -46,7 +46,7 @@ interface PerpsOrderDao : BaseDao<PerpsOrder> {
         FROM perps_orders o
         LEFT JOIN markets m ON m.market_id = o.market_id
         WHERE o.order_type IN ('open', 'increase_position', 'close')
-        AND o.status != 'opening'
+        AND o.status != 'processing'
         ORDER BY o.created_at DESC
     """)
     fun getOrdersPaged(): PagingSource<Int, PerpsOrderItem>
@@ -56,7 +56,7 @@ interface PerpsOrderDao : BaseDao<PerpsOrder> {
         FROM perps_orders o
         LEFT JOIN markets m ON m.market_id = o.market_id
         WHERE o.order_type IN ('open', 'increase_position', 'close')
-        AND o.status != 'opening'
+        AND o.status != 'processing'
         AND o.market_id = :marketId
         ORDER BY o.created_at DESC
         LIMIT :limit

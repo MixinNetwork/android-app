@@ -65,6 +65,11 @@ data class PerpsOrder(
         const val TYPE_INCREASE = "increase_position"
         const val TYPE_CLOSE = "close"
 
+        const val STATUS_PROCESSING = "processing"
+        const val STATUS_FILLED = "filled"
+        const val STATUS_REJECTED = "rejected"
+        const val STATUS_CLOSED = "closed"
+
         const val CLOSE_REASON_TAKE_PROFIT = "take_profit"
         const val CLOSE_REASON_STOP_LOSS = "stop_loss"
         const val CLOSE_REASON_LIQUIDATION = "liquidation"

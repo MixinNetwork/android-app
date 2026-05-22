@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.sp
 import androidx.fragment.app.FragmentActivity
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import one.mixin.android.R
+import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.CoilImage
@@ -137,6 +138,14 @@ fun PositionDetailPage(
         ) {
             guideType = null
         }
+    }
+
+    val isPending = position.state == "processing" || position.state == "adding"
+    val leverageTextColor = if (isPending) MixinAppTheme.colors.textAssist else sideColor
+    val leverageBackgroundColor = if (isPending) {
+        MixinAppTheme.colors.backgroundGrayLight
+    } else {
+        sideColor.copy(alpha = 0.1f)
     }
 
     fun showTpSlBottomSheetFromGuide(mode: PerpsTpSlBottomSheetDialogFragment.Mode) {
@@ -266,13 +275,13 @@ fun PositionDetailPage(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
-                        .background(sideColor.copy(alpha = 0.1f))
+                        .background(leverageBackgroundColor)
                         .padding(horizontal = 8.dp, vertical = 2.5.dp)
                         .align(Alignment.CenterHorizontally)
                 ) {
                     Text(
                         text = "$sideText ${position.leverage}x",
-                        color = sideColor,
+                        color = leverageTextColor,
                         fontSize = 14.sp
                     )
                 }
@@ -504,17 +513,25 @@ fun PositionDetailPage(
     } else {
         stringResource(R.string.Short)
     }
-    val title = if (isLong) {
-        stringResource(R.string.Closed_Long)
+    val isFailed = closeOrder.status == PerpsOrder.STATUS_REJECTED
+    val title = if (isFailed) {
+        stringResource(if (isLong) R.string.Close_Long_Failed else R.string.Close_Short_Failed)
     } else {
-        stringResource(R.string.Closed_Short)
+        stringResource(if (isLong) R.string.Closed_Long else R.string.Closed_Short)
+    }
+    val leverageDimmed = isFailed || closeOrder.status == PerpsOrder.STATUS_PROCESSING
+    val leverageTextColor = if (leverageDimmed) MixinAppTheme.colors.textAssist else sideColor
+    val leverageBackgroundColor = if (leverageDimmed) {
+        MixinAppTheme.colors.backgroundGrayLight
+    } else {
+        sideColor.copy(alpha = 0.1f)
     }
 
     val quantity = closeOrder.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val absQuantity = quantity.abs()
     val fiatRate = BigDecimal(Fiats.getRate())
     val fiatSymbol = Fiats.getSymbol()
-    val effectiveLeverage = leverage ?: 0
+    val effectiveLeverage = leverage ?: closeOrder.leverage
     val roe = (closeOrder.roe.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(BigDecimal(100))
 
     fun formatFiat(value: BigDecimal): String {
@@ -598,13 +615,13 @@ fun PositionDetailPage(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
-                        .background(sideColor.copy(alpha = 0.1f))
+                        .background(leverageBackgroundColor)
                         .padding(horizontal = 8.dp, vertical = 2.5.dp)
                         .align(Alignment.CenterHorizontally)
                 ) {
                     Text(
-                        text = if (effectiveLeverage > 0) "$sideText ${effectiveLeverage}x" else sideText,
-                        color = sideColor,
+                        text = "$sideText ${effectiveLeverage}x",
+                        color = leverageTextColor,
                         fontSize = 14.sp
                     )
                 }
@@ -749,10 +766,24 @@ fun OpenedOrderDetailPage(
     } else {
         stringResource(R.string.Short)
     }
-    val title = if (isLong) {
-        stringResource(R.string.Opened_Long)
+    val isIncrease = openedOrder.orderType == PerpsOrder.TYPE_INCREASE
+    val isFailed = openedOrder.status == PerpsOrder.STATUS_REJECTED
+    val title = when {
+        isIncrease && isFailed ->
+            stringResource(if (isLong) R.string.Add_Long_Failed else R.string.Add_Short_Failed)
+        isIncrease ->
+            stringResource(if (isLong) R.string.Added_Long else R.string.Added_Short)
+        isFailed ->
+            stringResource(if (isLong) R.string.Open_Long_Failed else R.string.Open_Short_Failed)
+        else ->
+            stringResource(if (isLong) R.string.Opened_Long else R.string.Opened_Short)
+    }
+    val leverageDimmed = isFailed || openedOrder.status == PerpsOrder.STATUS_PROCESSING
+    val leverageTextColor = if (leverageDimmed) MixinAppTheme.colors.textAssist else sideColor
+    val leverageBackgroundColor = if (leverageDimmed) {
+        MixinAppTheme.colors.backgroundGrayLight
     } else {
-        stringResource(R.string.Opened_Short)
+        sideColor.copy(alpha = 0.1f)
     }
 
     val quantity = openedOrder.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
@@ -833,13 +864,13 @@ fun OpenedOrderDetailPage(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
-                        .background(sideColor.copy(alpha = 0.1f))
+                        .background(leverageBackgroundColor)
                         .padding(horizontal = 8.dp, vertical = 2.5.dp)
                         .align(Alignment.CenterHorizontally)
                 ) {
                     Text(
                         text = "$sideText ${leverage}x",
-                        color = sideColor,
+                        color = leverageTextColor,
                         fontSize = 14.sp
                     )
                 }

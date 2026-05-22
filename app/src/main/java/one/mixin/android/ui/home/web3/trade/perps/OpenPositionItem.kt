@@ -59,7 +59,7 @@ fun OpenPositionItem(
         ?.toPlainString()
         ?: position.quantity.removePrefix("-")
     val isLong = position.side.equals("long", true)
-    val isOpening = position.state.equals("opening", true)
+    val isOpening = position.state.equals("processing", true)
     val isAdding = position.state.equals("adding", true)
     val isPending = isOpening || isAdding
     val sideColor = if (isLong) {
