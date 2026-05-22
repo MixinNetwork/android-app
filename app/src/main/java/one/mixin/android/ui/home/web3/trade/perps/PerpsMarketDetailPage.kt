@@ -137,20 +137,24 @@ fun PerpsMarketDetailPage(
     LaunchedEffect(marketId, walletId, lifecycleOwner) {
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
             if (walletId.isNotEmpty()) {
-                viewModel.refreshOrders(walletId, limit = CLOSED_POSITION_PREVIEW_LIMIT)
+                viewModel.startRefreshOrders(walletId, intervalMs = MARKET_REFRESH_INTERVAL_MS)
             }
-            while (isActive) {
-                viewModel.loadMarketDetail(
-                    marketId = marketId,
-                    onSuccess = { data ->
-                        market = data
-                        isLoading = false
-                    },
-                    onError = {
-                        isLoading = false
-                    }
-                )
-                delay(MARKET_REFRESH_INTERVAL_MS)
+            try {
+                while (isActive) {
+                    viewModel.loadMarketDetail(
+                        marketId = marketId,
+                        onSuccess = { data ->
+                            market = data
+                            isLoading = false
+                        },
+                        onError = {
+                            isLoading = false
+                        }
+                    )
+                    delay(MARKET_REFRESH_INTERVAL_MS)
+                }
+            } finally {
+                viewModel.stopRefreshOrders()
             }
         }
     }

@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.ComposeView
+import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -203,7 +204,7 @@ class PositionDetailFragment : BaseFragment() {
                     position.tokenSymbol.orEmpty(),
                     AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_DETAIL,
                 )
-                activity?.onBackPressedDispatcher?.onBackPressed()
+                activity?.supportFragmentManager?.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
             }
             .showNow(parentFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)
     }
@@ -217,7 +218,7 @@ class PositionDetailFragment : BaseFragment() {
             marketTokenSymbol = order.tokenSymbol.orEmpty(),
             source = AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_DETAIL,
         )
-        activity?.onBackPressedDispatcher?.onBackPressed()
+        activity?.supportFragmentManager?.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
     }
 
     private fun openViewMarket(order: PerpsOrderItem) {
@@ -229,7 +230,7 @@ class PositionDetailFragment : BaseFragment() {
             marketTokenSymbol = order.tokenSymbol.orEmpty(),
             source = AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_DETAIL,
         )
-        activity?.onBackPressedDispatcher?.onBackPressed()
+        activity?.supportFragmentManager?.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
     }
 
     private fun sharePosition(position: PerpsPositionItem) {

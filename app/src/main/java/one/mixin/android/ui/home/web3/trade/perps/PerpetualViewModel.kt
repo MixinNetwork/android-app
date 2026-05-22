@@ -8,7 +8,9 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
@@ -54,6 +56,22 @@ class PerpetualViewModel @Inject constructor(
 ) : ViewModel() {
     fun refreshPositions(walletId: String) {
         jobManager.addJobInBackground(RefreshPerpsPositionsJob(walletId))
+    }
+
+    private var refreshOrdersJob: kotlinx.coroutines.Job? = null
+
+    fun startRefreshOrders(walletId: String, intervalMs: Long = 10_000L) {
+        if (refreshOrdersJob?.isActive == true) return
+        refreshOrdersJob = viewModelScope.launch {
+            while (isActive) {
+                refreshOrders(walletId)
+                delay(intervalMs)
+            }
+        }
+    }
+
+    fun stopRefreshOrders() {
+        refreshOrdersJob?.cancel()
     }
 
     fun refreshOrders(walletId: String, limit: Int = 100) {

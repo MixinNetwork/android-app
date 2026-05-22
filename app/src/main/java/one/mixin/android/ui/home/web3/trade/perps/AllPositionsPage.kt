@@ -119,10 +119,14 @@ fun AllPositionsPage(
     LaunchedEffect(walletId, lifecycleOwner) {
         if (walletId.isEmpty()) return@LaunchedEffect
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-            viewModel.refreshOrders(walletId, limit = CLOSED_POSITION_REFRESH_LIMIT)
-            while (isActive) {
-                viewModel.refreshPositions(walletId)
-                delay(POSITION_REFRESH_INTERVAL_MS)
+            viewModel.startRefreshOrders(walletId, intervalMs = POSITION_REFRESH_INTERVAL_MS)
+            try {
+                while (isActive) {
+                    viewModel.refreshPositions(walletId)
+                    delay(POSITION_REFRESH_INTERVAL_MS)
+                }
+            } finally {
+                viewModel.stopRefreshOrders()
             }
         }
     }

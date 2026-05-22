@@ -144,15 +144,19 @@ fun PerpetualContent(
                     )
                 }
             )
-            viewModel.refreshOrders(walletId, limit = CLOSED_POSITION_PREVIEW_LIMIT)
-            while (isActive) {
-                viewModel.refreshMarkets(
-                    onError = { error ->
-                        errorMessage = error
-                    }
-                )
-                viewModel.refreshPositions(walletId)
-                delay(POSITION_REFRESH_INTERVAL_MS)
+            viewModel.startRefreshOrders(walletId, intervalMs = POSITION_REFRESH_INTERVAL_MS)
+            try {
+                while (isActive) {
+                    viewModel.refreshMarkets(
+                        onError = { error ->
+                            errorMessage = error
+                        }
+                    )
+                    viewModel.refreshPositions(walletId)
+                    delay(POSITION_REFRESH_INTERVAL_MS)
+                }
+            } finally {
+                viewModel.stopRefreshOrders()
             }
         }
     }
