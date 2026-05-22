@@ -17,10 +17,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.perps.PerpsMarketDao
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshPerpsPositionsJob
@@ -42,6 +45,10 @@ class PerpsActivity : BaseActivity() {
 
     private var selectedToken by mutableStateOf<TokenItem?>(null)
     private var renderJob: Job? = null
+
+    private val lastSelectedAssetId: String? by lazy {
+        defaultSharedPreferences.getString(Constants.Account.PREF_LAST_SELECTED_PERPS_ASSET_ID, null)
+    }
 
     companion object {
         private const val EXTRA_MARKET_ID = "extra_market_id"
@@ -136,6 +143,16 @@ class PerpsActivity : BaseActivity() {
                     direction = if (isLong) AnalyticsTracker.PerpsDirection.LONG else AnalyticsTracker.PerpsDirection.SHORT,
                     source = source,
                 )
+
+                if (selectedToken == null) {
+                    val assetId = lastSelectedAssetId
+                    if (assetId != null) {
+                        viewModel.loadUsdTokens { tokens ->
+                            selectedToken = tokens.firstOrNull { it.assetId == assetId }
+                        }
+                    }
+                }
+
                 setContent {
                     MixinAppTheme {
                         OpenPositionPage(
@@ -148,7 +165,12 @@ class PerpsActivity : BaseActivity() {
                             },
                             selectedToken = selectedToken,
                             onTokenSelect = { showTokenSelection() },
-                            onCurrentTokenChange = { token -> selectedToken = token }
+                            onCurrentTokenChange = { token ->
+                                selectedToken = token
+                                token?.assetId?.let {
+                                    defaultSharedPreferences.putString(Constants.Account.PREF_LAST_SELECTED_PERPS_ASSET_ID, it)
+                                }
+                            }
                         )
                     }
                 }
@@ -187,6 +209,9 @@ class PerpsActivity : BaseActivity() {
             currentAssetId = selectedToken?.assetId
         ).setOnAssetClick { token ->
             selectedToken = token
+            token.assetId.let {
+                defaultSharedPreferences.putString(Constants.Account.PREF_LAST_SELECTED_PERPS_ASSET_ID, it)
+            }
         }.setOnDepositClick {
             showDepositAssetSelection()
         }.show(supportFragmentManager, TokenListBottomSheetDialogFragment.TAG)

@@ -203,6 +203,7 @@ class PositionDetailFragment : BaseFragment() {
                     position.tokenSymbol.orEmpty(),
                     AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_DETAIL,
                 )
+                activity?.onBackPressedDispatcher?.onBackPressed()
             }
             .showNow(parentFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)
     }
@@ -216,6 +217,7 @@ class PositionDetailFragment : BaseFragment() {
             marketTokenSymbol = order.tokenSymbol.orEmpty(),
             source = AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_DETAIL,
         )
+        activity?.onBackPressedDispatcher?.onBackPressed()
     }
 
     private fun openViewMarket(order: PerpsOrderItem) {
@@ -227,6 +229,7 @@ class PositionDetailFragment : BaseFragment() {
             marketTokenSymbol = order.tokenSymbol.orEmpty(),
             source = AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_DETAIL,
         )
+        activity?.onBackPressedDispatcher?.onBackPressed()
     }
 
     private fun sharePosition(position: PerpsPositionItem) {

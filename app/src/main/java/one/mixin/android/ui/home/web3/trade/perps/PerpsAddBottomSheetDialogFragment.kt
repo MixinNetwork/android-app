@@ -69,6 +69,7 @@ import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.putInt
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
@@ -157,6 +158,10 @@ class PerpsAddBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
         var selectedToken by remember { mutableStateOf<TokenItem?>(null) }
         var market by remember { mutableStateOf<PerpsMarket?>(null) }
 
+        val lastSelectedAssetId = remember {
+            context.defaultSharedPreferences.getString(Constants.Account.PREF_LAST_SELECTED_PERPS_ASSET_ID, null)
+        }
+
         LaunchedEffect(acceptedPerpAssetIds) {
             market = viewModel.getMarketFromDb(position.marketId)
             viewModel.loadUsdTokens { tokens ->
@@ -172,11 +177,19 @@ class PerpsAddBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
                         supportedTokens.firstOrNull { it.assetId == assetId }
                     }
                 }
+
+                val initialToken = selectedToken ?: tokens.firstOrNull { it.assetId == lastSelectedAssetId }
                 selectedToken = resolveCurrentToken(
-                    selectedToken = selectedToken,
+                    selectedToken = initialToken,
                     availableTokens = orderedSupportedTokens,
                     preferredAssetIds = acceptedPerpAssetIdsOrdered,
                 )
+            }
+        }
+
+        LaunchedEffect(selectedToken) {
+            selectedToken?.assetId?.let {
+                context.defaultSharedPreferences.putString(Constants.Account.PREF_LAST_SELECTED_PERPS_ASSET_ID, it)
             }
         }
 
@@ -191,6 +204,7 @@ class PerpsAddBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
                         currentAssetId = selectedToken?.assetId,
                     ).setOnAssetClick { token ->
                         selectedToken = token
+                        context.defaultSharedPreferences.putString(Constants.Account.PREF_LAST_SELECTED_PERPS_ASSET_ID, token.assetId)
                     }.show(parentFragmentManager, TokenListBottomSheetDialogFragment.TAG)
                 },
                 onCancel = { dismiss() },
