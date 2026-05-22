@@ -112,6 +112,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        AnalyticsTracker.trackAssetDetail(TradeWallet.MAIN, if (fromMarket) AnalyticsTracker.AssetSource.MARKET_DETAIL else AnalyticsTracker.AssetSource.WALLET_HOME)
         jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(asset.assetId))))
         jobManager.addJobInBackground(RefreshPriceJob(asset.assetId))
 
@@ -348,6 +349,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         bottomBinding.apply {
             hide.setText(if (asset.hidden == true) R.string.Show else R.string.Hide)
             hide.setOnClickListener {
+                AnalyticsTracker.trackAssetDetailHide()
                 lifecycleScope.launch(Dispatchers.IO) {
                     walletViewModel.updateAssetHidden(asset.assetId, asset.hidden != true)
                 }
@@ -361,6 +363,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
     }
 
     override fun <T> onNormalItemClick(item: T) {
+        AnalyticsTracker.trackTransactionDetail(AnalyticsTracker.AssetSource.ASSET_DETAIL)
         view?.navigate(
             R.id.action_transactions_fragment_to_transaction_fragment,
             Bundle().apply {
@@ -388,6 +391,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
     }
 
     override fun onMoreClick() {
+        AnalyticsTracker.trackAllTransactions(AnalyticsTracker.AssetSource.ASSET_DETAIL)
         view?.navigate(
             R.id.action_transactions_fragment_to_all_transactions_fragment,
             Bundle().apply {
@@ -397,6 +401,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
     }
 
     private fun navigateToTransferDestination(asset: TokenItem) {
+        AnalyticsTracker.trackAssetSendStart(TradeWallet.MAIN, AnalyticsTracker.AssetSource.ASSET_DETAIL)
         findNavController().navigate(
             R.id.action_transactions_to_transfer_destination,
             Bundle().apply {
@@ -421,6 +426,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             sendReceiveView.receive.setOnClickListener {
                 if (
                     showRecoveryReminderForRiskAction {
+                        AnalyticsTracker.trackAssetReceiveStart(AnalyticsTracker.AssetSource.ASSET_DETAIL, TradeWallet.MAIN)
                         sendReceiveView.navigate(
                             R.id.action_transactions_to_deposit,
                             Bundle().apply { putParcelable(ARGS_ASSET, asset) },
@@ -429,6 +435,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                 ) {
                     return@setOnClickListener
                 }
+                AnalyticsTracker.trackAssetReceiveStart(AnalyticsTracker.AssetSource.ASSET_DETAIL, TradeWallet.MAIN)
                 sendReceiveView.navigate(
                     R.id.action_transactions_to_deposit,
                     Bundle().apply { putParcelable(ARGS_ASSET, asset) },

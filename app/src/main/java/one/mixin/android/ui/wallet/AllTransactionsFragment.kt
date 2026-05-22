@@ -40,6 +40,7 @@ import one.mixin.android.ui.wallet.TransactionFragment.Companion.ARGS_SNAPSHOT
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.ui.wallet.adapter.SnapshotPagedAdapter
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AddressItem
@@ -98,6 +99,7 @@ class AllTransactionsFragment : BaseTransactionsFragment(R.layout.fragment_all_t
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        AnalyticsTracker.trackAllTransactions(AnalyticsTracker.AssetSource.WALLET_HOME)
 
         adapter.listener = this
         binding.apply {
@@ -193,6 +195,7 @@ class AllTransactionsFragment : BaseTransactionsFragment(R.layout.fragment_all_t
     }
 
     override fun <T> onNormalItemClick(item: T) {
+        AnalyticsTracker.trackTransactionDetail(AnalyticsTracker.AssetSource.ALL_TRANSACTIONS)
         lifecycleScope.launch {
             val snapshot = item as SnapshotItem
             val a =

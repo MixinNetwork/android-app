@@ -68,6 +68,7 @@ import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.ExpiredMessage
 import one.mixin.android.vo.Account
+import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageHistory

@@ -75,6 +75,7 @@ import one.mixin.android.ui.wallet.transfer.data.TransferStatus
 import one.mixin.android.ui.wallet.transfer.data.TransferType
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.msg
 import one.mixin.android.util.viewBinding
@@ -724,6 +725,16 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     )
                     context?.updatePinCheck()
                     isSuccess = true
+                    when (t) {
+                        is AddressManageBiometricItem -> {
+                            if (t.type == ADD) {
+                                AnalyticsTracker.trackAddressBookAddEnd()
+                            }
+                        }
+                        is TransferBiometricItem, is AddressTransferBiometricItem, is WithdrawBiometricItem -> {
+                            AnalyticsTracker.trackAssetSendEnd()
+                        }
+                    }
 
                     val transactionHash = runCatching {
                         val data = response.data as? List<TransactionResponse>

@@ -48,6 +48,7 @@ import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.web.refreshScreenshot
 import one.mixin.android.util.ErrorHandler.Companion.ADDRESS_GENERATING
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getChainName
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.TokenItem
@@ -95,6 +96,7 @@ class DepositFragment : BaseFragment() {
     }
 
     override fun onDestroyView() {
+        AnalyticsTracker.trackAssetReceiveEnd()
         super.onDestroyView()
         _binding = null
     }
@@ -173,6 +175,7 @@ class DepositFragment : BaseFragment() {
                         }
                         setOnClickListener {
                             if (same) return@setOnClickListener
+                            AnalyticsTracker.trackAssetReceiveTokenSelect(AnalyticsTracker.TradeTokenSelectMethod.CHAIN_ITEM_CLICK)
                             syncJob?.cancel()
                             syncJob =
                                 lifecycleScope.launch {
