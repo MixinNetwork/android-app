@@ -249,16 +249,24 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
     private fun bindCard() {
         syncDisplayMetricToggle()
         if (::posterAdapter.isInitialized) {
-            posterAdapter.notifyDataSetChanged()
-            binding.posterPager.post { updatePosterPagerHeight() }
+            refreshVisiblePosters()
         }
     }
 
     private fun bindFooter() {
         bindMixinContact()
         if (::posterAdapter.isInitialized) {
-            posterAdapter.notifyDataSetChanged()
-            binding.posterPager.post { updatePosterPagerHeight() }
+            refreshVisiblePosters()
+        }
+    }
+
+    private fun refreshVisiblePosters() {
+        val recyclerView = binding.posterPager.getChildAt(0) as? RecyclerView ?: return
+        SharePosterStyle.values().forEachIndexed { index, style ->
+            (recyclerView.findViewHolderForAdapterPosition(index) as? PosterViewHolder)?.bind(style)
+        }
+        binding.posterPager.post {
+            updatePosterPagerHeight()
         }
     }
 
@@ -612,7 +620,9 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
                 bindDefaultPosterFooter(itemBinding)
             }
             val qrPadding = 8.dp
-            val qrCode = currentQrUrl().generateQRCode(58.dp, qrPadding).first.roundQrBackground(qrPadding, 6.dp.toFloat())
+            val qrSize = 72.dp
+            val qrCode = currentQrUrl().generateQRCode(qrSize, qrPadding, outputSize = qrSize).first
+                .roundQrBackground(qrPadding, 6.dp.toFloat())
             itemBinding.qr.setImageBitmap(qrCode)
         }
     }

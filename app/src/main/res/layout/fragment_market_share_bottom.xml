@@ -262,7 +262,7 @@
             android:id="@+id/mixin_contact"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
+            android:layout_marginTop="12dp"
             android:background="?attr/bg_market_card"
             android:clickable="true"
             android:focusable="true"
@@ -321,9 +321,7 @@
         android:layout_marginBottom="24dp"
         android:baselineAligned="false"
         android:gravity="center"
-        android:orientation="horizontal"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp">
+        android:orientation="horizontal">
 
         <LinearLayout
             android:id="@+id/share"

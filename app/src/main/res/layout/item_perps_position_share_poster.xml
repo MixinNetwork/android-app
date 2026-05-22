@@ -210,7 +210,7 @@
         <RelativeLayout
             android:id="@+id/footer"
             android:layout_width="match_parent"
-            android:layout_height="82dp"
+            android:layout_height="96dp"
             android:background="@drawable/bg_perps_share_footer"
             android:paddingStart="20dp"
             android:paddingTop="12dp"
@@ -249,8 +249,8 @@
 
             <FrameLayout
                 android:id="@+id/icon_fl"
-                android:layout_width="68dp"
-                android:layout_height="68dp"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true">
 
@@ -262,8 +262,8 @@
                     android:contentDescription="@null" />
 
                 <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
                     android:layout_gravity="center"
                     android:contentDescription="@null"
                     android:src="@drawable/ic_mixin_logo" />
