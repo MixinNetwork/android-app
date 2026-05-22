@@ -628,44 +628,48 @@ fun PositionDetailPage(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                        .padding(horizontal = 20.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(MixinAppTheme.colors.backgroundWindow),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = stringResource(R.string.Trade_Again),
-                        color = MixinAppTheme.colors.textPrimary,
-                        fontWeight = FontWeight.W500,
+                if (!isFailed) {
+                    Row(
                         modifier = Modifier
-                            .weight(1f)
-                            .clickable { onTradeAgain?.invoke() }
-                            .padding(vertical = 10.dp),
-                        textAlign = TextAlign.Center
-                    )
-                    Box(
-                        modifier = Modifier
-                            .width(2.dp)
-                            .height(24.dp)
-                            .background(Color(0x0D000000))
-                    )
-                    Text(
-                        text = stringResource(R.string.Share),
-                        color = MixinAppTheme.colors.textPrimary,
-                        fontWeight = FontWeight.W500,
-                        modifier = Modifier
-                            .weight(1f)
-                            .clickable { onShare?.invoke() }
-                            .padding(vertical = 10.dp),
-                        textAlign = TextAlign.Center
-                    )
-                }
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                            .padding(horizontal = 20.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MixinAppTheme.colors.backgroundWindow),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = stringResource(R.string.Trade_Again),
+                            color = MixinAppTheme.colors.textPrimary,
+                            fontWeight = FontWeight.W500,
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable { onTradeAgain?.invoke() }
+                                .padding(vertical = 10.dp),
+                            textAlign = TextAlign.Center
+                        )
+                        Box(
+                            modifier = Modifier
+                                .width(2.dp)
+                                .height(24.dp)
+                                .background(Color(0x0D000000))
+                        )
+                        Text(
+                            text = stringResource(R.string.Share),
+                            color = MixinAppTheme.colors.textPrimary,
+                            fontWeight = FontWeight.W500,
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable { onShare?.invoke() }
+                                .padding(vertical = 10.dp),
+                            textAlign = TextAlign.Center
+                        )
+                    }
 
-                Spacer(modifier = Modifier.height(30.dp))
+                    Spacer(modifier = Modifier.height(30.dp))
+                } else {
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
             }
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -877,44 +881,48 @@ fun OpenedOrderDetailPage(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                        .padding(horizontal = 20.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(MixinAppTheme.colors.backgroundWindow),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = stringResource(R.string.View_Market),
-                        color = MixinAppTheme.colors.textPrimary,
-                        fontWeight = FontWeight.W500,
+                if (!isFailed) {
+                    Row(
                         modifier = Modifier
-                            .weight(1f)
-                            .clickable { onViewMarket?.invoke() }
-                            .padding(vertical = 10.dp),
-                        textAlign = TextAlign.Center
-                    )
-                    Box(
-                        modifier = Modifier
-                            .width(2.dp)
-                            .height(24.dp)
-                            .background(Color(0x0D000000))
-                    )
-                    Text(
-                        text = stringResource(R.string.Share),
-                        color = MixinAppTheme.colors.textPrimary,
-                        fontWeight = FontWeight.W500,
-                        modifier = Modifier
-                            .weight(1f)
-                            .clickable { onShare?.invoke() }
-                            .padding(vertical = 10.dp),
-                        textAlign = TextAlign.Center
-                    )
-                }
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                            .padding(horizontal = 20.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MixinAppTheme.colors.backgroundWindow),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = stringResource(R.string.View_Market),
+                            color = MixinAppTheme.colors.textPrimary,
+                            fontWeight = FontWeight.W500,
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable { onViewMarket?.invoke() }
+                                .padding(vertical = 10.dp),
+                            textAlign = TextAlign.Center
+                        )
+                        Box(
+                            modifier = Modifier
+                                .width(2.dp)
+                                .height(24.dp)
+                                .background(Color(0x0D000000))
+                        )
+                        Text(
+                            text = stringResource(R.string.Share),
+                            color = MixinAppTheme.colors.textPrimary,
+                            fontWeight = FontWeight.W500,
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable { onShare?.invoke() }
+                                .padding(vertical = 10.dp),
+                            textAlign = TextAlign.Center
+                        )
+                    }
 
-                Spacer(modifier = Modifier.height(30.dp))
+                    Spacer(modifier = Modifier.height(30.dp))
+                } else {
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
             }
 
             Spacer(modifier = Modifier.height(10.dp))
