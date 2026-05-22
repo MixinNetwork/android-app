@@ -17,7 +17,6 @@ import kotlinx.coroutines.isActive
 import one.mixin.android.Constants
 import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsOrderItem
-import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.api.response.perps.toPosition
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -237,11 +236,6 @@ class PositionDetailFragment : BaseFragment() {
 
     private fun sharePosition(order: PerpsOrderItem, leverage: Int) {
         PerpsPositionShareBottomFragment.newInstance(order, leverage)
-            .show(parentFragmentManager, PerpsPositionShareBottomFragment.TAG)
-    }
-
-    private fun sharePosition(positionHistory: PerpsPositionHistoryItem) {
-        PerpsPositionShareBottomFragment.newInstance(positionHistory)
             .show(parentFragmentManager, PerpsPositionShareBottomFragment.TAG)
     }
 }
