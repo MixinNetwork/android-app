@@ -3,7 +3,6 @@ package one.mixin.android.ui.home.web3.trade.perps
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.DialogInterface
-import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -54,7 +53,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.fragment.app.FragmentActivity
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
@@ -64,6 +62,7 @@ import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.findFragmentActivityOrNull
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
@@ -265,13 +264,7 @@ private fun PerpsAddContent(
     val navigationBottom = WindowInsets.navigationBars.getBottom(density)
     val priceTabBottomPadding = if (navigationBottom in 1..with(density) { 32.dp.roundToPx() }) 24.dp else 8.dp
     fun showPerpsGuide(tab: Int) {
-        Log.d("PerpsAddGuide", "showPerpsGuide tab=$tab context=${context?.javaClass?.name}")
-        val activity = context as? FragmentActivity
-        if (activity == null) {
-            Log.d("PerpsAddGuide", "FAIL: context is not FragmentActivity, it is ${context?.javaClass?.name}")
-            return
-        }
-        Log.d("PerpsAddGuide", "SUCCESS: activity=$activity fm=$activity.supportFragmentManager")
+        val activity = context.findFragmentActivityOrNull() ?: return
         PerpetualGuideBottomSheetDialogFragment.newInstance(tab)
             .show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
     }
@@ -403,7 +396,7 @@ private fun PerpsAddContent(
                                     color = MixinAppTheme.colors.accent,
                                 ),
                                 modifier = Modifier.clickable {
-                                    val activity = context as? FragmentActivity ?: return@clickable
+                                    val activity = context.findFragmentActivityOrNull() ?: return@clickable
                                     val token = selectedToken
                                     if (token == null) {
                                         onTokenSelect()
@@ -671,7 +664,6 @@ private fun PerpsAddInfoRow(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
             ) {
-                Log.d("PerpsAddGuide", "PerpsAddInfoRow click, onTipClick!=null=${onTipClick != null}")
                 onTipClick?.invoke()
             },
         ) {

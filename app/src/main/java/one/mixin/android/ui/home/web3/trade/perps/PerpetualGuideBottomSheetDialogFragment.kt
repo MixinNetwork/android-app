@@ -3,7 +3,6 @@ package one.mixin.android.ui.home.web3.trade.perps
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.os.Bundle
-import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -75,7 +74,6 @@ class PerpetualGuideBottomSheetDialogFragment : MixinComposeBottomSheetDialogFra
     @Composable
     override fun ComposeContent() {
         val initialTab = arguments?.getInt(ARGS_INITIAL_TAB, TAB_OVERVIEW) ?: TAB_OVERVIEW
-        Log.d("PerpsAddGuide", "GuideFragment ComposeContent called, tab=$initialTab")
         MixinAppTheme {
             PerpetualGuidePage(
                 initialTab = initialTab,

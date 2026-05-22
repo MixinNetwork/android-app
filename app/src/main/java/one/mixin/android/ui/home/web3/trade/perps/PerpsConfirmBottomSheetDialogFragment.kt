@@ -663,6 +663,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     private fun doAfterPinComplete(pin: String) = lifecycleScope.launch(Dispatchers.IO) {
         try {
             step = Step.Sending
+            errorInfo = null
 
             if (payUrl != null) {
                 handlePayment(payUrl!!, pin)
