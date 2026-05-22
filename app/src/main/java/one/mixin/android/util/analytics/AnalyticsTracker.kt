@@ -97,8 +97,8 @@ object AnalyticsTracker {
         logEvent("login_end")
     }
 
-    fun setHasEmergencyContact(account: Account) {
-        firebaseAnalytics.setUserProperty("has_emergency_contact", account.hasEmergencyContact.toString())
+    fun setHasRecoveryContact(account: Account) {
+        firebaseAnalytics.setUserProperty("has_recovery_contact", account.hasEmergencyContact.toString())
     }
 
     fun setMembership(account: Account) {
@@ -106,24 +106,199 @@ object AnalyticsTracker {
     }
 
     fun setNotificationAuthStatus(context: Context) {
-        firebaseAnalytics.setUserProperty(
-            "notification_auth_status", if (NotificationManagerCompat.from(context).areNotificationsEnabled()) {
-                "authorized"
-            } else {
-                "denied"
-            }
-        )
+        val status = if (NotificationManagerCompat.from(context).areNotificationsEnabled()) {
+            "authorized"
+        } else {
+            "denied"
+        }
+        firebaseAnalytics.setUserProperty("notification_auth_status", status)
     }
 
     fun setAssetLevel(totalUsd: Int) {
         val level = when {
-            totalUsd >= 10000 -> "v10000"
-            totalUsd >= 1000 -> "v1000"
+            totalUsd >= 10000000 -> "v10,000,000"
+            totalUsd >= 1000000 -> "v1,000,000"
+            totalUsd >= 100000 -> "v100,000"
+            totalUsd >= 10000 -> "v10,000"
+            totalUsd >= 1000 -> "v1,000"
             totalUsd >= 100 -> "v100"
             totalUsd >= 1 -> "v1"
             else -> "v0"
         }
         firebaseAnalytics.setUserProperty("asset_level", level)
+    }
+
+    fun trackAssetDetail(wallet: String, source: String) {
+        logEvent("asset_detail") {
+            putString("wallet", wallet)
+            putString("source", source)
+        }
+    }
+
+    fun trackAssetDetailHide() {
+        logEvent("asset_detail_hide")
+    }
+
+    fun trackAllTransactions(source: String) {
+        logEvent("all_transactions") {
+            putString("source", source)
+        }
+    }
+
+    fun trackTransactionDetail(source: String) {
+        logEvent("transaction_detail") {
+            putString("source", source)
+        }
+    }
+
+    object AssetSource {
+        const val WALLET_HOME = "wallet_home"
+        const val ASSET_DETAIL = "asset_detail"
+        const val PROFILE = "profile"
+        const val MARKET_DETAIL = "market_detail"
+        const val TRANSACTION_DETAIL = "transaction_detail"
+        const val WALLET_SEARCH = "wallet_search"
+        const val CHAT_SEARCH = "chat_search"
+        const val MORE_SEARCH = "more_search"
+        const val HIDDEN_ASSETS = "hidden_assets"
+        const val ALL_TRANSACTIONS = "all_transactions"
+        const val SCHEMA = "schema"
+        const val CHAT = "chat"
+    }
+
+    fun trackAssetReceiveStart(source: String, wallet: String) {
+        logEvent("asset_receive_start") {
+            putString("source", source)
+            putString("wallet", wallet)
+        }
+    }
+
+    fun trackAssetReceiveTokenSelect(method: String) {
+        logEvent("asset_receive_token_select") {
+            putString("method", method)
+        }
+    }
+
+    fun trackAssetReceiveEnd() {
+        logEvent("asset_receive_end")
+    }
+
+    fun trackAssetSendStart(wallet: String, source: String) {
+        logEvent("asset_send_start") {
+            putString("wallet", wallet)
+            putString("source", source)
+        }
+    }
+
+    fun trackAssetSendTokenSelect(method: String) {
+        logEvent("asset_send_token_select") {
+            putString("method", method)
+        }
+    }
+
+    fun trackAssetSendRecipient(type: String) {
+        logEvent("asset_send_recipient") {
+            putString("type", type)
+        }
+    }
+
+    fun trackAssetSendAmount() {
+        logEvent("asset_send_amount")
+    }
+
+    fun trackAssetSendPreview() {
+        logEvent("asset_send_preview")
+    }
+
+    fun trackAssetSendEnd() {
+        logEvent("asset_send_end")
+    }
+
+    object AssetSendRecipientType {
+        const val ADDRESS = "address"
+        const val WALLET = "wallet"
+        const val ADDRESS_BOOK = "address_book"
+        const val CONTACT = "contact"
+    }
+
+    fun trackAddressBookAddStart() {
+        logEvent("address_book_add_start")
+    }
+
+    fun trackAddressBookAddMemo(type: String) {
+        logEvent("address_book_add_memo") {
+            putString("type", type)
+        }
+    }
+
+    fun trackAddressBookAddLabel() {
+        logEvent("address_book_add_label")
+    }
+
+    fun trackAddressBookAddPreview() {
+        logEvent("address_book_add_preview")
+    }
+
+    fun trackAddressBookAddEnd() {
+        logEvent("address_book_add_end")
+    }
+
+    fun trackAccountResumePin(type: String) {
+        logEvent("account_resume_pin") {
+            putString("type", type)
+        }
+    }
+
+    object AccountResumePinType {
+        const val PIN_CREATE = "pin_create"
+        const val PIN_CHANGE = "pin_change"
+    }
+
+    fun trackHomeTabSwitch(method: String) {
+        logEvent("home_tab_switch") {
+            putString("method", method)
+        }
+    }
+
+    object HomeTabMethod {
+        const val CHATS = "chats"
+        const val WALLETS = "wallets"
+        const val COLLECTIBLES = "collectibles"
+        const val MORE = "more"
+    }
+
+    fun trackMoreTabSwitch(method: String) {
+        logEvent("more_tab_switch") {
+            putString("method", method)
+        }
+    }
+
+    object MoreTabMethod {
+        const val BOTS = "bots"
+        const val MARKETS = "markets"
+    }
+
+    fun trackSearchItemSelect(type: String, source: String) {
+        logEvent("search_item_select") {
+            putString("type", type)
+            putString("source", source)
+        }
+    }
+
+    object SearchItemType {
+        const val CONTACT = "contact"
+        const val CONVERSATION = "conversation"
+        const val MESSAGES = "messages"
+        const val ASSET = "asset"
+        const val BOT = "bot"
+        const val LINK = "link"
+        const val PHONE = "phone"
+    }
+
+    object SearchSource {
+        const val CHAT = "chat"
+        const val WALLET = "wallet"
+        const val MORE = "more"
     }
 
     fun trackTradeTokenSelect(method: String) {
@@ -291,7 +466,7 @@ object AnalyticsTracker {
         const val MORE_MARKET_CAP = "more_market_cap"
         const val MORE_FAVORITES = "more_favorites"
         const val MORE_SEARCH = "more_search"
-        const val TOKEN_DETAIL = "token_detal"
+        const val TOKEN_DETAIL = "token_detail"
         const val APP_CARD = "app_card"
         const val SCHEMA = "schema"
         const val MARKET_DETAIL = "market_detail"
@@ -321,6 +496,8 @@ object AnalyticsTracker {
         const val PERPS_MARKET_DETAIL = "perps_market_detail"
         const val PERPS_ALL_POSITIONS = "perps_all_positions"
         const val PERPS_ACTIVITY_DETAIL = "perps_activity_detail"
+        const val PERPS_HOME_LIST = "perps_home_list"
+        const val PERPS_ACTIVITY_LIST = "perps_activity_list"
     }
 
     object PerpsDirection {

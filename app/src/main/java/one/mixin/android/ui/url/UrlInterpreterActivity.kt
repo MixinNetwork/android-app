@@ -160,6 +160,9 @@ class UrlInterpreterActivity : BaseActivity() {
                 val path = uri.pathSegments.first()
                 if (path.equals(REFERRALS,true)) {
                     InputReferralBottomSheetDialogFragment.newInstance(uri.pathSegments.last()).showNow(supportFragmentManager, InputReferralBottomSheetDialogFragment.TAG)
+                } else if (path.equals(BUY, true)) {
+                    MainActivity.showWallet(this, buy = true)
+                    finish()
                 } else if (path.equals(PAY, true) || path.equals(SCHEME, true) || path.equals(MULTISIGS, true) || path.equals(SWAP, true)) {
                     val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString(), LinkBottomSheetDialogFragment.FROM_EXTERNAL)
                     bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
