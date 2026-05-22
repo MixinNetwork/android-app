@@ -55,7 +55,6 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putString
 import one.mixin.android.session.Session
-import one.mixin.android.ui.home.web3.trade.ClosedPositionItem
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.widget.components.MixinButton
@@ -99,7 +98,6 @@ fun PerpetualContent(
     val closedPositions by remember(walletId) {
         viewModel.observeOrders(walletId, CLOSED_POSITION_PREVIEW_LIMIT)
     }.collectAsStateWithLifecycle(initialValue = emptyList())
-    val closedOnlyPositions = closedPositions.filter { it.orderType == PerpsOrder.TYPE_CLOSE }
     var previousOpenPositionsCount by remember(walletId) { mutableStateOf<Int?>(null) }
     val openPositionsCount = openPositions.size
     val openPositionsPreview = openPositions.take(3)
@@ -115,7 +113,7 @@ fun PerpetualContent(
         .sortedBy { sourceOrder[it.marketId] ?: Int.MAX_VALUE }
     val stocksMarketsPreview = stocksMarkets.take(3)
     val commoditiesMarketsPreview = commoditiesMarkets.take(3)
-    val closedPositionsPreview = closedOnlyPositions.take(3)
+    val closedPositionsPreview = closedPositions.take(3)
     val totalMargin = openPositions.fold(BigDecimal.ZERO) { total, position ->
         total + (position.margin?.toBigDecimalOrNull() ?: BigDecimal.ZERO)
     }
@@ -440,7 +438,7 @@ fun PerpetualContent(
                 }
                 Spacer(modifier = Modifier.height(12.dp))
 
-                if (closedOnlyPositions.isEmpty()) {
+                if (closedPositions.isEmpty()) {
                     Spacer(modifier = Modifier.height(16.dp))
                     Column(
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
@@ -461,14 +459,21 @@ fun PerpetualContent(
                     }
                 } else {
                     closedPositionsPreview.forEach { order ->
-                        ClosedPositionItem(
-                            order = order,
-                            onClick = { onClosedPositionClick(order) },
-                        )
+                        if (order.orderType == PerpsOrder.TYPE_CLOSE) {
+                            ClosedActivityItem(
+                                order = order,
+                                onClick = { onClosedPositionClick(order) },
+                            )
+                        } else {
+                            OpenedOrderItem(
+                                order = order,
+                                onClick = { onClosedPositionClick(order) },
+                            )
+                        }
                         Spacer(modifier = Modifier.height(12.dp))
                     }
 
-                    if (closedOnlyPositions.size > closedPositionsPreview.size) {
+                    if (closedPositions.size > closedPositionsPreview.size) {
                         ViewAllAction(onClick = onShowAllClosedPositions)
                     }
                 }

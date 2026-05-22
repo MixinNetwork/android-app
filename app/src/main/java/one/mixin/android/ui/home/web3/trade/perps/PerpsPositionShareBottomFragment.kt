@@ -100,7 +100,7 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
         arguments?.getParcelableCompat(ARGS_CLOSE_ORDER, PerpsOrderItem::class.java)
     }
     private val closeLeverage: Int by lazy {
-        arguments?.getInt(ARGS_CLOSE_LEVERAGE, 0) ?: 0
+        arguments?.getInt(ARGS_CLOSE_LEVERAGE, closeOrder?.leverage ?: 0) ?: closeOrder?.leverage ?: 0
     }
     private val quoteColorReversed: Boolean by lazy {
         requireContext().defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
@@ -249,7 +249,10 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
         syncDisplayMetricToggle()
         if (::posterAdapter.isInitialized) {
             posterAdapter.notifyDataSetChanged()
-            binding.posterPager.post { updatePosterPagerHeight() }
+            binding.posterPager.post {
+                binding.posterPager.requestTransform()
+                updatePosterPagerHeight()
+            }
         }
     }
 
@@ -257,7 +260,10 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
         bindMixinContact()
         if (::posterAdapter.isInitialized) {
             posterAdapter.notifyDataSetChanged()
-            binding.posterPager.post { updatePosterPagerHeight() }
+            binding.posterPager.post {
+                binding.posterPager.requestTransform()
+                updatePosterPagerHeight()
+            }
         }
     }
 

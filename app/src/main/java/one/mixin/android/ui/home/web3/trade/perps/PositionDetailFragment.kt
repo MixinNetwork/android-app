@@ -142,7 +142,7 @@ class PositionDetailFragment : BaseFragment() {
                                     openTradeAgain(closeOrder)
                                 },
                                 onShare = {
-                                    sharePosition(closeOrder, leverage ?: 0)
+                                    sharePosition(closeOrder, leverage ?: closeOrder.leverage)
                                 },
                                 onSupport = {
                                     context?.openUrl(

@@ -946,12 +946,14 @@ fun OpenedOrderDetailPage(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                PositionDetailItem(
-                    label = stringResource(R.string.Entry_Price).uppercase(),
-                    value = formatPriceUsd(entryPrice)
-                )
+                if (!isFailed) {
+                    PositionDetailItem(
+                        label = stringResource(R.string.Entry_Price).uppercase(),
+                        value = formatPriceUsd(entryPrice)
+                    )
 
-                Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
+                }
 
                 ItemWalletContent(
                     title = stringResource(R.string.Wallet).uppercase(),

@@ -246,10 +246,12 @@ private fun PerpsAddContent(
     val minimumMarginError = stringResource(
         R.string.perps_minimum_margin,
         minimumMargin.stripTrailingZeros().toPlainString(),
+        selectedToken?.symbol.orEmpty(),
     )
     val maximumMarginError = stringResource(
         R.string.perps_maximum_margin,
         maximumMargin.stripTrailingZeros().toPlainString(),
+        selectedToken?.symbol.orEmpty(),
     )
     val marginLimitError = when {
         belowMinimumMargin -> minimumMarginError
