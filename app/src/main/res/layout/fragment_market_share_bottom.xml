@@ -71,7 +71,7 @@
 
                         <ImageView
                             android:id="@+id/logo"
-                            android:layout_width="12dp"
+                            android:layout_width="wrap_content"
                             android:layout_height="12dp"
                             android:contentDescription="@string/mixin_messenger"
                             android:src="@drawable/ic_mixin_blue" />
@@ -262,7 +262,7 @@
             android:id="@+id/mixin_contact"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="20dp"
             android:background="?attr/bg_market_card"
             android:clickable="true"
             android:focusable="true"
@@ -280,7 +280,7 @@
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="14dp"
                 android:layout_marginEnd="8dp"
                 android:layout_weight="1"
                 android:orientation="vertical">
@@ -291,8 +291,7 @@
                     android:includeFontPadding="false"
                     android:text="@string/perps_share_to_mixin_contact"
                     android:textColor="?attr/text_minor"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
+                    android:textSize="14sp" />
 
                 <TextView
                     android:id="@+id/mixin_contact_desc"
@@ -317,7 +316,7 @@
         android:id="@+id/bottom"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="20dp"
         android:layout_marginBottom="24dp"
         android:baselineAligned="false"
         android:gravity="center"

@@ -188,23 +188,17 @@
                 android:id="@+id/trend_image"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
-                android:layout_marginStart="8dp"
+                android:layout_marginBottom="6dp"
                 android:adjustViewBounds="true"
                 android:contentDescription="@null"
                 android:scaleType="fitCenter"
                 android:src="@drawable/ic_perps_position_share_loss_classic"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintDimensionRatio="1:1"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="@id/right_guideline"
-                app:layout_constraintVertical_bias="0.62" />
+                app:layout_constraintTop_toTopOf="@id/pnl_tv"
+                android:layout_marginTop="26dp"
+                app:layout_constraintEnd_toEndOf="parent" />
 
-            <androidx.constraintlayout.widget.Guideline
-                android:id="@+id/right_guideline"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                app:layout_constraintGuide_percent="0.53" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <RelativeLayout
