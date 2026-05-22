@@ -1659,8 +1659,8 @@
     <string name="single_transaction_should_be_greater_than">Minimum amount %1$s %2$s</string>
     <string name="single_transaction_should_be_less_than">Maximum amount %1$s %2$s</string>
     <string name="single_transaction_should_be_between">Amount must be between %1$s %2$s and %3$s %4$s</string>
-    <string name="perps_minimum_margin">The minimum margin is %1$s %2$s</string>
-    <string name="perps_maximum_margin">The maximum margin is %1$s %2$s</string>
+    <string name="perps_minimum_margin">The minimum amount is %1$s %2$s</string>
+    <string name="perps_maximum_margin">The maximum amount is %1$s %2$s</string>
     <!-- Web3 -->
     <string name="web3_approve">Approve</string>
     <string name="web3_borrow">Borrow</string>
