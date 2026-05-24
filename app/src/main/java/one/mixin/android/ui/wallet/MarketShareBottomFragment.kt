@@ -149,7 +149,9 @@ class MarketShareBottomFragment : MixinBottomSheetDialogFragment() {
                 }
                 val qrCode = withContext(Dispatchers.Default) {
                     val qrPadding = 8.dp
-                    currentQrUrl().generateQRCode(58.dp, qrPadding).first.roundQrBackground(qrPadding, 6.dp.toFloat())
+                    val qrSize = 72.dp
+                    currentQrUrl().generateQRCode(qrSize, qrPadding, outputSize = qrSize).first
+                        .roundQrBackground(qrPadding, 6.dp.toFloat())
                 }
                 bindFooter(qrCode)
                 bindMixinContact()

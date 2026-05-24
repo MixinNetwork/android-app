@@ -20,6 +20,7 @@ import one.mixin.android.api.request.perps.PositionTpSlRequest
 import one.mixin.android.api.response.perps.CandleView
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.api.response.perps.PerpsPosition
+import one.mixin.android.api.response.perps.PerpsPositionHistory
 import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.api.response.perps.withDefaults
@@ -71,7 +72,7 @@ class PerpetualViewModel @Inject constructor(
                 val data = response.data
                 if (response.isSuccess && data != null) {
                     withContext(Dispatchers.IO) {
-                        perpsPositionHistoryDao.insertAll(data)
+                        upsertSyncedPositionHistories(data)
                     }
                     Timber.d("Perps position history refreshed: ${data.size} items")
                 } else {
@@ -635,6 +636,7 @@ class PerpetualViewModel @Inject constructor(
 
     fun closePerpsOrder(
         positionId: String,
+        leverage: Int,
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
@@ -650,6 +652,14 @@ class PerpetualViewModel @Inject constructor(
                 
                 if (response.isSuccess) {
                     withContext(Dispatchers.IO) {
+                        perpsPositionDao.getPosition(positionId)?.let { position ->
+                            perpsPositionHistoryDao.insert(
+                                createCachedClosedHistory(
+                                    position = position,
+                                    leverage = leverage.takeIf { it > 0 } ?: position.leverage,
+                                )
+                            )
+                        }
                         perpsPositionDao.deleteById(positionId)
                     }
                     Timber.d("Perps order closed: $positionId")
@@ -761,7 +771,7 @@ class PerpetualViewModel @Inject constructor(
                 if (response.isSuccess && data != null) {
                     Timber.d("Position history loaded: ${data.size} items")
                     withContext(Dispatchers.IO) {
-                        perpsPositionHistoryDao.insertAll(data)
+                        upsertSyncedPositionHistories(data)
                     }
                     
                     val updatedHistories = withContext(Dispatchers.IO) {
@@ -787,5 +797,47 @@ class PerpetualViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private suspend fun upsertSyncedPositionHistories(histories: List<PerpsPositionHistory>) {
+        if (histories.isEmpty()) return
+
+        val updatedHistories = histories.map { history ->
+            val cachedLeverage = perpsPositionHistoryDao.getCachedLeverage(history.positionId)
+            if (history.leverage == 0 && cachedLeverage != null) {
+                history.copy(leverage = cachedLeverage)
+            } else {
+                history
+            }
+        }
+
+        perpsPositionHistoryDao.deleteLocalByPositionIds(updatedHistories.map { it.positionId }.distinct())
+        perpsPositionHistoryDao.insertAll(updatedHistories)
+    }
+
+    private fun createCachedClosedHistory(
+        position: PerpsPositionItem,
+        leverage: Int,
+    ): PerpsPositionHistory {
+        val closedAt = position.updatedAt?.takeIf { it.isNotBlank() }
+            ?: position.createdAt?.takeIf { it.isNotBlank() }
+            ?: SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).format(Date())
+        val entryPrice = position.entryPrice
+        val closePrice = position.markPrice?.takeIf { it.isNotBlank() } ?: entryPrice
+
+        return PerpsPositionHistory(
+            historyId = "local_${position.positionId}",
+            positionId = position.positionId,
+            marketId = position.marketId,
+            side = position.side,
+            quantity = position.quantity,
+            entryPrice = entryPrice,
+            closePrice = closePrice,
+            realizedPnl = position.unrealizedPnl?.takeIf { it.isNotBlank() } ?: "0",
+            leverage = leverage,
+            marginMethod = "",
+            openAt = position.createdAt?.takeIf { it.isNotBlank() } ?: closedAt,
+            closedAt = closedAt,
+        )
     }
 }
