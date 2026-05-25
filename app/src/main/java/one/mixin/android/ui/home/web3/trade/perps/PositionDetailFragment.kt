@@ -11,10 +11,12 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsOrderItem
@@ -159,6 +161,19 @@ class PositionDetailFragment : BaseFragment() {
                             }
                             val cachedPosition = cachedPositionFlow
                                 .collectAsStateWithLifecycle(initialValue = null)
+
+                            val lifecycleOwner = viewLifecycleOwner
+                            LaunchedEffect(closeOrder.positionId, lifecycleOwner) {
+                                lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                                    while (isActive) {
+                                        viewModel.refreshSinglePosition(
+                                            positionId = closeOrder.positionId,
+                                        )
+                                        delay(POSITION_REFRESH_INTERVAL_MS)
+                                    }
+                                }
+                            }
+
                             OpenedOrderDetailPage(
                                 openedOrder = closeOrder,
                                 quoteColorReversed = quoteColorReversed,
@@ -173,7 +188,14 @@ class PositionDetailFragment : BaseFragment() {
                                     if (active != null) {
                                         sharePosition(active)
                                     } else {
-                                        sharePosition(closeOrder, closeOrder.leverage)
+                                        lifecycleScope.launch {
+                                            val fromDb = viewModel.getPositionFromDb(closeOrder.positionId)
+                                            if (fromDb != null) {
+                                                sharePosition(fromDb)
+                                            } else {
+                                                sharePosition(closeOrder, closeOrder.leverage)
+                                            }
+                                        }
                                     }
                                 },
                                 onSupport = {
