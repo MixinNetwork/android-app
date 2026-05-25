@@ -1,8 +1,7 @@
-package one.mixin.android.ui.home.web3.trade
+package one.mixin.android.ui.home.web3.trade.perps
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -30,16 +29,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.ui.home.web3.trade.perps.formatPerpsSignedPercent
-import one.mixin.android.ui.home.web3.trade.perps.formatPerpsSignedRawUsdDecimal
 import java.math.BigDecimal
 
 @Composable
-fun ClosedPositionItem(
+fun ClosedActivityItem(
     order: PerpsOrderItem,
     onClick: () -> Unit = {},
 ) {
@@ -47,7 +45,6 @@ fun ClosedPositionItem(
     val quoteColorPref = context.defaultSharedPreferences
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
 
-    val displaySymbol = order.displaySymbol ?: order.tokenSymbol ?: "Unknown"
     val quantity = order.quantity
         .toBigDecimalOrNull()
         ?.abs()
@@ -61,7 +58,10 @@ fun ClosedPositionItem(
     } else {
         if (quoteColorPref) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
     }
-    val leverageBackgroundColor = sideColor.copy(alpha = 0.1f)
+    val isFailed = order.status == PerpsOrder.STATUS_REJECTED
+    val leverageDimmed = isFailed || order.status == PerpsOrder.STATUS_PROCESSING
+    val leverageColor = if (leverageDimmed) MixinAppTheme.colors.textAssist else sideColor
+    val leverageBackgroundColor = leverageColor.copy(alpha = 0.1f)
     val pnl = order.realizedPnl.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val isProfit = pnl >= BigDecimal.ZERO
     val pnlColor = if (isProfit) {
@@ -70,13 +70,18 @@ fun ClosedPositionItem(
         if (quoteColorPref) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
     }
     val pnlPercent = order.roe.toBigDecimalOrNull()?.multiply(BigDecimal(100))
+    val titleRes = when {
+        isFailed && isLong -> R.string.Close_Long_Failed
+        isFailed -> R.string.Close_Short_Failed
+        isLong -> R.string.Closed_Long
+        else -> R.string.Closed_Short
+    }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         CoilImage(
@@ -93,19 +98,8 @@ fun ClosedPositionItem(
             modifier = Modifier.weight(1f),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                val sideText = if (isLong) {
-                    stringResource(R.string.Long)
-                } else {
-                    stringResource(R.string.Short)
-                }
                 Text(
-                    text = sideText,
-                    fontSize = 16.sp,
-                    color = MixinAppTheme.colors.textPrimary,
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = displaySymbol,
+                    text = stringResource(titleRes),
                     fontSize = 16.sp,
                     color = MixinAppTheme.colors.textPrimary,
                     maxLines = 1,
@@ -116,7 +110,7 @@ fun ClosedPositionItem(
                 Text(
                     text = "${order.leverage}x",
                     fontSize = 12.sp,
-                    color = sideColor,
+                    color = leverageColor,
                     lineHeight = 14.sp,
                     maxLines = 1,
                     modifier = Modifier
@@ -130,6 +124,8 @@ fun ClosedPositionItem(
                 text = "$quantity ${order.tokenSymbol ?: ""}",
                 fontSize = 14.sp,
                 color = MixinAppTheme.colors.textAssist,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         }
 
@@ -144,7 +140,7 @@ fun ClosedPositionItem(
                     append(")")
                 }
             },
-            modifier = Modifier.widthIn(max = 120.dp),
+            modifier = Modifier.widthIn(max = 160.dp),
             style = TextStyle(
                 fontSize = 14.sp,
                 color = pnlColor,

@@ -48,13 +48,13 @@ import kotlinx.coroutines.isActive
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
-import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
+import one.mixin.android.api.response.perps.PerpsOrder
+import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putString
 import one.mixin.android.session.Session
-import one.mixin.android.ui.home.web3.trade.ClosedPositionItem
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.widget.components.MixinButton
@@ -73,7 +73,7 @@ fun PerpetualContent(
     onShowAllClosedPositions: () -> Unit,
     onOpenPositionClick: (PerpsPositionItem) -> Unit,
     onMarketItemClick: (PerpsMarket) -> Unit,
-    onClosedPositionClick: (PerpsPositionHistoryItem) -> Unit,
+    onClosedPositionClick: (PerpsOrderItem) -> Unit,
 ) {
     val context = LocalContext.current
     val walletId = Session.getAccountId()!!
@@ -96,7 +96,7 @@ fun PerpetualContent(
         viewModel.observeTotalUnrealizedPnl(walletId)
     }.collectAsStateWithLifecycle(initialValue = 0.0)
     val closedPositions by remember(walletId) {
-        viewModel.observeClosedPositions(walletId, CLOSED_POSITION_PREVIEW_LIMIT)
+        viewModel.observeOrders(walletId, CLOSED_POSITION_PREVIEW_LIMIT)
     }.collectAsStateWithLifecycle(initialValue = emptyList())
     var previousOpenPositionsCount by remember(walletId) { mutableStateOf<Int?>(null) }
     val openPositionsCount = openPositions.size
@@ -144,15 +144,19 @@ fun PerpetualContent(
                     )
                 }
             )
-            viewModel.refreshPositionHistory(walletId, limit = CLOSED_POSITION_PREVIEW_LIMIT)
-            while (isActive) {
-                viewModel.refreshMarkets(
-                    onError = { error ->
-                        errorMessage = error
-                    }
-                )
-                viewModel.refreshPositions(walletId)
-                delay(POSITION_REFRESH_INTERVAL_MS)
+            viewModel.startRefreshOrders(walletId, intervalMs = POSITION_REFRESH_INTERVAL_MS)
+            try {
+                while (isActive) {
+                    viewModel.refreshMarkets(
+                        onError = { error ->
+                            errorMessage = error
+                        }
+                    )
+                    viewModel.refreshPositions(walletId)
+                    delay(POSITION_REFRESH_INTERVAL_MS)
+                }
+            } finally {
+                viewModel.stopRefreshOrders()
             }
         }
     }
@@ -160,7 +164,7 @@ fun PerpetualContent(
     LaunchedEffect(walletId, openPositionsCount) {
         val lastCount = previousOpenPositionsCount
         if (lastCount != null && openPositionsCount < lastCount) {
-            viewModel.refreshPositionHistory(walletId, limit = CLOSED_POSITION_PREVIEW_LIMIT)
+            viewModel.refreshOrders(walletId, limit = CLOSED_POSITION_PREVIEW_LIMIT)
         }
         previousOpenPositionsCount = openPositionsCount
     }
@@ -458,10 +462,18 @@ fun PerpetualContent(
                         )
                     }
                 } else {
-                    closedPositionsPreview.forEach { position ->
-                        ClosedPositionItem(
-                            position = position,
-                            onClick = { onClosedPositionClick(position) })
+                    closedPositionsPreview.forEach { order ->
+                        if (order.orderType == PerpsOrder.TYPE_CLOSE) {
+                            ClosedActivityItem(
+                                order = order,
+                                onClick = { onClosedPositionClick(order) },
+                            )
+                        } else {
+                            OpenedOrderItem(
+                                order = order,
+                                onClick = { onClosedPositionClick(order) },
+                            )
+                        }
                         Spacer(modifier = Modifier.height(12.dp))
                     }
 

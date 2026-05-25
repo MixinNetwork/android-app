@@ -33,7 +33,7 @@ import one.mixin.android.R
 import one.mixin.android.api.referral.ReferralShareInfo
 import one.mixin.android.api.referral.buildReferralCopyUrl
 import one.mixin.android.api.referral.buildReferralShareUrl
-import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
+import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.databinding.FragmentPerpsPositionShareBottomBinding
 import one.mixin.android.databinding.ItemPerpsPositionSharePosterBinding
@@ -73,7 +73,8 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "PerpsPositionShareBottomFragment"
         private const val ARGS_POSITION = "args_position"
-        private const val ARGS_POSITION_HISTORY = "args_position_history"
+        private const val ARGS_CLOSE_ORDER = "args_close_order"
+        private const val ARGS_CLOSE_LEVERAGE = "args_close_leverage"
         private const val SHARE_QR_URL = "https://mixin.one/mm"
         private const val SHARE_CARD_COVER_URL = "https://dl.mixinpay.com/perps-share-card.png"
         private val MIN_DISPLAY_PNL_PERCENT = BigDecimal("-100")
@@ -82,8 +83,9 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
             putParcelable(ARGS_POSITION, position)
         }
 
-        fun newInstance(positionHistory: PerpsPositionHistoryItem) = PerpsPositionShareBottomFragment().withArgs {
-            putParcelable(ARGS_POSITION_HISTORY, positionHistory)
+        fun newInstance(order: PerpsOrderItem, leverage: Int) = PerpsPositionShareBottomFragment().withArgs {
+            putParcelable(ARGS_CLOSE_ORDER, order)
+            putInt(ARGS_CLOSE_LEVERAGE, leverage)
         }
     }
 
@@ -94,8 +96,11 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
     private val position: PerpsPositionItem? by lazy {
         arguments?.getParcelableCompat(ARGS_POSITION, PerpsPositionItem::class.java)
     }
-    private val positionHistory: PerpsPositionHistoryItem? by lazy {
-        arguments?.getParcelableCompat(ARGS_POSITION_HISTORY, PerpsPositionHistoryItem::class.java)
+    private val closeOrder: PerpsOrderItem? by lazy {
+        arguments?.getParcelableCompat(ARGS_CLOSE_ORDER, PerpsOrderItem::class.java)
+    }
+    private val closeLeverage: Int by lazy {
+        arguments?.getInt(ARGS_CLOSE_LEVERAGE, closeOrder?.leverage ?: 0) ?: closeOrder?.leverage ?: 0
     }
     private val quoteColorReversed: Boolean by lazy {
         requireContext().defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
@@ -176,7 +181,13 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
         val open = position
         if (open != null) {
             val pnlAmount = open.unrealizedPnl.toBigDecimalSafely() ?: BigDecimal.ZERO
-            val pnlPercent = (open.roe.toBigDecimalSafely() ?: BigDecimal.ZERO).multiply(BigDecimal(100))
+            var pnlPercent = (open.roe.toBigDecimalSafely() ?: BigDecimal.ZERO).multiply(BigDecimal(100))
+            if (pnlPercent.compareTo(BigDecimal.ZERO) == 0 && pnlAmount.compareTo(BigDecimal.ZERO) != 0) {
+                val margin = open.margin.toBigDecimalSafely() ?: BigDecimal.ZERO
+                if (margin.compareTo(BigDecimal.ZERO) != 0) {
+                    pnlPercent = pnlAmount.divide(margin, 8, RoundingMode.HALF_UP).multiply(BigDecimal(100))
+                }
+            }
             bindCardData(
                 marketId = open.marketId,
                 iconUrl = open.iconUrl,
@@ -193,7 +204,7 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
             return true
         }
 
-        val closed = positionHistory ?: return false
+        val closed = closeOrder ?: return false
         val pnlAmount = closed.realizedPnl.toBigDecimalSafely() ?: BigDecimal.ZERO
         val effectiveLeverage = if (closed.leverage > 0) closed.leverage else 1
         bindCardData(
@@ -496,8 +507,8 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
     private fun buildFileName(): String {
         val name = position?.displaySymbol
             ?: position?.tokenSymbol
-            ?: positionHistory?.displaySymbol
-            ?: positionHistory?.tokenSymbol
+            ?: closeOrder?.displaySymbol
+            ?: closeOrder?.tokenSymbol
             ?: "perps"
         return name.replace("[^A-Za-z0-9._-]".toRegex(), "_")
     }

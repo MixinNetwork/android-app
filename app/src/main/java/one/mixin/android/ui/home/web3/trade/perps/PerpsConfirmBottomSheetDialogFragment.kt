@@ -106,6 +106,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         private const val ARGS_TAKE_PROFIT_PRICE = "args_take_profit_price"
         private const val ARGS_STOP_LOSS_PRICE = "args_stop_loss_price"
         private const val ARGS_PAY_URL = "args_pay_url"
+        private const val ARGS_IS_ADD_POSITION = "args_is_add_position"
 
         fun newInstance(
             marketSymbol: String,
@@ -118,6 +119,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
             takeProfitPrice: String? = null,
             stopLossPrice: String? = null,
             payUrl: String?,
+            isAddPosition: Boolean = false,
         ): PerpsConfirmBottomSheetDialogFragment {
             return PerpsConfirmBottomSheetDialogFragment().withArgs {
                 putString(ARGS_MARKET_SYMBOL, marketSymbol)
@@ -130,6 +132,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                 putString(ARGS_TAKE_PROFIT_PRICE, takeProfitPrice)
                 putString(ARGS_STOP_LOSS_PRICE, stopLossPrice)
                 putString(ARGS_PAY_URL, payUrl)
+                putBoolean(ARGS_IS_ADD_POSITION, isAddPosition)
             }
         }
     }
@@ -177,6 +180,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     private val tokenSymbol by lazy { requireNotNull(requireArguments().getString(ARGS_TOKEN_SYMBOL)) }
     private val takeProfitPrice by lazy { requireArguments().getString(ARGS_TAKE_PROFIT_PRICE).orEmpty() }
     private val stopLossPrice by lazy { requireArguments().getString(ARGS_STOP_LOSS_PRICE).orEmpty() }
+    private val isAddPosition by lazy { requireArguments().getBoolean(ARGS_IS_ADD_POSITION) }
     private val fiatRate by lazy { BigDecimal(Fiats.getRate()) }
     private val fiatSymbol by lazy { Fiats.getSymbol() }
 
@@ -289,8 +293,8 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                     Text(
                         text = stringResource(
                             id = when (step) {
-                                Step.Pending -> R.string.confirm_opening_position
-                                Step.Done -> R.string.Position_Submitted
+                                Step.Pending -> if (isAddPosition) R.string.confirm_adding_position else R.string.confirm_opening_position
+                                Step.Done -> if (isAddPosition) R.string.Position_Add_Submitted else R.string.Position_Submitted
                                 Step.Error -> R.string.swap_failed
                                 Step.Sending -> R.string.Sending
                             }
@@ -663,6 +667,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     private fun doAfterPinComplete(pin: String) = lifecycleScope.launch(Dispatchers.IO) {
         try {
             step = Step.Sending
+            errorInfo = null
 
             if (payUrl != null) {
                 handlePayment(payUrl!!, pin)

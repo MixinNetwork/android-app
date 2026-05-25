@@ -42,7 +42,8 @@ import androidx.compose.ui.unit.sp
 import androidx.fragment.app.FragmentActivity
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import one.mixin.android.R
-import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
+import one.mixin.android.api.response.perps.PerpsOrder
+import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -137,6 +138,14 @@ fun PositionDetailPage(
         ) {
             guideType = null
         }
+    }
+
+    val isPending = position.state == "processing" || position.state == "adding"
+    val leverageTextColor = if (isPending) MixinAppTheme.colors.textAssist else sideColor
+    val leverageBackgroundColor = if (isPending) {
+        MixinAppTheme.colors.backgroundGrayLight
+    } else {
+        sideColor.copy(alpha = 0.1f)
     }
 
     fun showTpSlBottomSheetFromGuide(mode: PerpsTpSlBottomSheetDialogFragment.Mode) {
@@ -266,13 +275,13 @@ fun PositionDetailPage(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
-                        .background(sideColor.copy(alpha = 0.1f))
+                        .background(leverageBackgroundColor)
                         .padding(horizontal = 8.dp, vertical = 2.5.dp)
                         .align(Alignment.CenterHorizontally)
                 ) {
                     Text(
                         text = "$sideText ${position.leverage}x",
-                        color = sideColor,
+                        color = leverageTextColor,
                         fontSize = 14.sp
                     )
                 }
@@ -466,7 +475,8 @@ private fun PositionDetailItem(
 
 @Composable
 fun PositionDetailPage(
-    positionHistory: PerpsPositionHistoryItem,
+    closeOrder: PerpsOrderItem,
+    leverage: Int?,
     quoteColorReversed: Boolean = false,
     pop: () -> Unit,
     onTradeAgain: (() -> Unit)? = null,
@@ -486,7 +496,7 @@ fun PositionDetailPage(
     }
 
     val pnl = try {
-        BigDecimal(positionHistory.realizedPnl)
+        BigDecimal(closeOrder.realizedPnl)
     } catch (e: Exception) {
         BigDecimal.ZERO
     }
@@ -495,7 +505,7 @@ fun PositionDetailPage(
     val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
     val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
     val pnlColor = if (isProfit) risingColor else fallingColor
-    val isLong = positionHistory.side.equals("long", ignoreCase = true)
+    val isLong = closeOrder.side.equals("long", ignoreCase = true)
     val sideColor = if (isLong) risingColor else fallingColor
 
     val sideText = if (isLong) {
@@ -503,22 +513,26 @@ fun PositionDetailPage(
     } else {
         stringResource(R.string.Short)
     }
-    val title = if (isLong) {
-        stringResource(R.string.Closed_Long)
+    val isFailed = closeOrder.status == PerpsOrder.STATUS_REJECTED
+    val title = if (isFailed) {
+        stringResource(if (isLong) R.string.Close_Long_Failed else R.string.Close_Short_Failed)
     } else {
-        stringResource(R.string.Closed_Short)
+        stringResource(if (isLong) R.string.Closed_Long else R.string.Closed_Short)
+    }
+    val leverageDimmed = isFailed || closeOrder.status == PerpsOrder.STATUS_PROCESSING
+    val leverageTextColor = if (leverageDimmed) MixinAppTheme.colors.textAssist else sideColor
+    val leverageBackgroundColor = if (leverageDimmed) {
+        MixinAppTheme.colors.backgroundGrayLight
+    } else {
+        sideColor.copy(alpha = 0.1f)
     }
 
-    val quantity = positionHistory.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val quantity = closeOrder.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val absQuantity = quantity.abs()
     val fiatRate = BigDecimal(Fiats.getRate())
     val fiatSymbol = Fiats.getSymbol()
-    val roe = calculateClosedRoe(
-        entryPrice = positionHistory.entryPrice,
-        closePrice = positionHistory.closePrice,
-        side = positionHistory.side,
-        leverage = positionHistory.leverage,
-    )
+    val effectiveLeverage = leverage ?: closeOrder.leverage
+    val roe = (closeOrder.roe.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(BigDecimal(100))
 
     fun formatFiat(value: BigDecimal): String {
         return formatPerpsUsdDecimal(value)
@@ -563,7 +577,7 @@ fun PositionDetailPage(
                 Spacer(modifier = Modifier.height(30.dp))
 
                 CoilImage(
-                    model = positionHistory.iconUrl,
+                    model = closeOrder.iconUrl,
                     placeholder = R.drawable.ic_avatar_place_holder,
                     modifier = Modifier
                         .size(70.dp)
@@ -584,7 +598,7 @@ fun PositionDetailPage(
                         fontFamily = FontFamily(Font(R.font.mixin_font)),
                         color = MixinAppTheme.colors.textPrimary,
                     )
-                    val symbol = positionHistory.tokenSymbol?.takeIf { it.isNotBlank() }
+                    val symbol = closeOrder.tokenSymbol?.takeIf { it.isNotBlank() }
                     if (symbol != null) {
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
@@ -601,57 +615,61 @@ fun PositionDetailPage(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
-                        .background(sideColor.copy(alpha = 0.1f))
+                        .background(leverageBackgroundColor)
                         .padding(horizontal = 8.dp, vertical = 2.5.dp)
                         .align(Alignment.CenterHorizontally)
                 ) {
                     Text(
-                        text = "$sideText ${positionHistory.leverage}x",
-                        color = sideColor,
+                        text = "$sideText ${effectiveLeverage}x",
+                        color = leverageTextColor,
                         fontSize = 14.sp
                     )
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                        .padding(horizontal = 20.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(MixinAppTheme.colors.backgroundWindow),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = stringResource(R.string.Trade_Again),
-                        color = MixinAppTheme.colors.textPrimary,
-                        fontWeight = FontWeight.W500,
+                if (!isFailed) {
+                    Row(
                         modifier = Modifier
-                            .weight(1f)
-                            .clickable { onTradeAgain?.invoke() }
-                            .padding(vertical = 10.dp),
-                        textAlign = TextAlign.Center
-                    )
-                    Box(
-                        modifier = Modifier
-                            .width(2.dp)
-                            .height(24.dp)
-                            .background(Color(0x0D000000))
-                    )
-                    Text(
-                        text = stringResource(R.string.Share),
-                        color = MixinAppTheme.colors.textPrimary,
-                        fontWeight = FontWeight.W500,
-                        modifier = Modifier
-                            .weight(1f)
-                            .clickable { onShare?.invoke() }
-                            .padding(vertical = 10.dp),
-                        textAlign = TextAlign.Center
-                    )
-                }
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                            .padding(horizontal = 20.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MixinAppTheme.colors.backgroundWindow),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = stringResource(R.string.Trade_Again),
+                            color = MixinAppTheme.colors.textPrimary,
+                            fontWeight = FontWeight.W500,
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable { onTradeAgain?.invoke() }
+                                .padding(vertical = 10.dp),
+                            textAlign = TextAlign.Center
+                        )
+                        Box(
+                            modifier = Modifier
+                                .width(2.dp)
+                                .height(24.dp)
+                                .background(Color(0x0D000000))
+                        )
+                        Text(
+                            text = stringResource(R.string.Share),
+                            color = MixinAppTheme.colors.textPrimary,
+                            fontWeight = FontWeight.W500,
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable { onShare?.invoke() }
+                                .padding(vertical = 10.dp),
+                            textAlign = TextAlign.Center
+                        )
+                    }
 
-                Spacer(modifier = Modifier.height(30.dp))
+                    Spacer(modifier = Modifier.height(30.dp))
+                } else {
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
             }
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -669,8 +687,8 @@ fun PositionDetailPage(
             ) {
                 PositionDetailItem(
                     label = stringResource(R.string.Perpetual).uppercase(),
-                    value = positionHistory.displaySymbol ?: positionHistory.tokenSymbol ?: "Unknown",
-                    icon = positionHistory.iconUrl
+                    value = closeOrder.displaySymbol ?: closeOrder.tokenSymbol ?: "Unknown",
+                    icon = closeOrder.iconUrl
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -685,16 +703,16 @@ fun PositionDetailPage(
 
                 PositionDetailItem(
                     label = stringResource(R.string.Entry_Price).uppercase(),
-                    value = formatPriceUsd(positionHistory.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+                    value = formatPriceUsd(closeOrder.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO)
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
 
                 PositionDetailItem(
                     label = stringResource(R.string.Close_Price).uppercase(),
-                    value = formatPriceUsd(positionHistory.closePrice.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+                    value = formatPriceUsd(closeOrder.closePrice.toBigDecimalOrNull() ?: BigDecimal.ZERO)
                 )
-                
+
                 Spacer(modifier = Modifier.height(20.dp))
 
                 ItemWalletContent(
@@ -702,12 +720,12 @@ fun PositionDetailPage(
                     fontSize = 16.sp,
                     padding = 0.dp
                 )
-                
+
                 Spacer(modifier = Modifier.height(20.dp))
-                
+
                 PositionDetailItem(
                     label = stringResource(R.string.Close_Time).uppercase(),
-                    value = formatDate(positionHistory.closedAt)
+                    value = formatDate(closeOrder.updatedAt)
                 )
             }
             
@@ -720,4 +738,238 @@ private fun formatSignedPercent(value: BigDecimal): String {
     val scaled = value.abs().setScale(2, RoundingMode.FLOOR)
     val number = if (scaled.compareTo(BigDecimal.ZERO) == 0) "0.0" else scaled.stripTrailingZeros().toPlainString()
     return "$number%"
+}
+
+@Composable
+fun OpenedOrderDetailPage(
+    openedOrder: PerpsOrderItem,
+    quoteColorReversed: Boolean = false,
+    pop: () -> Unit,
+    onViewMarket: (() -> Unit)? = null,
+    onShare: (() -> Unit)? = null,
+    onSupport: (() -> Unit)? = null,
+) {
+    val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault())
+
+    fun formatDate(dateStr: String?): String {
+        if (dateStr == null) return ""
+        return try {
+            val instant = Instant.parse(dateStr)
+            instant.atZone(ZoneId.systemDefault()).format(dateFormat)
+        } catch (e: Exception) {
+            dateStr
+        }
+    }
+
+    val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+    val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+    val isLong = openedOrder.side.equals("long", ignoreCase = true)
+    val sideColor = if (isLong) risingColor else fallingColor
+    val sideText = if (isLong) {
+        stringResource(R.string.Long)
+    } else {
+        stringResource(R.string.Short)
+    }
+    val isIncrease = openedOrder.orderType == PerpsOrder.TYPE_INCREASE
+    val isFailed = openedOrder.status == PerpsOrder.STATUS_REJECTED
+    val title = when {
+        isIncrease && isFailed ->
+            stringResource(if (isLong) R.string.Add_Long_Failed else R.string.Add_Short_Failed)
+        isIncrease ->
+            stringResource(if (isLong) R.string.Added_Long else R.string.Added_Short)
+        isFailed ->
+            stringResource(if (isLong) R.string.Open_Long_Failed else R.string.Open_Short_Failed)
+        else ->
+            stringResource(if (isLong) R.string.Opened_Long else R.string.Opened_Short)
+    }
+    val leverageDimmed = isFailed || openedOrder.status == PerpsOrder.STATUS_PROCESSING
+    val leverageTextColor = if (leverageDimmed) MixinAppTheme.colors.textAssist else sideColor
+    val leverageBackgroundColor = if (leverageDimmed) {
+        MixinAppTheme.colors.backgroundGrayLight
+    } else {
+        sideColor.copy(alpha = 0.1f)
+    }
+
+    val quantity = openedOrder.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val absQuantity = quantity.abs()
+    val entryPrice = openedOrder.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val leverage = openedOrder.leverage
+
+    fun formatPriceUsd(value: BigDecimal): String {
+        return formatPerpsUsdDecimal(value)
+    }
+
+    PageScaffold(
+        title = title,
+        verticalScrollable = false,
+        pop = pop,
+        actions = {
+            IconButton(onClick = { onSupport?.invoke() }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_support),
+                    contentDescription = null,
+                    tint = MixinAppTheme.colors.icon,
+                )
+            }
+        }
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .cardBackground(
+                        MixinAppTheme.colors.background,
+                        MixinAppTheme.colors.borderColor
+                    )
+            ) {
+                Spacer(modifier = Modifier.height(30.dp))
+
+                CoilImage(
+                    model = openedOrder.iconUrl,
+                    placeholder = R.drawable.ic_avatar_place_holder,
+                    modifier = Modifier
+                        .size(70.dp)
+                        .clip(CircleShape)
+                        .align(Alignment.CenterHorizontally)
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Row(
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    verticalAlignment = Alignment.Bottom,
+                ) {
+                    Text(
+                        text = absQuantity.stripTrailingZeros().toPlainString(),
+                        fontSize = 34.sp,
+                        fontWeight = FontWeight.W500,
+                        fontFamily = FontFamily(Font(R.font.mixin_font)),
+                        color = MixinAppTheme.colors.textPrimary,
+                    )
+                    val symbol = openedOrder.tokenSymbol?.takeIf { it.isNotBlank() }
+                    if (symbol != null) {
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = symbol,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.W500,
+                            color = MixinAppTheme.colors.textPrimary,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(leverageBackgroundColor)
+                        .padding(horizontal = 8.dp, vertical = 2.5.dp)
+                        .align(Alignment.CenterHorizontally)
+                ) {
+                    Text(
+                        text = "$sideText ${leverage}x",
+                        color = leverageTextColor,
+                        fontSize = 14.sp
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                if (!isFailed) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                            .padding(horizontal = 20.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MixinAppTheme.colors.backgroundWindow),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = stringResource(R.string.View_Market),
+                            color = MixinAppTheme.colors.textPrimary,
+                            fontWeight = FontWeight.W500,
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable { onViewMarket?.invoke() }
+                                .padding(vertical = 10.dp),
+                            textAlign = TextAlign.Center
+                        )
+                        Box(
+                            modifier = Modifier
+                                .width(2.dp)
+                                .height(24.dp)
+                                .background(Color(0x0D000000))
+                        )
+                        Text(
+                            text = stringResource(R.string.Share),
+                            color = MixinAppTheme.colors.textPrimary,
+                            fontWeight = FontWeight.W500,
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable { onShare?.invoke() }
+                                .padding(vertical = 10.dp),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(30.dp))
+                } else {
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .wrapContentHeight()
+                    .cardBackground(
+                        MixinAppTheme.colors.background,
+                        MixinAppTheme.colors.borderColor
+                    )
+                    .padding(horizontal = 16.dp, vertical = 16.dp)
+            ) {
+                PositionDetailItem(
+                    label = stringResource(R.string.Perpetual).uppercase(),
+                    value = openedOrder.displaySymbol ?: openedOrder.tokenSymbol ?: "Unknown",
+                    icon = openedOrder.iconUrl
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                if (!isFailed) {
+                    PositionDetailItem(
+                        label = stringResource(R.string.Entry_Price).uppercase(),
+                        value = formatPriceUsd(entryPrice)
+                    )
+
+                    Spacer(modifier = Modifier.height(20.dp))
+                }
+
+                ItemWalletContent(
+                    title = stringResource(R.string.Wallet).uppercase(),
+                    fontSize = 16.sp,
+                    padding = 0.dp
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                PositionDetailItem(
+                    label = stringResource(R.string.Open_Time).uppercase(),
+                    value = formatDate(openedOrder.createdAt)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(40.dp))
+        }
+    }
 }

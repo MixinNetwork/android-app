@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -17,10 +18,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.perps.PerpsMarketDao
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshPerpsPositionsJob
@@ -39,6 +43,8 @@ class PerpsActivity : BaseActivity() {
     lateinit var jobManager: MixinJobManager
     @Inject
     lateinit var perpsMarketDao: PerpsMarketDao
+
+    private val viewModel by viewModels<PerpetualViewModel>()
 
     private var selectedToken by mutableStateOf<TokenItem?>(null)
     private var renderJob: Job? = null
@@ -136,6 +142,7 @@ class PerpsActivity : BaseActivity() {
                     direction = if (isLong) AnalyticsTracker.PerpsDirection.LONG else AnalyticsTracker.PerpsDirection.SHORT,
                     source = source,
                 )
+
                 setContent {
                     MixinAppTheme {
                         OpenPositionPage(
@@ -148,7 +155,9 @@ class PerpsActivity : BaseActivity() {
                             },
                             selectedToken = selectedToken,
                             onTokenSelect = { showTokenSelection() },
-                            onCurrentTokenChange = { token -> selectedToken = token }
+                            onCurrentTokenChange = { token ->
+                                selectedToken = token
+                            }
                         )
                     }
                 }

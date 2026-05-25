@@ -59,14 +59,16 @@ fun OpenPositionItem(
         ?.toPlainString()
         ?: position.quantity.removePrefix("-")
     val isLong = position.side.equals("long", true)
-    val isOpening = position.state.equals("opening", true)
+    val isOpening = position.state.equals("processing", true)
+    val isAdding = position.state.equals("adding", true)
+    val isPending = isOpening || isAdding
     val sideColor = if (isLong) {
         if (quoteColorPref) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
     } else {
         if (quoteColorPref) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
     }
-    val leverageTextColor = if (isOpening) MixinAppTheme.colors.textAssist else sideColor
-    val leverageBackgroundColor = if (isOpening) {
+    val leverageTextColor = if (isPending) MixinAppTheme.colors.textAssist else sideColor
+    val leverageBackgroundColor = if (isPending) {
         MixinAppTheme.colors.backgroundGrayLight
     } else {
         sideColor.copy(alpha = 0.1f)
@@ -142,10 +144,10 @@ fun OpenPositionItem(
                     }
                 }
 
-                if (isOpening) {
+                if (isPending) {
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = stringResource(R.string.Pending),
+                        text = stringResource(if (isAdding) R.string.adding_position else R.string.Pending),
                         fontSize = 14.sp,
                         color = MixinAppTheme.colors.textAssist,
                         textAlign = TextAlign.End,
@@ -185,7 +187,7 @@ fun OpenPositionItem(
                     modifier = Modifier.weight(1f)
                 )
 
-                if (isOpening) {
+                if (isPending) {
                     Spacer(modifier = Modifier.width(8.dp))
                 } else {
                     val unrealizedPnl = position.unrealizedPnl?.toBigDecimalOrNull() ?: BigDecimal.ZERO

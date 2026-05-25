@@ -104,11 +104,7 @@ private fun resolveCurrentToken(
     preferredAssetIds: List<String>,
 ): TokenItem? {
     if (selectedToken == null) {
-        return availableTokens.firstOrNull { it.hasPositiveBalance() }
-            ?: preferredAssetIds.firstNotNullOfOrNull { assetId ->
-                availableTokens.firstOrNull { it.assetId == assetId }
-            }
-            ?: availableTokens.firstOrNull()
+        return availableTokens.firstOrNull()
     }
 
     val matchedToken = availableTokens.firstOrNull { it.assetId == selectedToken.assetId }
@@ -227,11 +223,13 @@ fun OpenPositionPage(
     val canReview = hasInputAmount && !belowMinimumMargin && !aboveMaximumMargin && !insufficientBalance
     val minimumMarginError = stringResource(
         R.string.perps_minimum_margin,
-        minimumMargin.stripTrailingZeros().toPlainString()
+        minimumMargin.stripTrailingZeros().toPlainString(),
+        currentToken?.symbol.orEmpty(),
     )
     val maximumMarginError = stringResource(
         R.string.perps_maximum_margin,
-        maximumMargin.stripTrailingZeros().toPlainString()
+        maximumMargin.stripTrailingZeros().toPlainString(),
+        currentToken?.symbol.orEmpty(),
     )
     val marginLimitError = when {
         belowMinimumMargin -> minimumMarginError

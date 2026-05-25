@@ -1659,8 +1659,8 @@
     <string name="single_transaction_should_be_greater_than">Minimum amount %1$s %2$s</string>
     <string name="single_transaction_should_be_less_than">Maximum amount %1$s %2$s</string>
     <string name="single_transaction_should_be_between">Amount must be between %1$s %2$s and %3$s %4$s</string>
-    <string name="perps_minimum_margin">The minimum margin is %1$s</string>
-    <string name="perps_maximum_margin">The maximum margin is %1$s</string>
+    <string name="perps_minimum_margin">The minimum amount is %1$s %2$s</string>
+    <string name="perps_maximum_margin">The maximum amount is %1$s %2$s</string>
     <!-- Web3 -->
     <string name="web3_approve">Approve</string>
     <string name="web3_borrow">Borrow</string>
@@ -2394,6 +2394,8 @@
     <string name="position_size">Size</string>
     <string name="add_position">Add</string>
     <string name="adding_position">Add</string>
+    <string name="perps_opened">Opened</string>
+    <string name="perps_added">Added</string>
     <string name="add_position_title">Add to %1$s %2$s</string>
     <string name="add_position_add_size">Add Size</string>
     <string name="add_position_total_size">Total Size</string>
@@ -2424,14 +2426,26 @@
     <string name="Open_Interest">Open Interest</string>
     <string name="Funding_Rate">Funding Rate</string>
     <string name="confirm_opening_position">Confirm Opening</string>
+    <string name="confirm_adding_position">Confirm Adding</string>
     <string name="Position_Submitted">Position Submitted</string>
-    <string name="Close_Position">Close Position</string>
+    <string name="Position_Add_Submitted">Add Submitted</string>
+    <string name="Close_Position">Close</string>
     <string name="confirm_closing_position">Confirm Closing</string>
     <string name="Position_Closed">Position Closed</string>
     <string name="Opened_Long">Opened Long</string>
     <string name="Opened_Short">Opened Short</string>
     <string name="Closed_Long">Closed Long</string>
     <string name="Closed_Short">Closed Short</string>
+    <string name="Added_Long">Added Long</string>
+    <string name="Added_Short">Added Short</string>
+    <string name="Open_Long_Failed">Open Long Failed</string>
+    <string name="Open_Short_Failed">Open Short Failed</string>
+    <string name="Close_Long_Failed">Close Long Failed</string>
+    <string name="Close_Short_Failed">Close Short Failed</string>
+    <string name="Add_Long_Failed">Add Long Failed</string>
+    <string name="Add_Short_Failed">Add Short Failed</string>
+    <string name="add_position_title_failed">Add to %1$s %2$s Failed</string>
+    <string name="View_Market">View Market</string>
     <string name="Estimated_Liquidation_Price">Estimated Liquidation Price</string>
     <string name="Total_Position_Value">Total Position Value</string>
     <string name="Perpetual_Side_Symbol_Title">%1$s %2$s</string>
@@ -2456,7 +2470,7 @@
     <string name="no_sim_detected">No SIM card detected.</string>
     <string name="title">Choose a Country or Region</string>
     <string name="anonymous_number">Anonymous Number</string>
-    <string name="perps_markets">Markets</string>
+    <string name="perps_markets">Trending</string>
     <string name="perps_market">Market</string>
     <string name="perps_share_card_title">🚀 Perps %1$s</string>
     <string name="perps_share_card_market">- 📈 Market: %1$s</string>

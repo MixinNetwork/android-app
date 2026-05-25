@@ -73,6 +73,52 @@ class PerpsMigrationTest {
         }
     }
 
+    @Test
+    fun migrate_3_4_replacesPositionHistoriesWithOrders() {
+        migrationTestHelper.createDatabase(Constants.DataBase.PERPS_DB_NAME, 3).apply {
+            insertPositionHistoryV3()
+            close()
+        }
+
+        val migratedDb = migrationTestHelper.runMigrationsAndValidate(
+            Constants.DataBase.PERPS_DB_NAME,
+            4,
+            true,
+            PerpsDatabase.MIGRATION_3_4,
+        )
+
+        migratedDb.query(
+            "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'position_histories'",
+        ).use { cursor ->
+            assertEquals(0, cursor.count)
+        }
+
+        migratedDb.execSQL(
+            """
+            INSERT INTO perps_orders (
+                order_id, position_id, market_id, side, order_type, status, leverage, quantity,
+                entry_price, close_price, realized_pnl, roe, close_reason, trigger_price,
+                created_at, updated_at
+            ) VALUES (
+                'order-1', 'position-1', 'market-1', 'long', 'close', 'filled', 10, '1',
+                '99000', '100000', '1000', '0.1', 'take_profit', NULL,
+                '2026-05-15T15:00:00Z', '2026-05-15T15:00:00Z'
+            )
+            """.trimIndent(),
+        )
+
+        migratedDb.query(
+            "SELECT leverage, close_price, realized_pnl, roe, close_reason FROM perps_orders WHERE order_id = 'order-1'",
+        ).use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(10, cursor.getInt(cursor.getColumnIndexOrThrow("leverage")))
+            assertEquals("100000", cursor.getString(cursor.getColumnIndexOrThrow("close_price")))
+            assertEquals("1000", cursor.getString(cursor.getColumnIndexOrThrow("realized_pnl")))
+            assertEquals("0.1", cursor.getString(cursor.getColumnIndexOrThrow("roe")))
+            assertEquals("take_profit", cursor.getString(cursor.getColumnIndexOrThrow("close_reason")))
+        }
+    }
+
     private fun SupportSQLiteDatabase.insertMarketV2() {
         execSQL(
             """
@@ -101,6 +147,20 @@ class PerpsMigrationTest {
                 'position-1', 'market-1', 'long', '1', '99000', '100', 20, 'open',
                 '100000', '10', '0.1', 'asset-1', '100', 'asset-1', 'bot-1', 'wallet-1',
                 '2026-05-15T15:00:00Z', '2026-05-15T15:00:00Z'
+            )
+            """.trimIndent(),
+        )
+    }
+
+    private fun SupportSQLiteDatabase.insertPositionHistoryV3() {
+        execSQL(
+            """
+            INSERT INTO position_histories (
+                history_id, position_id, market_id, side, quantity, entry_price, close_price,
+                realized_pnl, leverage, margin_method, open_at, closed_at
+            ) VALUES (
+                'history-1', 'position-1', 'market-1', 'long', '1', '99000', '100000',
+                '1000', 20, 'cross', '2026-05-15T15:00:00Z', '2026-05-15T16:00:00Z'
             )
             """.trimIndent(),
         )
