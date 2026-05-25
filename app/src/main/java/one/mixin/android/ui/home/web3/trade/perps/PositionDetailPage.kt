@@ -297,32 +297,44 @@ fun PositionDetailPage(
                         .background(MixinAppTheme.colors.backgroundWindow),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = stringResource(R.string.Close_Position),
-                        color = MixinAppTheme.colors.textPrimary,
-                        fontWeight = FontWeight.W500,
-                        modifier = Modifier
-                            .weight(1f)
-                            .clickable { onClose?.invoke() }
-                            .padding(vertical = 10.dp),
-                        textAlign = TextAlign.Center
-                    )
-                    Box(
-                        modifier = Modifier
-                            .width(2.dp)
-                            .height(24.dp)
-                            .background(Color(0x0D000000))
-                    )
-                    Text(
-                        text = stringResource(R.string.Share),
-                        color = MixinAppTheme.colors.textPrimary,
-                        fontWeight = FontWeight.W500,
-                        modifier = Modifier
-                            .weight(1f)
-                            .clickable { onShare?.invoke() }
-                            .padding(vertical = 10.dp),
-                        textAlign = TextAlign.Center
-                    )
+                    if (isPending) {
+                        Text(
+                            text = stringResource(if (position.state == "adding") R.string.adding_position else R.string.Pending),
+                            color = MixinAppTheme.colors.textAssist,
+                            fontWeight = FontWeight.W500,
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(vertical = 10.dp),
+                            textAlign = TextAlign.Center
+                        )
+                    } else {
+                        Text(
+                            text = stringResource(R.string.Close_Position),
+                            color = MixinAppTheme.colors.textPrimary,
+                            fontWeight = FontWeight.W500,
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable { onClose?.invoke() }
+                                .padding(vertical = 10.dp),
+                            textAlign = TextAlign.Center
+                        )
+                        Box(
+                            modifier = Modifier
+                                .width(2.dp)
+                                .height(24.dp)
+                                .background(Color(0x0D000000))
+                        )
+                        Text(
+                            text = stringResource(R.string.Share),
+                            color = MixinAppTheme.colors.textPrimary,
+                            fontWeight = FontWeight.W500,
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable { onShare?.invoke() }
+                                .padding(vertical = 10.dp),
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
                 
                 Spacer(modifier = Modifier.height(30.dp))
