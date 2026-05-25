@@ -177,7 +177,6 @@ class PerpsAddBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
                 selectedToken = resolveCurrentToken(
                     selectedToken = selectedToken,
                     availableTokens = orderedSupportedTokens,
-                    preferredAssetIds = acceptedPerpAssetIdsOrdered,
                 )
             }
         }
@@ -737,13 +736,9 @@ private fun readAcceptedPerpAssetIds(context: android.content.Context): List<Str
         .filter { it.isNotBlank() }
 }
 
-private fun TokenItem.hasPositiveBalance(): Boolean =
-    (balance.toBigDecimalOrNull() ?: BigDecimal.ZERO) > BigDecimal.ZERO
-
 private fun resolveCurrentToken(
     selectedToken: TokenItem?,
     availableTokens: List<TokenItem>,
-    preferredAssetIds: List<String>,
 ): TokenItem? {
     if (selectedToken == null) {
         return availableTokens.firstOrNull()

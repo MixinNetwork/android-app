@@ -529,7 +529,13 @@ class TradeFragment : BaseFragment() {
                                     navTo(AllPositionsFragment.newClosedInstance(), AllPositionsFragment.TAG)
                                 },
                                 onOpenPositionClick = { position ->
-                                    navTo(PositionDetailFragment.newInstance(position), PositionDetailFragment.TAG)
+                                    navTo(
+                                        PositionDetailFragment.newInstance(
+                                            position,
+                                            AnalyticsTracker.PerpsSource.PERPS_HOME_LIST,
+                                        ),
+                                        PositionDetailFragment.TAG,
+                                    )
                                 },
                                 onMarketItemClick = { market ->
                                     PerpsActivity.showDetail(

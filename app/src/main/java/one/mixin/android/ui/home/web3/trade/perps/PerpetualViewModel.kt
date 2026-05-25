@@ -910,7 +910,7 @@ class PerpetualViewModel @Inject constructor(
             marketId = position.marketId,
             side = position.side,
             orderType = PerpsOrder.TYPE_CLOSE,
-            status = PerpsOrder.STATUS_CLOSED,
+            status = PerpsOrder.STATUS_FILLED,
             leverage = leverage,
             quantity = position.quantity,
             entryPrice = entryPrice,
