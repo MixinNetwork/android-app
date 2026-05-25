@@ -334,7 +334,7 @@ class MarketShareBottomFragment : MixinBottomSheetDialogFragment() {
         val buildTradeUrl = { input: String, output: String ->
             "${Constants.Scheme.HTTPS_SWAP}?input=$input&output=$output&referral=$referral"
         }
-        val stableAssetId = Constants.AssetId.OMNI_USDT_ASSET_ID
+        val stableAssetId = Constants.AssetId.USDT_ASSET_ETH_ID
         val targetAssetId = marketItem.assetIds?.firstOrNull().orEmpty()
         val marketCap = runCatching {
             BigDecimal(marketItem.marketCap).multiply(BigDecimal(Fiats.getRate())).numberFormatCompact()
