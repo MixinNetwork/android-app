@@ -102,6 +102,9 @@ fun PerpetualContent(
     val openPositionsCount = openPositions.size
     val openPositionsPreview = openPositions.take(3)
     val marketsPreview = markets.take(3)
+    val topMoversPreview = remember(markets) {
+        markets.sortedByDescending { it.changePercent() }.take(8)
+    }
     val sourceOrder = remember(markets) {
         markets.withIndex().associate { it.value.marketId to it.index }
     }
@@ -305,6 +308,24 @@ fun PerpetualContent(
                         Spacer(modifier = Modifier.height(12.dp))
                         ViewAllAction(onClick = onShowAllOpenPositions)
                     }
+                }
+            }
+
+            if (topMoversPreview.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .clip(RoundedCornerShape(8.dp))
+                        .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
+                        .padding(vertical = 16.dp)
+                ) {
+                    TopMoversCard(
+                        markets = topMoversPreview,
+                        quoteColorReversed = quoteColorReversed,
+                        onMarketItemClick = onMarketItemClick,
+                    )
                 }
             }
 
