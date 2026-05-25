@@ -913,22 +913,6 @@ fun OpenedOrderDetailPage(
                                 .padding(vertical = 10.dp),
                             textAlign = TextAlign.Center
                         )
-                        Box(
-                            modifier = Modifier
-                                .width(2.dp)
-                                .height(24.dp)
-                                .background(Color(0x0D000000))
-                        )
-                        Text(
-                            text = stringResource(R.string.Share),
-                            color = MixinAppTheme.colors.textPrimary,
-                            fontWeight = FontWeight.W500,
-                            modifier = Modifier
-                                .weight(1f)
-                                .clickable { onShare?.invoke() }
-                                .padding(vertical = 10.dp),
-                            textAlign = TextAlign.Center
-                        )
                     }
 
                     Spacer(modifier = Modifier.height(30.dp))
@@ -962,6 +946,19 @@ fun OpenedOrderDetailPage(
                     PositionDetailItem(
                         label = stringResource(R.string.Entry_Price).uppercase(),
                         value = formatPriceUsd(entryPrice)
+                    )
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    val amountValue = if (leverage > 0) {
+                        absQuantity.multiply(entryPrice)
+                            .divide(BigDecimal(leverage), 8, RoundingMode.HALF_UP)
+                    } else {
+                        BigDecimal.ZERO
+                    }
+                    PositionDetailItem(
+                        label = stringResource(R.string.Amount).uppercase(),
+                        value = formatPerpsUsdDecimal(amountValue)
                     )
 
                     Spacer(modifier = Modifier.height(20.dp))

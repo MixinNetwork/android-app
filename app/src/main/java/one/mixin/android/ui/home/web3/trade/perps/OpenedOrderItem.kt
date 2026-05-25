@@ -10,8 +10,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -19,6 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -29,6 +34,8 @@ import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 @Composable
 fun OpenedOrderItem(
@@ -66,6 +73,15 @@ fun OpenedOrderItem(
             stringResource(if (isLong) R.string.Opened_Long_Failed else R.string.Opened_Short_Failed)
         else ->
             stringResource(if (isLong) R.string.Opened_Long else R.string.Opened_Short)
+    }
+
+    val amountValue = if (!isFailed && order.leverage > 0) {
+        val quantityDecimal = order.quantity.toBigDecimalOrNull()?.abs() ?: BigDecimal.ZERO
+        val entryPriceDecimal = order.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
+        quantityDecimal.multiply(entryPriceDecimal)
+            .divide(BigDecimal(order.leverage), 8, RoundingMode.HALF_UP)
+    } else {
+        null
     }
 
     Row(
@@ -120,6 +136,27 @@ fun OpenedOrderItem(
                 color = MixinAppTheme.colors.textAssist,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
+            )
+        }
+
+        if (amountValue != null) {
+            Spacer(modifier = Modifier.width(8.dp))
+            BasicText(
+                text = formatPerpsUsdDecimal(amountValue),
+                modifier = Modifier.widthIn(max = 160.dp),
+                style = TextStyle(
+                    fontSize = 14.sp,
+                    color = MixinAppTheme.colors.textPrimary,
+                    textAlign = TextAlign.End,
+                ),
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Ellipsis,
+                autoSize = TextAutoSize.StepBased(
+                    minFontSize = 8.sp,
+                    maxFontSize = 14.sp,
+                    stepSize = 0.5.sp,
+                ),
             )
         }
     }
