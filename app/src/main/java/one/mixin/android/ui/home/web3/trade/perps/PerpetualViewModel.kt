@@ -26,6 +26,7 @@ import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.api.response.perps.PerpsPosition
 import one.mixin.android.api.response.perps.PerpsPositionItem
+import one.mixin.android.api.response.perps.toPosition
 import one.mixin.android.api.response.perps.withDefaults
 import one.mixin.android.api.service.RouteService
 import one.mixin.android.db.TokenDao
@@ -392,6 +393,7 @@ class PerpetualViewModel @Inject constructor(
         positionId: String,
         assetId: String,
         amount: String,
+        position: PerpsPositionItem? = null,
         destination: String? = null,
         price: String? = null,
         takeProfitPrice: String? = null,
@@ -418,7 +420,18 @@ class PerpetualViewModel @Inject constructor(
                 if (response.isSuccess && data != null) {
                     val now = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).format(Date())
                     withContext(Dispatchers.IO) {
-                        perpsPositionDao.updateStatus(positionId, "adding", now)
+                        val localPosition = perpsPositionDao.getPosition(positionId)?.toPosition()
+                            ?: position?.toPosition()
+                        if (localPosition != null) {
+                            perpsPositionDao.upsertSuspend(
+                                localPosition.copy(
+                                    state = "adding",
+                                    updatedAt = now,
+                                )
+                            )
+                        } else {
+                            perpsPositionDao.updateStatus(positionId, "adding", now)
+                        }
                     }
                     onSuccess(data)
                 } else {

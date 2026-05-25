@@ -2393,7 +2393,7 @@
     <string name="stop_loss_label">SL</string>
     <string name="position_size">Size</string>
     <string name="add_position">Add</string>
-    <string name="adding_position">Add</string>
+    <string name="adding_position">Adding</string>
     <string name="perps_opened">Opened</string>
     <string name="perps_added">Added</string>
     <string name="add_position_title">Add to %1$s %2$s</string>
