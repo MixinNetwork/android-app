@@ -36,7 +36,6 @@ import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
 @Composable
@@ -48,8 +47,6 @@ fun OpenPositionItem(
     val quoteColorPref = context.defaultSharedPreferences
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     val margin = position.margin?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    val fiatRate = BigDecimal(Fiats.getRate())
-    val fiatSymbol = Fiats.getSymbol()
 
     val displaySymbol = position.tokenSymbol ?: stringResource(R.string.Unknown)
     val quantity = position.quantity

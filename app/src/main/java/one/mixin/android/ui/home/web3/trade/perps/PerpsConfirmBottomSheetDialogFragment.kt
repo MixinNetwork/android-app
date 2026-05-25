@@ -82,7 +82,6 @@ import one.mixin.android.ui.wallet.ItemUserContent
 import one.mixin.android.ui.wallet.components.WalletLabel
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.analytics.AnalyticsTracker
-import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.components.MixinButton
@@ -181,8 +180,6 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     private val takeProfitPrice by lazy { requireArguments().getString(ARGS_TAKE_PROFIT_PRICE).orEmpty() }
     private val stopLossPrice by lazy { requireArguments().getString(ARGS_STOP_LOSS_PRICE).orEmpty() }
     private val isAddPosition by lazy { requireArguments().getBoolean(ARGS_IS_ADD_POSITION) }
-    private val fiatRate by lazy { BigDecimal(Fiats.getRate()) }
-    private val fiatSymbol by lazy { Fiats.getSymbol() }
 
     private val payUrl by lazy { requireArguments().getString(ARGS_PAY_URL) }
     private val entryFiatPrice by lazy {

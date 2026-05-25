@@ -58,7 +58,6 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.session.Session
 import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.wallet.alert.components.cardBackground
-import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -399,7 +398,7 @@ private fun TotalPositionValueCard(
         )
         Spacer(modifier = Modifier.height(6.dp))
         Text(
-            text = formatPerpsFiatDecimal(totalMargin.abs().multiply(BigDecimal(Fiats.getRate())), Fiats.getSymbol()),
+            text = formatPerpsUsdDecimal(totalMargin.abs()),
             fontSize = 18.sp,
             fontWeight = FontWeight.W500,
             color = MixinAppTheme.colors.textPrimary,

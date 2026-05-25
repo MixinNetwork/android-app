@@ -53,7 +53,6 @@ import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.tip.wc.compose.ItemWalletContent
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.getMixinErrorStringByCode
-import one.mixin.android.vo.Fiats
 import org.threeten.bp.Instant
 import org.threeten.bp.ZoneId
 import org.threeten.bp.format.DateTimeFormatter
@@ -108,8 +107,6 @@ fun PositionDetailPage(
         ?.takeIf { it.isNotBlank() }
         ?.let { formatPerpsPrice(it, position.priceScale) }
         ?: "--"
-    val fiatRate = BigDecimal(Fiats.getRate())
-    val fiatSymbol = Fiats.getSymbol()
     val hasTakeProfit = !position.takeProfitPrice.isNullOrBlank()
     val hasStopLoss = !position.stopLossPrice.isNullOrBlank()
     var hideTakeProfitGuideUntil by remember(preferences) {
@@ -541,8 +538,6 @@ fun PositionDetailPage(
 
     val quantity = closeOrder.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val absQuantity = quantity.abs()
-    val fiatRate = BigDecimal(Fiats.getRate())
-    val fiatSymbol = Fiats.getSymbol()
     val effectiveLeverage = leverage ?: closeOrder.leverage
     val roe = (closeOrder.roe.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(BigDecimal(100))
 
