@@ -741,7 +741,9 @@ private fun resolveCurrentToken(
     availableTokens: List<TokenItem>,
 ): TokenItem? {
     if (selectedToken == null) {
-        return availableTokens.firstOrNull()
+        return availableTokens
+            .sortedByDescending { it.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO }
+            .firstOrNull()
     }
 
     return availableTokens.firstOrNull { it.assetId == selectedToken.assetId } ?: selectedToken
