@@ -438,7 +438,25 @@ fun PerpsMarketDetailPage(
                     if (currentPosition != null) {
                         val isOpen = currentPosition.state == "open"
                         val isAdding = currentPosition.state == "adding"
-                        if (isOpen || isAdding) {
+                        val isPending = currentPosition.state == "processing" || isAdding
+                        if (isPending) {
+                            MixinButton(
+                                modifier = Modifier
+                                    .align(Alignment.CenterHorizontally)
+                                    .fillMaxWidth()
+                                    .height(48.dp),
+                                enabled = false,
+                                onClick = {},
+                                backgroundColor = MixinAppTheme.colors.backgroundWindow,
+                                contentColor = MixinAppTheme.colors.textAssist,
+                                shape = RoundedCornerShape(32.dp),
+                            ) {
+                                Text(
+                                    fontSize = 16.sp,
+                                    text = stringResource(if (isAdding) R.string.adding_position else R.string.Pending),
+                                )
+                            }
+                        } else if (isOpen) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -447,7 +465,7 @@ fun PerpsMarketDetailPage(
                                     modifier = Modifier
                                         .weight(1f)
                                         .height(48.dp),
-                                    enabled = isOpen,
+                                    enabled = true,
                                     onClick = {
                                         val activity = context as? FragmentActivity ?: return@MixinButton
                                         val positionForAdd = currentPosition
@@ -460,6 +478,7 @@ fun PerpsMarketDetailPage(
                                                     positionId = positionForAdd.positionId,
                                                     assetId = token.assetId,
                                                     amount = amount,
+                                                    position = positionForAdd,
                                                     price = referencePrice.takeIf { it.isNotBlank() },
                                                     onSuccess = { response ->
                                                         val isLong = positionForAdd.side.equals("long", ignoreCase = true)
@@ -495,13 +514,13 @@ fun PerpsMarketDetailPage(
                                             }
                                             .show(activity.supportFragmentManager, PerpsAddBottomSheetDialogFragment.TAG)
                                     },
-                                    backgroundColor = if (isOpen) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.backgroundWindow,
-                                    contentColor = if (isOpen) Color.White else MixinAppTheme.colors.textAssist,
+                                    backgroundColor = MixinAppTheme.colors.walletGreen,
+                                    contentColor = Color.White,
                                     shape = RoundedCornerShape(32.dp),
                                 ) {
                                     Text(
                                         fontSize = 16.sp,
-                                        text = stringResource(if (isAdding) R.string.adding_position else R.string.add_position),
+                                        text = stringResource(R.string.add_position),
                                     )
                                 }
 
@@ -509,7 +528,7 @@ fun PerpsMarketDetailPage(
                                     modifier = Modifier
                                         .weight(1f)
                                         .height(48.dp),
-                                    enabled = isOpen,
+                                    enabled = true,
                                     onClick = {
                                         val activity = context as? FragmentActivity ?: return@MixinButton
                                         val position = currentPosition.toPosition()
@@ -518,8 +537,8 @@ fun PerpsMarketDetailPage(
                                             position = position,
                                         ).show(activity.supportFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)
                                     },
-                                    backgroundColor = if (isOpen) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundWindow,
-                                    contentColor = if (isOpen) Color.White else MixinAppTheme.colors.textAssist,
+                                    backgroundColor = MixinAppTheme.colors.accent,
+                                    contentColor = Color.White,
                                     shape = RoundedCornerShape(32.dp),
                                 ) {
                                     Text(
