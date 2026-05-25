@@ -33,6 +33,7 @@ import one.mixin.android.R
 import one.mixin.android.api.referral.ReferralShareInfo
 import one.mixin.android.api.referral.buildReferralCopyUrl
 import one.mixin.android.api.referral.buildReferralShareUrl
+import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.databinding.FragmentPerpsPositionShareBottomBinding
@@ -205,6 +206,7 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
         }
 
         val closed = closeOrder ?: return false
+        if (closed.orderType != PerpsOrder.TYPE_CLOSE) return false
         val pnlAmount = closed.realizedPnl.toBigDecimalSafely() ?: BigDecimal.ZERO
         val effectiveLeverage = if (closed.leverage > 0) closed.leverage else 1
         val pnlPercent = (closed.roe.toBigDecimalSafely() ?: BigDecimal.ZERO).multiply(BigDecimal(100))

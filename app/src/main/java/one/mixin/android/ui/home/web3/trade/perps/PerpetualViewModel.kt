@@ -881,6 +881,12 @@ class PerpetualViewModel @Inject constructor(
         }
     }
 
+    suspend fun getCloseOrderFromDb(positionId: String): PerpsOrderItem? {
+        return withContext(Dispatchers.IO) {
+            perpsOrderDao.getCloseOrderByPositionId(positionId)
+        }
+    }
+
     private suspend fun upsertSyncedOrders(orders: List<PerpsOrder>) {
         if (orders.isEmpty()) return
 
