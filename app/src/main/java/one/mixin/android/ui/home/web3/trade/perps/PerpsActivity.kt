@@ -49,10 +49,6 @@ class PerpsActivity : BaseActivity() {
     private var selectedToken by mutableStateOf<TokenItem?>(null)
     private var renderJob: Job? = null
 
-    private val lastSelectedAssetId: String? by lazy {
-        defaultSharedPreferences.getString(Constants.Account.PREF_LAST_SELECTED_PERPS_ASSET_ID, null)
-    }
-
     companion object {
         private const val EXTRA_MARKET_ID = "extra_market_id"
         private const val EXTRA_MARKET_SYMBOL = "extra_market_symbol"
@@ -147,15 +143,6 @@ class PerpsActivity : BaseActivity() {
                     source = source,
                 )
 
-                if (selectedToken == null) {
-                    val assetId = lastSelectedAssetId
-                    if (assetId != null) {
-                        viewModel.loadUsdTokens { tokens ->
-                            selectedToken = tokens.firstOrNull { it.assetId == assetId }
-                        }
-                    }
-                }
-
                 setContent {
                     MixinAppTheme {
                         OpenPositionPage(
@@ -170,9 +157,6 @@ class PerpsActivity : BaseActivity() {
                             onTokenSelect = { showTokenSelection() },
                             onCurrentTokenChange = { token ->
                                 selectedToken = token
-                                token?.assetId?.let {
-                                    defaultSharedPreferences.putString(Constants.Account.PREF_LAST_SELECTED_PERPS_ASSET_ID, it)
-                                }
                             }
                         )
                     }
@@ -212,9 +196,6 @@ class PerpsActivity : BaseActivity() {
             currentAssetId = selectedToken?.assetId
         ).setOnAssetClick { token ->
             selectedToken = token
-            token.assetId.let {
-                defaultSharedPreferences.putString(Constants.Account.PREF_LAST_SELECTED_PERPS_ASSET_ID, it)
-            }
         }.setOnDepositClick {
             showDepositAssetSelection()
         }.show(supportFragmentManager, TokenListBottomSheetDialogFragment.TAG)

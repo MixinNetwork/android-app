@@ -158,10 +158,6 @@ class PerpsAddBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
         var selectedToken by remember { mutableStateOf<TokenItem?>(null) }
         var market by remember { mutableStateOf<PerpsMarket?>(null) }
 
-        val lastSelectedAssetId = remember {
-            context.defaultSharedPreferences.getString(Constants.Account.PREF_LAST_SELECTED_PERPS_ASSET_ID, null)
-        }
-
         LaunchedEffect(acceptedPerpAssetIds) {
             market = viewModel.getMarketFromDb(position.marketId)
             viewModel.loadUsdTokens { tokens ->
@@ -178,18 +174,11 @@ class PerpsAddBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
                     }
                 }
 
-                val initialToken = selectedToken ?: tokens.firstOrNull { it.assetId == lastSelectedAssetId }
                 selectedToken = resolveCurrentToken(
-                    selectedToken = initialToken,
+                    selectedToken = selectedToken,
                     availableTokens = orderedSupportedTokens,
                     preferredAssetIds = acceptedPerpAssetIdsOrdered,
                 )
-            }
-        }
-
-        LaunchedEffect(selectedToken) {
-            selectedToken?.assetId?.let {
-                context.defaultSharedPreferences.putString(Constants.Account.PREF_LAST_SELECTED_PERPS_ASSET_ID, it)
             }
         }
 
@@ -204,7 +193,6 @@ class PerpsAddBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
                         currentAssetId = selectedToken?.assetId,
                     ).setOnAssetClick { token ->
                         selectedToken = token
-                        context.defaultSharedPreferences.putString(Constants.Account.PREF_LAST_SELECTED_PERPS_ASSET_ID, token.assetId)
                     }.show(parentFragmentManager, TokenListBottomSheetDialogFragment.TAG)
                 },
                 onCancel = { dismiss() },
@@ -758,11 +746,7 @@ private fun resolveCurrentToken(
     preferredAssetIds: List<String>,
 ): TokenItem? {
     if (selectedToken == null) {
-        return availableTokens.firstOrNull { it.hasPositiveBalance() }
-            ?: preferredAssetIds.firstNotNullOfOrNull { assetId ->
-                availableTokens.firstOrNull { it.assetId == assetId }
-            }
-            ?: availableTokens.firstOrNull()
+        return availableTokens.firstOrNull()
     }
 
     return availableTokens.firstOrNull { it.assetId == selectedToken.assetId } ?: selectedToken

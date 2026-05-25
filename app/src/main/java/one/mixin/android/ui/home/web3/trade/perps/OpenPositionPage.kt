@@ -104,11 +104,7 @@ private fun resolveCurrentToken(
     preferredAssetIds: List<String>,
 ): TokenItem? {
     if (selectedToken == null) {
-        return availableTokens.firstOrNull { it.hasPositiveBalance() }
-            ?: preferredAssetIds.firstNotNullOfOrNull { assetId ->
-                availableTokens.firstOrNull { it.assetId == assetId }
-            }
-            ?: availableTokens.firstOrNull()
+        return availableTokens.firstOrNull()
     }
 
     val matchedToken = availableTokens.firstOrNull { it.assetId == selectedToken.assetId }
