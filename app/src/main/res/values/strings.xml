@@ -2478,10 +2478,9 @@
     <string name="perps_share_card_trade_now">💰 Trade Now</string>
     <string name="market_share_card_title">Trade %1$s</string>
     <string name="market_share_card_asset">🔥 %1$s (%2$s)</string>
-    <string name="market_share_card_market_cap">📈 Market Cap: %1$s%2$s</string>
-    <string name="market_share_card_price">🏷️ Price: %1$s%2$s</string>
+    <string name="market_share_card_market_cap">📈 Market Cap: %1$s</string>
+    <string name="market_share_card_price">🏷️ Price: %1$s</string>
     <string name="market_share_card_price_change">💰 24h Price Change: %1$s</string>
-    <string name="market_share_card_market_button">%1$s Market</string>
     <string name="perps_category_all">All</string>
     <string name="perps_category_crypto">Crypto</string>
     <string name="perps_category_stocks">Stocks</string>
