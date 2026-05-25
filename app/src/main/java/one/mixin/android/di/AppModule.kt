@@ -6,6 +6,7 @@ import android.content.ContentResolver
 import android.content.Context
 import android.content.SharedPreferences
 import com.birbit.android.jobqueue.config.Configuration
+import com.birbit.android.jobqueue.scheduling.FrameworkScheduler
 import com.birbit.android.jobqueue.scheduling.FrameworkJobSchedulerService
 import com.google.android.gms.net.CronetProviderInstaller
 import com.google.gson.Gson
@@ -176,7 +177,7 @@ object AppModule {
             reportException(e)
             null
         } catch (e: Exception) {
-            if (e is TimeoutException || e is Timeout) {
+            if (e is TimeoutException) {
                 Timber.e(e)
             } else {
                 reportException(e)
@@ -436,10 +437,12 @@ object AppModule {
                 }
                 .customLogger(JobLogger())
                 .networkUtil(jobNetworkUtil)
-        builder.scheduler(
-            FrameworkJobSchedulerService
-                .createSchedulerFor(app.applicationContext, MyJobService::class.java),
-        )
+        val scheduler: FrameworkScheduler =
+            FrameworkJobSchedulerService.createSchedulerFor(
+                app.applicationContext,
+                MyJobService::class.java,
+            )
+        builder.scheduler(scheduler)
         return MixinJobManager(builder.build())
     }
 

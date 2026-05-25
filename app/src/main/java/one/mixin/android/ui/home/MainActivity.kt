@@ -1223,7 +1223,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         lastBottomNavItemId = R.id.nav_wallet
     }
 
-    private fun <T : Fragment> findFragmentByTagTyped(tag: String): T? =
+    private inline fun <reified T : Fragment> findFragmentByTagTyped(tag: String): T? =
         supportFragmentManager.findFragmentByTag(tag) as? T
 
     fun showUpdate(releaseUrl: String?) {

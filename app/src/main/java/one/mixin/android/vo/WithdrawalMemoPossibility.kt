@@ -1,9 +1,9 @@
 package one.mixin.android.vo
 
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Serializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -22,7 +22,7 @@ enum class WithdrawalMemoPossibility(val value: String) {
     POSITIVE("positive"),
 }
 
-@Serializer(forClass = WithdrawalMemoPossibility::class)
+@OptIn(ExperimentalSerializationApi::class)
 object WithdrawalMemoPossibilitySerializer : KSerializer<WithdrawalMemoPossibility> {
     override val descriptor: SerialDescriptor =
         PrimitiveSerialDescriptor("WithdrawalMemoPossibility", PrimitiveKind.STRING)

@@ -326,7 +326,7 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
         }
     }
 
-    private fun <T : Fragment> findFragmentByTagTyped(tag: String): T? =
+    private inline fun <reified T : Fragment> findFragmentByTagTyped(tag: String): T? =
         parentFragmentManager.findFragmentByTag(tag) as? T
 
     fun edit(conversationCircleItem: ConversationCircleItem) {

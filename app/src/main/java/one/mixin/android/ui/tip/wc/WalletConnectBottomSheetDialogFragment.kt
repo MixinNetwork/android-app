@@ -361,8 +361,8 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                         } else {
                             tipGas = buildTipGas(chain.chainId, r.data!!)
                         }
-                        if (tipGas != null) {
-                            (signData as? WalletConnect.WCSignData.V2SignData)?.tipGas = tipGas
+                        if (tipGas != null && signData is WalletConnect.WCSignData.V2SignData) {
+                            signData.tipGas = tipGas
                         }
                     } catch (e: Exception) {
                         Timber.e(e)

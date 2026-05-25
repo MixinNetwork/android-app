@@ -382,7 +382,9 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
                         updateRv(searchDappsJob)
                     }
 
-                val tokenItems = searchViewModel.fuzzySearch<TokenItem>(cancellationSignal, keyword) as List<TokenItem>?
+                val tokenItems =
+                    searchViewModel.fuzzySearch<TokenItem>(cancellationSignal, keyword)
+                        ?.filterIsInstance<TokenItem>()
                 searchAdapter.setAssets(tokenItems)
                 refreshAssetsJob =
                     launch {

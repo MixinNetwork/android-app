@@ -448,7 +448,7 @@ fun PopupMenu.showIcon() {
     try {
         val fMenuHelper: Field = PopupMenu::class.java.getDeclaredField("mPopup")
         fMenuHelper.isAccessible = true
-        menuHelper = fMenuHelper.get(this)
+        menuHelper = requireNotNull(fMenuHelper.get(this))
         argTypes = arrayOf(Boolean::class.javaPrimitiveType)
         menuHelper.javaClass.getDeclaredMethod("setForceShowIcon", *argTypes)
             .invoke(menuHelper, true)

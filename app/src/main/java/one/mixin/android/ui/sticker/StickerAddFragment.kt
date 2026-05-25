@@ -133,7 +133,8 @@ class StickerAddFragment : BaseFragment() {
                     try {
                         val loader = requireContext().imageLoader
                         val request = ImageRequest.Builder(requireContext()).data(url).build()
-                        val result = (loader.execute(request).request as? SuccessResult)?.image?.asDrawable(requireContext().resources) ?: return@withContext 0
+                        val result = (loader.execute(request) as? SuccessResult)?.image?.asDrawable(requireContext().resources)
+                            ?: return@withContext 0
                         val byteArray = result.toBitmap().toBytes()
                         val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size, BitmapFactory.Options())
                         if (bitmap.width < dp100) {
