@@ -527,7 +527,7 @@ fun PositionDetailPage(
     }
     val isFailed = closeOrder.status == PerpsOrder.STATUS_REJECTED
     val title = if (isFailed) {
-        stringResource(if (isLong) R.string.Close_Long_Failed else R.string.Close_Short_Failed)
+        stringResource(if (isLong) R.string.Closed_Long_Failed else R.string.Closed_Short_Failed)
     } else {
         stringResource(if (isLong) R.string.Closed_Long else R.string.Closed_Short)
     }
@@ -786,11 +786,11 @@ fun OpenedOrderDetailPage(
     val isFailed = openedOrder.status == PerpsOrder.STATUS_REJECTED
     val title = when {
         isIncrease && isFailed ->
-            stringResource(if (isLong) R.string.Add_Long_Failed else R.string.Add_Short_Failed)
+            stringResource(if (isLong) R.string.Added_Long_Failed else R.string.Added_Short_Failed)
         isIncrease ->
             stringResource(if (isLong) R.string.Added_Long else R.string.Added_Short)
         isFailed ->
-            stringResource(if (isLong) R.string.Open_Long_Failed else R.string.Open_Short_Failed)
+            stringResource(if (isLong) R.string.Opened_Long_Failed else R.string.Opened_Short_Failed)
         else ->
             stringResource(if (isLong) R.string.Opened_Long else R.string.Opened_Short)
     }
@@ -904,7 +904,7 @@ fun OpenedOrderDetailPage(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = stringResource(R.string.View_Market),
+                            text = stringResource(R.string.view_perps_market),
                             color = MixinAppTheme.colors.textPrimary,
                             fontWeight = FontWeight.W500,
                             modifier = Modifier

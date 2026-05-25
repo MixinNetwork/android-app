@@ -59,11 +59,11 @@ fun OpenedOrderItem(
     val leverageBackgroundColor = leverageColor.copy(alpha = 0.1f)
     val title = when {
         isIncrease && isFailed ->
-            stringResource(if (isLong) R.string.Add_Long_Failed else R.string.Add_Short_Failed)
+            stringResource(if (isLong) R.string.Added_Long_Failed else R.string.Added_Short_Failed)
         isIncrease ->
             stringResource(if (isLong) R.string.Added_Long else R.string.Added_Short)
         isFailed ->
-            stringResource(if (isLong) R.string.Open_Long_Failed else R.string.Open_Short_Failed)
+            stringResource(if (isLong) R.string.Opened_Long_Failed else R.string.Opened_Short_Failed)
         else ->
             stringResource(if (isLong) R.string.Opened_Long else R.string.Opened_Short)
     }
