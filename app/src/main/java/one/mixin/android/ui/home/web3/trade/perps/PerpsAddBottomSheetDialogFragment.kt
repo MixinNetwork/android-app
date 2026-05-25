@@ -254,7 +254,7 @@ private fun PerpsAddContent(
 
     val insufficientBalance = amountValue != null && amountValue > BigDecimal.ZERO && amountValue > tokenBalance
     val canAdd = selectedToken != null && hasInputAmount && !insufficientBalance && !belowMinimumMargin && !aboveMaximumMargin
-    val marketSymbol = position.displaySymbol ?: position.tokenSymbol.orEmpty()
+    val marketSymbol = position.tokenSymbol ?: position.displaySymbol.orEmpty()
     val currentPrice = position.markPrice.orEmpty().ifBlank { position.entryPrice }
 
     val minimumMarginError = stringResource(
