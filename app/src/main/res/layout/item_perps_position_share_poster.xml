@@ -146,7 +146,7 @@
                     android:layout_marginTop="2dp"
                     android:includeFontPadding="false"
                     android:textColor="@color/white"
-                    android:textSize="13sp"
+                    android:textSize="14sp"
                     android:textFontWeight="600"
                     tools:text="$45,328.6" />
 
@@ -167,7 +167,7 @@
                     android:layout_marginTop="2dp"
                     android:includeFontPadding="false"
                     android:textColor="@color/white"
-                    android:textSize="13sp"
+                    android:textSize="14sp"
                     android:textFontWeight="600"
                     tools:text="$3,412.23" />
             </LinearLayout>
