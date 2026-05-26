@@ -597,8 +597,8 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
             itemBinding.topCard.setBackgroundResource(cardBackground(useProfitStyle))
             itemBinding.assetIcon.loadImage(data.iconUrl, R.drawable.ic_avatar_place_holder)
             itemBinding.pnlTv.text = when (currentDisplayMetric) {
-                ShareDisplayMetric.ROE -> formatSignedPercent(data.pnlPercent)
-                ShareDisplayMetric.PNL -> formatSignedAmount(data.pnlAmount)
+                ShareDisplayMetric.ROE -> formatSignedAmount(data.pnlAmount)
+                ShareDisplayMetric.PNL -> formatSignedPercent(data.pnlPercent)
             }
             itemBinding.pnlLabelTv.text = getString(currentDisplayMetric.labelRes)
 
