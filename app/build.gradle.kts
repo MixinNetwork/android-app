@@ -616,24 +616,3 @@ tasks.register("allTests") {
     description = "Run unit tests and instrumentation tests"
 }
 
-tasks.register("syncStrings") {
-    doLast {
-        listOf("en", "zh", "zh-TW", "ja", "ru", "in", "ms").forEach { lang ->
-            project.extensions.getByName("download").let { ext ->
-                val downloadExt = ext as de.undercouch.gradle.tasks.download.DownloadExtension
-                downloadExt.run {
-                    src("https://raw.githubusercontent.com/Tougee/sync-google-sheet/master/generated/output/Android/value-$lang/strings.xml")
-                    dest(
-                        when (lang) {
-                            "en" -> "src/main/res/values"
-                            "zh" -> "src/main/res/values-zh-rCN"
-                            "zh-TW" -> "src/main/res/values-zh-rTW"
-                            "zh-HK" -> "src/main/res/values-zh-rHK"
-                            else -> "src/main/res/values-$lang"
-                        }
-                    )
-                }
-            }
-        }
-    }
-}
