@@ -326,7 +326,7 @@ dependencies {
     }
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:$desugarJdkLibsVersion")
     implementation(platform("com.google.firebase:firebase-bom:$firebaseBomVersion"))
-    implementation("com.google.firebase:firebase-perf")
+    releaseImplementation("com.google.firebase:firebase-perf")
     implementation(fileTree(mapOf("include" to listOf("*.aar"), "dir" to "libs")))
     implementation("androidx.fragment:fragment-ktx:$fragmentVersion")
     implementation("androidx.activity:activity-ktx:$activity_version")
@@ -438,7 +438,7 @@ dependencies {
 
     implementation("com.google.protobuf:protobuf-javalite") {
         version {
-            strictly("3.11.0")
+            strictly("3.25.5")
         }
     }
 
@@ -555,6 +555,7 @@ dependencies {
     }
     androidTestImplementation("androidx.test.espresso:espresso-idling-resource:$espressoVersion")
     androidTestImplementation("androidx.test.ext:junit:$androidxJunitVersion")
+    androidTestImplementation("org.hamcrest:hamcrest:2.2")
     androidTestImplementation("androidx.fragment:fragment-testing:$fragmentVersion")
     androidTestImplementation("androidx.navigation:navigation-testing:$navigationVersion")
 
