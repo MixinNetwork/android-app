@@ -70,7 +70,7 @@
                     android:checked="true"
                     android:paddingStart="16dp"
                     android:paddingEnd="16dp"
-                    android:text="@string/PnL"
+                    android:text="@string/perps_share_pnl"
                     android:textColor="@drawable/radio_button_text_selector"
                     android:textSize="14sp" />
 
@@ -82,7 +82,7 @@
                     android:button="@null"
                     android:paddingStart="16dp"
                     android:paddingEnd="16dp"
-                    android:text="@string/RoE"
+                    android:text="@string/perps_share_roe"
                     android:textColor="@drawable/radio_button_text_selector"
                     android:textSize="14sp" />
             </RadioGroup>

@@ -2497,7 +2497,9 @@
     <string name="pin_log_subtitle_recovery_contact_changed">✅ 恢复联系人已修改</string>
     <string name="pin_log_subtitle_mnemonic_phrase_exported">✅ 助记词已导出</string>
     <string name="pin_log_subtitle_mobile_number_changed">✅ 手机号已修改</string>
-    <string name="perps_share_to_mixin_contact">发送给 Mixin 联系人</string>
+    <string name="perps_share_to_mixin_contact">发送到 Mixin 联系人</string>
+    <string name="perps_share_pnl">收益额</string>
+    <string name="perps_share_roe">收益率</string>
     <string name="perps_share_mixin_contact_desc">邀请好友一起交易</string>
     <string name="perps_share_mixin_contact_desc_with_percent">通过此链接赚取 %1$s 分佣</string>
 </resources>

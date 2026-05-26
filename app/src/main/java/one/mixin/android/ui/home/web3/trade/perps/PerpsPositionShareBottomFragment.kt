@@ -562,8 +562,8 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
     )
 
     private enum class ShareDisplayMetric(val labelRes: Int) {
-        ROE(R.string.RoE),
-        PNL(R.string.PnL),
+        ROE(R.string.perps_share_roe),
+        PNL(R.string.perps_share_pnl),
     }
 
     private enum class SharePosterStyle {
