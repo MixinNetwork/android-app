@@ -20,6 +20,7 @@ import android.net.Uri
 import android.net.http.SslError
 import android.os.Build
 import android.os.Bundle
+import android.provider.Browser
 import android.provider.MediaStore
 import android.provider.Settings
 import android.util.Base64
@@ -51,7 +52,10 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
+import androidx.browser.customtabs.CustomTabColorSchemeParams
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.app.ShareCompat
+import androidx.core.content.ContextCompat
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.toColorInt
 import androidx.core.view.ViewCompat
@@ -951,7 +955,21 @@ class WebFragment : BaseFragment() {
                     },
                     signBotSignature = { appId, reloadPublicKey, metho, path, body, callbackFunction ->
                         botSign(appId, reloadPublicKey, metho, path, body, callbackFunction)
-                    }
+                    },
+                    openInBrowserAction = { url ->
+                        lifecycleScope.launch {
+                            val browserUrl =
+                                url.takeUnless {
+                                    it.isBlank() ||
+                                        it.equals("undefined", true) ||
+                                        it.equals("null", true)
+                                }
+                                    ?: webView.url
+                                    ?: currentUrl
+                                    ?: this@WebFragment.url
+                            openInBrowser(browserUrl)
+                        }
+                    },
                 )
             webAppInterface?.let { webView.addJavascriptInterface(it, "MixinContext") }
             webView.addJavascriptInterface(
@@ -1034,6 +1052,46 @@ class WebFragment : BaseFragment() {
                 )
             } else {
                 Log.e("WebFragment", "WebView does not support passkeys.")
+            }
+        }
+    }
+
+    private fun openInBrowser(url: String) {
+        if (viewDestroyed() || url.isBlank()) return
+        val context = context ?: return
+        var uri = url.toUri()
+        if (uri.scheme.isNullOrBlank()) {
+            uri = Uri.parse("http://$url")
+        }
+        if (!uri.scheme.equals("http", true) && !uri.scheme.equals("https", true)) {
+            return
+        }
+
+        val extraHeaders =
+            Bundle().apply {
+                putString("Mixin", BuildConfig.VERSION_NAME)
+            }
+        try {
+            val customTabsIntent =
+                CustomTabsIntent.Builder()
+                    .setDefaultColorSchemeParams(
+                        CustomTabColorSchemeParams.Builder()
+                            .setToolbarColor(ContextCompat.getColor(context, android.R.color.white))
+                            .build(),
+                    )
+                    .setShowTitle(true)
+                    .build()
+            customTabsIntent.intent.putExtra(Browser.EXTRA_HEADERS, extraHeaders)
+            customTabsIntent.launchUrl(context, uri)
+        } catch (e: Exception) {
+            Timber.e(e, "OpenInBrowser")
+            try {
+                val intent = Intent(Intent.ACTION_VIEW, uri)
+                    .putExtra(Browser.EXTRA_APPLICATION_ID, context.packageName)
+                    .putExtra(Browser.EXTRA_HEADERS, extraHeaders)
+                startActivity(intent)
+            } catch (e: Exception) {
+                Timber.e(e, "OpenInBrowser")
             }
         }
     }
@@ -2171,6 +2229,7 @@ class WebFragment : BaseFragment() {
         var tipSignAction: ((String, String, String) -> Unit)? = null,
         var getAssetAction: ((Array<String>, String) -> Unit)? = null,
         var signBotSignature: ((String, Boolean, String, String, String, String) -> Unit)? = null,
+        var openInBrowserAction: ((String) -> Unit)? = null,
     ) {
         @JavascriptInterface
         fun showToast(toast: String) {
@@ -2213,6 +2272,11 @@ class WebFragment : BaseFragment() {
         @JavascriptInterface
         fun close() {
             closeAction?.invoke()
+        }
+
+        @JavascriptInterface
+        fun openInBrowser(url: String) {
+            openInBrowserAction?.invoke(url)
         }
 
         @JavascriptInterface
