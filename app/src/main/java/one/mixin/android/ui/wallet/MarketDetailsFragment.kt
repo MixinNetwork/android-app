@@ -6,6 +6,7 @@ import android.view.View
 import android.view.View.VISIBLE
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.text.HtmlCompat
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
@@ -50,6 +51,7 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
+import java.util.Locale
 import javax.inject.Inject
 import timber.log.Timber
 
@@ -369,6 +371,15 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     lowTime.isVisible = true
                     lowTime.text = info.atlDate.dayTime()
 
+                    val desc = info.descriptions?.let { map ->
+                        val lang = Locale.getDefault().language
+                        (map[lang]?.takeIf { it.isNotBlank() }
+                            ?: map["en"]?.takeIf { it.isNotBlank() }
+                            ?: map.values.firstOrNull { it.isNotBlank() })
+                    }?.let { HtmlCompat.fromHtml(it, HtmlCompat.FROM_HTML_MODE_LEGACY).toString().trim() }
+                    aboutContainer.isVisible = !desc.isNullOrBlank()
+                    aboutContent.text = desc.orEmpty()
+
                     priceValue.setTextColor(textPrimary)
                     marketCap.setTextColor(textPrimary)
                     marketHigh.setTextColor(textPrimary)
@@ -403,6 +414,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     highValue.setText(R.string.N_A)
                     lowValue.setTextColor(textAssist)
                     lowValue.setText(R.string.N_A)
+                    aboutContainer.isVisible = false
                 }
             }
         }
