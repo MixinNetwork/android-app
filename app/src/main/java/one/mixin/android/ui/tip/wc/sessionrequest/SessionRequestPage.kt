@@ -119,7 +119,9 @@ fun SessionRequestPage(
         showPin = showPin,
         checkAddressAndGetDisplayName = { addr -> viewModel.checkAddressAndGetDisplayName(addr, null) },
         findWalletById = { id -> viewModel.findWalletById(id) },
-        web3TokenItemById = { id, assetId -> viewModel.web3TokenItemById(id, assetId = assetId) }
+        web3TokenItemById = { id, assetId -> viewModel.web3TokenItemById(id, assetId = assetId) },
+        getContent = { v, g, data -> viewModel.getContent(v, g, data) },
+        rejectRequest = { v, t -> viewModel.rejectRequest(v, t) },
     )
 }
 
@@ -143,7 +145,9 @@ fun SessionRequestPageContent(
     showPin: () -> Unit,
     checkAddressAndGetDisplayName: suspend (String) -> Triple<String?, Int, Boolean?>?,
     findWalletById: suspend (String) -> one.mixin.android.vo.safe.SafeWallet?,
-    web3TokenItemById: suspend (String, String) -> Web3TokenItem?
+    web3TokenItemById: suspend (String, String) -> Web3TokenItem?,
+    getContent: (WalletConnect.Version, Gson, Any?) -> String,
+    rejectRequest: (WalletConnect.Version, String) -> Unit,
 ) {
     val context = LocalContext.current
     val commonWallet = stringResource(R.string.Common_Wallet)
@@ -338,7 +342,7 @@ fun SessionRequestPageContent(
                 when (sessionRequestUI.data) {
                     is WCEthereumTransaction -> {
                         if (signType == 2) {
-                            MessagePreview(content = viewModel.getContent(version, gson, sessionRequestUI.data)) {
+                            MessagePreview(content = getContent(version, gson, sessionRequestUI.data)) {
                                 onPreviewMessage.invoke(it)
                             }
                         } else {
@@ -357,7 +361,7 @@ fun SessionRequestPageContent(
                     }
 
                     else -> {
-                        MessagePreview(content = viewModel.getContent(version, gson, sessionRequestUI.data)) {
+                        MessagePreview(content = getContent(version, gson, sessionRequestUI.data)) {
                             onPreviewMessage.invoke(it)
                         }
                     }
@@ -452,7 +456,7 @@ fun SessionRequestPageContent(
                                 ActionButton(
                                     text = stringResource(id = R.string.insufficient_balance_symbol, chain.symbol),
                                     onClick = {
-                                        viewModel.rejectRequest(version, topic)
+                                        rejectRequest(version, topic)
                                         onDismissRequest.invoke()
                                     },
                                     backgroundColor = MixinAppTheme.colors.backgroundGray,
@@ -462,7 +466,7 @@ fun SessionRequestPageContent(
                             }
                         } else {
                             ActionBottom(modifier = Modifier.align(Alignment.BottomCenter), stringResource(id = R.string.Cancel), stringResource(id = R.string.Confirm), {
-                                viewModel.rejectRequest(version, topic)
+                                rejectRequest(version, topic)
                                 onDismissRequest.invoke()
                             }, showPin)
                         }
