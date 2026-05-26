@@ -54,6 +54,31 @@ import java.util.Locale
 
 @Composable
 fun AppearancePage() {
+    val context = LocalContext.current
+    val preference = context.defaultSharedPreferences
+    val initialThemeId = preference.getInt(
+        Constants.Theme.THEME_CURRENT_ID,
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            Constants.Theme.THEME_DEFAULT_ID
+        } else {
+            Constants.Theme.THEME_AUTO_ID
+        },
+    )
+    val initialCurrency = Session.getFiatCurrency()
+    
+    AppearancePageContent(
+        initialThemeId = initialThemeId,
+        initialCurrency = initialCurrency,
+        getCurrencySymbol = { Fiats.getSymbol(it) }
+    )
+}
+
+@Composable
+fun AppearancePageContent(
+    initialThemeId: Int,
+    initialCurrency: String,
+    getCurrencySymbol: (String) -> String,
+) {
     val navController = LocalSettingNav.current
     Scaffold(
         backgroundColor = MixinAppTheme.colors.backgroundWindow,
@@ -69,7 +94,7 @@ fun AppearancePage() {
         },
     ) {
         Column(Modifier.padding(it)) {
-            ThemeItem()
+            ThemeItem(initialThemeId)
 
             Box(modifier = Modifier.height(20.dp))
 
@@ -77,7 +102,7 @@ fun AppearancePage() {
 
             Box(modifier = Modifier.height(20.dp))
 
-            CurrencyItem()
+            CurrencyItem(initialCurrency, getCurrencySymbol)
 
             Box(modifier = Modifier.height(20.dp))
 
@@ -104,25 +129,13 @@ fun AppearancePage() {
 }
 
 @Composable
-private fun ThemeItem() {
+private fun ThemeItem(initialThemeId: Int) {
     val context = LocalContext.current
     val preference = context.defaultSharedPreferences
     val themeTitle = stringResource(id = R.string.Theme)
     val themeOptions = stringArrayResource(R.array.setting_night_array_oreo)
 
-    val currentThemeId =
-        remember {
-            val id =
-                preference.getInt(
-                    Constants.Theme.THEME_CURRENT_ID,
-                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-                        Constants.Theme.THEME_DEFAULT_ID
-                    } else {
-                        Constants.Theme.THEME_AUTO_ID
-                    },
-                )
-            mutableStateOf(id)
-        }
+    val currentThemeId = remember(initialThemeId) { mutableStateOf(initialThemeId) }
 
     AppearanceItem(
         label = themeTitle,
@@ -148,11 +161,9 @@ private fun ThemeItem() {
                     else -> AppCompatDelegate.MODE_NIGHT_NO
                 },
             )
-            if (changed) {
-                context.findFragmentActivityOrNull()?.apply {
-                    onBackPressed()
-                    recreate()
-                }
+            if (changed && isFollowSystem()) {
+                val activity = context.findFragmentActivityOrNull()
+                activity?.recreate()
             }
         }
     }
@@ -160,104 +171,62 @@ private fun ThemeItem() {
 
 @Composable
 private fun LanguageItem() {
-    val languageNames =
-        stringArrayResource(R.array.language_names).apply {
-            this[0] = stringResource(R.string.Follow_system)
-        }
-
-    val showLanguageDialog = remember { mutableStateOf(false) }
-
-    val currentLanguage =
+    val showLanguageDialog =
         remember {
-            val index =
-                if (isFollowSystem()) {
-                    AppearanceFragment.POS_FOLLOW_SYSTEM
-                } else {
-                    getLanguagePos()
-                }
-            mutableStateOf(index)
+            mutableStateOf(false)
         }
+
+    val context = LocalContext.current
 
     AppearanceItem(
-        label = stringResource(R.string.Language),
-        value = languageNames[currentLanguage.value],
+        label = stringResource(id = R.string.Language),
+        value = stringArrayResource(id = R.array.setting_language_array)[getLanguagePos()],
     ) {
         showLanguageDialog.value = true
     }
 
     if (showLanguageDialog.value) {
-        val dialogSelected = remember { mutableStateOf(currentLanguage.value) }
-        val context = LocalContext.current
         MixinAlertDialog(
-            title = {
-                Text(stringResource(R.string.Language))
-            },
             onDismissRequest = {
                 showLanguageDialog.value = false
             },
+            confirmButton = {},
+            title = {
+                Text(
+                    text = stringResource(id = R.string.Language),
+                    fontSize = 18.sp,
+                    color = MixinAppTheme.colors.textPrimary,
+                )
+            },
             text = {
                 Column {
-                    Box(modifier = Modifier.height(8.dp))
-
-                    listOf(
-                        AppearanceFragment.POS_FOLLOW_SYSTEM,
-                        AppearanceFragment.POS_ENGLISH,
-                        AppearanceFragment.POS_SIMPLIFY_CHINESE,
-                        AppearanceFragment.POS_TRADITIONAL_CHINESE,
-                        AppearanceFragment.POS_SIMPLIFY_JAPANESE,
-                        AppearanceFragment.POS_RUSSIAN,
-                        AppearanceFragment.POS_INDONESIA,
-                        AppearanceFragment.POS_Malay,
-                    ).forEach { index ->
+                    val radioOptions = stringArrayResource(id = R.array.setting_language_array)
+                    val (selectedOption, onOptionSelected) = remember { mutableStateOf(radioOptions[getLanguagePos()]) }
+                    radioOptions.forEach { text ->
                         LanguageRadioItem(
-                            name = languageNames[index],
-                            selected = dialogSelected.value == index,
+                            name = text,
+                            selected = (text == selectedOption),
                             onOptionSelected = {
-                                dialogSelected.value = index
+                                onOptionSelected(text)
+                                showLanguageDialog.value = false
+                                val pos = radioOptions.indexOf(text)
+                                if (pos == getLanguagePos()) return@LanguageRadioItem
+                                val locale =
+                                    when (pos) {
+                                        0 -> Locale.getDefault()
+                                        1 -> Locale.ENGLISH
+                                        2 -> Locale.SIMPLIFIED_CHINESE
+                                        3 -> Locale.TRADITIONAL_CHINESE
+                                        4 -> Locale("zh", "HK")
+                                        5 -> Locale("ja")
+                                        else -> Locale.getDefault()
+                                    }
+                                val appLocale: LocaleListCompat = LocaleListCompat.create(locale)
+                                AppCompatDelegate.setApplicationLocales(appLocale)
+
+                                TimeCache.clear()
                             },
                         )
-                    }
-                }
-            },
-            dismissText = stringResource(R.string.Cancel),
-            confirmText = stringResource(R.string.OK),
-            onConfirmClick = {
-                showLanguageDialog.value = false
-
-                val newSelected = dialogSelected.value
-                if (currentLanguage.value != newSelected) {
-                    currentLanguage.value = newSelected
-                    if (newSelected == AppearanceFragment.POS_FOLLOW_SYSTEM) {
-                        AppCompatDelegate.setApplicationLocales(LocaleListCompat.getEmptyLocaleList())
-                    } else {
-                        val selectedLang =
-                            when (newSelected) {
-                                AppearanceFragment.POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.language
-                                AppearanceFragment.POS_TRADITIONAL_CHINESE -> Locale.TRADITIONAL_CHINESE.language
-                                AppearanceFragment.POS_SIMPLIFY_JAPANESE -> Locale.JAPANESE.language
-                                AppearanceFragment.POS_RUSSIAN -> Constants.Locale.Russian.Language
-                                AppearanceFragment.POS_INDONESIA -> Constants.Locale.Indonesian.Language
-                                AppearanceFragment.POS_Malay -> Constants.Locale.Malay.Language
-                                else -> Locale.US.language
-                            }
-                        val selectedCountry =
-                            when (newSelected) {
-                                AppearanceFragment.POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.country
-                                AppearanceFragment.POS_TRADITIONAL_CHINESE -> Locale.TRADITIONAL_CHINESE.country
-                                AppearanceFragment.POS_SIMPLIFY_JAPANESE -> Locale.JAPANESE.country
-                                AppearanceFragment.POS_RUSSIAN -> Constants.Locale.Russian.Country
-                                AppearanceFragment.POS_INDONESIA -> Constants.Locale.Indonesian.Country
-                                AppearanceFragment.POS_Malay -> Constants.Locale.Malay.Country
-                                else -> Locale.US.country
-                            }
-                        val newLocale = Locale(selectedLang, selectedCountry)
-                        AppCompatDelegate.setApplicationLocales(LocaleListCompat.create(newLocale))
-                    }
-
-                    TimeCache.singleton.evictAll()
-                    context.findFragmentActivityOrNull()?.apply {
-                        onBackPressed()
-                        recreate()
                     }
                 }
             },
@@ -269,33 +238,67 @@ private fun LanguageItem() {
 private fun LanguageRadioItem(
     name: String,
     selected: Boolean,
-    onOptionSelected: () -> Unit,
+    onOptionSelected: (String) -> Unit,
 ) {
     Row(
         Modifier
             .fillMaxWidth()
             .height(56.dp)
             .selectable(
-                selected = (selected),
-                onClick = { onOptionSelected() },
+                selected = selected,
+                onClick = { onOptionSelected(name) },
                 role = Role.RadioButton,
             ),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         RadioButton(
+            selected = selected,
+            onClick = null,
             colors =
                 RadioButtonDefaults.colors(
                     selectedColor = MixinAppTheme.colors.accent,
+                    unselectedColor = MixinAppTheme.colors.unchecked,
                 ),
-            selected = selected,
-            onClick = null, // null recommended for accessibility with screenreaders
         )
         Text(
             text = name,
+            style =
+                TextStyle(
+                    fontSize = 16.sp,
+                    color = MixinAppTheme.colors.textPrimary,
+                ),
             modifier = Modifier.padding(start = 16.dp),
-            fontSize = 14.sp,
-            color = MixinAppTheme.colors.textPrimary,
         )
+    }
+}
+
+@Composable
+private fun CurrencyItem(
+    initialCurrency: String,
+    getCurrencySymbol: (String) -> String,
+) {
+    val currentCurrency = remember(initialCurrency) { mutableStateOf(initialCurrency) }
+
+    val context = LocalContext.current
+
+    AppearanceItem(
+        label = stringResource(id = R.string.Currency),
+        value =
+            stringResource(
+                R.string.wallet_setting_currency_desc,
+                currentCurrency.value,
+                getCurrencySymbol(currentCurrency.value),
+            ),
+    ) {
+        val activity = context.findFragmentActivityOrNull() ?: return@AppearanceItem
+        val currencyBottom = CurrencyBottomSheetDialogFragment.newInstance()
+        currencyBottom.callback =
+            object : CurrencyBottomSheetDialogFragment.Callback {
+                override fun onCurrencyClick(currency: Currency) {
+                    currentCurrency.value = currency.name
+                }
+            }
+        currencyBottom.show(activity.supportFragmentManager, AppearanceFragment.TAG)
     }
 }
 
@@ -308,65 +311,34 @@ private fun AppearanceItem(
     Row(
         modifier =
             Modifier
-                .fillMaxWidth()
-                .background(MixinAppTheme.colors.background)
                 .height(60.dp)
-                .clickable {
-                    onClick()
-                }
-                .padding(horizontal = 16.dp),
+                .background(MixinAppTheme.colors.background)
+                .clickable { onClick() }
+                .padding(start = 16.dp, end = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = label,
-            style =
-                TextStyle(
-                    color = MixinAppTheme.colors.textPrimary,
-                    fontSize = 14.sp,
-                ),
+            fontSize = 14.sp,
+            color = MixinAppTheme.colors.textPrimary,
         )
-
         Spacer(Modifier.weight(1f))
-
         Text(
             text = value,
-            style =
-                TextStyle(
-                    color = MixinAppTheme.colors.textAssist,
-                ),
+            fontSize = 14.sp,
+            color = MixinAppTheme.colors.textAssist,
         )
     }
 }
 
 @Composable
-private fun CurrencyItem() {
-    val currentCurrency =
-        remember {
-            mutableStateOf(Session.getFiatCurrency())
-        }
-
-    val context = LocalContext.current
-
-    AppearanceItem(
-        label = stringResource(id = R.string.Currency),
-        value =
-            stringResource(
-                R.string.wallet_setting_currency_desc,
-                currentCurrency.value,
-                Fiats.getSymbol(currentCurrency.value),
-            ),
-    ) {
-        val activity = context.findFragmentActivityOrNull() ?: return@AppearanceItem
-        val currencyBottom = CurrencyBottomSheetDialogFragment.newInstance()
-        currencyBottom.callback =
-            object : CurrencyBottomSheetDialogFragment.Callback {
-                override fun onCurrencyClick(currency: Currency) {
-                    currentCurrency.value = currency.name
-                }
-            }
-        currencyBottom.showNow(
-            activity.supportFragmentManager,
-            CurrencyBottomSheetDialogFragment.TAG,
+@Preview
+fun AppearancePagePreview() {
+    MixinAppTheme {
+        AppearancePageContent(
+            initialThemeId = 0,
+            initialCurrency = "USD",
+            getCurrencySymbol = { "$" }
         )
     }
 }

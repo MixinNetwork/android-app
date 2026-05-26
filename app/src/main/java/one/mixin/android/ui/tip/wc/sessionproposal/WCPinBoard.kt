@@ -93,17 +93,47 @@ fun WCPinBoard(
 ) {
     val context = LocalContext.current
     val isInPreview = LocalInspectionMode.current
-    val clipboardManager: ClipboardManager = LocalClipboardManager.current
-    val showBiometric = allowBiometric && !isInPreview && BiometricUtil.shouldShowBiometric(context)
+    
+    val showBiometric = if (isInPreview) false else allowBiometric && BiometricUtil.shouldShowBiometric(context)
     val randomKeyboardEnabled by if (isInPreview) {
         remember { mutableStateOf(false) }
     } else {
-        LocalContext.current.defaultSharedPreferences
-            .booleanValueAsState(
-                key = Constants.Account.PREF_RANDOM,
-                defaultValue = false,
-            )
+        context.defaultSharedPreferences.booleanValueAsState(
+            key = Constants.Account.PREF_RANDOM,
+            defaultValue = false,
+        )
     }
+
+    WCPinBoardContent(
+        step = step,
+        errorInfo = errorInfo,
+        showBiometric = showBiometric,
+        signUnavailable = signUnavailable,
+        randomKeyboardEnabled = randomKeyboardEnabled,
+        onNegativeClick = onNegativeClick,
+        onPositiveClick = onPositiveClick,
+        onDoneClick = onDoneClick,
+        onBiometricClick = onBiometricClick,
+        onPinComplete = onPinComplete
+    )
+}
+
+@Composable
+fun WCPinBoardContent(
+    step: Step,
+    errorInfo: String?,
+    showBiometric: Boolean,
+    signUnavailable: Boolean,
+    randomKeyboardEnabled: Boolean,
+    onNegativeClick: () -> Unit,
+    onPositiveClick: () -> Unit,
+    onDoneClick: () -> Unit,
+    onBiometricClick: (() -> Unit)?,
+    onPinComplete: ((String) -> Unit)?,
+) {
+    val context = LocalContext.current
+    val clipboardManager: ClipboardManager = LocalClipboardManager.current
+    
     val list =
         if (randomKeyboardEnabled) {
             mutableListOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "0").apply {
@@ -112,361 +142,215 @@ fun WCPinBoard(
                 add("<<")
             }
         } else {
-            listOf(
-                "1",
-                "2",
-                "3",
-                "4",
-                "5",
-                "6",
-                "7",
-                "8",
-                "9",
-                "",
-                "0",
-                "<<",
-            )
+            listOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "<<")
         }
-    var size by remember { mutableStateOf(IntSize.Zero) }
-    var pinCode by remember { mutableStateOf("") }
 
-    AnimatedContent(targetState = step, transitionSpec = {
-        if (targetState == Step.Input) {
-            (slideInVertically(initialOffsetY = { it }) togetherWith scaleOut() + fadeOut())
-        } else if (initialState == Step.Input) {
-            if (targetState == Step.Loading) {
-                (EnterTransition.None togetherWith ExitTransition.None)
-            } else {
-                (scaleIn() + fadeIn() togetherWith fadeOut())
+    var pinValue by remember {
+        mutableStateOf("")
+    }
+
+    Column(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
+    ) {
+        if (step == Step.Input || step == Step.Verifying) {
+            Spacer(modifier = Modifier.height(10.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+            ) {
+                for (i in 1..6) {
+                    Box(
+                        modifier =
+                            Modifier
+                                .size(14.dp)
+                                .clip(RoundedCornerShape(7.dp))
+                                .background(
+                                    if (pinValue.length >= i) {
+                                        MixinAppTheme.colors.accent
+                                    } else {
+                                        MixinAppTheme.colors.backgroundGrayLight
+                                    },
+                                ),
+                    )
+                    if (i != 6) {
+                        Spacer(modifier = Modifier.width(16.dp))
+                    }
+                }
             }
-        } else {
-            (scaleIn() + fadeIn() togetherWith scaleOut() + fadeOut())
-        }
-    }, label = "") { s ->
-        when (s) {
-            Step.Error ->
-                Column(
-                    modifier =
-                        Modifier
-                            .clickable(
-                                onClick = {
-                                    clipboardManager.setText(AnnotatedString(errorInfo ?: ""))
-                                    toast(R.string.copied_to_clipboard)
-                                },
-                            )
-                            .height(200.dp)
-                            .fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(20.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                if (errorInfo != null) {
                     Text(
-                        text = "Error",
+                        text = errorInfo,
                         color = MixinAppTheme.colors.red,
-                        fontSize = 18.sp,
-                    )
-                    Text(
-                        modifier = Modifier.padding(32.dp, 12.dp, 32.dp, 32.dp),
-                        text = errorInfo ?: "",
-                        textAlign = TextAlign.Center,
-                        color = MixinAppTheme.colors.textPrimary,
                         fontSize = 14.sp,
+                        textAlign = TextAlign.Center,
                     )
                 }
-            Step.Done ->
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                ) {
-                    Box(modifier = Modifier.height(20.dp))
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_transfer_done),
-                        contentDescription = null,
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            var keyboardHeight by remember {
+                mutableStateOf(0.dp)
+            }
+
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = keyboardHeight),
+            ) {
+                if (step == Step.Verifying) {
+                    CircularProgressIndicator(
+                        modifier =
+                            Modifier
+                                .size(32.dp)
+                                .align(Alignment.Center),
+                        color = MixinAppTheme.colors.accent,
                     )
-                    Box(modifier = Modifier.height(12.dp))
-                    Text(text = stringResource(R.string.Success), color = MixinAppTheme.colors.textMinor)
-                    Box(modifier = Modifier.height(40.dp))
-                    MixinButton(
-                        onClick = { onDoneClick.invoke() },
-                        contentPadding = PaddingValues(horizontal = 28.dp),
-                        shape = RoundedCornerShape(40.dp),
+                } else {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(3),
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .onSizeChanged {
+                                    keyboardHeight = context.pxToDp(it.height).dp
+                                },
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
                     ) {
-                        Text(
-                            text = stringResource(id = R.string.Done),
-                            fontSize = 16.sp,
-                            color = Color.White,
-                        )
-                    }
-                    Box(modifier = Modifier.height(32.dp))
-                }
-            Step.Sign ->
-                Column(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.SpaceEvenly,
-                ) {
-                    Box(modifier = Modifier.height(20.dp))
-                    MixinButton(
-                        modifier = Modifier.widthIn(min = 100.dp),
-                        onClick = {
-                            if (!signUnavailable) {
-                                onPositiveClick.invoke()
-                            }
-                        },
-                        contentPadding = PaddingValues(horizontal = 28.dp, vertical = 11.dp),
-                        shape = RoundedCornerShape(40.dp),
-                    ) {
-                        if (signUnavailable) {
-                            CircularProgressIndicator(
-                                modifier =
-                                    Modifier
-                                        .size(16.dp),
-                                color = Color.White,
-                                strokeWidth = 2.dp,
-                            )
-                        } else {
-                            Text(
-                                text = stringResource(id = R.string.sign_by_pin),
-                                color = Color.White,
-                                fontSize = 16.sp,
-                            )
-                        }
-                    }
-                    Box(modifier = Modifier.height(24.dp))
-                    TextButton(
-                        onClick = { onNegativeClick() },
-                        contentPadding = PaddingValues(horizontal = 28.dp, vertical = 11.dp),
-                        shape = RoundedCornerShape(40.dp),
-                    ) {
-                        Text(
-                            text = stringResource(R.string.Cancel),
-                            color = Color(0xFF4B7CDD),
-                            fontSize = 16.sp,
-                        )
-                    }
-                    Box(modifier = Modifier.height(32.dp))
-                }
-            else ->
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    AnimatedContent(targetState = step, transitionSpec = {
-                        (fadeIn() togetherWith fadeOut())
-                    }, label = "") {
-                        if (step == Step.Input) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center,
-                                modifier =
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .wrapContentHeight(),
-                            ) {
-                                Box(modifier = Modifier.height(10.dp))
-                                Box(
-                                    modifier =
-                                        Modifier
-                                            .padding(8.dp)
-                                            .fillMaxWidth(),
-                                    contentAlignment = Alignment.Center,
-                                ) {
-                                    LazyRow(
-                                        modifier = Modifier.height(20.dp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                    ) {
-                                        items(6) { index ->
-                                            val hasContent = index < pinCode.length
-                                            AnimatedContent(
-                                                targetState = hasContent,
-                                                transitionSpec = {
-                                                    if (targetState > initialState) {
-                                                        scaleIn() + fadeIn() togetherWith scaleOut() + fadeOut()
-                                                    } else {
-                                                        scaleIn() + fadeIn() togetherWith scaleOut() + fadeOut()
-                                                    }.using(
-                                                        SizeTransform(clip = false),
-                                                    )
-                                                },
-                                                label = "",
-                                            ) { b ->
-                                                Text(
-                                                    "*",
-                                                    modifier =
-                                                        Modifier
-                                                            .width(24.dp),
-                                                    fontWeight = FontWeight.Bold,
-                                                    color = if (b) MixinAppTheme.colors.textPrimary else MixinAppTheme.colors.textMinor,
-                                                    fontSize = if (b) 18.sp else 12.sp,
-                                                    textAlign = TextAlign.Center,
-                                                )
-                                            }
+                        items(list.size) { index ->
+                            val item = list[index]
+                            when (item) {
+                                "" -> {
+                                    if (showBiometric) {
+                                        Box(
+                                            modifier =
+                                                Modifier
+                                                    .size(60.dp)
+                                                    .clip(RoundedCornerShape(30.dp))
+                                                    .clickable {
+                                                        onBiometricClick?.invoke()
+                                                    },
+                                            contentAlignment = Alignment.Center,
+                                        ) {
+                                            Icon(
+                                                painter = painterResource(id = R.drawable.ic_biometric),
+                                                contentDescription = null,
+                                                tint = MixinAppTheme.colors.icon,
+                                            )
                                         }
+                                    } else {
+                                        Box(modifier = Modifier.size(60.dp))
                                     }
                                 }
-                                if (showBiometric) {
-                                    Spacer(modifier = Modifier.height(12.dp))
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
+                                "<<" -> {
+                                    Box(
                                         modifier =
                                             Modifier
-                                                .padding(horizontal = 12.dp, vertical = 3.dp)
-                                                .clip(
-                                                    shape = RoundedCornerShape(4.dp),
-                                                )
-                                                .clickable { onBiometricClick?.invoke() },
+                                                .size(60.dp)
+                                                .clip(RoundedCornerShape(30.dp))
+                                                .clickable {
+                                                    if (pinValue.isNotEmpty()) {
+                                                        pinValue = pinValue.substring(0, pinValue.length - 1)
+                                                        context.tickVibrate()
+                                                    }
+                                                },
+                                        contentAlignment = Alignment.Center,
                                     ) {
-                                        Image(
-                                            painter = painterResource(R.drawable.ic_biometric),
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.ic_backspace),
                                             contentDescription = null,
-                                        )
-                                        Spacer(modifier = Modifier.width(4.dp))
-                                        Text(
-                                            text = stringResource(R.string.Verify_by_Biometric),
-                                            color = MixinAppTheme.colors.textBlue,
+                                            tint = MixinAppTheme.colors.icon,
                                         )
                                     }
                                 }
-                                Spacer(modifier = Modifier.height(12.dp))
-                            }
-                        } else {
-                            Box(
-                                contentAlignment = Alignment.Center,
-                                modifier =
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .height(94.dp),
-                            ) {
-                                CircularProgressIndicator(
-                                    modifier =
-                                        Modifier
-                                            .size(32.dp),
-                                    color = MixinAppTheme.colors.accent,
-                                )
-                            }
-                        }
-                    }
-                    AnimatedVisibility(
-                        visible = step == Step.Input || step == Step.Loading,
-                        enter = slideInVertically(initialOffsetY = { it }),
-                        exit = slideOutVertically(targetOffsetY = { it }),
-                    ) {
-                        Column(modifier = Modifier.background(MixinAppTheme.colors.backgroundWindow)) {
-                            if (Session.getTipPub() != null) {
-                                Row(
-                                    modifier =
-                                        Modifier
-                                            .background(MixinAppTheme.colors.backgroundWindow)
-                                            .height(36.dp)
-                                            .fillMaxWidth(),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.Center,
-                                ) {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.ic_secret_tip),
-                                        contentDescription = null,
-                                        tint = MixinAppTheme.colors.textMinor,
-                                    )
-                                    Text(
-                                        color = MixinAppTheme.colors.textMinor,
-                                        text = stringResource(id = R.string.Secured_by_TIP),
-                                        fontSize = 12.sp,
-                                    )
+                                else -> {
+                                    Box(
+                                        modifier =
+                                            Modifier
+                                                .size(60.dp)
+                                                .clip(RoundedCornerShape(30.dp))
+                                                .background(MixinAppTheme.colors.backgroundGrayLight)
+                                                .clickable {
+                                                    if (pinValue.length < 6) {
+                                                        pinValue += item
+                                                        context.tickVibrate()
+                                                        if (pinValue.length == 6) {
+                                                            onPinComplete?.invoke(pinValue)
+                                                            pinValue = ""
+                                                        }
+                                                    }
+                                                },
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        Text(
+                                            text = item,
+                                            fontSize = 24.sp,
+                                            color = MixinAppTheme.colors.textPrimary,
+                                        )
+                                    }
                                 }
-                            }
-                            Box(
-                                modifier =
-                                    Modifier
-                                        .wrapContentHeight()
-                                        .heightIn(120.dp, 240.dp)
-                                        .onSizeChanged {
-                                            size = it
-                                        },
-                            ) {
-                                LazyVerticalGrid(
-                                    modifier =
-                                        Modifier
-                                            .fillMaxHeight()
-                                            .padding(horizontal = 8.dp, vertical = 8.dp),
-                                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    columns = GridCells.Fixed(3),
-                                    content = {
-                                        items(list.size) { index ->
-                                            Box(
-                                                contentAlignment = Alignment.Center,
-                                                modifier =
-                                                    Modifier
-                                                        .height(
-                                                            context.pxToDp(
-                                                                (
-                                                                    size.toSize().height -
-                                                                        context.dpToPx(
-                                                                            40f,
-                                                                        )
-                                                                ) / 4,
-                                                            ).dp,
-                                                        )
-                                                        .clip(shape = RoundedCornerShape(8.dp))
-                                                        .background(
-                                                            when (index) {
-                                                                11 -> MixinAppTheme.colors.backgroundDark
-                                                                9 -> Color.Transparent
-                                                                else -> MixinAppTheme.colors.background
-                                                            },
-                                                        )
-                                                        .run {
-                                                            if (step == Step.Input && index != 9) {
-                                                                clickable {
-                                                                    context.tickVibrate()
-                                                                    if (index == 11) {
-                                                                        if (pinCode.isNotEmpty()) {
-                                                                            pinCode =
-                                                                                pinCode.substring(
-                                                                                    0,
-                                                                                    pinCode.length - 1,
-                                                                                )
-                                                                        }
-                                                                    } else if (pinCode.length < 6) {
-                                                                        pinCode += list[index]
-                                                                        if (pinCode.length == 6) {
-                                                                            onPinComplete?.invoke(pinCode)
-                                                                            pinCode = ""
-                                                                        }
-                                                                    }
-                                                                }
-                                                            } else {
-                                                                this
-                                                            }
-                                                        },
-                                            ) {
-                                                if (index == 11) {
-                                                    Image(
-                                                        painter = painterResource(R.drawable.ic_delete),
-                                                        contentDescription = null,
-                                                    )
-                                                } else if (index != 9) {
-                                                    Text(
-                                                        text = list[index],
-                                                        fontSize = 24.sp,
-                                                        color = MixinAppTheme.colors.textPrimary,
-                                                        textAlign = TextAlign.Center,
-                                                    )
-                                                }
-                                            }
-                                        }
-                                    },
-                                )
                             }
                         }
                     }
                 }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+            ) {
+                Text(
+                    text = stringResource(id = R.string.Forgot_PIN),
+                    modifier =
+                        Modifier.clickable {
+                            context.toast(R.string.forget_pin_tip)
+                        },
+                    color = MixinAppTheme.colors.accent,
+                    fontSize = 14.sp,
+                )
+            }
+            Spacer(modifier = Modifier.height(24.dp))
+        } else {
+            Spacer(modifier = Modifier.height(24.dp))
+            MixinButton(
+                text = stringResource(id = R.string.Done),
+                modifier = Modifier.fillMaxWidth(),
+                onClick = onDoneClick,
+            )
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun WCPinBoardPreview() {
     MixinAppTheme {
-        WCPinBoard(Step.Input, null, allowBiometric = false, true, {}, {}, {}, null, null)
+        WCPinBoardContent(
+            step = Step.Input,
+            errorInfo = null,
+            showBiometric = true,
+            signUnavailable = false,
+            randomKeyboardEnabled = false,
+            onNegativeClick = {},
+            onPositiveClick = {},
+            onDoneClick = {},
+            onBiometricClick = {},
+            onPinComplete = {}
+        )
     }
 }

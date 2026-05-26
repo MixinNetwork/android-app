@@ -21,29 +21,23 @@ import one.mixin.android.ui.tip.TipType
 
 @Composable
 fun SecurityPage() {
+    SecurityPageContent(hasPin = Session.getAccount()?.hasPin == true)
+}
+
+@Composable
+fun SecurityPageContent(hasPin: Boolean) {
     val navController = LocalSettingNav.current
     val context = LocalContext.current
 
     SettingPageScaffold(title = stringResource(id = R.string.Security)) {
         SettingTile(title = stringResource(R.string.PIN)) {
-            if (Session.getAccount()?.hasPin == true) {
+            if (hasPin) {
                 navController.navigation(SettingDestination.PinSetting)
             } else {
                 TipActivity.show(context as SettingActivity, TipType.Create)
             }
         }
-
-        Box(modifier = Modifier.height(16.dp))
-        SettingTile(title = stringResource(R.string.Emergency_Contact)) {
-            navController.navigation(SettingDestination.EmergencyContact)
-        }
-
-        Box(modifier = Modifier.height(16.dp))
-        SettingTile(title = stringResource(R.string.Authorizations)) {
-            navController.navigation(SettingDestination.Authentications)
-        }
-
-        Box(modifier = Modifier.height(16.dp))
+...
         SettingTile(title = stringResource(R.string.Logs)) {
             navController.navigation(SettingDestination.PinLogs)
         }
@@ -54,6 +48,6 @@ fun SecurityPage() {
 @Preview
 fun SecurityPagePreview() {
     MixinAppTheme {
-        SecurityPage()
+        SecurityPageContent(hasPin = true)
     }
 }

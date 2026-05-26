@@ -84,18 +84,39 @@ fun PinKeyBoard(
 ) {
     val context = LocalContext.current
     val isInPreview = LocalInspectionMode.current
-    // val open = context.defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
-    // val biometricEnable = !open && BiometricUtil.isSupport(context)
+    
     val showBiometric = if (isInPreview) false else BiometricUtil.shouldShowBiometric(context)
     val randomKeyboardEnabled by if (isInPreview) {
         remember { mutableStateOf(false) }
     } else {
-        LocalContext.current.defaultSharedPreferences
-            .booleanValueAsState(
-                key = Constants.Account.PREF_RANDOM,
-                defaultValue = false,
-            )
+        context.defaultSharedPreferences.booleanValueAsState(
+            key = Constants.Account.PREF_RANDOM,
+            defaultValue = false,
+        )
     }
+
+    PinKeyBoardContent(
+        step = step,
+        errorContent = errorContent,
+        showBiometric = showBiometric,
+        randomKeyboardEnabled = randomKeyboardEnabled,
+        onResetClick = onResetClick,
+        onBiometricClick = onBiometricClick,
+        onVerifyRequest = onVerifyRequest
+    )
+}
+
+@Composable
+fun PinKeyBoardContent(
+    step: AuthStep,
+    errorContent: String,
+    showBiometric: Boolean,
+    randomKeyboardEnabled: Boolean,
+    onResetClick: (() -> Unit)?,
+    onBiometricClick: (() -> Unit)?,
+    onVerifyRequest: ((String) -> Unit)?,
+) {
+    val context = LocalContext.current
     val list =
         if (randomKeyboardEnabled) {
             mutableListOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "0").apply {
@@ -104,325 +125,205 @@ fun PinKeyBoard(
                 add("<<")
             }
         } else {
-            listOf(
-                "1",
-                "2",
-                "3",
-                "4",
-                "5",
-                "6",
-                "7",
-                "8",
-                "9",
-                "",
-                "0",
-                "<<",
-            )
+            listOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "<<")
         }
-    var size by remember { mutableStateOf(IntSize.Zero) }
-    var pinCode by remember { mutableStateOf("") }
 
-    AnimatedContent(targetState = step, transitionSpec = {
-        if (targetState == AuthStep.INPUT) {
-            (slideInVertically(initialOffsetY = { it }) togetherWith scaleOut() + fadeOut())
-        } else if (initialState == AuthStep.INPUT) {
-            if (targetState == AuthStep.LOADING) {
-                (EnterTransition.None togetherWith ExitTransition.None)
-            } else {
-                (scaleIn() + fadeIn() togetherWith fadeOut())
+    var pinValue by remember {
+        mutableStateOf("")
+    }
+
+    Column(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .navigationBarsPadding(),
+    ) {
+        Spacer(modifier = Modifier.height(10.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+        ) {
+            for (i in 1..6) {
+                Box(
+                    modifier =
+                        Modifier
+                            .size(14.dp)
+                            .clip(CircleShape)
+                            .background(
+                                if (pinValue.length >= i) {
+                                    MixinAppTheme.colors.accent
+                                } else {
+                                    MixinAppTheme.colors.backgroundGrayLight
+                                },
+                            ),
+                )
+                if (i != 6) {
+                    Spacer(modifier = Modifier.width(16.dp))
+                }
             }
-        } else {
-            (scaleIn() + fadeIn() togetherWith scaleOut() + fadeOut())
         }
-    }, label = "") { s ->
-        when (s) {
-            AuthStep.DONE ->
-                Column(
+        Spacer(modifier = Modifier.height(16.dp))
+        Box(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(20.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            if (errorContent.isNotEmpty()) {
+                Text(
+                    text = errorContent,
+                    color = MixinAppTheme.colors.red,
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.Center,
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        var keyboardHeight by remember {
+            mutableStateOf(0.dp)
+        }
+
+        Box(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = keyboardHeight),
+        ) {
+            if (step == AuthStep.VERIFYING) {
+                CircularProgressIndicator(
                     modifier =
                         Modifier
-                            .height(150.dp)
-                            .fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_transfer_done),
-                        contentDescription = null,
-                    )
-                    Text(text = stringResource(R.string.Done), color = MixinAppTheme.colors.textMinor)
-                    // Todo hide biometric
-                    // if (biometricEnable) {
-                    //     Spacer(modifier = Modifier.height(12.dp))
-                    //     Row(
-                    //         verticalAlignment = Alignment.CenterVertically,
-                    //         modifier = Modifier
-                    //             .clickable {
-                    //             }
-                    //             .alpha(0f)
-                    //     ) {
-                    //         Image(
-                    //             painter = painterResource(id = R.drawable.ic_biometric_enable),
-                    //             contentDescription = null
-                    //         )
-                    //         Spacer(modifier = Modifier.width(4.dp))
-                    //         Text(
-                    //             text = stringResource(R.string.setting_enable_biometric_pay),
-                    //             color = MixinAppTheme.colors.textBlue
-                    //         )
-                    //     }
-                    // }
-                }
-            AuthStep.ERROR ->
-                Column(
+                            .size(32.dp)
+                            .align(Alignment.Center),
+                    color = MixinAppTheme.colors.accent,
+                )
+            } else {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(3),
                     modifier =
                         Modifier
-                            .heightIn(min = 150.dp)
-                            .fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
+                            .fillMaxWidth()
+                            .onSizeChanged {
+                                keyboardHeight = context.pxToDp(it.height).dp
+                            },
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
-                    Text(
-                        modifier =
-                            Modifier
-                                .padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 10.dp)
-                                .background(
-                                    color = MixinAppTheme.colors.backgroundGrayLight,
-                                    shape = RoundedCornerShape(8.dp),
-                                )
-                                .padding(horizontal = 20.dp, vertical = 10.dp),
-                        text = errorContent,
-                        color = MixinAppTheme.colors.tipError,
-                        textAlign = TextAlign.Center,
-                        fontSize = 14.sp,
-                    )
-                    MixinButton(
-                        onClick = {
-                            onResetClick?.invoke()
-                        },
-                        contentPadding = PaddingValues(horizontal = 20.dp),
-                        shape = RoundedCornerShape(30.dp),
-                    ) {
-                        Text(
-                            fontSize = 16.sp,
-                            text = stringResource(id = R.string.Continue),
-                            color = Color.White,
-                        )
-                    }
-                }
-            else ->
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    AnimatedContent(targetState = step, transitionSpec = {
-                        (fadeIn() togetherWith fadeOut())
-                    }, label = "") { step ->
-                        if (step == AuthStep.INPUT) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center,
-                                modifier =
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .wrapContentHeight(),
-                            ) {
+                    items(list.size) { index ->
+                        val item = list[index]
+                        when (item) {
+                            "" -> {
+                                if (showBiometric) {
+                                    Box(
+                                        modifier =
+                                            Modifier
+                                                .size(60.dp)
+                                                .clip(RoundedCornerShape(30.dp))
+                                                .clickable {
+                                                    onBiometricClick?.invoke()
+                                                },
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.ic_biometric),
+                                            contentDescription = null,
+                                            tint = MixinAppTheme.colors.icon,
+                                        )
+                                    }
+                                } else {
+                                    Box(modifier = Modifier.size(60.dp))
+                                }
+                            }
+                            "<<" -> {
                                 Box(
                                     modifier =
                                         Modifier
-                                            .padding(8.dp)
-                                            .fillMaxWidth(),
+                                            .size(60.dp)
+                                            .clip(RoundedCornerShape(30.dp))
+                                            .clickable {
+                                                if (pinValue.isNotEmpty()) {
+                                                    pinValue = pinValue.substring(0, pinValue.length - 1)
+                                                    context.tickVibrate()
+                                                }
+                                            },
                                     contentAlignment = Alignment.Center,
                                 ) {
-                                    LazyRow(
-                                        modifier = Modifier.wrapContentSize().padding(bottom = 8.dp),
-                                        verticalAlignment = Alignment.Bottom,
-                                        horizontalArrangement = Arrangement.spacedBy(24.dp),
-                                    ) {
-                                        items(6) { index ->
-                                            val hasContent = index < pinCode.length
-                                            AnimatedContent(
-                                                targetState = hasContent,
-                                                transitionSpec = {
-                                                    if (targetState > initialState) {
-                                                        scaleIn() + fadeIn() togetherWith scaleOut() + fadeOut()
-                                                    } else {
-                                                        scaleIn() + fadeIn() togetherWith scaleOut() + fadeOut()
-                                                    }.using(
-                                                        SizeTransform(clip = false),
-                                                    )
-                                                },
-                                                label = "",
-                                            ) { b ->
-                                                Box(
-                                                    modifier = Modifier
-                                                        .size(14.dp)
-                                                        .border(1.dp, MixinAppTheme.colors.textPrimary, CircleShape)
-                                                        .background(if (b) MixinAppTheme.colors.textPrimary else Color.Transparent, CircleShape)
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
-                                if (showBiometric) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        modifier =
-                                            Modifier
-                                                .clip(
-                                                    shape = RoundedCornerShape(4.dp),
-                                                )
-                                                .clickable { onBiometricClick?.invoke() }
-                                                .padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 20.dp),
-                                    ) {
-                                        Image(
-                                            painter = painterResource(R.drawable.ic_biometric),
-                                            contentDescription = null,
-                                        )
-                                        Spacer(modifier = Modifier.width(4.dp))
-                                        Text(
-                                            text = stringResource(R.string.Verify_by_Biometric),
-                                            color = MixinAppTheme.colors.textBlue,
-                                        )
-                                    }
-                                }
-                            }
-                        } else {
-                            Box(
-                                contentAlignment = Alignment.Center,
-                                modifier =
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .height(94.dp),
-                            ) {
-                                CircularProgressIndicator(
-                                    modifier =
-                                        Modifier
-                                            .size(32.dp),
-                                    color = MixinAppTheme.colors.accent,
-                                )
-                            }
-                        }
-                    }
-                    AnimatedVisibility(
-                        visible = step == AuthStep.INPUT || step == AuthStep.LOADING,
-                        enter = slideInVertically(initialOffsetY = { it }),
-                        exit = slideOutVertically(targetOffsetY = { it }),
-                    ) {
-                        Column(modifier = Modifier.background(MixinAppTheme.colors.backgroundWindow)) {
-                            if (Session.getTipPub() != null) {
-                                Row(
-                                    modifier =
-                                        Modifier
-                                            .background(MixinAppTheme.colors.backgroundWindow)
-                                            .height(36.dp)
-                                            .fillMaxWidth(),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.Center,
-                                ) {
                                     Icon(
-                                        painter = painterResource(id = R.drawable.ic_secret_tip),
+                                        painter = painterResource(id = R.drawable.ic_backspace),
                                         contentDescription = null,
-                                        tint = MixinAppTheme.colors.textAssist,
-                                    )
-                                    Text(
-                                        color = MixinAppTheme.colors.textAssist,
-                                        text = stringResource(id = R.string.Secured_by_TIP),
-                                        fontSize = 12.sp,
+                                        tint = MixinAppTheme.colors.icon,
                                     )
                                 }
                             }
-                            Box(
-                                modifier =
-                                    Modifier
-                                        .wrapContentHeight()
-                                        .heightIn(120.dp, 240.dp)
-                                        .onSizeChanged {
-                                            size = it
-                                        },
-                            ) {
-                                LazyVerticalGrid(
+                            else -> {
+                                Box(
                                     modifier =
                                         Modifier
-                                            .fillMaxHeight()
-                                            .padding(horizontal = 8.dp, vertical = 8.dp),
-                                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    columns = GridCells.Fixed(3),
-                                    content = {
-                                        items(list.size) { index ->
-                                            Box(
-                                                contentAlignment = Alignment.Center,
-                                                modifier =
-                                                    Modifier
-                                                        .height(
-                                                            context.pxToDp(
-                                                                (
-                                                                    size.toSize().height -
-                                                                        context.dpToPx(
-                                                                            40f,
-                                                                        )
-                                                                ) / 4,
-                                                            ).dp,
-                                                        )
-                                                        .clip(shape = RoundedCornerShape(8.dp))
-                                                        .background(
-                                                            when (index) {
-                                                                11 -> MixinAppTheme.colors.backgroundDark
-                                                                9 -> Color.Transparent
-                                                                else -> MixinAppTheme.colors.background
-                                                            },
-                                                        )
-                                                        .run {
-                                                            if (step == AuthStep.INPUT && index != 9) {
-                                                                clickable {
-                                                                    context.tickVibrate()
-                                                                    if (index == 11) {
-                                                                        if (pinCode.isNotEmpty()) {
-                                                                            pinCode =
-                                                                                pinCode.substring(
-                                                                                    0,
-                                                                                    pinCode.length - 1,
-                                                                                )
-                                                                        }
-                                                                    } else if (pinCode.length < 6) {
-                                                                        pinCode += list[index]
-                                                                        if (pinCode.length == 6) {
-                                                                            onVerifyRequest?.invoke(pinCode)
-                                                                            pinCode = ""
-                                                                        }
-                                                                    }
-                                                                }
-                                                            } else {
-                                                                this
-                                                            }
-                                                        },
-                                            ) {
-                                                if (index == 11) {
-                                                    Image(
-                                                        painter = painterResource(R.drawable.ic_delete),
-                                                        contentDescription = null,
-                                                    )
-                                                } else if (index != 9) {
-                                                    Text(
-                                                        text = list[index],
-                                                        fontSize = 24.sp,
-                                                        color = MixinAppTheme.colors.textPrimary,
-                                                        textAlign = TextAlign.Center,
-                                                    )
+                                            .size(60.dp)
+                                            .clip(RoundedCornerShape(30.dp))
+                                            .background(MixinAppTheme.colors.backgroundGrayLight)
+                                            .clickable {
+                                                if (pinValue.length < 6) {
+                                                    pinValue += item
+                                                    context.tickVibrate()
+                                                    if (pinValue.length == 6) {
+                                                        onVerifyRequest?.invoke(pinValue)
+                                                        pinValue = ""
+                                                    }
                                                 }
-                                            }
-                                        }
-                                    },
-                                )
+                                            },
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    Text(
+                                        text = item,
+                                        fontSize = 24.sp,
+                                        color = MixinAppTheme.colors.textPrimary,
+                                    )
+                                }
                             }
                         }
                     }
                 }
+            }
         }
+
+        Spacer(modifier = Modifier.height(24.dp))
+        if (onResetClick != null) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+            ) {
+                Text(
+                    text = stringResource(id = R.string.Forgot_PIN),
+                    modifier =
+                        Modifier.clickable {
+                            onResetClick.invoke()
+                        },
+                    color = MixinAppTheme.colors.accent,
+                    fontSize = 14.sp,
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(24.dp))
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun PinKeyBoardPreview() {
     MixinAppTheme {
-        PinKeyBoard(AuthStep.INPUT, "", {}, null, null)
+        PinKeyBoardContent(
+            step = AuthStep.INPUT,
+            errorContent = "",
+            showBiometric = true,
+            randomKeyboardEnabled = false,
+            onResetClick = {},
+            onBiometricClick = {},
+            onVerifyRequest = {}
+        )
     }
 }
