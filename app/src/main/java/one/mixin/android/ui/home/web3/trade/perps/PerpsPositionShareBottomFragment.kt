@@ -111,7 +111,7 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
 
     private var referralShareInfo: ReferralShareInfo? = null
     private var isLoading = false
-    private var currentDisplayMetric = ShareDisplayMetric.ROE
+    private var currentDisplayMetric = ShareDisplayMetric.PNL
     private var currentPosterStyle = SharePosterStyle.CLASSIC
     private lateinit var shareData: ShareCardData
     private lateinit var posterAdapter: PosterAdapter
