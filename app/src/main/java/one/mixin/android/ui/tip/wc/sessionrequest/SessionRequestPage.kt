@@ -98,26 +98,68 @@ fun SessionRequestPage(
     showPin: () -> Unit,
 ) {
     val viewModel = hiltViewModel<SessionRequestViewModel>()
+    val sessionRequestUI = viewModel.getSessionRequestUI(version, chain, signData, sessionRequest)
+    
+    SessionRequestPageContent(
+        gson = gson,
+        version = version,
+        account = account,
+        step = step,
+        chain = chain,
+        topic = topic,
+        sessionRequest = sessionRequest,
+        sessionRequestUI = sessionRequestUI,
+        asset = asset,
+        tipGas = tipGas,
+        errorInfo = errorInfo,
+        isFeeWaived = isFeeWaived,
+        onFreeClick = onFreeClick,
+        onPreviewMessage = onPreviewMessage,
+        onDismissRequest = onDismissRequest,
+        showPin = showPin,
+        checkAddressAndGetDisplayName = { addr -> viewModel.checkAddressAndGetDisplayName(addr, null) },
+        findWalletById = { id -> viewModel.findWalletById(id) },
+        web3TokenItemById = { id, assetId -> viewModel.web3TokenItemById(id, assetId = assetId) }
+    )
+}
+
+@Composable
+fun SessionRequestPageContent(
+    gson: Gson,
+    version: WalletConnect.Version,
+    account: String,
+    step: WalletConnectBottomSheetDialogFragment.Step,
+    chain: Chain,
+    topic: String,
+    sessionRequest: Wallet.Model.SessionRequest?,
+    sessionRequestUI: one.mixin.android.tip.wc.internal.SessionRequestUI?,
+    asset: Token?,
+    tipGas: TipGas?,
+    errorInfo: String?,
+    isFeeWaived: Boolean = false,
+    onFreeClick: (() -> Unit)? = null,
+    onPreviewMessage: (String) -> Unit,
+    onDismissRequest: () -> Unit,
+    showPin: () -> Unit,
+    checkAddressAndGetDisplayName: suspend (String) -> Triple<String?, Int, Boolean?>?,
+    findWalletById: suspend (String) -> one.mixin.android.vo.safe.SafeWallet?,
+    web3TokenItemById: suspend (String, String) -> Web3TokenItem?
+) {
     val context = LocalContext.current
     val commonWallet = stringResource(R.string.Common_Wallet)
     var walletName by remember { mutableStateOf<String?>(null) }
     var walletDisplayInfo by remember { mutableStateOf<Triple<String?, Int, Boolean?>?>(null) }
     var chainToken by remember { mutableStateOf<Web3TokenItem?>(null) }
 
-    if (version != WalletConnect.Version.TIP && (signData == null || sessionRequest == null)) {
-        Loading()
-        return
-    }
-    val sessionRequestUI = viewModel.getSessionRequestUI(version, chain, signData, sessionRequest)
-    if (sessionRequestUI == null) {
+    if (version != WalletConnect.Version.TIP && (sessionRequestUI == null)) {
         Loading()
         return
     }
 
     val signType =
-        if ((sessionRequestUI.data as? WCEthereumSignMessage)?.type == WCEthereumSignMessage.WCSignType.PERSONAL_MESSAGE) {
+        if ((sessionRequestUI?.data as? WCEthereumSignMessage)?.type == WCEthereumSignMessage.WCSignType.PERSONAL_MESSAGE) {
             0
-        } else if (sessionRequestUI.data is WCEthereumTransaction && (sessionRequestUI.data.value == null || Numeric.decodeQuantity(sessionRequestUI.data.value) == BigInteger.ZERO)) {
+        } else if (sessionRequestUI?.data is WCEthereumTransaction && (sessionRequestUI.data.value == null || Numeric.decodeQuantity(sessionRequestUI.data.value) == BigInteger.ZERO)) {
             2
         } else {
             1
@@ -125,7 +167,7 @@ fun SessionRequestPage(
 
     LaunchedEffect(account) {
         try {
-            walletDisplayInfo = viewModel.checkAddressAndGetDisplayName(account, null)
+            walletDisplayInfo = checkAddressAndGetDisplayName(account)
         } catch (e: Exception) {
             walletDisplayInfo = null
         }
@@ -134,7 +176,7 @@ fun SessionRequestPage(
 
     LaunchedEffect(Unit) {
         try {
-            val wallet = viewModel.findWalletById(Web3Signer.currentWalletId)
+            val wallet = findWalletById(Web3Signer.currentWalletId)
             walletName = wallet?.name?.takeIf { it.isNotEmpty() } ?: commonWallet
         } catch (e: Exception) {
             walletName = commonWallet
@@ -143,7 +185,7 @@ fun SessionRequestPage(
 
     LaunchedEffect(Unit) {
         try {
-            chainToken = viewModel.web3TokenItemById(Web3Signer.currentWalletId, assetId = chain.assetId)
+            chainToken = web3TokenItemById(Web3Signer.currentWalletId, chain.assetId)
         } catch (e: Exception) {
             Timber.e(e)
         }

@@ -10,7 +10,6 @@ import androidx.compose.material.RippleConfiguration
 import androidx.compose.material.RippleDefaults
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
@@ -18,6 +17,7 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.colorspace.ColorSpaces
 import androidx.compose.ui.platform.LocalContext
+import one.mixin.android.MixinApplication
 import one.mixin.android.extension.isScreenWideColorGamut
 import one.mixin.android.util.isCurrChinese
 
@@ -180,7 +180,14 @@ private val LocalColors = compositionLocalOf { createAppColors(isDarkTheme = fal
 
 @Composable
 fun MixinAppTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = run {
+        val isInPreview = LocalInspectionMode.current
+        if (isInPreview) {
+            false
+        } else {
+            MixinApplication.get().isNightMode()
+        }
+    },
     content: @Composable () -> Unit,
 ) {
     val context = LocalContext.current

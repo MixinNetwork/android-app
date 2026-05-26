@@ -237,14 +237,37 @@ private fun NotificationItem(
 
 @Composable
 private fun TransferNotificationItem() {
+    val viewModel = hiltViewModel<SettingViewModel>()
+    val thresholdValue = remember {
+        mutableStateOf(Session.getAccount()!!.transferNotificationThreshold)
+    }
+    TransferNotificationItemContent(
+        thresholdValue = thresholdValue.value,
+        onUpdateThreshold = { newValue ->
+            viewModel.preferences(
+                AccountUpdateRequest(
+                    fiatCurrency = Session.getFiatCurrency(),
+                    transferNotificationThreshold = newValue,
+                ),
+            )
+        },
+        onSuccess = { account ->
+            thresholdValue.value = account.transferNotificationThreshold
+        }
+    )
+}
+
+@Composable
+private fun TransferNotificationItemContent(
+    thresholdValue: Double,
+    onUpdateThreshold: suspend (Double) -> retrofit2.Response<one.mixin.android.api.response.MixinResponse<one.mixin.android.vo.Account>>,
+    onSuccess: (one.mixin.android.vo.Account) -> Unit,
+) {
     val accountSymbol =
         remember {
             Fiats.getSymbol()
         }
-    val threshold =
-        remember {
-            mutableStateOf(Session.getAccount()!!.transferNotificationThreshold)
-        }
+    val threshold = remember(thresholdValue) { mutableStateOf(thresholdValue) }
 
     var showEditDialog by remember {
         mutableStateOf(false)
@@ -255,7 +278,6 @@ private fun TransferNotificationItem() {
     }
 
     val scope = rememberCoroutineScope()
-    val viewModel = hiltViewModel<SettingViewModel>()
 
     NotificationItem(
         trailing = {
@@ -278,7 +300,6 @@ private fun TransferNotificationItem() {
                 },
                 text = threshold.value.toString(),
                 onConfirm = {
-                    Timber.d("onConfirm $it")
                     val result = it.toDoubleOrNull()
                     if (result == null) {
                         toast(R.string.Data_error)
@@ -287,17 +308,13 @@ private fun TransferNotificationItem() {
                         scope.launch {
                             handleMixinResponse(
                                 invokeNetwork = {
-                                    viewModel.preferences(
-                                        AccountUpdateRequest(
-                                            fiatCurrency = Session.getFiatCurrency(),
-                                            transferNotificationThreshold = result,
-                                        ),
-                                    )
+                                    onUpdateThreshold(result)
                                 },
                                 successBlock = { response ->
                                     response.data?.let { account ->
                                         Session.storeAccount(account)
                                         threshold.value = account.transferNotificationThreshold
+                                        onSuccess(account)
                                     }
                                 },
                                 doAfterNetworkSuccess = {
@@ -325,14 +342,37 @@ private fun TransferNotificationItem() {
 
 @Composable
 private fun TransferLargeAmountItem() {
+    val viewModel = hiltViewModel<SettingViewModel>()
+    val thresholdValue = remember {
+        mutableStateOf(Session.getAccount()!!.transferConfirmationThreshold)
+    }
+    TransferLargeAmountItemContent(
+        thresholdValue = thresholdValue.value,
+        onUpdateThreshold = { newValue ->
+            viewModel.preferences(
+                AccountUpdateRequest(
+                    fiatCurrency = Session.getFiatCurrency(),
+                    transferConfirmationThreshold = newValue,
+                ),
+            )
+        },
+        onSuccess = { account ->
+            thresholdValue.value = account.transferConfirmationThreshold
+        }
+    )
+}
+
+@Composable
+private fun TransferLargeAmountItemContent(
+    thresholdValue: Double,
+    onUpdateThreshold: suspend (Double) -> retrofit2.Response<one.mixin.android.api.response.MixinResponse<one.mixin.android.vo.Account>>,
+    onSuccess: (one.mixin.android.vo.Account) -> Unit,
+) {
     val accountSymbol =
         remember {
             Fiats.getSymbol()
         }
-    val threshold =
-        remember {
-            mutableStateOf(Session.getAccount()!!.transferConfirmationThreshold)
-        }
+    val threshold = remember(thresholdValue) { mutableStateOf(thresholdValue) }
 
     var showEditDialog by remember {
         mutableStateOf(false)
@@ -343,7 +383,6 @@ private fun TransferLargeAmountItem() {
     }
 
     val scope = rememberCoroutineScope()
-    val viewModel = hiltViewModel<SettingViewModel>()
 
     NotificationItem(
         trailing = {
@@ -377,7 +416,6 @@ private fun TransferLargeAmountItem() {
                 },
                 text = threshold.value.toString(),
                 onConfirm = {
-                    Timber.d("onConfirm $it")
                     val result = it.toDoubleOrNull()
                     if (result == null) {
                         toast(R.string.Data_error)
@@ -386,17 +424,13 @@ private fun TransferLargeAmountItem() {
                         scope.launch {
                             handleMixinResponse(
                                 invokeNetwork = {
-                                    viewModel.preferences(
-                                        AccountUpdateRequest(
-                                            fiatCurrency = Session.getFiatCurrency(),
-                                            transferConfirmationThreshold = result,
-                                        ),
-                                    )
+                                    onUpdateThreshold(result)
                                 },
                                 successBlock = { response ->
                                     response.data?.let { account ->
                                         Session.storeAccount(account)
                                         threshold.value = account.transferConfirmationThreshold
+                                        onSuccess(account)
                                     }
                                 },
                                 doAfterNetworkSuccess = {

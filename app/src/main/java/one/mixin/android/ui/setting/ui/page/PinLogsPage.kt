@@ -46,12 +46,22 @@ import timber.log.Timber
 
 @Composable
 fun PinLogsPage() {
+    val viewModel = hiltViewModel<SettingViewModel>()
+    PinLogsPageContent(
+        loadMore = { lastCreatedAt ->
+            viewModel.getPinLogs(lastCreatedAt)
+        }
+    )
+}
+
+@Composable
+fun PinLogsPageContent(
+    loadMore: suspend (String?) -> retrofit2.Response<one.mixin.android.api.response.MixinResponse<List<LogResponse>>>,
+) {
     SettingPageScaffold(
         title = stringResource(id = R.string.Logs),
         verticalScrollable = false,
     ) {
-        val viewModel = hiltViewModel<SettingViewModel>()
-
         var logs by remember {
             mutableStateOf(listOf<LogResponse>())
         }
@@ -66,13 +76,13 @@ fun PinLogsPage() {
 
         val scope = rememberCoroutineScope()
 
-        suspend fun loadMore() {
+        suspend fun loadMoreInternal() {
             if (isLoading || !hasMore) return
             isLoading = true
             Timber.d("loadMore")
             handleMixinResponse(
                 invokeNetwork = {
-                    viewModel.getPinLogs(logs.lastOrNull()?.createdAt)
+                    loadMore(logs.lastOrNull()?.createdAt)
                 },
                 successBlock = {
                     val data = it.data ?: emptyList()
@@ -87,7 +97,7 @@ fun PinLogsPage() {
         }
 
         LaunchedEffect(true) {
-            loadMore()
+            loadMoreInternal()
         }
 
         if (logs.isEmpty()) {
@@ -101,7 +111,7 @@ fun PinLogsPage() {
                 logs = logs,
                 loadMore = {
                     scope.launch {
-                        loadMore()
+                        loadMoreInternal()
                     }
                 },
             )

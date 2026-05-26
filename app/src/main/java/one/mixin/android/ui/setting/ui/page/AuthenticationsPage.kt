@@ -47,24 +47,29 @@ import one.mixin.android.vo.App
 
 @Composable
 fun AuthenticationsPage() {
+    val viewModel = hiltViewModel<AuthenticationsViewModel>()
+    val response by viewModel.authentications.collectAsState()
+    AuthenticationsPageContent(response)
+}
+
+@Composable
+fun AuthenticationsPageContent(
+    response: Result<List<AuthorizationResponse>>?,
+) {
     SettingPageScaffold(
         title = stringResource(id = R.string.Authorizations),
         verticalScrollable = false,
     ) {
-        val viewModel = hiltViewModel<AuthenticationsViewModel>()
-
         val text =
             rememberSaveable {
                 mutableStateOf("")
             }
         SearchTextField(text, stringResource(id = R.string.setting_auth_search_hint))
 
-        val response by viewModel.authentications.collectAsState()
-
         if (response == null) {
             Loading()
-        } else if (response?.isSuccess == true) {
-            val data = response?.getOrNull() ?: emptyList()
+        } else if (response.isSuccess) {
+            val data = response.getOrNull() ?: emptyList()
             if (data.isEmpty()) {
                 EmptyLayout()
             } else {
@@ -195,6 +200,14 @@ private fun AuthenticationItem(
             )
         }
         Box(modifier = Modifier.width(16.dp))
+    }
+}
+
+@Composable
+@Preview
+fun AuthenticationsPagePreview() {
+    MixinAppTheme {
+        AuthenticationsPageContent(response = Result.success(emptyList()))
     }
 }
 

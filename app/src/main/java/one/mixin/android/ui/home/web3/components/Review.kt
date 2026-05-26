@@ -17,7 +17,10 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -46,7 +49,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -154,7 +156,7 @@ fun TokenTransactionPreview(
             modifier =
                 Modifier
                     .fillMaxWidth(),
-            verticalAlignment = Alignment.Bottom,
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             CoilImage(
                 model = token.iconUrl,
@@ -169,13 +171,28 @@ fun TokenTransactionPreview(
                 text = token.name,
                 color = MixinAppTheme.colors.textPrimary,
                 fontSize = 16.sp,
-                fontWeight = FontWeight.W600
+                fontWeight = FontWeight.W600,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.widthIn(max = 140.dp)
             )
-            Box(modifier = Modifier.weight(1f))
-            Text(
+            Box(modifier = Modifier.width(8.dp))
+            BasicText(
                 text = "-${amount} ${token.symbol}",
-                color = MixinAppTheme.colors.red,
-                fontSize = 14.sp,
+                modifier = Modifier.weight(1f),
+                style = TextStyle(
+                    color = MixinAppTheme.colors.red,
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.End,
+                ),
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Ellipsis,
+                autoSize = TextAutoSize.StepBased(
+                    minFontSize = 8.sp,
+                    maxFontSize = 14.sp,
+                    stepSize = 0.5.sp
+                )
             )
         }
         Box(modifier = Modifier.height(4.dp))
@@ -192,6 +209,23 @@ fun TokenTransactionPreview(
 fun ParsedTxPreview(
     asset: Token?,
     parsedTx: ParsedTx?,
+    solanaTxSource: SolanaTxSource? = null,
+) {
+    val viewModel = hiltViewModel<Web3ViewModel>()
+    val prices = mutableMapOf<String, String?>()
+    parsedTx?.balanceChanges?.forEach { bc ->
+        val priceUsd by viewModel.getTokenPriceUsdFlow(bc.assetId)
+            .collectAsStateWithLifecycle(initialValue = null)
+        prices[bc.assetId] = priceUsd
+    }
+    ParsedTxPreviewContent(asset, parsedTx, prices, solanaTxSource)
+}
+
+@Composable
+fun ParsedTxPreviewContent(
+    asset: Token?,
+    parsedTx: ParsedTx?,
+    prices: Map<String, String?>,
     solanaTxSource: SolanaTxSource? = null,
 ) {
     Column(
@@ -276,7 +310,7 @@ fun ParsedTxPreview(
             }
             BalanceChangeHead()
             parsedTx.balanceChanges.forEach { bc ->
-                BalanceChangeItem(balanceChange = bc)
+                BalanceChangeItemContent(balanceChange = bc, priceUsd = prices[bc.assetId])
                 Box(modifier = Modifier.height(10.dp))
             }
         } else if (parsedTx.approves.isNullOrEmpty().not() && parsedTx.balanceChanges.isNullOrEmpty()){
@@ -290,11 +324,12 @@ fun ParsedTxPreview(
             val viewDetails = remember { mutableStateOf(false) }
             val rotation by animateFloatAsState(if (viewDetails.value) 90f else 0f, label = "rotation")
             if (parsedTx.balanceChanges?.size == 1) {
-                SingleBalanceChangeItem(bc = parsedTx.balanceChanges.first())
+                val bc = parsedTx.balanceChanges.first()
+                SingleBalanceChangeItemContent(bc = bc, priceUsd = prices[bc.assetId])
                 Box(modifier = Modifier.height(10.dp))
             } else {
                 parsedTx.balanceChanges?.forEach { bc ->
-                    BalanceChangeItem(balanceChange = bc)
+                    BalanceChangeItemContent(balanceChange = bc, priceUsd = prices[bc.assetId])
                     Spacer(modifier = Modifier.height(10.dp))
                 }
             }
@@ -482,15 +517,17 @@ private fun ApproveChangeItem(
 private fun SingleBalanceChangeItem(
     bc: BalanceChange
 ) {
-    val isInPreview: Boolean = LocalInspectionMode.current
-    val priceUsd: String? = if (isInPreview) {
-        null
-    } else {
-        val viewModel: Web3ViewModel = hiltViewModel()
-        val collectedPriceUsd: String? by viewModel.getTokenPriceUsdFlow(bc.assetId)
-            .collectAsStateWithLifecycle(initialValue = null)
-        collectedPriceUsd
-    }
+    val viewModel = hiltViewModel<Web3ViewModel>()
+    val priceUsd: String? by viewModel.getTokenPriceUsdFlow(bc.assetId)
+        .collectAsStateWithLifecycle(initialValue = null)
+    SingleBalanceChangeItemContent(bc, priceUsd)
+}
+
+@Composable
+private fun SingleBalanceChangeItemContent(
+    bc: BalanceChange,
+    priceUsd: String?
+) {
     val fiatPrice = bc.formatPrice(priceUsd)
 
     Row(
@@ -535,15 +572,17 @@ private fun SingleBalanceChangeItem(
 private fun BalanceChangeItem(
     balanceChange: BalanceChange,
 ) {
-    val isInPreview: Boolean = LocalInspectionMode.current
-    val priceUsd: String? = if (isInPreview) {
-        null
-    } else {
-        val viewModel: Web3ViewModel = hiltViewModel()
-        val collectedPriceUsd: String? by viewModel.getTokenPriceUsdFlow(balanceChange.assetId)
-            .collectAsStateWithLifecycle(initialValue = null)
-        collectedPriceUsd
-    }
+    val viewModel = hiltViewModel<Web3ViewModel>()
+    val priceUsd: String? by viewModel.getTokenPriceUsdFlow(balanceChange.assetId)
+        .collectAsStateWithLifecycle(initialValue = null)
+    BalanceChangeItemContent(balanceChange, priceUsd)
+}
+
+@Composable
+private fun BalanceChangeItemContent(
+    balanceChange: BalanceChange,
+    priceUsd: String?
+) {
     val fiatPrice = balanceChange.formatPrice(priceUsd)
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -675,10 +714,9 @@ private fun Item(
 @Preview
 @Composable
 fun PreviewMessage() {
-    MixinAppTheme {
-        Box(modifier = Modifier.background(MixinAppTheme.colors.background)) {
-            MessagePreview(
-                content = """{
+    Box(modifier = Modifier.background(MixinAppTheme.colors.background)) {
+        MessagePreview(
+            content = """{
           "raw": [
             "0x9df67f5a05fb594c4357d87221cbd69f1d5a6fbb",
             "{\"types\":{\"Alias\":[{\"name\":\"from\",\"type\":\"address\"},{\"name\":\"alias\",\"type\":\"address\"},{\"name\":\"timestamp\",\"type\":\"uint64\"}],\"EIP712Domain\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"version\",\"type\":\"string\"}]},\"domain\":{\"name\":\"snapshot\",\"version\":\"0.1.4\"},\"primaryType\":\"Alias\",\"message\":{\"from\":\"0x9df67f5a05fb594c4357d87221cbd69f1d5a6fbb\",\"alias\":\"0x8f14e8dbc7b3619e5210201022f637f271545c90\",\"timestamp\":\"1710766295\"}}"
@@ -686,8 +724,7 @@ fun PreviewMessage() {
           "type": "TYPED_MESSAGE"
         }
     """,
-            ) {
-            }
+        ) {
         }
     }
 }
@@ -695,31 +732,27 @@ fun PreviewMessage() {
 @Preview
 @Composable
 private fun TransactionPreview() {
-    MixinAppTheme {
-        TransactionPreview(balance = BigDecimal(0.134), chain = Chain.Ethereum, null)
-    }
+    TransactionPreview(balance = BigDecimal(0.134), chain = Chain.Ethereum, null)
 }
 
 @Preview
 @Composable
 private fun WarningPreview() {
-    MixinAppTheme {
-        Box(
-            modifier =
-            Modifier
-                .fillMaxWidth()
-                .height(300.dp),
+    Box(
+        modifier =
+        Modifier
+            .fillMaxWidth()
+            .height(300.dp),
+    ) {
+        ActionBottom(
+            modifier = Modifier.align(Alignment.BottomCenter),
+            cancelTitle = stringResource(id = R.string.Cancel),
+            confirmTitle = stringResource(id = R.string.Confirm),
+            cancelAction = { },
         ) {
-            ActionBottom(
-                modifier = Modifier.align(Alignment.BottomCenter),
-                cancelTitle = stringResource(id = R.string.Cancel),
-                confirmTitle = stringResource(id = R.string.Confirm),
-                cancelAction = { },
-            ) {
-            }
-
-            Warning(modifier = Modifier.align(Alignment.BottomCenter))
         }
+
+        Warning(modifier = Modifier.align(Alignment.BottomCenter))
     }
 }
 
@@ -795,11 +828,9 @@ fun ActionBottom(
 @Preview
 @Composable
 fun TransferBottomPreview() {
-    MixinAppTheme {
-        Column {
-            ActionBottom(modifier = Modifier, stringResource(id = R.string.Cancel), stringResource(id = R.string.Confirm), {}, {})
-            ActionBottom(modifier = Modifier, stringResource(id = R.string.Discard), stringResource(id = R.string.Send), {}, {})
-        }
+    Column {
+        ActionBottom(modifier = Modifier, stringResource(id = R.string.Cancel), stringResource(id = R.string.Confirm), {}, {})
+        ActionBottom(modifier = Modifier, stringResource(id = R.string.Discard), stringResource(id = R.string.Send), {}, {})
     }
 }
 
@@ -813,9 +844,7 @@ fun BalanceChangePreview() {
 @Preview
 @Composable
 fun ItemPreview() {
-    MixinAppTheme {
-        Item(Item("Compute Unit Limit", "1400000 compute units"))
-    }
+    Item(Item("Compute Unit Limit", "1400000 compute units"))
 }
 
 @Preview
@@ -833,17 +862,13 @@ fun SolanaParsedTxPreviewPreview() {
 @Preview
 @Composable
 fun InstructionPreview() {
-    MixinAppTheme {
-        Instruction(ParsedInstruction("", "", "", info = "cannot decode instruction for Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB"))
-    }
+    Instruction(ParsedInstruction("", "", "", info = "cannot decode instruction for Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB"))
 }
 
 @Preview
 @Composable
 fun SolanaParsedTxNullPreview() {
-    MixinAppTheme {
-        ParsedTxPreview(parsedTx = null, asset = null, solanaTxSource = SolanaTxSource.Web)
-    }
+    ParsedTxPreviewContent(parsedTx = null, asset = null, prices = emptyMap(), solanaTxSource = SolanaTxSource.Web)
 }
 
 @Preview
@@ -851,9 +876,7 @@ fun SolanaParsedTxNullPreview() {
 fun SolanaParsedTxInstructionNullPreview() {
     val data = """{"instructions":[]}"""
     val parsedTx = GsonHelper.customGson.fromJson(data, ParsedTx::class.java)
-    MixinAppTheme {
-        ParsedTxPreview(parsedTx = parsedTx, asset = null, solanaTxSource = SolanaTxSource.Web)
-    }
+    ParsedTxPreviewContent(parsedTx = parsedTx, asset = null, prices = emptyMap(), solanaTxSource = SolanaTxSource.Web)
 }
 
 @Preview
@@ -861,9 +884,7 @@ fun SolanaParsedTxInstructionNullPreview() {
 fun SolanaParsedTxBalanceChangeNullWebPreview() {
     val data = """{"instructions":[{"program_id":"ComputeBudget111111111111111111111111111111","program_name":"ComputeBudget","instruction_name":"SetComputeUnitLimit","items":[{"key":"Compute Unit Limit","value":"600000 compute units"}]},{"program_id":"ComputeBudget111111111111111111111111111111","program_name":"ComputeBudget","instruction_name":"SetComputeUnitPrice","items":[{"key":"Compute Unit Price","value":"0.1 lamports per compute unit"}]},{"program_id":"ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL","program_name":"AssociatedTokenAccount","instruction_name":"Create"},{"program_id":"11111111111111111111111111111111","program_name":"System","instruction_name":"Transfer","items":[{"key":"Transfer Amount (SOL)","value":"0.01"}]},{"program_id":"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA","program_name":"Token","instruction_name":"SyncNative"},{"program_id":"JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4","program_name":"Jupiter","instruction_name":"Route","items":[{"key":"Route Plan","value":""},{"key":"In Amount","value":"824635312696"},{"key":"Quoted Out Amount","value":"824635312704"},{"key":"Slippage Bps","value":"824635312712"},{"key":"Platform Fee Bps","value":"50"}],"token_changes":[{"address":"So11111111111111111111111111111111111111112","amount":10000000,"is_pay":true},{"address":"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v","amount":1323264,"is_pay":false}]},{"program_id":"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA","program_name":"Token","instruction_name":"CloseAccount"}]}"""
     val parsedTx = GsonHelper.customGson.fromJson(data, ParsedTx::class.java)
-    MixinAppTheme {
-        ParsedTxPreview(parsedTx = parsedTx, asset = null, solanaTxSource = SolanaTxSource.Web)
-    }
+    ParsedTxPreviewContent(parsedTx = parsedTx, asset = null, prices = emptyMap(), solanaTxSource = SolanaTxSource.Web)
 }
 
 @Preview
@@ -871,9 +892,7 @@ fun SolanaParsedTxBalanceChangeNullWebPreview() {
 fun SolanaParsedTxBalanceChangeNullInnerPreview() {
     val data = """{"instructions":[{"program_id":"ComputeBudget111111111111111111111111111111","program_name":"ComputeBudget","instruction_name":"SetComputeUnitLimit","items":[{"key":"Compute Unit Limit","value":"600000 compute units"}]},{"program_id":"ComputeBudget111111111111111111111111111111","program_name":"ComputeBudget","instruction_name":"SetComputeUnitPrice","items":[{"key":"Compute Unit Price","value":"0.1 lamports per compute unit"}]},{"program_id":"ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL","program_name":"AssociatedTokenAccount","instruction_name":"Create"},{"program_id":"11111111111111111111111111111111","program_name":"System","instruction_name":"Transfer","items":[{"key":"Transfer Amount (SOL)","value":"0.01"}]},{"program_id":"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA","program_name":"Token","instruction_name":"SyncNative"},{"program_id":"JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4","program_name":"Jupiter","instruction_name":"Route","items":[{"key":"Route Plan","value":""},{"key":"In Amount","value":"824635312696"},{"key":"Quoted Out Amount","value":"824635312704"},{"key":"Slippage Bps","value":"824635312712"},{"key":"Platform Fee Bps","value":"50"}],"token_changes":[{"address":"So11111111111111111111111111111111111111112","amount":10000000,"is_pay":true},{"address":"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v","amount":1323264,"is_pay":false}]},{"program_id":"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA","program_name":"Token","instruction_name":"CloseAccount"}]}"""
     val parsedTx = GsonHelper.customGson.fromJson(data, ParsedTx::class.java)
-    MixinAppTheme {
-        ParsedTxPreview(parsedTx = parsedTx, asset = null, solanaTxSource = SolanaTxSource.InnerSwap)
-    }
+    ParsedTxPreviewContent(parsedTx = parsedTx, asset = null, prices = emptyMap(), solanaTxSource = SolanaTxSource.InnerSwap)
 }
 
 @Preview
@@ -881,7 +900,5 @@ fun SolanaParsedTxBalanceChangeNullInnerPreview() {
 fun SolanaParsedTxTokenNullPreview() {
     val data = """{"balance_changes":[{"address":"So11111111111111111111111111111111111111112","amount":-10000000},{"address":"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v","amount":1323264}],"instructions":[{"program_id":"ComputeBudget111111111111111111111111111111","program_name":"ComputeBudget","instruction_name":"SetComputeUnitLimit","items":[{"key":"Compute Unit Limit","value":"600000 compute units"}]},{"program_id":"ComputeBudget111111111111111111111111111111","program_name":"ComputeBudget","instruction_name":"SetComputeUnitPrice","items":[{"key":"Compute Unit Price","value":"0.1 lamports per compute unit"}]},{"program_id":"ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL","program_name":"AssociatedTokenAccount","instruction_name":"Create"},{"program_id":"11111111111111111111111111111111","program_name":"System","instruction_name":"Transfer","items":[{"key":"Transfer Amount (SOL)","value":"0.01"}]},{"program_id":"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA","program_name":"Token","instruction_name":"SyncNative"},{"program_id":"JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4","program_name":"Jupiter","instruction_name":"Route","items":[{"key":"Route Plan","value":""},{"key":"In Amount","value":"824635312696"},{"key":"Quoted Out Amount","value":"824635312704"},{"key":"Slippage Bps","value":"824635312712"},{"key":"Platform Fee Bps","value":"50"}],"token_changes":[{"address":"So11111111111111111111111111111111111111112","amount":10000000,"is_pay":true},{"address":"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v","amount":1323264,"is_pay":false}]},{"program_id":"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA","program_name":"Token","instruction_name":"CloseAccount"}]}"""
     val parsedTx = GsonHelper.customGson.fromJson(data, ParsedTx::class.java)
-    MixinAppTheme {
-        ParsedTxPreview(parsedTx = parsedTx, asset = null, solanaTxSource = SolanaTxSource.InnerSwap)
-    }
+    ParsedTxPreviewContent(parsedTx = parsedTx, asset = null, prices = emptyMap(), solanaTxSource = SolanaTxSource.InnerSwap)
 }

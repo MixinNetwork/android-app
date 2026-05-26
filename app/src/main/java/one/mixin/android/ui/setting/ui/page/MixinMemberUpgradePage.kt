@@ -12,7 +12,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -59,9 +58,46 @@ fun MixinMemberUpgradePage(
     onContactTeamMixin: () -> Unit = {},
     onViewInvoice: (MembershipOrder) -> Unit = {}
 ) {
-    val isInPreview = LocalInspectionMode.current
-    val viewModel: MemberViewModel? = if (isInPreview) null else hiltViewModel()
+    val viewModel: MemberViewModel = hiltViewModel()
 
+    val pendingOrderState by viewModel.pendingOrder.collectAsState()
+    val subscriptionPlans by viewModel.subscriptionPlans.collectAsState()
+
+    MixinMemberUpgradePageContent(
+        currentUserPlan = currentUserPlan,
+        selectedPlanOverride = selectedPlanOverride,
+        pendingOrderState = pendingOrderState,
+        subscriptionPlans = subscriptionPlans,
+        onClose = onClose,
+        onUrlGenerated = onUrlGenerated,
+        onGooglePlay = onGooglePlay,
+        onContactTeamMixin = onContactTeamMixin,
+        onViewInvoice = onViewInvoice,
+        getPlans = { viewModel.getPlans() },
+        getOrder = { viewModel.getOrder(it) },
+        insertOrders = { viewModel.insertOrders(it) },
+        createMemberOrder = { viewModel.createMemberOrder(it) },
+        clearPendingOrder = { viewModel.clearPendingOrder() }
+    )
+}
+
+@Composable
+fun MixinMemberUpgradePageContent(
+    currentUserPlan: Plan,
+    selectedPlanOverride: Plan? = null,
+    pendingOrderState: MembershipOrder? = null,
+    subscriptionPlans: List<MemberOrderPlan> = emptyList(),
+    onClose: () -> Unit,
+    onUrlGenerated: (String) -> Unit,
+    onGooglePlay: (orderId: String, playStoreSubscriptionId: String) -> Unit,
+    onContactTeamMixin: () -> Unit = {},
+    onViewInvoice: (MembershipOrder) -> Unit = {},
+    getPlans: suspend () -> one.mixin.android.api.response.MixinResponse<one.mixin.android.api.response.MemberOrderPlans>,
+    getOrder: suspend (String) -> one.mixin.android.api.response.MixinResponse<MembershipOrder>?,
+    insertOrders: suspend (MembershipOrder) -> Unit,
+    createMemberOrder: suspend (MemberOrderRequest) -> one.mixin.android.api.response.MixinResponse<MembershipOrder>,
+    clearPendingOrder: () -> Unit
+) {
     var purchaseState by remember { mutableStateOf(PlanPurchaseState()) }
     var savedOrderId by remember { mutableStateOf<String?>(null) }
 
@@ -78,28 +114,9 @@ fun MixinMemberUpgradePage(
         )
     }
 
-    val pendingOrderState = if (isInPreview) {
-        null
-    } else {
-        viewModel?.pendingOrder?.collectAsState()?.value
-    }
-    val subscriptionPlans = if (isInPreview) {
-        emptyList()
-    } else {
-        viewModel?.subscriptionPlans?.collectAsState()?.value.orEmpty()
-    }
-
     LaunchedEffect(Unit) {
-        if (isInPreview) {
-            purchaseState = purchaseState.copy(
-                availablePlans = emptyList(),
-                availablePlayStorePlans = emptySet(),
-                loading = false,
-            )
-            return@LaunchedEffect
-        }
         try {
-            val response = requireNotNull(viewModel).getPlans()
+            val response = getPlans()
             if (response.isSuccess && response.data != null) {
                 val availablePlayStorePlans = if (BuildConfig.IS_GOOGLE_PLAY) {
                     val billingPlanIds = subscriptionPlans.map { it.planId }.toSet()
@@ -116,15 +133,6 @@ fun MixinMemberUpgradePage(
                     availablePlayStorePlans = availablePlayStorePlans
                 )
                 Timber.d("Plans loaded: ${response.data!!.plans.size}, Valid Google Play plans: ${availablePlayStorePlans.size}")
-
-                if (BuildConfig.IS_GOOGLE_PLAY) {
-                    val billingPlanIds = subscriptionPlans.map { it.planId }
-                    val backendPlayStoreIds = response.data!!.plans.mapNotNull { it.playStoreSubscriptionId }
-
-                    Timber.d("Billing library plan IDs: $billingPlanIds")
-                    Timber.d("Backend Play Store subscription IDs: $backendPlayStoreIds")
-                    Timber.d("Matched plan IDs: $availablePlayStorePlans")
-                }
             }
         } catch (e: Exception) {
             Timber.e(e, "Failed to load plans")
@@ -135,10 +143,9 @@ fun MixinMemberUpgradePage(
     }
 
     LaunchedEffect(pendingOrderState?.orderId ?: "") {
-        if (isInPreview) return@LaunchedEffect
         try {
             while (pendingOrderState?.orderId.isNullOrEmpty().not()) {
-                val orderResponse = requireNotNull(viewModel).getOrder(pendingOrderState!!.orderId)
+                val orderResponse = getOrder(pendingOrderState!!.orderId)
                 if (orderResponse?.isSuccess == true && orderResponse.data != null) {
                     val order = orderResponse.data!!
                     val status = MemberOrderStatus.fromString(order.status)
@@ -146,102 +153,102 @@ fun MixinMemberUpgradePage(
                     when (status) {
                         MemberOrderStatus.PAID, MemberOrderStatus.COMPLETED -> {
                             Timber.d("Order completed: ${order.orderId}")
-                            requireNotNull(viewModel).insertOrders(order)
+                            insertOrders(order)
                             onClose()
                             break
                         }
-
-                        MemberOrderStatus.FAILED, MemberOrderStatus.EXPIRED, MemberOrderStatus.CANCEL -> {
-                            Timber.d("Order failed: ${order.orderId}")
-                            requireNotNull(viewModel).insertOrders(order)
-                            onClose()
-                            break
+                        MemberOrderStatus.PENDING -> {
+                            Timber.d("Order still pending")
                         }
-
                         else -> {
-                            Timber.d("Order pending: ${order.orderId}")
-                            delay(3000)
+                            Timber.d("Order status: $status")
+                            break
                         }
                     }
-                } else {
-                    delay(3000)
                 }
+                delay(2000)
             }
         } catch (e: Exception) {
-            purchaseState.copy(error = ErrorHandler.getErrorMessage(e))
-            Timber.e(e, "Failed to poll order status")
+            Timber.e(e, "Error checking order status")
         }
     }
 
-    MixinAppTheme {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-        )
-        {
-            MemberUpgradeTopBar(onClose = onClose)
-            Spacer(modifier = Modifier.height(16.dp))
+    LaunchedEffect(savedOrderId ?: "") {
+        try {
+            while (savedOrderId.isNullOrEmpty().not()) {
+                val orderResponse = getOrder(savedOrderId!!)
+                if (orderResponse?.isSuccess == true && orderResponse.data != null) {
+                    val order = orderResponse.data!!
+                    val status = MemberOrderStatus.fromString(order.status)
 
-            PlanSelector(
-                selectedPlan = selectedPlan,
-                onPlanSelected = { plan ->
-                    selectedPlan = plan
+                    if (status == MemberOrderStatus.PAID || status == MemberOrderStatus.COMPLETED) {
+                        insertOrders(order)
+                        onClose()
+                        break
+                    }
                 }
-            )
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                MemberUpgradeContent(selectedPlan = selectedPlan)
+                delay(3000)
             }
+        } catch (e: Exception) {
+            Timber.e(e, "Error checking saved order status")
+        }
+    }
 
-            MemberUpgradePaymentButton(
-                currentUserPlan = currentUserPlan,
-                selectedPlan = selectedPlan,
-                pendingOrder = pendingOrderState,
-                purchaseState = purchaseState,
-                savedOrderId = savedOrderId,
-                onPaymentClick = {
-                    val isGooglePlayChannel = BuildConfig.IS_GOOGLE_PLAY
-                    val plan =
-                        mapLocalPlanToMemberOrderPlan(selectedPlan, purchaseState.availablePlans)
-                            ?: return@MemberUpgradePaymentButton
-                    val memberViewModel = viewModel ?: return@MemberUpgradePaymentButton
-                    memberViewModel.viewModelScope.launch(CoroutineExceptionHandler { _, error ->
-                        purchaseState = purchaseState.copy(loading = false)
-                        purchaseState = purchaseState.copy(
-                            error = ErrorHandler.getErrorMessage(error)
-                        )
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        MemberUpgradeTopBar(onClose = onClose)
+
+        MemberUpgradeContent(
+            currentUserPlan = currentUserPlan,
+            purchaseState = purchaseState,
+            onContactTeamMixin = onContactTeamMixin
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        PlanSelector(
+            availablePlans = purchaseState.availablePlans,
+            selectedPlan = selectedPlan,
+            onPlanSelected = { selectedPlan = it }
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        val scope = rememberCoroutineScope()
+        MemberUpgradePaymentButton(
+            selectedPlan = selectedPlan,
+            purchaseState = purchaseState,
+            onClick = {
+                val plan = purchaseState.availablePlans.find { Plan.fromString(it.name) == selectedPlan }
+                if (plan != null) {
+                    val orderRequest = MemberOrderRequest(planId = plan.planId)
+                    purchaseState = purchaseState.copy(loading = true)
+                    scope.launch(CoroutineExceptionHandler { _, error ->
+                        Timber.e(error, "Error creating order")
+                        purchaseState = purchaseState.copy(loading = false, error = error.message)
                     }) {
-                        purchaseState = purchaseState.copy(loading = true)
-                        val orderRequest = if (isGooglePlayChannel) {
-                            MemberOrderRequest(plan = plan.plan, fiatSource = "play_store", subscriptionId = plan.playStoreSubscriptionId)
-                        } else {
-                            MemberOrderRequest(plan = plan.plan)
-                        }
-                        val orderResponse = memberViewModel.createMemberOrder(orderRequest)
-
+                        val orderResponse = createMemberOrder(orderRequest)
                         if (orderResponse.isSuccess && orderResponse.data != null) {
-                            orderResponse.data?.orderId?.let { orderId ->
-                                savedOrderId = orderId
+                            val order = orderResponse.data!!
+                            if (order.status == MemberOrderStatus.PAID.name || order.status == MemberOrderStatus.COMPLETED.name) {
+                                onViewInvoice(order)
+                            } else if (order.payUrl.isNullOrEmpty().not()) {
+                                onUrlGenerated(order.payUrl!!)
+                            } else if (order.playStoreSubscriptionId.isNullOrEmpty().not()) {
+                                onGooglePlay(order.orderId, order.playStoreSubscriptionId!!)
+                                savedOrderId = order.orderId
                             }
-
-                            if (isGooglePlayChannel) {
-                                plan.playStoreSubscriptionId?.let { playStoreId ->
-                                    onGooglePlay(orderResponse.data!!.orderId!!, playStoreId)
-                                }
-                            } else {
-                                onUrlGenerated(orderResponse.data!!.paymentUrl!!)
-                            }
+                        } else {
+                            purchaseState = purchaseState.copy(loading = false, error = orderResponse.error?.description ?: "Unknown error")
                         }
                         purchaseState = purchaseState.copy(loading = false)
                     }
-                },
-                onContactSupport = onContactTeamMixin,
-                onViewInvoice = onViewInvoice
-            )
-        }
+                }
+            }
+        )
     }
 }
 
@@ -249,13 +256,18 @@ fun MixinMemberUpgradePage(
 @Composable
 private fun MixinMemberUpgradePagePreview() {
     MixinAppTheme {
-        MixinMemberUpgradePage(
+        MixinMemberUpgradePageContent(
             currentUserPlan = Plan.ADVANCE,
             selectedPlanOverride = null,
             onClose = {},
             onUrlGenerated = {},
             onGooglePlay = { _, _ -> },
-            onContactTeamMixin = {}
+            onContactTeamMixin = {},
+            getPlans = { one.mixin.android.api.response.MixinResponse() },
+            getOrder = { null },
+            insertOrders = {},
+            createMemberOrder = { one.mixin.android.api.response.MixinResponse() },
+            clearPendingOrder = {}
         )
     }
 }
