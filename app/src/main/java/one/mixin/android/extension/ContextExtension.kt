@@ -904,6 +904,47 @@ fun Context.openUrl(
     }
 }
 
+fun Context.openInBrowser(
+    url: String,
+    extraHeaders: Bundle? = null,
+) {
+    var uri = url.toUri()
+    if (uri.scheme.isNullOrBlank()) {
+        uri = Uri.parse("http://$url")
+    }
+    if (!uri.scheme.equals("http", true) && !uri.scheme.equals("https", true)) {
+        return
+    }
+
+    try {
+        val customTabsIntent =
+            CustomTabsIntent.Builder()
+                .setDefaultColorSchemeParams(
+                    CustomTabColorSchemeParams.Builder()
+                        .setToolbarColor(ContextCompat.getColor(this, android.R.color.white))
+                        .build(),
+                )
+                .setShowTitle(true)
+                .build()
+        extraHeaders?.let {
+            customTabsIntent.intent.putExtra(Browser.EXTRA_HEADERS, it)
+        }
+        customTabsIntent.launchUrl(this, uri)
+    } catch (e: Exception) {
+        Timber.e(e, "OpenInBrowser")
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, uri)
+                .putExtra(Browser.EXTRA_APPLICATION_ID, packageName)
+            extraHeaders?.let {
+                intent.putExtra(Browser.EXTRA_HEADERS, it)
+            }
+            startActivity(intent)
+        } catch (e: Exception) {
+            Timber.e(e, "OpenInBrowser")
+        }
+    }
+}
+
 fun Context.openExternalUrl(url: String) {
     try {
         var uri = Uri.parse(url)

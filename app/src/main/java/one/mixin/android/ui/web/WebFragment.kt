@@ -20,7 +20,6 @@ import android.net.Uri
 import android.net.http.SslError
 import android.os.Build
 import android.os.Bundle
-import android.provider.Browser
 import android.provider.MediaStore
 import android.provider.Settings
 import android.util.Base64
@@ -52,10 +51,7 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
-import androidx.browser.customtabs.CustomTabColorSchemeParams
-import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.app.ShareCompat
-import androidx.core.content.ContextCompat
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.toColorInt
 import androidx.core.view.ViewCompat
@@ -124,6 +120,7 @@ import one.mixin.android.extension.matchResourcePattern
 import one.mixin.android.extension.openAsUrl
 import one.mixin.android.extension.openAsUrlOrQrScan
 import one.mixin.android.extension.openCamera
+import one.mixin.android.extension.openInBrowser
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putString
@@ -1058,42 +1055,12 @@ class WebFragment : BaseFragment() {
 
     private fun openInBrowser(url: String) {
         if (viewDestroyed() || url.isBlank()) return
-        val context = context ?: return
-        var uri = url.toUri()
-        if (uri.scheme.isNullOrBlank()) {
-            uri = Uri.parse("http://$url")
-        }
-        if (!uri.scheme.equals("http", true) && !uri.scheme.equals("https", true)) {
-            return
-        }
-
-        val extraHeaders =
+        context?.openInBrowser(
+            url,
             Bundle().apply {
                 putString("Mixin", BuildConfig.VERSION_NAME)
-            }
-        try {
-            val customTabsIntent =
-                CustomTabsIntent.Builder()
-                    .setDefaultColorSchemeParams(
-                        CustomTabColorSchemeParams.Builder()
-                            .setToolbarColor(ContextCompat.getColor(context, android.R.color.white))
-                            .build(),
-                    )
-                    .setShowTitle(true)
-                    .build()
-            customTabsIntent.intent.putExtra(Browser.EXTRA_HEADERS, extraHeaders)
-            customTabsIntent.launchUrl(context, uri)
-        } catch (e: Exception) {
-            Timber.e(e, "OpenInBrowser")
-            try {
-                val intent = Intent(Intent.ACTION_VIEW, uri)
-                    .putExtra(Browser.EXTRA_APPLICATION_ID, context.packageName)
-                    .putExtra(Browser.EXTRA_HEADERS, extraHeaders)
-                startActivity(intent)
-            } catch (e: Exception) {
-                Timber.e(e, "OpenInBrowser")
-            }
-        }
+            },
+        )
     }
 
     private fun closeSelf() {
