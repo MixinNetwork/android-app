@@ -119,8 +119,8 @@ private fun TopMoverGridItem(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Box(
-            modifier = Modifier.size(42.dp),
-            contentAlignment = Alignment.BottomCenter,
+            modifier = Modifier.size(width = 42.dp, height = 46.dp),
+            contentAlignment = Alignment.TopCenter,
         ) {
             CoilImage(
                 model = market.iconUrl,
@@ -131,10 +131,11 @@ private fun TopMoverGridItem(
             )
             Text(
                 text = "${market.leverage}x",
-                fontSize = 14.sp,
-                lineHeight = 16.sp,
+                fontSize = 12.sp,
+                lineHeight = 14.sp,
                 color = MixinAppTheme.colors.textAssist,
                 modifier = Modifier
+                    .offset(y = 32.dp)
                     .clip(RoundedCornerShape(4.dp))
                     .background(MixinAppTheme.colors.background)
                     .padding(horizontal = 3.dp, vertical = 1.dp),
