@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.colorspace.ColorSpaces
 import androidx.compose.ui.platform.LocalContext
 import one.mixin.android.MixinApplication
+import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isScreenWideColorGamut
 import one.mixin.android.util.isCurrChinese
 

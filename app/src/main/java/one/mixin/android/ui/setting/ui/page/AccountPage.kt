@@ -38,17 +38,6 @@ import one.mixin.android.ui.tip.TipType
 
 @Composable
 fun AccountPage() {
-    AccountPageContent(
-        hasPhone = Session.hasPhone(),
-        hasPin = Session.getAccount()?.hasPin == true
-    )
-}
-
-@Composable
-fun AccountPageContent(
-    hasPhone: Boolean,
-    hasPin: Boolean,
-) {
     Scaffold(
         backgroundColor = MixinAppTheme.colors.backgroundWindow,
         topBar = {
@@ -74,7 +63,7 @@ fun AccountPageContent(
             AccountTile(stringResource(R.string.Security)) {
                 navController.navigation(SettingDestination.AccountSecurity)
             }
-            ChangeNumberButton(hasPhone, hasPin)
+            ChangeNumberButton()
             Box(modifier = Modifier.height(16.dp))
             AccountTile(stringResource(R.string.Delete_my_account)) {
                 navController.navigation(SettingDestination.DeleteAccount)
@@ -84,10 +73,7 @@ fun AccountPageContent(
 }
 
 @Composable
-private fun ChangeNumberButton(
-    hasPhone: Boolean,
-    hasPin: Boolean,
-) {
+private fun ChangeNumberButton() {
     val openDialog =
         remember {
             mutableStateOf(false)
@@ -97,24 +83,21 @@ private fun ChangeNumberButton(
 
         MixinAlertDialog(
             text = {
-                Text(stringResource(if (hasPhone) R.string.profile_modify_number else R.string.profile_add_number))
+                Text(stringResource(if (Session.hasPhone()) R.string.profile_modify_number else R.string.profile_add_number))
             },
-            confirmText = stringResource(if (hasPhone) R.string.Change_Phone_Number else R.string.Add_Mobile_Number),
+            confirmText = stringResource(if (Session.hasPhone()) R.string.Change_Phone_Number else R.string.Add_Mobile_Number),
             onConfirmClick = {
                 openDialog.value = false
 
                 val activity = context.findFragmentActivityOrNull()
 
-                if (hasPin) {
+                if (Session.getAccount()?.hasPin == true) {
                     activity?.supportFragmentManager?.inTransaction {
                         setCustomAnimations(
                             R.anim.slide_in_bottom,
                             R.anim.slide_out_bottom,
                             R.anim.slide_in_bottom,
                             R.anim.slide_out_bottom,
-...
-    }
-}
                         )
                             .add(
                                 R.id.container,
@@ -164,6 +147,6 @@ private fun AccountTile(
 @Composable
 fun AccountPagePreview() {
     MixinAppTheme {
-        AccountPageContent(hasPhone = true, hasPin = true)
+        AccountPage()
     }
 }

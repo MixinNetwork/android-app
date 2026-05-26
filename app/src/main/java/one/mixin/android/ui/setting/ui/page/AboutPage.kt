@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Scaffold
@@ -20,7 +19,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -67,27 +65,15 @@ private fun Modifier.debugClickable(
 
 @Composable
 fun AboutPage() {
-    val context = LocalContext.current
-    val preferences = context.defaultSharedPreferences
-    val showLogDebugInitial = remember { preferences.getBoolean(Constants.Debug.LOG_AND_DEBUG, false) }
-    
-    AboutPageContent(
-        showLogDebugInitial = showLogDebugInitial,
-        onUpdateLogDebug = { newValue -> preferences.putBoolean(Constants.Debug.LOG_AND_DEBUG, newValue) }
-    )
-}
-
-@Composable
-fun AboutPageContent(
-    showLogDebugInitial: Boolean,
-    onUpdateLogDebug: (Boolean) -> Unit,
-) {
     val settingNavController = LocalSettingNav.current
-    val showLogDebug = remember { mutableStateOf(showLogDebugInitial) }
+    val preferences = LocalContext.current.defaultSharedPreferences
+    val showLogDebug =
+        remember { mutableStateOf(preferences.getBoolean(Constants.Debug.LOG_AND_DEBUG, false)) }
 
     Scaffold(
         backgroundColor = MixinAppTheme.colors.background,
         topBar = {
+            val context = LocalContext.current
             MixinTopAppBar(
                 navigationIcon = {
                     MixinBackButton()
@@ -111,23 +97,21 @@ fun AboutPageContent(
                     .verticalScroll(rememberScrollState()),
         ) {
             val context = LocalContext.current
-            val isInPreview = LocalInspectionMode.current
-            val logoResId = if (isInPreview) R.drawable.ic_launcher_logo else {
-                val attrs = context.obtainStyledAttributes(intArrayOf(R.attr.ic_logo))
-                val resId = attrs.getResourceId(0, R.drawable.ic_launcher_logo)
-                attrs.recycle()
-                resId
-            }
+            val attrs = context.obtainStyledAttributes(intArrayOf(R.attr.ic_logo))
+            val logoResId = attrs.getResourceId(0, R.drawable.ic_logo_mixin)
+            attrs.recycle()
             Image(
                 modifier =
                     Modifier
                         .debugClickable {
-                            val isLogDebug = showLogDebug.value
-                            onUpdateLogDebug(!isLogDebug)
-                            showLogDebug.value = !isLogDebug
+                            if (preferences.getBoolean(Constants.Debug.LOG_AND_DEBUG, false)) {
+                                preferences.putBoolean(Constants.Debug.LOG_AND_DEBUG, false)
+                                showLogDebug.value = false
+                            } else {
+                                preferences.putBoolean(Constants.Debug.LOG_AND_DEBUG, true)
+                                showLogDebug.value = true
+                            }
                         }
-                        .padding(top = 40.dp, bottom = 20.dp)
-                        .size(64.dp)
                         .align(Alignment.CenterHorizontally),
                 painter = painterResource(id = logoResId),
                 contentDescription = null,
@@ -153,40 +137,34 @@ fun AboutPageContent(
             )
             val termsUrl = stringResource(R.string.landing_terms_url)
             AboutTile(
-                text = stringResource(id = R.string.Terms_of_service),
+                text = stringResource(id = R.string.Terms_of_Service),
                 onClick = {
                     context.openUrl(termsUrl)
                 },
             )
-            val privacyUrl = stringResource(R.string.landing_privacy_url)
+            val privacyPolicyUrl = stringResource(R.string.landing_privacy_policy_url)
             AboutTile(
-                text = stringResource(id = R.string.Privacy_policy),
+                text = stringResource(id = R.string.Privacy_Policy),
                 onClick = {
-                    context.openUrl(privacyUrl)
+                    context.openUrl(privacyPolicyUrl)
                 },
             )
             AboutTile(
-                text = stringResource(id = R.string.Check_for_updates),
+                text = stringResource(id = R.string.Version_Update),
                 onClick = {
-                    context.openMarket(context.packageName)
+                    context.openMarket()
                 },
             )
             if (showLogDebug.value) {
-                AboutTile(stringResource(id = R.string.Logs)) {
-                    settingNavController.navigation(SettingDestination.Logs)
-                }
+                AboutTile(
+                    text = stringResource(id = R.string.LogAndDebug),
+                    onClick = {
+                        settingNavController.navigation(SettingDestination.LogAndDebug)
+                    },
+                )
             }
         }
     }
-}
-
-@Composable
-private fun VersionName() {
-    Text(
-        text = "V ${BuildConfig.VERSION_NAME}",
-        color = MixinAppTheme.colors.textAssist,
-        fontSize = 10.sp,
-    )
 }
 
 @Composable
@@ -194,27 +172,40 @@ private fun AboutTile(
     text: String,
     onClick: () -> Unit,
 ) {
-    Row(
+    Box(
         modifier =
             Modifier
-                .fillMaxWidth()
-                .height(60.dp)
+                .height(56.dp)
                 .clickable { onClick() }
-                .padding(horizontal = 16.dp),
-        verticalAlignment = Alignment.CenterVertically,
+                .padding(horizontal = 16.dp)
+                .fillMaxWidth(),
+        contentAlignment = Alignment.CenterStart,
     ) {
-        Text(
-            text = text,
-            fontSize = 14.sp,
-            color = MixinAppTheme.colors.textPrimary,
-        )
+        Text(text = text, color = MixinAppTheme.colors.accent)
     }
+}
+
+@Composable
+private fun VersionName() {
+    val context = LocalContext.current
+    val versionName =
+        remember {
+            context.packageManager?.getPackageInfo(
+                context.packageName,
+                0,
+            )?.versionName ?: "Unknown"
+        }
+    Text(
+        text = "${BuildConfig.VERSION_NAME}-${BuildConfig.VERSION_CODE}",
+        color = MixinAppTheme.colors.textAssist,
+        fontSize = 10.sp,
+    )
 }
 
 @Preview
 @Composable
 fun AboutPagePreview() {
     MixinAppTheme {
-        AboutPageContent(showLogDebugInitial = false, onUpdateLogDebug = {})
+        AboutPage()
     }
 }
