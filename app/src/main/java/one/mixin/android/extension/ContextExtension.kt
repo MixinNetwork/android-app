@@ -907,13 +907,14 @@ fun Context.openUrl(
 fun Context.openInBrowser(
     url: String,
     extraHeaders: Bundle? = null,
-) {
+): Boolean {
+    if (url.isBlank()) return false
     var uri = url.toUri()
     if (uri.scheme.isNullOrBlank()) {
         uri = Uri.parse("http://$url")
     }
     if (!uri.scheme.equals("http", true) && !uri.scheme.equals("https", true)) {
-        return
+        return false
     }
 
     try {
@@ -930,6 +931,7 @@ fun Context.openInBrowser(
             customTabsIntent.intent.putExtra(Browser.EXTRA_HEADERS, it)
         }
         customTabsIntent.launchUrl(this, uri)
+        return true
     } catch (e: Exception) {
         Timber.e(e, "OpenInBrowser")
         try {
@@ -939,10 +941,12 @@ fun Context.openInBrowser(
                 intent.putExtra(Browser.EXTRA_HEADERS, it)
             }
             startActivity(intent)
+            return true
         } catch (e: Exception) {
             Timber.e(e, "OpenInBrowser")
         }
     }
+    return false
 }
 
 fun Context.openExternalUrl(url: String) {

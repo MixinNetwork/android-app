@@ -954,18 +954,7 @@ class WebFragment : BaseFragment() {
                         botSign(appId, reloadPublicKey, metho, path, body, callbackFunction)
                     },
                     openInBrowserAction = { url ->
-                        lifecycleScope.launch {
-                            val browserUrl =
-                                url.takeUnless {
-                                    it.isBlank() ||
-                                        it.equals("undefined", true) ||
-                                        it.equals("null", true)
-                                }
-                                    ?: webView.url
-                                    ?: currentUrl
-                                    ?: this@WebFragment.url
-                            openInBrowser(browserUrl)
-                        }
+                        openInBrowser(url)
                     },
                 )
             webAppInterface?.let { webView.addJavascriptInterface(it, "MixinContext") }
@@ -1053,14 +1042,30 @@ class WebFragment : BaseFragment() {
         }
     }
 
-    private fun openInBrowser(url: String) {
-        if (viewDestroyed() || url.isBlank()) return
-        context?.openInBrowser(
-            url,
-            Bundle().apply {
-                putString("Mixin", BuildConfig.VERSION_NAME)
-            },
-        )
+    private fun openInBrowser(url: String): Boolean {
+        if (viewDestroyed() || !url.isOpenInBrowserUrl()) return false
+        val context = context ?: return false
+        lifecycleScope.launch {
+            if (viewDestroyed()) return@launch
+            context.openInBrowser(
+                url,
+                Bundle().apply {
+                    putString("Mixin", BuildConfig.VERSION_NAME)
+                },
+            )
+        }
+        return true
+    }
+
+    private fun String.isOpenInBrowserUrl(): Boolean {
+        if (isBlank() || equals("undefined", true) || equals("null", true)) {
+            return false
+        }
+        var uri = toUri()
+        if (uri.scheme.isNullOrBlank()) {
+            uri = Uri.parse("http://$this")
+        }
+        return uri.scheme.equals("http", true) || uri.scheme.equals("https", true)
     }
 
     private fun closeSelf() {
@@ -2196,7 +2201,7 @@ class WebFragment : BaseFragment() {
         var tipSignAction: ((String, String, String) -> Unit)? = null,
         var getAssetAction: ((Array<String>, String) -> Unit)? = null,
         var signBotSignature: ((String, Boolean, String, String, String, String) -> Unit)? = null,
-        var openInBrowserAction: ((String) -> Unit)? = null,
+        var openInBrowserAction: ((String) -> Boolean)? = null,
     ) {
         @JavascriptInterface
         fun showToast(toast: String) {
@@ -2242,8 +2247,8 @@ class WebFragment : BaseFragment() {
         }
 
         @JavascriptInterface
-        fun openInBrowser(url: String) {
-            openInBrowserAction?.invoke(url)
+        fun openInBrowser(url: String): Boolean {
+            return openInBrowserAction?.invoke(url) ?: false
         }
 
         @JavascriptInterface
