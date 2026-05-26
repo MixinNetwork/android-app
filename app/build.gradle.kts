@@ -124,7 +124,7 @@ val billingVersion: String by rootProject.extra
 
 val versionMajor = 4
 val versionMinor = 2
-val versionPatch = 1
+val versionPatch = 0
 val versionBuild = 0
 
 val includeDebugX86_64 = project.findProperty("includeDebugX86_64")?.toString()?.toBoolean() ?: false
@@ -345,6 +345,7 @@ dependencies {
     implementation("androidx.coordinatorlayout:coordinatorlayout:$coordinatorVersion")
     implementation("androidx.biometric:biometric:$biometricVersion")
     implementation("androidx.security:security-crypto:1.1.0")
+    implementation("androidx.webkit:webkit:1.16.0")
 
     implementation("org.sol4k:tweetnacl:$tweetnaclVersion")
     implementation("org.sol4k:utilities:$sol4kUtilitiesVersion")

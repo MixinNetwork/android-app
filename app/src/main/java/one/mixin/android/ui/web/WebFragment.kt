@@ -66,6 +66,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.webkit.WebSettingsCompat
+import androidx.webkit.WebViewFeature
 import coil3.annotation.ExperimentalCoilApi
 import coil3.imageLoader
 import coil3.request.ImageRequest
@@ -1019,6 +1021,20 @@ class WebFragment : BaseFragment() {
                 return
             }
             webView.loadUrl(url, extraHeaders)
+            if (WebViewFeature.isFeatureSupported(WebViewFeature.WEB_AUTHENTICATION)) {
+                WebSettingsCompat.setWebAuthenticationSupport(
+                    webView.settings,
+                    WebSettingsCompat.WEB_AUTHENTICATION_SUPPORT_FOR_APP,
+                )
+                Log.e(
+                    "WebFragment",
+                    "getWebAuthenticationSupport result: " + WebSettingsCompat.getWebAuthenticationSupport(
+                        webView.settings
+                    ),
+                )
+            } else {
+                Log.e("WebFragment", "WebView does not support passkeys.")
+            }
         }
     }
 
@@ -1188,8 +1204,7 @@ class WebFragment : BaseFragment() {
                 },
                 callback = {
                     if (isAdded) {
-                        val spendKey = it
-                        val priv = requireNotNull(CryptoWalletHelper.getWeb3PrivateKey(requireContext(), spendKey, chainId))
+                        val priv = requireNotNull(CryptoWalletHelper.getWeb3PrivateKey(requireContext(), it, chainId))
                         val sig = TipSignSpec.Ecdsa.Secp256k1.sign(priv, message.toByteArray())
                         lifecycleScope.launch {
                             webView.evaluateJavascript("$callbackFunction('$sig')") {}
