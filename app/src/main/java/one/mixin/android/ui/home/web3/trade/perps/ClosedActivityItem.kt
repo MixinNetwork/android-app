@@ -71,8 +71,8 @@ fun ClosedActivityItem(
     }
     val pnlPercent = order.roe.toBigDecimalOrNull()?.multiply(BigDecimal(100))
     val titleRes = when {
-        isFailed && isLong -> R.string.Close_Long_Failed
-        isFailed -> R.string.Close_Short_Failed
+        isFailed && isLong -> R.string.Closed_Long_Failed
+        isFailed -> R.string.Closed_Short_Failed
         isLong -> R.string.Closed_Long
         else -> R.string.Closed_Short
     }

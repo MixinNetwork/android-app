@@ -104,7 +104,9 @@ private fun resolveCurrentToken(
     preferredAssetIds: List<String>,
 ): TokenItem? {
     if (selectedToken == null) {
-        return availableTokens.firstOrNull()
+        return availableTokens
+            .sortedByDescending { it.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO }
+            .firstOrNull()
     }
 
     val matchedToken = availableTokens.firstOrNull { it.assetId == selectedToken.assetId }

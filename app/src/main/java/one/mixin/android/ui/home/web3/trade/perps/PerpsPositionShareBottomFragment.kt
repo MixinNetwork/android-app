@@ -33,6 +33,7 @@ import one.mixin.android.R
 import one.mixin.android.api.referral.ReferralShareInfo
 import one.mixin.android.api.referral.buildReferralCopyUrl
 import one.mixin.android.api.referral.buildReferralShareUrl
+import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.databinding.FragmentPerpsPositionShareBottomBinding
@@ -110,7 +111,7 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
 
     private var referralShareInfo: ReferralShareInfo? = null
     private var isLoading = false
-    private var currentDisplayMetric = ShareDisplayMetric.ROE
+    private var currentDisplayMetric = ShareDisplayMetric.PNL
     private var currentPosterStyle = SharePosterStyle.CLASSIC
     private lateinit var shareData: ShareCardData
     private lateinit var posterAdapter: PosterAdapter
@@ -205,20 +206,17 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
         }
 
         val closed = closeOrder ?: return false
+        if (closed.orderType != PerpsOrder.TYPE_CLOSE) return false
         val pnlAmount = closed.realizedPnl.toBigDecimalSafely() ?: BigDecimal.ZERO
         val effectiveLeverage = if (closed.leverage > 0) closed.leverage else 1
+        val pnlPercent = (closed.roe.toBigDecimalSafely() ?: BigDecimal.ZERO).multiply(BigDecimal(100))
         bindCardData(
             marketId = closed.marketId,
             iconUrl = closed.iconUrl,
             side = closed.side,
             leverage = effectiveLeverage,
             pnlAmount = pnlAmount,
-            pnlPercent = calculateClosedRoe(
-                entryPrice = closed.entryPrice,
-                closePrice = closed.closePrice,
-                side = closed.side,
-                leverage = effectiveLeverage,
-            ),
+            pnlPercent = pnlPercent,
             tokenSymbol = closed.tokenSymbol.orEmpty(),
             displaySymbol = closed.displaySymbol.orEmpty(),
             entryPrice = closed.entryPrice,
@@ -564,8 +562,8 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
     )
 
     private enum class ShareDisplayMetric(val labelRes: Int) {
-        ROE(R.string.RoE),
-        PNL(R.string.PnL),
+        ROE(R.string.perps_share_roe),
+        PNL(R.string.perps_share_pnl),
     }
 
     private enum class SharePosterStyle {
@@ -599,8 +597,8 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
             itemBinding.topCard.setBackgroundResource(cardBackground(useProfitStyle))
             itemBinding.assetIcon.loadImage(data.iconUrl, R.drawable.ic_avatar_place_holder)
             itemBinding.pnlTv.text = when (currentDisplayMetric) {
-                ShareDisplayMetric.ROE -> formatSignedPercent(data.pnlPercent)
-                ShareDisplayMetric.PNL -> formatSignedAmount(data.pnlAmount)
+                ShareDisplayMetric.ROE -> formatSignedAmount(data.pnlAmount)
+                ShareDisplayMetric.PNL -> formatSignedPercent(data.pnlPercent)
             }
             itemBinding.pnlLabelTv.text = getString(currentDisplayMetric.labelRes)
 

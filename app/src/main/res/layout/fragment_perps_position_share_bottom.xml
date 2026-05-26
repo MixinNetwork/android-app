@@ -61,7 +61,7 @@
                 android:orientation="horizontal">
 
                 <androidx.appcompat.widget.AppCompatRadioButton
-                    android:id="@+id/roe_toggle"
+                    android:id="@+id/pnl_toggle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="12dp"
@@ -70,19 +70,19 @@
                     android:checked="true"
                     android:paddingStart="16dp"
                     android:paddingEnd="16dp"
-                    android:text="@string/RoE"
+                    android:text="@string/perps_share_pnl"
                     android:textColor="@drawable/radio_button_text_selector"
                     android:textSize="14sp" />
 
                 <androidx.appcompat.widget.AppCompatRadioButton
-                    android:id="@+id/pnl_toggle"
+                    android:id="@+id/roe_toggle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="@drawable/selector_radio"
                     android:button="@null"
                     android:paddingStart="16dp"
                     android:paddingEnd="16dp"
-                    android:text="@string/PnL"
+                    android:text="@string/perps_share_roe"
                     android:textColor="@drawable/radio_button_text_selector"
                     android:textSize="14sp" />
             </RadioGroup>
