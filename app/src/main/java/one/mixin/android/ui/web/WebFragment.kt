@@ -1043,12 +1043,13 @@ class WebFragment : BaseFragment() {
     }
 
     private fun openInBrowser(url: String): Boolean {
-        if (viewDestroyed() || !url.isOpenInBrowserUrl()) return false
+        if (viewDestroyed()) return false
+        val browserUrl = url.toOpenInBrowserUrlOrNull() ?: return false
         val context = context ?: return false
         lifecycleScope.launch {
             if (viewDestroyed()) return@launch
             context.openInBrowser(
-                url,
+                browserUrl,
                 Bundle().apply {
                     putString("Mixin", BuildConfig.VERSION_NAME)
                 },
@@ -1057,15 +1058,18 @@ class WebFragment : BaseFragment() {
         return true
     }
 
-    private fun String.isOpenInBrowserUrl(): Boolean {
-        if (isBlank() || equals("undefined", true) || equals("null", true)) {
-            return false
+    private fun String.toOpenInBrowserUrlOrNull(): String? {
+        val url = trim()
+        if (url.isBlank() || url.equals("undefined", true) || url.equals("null", true)) {
+            return null
         }
-        var uri = toUri()
+        var uri = url.toUri()
         if (uri.scheme.isNullOrBlank()) {
-            uri = Uri.parse("http://$this")
+            uri = Uri.parse("http://$url")
         }
-        return uri.scheme.equals("http", true) || uri.scheme.equals("https", true)
+        return url.takeIf {
+            uri.scheme.equals("http", true) || uri.scheme.equals("https", true)
+        }
     }
 
     private fun closeSelf() {

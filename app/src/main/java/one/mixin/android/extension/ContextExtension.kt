@@ -908,10 +908,11 @@ fun Context.openInBrowser(
     url: String,
     extraHeaders: Bundle? = null,
 ): Boolean {
-    if (url.isBlank()) return false
-    var uri = url.toUri()
+    val browserUrl = url.trim()
+    if (browserUrl.isBlank()) return false
+    var uri = browserUrl.toUri()
     if (uri.scheme.isNullOrBlank()) {
-        uri = Uri.parse("http://$url")
+        uri = Uri.parse("http://$browserUrl")
     }
     if (!uri.scheme.equals("http", true) && !uri.scheme.equals("https", true)) {
         return false
