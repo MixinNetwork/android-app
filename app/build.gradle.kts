@@ -124,7 +124,7 @@ val billingVersion: String by rootProject.extra
 
 val versionMajor = 4
 val versionMinor = 2
-val versionPatch = 0
+val versionPatch = 1
 val versionBuild = 0
 
 val includeDebugX86_64 = project.findProperty("includeDebugX86_64")?.toString()?.toBoolean() ?: false
