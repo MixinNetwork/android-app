@@ -345,6 +345,7 @@ dependencies {
     implementation("androidx.coordinatorlayout:coordinatorlayout:$coordinatorVersion")
     implementation("androidx.biometric:biometric:$biometricVersion")
     implementation("androidx.security:security-crypto:1.1.0")
+    implementation("androidx.webkit:webkit:1.16.0")
 
     implementation("org.sol4k:tweetnacl:$tweetnaclVersion")
     implementation("org.sol4k:utilities:$sol4kUtilitiesVersion")

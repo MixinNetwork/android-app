@@ -334,7 +334,7 @@ class MarketShareBottomFragment : MixinBottomSheetDialogFragment() {
         val buildTradeUrl = { input: String, output: String ->
             "${Constants.Scheme.HTTPS_SWAP}?input=$input&output=$output&referral=$referral"
         }
-        val stableAssetId = Constants.AssetId.OMNI_USDT_ASSET_ID
+        val stableAssetId = Constants.AssetId.USDT_ASSET_ETH_ID
         val targetAssetId = marketItem.assetIds?.firstOrNull().orEmpty()
         val marketCap = runCatching {
             BigDecimal(marketItem.marketCap).multiply(BigDecimal(Fiats.getRate())).numberFormatCompact()
@@ -354,9 +354,9 @@ class MarketShareBottomFragment : MixinBottomSheetDialogFragment() {
             description = buildString {
                 append(getString(R.string.market_share_card_asset, marketItem.name, marketItem.symbol))
                 append('\n')
-                append(getString(R.string.market_share_card_market_cap, Fiats.getSymbol(), marketCap))
+                append(getString(R.string.market_share_card_market_cap, "${Fiats.getSymbol()}$marketCap"))
                 append('\n')
-                append(getString(R.string.market_share_card_price, Fiats.getSymbol(), price))
+                append(getString(R.string.market_share_card_price, "${Fiats.getSymbol()}$price"))
                 append('\n')
                 append(getString(R.string.market_share_card_price_change, changeText))
             }.take(128),
@@ -379,7 +379,7 @@ class MarketShareBottomFragment : MixinBottomSheetDialogFragment() {
                     )
                 },
                 ActionButtonData(
-                    label = getString(R.string.market_share_card_market_button, marketItem.symbol),
+                    label = getString(R.string.Market),
                     color = "#3D75E3",
                     action = marketLink,
                 ),

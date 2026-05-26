@@ -71,6 +71,17 @@ interface PerpsOrderDao : BaseDao<PerpsOrder> {
     """)
     suspend fun getOrder(orderId: String): PerpsOrderItem?
 
+    @Query("""
+        SELECT o.*, m.display_symbol, m.icon_url, m.token_symbol
+        FROM perps_orders o
+        LEFT JOIN markets m ON m.market_id = o.market_id
+        WHERE o.position_id = :positionId
+        AND o.order_type = 'close'
+        ORDER BY o.updated_at DESC
+        LIMIT 1
+    """)
+    suspend fun getCloseOrderByPositionId(positionId: String): PerpsOrderItem?
+
     @Query("DELETE FROM perps_orders")
     suspend fun deleteAll()
 
