@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
@@ -91,6 +92,8 @@ import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.components.MixinButton
 import java.math.BigDecimal
 import java.math.RoundingMode
+
+private const val PERPS_ADD_REFRESH_INTERVAL_MS = 3_000L
 
 @AndroidEntryPoint
 class PerpsAddBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
@@ -158,8 +161,21 @@ class PerpsAddBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
         var selectedToken by remember { mutableStateOf<TokenItem?>(null) }
         var market by remember { mutableStateOf<PerpsMarket?>(null) }
 
-        LaunchedEffect(acceptedPerpAssetIds) {
+        LaunchedEffect(position.marketId) {
             market = viewModel.getMarketFromDb(position.marketId)
+            while (true) {
+                viewModel.loadMarketDetail(
+                    marketId = position.marketId,
+                    onSuccess = { data ->
+                        market = data
+                    },
+                    onError = {},
+                )
+                delay(PERPS_ADD_REFRESH_INTERVAL_MS)
+            }
+        }
+
+        LaunchedEffect(acceptedPerpAssetIds) {
             viewModel.loadUsdTokens { tokens ->
                 val supportedTokens = if (acceptedPerpAssetIds.isEmpty()) {
                     tokens
@@ -242,7 +258,11 @@ private fun PerpsAddContent(
     val insufficientBalance = amountValue != null && amountValue > BigDecimal.ZERO && amountValue > tokenBalance
     val canAdd = selectedToken != null && hasInputAmount && !insufficientBalance && !belowMinimumMargin && !aboveMaximumMargin
     val marketSymbol = position.tokenSymbol ?: position.displaySymbol.orEmpty()
-    val currentPrice = position.markPrice.orEmpty().ifBlank { position.entryPrice }
+    val currentPrice = market?.last.orEmpty()
+        .ifBlank { market?.markPrice.orEmpty() }
+        .ifBlank { position.markPrice.orEmpty() }
+        .ifBlank { position.entryPrice }
+    val priceScale = market?.priceScale ?: position.priceScale
 
     val minimumMarginError = stringResource(
         R.string.perps_minimum_margin,
@@ -260,10 +280,10 @@ private fun PerpsAddContent(
         else -> null
     }
 
-    val currentPriceText = formatPerpsPrice(currentPrice, position.priceScale)
+    val currentPriceText = formatPerpsPrice(currentPrice, priceScale)
     val entryPriceText = position.entryPrice
         .takeIf { it.isNotBlank() }
-        ?.let { formatPerpsPrice(it, position.priceScale) }
+        ?.let { formatPerpsPrice(it, priceScale) }
         ?: "--"
     val subtitleRawText = stringResource(R.string.auto_close_subtitle_after_open, entryPriceText, currentPriceText)
     val subtitleLabelColor = MixinAppTheme.colors.textRemarks
@@ -512,6 +532,7 @@ private fun PerpsAddContent(
                             position = position,
                             amount = amount,
                             currentPrice = currentPrice,
+                            priceScale = priceScale,
                         ),
                         onTipClick = {
                             showPerpsGuide(PerpetualGuideBottomSheetDialogFragment.TAB_LIQUIDATION)
@@ -805,10 +826,11 @@ private fun calculateEstimatedLiquidationPrice(
     position: PerpsPositionItem,
     amount: String,
     currentPrice: String,
+    priceScale: Int,
 ): String {
     val existingLiquidationPrice = position.liquidationPrice
         ?.takeIf { it.isNotBlank() }
-        ?.let { formatPerpsPrice(it, position.priceScale) }
+        ?.let { formatPerpsPrice(it, priceScale) }
         ?: "--"
     val addMargin = amount.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: return existingLiquidationPrice
     val currentQuantity = position.quantity.toBigDecimalOrNull()?.abs() ?: BigDecimal.ZERO
@@ -829,5 +851,5 @@ private fun calculateEstimatedLiquidationPrice(
     } else {
         averageEntry.multiply(BigDecimal.ONE.subtract(liquidationRatio))
     }
-    return formatPerpsPrice(estimatedPrice, position.priceScale)
+    return formatPerpsPrice(estimatedPrice, priceScale)
 }
