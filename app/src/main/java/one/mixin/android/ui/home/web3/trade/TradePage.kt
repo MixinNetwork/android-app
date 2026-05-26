@@ -63,6 +63,7 @@ import one.mixin.android.ui.home.web3.components.OutlinedTab
 import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.home.web3.trade.perps.PerpetualContent
 import one.mixin.android.ui.home.web3.trade.perps.PerpetualViewModel
+import one.mixin.android.ui.home.web3.widget.MarketSort
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.WalletCategory
 import java.math.BigDecimal
@@ -103,7 +104,7 @@ fun TradePage(
     onShowTradingGuide: (Int) -> Unit,
     onShowHelpBottomSheet: (() -> Unit, () -> Unit) -> Unit,
     onShowMarketList: (Boolean) -> Unit,
-    onShowAllMarkets: (String?) -> Unit,
+    onShowAllMarkets: (String?, MarketSort?) -> Unit,
     onShowAllOpenPositions: () -> Unit,
     onShowAllClosedPositions: () -> Unit,
     onOpenPositionClick: (PerpsPositionItem) -> Unit,

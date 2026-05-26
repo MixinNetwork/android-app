@@ -9,15 +9,18 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -35,6 +38,7 @@ private const val TOP_MOVERS_COLUMNS = 4
 fun TopMoversCard(
     markets: List<PerpsMarket>,
     quoteColorReversed: Boolean,
+    onViewAllClick: () -> Unit,
     onMarketItemClick: (PerpsMarket) -> Unit,
 ) {
     if (markets.isEmpty()) return
@@ -42,6 +46,7 @@ fun TopMoversCard(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable(onClick = onViewAllClick)
             .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -50,6 +55,12 @@ fun TopMoversCard(
             text = stringResource(R.string.perps_top_movers),
             fontSize = 14.sp,
             color = MixinAppTheme.colors.textPrimary,
+        )
+        Icon(
+            painter = painterResource(R.drawable.ic_arrow_right),
+            contentDescription = null,
+            tint = MixinAppTheme.colors.textAssist,
+            modifier = Modifier.size(16.dp),
         )
     }
     Spacer(modifier = Modifier.height(12.dp))
@@ -101,6 +112,7 @@ private fun TopMoverGridItem(
 
     Column(
         modifier = Modifier
+            .offset(y = 6.dp)
             .clip(RoundedCornerShape(8.dp))
             .clickable(onClick = onClick)
             .padding(horizontal = 4.dp, vertical = 8.dp),
@@ -119,16 +131,16 @@ private fun TopMoverGridItem(
             )
             Text(
                 text = "${market.leverage}x",
-                fontSize = 9.sp,
-                lineHeight = 10.sp,
-                color = MixinAppTheme.colors.textPrimary,
+                fontSize = 14.sp,
+                lineHeight = 16.sp,
+                color = MixinAppTheme.colors.textAssist,
                 modifier = Modifier
                     .clip(RoundedCornerShape(4.dp))
-                    .background(MixinAppTheme.colors.backgroundGrayLight)
+                    .background(MixinAppTheme.colors.background)
                     .padding(horizontal = 3.dp, vertical = 1.dp),
             )
         }
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = market.tokenSymbol,
             fontSize = 13.sp,
@@ -137,7 +149,6 @@ private fun TopMoverGridItem(
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center,
         )
-        Spacer(modifier = Modifier.height(2.dp))
         Text(
             text = changeText,
             fontSize = 12.sp,
