@@ -261,7 +261,7 @@ class ExploreFragment : BaseFragment() {
         }, { bot ->
             lifecycleScope.launch {
                 botManagerViewModel.findUserByAppId(bot.getBotId())?.let { user ->
-                    showUserBottom(parentFragmentManager, user)
+                    showUserBottom(parentFragmentManager, user, botEntrySource = AnalyticsTracker.BotSource.MORE_EXPLORE_DIALOG)
                 }
             }
         })
@@ -315,8 +315,9 @@ class ExploreFragment : BaseFragment() {
     private val clickAction: (BotInterface) -> Unit = { app ->
         if (app is ExploreApp) {
             lifecycleScope.launch {
-                botManagerViewModel.findAppByAppId(app.appId)?.let { app ->
-                    WebActivity.show(requireActivity(), url = app.homeUri, app = app, conversationId = null)
+                botManagerViewModel.findAppByAppId(app.appId)?.let { favoriteApp ->
+                    AnalyticsTracker.trackOpenBotHomePage(AnalyticsTracker.BotSource.MORE_EXPLORE_FAVORITE, favoriteApp.appNumber)
+                    WebActivity.show(requireActivity(), url = favoriteApp.homeUri, app = favoriteApp, conversationId = null)
                 }
             }
         } else if (app is Bot) {
@@ -340,11 +341,27 @@ class ExploreFragment : BaseFragment() {
                 INTERNAL_SWAP_ID -> {
                     val shown = RecoveryReminderBottomSheetDialogFragment.showForRiskAction(parentFragmentManager) {
                         AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, AnalyticsTracker.TradeSource.EXPLORE)
-                        SwapActivity.show(requireActivity(), null, null, null, null)
+                        SwapActivity.show(
+                            requireActivity(),
+                            null,
+                            null,
+                            null,
+                            null,
+                            entrySource = AnalyticsTracker.TradeSource.EXPLORE,
+                            entryType = AnalyticsTracker.SpotTradeType.SIMPLE,
+                        )
                     }
                     if (!shown) {
                         AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, AnalyticsTracker.TradeSource.EXPLORE)
-                        SwapActivity.show(requireActivity(), null, null, null, null)
+                        SwapActivity.show(
+                            requireActivity(),
+                            null,
+                            null,
+                            null,
+                            null,
+                            entrySource = AnalyticsTracker.TradeSource.EXPLORE,
+                            entryType = AnalyticsTracker.SpotTradeType.SIMPLE,
+                        )
                     }
                 }
                 INTERNAL_MEMBER_ID -> {
@@ -376,7 +393,13 @@ class ExploreFragment : BaseFragment() {
                 }
             }
         } else {
-            // do nothing
+            lifecycleScope.launch {
+                botManagerViewModel.findUserByAppId(app.getBotId())?.let { user ->
+                    showUserBottom(parentFragmentManager, user, botEntrySource = AnalyticsTracker.BotSource.MORE_EXPLORE_FAVORITE)
+                } ?: botManagerViewModel.findAppByAppId(app.getBotId())?.let { favoriteApp ->
+                    WebActivity.show(requireActivity(), url = favoriteApp.homeUri, app = favoriteApp, conversationId = null)
+                }
+            }
         }
     }
 

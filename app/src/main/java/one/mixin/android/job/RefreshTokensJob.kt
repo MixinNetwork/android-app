@@ -3,6 +3,7 @@ package one.mixin.android.job
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.db.flow.MessageFlow
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.Token
 import timber.log.Timber
@@ -46,6 +47,7 @@ class RefreshTokensJob(
                 }
                 refreshFiats()
             }
+            AnalyticsTracker.setAssetLevel(tokenDao.findTotalUSDBalance() ?: 0)
         }
 
     private suspend fun refreshAsset() {

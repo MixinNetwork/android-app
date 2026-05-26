@@ -99,7 +99,7 @@ fun AlertEditPage(
     alert: Alert?,
     onAdd: (CoinItem) -> Unit,
     pop: () -> Unit,
-    onSaved: (Boolean) -> Unit,
+    onSaved: (Boolean, String, String) -> Unit,
     onShowTypeSelector: (AlertType, (AlertType) -> Unit) -> Unit,
     onShowFrequencySelector: (AlertFrequency, (AlertFrequency) -> Unit) -> Unit,
 ) {
@@ -429,7 +429,7 @@ fun AlertEditPage(
                                         )
                                         val re = viewModel.updateAlert(alert.alertId, alertRequest)
                                         if (re?.isSuccess == true) {
-                                            onSaved(false)
+                                            onSaved(false, selectedAlertFrequency.value, selectedAlertType.value)
                                         }
                                     } else {
                                         val alertRequest = AlertRequest(
@@ -448,7 +448,7 @@ fun AlertEditPage(
                                         val re = viewModel.add(alertRequest)
                                         if (re?.isSuccess == true) {
                                             onAdd.invoke(coin)
-                                            onSaved(true)
+                                            onSaved(true, selectedAlertFrequency.value, selectedAlertType.value)
                                         }
                                     }
                                     isLoading = false

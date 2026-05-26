@@ -9,6 +9,7 @@ import android.app.NotificationManager.BUBBLE_PREFERENCE_NONE
 import android.app.PendingIntent
 import android.app.UiModeManager
 import android.content.ActivityNotFoundException
+import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.ComponentName
 import android.content.ContentResolver
@@ -40,6 +41,7 @@ import android.os.VibrationEffect.EFFECT_HEAVY_CLICK
 import android.os.VibrationEffect.EFFECT_TICK
 import android.os.Vibrator
 import android.os.VibratorManager
+import android.os.PersistableBundle
 import android.os.storage.StorageManager
 import android.os.storage.StorageVolume
 import android.provider.Browser
@@ -70,6 +72,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailabilityLight
 import com.google.android.gms.common.GooglePlayServicesUtil
@@ -858,8 +863,12 @@ fun Fragment.openGalleryFromSticker() {
         .forResult(REQUEST_GALLERY)
 }
 
-fun Context.openUrl(url: String) {
-    if (openCustomerServiceIfMatched(url)) {
+fun Context.openUrl(
+    url: String,
+    source: String? = null,
+    wallet: String = one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet.MAIN,
+) {
+    if (openCustomerServiceIfMatched(url, source, wallet)) {
         return
     }
     var uri = url.toUri()
@@ -911,6 +920,29 @@ fun Context.openExternalUrl(url: String) {
 }
 
 fun Context.getClipboardManager(): ClipboardManager = requireNotNull(getSystemService())
+
+fun Context.copySensitiveTextToClipboard(content: String, scope: CoroutineScope) {
+    val clipboard = getClipboardManager()
+    val clip = ClipData.newPlainText("", content)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        @Suppress("NewApi")
+        clip.description.extras = PersistableBundle().apply {
+            putBoolean("android.content.extra.IS_SENSITIVE", true)
+        }
+    }
+    clipboard.setPrimaryClip(clip)
+    scope.launch {
+        delay(60_000L)
+        val current = clipboard.primaryClip?.getItemAt(0)?.text?.toString()
+        if (current == content) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                clipboard.clearPrimaryClip()
+            } else {
+                clipboard.setPrimaryClip(ClipData.newPlainText("", ""))
+            }
+        }
+    }
+}
 
 fun Window.isNotchScreen(): Boolean {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {

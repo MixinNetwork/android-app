@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
@@ -19,9 +20,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -31,6 +34,7 @@ import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
@@ -55,17 +59,27 @@ fun OpenPositionItem(
         ?.toPlainString()
         ?: position.quantity.removePrefix("-")
     val isLong = position.side.equals("long", true)
-    val isOpening = position.state.equals("opening", true)
+    val isOpening = position.state.equals("processing", true)
+    val isAdding = position.state.equals("adding", true)
+    val isPending = isOpening || isAdding
     val sideColor = if (isLong) {
         if (quoteColorPref) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
     } else {
         if (quoteColorPref) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
     }
-    val leverageTextColor = if (isOpening) MixinAppTheme.colors.textAssist else sideColor
-    val leverageBackgroundColor = if (isOpening) {
+    val leverageTextColor = if (isPending) MixinAppTheme.colors.textAssist else sideColor
+    val leverageBackgroundColor = if (isPending) {
         MixinAppTheme.colors.backgroundGrayLight
     } else {
         sideColor.copy(alpha = 0.1f)
+    }
+    val hasTakeProfit = !position.takeProfitPrice.isNullOrBlank()
+    val hasStopLoss = !position.stopLossPrice.isNullOrBlank()
+    val tpSlTagText = when {
+        hasTakeProfit && hasStopLoss -> stringResource(R.string.take_profit_stop_loss_label)
+        hasTakeProfit -> stringResource(R.string.take_profit_label)
+        hasStopLoss -> stringResource(R.string.stop_loss_label)
+        else -> null
     }
 
     Row(
@@ -124,21 +138,25 @@ fun OpenPositionItem(
                             .background(leverageBackgroundColor)
                             .padding(horizontal = 3.dp, vertical = 2.dp)
                     )
+                    if (tpSlTagText != null) {
+                        Spacer(modifier = Modifier.width(4.dp))
+                        TpSlStatusTag(text = tpSlTagText)
+                    }
                 }
 
-                if (isOpening) {
+                if (isPending) {
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = stringResource(R.string.Pending),
+                        text = stringResource(if (isAdding) R.string.adding_position else R.string.Pending),
                         fontSize = 14.sp,
                         color = MixinAppTheme.colors.textAssist,
                         textAlign = TextAlign.End,
-                        modifier = Modifier.weight(0.85f)
                     )
                 } else {
-                    val marginFiat = margin.multiply(fiatRate)
+                    Spacer(modifier = Modifier.width(8.dp))
                     BasicText(
-                        text = formatPerpsFiatDecimal(marginFiat, fiatSymbol),
-                        modifier = Modifier.weight(0.85f),
+                        text = formatPerpsUsdDecimal(margin),
+                        modifier = Modifier.widthIn(max = 120.dp),
                         style = TextStyle(
                             fontSize = 14.sp,
                             color = MixinAppTheme.colors.textPrimary,
@@ -169,8 +187,8 @@ fun OpenPositionItem(
                     modifier = Modifier.weight(1f)
                 )
 
-                if (isOpening) {
-                    Spacer(modifier = Modifier.weight(0.85f))
+                if (isPending) {
+                    Spacer(modifier = Modifier.width(8.dp))
                 } else {
                     val unrealizedPnl = position.unrealizedPnl?.toBigDecimalOrNull() ?: BigDecimal.ZERO
                     val roe = (position.roe?.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(BigDecimal(100))
@@ -181,9 +199,10 @@ fun OpenPositionItem(
                         if (quoteColorPref) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
                     }
 
+                    Spacer(modifier = Modifier.width(8.dp))
                     BasicText(
-                        text = "${formatPerpsSignedFiatDecimal(unrealizedPnl.multiply(fiatRate), fiatSymbol)} (${formatPerpsSignedPercent(roe, withSign = false)})",
-                        modifier = Modifier.weight(0.85f),
+                        text = "${formatPerpsSignedRawUsdDecimal(unrealizedPnl)} (${formatPerpsSignedPercent(roe, withSign = false)})",
+                        modifier = Modifier.widthIn(max = 120.dp),
                         style = TextStyle(
                             fontSize = 14.sp,
                             color = pnlColor,
@@ -202,4 +221,22 @@ fun OpenPositionItem(
             }
         }
     }
+}
+
+@Composable
+private fun TpSlStatusTag(
+    text: String,
+) {
+    val backgroundColor = Color(LocalContext.current.colorAttr(R.attr.bg_market_gradient_start))
+    Text(
+        text = text,
+        fontSize = 11.sp,
+        fontWeight = FontWeight.W500,
+        color = Color.White,
+        lineHeight = 14.sp,
+        modifier = Modifier
+            .clip(RoundedCornerShape(4.dp))
+            .background(backgroundColor)
+            .padding(horizontal = 4.dp, vertical = 2.dp),
+    )
 }

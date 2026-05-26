@@ -80,7 +80,12 @@ fun AllPositionsPage(
     onOpenPositionClick: (PerpsPositionItem) -> Unit,
     onClosedPositionClick: (PerpsOrderItem) -> Unit,
 ) {
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     val walletId = Session.getAccountId().orEmpty()
+    val quoteColorReversed = context.defaultSharedPreferences
+        .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
+
     val openPositionsSnapshot by remember(walletId) {
         if (walletId.isNotEmpty()) {
             viewModel.observeOpenPositions(walletId)
@@ -95,79 +100,33 @@ fun AllPositionsPage(
             flowOf(0.0)
         }
     }.collectAsStateWithLifecycle(initialValue = 0.0)
-
-    val openPositionsPagingFlow = remember(walletId) {
+    val openPositionsPaging = remember(walletId) {
         if (walletId.isNotEmpty()) {
             viewModel.getOpenPositionsPaged(walletId)
         } else {
             flowOf(PagingData.empty<PerpsPositionItem>())
         }
-    }
-    val closedPositionsPagingFlow = remember(walletId) {
+    }.collectAsLazyPagingItems()
+    val closedPositionsPaging = remember(walletId) {
         if (walletId.isNotEmpty()) {
             viewModel.getOrdersPaged(walletId)
         } else {
             flowOf(PagingData.empty<PerpsOrderItem>())
         }
-    }
-
-    AllPositionsPageContent(
-        positionType = positionType,
-        walletId = walletId,
-        openPositionsSnapshot = openPositionsSnapshot,
-        totalUnrealizedPnl = totalUnrealizedPnl,
-        openPositionsPagingFlow = openPositionsPagingFlow,
-        closedPositionsPagingFlow = closedPositionsPagingFlow,
-        onBack = onBack,
-        onSupport = onSupport,
-        onShowTradingGuide = onShowTradingGuide,
-        onOpenPositionClick = onOpenPositionClick,
-        onClosedPositionClick = onClosedPositionClick,
-        startRefreshOrders = { id, interval -> viewModel.startRefreshOrders(id, interval) },
-        stopRefreshOrders = { viewModel.stopRefreshOrders() },
-        refreshPositions = { id -> viewModel.refreshPositions(id) },
-        refreshOrders = { id, limit -> viewModel.refreshOrders(id, limit) }
-    )
-}
-
-@Composable
-fun AllPositionsPageContent(
-    positionType: AllPositionsType,
-    walletId: String,
-    openPositionsSnapshot: List<PerpsPositionItem>,
-    totalUnrealizedPnl: Double,
-    openPositionsPagingFlow: kotlinx.coroutines.flow.Flow<PagingData<PerpsPositionItem>>,
-    closedPositionsPagingFlow: kotlinx.coroutines.flow.Flow<PagingData<PerpsOrderItem>>,
-    onBack: () -> Unit,
-    onSupport: () -> Unit,
-    onShowTradingGuide: () -> Unit,
-    onOpenPositionClick: (PerpsPositionItem) -> Unit,
-    onClosedPositionClick: (PerpsOrderItem) -> Unit,
-    startRefreshOrders: (String, Long) -> Unit,
-    stopRefreshOrders: () -> Unit,
-    refreshPositions: suspend (String) -> Unit,
-    refreshOrders: suspend (String, Int) -> Unit,
-) {
-    val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
-    val quoteColorReversed = context.defaultSharedPreferences
-        .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
-
-    val openPositionsPaging = openPositionsPagingFlow.collectAsLazyPagingItems()
-    val closedPositionsPaging = closedPositionsPagingFlow.collectAsLazyPagingItems()
+    }.collectAsLazyPagingItems()
     var previousOpenPositionsCount by remember(walletId) { mutableStateOf<Int?>(null) }
 
     LaunchedEffect(walletId, lifecycleOwner) {
         if (walletId.isEmpty()) return@LaunchedEffect
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-            startRefreshOrders(walletId, POSITION_REFRESH_INTERVAL_MS)
+            viewModel.startRefreshOrders(walletId, intervalMs = POSITION_REFRESH_INTERVAL_MS)
             try {
                 while (isActive) {
-                    refreshPositions(walletId)
+                    viewModel.refreshPositions(walletId)
                     delay(POSITION_REFRESH_INTERVAL_MS)
                 }
             } finally {
-                stopRefreshOrders()
+                viewModel.stopRefreshOrders()
             }
         }
     }
@@ -177,7 +136,7 @@ fun AllPositionsPageContent(
         val currentCount = openPositionsSnapshot.size
         val lastCount = previousOpenPositionsCount
         if (lastCount != null && currentCount < lastCount) {
-            refreshOrders(walletId, CLOSED_POSITION_REFRESH_LIMIT)
+            viewModel.refreshOrders(walletId, limit = CLOSED_POSITION_REFRESH_LIMIT)
         }
         previousOpenPositionsCount = currentCount
     }
@@ -500,30 +459,6 @@ private fun calculatePnlPercent(
     return pnl
         .divide(margin, 8, RoundingMode.HALF_UP)
         .multiply(BigDecimal(100))
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun AllPositionsPagePreview() {
-    MixinAppTheme {
-        AllPositionsPageContent(
-            positionType = AllPositionsType.OPEN,
-            walletId = "",
-            openPositionsSnapshot = emptyList(),
-            totalUnrealizedPnl = 0.0,
-            openPositionsPagingFlow = flowOf(PagingData.empty()),
-            closedPositionsPagingFlow = flowOf(PagingData.empty()),
-            onBack = {},
-            onSupport = {},
-            onShowTradingGuide = {},
-            onOpenPositionClick = {},
-            onClosedPositionClick = {},
-            startRefreshOrders = { _, _ -> },
-            stopRefreshOrders = {},
-            refreshPositions = {},
-            refreshOrders = { _, _ -> }
-        )
-    }
 }
 
 @Preview(showBackground = true)

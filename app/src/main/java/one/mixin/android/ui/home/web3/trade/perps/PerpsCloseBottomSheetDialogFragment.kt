@@ -68,7 +68,7 @@ import one.mixin.android.ui.tip.wc.compose.ItemWalletContent
 import one.mixin.android.ui.wallet.ItemUserContent
 import one.mixin.android.ui.wallet.components.WalletLabel
 import one.mixin.android.util.SystemUIManager
-import one.mixin.android.vo.Fiats
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.components.MixinButton
@@ -155,6 +155,9 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
     private val unrealizedPnl by lazy {
         requireNotNull(requireArguments().getString(ARGS_UNREALIZED_PNL)) { "unrealizedPnl is null" }
     }
+    private val leverage by lazy {
+        requireArguments().getInt(ARGS_LEVERAGE)
+    }
     private var step by mutableStateOf(Step.Pending)
     private var errorInfo: String? by mutableStateOf(null)
 
@@ -171,10 +174,9 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
         val context = LocalContext.current
         val quoteColorReversed = context.defaultSharedPreferences
             .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
-        val fiatRate = BigDecimal(Fiats.getRate())
-        val fiatSymbol = Fiats.getSymbol()
 
         LaunchedEffect(Unit) {
+            AnalyticsTracker.trackPerpsClosePositionPreview()
             latestMarkPrice = markPrice
             latestUnrealizedPnl = unrealizedPnl
         }
@@ -447,7 +449,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                                 fontSize = 14.sp
                             )
                             Text(
-                                text = "${formatPerpsSignedFiatDecimal(pnl.multiply(fiatRate), fiatSymbol)} (${formatPerpsSignedPercent(pnlPercent, withSign = false)})",
+                                text = "${formatPerpsSignedRawUsdDecimal(pnl)} (${formatPerpsSignedPercent(pnlPercent, withSign = false)})",
                                 color = pnlColor,
                                 fontSize = 14.sp
                             )
@@ -491,8 +493,14 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                                 modifier = Modifier.align(Alignment.BottomCenter),
                                 cancelTitle = stringResource(R.string.Cancel),
                                 confirmTitle = stringResource(id = R.string.Retry),
-                                cancelAction = { dismiss() },
-                                confirmAction = { showVerifyPinThenClose() },
+                                cancelAction = {
+                                    AnalyticsTracker.trackPerpsClosePositionPreviewCancel()
+                                    dismiss()
+                                },
+                                confirmAction = {
+                                    AnalyticsTracker.trackPerpsClosePositionPreviewConfirm()
+                                    showVerifyPinThenClose()
+                                },
                             )
                         }
 
@@ -501,8 +509,14 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                                 modifier = Modifier.align(Alignment.BottomCenter),
                                 cancelTitle = stringResource(R.string.Cancel),
                                 confirmTitle = stringResource(id = R.string.Confirm),
-                                cancelAction = { dismiss() },
-                                confirmAction = { showVerifyPinThenClose() },
+                                cancelAction = {
+                                    AnalyticsTracker.trackPerpsClosePositionPreviewCancel()
+                                    dismiss()
+                                },
+                                confirmAction = {
+                                    AnalyticsTracker.trackPerpsClosePositionPreviewConfirm()
+                                    showVerifyPinThenClose()
+                                },
                             )
                         }
 
@@ -544,8 +558,10 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
         step = Step.Sending
         viewModel.closePerpsOrder(
             positionId = positionId,
+            leverage = leverage,
             onSuccess = {
                 step = Step.Done
+                AnalyticsTracker.trackPerpsClosePositionEnd()
             },
             onError = { error ->
                 errorInfo = error

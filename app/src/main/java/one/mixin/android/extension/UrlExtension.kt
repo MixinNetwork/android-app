@@ -34,6 +34,7 @@ import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.web.WebActivity
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ForwardAction
@@ -87,6 +88,7 @@ fun String.isMixinUrl(): Boolean {
         startsWith(Constants.Scheme.CONVERSATIONS, true) ||
         startsWith(Constants.Scheme.TIP, true) ||
         startsWith(Constants.Scheme.BUY, true) ||
+        startsWith(Constants.Scheme.MIXIN_BUY, true) ||
         startsWith(Constants.Scheme.MIXIN_PAY, true) ||
         startsWith(Constants.Scheme.HTTPS_SEND, true) ||
         startsWith(Constants.Scheme.HTTPS_MULTISIGS, true) ||
@@ -101,6 +103,7 @@ fun String.isMixinUrl(): Boolean {
         startsWith(Constants.Scheme.HTTPS_SWAP, true) ||
         startsWith(Constants.Scheme.MIXIN_SWAP, true) ||
         startsWith(Constants.Scheme.HTTPS_TRADE, true) ||
+        startsWith(Constants.Scheme.HTTPS_BUY, true) ||
         startsWith(Constants.Scheme.MIXIN_TRADE, true) ||
         startsWith(Constants.Scheme.DEBUG, true)
     ) {
@@ -122,7 +125,7 @@ fun String.isMixinUrl(): Boolean {
         } else if (startsWith(Constants.Scheme.HTTPS_TRANSFER, true)) {
             segments.size >= 2 && segments[1].isUUID()
         } else {
-            startsWith(Constants.Scheme.HTTPS_ADDRESS, true) || startsWith(Constants.Scheme.HTTPS_INSCRIPTION, true) || startsWith(Constants.Scheme.MIXIN_MARKET, true) || startsWith(Constants.Scheme.HTTPS_MARKET, true) || startsWith(Constants.Scheme.MIXIN_REFERRALS, true) || startsWith(Constants.Scheme.HTTPS_REFERRALS, true)
+            startsWith(Constants.Scheme.HTTPS_ADDRESS, true) || startsWith(Constants.Scheme.HTTPS_INSCRIPTION, true) || startsWith(Constants.Scheme.MIXIN_MARKET, true) || startsWith(Constants.Scheme.HTTPS_MARKET, true) || startsWith(Constants.Scheme.HTTPS_BUY, true) || startsWith(Constants.Scheme.MIXIN_BUY, true) || startsWith(Constants.Scheme.MIXIN_REFERRALS, true) || startsWith(Constants.Scheme.HTTPS_REFERRALS, true)
         }
     }
 }
@@ -269,6 +272,7 @@ fun String.checkUserOrApp(
                         } catch (e: Exception) {
                             app.homeUri
                         }
+                    AnalyticsTracker.trackOpenBotHomePage(AnalyticsTracker.BotSource.SCHEME, app.appNumber)
                     WebActivity.show(context, url, null, app)
                     if (context is UrlInterpreterActivity) {
                         context.finish()
@@ -276,7 +280,7 @@ fun String.checkUserOrApp(
                     return@launch
                 }
             }
-            showUserBottom(supportFragmentManager, user)
+            showUserBottom(supportFragmentManager, user, botEntrySource = AnalyticsTracker.BotSource.SCHEME)
         }
     }
 }

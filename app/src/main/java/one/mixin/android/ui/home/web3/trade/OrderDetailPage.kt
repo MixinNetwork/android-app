@@ -61,6 +61,7 @@ import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.tip.wc.compose.ItemContent
 import one.mixin.android.ui.tip.wc.compose.ItemWalletContent
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.route.OrderItem
@@ -174,7 +175,11 @@ fun DetailItem(
             pop = pop,
             actions = {
                 IconButton(onClick = {
-                    context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                    context.openUrl(
+                        Constants.HelpLink.CUSTOMER_SERVICE,
+                        source = AnalyticsTracker.CustomerServiceSource.TRADE_DETAIL,
+                        wallet = AnalyticsTracker.TradeWallet.WEB3,
+                    )
                 }) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_support),

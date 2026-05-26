@@ -1,10 +1,14 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
+import android.content.Context
 import one.mixin.android.api.response.perps.PerpsMarket
+import one.mixin.android.R
+import one.mixin.android.extension.priceFormat
+import java.text.DecimalFormat
 import java.math.BigDecimal
 import java.math.RoundingMode
 
-private val perpsMinDisplayValue = BigDecimal("0.01")
+const val PERPS_USD_SYMBOL = "\$"
 
 fun PerpsMarket.changePercent(): BigDecimal {
     return try {
@@ -14,23 +18,10 @@ fun PerpsMarket.changePercent(): BigDecimal {
     }
 }
 
-fun formatPerpsDisplayDecimal(value: BigDecimal?): String {
-    val safeValue = value ?: BigDecimal.ZERO
-    val absValue = safeValue.abs()
-    if (absValue > BigDecimal.ZERO && absValue < perpsMinDisplayValue) {
-        return "<0.01"
-    }
-    return safeValue.setScale(2, RoundingMode.HALF_UP).toPlainString()
-}
-
 fun formatPerpsFiatDecimal(value: BigDecimal?, fiatSymbol: String): String {
     val safeValue = value ?: BigDecimal.ZERO
     val absValue = safeValue.abs()
-    return if (absValue > BigDecimal.ZERO && absValue < perpsMinDisplayValue) {
-        "<${fiatSymbol}0.01"
-    } else {
-        "$fiatSymbol${absValue.setScale(2, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()}"
-    }
+    return "$fiatSymbol${absValue.setScale(2, RoundingMode.HALF_UP).priceFormat()}"
 }
 
 fun formatPerpsSignedFiatDecimal(value: BigDecimal?, fiatSymbol: String): String {
@@ -39,6 +30,76 @@ fun formatPerpsSignedFiatDecimal(value: BigDecimal?, fiatSymbol: String): String
         safeValue > BigDecimal.ZERO -> "+${formatPerpsFiatDecimal(safeValue, fiatSymbol)}"
         safeValue < BigDecimal.ZERO -> "-${formatPerpsFiatDecimal(safeValue.abs(), fiatSymbol)}"
         else -> formatPerpsFiatDecimal(BigDecimal.ZERO, fiatSymbol)
+    }
+}
+
+fun formatPerpsUsdDecimal(value: BigDecimal?): String = formatPerpsFiatDecimal(value, PERPS_USD_SYMBOL)
+
+fun formatPerpsSignedUsdDecimal(value: BigDecimal?): String = formatPerpsSignedFiatDecimal(value, PERPS_USD_SYMBOL)
+
+fun formatPerpsPrice(value: BigDecimal?, priceScale: Int): String {
+    val safeValue = value ?: BigDecimal.ZERO
+    val safeScale = priceScale.coerceAtLeast(0)
+    val scaledValue = safeValue.setScale(safeScale, RoundingMode.HALF_UP)
+    val pattern = if (safeScale == 0) {
+        ",##0"
+    } else {
+        ",##0.${"0".repeat(safeScale)}"
+    }
+    return "$PERPS_USD_SYMBOL${DecimalFormat(pattern).format(scaledValue)}"
+}
+
+fun formatPerpsPrice(rawPrice: String?, priceScale: Int): String {
+    return formatPerpsPrice(rawPrice?.toBigDecimalOrNull(), priceScale)
+}
+
+fun formatPerpsPriceInput(value: BigDecimal, priceScale: Int): String {
+    return value
+        .setScale(priceScale.coerceAtLeast(0), RoundingMode.HALF_UP)
+        .stripTrailingZeros()
+        .toPlainString()
+}
+
+fun formatPerpsRawUsdDecimal(value: BigDecimal?): String {
+    val safeValue = value ?: BigDecimal.ZERO
+    val absValue = safeValue.abs()
+    return when {
+        absValue.compareTo(BigDecimal.ZERO) == 0 -> "${PERPS_USD_SYMBOL}0.00"
+        absValue < BigDecimal("0.01") -> "<${PERPS_USD_SYMBOL}0.01"
+        else -> "$PERPS_USD_SYMBOL${absValue.setScale(2, RoundingMode.FLOOR).priceFormat()}"
+    }
+}
+
+fun formatPerpsSignedRawUsdDecimal(value: BigDecimal?): String {
+    val safeValue = value ?: BigDecimal.ZERO
+    return when {
+        safeValue > BigDecimal.ZERO -> "+${formatPerpsRawUsdDecimal(safeValue)}"
+        safeValue < BigDecimal.ZERO -> "-${formatPerpsRawUsdDecimal(safeValue.abs())}"
+        else -> formatPerpsRawUsdDecimal(BigDecimal.ZERO)
+    }
+}
+
+fun Context.formatPerpsProfitPreview(
+    isLong: Boolean,
+    priceChangeText: String,
+    profitPercentText: String,
+    profitAmountText: String,
+): String {
+    val resId = if (isLong) R.string.Price_Up_Profit else R.string.Price_Down_Profit
+    return runCatching {
+        getString(resId, priceChangeText, profitPercentText, profitAmountText)
+    }.getOrElse {
+        val direction = if (isLong) "↑" else "↓"
+        "$direction $priceChangeText% → $profitPercentText% (+$profitAmountText)"
+    }
+}
+
+fun formatPerpsQuantity(value: BigDecimal?): String {
+    val safeValue = value ?: BigDecimal.ZERO
+    return if (safeValue.compareTo(BigDecimal.ZERO) == 0) {
+        "0"
+    } else {
+        safeValue.stripTrailingZeros().toPlainString()
     }
 }
 
@@ -82,9 +143,7 @@ fun formatPerpsSignedPercent(value: Double, withSign: Boolean = true): String {
 
 private fun formatPerpsPercentDecimal(value: BigDecimal): String {
     val safeValue = value.abs()
-    val scale = if (safeValue > BigDecimal.ZERO && safeValue < BigDecimal("0.01")) 3 else 2
-    return safeValue
-        .setScale(scale, RoundingMode.HALF_UP)
-        .stripTrailingZeros()
-        .toPlainString()
+    val scaled = safeValue.setScale(2, RoundingMode.FLOOR)
+    if (scaled.compareTo(BigDecimal.ZERO) == 0) return "0.0"
+    return scaled.stripTrailingZeros().toPlainString()
 }

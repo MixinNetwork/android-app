@@ -6,7 +6,6 @@ import android.view.View
 import android.view.View.VISIBLE
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.view.drawToBitmap
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
@@ -37,8 +36,10 @@ import one.mixin.android.job.RefreshMarketJob
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.market.Market
 import one.mixin.android.ui.home.web3.market.DepositTokensBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.trade.TradeFragment
 import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.ARGS_INPUT
 import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.ARGS_OUTPUT
+import one.mixin.android.ui.wallet.alert.AlertFragment
 import one.mixin.android.ui.wallet.alert.AlertFragment.Companion.ARGS_COIN
 import one.mixin.android.ui.wallet.alert.AlertFragment.Companion.ARGS_GO_ALERT
 import one.mixin.android.util.analytics.AnalyticsTracker
@@ -58,6 +59,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
         const val TAG = "MarketDetailsFragment"
         const val ARGS_MARKET = "args_market"
         const val ARGS_ASSET_ID = "args_asset_id"
+        const val ARGS_MARKET_SOURCE = "args_market_source"
     }
 
     private val binding by viewBinding(FragmentDetailsMarketBinding::bind)
@@ -76,6 +78,15 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
     }
 
     private val typeState = mutableStateOf("1D")
+    private val marketSource by lazy {
+        requireArguments().getString(ARGS_MARKET_SOURCE) ?: AnalyticsTracker.MarketSource.MORE_MARKET_CAP
+    }
+    private fun marketFavoriteSource(): String =
+        if (marketSource == AnalyticsTracker.MarketSource.MORE_MARKET_CAP) {
+            AnalyticsTracker.MarketSource.MORE_MARKET_CAP
+        } else {
+            AnalyticsTracker.MarketSource.MARKET_DETAIL
+        }
 
     @SuppressLint("SetTextI18n", "DefaultLocale")
     override fun onViewCreated(
@@ -84,6 +95,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
     ) {
         super.onViewCreated(view, savedInstanceState)
         jobManager.addJobInBackground(RefreshMarketJob(marketItem.coinId))
+        AnalyticsTracker.trackMarketDetail(marketSource)
         binding.apply {
             titleView.apply {
                 setSubTitle(marketItem.symbol, marketItem.name)
@@ -91,18 +103,20 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                 rightExtraIb.isVisible = true
                 rightExtraIb.setImageResource(if (marketItem.isFavored == true) R.drawable.ic_title_favorites_checked else R.drawable.ic_title_favorites)
                 rightExtraIb.setOnClickListener {
+                    val addingFavorite = marketItem.isFavored != true
                     walletViewModel.updateMarketFavored(marketItem.symbol, marketItem.coinId, marketItem.isFavored)
                     marketItem.isFavored = marketItem.isFavored != true
+                    if (addingFavorite) {
+                        AnalyticsTracker.trackMarketFavoriteAdd(marketFavoriteSource())
+                    }
                     rightExtraIb.setImageResource(if (marketItem.isFavored == true) R.drawable.ic_title_favorites_checked else R.drawable.ic_title_favorites)
                 }
                 rightIb.setOnClickListener {
                     if (!isLoading || marketItem.coinId.isBlank()) {
-                        MarketShareActivity.show(
-                            requireContext(),
-                            captureMarketShareBitmap(),
-                            marketItem.symbol,
-                            marketItem.coinId,
-                        )
+                        MarketShareBottomFragment.newInstance(
+                            marketItem,
+                            typeState.value,
+                        ).show(parentFragmentManager, MarketShareBottomFragment.TAG)
                     } else toast(R.string.Please_wait_a_bit)
                 }
             }
@@ -142,6 +156,8 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                             Bundle().apply {
                                 putString(ARGS_INPUT, input)
                                 putString(ARGS_OUTPUT, nowTokens.first().assetId)
+                                putString(TradeFragment.ARGS_ENTRY_SOURCE, TradeSource.MARKET_DETAIL)
+                                putString(TradeFragment.ARGS_ENTRY_TYPE, AnalyticsTracker.SpotTradeType.SIMPLE)
                             })
                     } else {
                         DepositTokensBottomSheetDialogFragment.newInstance(ArrayList<TokenItem>().apply { addAll(nowTokens) }).apply {
@@ -157,6 +173,8 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                                     Bundle().apply {
                                         putString(ARGS_INPUT, token.assetId)
                                         putString(ARGS_OUTPUT, output)
+                                        putString(TradeFragment.ARGS_ENTRY_SOURCE, TradeSource.MARKET_DETAIL)
+                                        putString(TradeFragment.ARGS_ENTRY_TYPE, AnalyticsTracker.SpotTradeType.SIMPLE)
                                     })
                             }
                         }.show(parentFragmentManager, DepositTokensBottomSheetDialogFragment.TAG)
@@ -205,12 +223,14 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                                     view.navigate(R.id.action_market_details_to_alert, Bundle().apply {
                                         putParcelable(ARGS_COIN, coinItem)
                                         putBoolean(ARGS_GO_ALERT, !exist)
+                                        putString(AlertFragment.ARGS_SOURCE, AnalyticsTracker.MarketSource.MARKET_DETAIL)
                                     })
                                 }
                             } else {
                                 view.navigate(R.id.action_market_details_to_alert, Bundle().apply {
                                     putParcelable(ARGS_COIN, coinItem)
                                     putBoolean(ARGS_GO_ALERT, !exist)
+                                    putString(AlertFragment.ARGS_SOURCE, AnalyticsTracker.MarketSource.MARKET_DETAIL)
                                 })
                             }
                         }
@@ -518,13 +538,4 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
     private var currentPrice: String? = null
     private var currentRise: String? = null
 
-    private fun captureMarketShareBitmap() = with(binding.swapAlert) {
-        val originalInvisible = isInvisible
-        isInvisible = true
-        try {
-            binding.marketLl.drawToBitmap()
-        } finally {
-            isInvisible = originalInvisible
-        }
-    }
 }

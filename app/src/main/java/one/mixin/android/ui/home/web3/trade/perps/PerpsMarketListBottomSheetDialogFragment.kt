@@ -28,6 +28,7 @@ import one.mixin.android.db.perps.PerpsPositionDao
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getSafeAreaInsetsTop
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.extension.scrollToCenterCheckedRadio
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
@@ -139,7 +140,7 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
                 currentSort = null
                 renderSortState()
                 categoryScroll.scrollToCenterCheckedRadio(group)
-                filterAndSortMarkets()
+                filterAndSortMarkets(scrollToTop = true)
             }
 
             volumeSort.setOnClickListener {
@@ -315,7 +316,8 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
                     marketSymbol = market.displaySymbol,
                     marketDisplaySymbol = market.displaySymbol,
                     marketTokenSymbol = market.tokenSymbol,
-                    isLong = requireNotNull(isLong)
+                    isLong = requireNotNull(isLong),
+                    source = AnalyticsTracker.PerpsSource.MORE_EXPLORE,
                 )
             }
             dismiss()

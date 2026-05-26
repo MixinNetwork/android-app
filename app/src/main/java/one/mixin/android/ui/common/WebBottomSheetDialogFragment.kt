@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.net.Uri
 import android.graphics.Rect
 import android.view.ViewTreeObserver
 import android.webkit.CookieManager
@@ -14,12 +15,20 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.addCallback
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.lifecycleScope
 import one.mixin.android.BuildConfig
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentWebBottomSheetBinding
+import one.mixin.android.extension.isExternalTransferUrl
+import one.mixin.android.extension.isLightningUrl
+import one.mixin.android.extension.isMixinUrl
+import one.mixin.android.extension.openAsUrl
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
+import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.viewBinding
+import one.mixin.android.web3.convertWcLink
 import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
 
@@ -65,6 +74,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private val subtitle by lazy { requireArguments().getString(ARGS_SUBTITLE) }
     private var bottomSheet: BottomSheet? = null
     private var lastVisibleHeight = 0
+    private var lastHandledUrl: Pair<String, Long>? = null
     private val keyboardLayoutListener =
         ViewTreeObserver.OnGlobalLayoutListener {
             val visibleHeight = getDialogVisibleHeight()
@@ -146,22 +156,67 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private inner class BottomSheetWebViewClient : WebViewClient() {
+        private fun interceptMixinUrl(
+            view: WebView?,
+            url: String,
+        ): Boolean {
+            if (url.startsWith(Constants.Scheme.WALLET_CONNECT_PREFIX, true) ||
+                url.startsWith(Constants.Scheme.MIXIN_WC) ||
+                url.startsWith(Constants.Scheme.HTTPS_MIXIN_WC)
+            ) {
+                view?.stopLoading()
+                convertWcLink(url)?.let { wcUri ->
+                    UrlInterpreterActivity.show(view?.context ?: requireContext(), wcUri)
+                }
+                return true
+            }
+
+            if (url.isMixinUrl() || url.isExternalTransferUrl() || url.isLightningUrl()) {
+                val now = System.currentTimeMillis()
+                if (url == lastHandledUrl?.first && now - (lastHandledUrl?.second ?: 0L) <= 1000L) {
+                    view?.stopLoading()
+                    return true
+                }
+                lastHandledUrl = url to now
+                view?.stopLoading()
+                val host = view?.url?.let { Uri.parse(it).host }
+                url.openAsUrl(
+                    view?.context ?: requireContext(),
+                    parentFragmentManager,
+                    lifecycleScope,
+                    host = host,
+                ) {}
+                return true
+            }
+
+            return false
+        }
+
         override fun shouldOverrideUrlLoading(
             view: WebView?,
             request: WebResourceRequest?,
         ): Boolean {
             val uri = request?.url ?: return false
+            val url = uri.toString()
+            if (interceptMixinUrl(view, url)) {
+                return true
+            }
+
             return when (uri.scheme?.lowercase()) {
                 "http", "https" -> false
                 else -> {
-                    val context = context ?: return false
+                    val context = view?.context ?: context ?: return false
                     runCatching {
                         context.startActivity(Intent(Intent.ACTION_VIEW, uri))
                     }.onFailure {
                         if (it !is ActivityNotFoundException) {
                             Timber.w(it)
                         }
-                    }.isSuccess
+                    }.isSuccess.also { handled ->
+                        if (handled && request.isForMainFrame) {
+                            dismiss()
+                        }
+                    }
                 }
             }
         }
@@ -171,6 +226,9 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             url: String?,
             favicon: android.graphics.Bitmap?,
         ) {
+            if (!url.isNullOrBlank() && url != this@WebBottomSheetDialogFragment.url && interceptMixinUrl(view, url)) {
+                return
+            }
             super.onPageStarted(view, url, favicon)
         }
 

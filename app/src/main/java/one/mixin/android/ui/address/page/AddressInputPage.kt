@@ -54,6 +54,7 @@ import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.address.component.TokenInfoHeader
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.safe.TokenItem
 
 @Composable
@@ -83,7 +84,15 @@ fun AddressInputPage(
         pop = pop,
         actions = {
             IconButton(onClick = {
-                context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                context.openUrl(
+                    Constants.HelpLink.CUSTOMER_SERVICE,
+                    source = AnalyticsTracker.CustomerServiceSource.ADDRESS_BOOK_ADD_ADDRESS,
+                    wallet = if (web3Token != null) {
+                        AnalyticsTracker.TradeWallet.WEB3
+                    } else {
+                        AnalyticsTracker.TradeWallet.MAIN
+                    },
+                )
             }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_support),

@@ -1,8 +1,6 @@
 package one.mixin.android.ui.landing.components
 
 import android.content.ClipData
-import android.os.Build
-import android.os.PersistableBundle
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -75,6 +73,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.crypto.getMatchingWords
 import one.mixin.android.crypto.initFromSeedAndSign
 import one.mixin.android.crypto.isMnemonicValid
+import one.mixin.android.extension.copySensitiveTextToClipboard
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toHex
@@ -355,25 +354,8 @@ fun MnemonicPhraseInput(
                                             .clip(RoundedCornerShape(4.dp))
                                             .clickable {
                                                 val content = mnemonicList.joinToString(" ")
-                                                val clipboard = context.getClipboardManager()
-                                                val clip = ClipData.newPlainText("", content)
-                                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                                    @Suppress("NewApi")
-                                                    clip.description.extras = PersistableBundle().apply {
-                                                        putBoolean("android.content.extra.IS_SENSITIVE", true)
-                                                    }
-                                                }
-                                                clipboard.setPrimaryClip(clip)
+                                                context.copySensitiveTextToClipboard(content, coroutineScope)
                                                 toast(R.string.copied_to_clipboard)
-                                                coroutineScope.launch {
-                                                    delay(60_000L)
-                                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                                                        val current = clipboard.primaryClip?.getItemAt(0)?.text?.toString()
-                                                        if (current == content) {
-                                                            clipboard.clearPrimaryClip()
-                                                        }
-                                                    }
-                                                }
                                             }
                                             .padding(8.dp)) {
 
@@ -652,25 +634,8 @@ fun MnemonicPhraseInput(
                                                     inputs = inputs.map { "" }
                                                 } else if (state == MnemonicState.Display) {
                                                     val content = mnemonicList.joinToString(" ")
-                                                    val clipboard = context.getClipboardManager()
-                                                    val clip = ClipData.newPlainText("", content)
-                                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                                        @Suppress("NewApi")
-                                                        clip.description.extras = PersistableBundle().apply {
-                                                            putBoolean("android.content.extra.IS_SENSITIVE", true)
-                                                        }
-                                                    }
-                                                    clipboard.setPrimaryClip(clip)
+                                                    context.copySensitiveTextToClipboard(content, coroutineScope)
                                                     toast(R.string.copied_to_clipboard)
-                                                    coroutineScope.launch {
-                                                        delay(60_000L)
-                                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                                                            val current = clipboard.primaryClip?.getItemAt(0)?.text?.toString()
-                                                            if (current == content) {
-                                                                clipboard.clearPrimaryClip()
-                                                            }
-                                                        }
-                                                    }
                                                 }
                                             }
                                             .padding(8.dp)

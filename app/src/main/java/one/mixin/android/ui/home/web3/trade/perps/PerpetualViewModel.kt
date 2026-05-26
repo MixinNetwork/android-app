@@ -8,25 +8,31 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.request.perps.CloseOrderRequest
+import one.mixin.android.api.request.perps.IncreaseOrderRequest
 import one.mixin.android.api.request.perps.OpenOrderRequest
 import one.mixin.android.api.request.perps.OpenOrderResponse
+import one.mixin.android.api.request.perps.PositionTpSlRequest
 import one.mixin.android.api.response.perps.CandleView
 import one.mixin.android.api.response.perps.PerpsMarket
+import one.mixin.android.api.response.perps.PerpsOrder
+import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.api.response.perps.PerpsPosition
-import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
+import one.mixin.android.api.response.perps.toPosition
 import one.mixin.android.api.response.perps.withDefaults
 import one.mixin.android.api.service.RouteService
 import one.mixin.android.db.TokenDao
 import one.mixin.android.db.perps.PerpsMarketDao
+import one.mixin.android.db.perps.PerpsOrderDao
 import one.mixin.android.db.perps.PerpsPositionDao
-import one.mixin.android.db.perps.PerpsPositionHistoryDao
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshPerpsPositionsJob
 import one.mixin.android.job.RefreshTokensJob
@@ -45,7 +51,7 @@ class PerpetualViewModel @Inject constructor(
     private val routeService: RouteService,
     private val tokenDao: TokenDao,
     private val perpsPositionDao: PerpsPositionDao,
-    private val perpsPositionHistoryDao: PerpsPositionHistoryDao,
+    private val perpsOrderDao: PerpsOrderDao,
     private val perpsMarketDao: PerpsMarketDao,
     private val jobManager: MixinJobManager
 ) : ViewModel() {
@@ -53,31 +59,47 @@ class PerpetualViewModel @Inject constructor(
         jobManager.addJobInBackground(RefreshPerpsPositionsJob(walletId))
     }
 
-    fun refreshPositionHistory(walletId: String, limit: Int = 100) {
+    private var refreshOrdersJob: kotlinx.coroutines.Job? = null
+
+    fun startRefreshOrders(walletId: String, intervalMs: Long = 10_000L) {
+        if (refreshOrdersJob?.isActive == true) return
+        refreshOrdersJob = viewModelScope.launch {
+            while (isActive) {
+                refreshOrders(walletId)
+                delay(intervalMs)
+            }
+        }
+    }
+
+    fun stopRefreshOrders() {
+        refreshOrdersJob?.cancel()
+    }
+
+    fun refreshOrders(walletId: String, limit: Int = 100) {
         viewModelScope.launch {
             try {
-                val latestClosedAt = withContext(Dispatchers.IO) {
-                    perpsPositionHistoryDao.getLatestClosedAt()
+                val latestUpdatedAt = withContext(Dispatchers.IO) {
+                    perpsOrderDao.getLatestUpdatedAt()
                 }
                 val response = withContext(Dispatchers.IO) {
-                    routeService.getPerpsPositionHistory(
+                    routeService.getPerpsOrders(
                         walletId = walletId,
                         limit = limit,
-                        offset = latestClosedAt
+                        offset = latestUpdatedAt,
                     )
                 }
 
                 val data = response.data
                 if (response.isSuccess && data != null) {
                     withContext(Dispatchers.IO) {
-                        perpsPositionHistoryDao.insertAll(data)
+                        upsertSyncedOrders(data)
                     }
-                    Timber.d("Perps position history refreshed: ${data.size} items")
+                    Timber.d("Perps orders refreshed: ${data.size} items")
                 } else {
-                    Timber.e("Failed to refresh position history: ${response.errorDescription}")
+                    Timber.e("Failed to refresh orders: ${response.errorDescription}")
                 }
             } catch (e: Exception) {
-                Timber.e(e, "Error refreshing position history")
+                Timber.e(e, "Error refreshing orders")
             }
         }
     }
@@ -292,6 +314,8 @@ class PerpetualViewModel @Inject constructor(
         amount: String,
         leverage: Int,
         walletId: String,
+        takeProfitPrice: String? = null,
+        stopLossPrice: String? = null,
         destination: String? = null,
         entryPrice: String,
         onSuccess: (OpenOrderResponse) -> Unit,
@@ -306,6 +330,8 @@ class PerpetualViewModel @Inject constructor(
                     amount = amount,
                     leverage = leverage,
                     walletId = walletId,
+                    takeProfitPrice = takeProfitPrice,
+                    stopLossPrice = stopLossPrice,
                     destination = destination
                 )
                 
@@ -328,8 +354,11 @@ class PerpetualViewModel @Inject constructor(
                         margin = data.payAmount,
                         openPayAmount = data.payAmount,
                         openPayAssetId = assetId,
+                        takeProfitPrice = takeProfitPrice,
+                        stopLossPrice = stopLossPrice,
+                        liquidationPrice = null,
                         leverage = leverage,
-                        state = "opening",
+                        state = "processing",
                         markPrice = entryPrice,
                         unrealizedPnl = "0",
                         roe = "0",
@@ -354,6 +383,98 @@ class PerpetualViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 val error = "Error opening perps order: ${e.message}"
+                Timber.e(e, error)
+                onError(-1, error)
+            }
+        }
+    }
+
+    fun increasePerpsPosition(
+        positionId: String,
+        assetId: String,
+        amount: String,
+        position: PerpsPositionItem? = null,
+        destination: String? = null,
+        price: String? = null,
+        takeProfitPrice: String? = null,
+        stopLossPrice: String? = null,
+        onSuccess: (OpenOrderResponse) -> Unit,
+        onError: (Int, String) -> Unit,
+    ) {
+        viewModelScope.launch {
+            try {
+                val request = IncreaseOrderRequest(
+                    assetId = assetId,
+                    amount = amount,
+                    destination = destination,
+                    price = price,
+                    takeProfitPrice = takeProfitPrice,
+                    stopLossPrice = stopLossPrice,
+                )
+
+                val response = withContext(Dispatchers.IO) {
+                    routeService.increasePerpsPosition(positionId, request)
+                }
+
+                val data = response.data
+                if (response.isSuccess && data != null) {
+                    val now = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).format(Date())
+                    withContext(Dispatchers.IO) {
+                        val localPosition = perpsPositionDao.getPosition(positionId)?.toPosition()
+                            ?: position?.toPosition()
+                        if (localPosition != null) {
+                            perpsPositionDao.upsertSuspend(
+                                localPosition.copy(
+                                    state = "adding",
+                                    updatedAt = now,
+                                )
+                            )
+                        } else {
+                            perpsPositionDao.updateStatus(positionId, "adding", now)
+                        }
+                    }
+                    onSuccess(data)
+                } else {
+                    onError(response.errorCode, response.errorDescription)
+                }
+            } catch (e: Exception) {
+                val error = "Error increasing perps position: ${e.message}"
+                Timber.e(e, error)
+                onError(-1, error)
+            }
+        }
+    }
+
+    fun setPositionTpSl(
+        positionId: String,
+        takeProfitPrice: String? = null,
+        stopLossPrice: String? = null,
+        onSuccess: (PerpsPosition) -> Unit,
+        onError: (Int, String) -> Unit,
+    ) {
+        viewModelScope.launch {
+            try {
+                val response = withContext(Dispatchers.IO) {
+                    routeService.setPerpsPositionTpSl(
+                        PositionTpSlRequest(
+                            positionId = positionId,
+                            takeProfitPrice = takeProfitPrice,
+                            stopLossPrice = stopLossPrice,
+                        )
+                    )
+                }
+
+                val data = response.data
+                if (response.isSuccess && data != null) {
+                    withContext(Dispatchers.IO) {
+                        perpsPositionDao.upsertSuspend(data)
+                    }
+                    onSuccess(data)
+                } else {
+                    onError(response.errorCode, response.errorDescription)
+                }
+            } catch (e: Exception) {
+                val error = "Error setting position TP/SL: ${e.message}"
                 Timber.e(e, error)
                 onError(-1, error)
             }
@@ -421,8 +542,8 @@ class PerpetualViewModel @Inject constructor(
         }
     }
 
-    fun observeClosedPositions(walletId: String, limit: Int): Flow<List<PerpsPositionHistoryItem>> {
-        return perpsPositionHistoryDao.observeHistories(limit)
+    fun observeOrders(walletId: String, limit: Int): Flow<List<PerpsOrderItem>> {
+        return perpsOrderDao.observeOrders(limit)
     }
 
     suspend fun getOpenPositionsFromDb(walletId: String): List<PerpsPositionItem> {
@@ -436,12 +557,12 @@ class PerpetualViewModel @Inject constructor(
         }
     }
 
-    suspend fun getClosedPositionsFromDb(walletId: String, limit: Int): List<PerpsPositionHistoryItem> {
+    suspend fun getOrdersFromDb(walletId: String, limit: Int): List<PerpsOrderItem> {
         return withContext(Dispatchers.IO) {
             try {
-                perpsPositionHistoryDao.getHistories(limit)
+                perpsOrderDao.getOrders(limit)
             } catch (e: Exception) {
-                Timber.e(e, "Error loading closed positions from db")
+                Timber.e(e, "Error loading orders from db")
                 emptyList()
             }
         }
@@ -494,7 +615,7 @@ class PerpetualViewModel @Inject constructor(
     suspend fun getTotalRealizedPnlFromDb(walletId: String): Double {
         return withContext(Dispatchers.IO) {
             try {
-                perpsPositionHistoryDao.getTotalRealizedPnl() ?: 0.0
+                perpsOrderDao.getTotalRealizedPnl() ?: 0.0
             } catch (e: Exception) {
                 Timber.e(e, "Error loading total realized PnL from db")
                 0.0
@@ -503,13 +624,13 @@ class PerpetualViewModel @Inject constructor(
     }
 
     fun observeTotalRealizedPnl(walletId: String): Flow<Double> {
-        return perpsPositionHistoryDao.observeTotalRealizedPnl()
+        return perpsOrderDao.observeTotalRealizedPnl()
     }
 
     suspend fun getTotalClosedEntryValueFromDb(walletId: String): Double {
         return withContext(Dispatchers.IO) {
             try {
-                perpsPositionHistoryDao.getTotalClosedEntryValue() ?: 0.0
+                perpsOrderDao.getTotalClosedEntryValue() ?: 0.0
             } catch (e: Exception) {
                 Timber.e(e, "Error loading total closed entry value from db")
                 0.0
@@ -518,7 +639,7 @@ class PerpetualViewModel @Inject constructor(
     }
 
     fun observeTotalClosedEntryValue(walletId: String): Flow<Double> {
-        return perpsPositionHistoryDao.observeTotalClosedEntryValue()
+        return perpsOrderDao.observeTotalClosedEntryValue()
     }
 
     fun getOpenPositionsPaged(walletId: String): Flow<PagingData<PerpsPositionItem>> {
@@ -533,7 +654,7 @@ class PerpetualViewModel @Inject constructor(
         }.flow.cachedIn(viewModelScope)
     }
 
-    fun getClosedPositionsPaged(walletId: String): Flow<PagingData<PerpsPositionHistoryItem>> {
+    fun getOrdersPaged(walletId: String): Flow<PagingData<PerpsOrderItem>> {
         return Pager(
             config = PagingConfig(
                 pageSize = Constants.PAGE_SIZE,
@@ -541,7 +662,7 @@ class PerpetualViewModel @Inject constructor(
                 enablePlaceholders = false,
             ),
         ) {
-            perpsPositionHistoryDao.getHistoriesPaged()
+            perpsOrderDao.getOrdersPaged()
         }.flow.cachedIn(viewModelScope)
     }
 
@@ -574,16 +695,15 @@ class PerpetualViewModel @Inject constructor(
         }
     }
 
-    fun getClosedPositionsByMarket(walletId: String, marketId: String, onSuccess: (List<PerpsPositionHistoryItem>) -> Unit) {
+    fun getOrdersByMarket(walletId: String, marketId: String, onSuccess: (List<PerpsOrderItem>) -> Unit) {
         viewModelScope.launch {
             try {
-                val allHistories = withContext(Dispatchers.IO) {
-                    perpsPositionHistoryDao.getHistories(100)
+                val orders = withContext(Dispatchers.IO) {
+                    perpsOrderDao.getOrdersByMarket(marketId)
                 }
-                val filteredHistories = allHistories.filter { it.marketId == marketId }
-                onSuccess(filteredHistories)
+                onSuccess(orders)
             } catch (e: Exception) {
-                Timber.e(e, "Error loading closed positions by market")
+                Timber.e(e, "Error loading orders by market")
                 onSuccess(emptyList())
             }
         }
@@ -591,6 +711,7 @@ class PerpetualViewModel @Inject constructor(
 
     fun closePerpsOrder(
         positionId: String,
+        leverage: Int,
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
@@ -605,7 +726,16 @@ class PerpetualViewModel @Inject constructor(
                 }
                 
                 if (response.isSuccess) {
+                    val now = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).format(Date())
                     withContext(Dispatchers.IO) {
+                        perpsPositionDao.getPosition(positionId)?.let { position ->
+                            perpsOrderDao.insert(
+                                createCachedClosedOrder(
+                                    position = position,
+                                    leverage = leverage.takeIf { it > 0 } ?: position.leverage,
+                                )
+                            )
+                        }
                         perpsPositionDao.deleteById(positionId)
                     }
                     Timber.d("Perps order closed: $positionId")
@@ -688,60 +818,122 @@ class PerpetualViewModel @Inject constructor(
         }
     }
 
-    fun loadPositionHistory(
+    fun loadOrders(
         walletId: String,
         limit: Int = 10,
         offset: String? = null,
-        onSuccess: (List<PerpsPositionHistoryItem>) -> Unit,
-        onError: (String) -> Unit
+        onSuccess: (List<PerpsOrderItem>) -> Unit,
+        onError: (String) -> Unit,
     ) {
         viewModelScope.launch {
             try {
-                val cachedHistories = withContext(Dispatchers.IO) {
-                    perpsPositionHistoryDao.getHistories(limit, offset)
+                val cached = withContext(Dispatchers.IO) {
+                    perpsOrderDao.getOrders(limit, offset)
                 }
-                
-                if (cachedHistories.isNotEmpty()) {
-                    onSuccess(cachedHistories)
+
+                if (cached.isNotEmpty()) {
+                    onSuccess(cached)
                 }
-                
+
                 val response = withContext(Dispatchers.IO) {
-                    routeService.getPerpsPositionHistory(
+                    routeService.getPerpsOrders(
                         walletId = walletId,
                         limit = limit,
-                        offset = offset
+                        offset = offset,
                     )
                 }
-                
+
                 val data = response.data
                 if (response.isSuccess && data != null) {
-                    Timber.d("Position history loaded: ${data.size} items")
+                    Timber.d("Perps orders loaded: ${data.size} items")
                     withContext(Dispatchers.IO) {
-                        perpsPositionHistoryDao.insertAll(data)
+                        upsertSyncedOrders(data)
                     }
-                    
-                    val updatedHistories = withContext(Dispatchers.IO) {
-                        perpsPositionHistoryDao.getHistories(limit, offset)
+
+                    val updated = withContext(Dispatchers.IO) {
+                        perpsOrderDao.getOrders(limit, offset)
                     }
-                    onSuccess(updatedHistories)
+                    onSuccess(updated)
                 } else {
-                    val error = "Failed to load position history: ${response.errorDescription}"
+                    val error = "Failed to load orders: ${response.errorDescription}"
                     Timber.e(error)
-                    if (cachedHistories.isEmpty()) {
+                    if (cached.isEmpty()) {
                         onError(error)
                     }
                 }
             } catch (e: Exception) {
-                val error = "Error loading position history: ${e.message}"
+                val error = "Error loading orders: ${e.message}"
                 Timber.e(e, error)
-                
-                val cachedHistories = withContext(Dispatchers.IO) {
-                    perpsPositionHistoryDao.getHistories(limit, offset)
+
+                val cached = withContext(Dispatchers.IO) {
+                    perpsOrderDao.getOrders(limit, offset)
                 }
-                if (cachedHistories.isEmpty()) {
+                if (cached.isEmpty()) {
                     onError(error)
                 }
             }
         }
+    }
+
+    suspend fun getOrderFromDb(orderId: String): PerpsOrderItem? {
+        return withContext(Dispatchers.IO) {
+            perpsOrderDao.getOrder(orderId)
+        }
+    }
+
+    private suspend fun upsertSyncedOrders(orders: List<PerpsOrder>) {
+        if (orders.isEmpty()) return
+
+        val updatedOrders = orders.map { order ->
+            val cachedLeverage = perpsOrderDao.getCachedLeverage(order.positionId)
+            if (order.leverage == 0 && cachedLeverage != null) {
+                order.copy(leverage = cachedLeverage)
+            } else {
+                order
+            }
+        }
+
+        perpsOrderDao.deleteLocalByPositionIds(updatedOrders.map { it.positionId }.distinct())
+        perpsOrderDao.insertAll(updatedOrders)
+
+        // Sync position status if it's a close order
+        updatedOrders.filter { it.orderType == PerpsOrder.TYPE_CLOSE && it.status == PerpsOrder.STATUS_FILLED }
+            .forEach { closeOrder ->
+                perpsPositionDao.updateStatus(
+                    closeOrder.positionId,
+                    "closed",
+                    closeOrder.updatedAt,
+                )
+            }
+    }
+
+    private fun createCachedClosedOrder(
+        position: PerpsPositionItem,
+        leverage: Int,
+    ): PerpsOrder {
+        val closedAt = position.updatedAt?.takeIf { it.isNotBlank() }
+            ?: position.createdAt?.takeIf { it.isNotBlank() }
+            ?: SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).format(Date())
+        val entryPrice = position.entryPrice
+        val closePrice = position.markPrice?.takeIf { it.isNotBlank() } ?: entryPrice
+
+        return PerpsOrder(
+            orderId = "local_${position.positionId}",
+            positionId = position.positionId,
+            marketId = position.marketId,
+            side = position.side,
+            orderType = PerpsOrder.TYPE_CLOSE,
+            status = PerpsOrder.STATUS_FILLED,
+            leverage = leverage,
+            quantity = position.quantity,
+            entryPrice = entryPrice,
+            closePrice = closePrice,
+            realizedPnl = position.unrealizedPnl?.takeIf { it.isNotBlank() } ?: "0",
+            roe = position.roe ?: "0",
+            closeReason = null,
+            triggerPrice = null,
+            createdAt = position.createdAt?.takeIf { it.isNotBlank() } ?: closedAt,
+            updatedAt = closedAt,
+        )
     }
 }

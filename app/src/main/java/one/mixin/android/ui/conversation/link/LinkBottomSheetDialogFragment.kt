@@ -252,13 +252,14 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                                     } catch (e: Exception) {
                                         app.homeUri
                                     }
+                                AnalyticsTracker.trackOpenBotHomePage(AnalyticsTracker.BotSource.SCHEME, app.appNumber)
                                 WebActivity.show(requireActivity(), url, null, app)
                             } else {
-                                showUserBottom(parentFragmentManager, user)
+                                showUserBottom(parentFragmentManager, user, botEntrySource = AnalyticsTracker.BotSource.SCHEME)
                             }
                         }
                     } else {
-                        showUserBottom(parentFragmentManager, user)
+                        showUserBottom(parentFragmentManager, user, botEntrySource = AnalyticsTracker.BotSource.SCHEME)
                     }
                     dismiss()
                 }
@@ -730,7 +731,12 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                     if (marketItem == null) {
                         showError(R.string.Data_error)
                     } else {
-                        WalletActivity.showWithMarket(requireActivity(), marketItem, Destination.Market)
+                        WalletActivity.showWithMarket(
+                            requireActivity(),
+                            marketItem,
+                            Destination.Market,
+                            AnalyticsTracker.MarketSource.SCHEMA,
+                        )
                         dismiss()
                     }
                 }
@@ -914,7 +920,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                 ConfirmBottomFragment.show(requireContext(), parentFragmentManager, url)
                 dismiss()
             }
-        } else if (url.startsWith(Scheme.BUY, true)) {
+        } else if (url.startsWith(Scheme.HTTPS_BUY, true) || url.startsWith(Scheme.MIXIN_BUY, true) || url.startsWith(Scheme.BUY, true)) {
             MainActivity.showWallet(requireContext(), buy = true)
             dismiss()
         } else if (url.startsWith(Scheme.TIP, true)) {
@@ -934,6 +940,18 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
             lifecycleScope.launch(errorHandler) {
                 handleTradeScheme(url.toUri())
             }
+        } else if (WalletConnect.isEnabled() && WalletConnect.isPaymentLink(url)) {
+            if (MixinApplication.get().topActivity is WebActivity) {
+                WalletConnect.connect(url)
+            } else {
+                startActivity(
+                    Intent(requireContext(), MainActivity::class.java).apply {
+                        putExtra(MainActivity.WALLET_CONNECT, url)
+                        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
+                    },
+                )
+            }
+            dismiss()
         } else if (url.startsWith(Scheme.HTTPS_MIXIN_WC) || url.startsWith(Scheme.MIXIN_WC) ||
             url.startsWith(Scheme.WALLET_CONNECT_PREFIX)
         ) {
@@ -1073,7 +1091,16 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
             AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.SCHEMA)
         }
         defaultSharedPreferences.putInt("$PREF_TRADE_SELECTED_TAB_PREFIX${Session.getAccountId() ?: ""}", 0)
-        SwapActivity.show(requireContext(), input, output, amount, referral)
+        SwapActivity.show(
+            requireContext(),
+            input,
+            output,
+            amount,
+            referral,
+            entrySource = if (activity is ConversationActivity) TradeSource.APP_CARD else TradeSource.SCHEMA,
+            entryType = AnalyticsTracker.SpotTradeType.SIMPLE,
+        )
+        closeSourceWebActivityIfNeeded()
         dismiss()
     }
 
@@ -1098,8 +1125,10 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                 market.marketId,
                 market.displaySymbol,
                 market.displaySymbol,
-                market.tokenSymbol
+                market.tokenSymbol,
+                AnalyticsTracker.PerpsSource.APP_CARD,
             )
+            closeSourceWebActivityIfNeeded()
             dismiss()
             return
         }
@@ -1122,8 +1151,21 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
         }
 
         defaultSharedPreferences.putInt("$PREF_TRADE_SELECTED_TAB_PREFIX${Session.getAccountId() ?: ""}", if (openLimit) 1 else 0)
-        SwapActivity.show(requireContext(), input, output, amount, referral)
+        SwapActivity.show(
+            requireContext(),
+            input,
+            output,
+            amount,
+            referral,
+            entrySource = if (activity is ConversationActivity) TradeSource.APP_CARD else TradeSource.SCHEMA,
+            entryType = if (openLimit) AnalyticsTracker.SpotTradeType.ADVANCED else AnalyticsTracker.SpotTradeType.SIMPLE,
+        )
+        closeSourceWebActivityIfNeeded()
         dismiss()
+    }
+
+    private fun closeSourceWebActivityIfNeeded() {
+        (activity as? WebActivity)?.finish()
     }
 
     private fun handleTipScheme(uri: Uri) {

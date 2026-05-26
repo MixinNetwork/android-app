@@ -67,6 +67,7 @@ fun InputContent(
     tokenIconSize: Dp = 32.dp,
     inputFontSize: TextUnit = 24.sp,
     inputFontWeight: FontWeight = FontWeight.Black,
+    autoFocus: Boolean = false,
 ) {
     if (readOnly) {
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -96,6 +97,12 @@ fun InputContent(
     } else {
         val focusRequester = remember { FocusRequester() }
         val keyboardController = LocalSoftwareKeyboardController.current
+        LaunchedEffect(Unit) {
+            if (autoFocus) {
+                focusRequester.requestFocus()
+                keyboardController?.show()
+            }
+        }
         val interactionSource = remember { MutableInteractionSource() }
         var textFieldValue by remember {
             mutableStateOf(

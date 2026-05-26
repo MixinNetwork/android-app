@@ -14,6 +14,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.jakewharton.rxbinding3.widget.textChanges
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
@@ -96,7 +97,9 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     }
 
     private val adapter by lazy {
-        SwapTokenAdapter(selectUnique)
+        SwapTokenAdapter(selectUnique).apply {
+            tokenType = spotTokenType()
+        }
     }
 
     private var isLoading = false
@@ -278,6 +281,12 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                         setContent {
                             RecentSwapTokens(key) {
                                 AnalyticsTracker.trackTradeTokenSelect(AnalyticsTracker.TradeTokenSelectMethod.RECENT_CLICK)
+                                AnalyticsTracker.trackSpotTokenSelect(
+                                    method = AnalyticsTracker.TradeTokenSelectMethod.RECENT_CLICK,
+                                    type = spotTokenType(),
+                                    chain = it.chain.name,
+                                    assetSymbol = it.symbol,
+                                )
                                 adapter.onClick(it)
                             }
                         }
@@ -323,6 +332,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 } else {
                     binding.rvVa.displayedChild = 0
                 }
+                scrollListToTop()
                 return@launch
             }
             val assetList = if (isStockMode && s.isBlank()) {
@@ -351,8 +361,28 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         } else {
             binding.rvVa.displayedChild = 0
         }
-        binding.assetRv.scrollToPosition(0)
+        scrollListToTop()
         binding.pb.isVisible = false
+    }
+
+    private fun scrollListToTop() {
+        binding.assetRv.post {
+            binding.assetRv.stopScroll()
+            val layoutManager = binding.assetRv.layoutManager as? LinearLayoutManager
+            if (layoutManager != null) {
+                layoutManager.scrollToPositionWithOffset(0, 0)
+            } else {
+                binding.assetRv.scrollToPosition(0)
+            }
+        }
+    }
+
+    private fun spotTokenType(): String {
+        return if (isFrom) {
+            AnalyticsTracker.SpotTokenType.SEND
+        } else {
+            AnalyticsTracker.SpotTokenType.RECEIVE
+        }
     }
 
     private suspend fun search(

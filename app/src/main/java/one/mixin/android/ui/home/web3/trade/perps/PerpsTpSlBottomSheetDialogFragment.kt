@@ -258,59 +258,20 @@ private fun PerpsTpSlContent(
     onCancel: () -> Unit,
     onApply: (String?) -> Unit,
 ) {
-    val viewModel = hiltViewModel<PerpetualViewModel>()
-    PerpsTpSlContentInternal(
-        mode = mode,
-        initialPrice = initialPrice,
-        currentPrice = currentPrice,
-        isLong = isLong,
-        marketIconUrl = marketIconUrl,
-        marketSymbol = marketSymbol,
-        marginAmount = marginAmount,
-        leverage = leverage,
-        entryPrice = entryPrice,
-        marketId = marketId,
-        priceScale = priceScale,
-        liquidationPrice = liquidationPrice,
-        onCancel = onCancel,
-        onApply = onApply,
-        loadMarketDetail = { id, onSuccess, onError ->
-            viewModel.loadMarketDetail(id, onSuccess, onError)
-        }
-    )
-}
-
-@Composable
-private fun PerpsTpSlContentInternal(
-    mode: PerpsTpSlBottomSheetDialogFragment.Mode,
-    initialPrice: String,
-    currentPrice: String,
-    isLong: Boolean,
-    marketIconUrl: String,
-    marketSymbol: String,
-    marginAmount: String,
-    leverage: Int,
-    entryPrice: String,
-    marketId: String,
-    priceScale: Int,
-    liquidationPrice: String?,
-    onCancel: () -> Unit,
-    onApply: (String?) -> Unit,
-    loadMarketDetail: (String, (one.mixin.android.api.response.perps.PerpsMarket) -> Unit, (Exception) -> Unit) -> Unit,
-) {
     val context = LocalContext.current
+    val viewModel = hiltViewModel<PerpetualViewModel>()
     val preferences = remember(context) { context.defaultSharedPreferences }
     val safePriceScale = remember(priceScale) { priceScale.coerceAtLeast(0) }
     var latestCurrentPrice by rememberSaveable(marketId, currentPrice) { mutableStateOf(currentPrice) }
     LaunchedEffect(marketId) {
         if (marketId.isBlank()) return@LaunchedEffect
         while (isActive) {
-            loadMarketDetail(
-                marketId,
-                { market ->
+            viewModel.loadMarketDetail(
+                marketId = marketId,
+                onSuccess = { market ->
                     latestCurrentPrice = market.last.ifBlank { market.markPrice }.ifBlank { latestCurrentPrice }
                 },
-                {},
+                onError = {},
             )
             delay(10_000)
         }
@@ -369,7 +330,6 @@ private fun PerpsTpSlContentInternal(
     val percentMagnitudeInput = percentFieldValue.text
     val isTakeProfit = mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT
     val priceErrorText = validateTpSlPrice(
-        context = context,
         rawValue = priceInput,
         currentPrice = validationCurrentPrice,
         liquidationBasePrice = liquidationBasePrice,
@@ -378,7 +338,6 @@ private fun PerpsTpSlContentInternal(
         isTakeProfit = isTakeProfit,
     )
     val percentErrorText = validateTpSlPercent(
-        context = context,
         rawValue = percentMagnitudeInput,
         currentPrice = validationCurrentPrice,
         percentBasePrice = percentBasePrice,
@@ -1265,7 +1224,6 @@ private fun signedPercentFromPrice(
 }
 
 internal fun validateTpSlPrice(
-    context: android.content.Context,
     rawValue: String,
     currentPrice: BigDecimal,
     liquidationBasePrice: BigDecimal,
@@ -1278,9 +1236,9 @@ internal fun validateTpSlPrice(
         return null
     }
 
-    val price = trimmed.toBigDecimalOrNull() ?: return context.getString(R.string.error_invalid_number)
+    val price = trimmed.toBigDecimalOrNull() ?: return MixinApplicationHolder.getString(R.string.error_invalid_number)
     if (price <= BigDecimal.ZERO) {
-        return context.getString(R.string.the_price_must_higher_than, "${PERPS_USD_SYMBOL}0")
+        return MixinApplicationHolder.getString(R.string.the_price_must_higher_than, "${PERPS_USD_SYMBOL}0")
     }
     if (currentPrice <= BigDecimal.ZERO) {
         return null
@@ -1296,7 +1254,7 @@ internal fun validateTpSlPrice(
     return when {
         isLong && isTakeProfit -> {
             if (price <= currentPrice) {
-                context.getString(
+                MixinApplicationHolder.getString(
                     R.string.the_price_must_higher_than,
                     "$PERPS_USD_SYMBOL${currentPrice.stripTrailingZeros().toPlainString()}",
                 )
@@ -1304,11 +1262,11 @@ internal fun validateTpSlPrice(
         }
         isLong && !isTakeProfit -> {
             when {
-                price >= currentPrice -> context.getString(
+                price >= currentPrice -> MixinApplicationHolder.getString(
                     R.string.the_price_must_lower_than,
                     "$PERPS_USD_SYMBOL${currentPrice.stripTrailingZeros().toPlainString()}",
                 )
-                price < liquidationPriceLong -> context.getString(
+                price < liquidationPriceLong -> MixinApplicationHolder.getString(
                     R.string.the_price_must_higher_than,
                     "$PERPS_USD_SYMBOL${liquidationPriceLong.stripTrailingZeros().toPlainString()}",
                 )
@@ -1317,7 +1275,7 @@ internal fun validateTpSlPrice(
         }
         !isLong && isTakeProfit -> {
             when {
-                price >= currentPrice -> context.getString(
+                price >= currentPrice -> MixinApplicationHolder.getString(
                     R.string.the_price_must_lower_than,
                     "$PERPS_USD_SYMBOL${currentPrice.stripTrailingZeros().toPlainString()}",
                 )
@@ -1327,11 +1285,11 @@ internal fun validateTpSlPrice(
         else -> {
             // !isLong && !isTakeProfit (short stop loss)
             when {
-                price <= currentPrice -> context.getString(
+                price <= currentPrice -> MixinApplicationHolder.getString(
                     R.string.the_price_must_higher_than,
                     "$PERPS_USD_SYMBOL${currentPrice.stripTrailingZeros().toPlainString()}",
                 )
-                price > liquidationPriceShort -> context.getString(
+                price > liquidationPriceShort -> MixinApplicationHolder.getString(
                     R.string.the_price_must_lower_than,
                     "$PERPS_USD_SYMBOL${liquidationPriceShort.stripTrailingZeros().toPlainString()}",
                 )
@@ -1342,7 +1300,6 @@ internal fun validateTpSlPrice(
 }
 
 private fun validateTpSlPercent(
-    context: android.content.Context,
     rawValue: String,
     currentPrice: BigDecimal,
     percentBasePrice: BigDecimal,
@@ -1357,9 +1314,9 @@ private fun validateTpSlPercent(
         return null
     }
 
-    val percent = trimmed.toBigDecimalOrNull() ?: return context.getString(R.string.error_invalid_number)
+    val percent = trimmed.toBigDecimalOrNull() ?: return MixinApplicationHolder.getString(R.string.error_invalid_number)
     if (percent <= BigDecimal.ZERO) {
-        return context.getString(R.string.error_percentage_must_be_greater_than_value, "0%")
+        return MixinApplicationHolder.getString(R.string.error_percentage_must_be_greater_than_value, "0%")
     }
     val derivedPrice = percentToPriceInput(
         percentMagnitudeInput = trimmed,
@@ -1371,10 +1328,9 @@ private fun validateTpSlPercent(
     )
     if (derivedPrice.isBlank()) {
         val maxPercent = (leverage * 100).toBigDecimal().stripTrailingZeros().toPlainString()
-        return context.getString(R.string.error_percentage_must_be_less_than_value, "$maxPercent%")
+        return MixinApplicationHolder.getString(R.string.error_percentage_must_be_less_than_value, "$maxPercent%")
     }
     return validateTpSlPrice(
-        context = context,
         rawValue = derivedPrice,
         currentPrice = currentPrice,
         liquidationBasePrice = liquidationBasePrice,
@@ -1383,6 +1339,12 @@ private fun validateTpSlPercent(
         isTakeProfit = mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT,
     )
 }
+
+private object MixinApplicationHolder {
+    fun getString(resId: Int, vararg formatArgs: Any): String =
+        MixinApplication.appContext.getString(resId, *formatArgs)
+}
+
 
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable

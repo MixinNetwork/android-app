@@ -6,10 +6,10 @@ import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class PerpsPositionHistoryItem(
-    @SerializedName("history_id")
-    @ColumnInfo(name = "history_id")
-    val historyId: String,
+data class PerpsOrderItem(
+    @SerializedName("order_id")
+    @ColumnInfo(name = "order_id")
+    val orderId: String,
     @SerializedName("position_id")
     @ColumnInfo(name = "position_id")
     val positionId: String,
@@ -19,6 +19,15 @@ data class PerpsPositionHistoryItem(
     @SerializedName("side")
     @ColumnInfo(name = "side")
     val side: String,
+    @SerializedName("order_type")
+    @ColumnInfo(name = "order_type")
+    val orderType: String,
+    @SerializedName("status")
+    @ColumnInfo(name = "status")
+    val status: String,
+    @SerializedName("leverage")
+    @ColumnInfo(name = "leverage")
+    val leverage: Int,
     @SerializedName("quantity")
     @ColumnInfo(name = "quantity")
     val quantity: String,
@@ -31,22 +40,25 @@ data class PerpsPositionHistoryItem(
     @SerializedName("realized_pnl")
     @ColumnInfo(name = "realized_pnl")
     val realizedPnl: String,
-    @SerializedName("leverage")
-    @ColumnInfo(name = "leverage")
-    val leverage: Int,
-    @SerializedName("margin_method")
-    @ColumnInfo(name = "margin_method")
-    val marginMethod: String,
-    @SerializedName("open_at")
-    @ColumnInfo(name = "open_at")
-    val openAt: String,
-    @SerializedName("closed_at")
-    @ColumnInfo(name = "closed_at")
-    val closedAt: String,
+    @SerializedName("roe")
+    @ColumnInfo(name = "roe")
+    val roe: String,
+    @SerializedName("close_reason")
+    @ColumnInfo(name = "close_reason")
+    val closeReason: String?,
+    @SerializedName("trigger_price")
+    @ColumnInfo(name = "trigger_price")
+    val triggerPrice: String?,
+    @SerializedName("created_at")
+    @ColumnInfo(name = "created_at")
+    val createdAt: String,
+    @SerializedName("updated_at")
+    @ColumnInfo(name = "updated_at")
+    val updatedAt: String,
     @ColumnInfo(name = "display_symbol")
     val displaySymbol: String? = null,
     @ColumnInfo(name = "icon_url")
     val iconUrl: String? = null,
     @ColumnInfo(name = "token_symbol")
-    val tokenSymbol: String? = null
+    val tokenSymbol: String? = null,
 ) : Parcelable

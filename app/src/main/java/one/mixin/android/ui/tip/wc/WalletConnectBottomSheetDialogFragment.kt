@@ -186,6 +186,7 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     showPin = { showPin() },
                 )
             }
+            RequestType.Pay -> {}
         }
     }
 
@@ -196,6 +197,7 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                 RequestType.Connect -> Step.Connecting
                 RequestType.SessionProposal -> Step.Input
                 RequestType.SessionRequest -> Step.Sign
+                RequestType.Pay -> Step.Done
             }
         checkV2ChainAndParseSignData()
     }
@@ -446,6 +448,7 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                             return@approveRequest nonce
                         })
                     }
+                    RequestType.Pay -> {}
                 }
             }
             WalletConnect.Version.TIP -> {
@@ -466,6 +469,7 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     RequestType.SessionRequest -> {
                         WalletConnectV2.rejectRequest(topic = topic)
                     }
+                    RequestType.Pay -> {}
                 }
             }
             WalletConnect.Version.TIP -> {

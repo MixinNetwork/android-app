@@ -40,6 +40,7 @@ import one.mixin.android.extension.findFragmentActivityOrNull
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.openUrl
 import one.mixin.android.session.Session
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.setting.EmergencyViewModel
@@ -220,6 +221,7 @@ private fun RemoveEmergencyButton(
                             val a = response.data as Account
                             Session.storeAccount(a)
                             Session.setHasEmergencyContact(a.hasEmergencyContact)
+                            AnalyticsTracker.setHasRecoveryContact(a)
                             Timber.d("delete emergency contact success: ${a.hasEmergencyContact}")
                             onEmergencyAccountRemoved()
                         },

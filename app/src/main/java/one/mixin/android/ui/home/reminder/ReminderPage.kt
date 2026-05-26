@@ -7,12 +7,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -51,85 +52,96 @@ fun ReminderPage(
     extraContent: (@Composable () -> Unit)? = null,
     stickyFooter: Boolean = false,
 ) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier
+    BoxWithConstraints(
+        modifier = Modifier
             .fillMaxWidth()
-            .fillMaxHeight()
             .clip(RoundedCornerShape(topEnd = 12.dp, topStart = 12.dp))
             .background(MixinAppTheme.colors.primary)
     ) {
-        Box(
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxWidth()
-                .wrapContentHeight()
-                .background(
-                    brush = Brush.linearGradient(
-                        colors = listOf(
-                            MixinAppTheme.colors.bgGradientStart,
-                            MixinAppTheme.colors.bgGradientEnd
-                        ),
-                        start = Offset(0f, 0f),
-                        end = Offset(0f, Float.POSITIVE_INFINITY)
-                    )
+                .then(
+                    if (stickyFooter) {
+                        Modifier.heightIn(max = maxHeight)
+                    } else {
+                        Modifier.wrapContentHeight()
+                    }
                 )
-                .padding(horizontal = 22.dp)
-                .padding(top = 30.dp)
         ) {
-            Image(
-                painter = painterResource(id = contentImage),
-                contentDescription = null,
-                modifier = Modifier.align(Alignment.BottomCenter)
-            )
-        }
-        if (stickyFooter) {
-            Column(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f)
-                    .padding(horizontal = 30.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .verticalScroll(rememberScrollState()),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        ReminderContent(
-                            title = title,
-                            contentSlot = contentSlot,
-                            extraContent = extraContent,
+                    .wrapContentHeight()
+                    .background(
+                        brush = Brush.linearGradient(
+                            colors = listOf(
+                                MixinAppTheme.colors.bgGradientStart,
+                                MixinAppTheme.colors.bgGradientEnd
+                            ),
+                            start = Offset(0f, 0f),
+                            end = Offset(0f, Float.POSITIVE_INFINITY)
                         )
-                    }
-                }
-                ReminderActions(
-                    actionStr = actionStr,
-                    dismissStr = dismissStr,
-                    action = action,
-                    dismiss = dismiss,
+                    )
+                    .padding(horizontal = 22.dp)
+                    .padding(top = 30.dp)
+            ) {
+                Image(
+                    painter = painterResource(id = contentImage),
+                    contentDescription = null,
+                    modifier = Modifier.align(Alignment.BottomCenter)
                 )
             }
-        } else {
-            Column(
-                modifier = Modifier.padding(horizontal = 30.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                ReminderContent(
-                    title = title,
-                    contentSlot = contentSlot,
-                    extraContent = extraContent,
-                )
-                ReminderActions(
-                    actionStr = actionStr,
-                    dismissStr = dismissStr,
-                    action = action,
-                    dismiss = dismiss,
-                )
+            if (stickyFooter) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 30.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f, fill = false),
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .verticalScroll(rememberScrollState()),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            ReminderContent(
+                                title = title,
+                                contentSlot = contentSlot,
+                                extraContent = extraContent,
+                            )
+                        }
+                    }
+                    ReminderActions(
+                        actionStr = actionStr,
+                        dismissStr = dismissStr,
+                        action = action,
+                        dismiss = dismiss,
+                    )
+                }
+            } else {
+                Column(
+                    modifier = Modifier.padding(horizontal = 30.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    ReminderContent(
+                        title = title,
+                        contentSlot = contentSlot,
+                        extraContent = extraContent,
+                    )
+                    ReminderActions(
+                        actionStr = actionStr,
+                        dismissStr = dismissStr,
+                        action = action,
+                        dismiss = dismiss,
+                    )
+                }
             }
         }
     }
