@@ -31,6 +31,8 @@ sealed class Chain(
 
     object Avalanche : Chain(Constants.ChainId.Avalanche, "eip155", "43114", "0xa86a", "Avalanche C-Chain", "AVAX", listOf("https://api.avax.network/ext/bc/C/rpc"))
 
+    object HyperEVM : Chain(Constants.ChainId.HyperEVM, "eip155", "999", "0x3e7", "HyperEVM", "HYPE", listOf("https://rpc.hyperliquid.xyz/evm"))
+
     object Solana : Chain(SOLANA_CHAIN_ID, "solana", "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ", "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ", "Solana", "SOL", listOf("https://api.mainnet-beta.solana.com"))
 
     object Bitcoin : Chain(BITCOIN_CHAIN_ID, "BTC", "", "", "Bitcoin", "BTC", listOf(""))
@@ -55,12 +57,13 @@ sealed class Chain(
             Polygon ->  Constants.ChainId.Polygon
             Base ->  Constants.ChainId.Base
             Avalanche -> Constants.ChainId.Avalanche
+            HyperEVM -> Constants.ChainId.HyperEVM
             else ->  Constants.ChainId.Solana
         }
 }
 // Chain.Blast
-internal val supportChainList = listOf(Chain.Solana, Chain.Ethereum, Chain.Base, Chain.BinanceSmartChain, Chain.Polygon, Chain.Optimism, Chain.Arbitrum, Chain.Avalanche)
-internal val evmChainList = listOf(Chain.Ethereum, Chain.Base, Chain.BinanceSmartChain, Chain.Polygon, Chain.Optimism, Chain.Arbitrum, Chain.Avalanche)
+internal val supportChainList = listOf(Chain.Solana, Chain.Ethereum, Chain.Base, Chain.BinanceSmartChain, Chain.Polygon, Chain.Optimism, Chain.Arbitrum, Chain.Avalanche, Chain.HyperEVM)
+internal val evmChainList = listOf(Chain.Ethereum, Chain.Base, Chain.BinanceSmartChain, Chain.Polygon, Chain.Optimism, Chain.Arbitrum, Chain.Avalanche, Chain.HyperEVM)
 
 internal fun String.getChain(): Chain? {
     return when (this) {
@@ -71,6 +74,7 @@ internal fun String.getChain(): Chain? {
         Chain.Avalanche.chainReference -> Chain.Avalanche
         Chain.BinanceSmartChain.chainReference -> Chain.BinanceSmartChain
         Chain.Polygon.chainReference -> Chain.Polygon
+        Chain.HyperEVM.chainReference -> Chain.HyperEVM
         Chain.Solana.chainId -> Chain.Solana
         else -> null
     }
@@ -87,6 +91,7 @@ internal fun getChainByChainId(chainId: String?): Chain? {
         Chain.Avalanche.chainId -> Chain.Avalanche
         Chain.BinanceSmartChain.chainId -> Chain.BinanceSmartChain
         Chain.Polygon.chainId -> Chain.Polygon
+        Chain.HyperEVM.chainId -> Chain.HyperEVM
         Chain.Solana.chainId -> Chain.Solana
         else -> null
     }
