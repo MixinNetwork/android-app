@@ -80,25 +80,6 @@ fun AssetDashboardScreen(
     onUpgradePlan: () -> Unit,
 ) {
     val viewModel: AssetDistributionViewModel = hiltViewModel()
-    val wallets by viewModel.wallets.collectAsStateWithLifecycle()
-    
-    AssetDashboardScreenContent(
-        wallets = wallets,
-        onLoadWallets = { viewModel.loadWallets() },
-        onWalletCardClick = onWalletCardClick,
-        onAddWalletClick = onAddWalletClick,
-        onUpgradePlan = onUpgradePlan
-    )
-}
-
-@Composable
-fun AssetDashboardScreenContent(
-    wallets: List<one.mixin.android.vo.safe.SafeWallet>,
-    onLoadWallets: () -> Unit,
-    onWalletCardClick: (destination: WalletDestination) -> Unit,
-    onAddWalletClick: () -> Unit,
-    onUpgradePlan: () -> Unit,
-) {
     val context = LocalContext.current
     val safeCreateGuidelineUrl: String = stringResource(R.string.safe_create_guideline_url)
     val safeLearnMoreUrl: String = stringResource(R.string.safe_learn_more_url)
@@ -115,6 +96,7 @@ fun AssetDashboardScreenContent(
     val hideSafeWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_SAFE_WALLET_INFO, false)) }
     val hasSeenSafeCategoryBadge = remember { mutableStateOf(prefs.getBoolean(KEY_SAFE_CATEGORY_BADGE_SEEN, false)) }
     val addWalletClicked = remember { mutableStateOf(prefs.getBoolean(PREF_HAS_USED_ADD_WALLET, false)) }
+    val wallets by viewModel.wallets.collectAsStateWithLifecycle()
     var selectedCategory by remember { mutableStateOf<String?>(prefs.getString(PREF_WALLET_CATEGORY_FILTER, null)) }
     var isWalletInfoCardVisible by remember { mutableStateOf(true) }
 
@@ -143,7 +125,7 @@ fun AssetDashboardScreenContent(
     }
 
     LaunchedEffect(refreshTrigger) {
-        onLoadWallets()
+        viewModel.loadWallets()
     }
 
     LaunchedEffect(selectedCategory, wallets.size) {
@@ -948,11 +930,9 @@ fun CreateSafeCard(
 @Preview
 @Composable
 fun CardPreview() {
-    MixinAppTheme {
-        Column {
-            CreateSafeCard {}
-            Spacer(modifier = Modifier.height(8.dp))
-            UpgradeSafeCard({}, {})
-        }
+    Column {
+        CreateSafeCard {}
+        Spacer(modifier = Modifier.height(8.dp))
+        UpgradeSafeCard({}, {})
     }
 }

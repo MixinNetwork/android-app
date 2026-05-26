@@ -98,72 +98,26 @@ fun SessionRequestPage(
     showPin: () -> Unit,
 ) {
     val viewModel = hiltViewModel<SessionRequestViewModel>()
-    val sessionRequestUI = viewModel.getSessionRequestUI(version, chain, signData, sessionRequest)
-    
-    SessionRequestPageContent(
-        gson = gson,
-        version = version,
-        account = account,
-        step = step,
-        chain = chain,
-        topic = topic,
-        sessionRequest = sessionRequest,
-        sessionRequestUI = sessionRequestUI,
-        asset = asset,
-        tipGas = tipGas,
-        errorInfo = errorInfo,
-        isFeeWaived = isFeeWaived,
-        onFreeClick = onFreeClick,
-        onPreviewMessage = onPreviewMessage,
-        onDismissRequest = onDismissRequest,
-        showPin = showPin,
-        checkAddressAndGetDisplayName = { addr -> viewModel.checkAddressAndGetDisplayName(addr, null) },
-        findWalletById = { id -> viewModel.findWalletById(id) },
-        web3TokenItemById = { id, assetId -> viewModel.web3TokenItemById(id, assetId = assetId) },
-        getContent = { v, g, data -> viewModel.getContent(v, g, data) },
-        rejectRequest = { v, t -> viewModel.rejectRequest(v, t) },
-    )
-}
-
-@Composable
-fun SessionRequestPageContent(
-    gson: Gson,
-    version: WalletConnect.Version,
-    account: String,
-    step: WalletConnectBottomSheetDialogFragment.Step,
-    chain: Chain,
-    topic: String,
-    sessionRequest: Wallet.Model.SessionRequest?,
-    sessionRequestUI: one.mixin.android.tip.wc.internal.SessionRequestUI?,
-    asset: Token?,
-    tipGas: TipGas?,
-    errorInfo: String?,
-    isFeeWaived: Boolean = false,
-    onFreeClick: (() -> Unit)? = null,
-    onPreviewMessage: (String) -> Unit,
-    onDismissRequest: () -> Unit,
-    showPin: () -> Unit,
-    checkAddressAndGetDisplayName: suspend (String) -> Triple<String?, Int, Boolean?>?,
-    findWalletById: suspend (String) -> one.mixin.android.vo.safe.SafeWallet?,
-    web3TokenItemById: suspend (String, String) -> Web3TokenItem?,
-    getContent: (WalletConnect.Version, Gson, Any?) -> String,
-    rejectRequest: (WalletConnect.Version, String) -> Unit,
-) {
     val context = LocalContext.current
     val commonWallet = stringResource(R.string.Common_Wallet)
     var walletName by remember { mutableStateOf<String?>(null) }
     var walletDisplayInfo by remember { mutableStateOf<Triple<String?, Int, Boolean?>?>(null) }
     var chainToken by remember { mutableStateOf<Web3TokenItem?>(null) }
 
-    if (version != WalletConnect.Version.TIP && (sessionRequestUI == null)) {
+    if (version != WalletConnect.Version.TIP && (signData == null || sessionRequest == null)) {
+        Loading()
+        return
+    }
+    val sessionRequestUI = viewModel.getSessionRequestUI(version, chain, signData, sessionRequest)
+    if (sessionRequestUI == null) {
         Loading()
         return
     }
 
     val signType =
-        if ((sessionRequestUI?.data as? WCEthereumSignMessage)?.type == WCEthereumSignMessage.WCSignType.PERSONAL_MESSAGE) {
+        if ((sessionRequestUI.data as? WCEthereumSignMessage)?.type == WCEthereumSignMessage.WCSignType.PERSONAL_MESSAGE) {
             0
-        } else if (sessionRequestUI?.data is WCEthereumTransaction && (sessionRequestUI.data.value == null || Numeric.decodeQuantity(sessionRequestUI.data.value) == BigInteger.ZERO)) {
+        } else if (sessionRequestUI.data is WCEthereumTransaction && (sessionRequestUI.data.value == null || Numeric.decodeQuantity(sessionRequestUI.data.value) == BigInteger.ZERO)) {
             2
         } else {
             1
@@ -171,7 +125,7 @@ fun SessionRequestPageContent(
 
     LaunchedEffect(account) {
         try {
-            walletDisplayInfo = checkAddressAndGetDisplayName(account)
+            walletDisplayInfo = viewModel.checkAddressAndGetDisplayName(account, null)
         } catch (e: Exception) {
             walletDisplayInfo = null
         }
@@ -180,7 +134,7 @@ fun SessionRequestPageContent(
 
     LaunchedEffect(Unit) {
         try {
-            val wallet = findWalletById(Web3Signer.currentWalletId)
+            val wallet = viewModel.findWalletById(Web3Signer.currentWalletId)
             walletName = wallet?.name?.takeIf { it.isNotEmpty() } ?: commonWallet
         } catch (e: Exception) {
             walletName = commonWallet
@@ -189,7 +143,7 @@ fun SessionRequestPageContent(
 
     LaunchedEffect(Unit) {
         try {
-            chainToken = web3TokenItemById(Web3Signer.currentWalletId, chain.assetId)
+            chainToken = viewModel.web3TokenItemById(Web3Signer.currentWalletId, assetId = chain.assetId)
         } catch (e: Exception) {
             Timber.e(e)
         }
@@ -342,7 +296,7 @@ fun SessionRequestPageContent(
                 when (sessionRequestUI.data) {
                     is WCEthereumTransaction -> {
                         if (signType == 2) {
-                            MessagePreview(content = getContent(version, gson, sessionRequestUI.data)) {
+                            MessagePreview(content = viewModel.getContent(version, gson, sessionRequestUI.data)) {
                                 onPreviewMessage.invoke(it)
                             }
                         } else {
@@ -361,7 +315,7 @@ fun SessionRequestPageContent(
                     }
 
                     else -> {
-                        MessagePreview(content = getContent(version, gson, sessionRequestUI.data)) {
+                        MessagePreview(content = viewModel.getContent(version, gson, sessionRequestUI.data)) {
                             onPreviewMessage.invoke(it)
                         }
                     }
@@ -456,7 +410,7 @@ fun SessionRequestPageContent(
                                 ActionButton(
                                     text = stringResource(id = R.string.insufficient_balance_symbol, chain.symbol),
                                     onClick = {
-                                        rejectRequest(version, topic)
+                                        viewModel.rejectRequest(version, topic)
                                         onDismissRequest.invoke()
                                     },
                                     backgroundColor = MixinAppTheme.colors.backgroundGray,
@@ -466,7 +420,7 @@ fun SessionRequestPageContent(
                             }
                         } else {
                             ActionBottom(modifier = Modifier.align(Alignment.BottomCenter), stringResource(id = R.string.Cancel), stringResource(id = R.string.Confirm), {
-                                rejectRequest(version, topic)
+                                viewModel.rejectRequest(version, topic)
                                 onDismissRequest.invoke()
                             }, showPin)
                         }
@@ -634,21 +588,17 @@ fun FeeInfo(
 @Preview
 @Composable
 private fun NetworkInfoPreview() {
-    MixinAppTheme {
-        FeeInfo("0.0169028 ETH", BigDecimal("7.57"))
-    }
+    FeeInfo("0.0169028 ETH", BigDecimal("7.57"))
 }
 
 @Preview
 @Composable
 private fun HintPreview() {
-    MixinAppTheme {
-        Column(modifier = Modifier.padding(8.dp)) {
-            Hint(Hint.NoPreview)
-            Box(modifier = Modifier.height(8.dp))
-            Hint(Hint.Cancel)
-            Box(modifier = Modifier.height(8.dp))
-            Hint(Hint.SpeedUp)
-        }
+    Column(modifier = Modifier.padding(8.dp)) {
+        Hint(Hint.NoPreview)
+        Box(modifier = Modifier.height(8.dp))
+        Hint(Hint.Cancel)
+        Box(modifier = Modifier.height(8.dp))
+        Hint(Hint.SpeedUp)
     }
 }
