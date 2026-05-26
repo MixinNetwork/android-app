@@ -59,8 +59,6 @@ import androidx.annotation.ColorInt
 import androidx.annotation.RequiresApi
 import androidx.browser.customtabs.CustomTabColorSchemeParams
 import androidx.browser.customtabs.CustomTabsIntent
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.ui.platform.LocalDensity
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -904,6 +902,52 @@ fun Context.openUrl(
     } catch (e: Exception) {
         Timber.e(e, "OpenUrl")
     }
+}
+
+fun Context.openInBrowser(
+    url: String,
+    extraHeaders: Bundle? = null,
+): Boolean {
+    val browserUrl = url.trim()
+    if (browserUrl.isBlank()) return false
+    var uri = browserUrl.toUri()
+    if (uri.scheme.isNullOrBlank()) {
+        uri = Uri.parse("http://$browserUrl")
+    }
+    if (!uri.scheme.equals("http", true) && !uri.scheme.equals("https", true)) {
+        return false
+    }
+
+    try {
+        val customTabsIntent =
+            CustomTabsIntent.Builder()
+                .setDefaultColorSchemeParams(
+                    CustomTabColorSchemeParams.Builder()
+                        .setToolbarColor(ContextCompat.getColor(this, android.R.color.white))
+                        .build(),
+                )
+                .setShowTitle(true)
+                .build()
+        extraHeaders?.let {
+            customTabsIntent.intent.putExtra(Browser.EXTRA_HEADERS, it)
+        }
+        customTabsIntent.launchUrl(this, uri)
+        return true
+    } catch (e: Exception) {
+        Timber.e(e, "OpenInBrowser")
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, uri)
+                .putExtra(Browser.EXTRA_APPLICATION_ID, packageName)
+            extraHeaders?.let {
+                intent.putExtra(Browser.EXTRA_HEADERS, it)
+            }
+            startActivity(intent)
+            return true
+        } catch (e: Exception) {
+            Timber.e(e, "OpenInBrowser")
+        }
+    }
+    return false
 }
 
 fun Context.openExternalUrl(url: String) {
