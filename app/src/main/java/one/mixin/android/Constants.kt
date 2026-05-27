@@ -265,8 +265,8 @@ object Constants {
     }
 
 
-    val Web3EvmChainIds = listOf(ETHEREUM_CHAIN_ID, Polygon, BinanceSmartChain, Base, Arbitrum, Optimism, Avalanche)
-    val Web3ChainIds = listOf(ETHEREUM_CHAIN_ID, Polygon, BinanceSmartChain, Base, Arbitrum, Optimism, Avalanche)
+    val Web3EvmChainIds = listOf(ETHEREUM_CHAIN_ID, Polygon, BinanceSmartChain, Base, Arbitrum, Optimism, Avalanche, ChainId.HyperEVM)
+    val Web3ChainIds = listOf(ETHEREUM_CHAIN_ID, Polygon, BinanceSmartChain, Base, Arbitrum, Optimism, Avalanche, ChainId.HyperEVM)
 
     object ChainId {
         const val RIPPLE_CHAIN_ID = "23dfb5a5-5d7b-48b6-905f-3970e3176e27"
@@ -293,6 +293,8 @@ object Constants {
         const val MobileCoin = "eea900a8-b327-488c-8d8d-1428702fe240"
 
         const val Avalanche = "1f67ac58-87ba-3571-9781-e9413c046f34"
+
+        const val HyperEVM = "36d23d9e-bf4e-3ede-a12d-26f1f1f9fd2f"
 
         const val TON_CHAIN_ID = "ef660437-d915-4e27-ad3f-632bfb6ba0ee"
     }

@@ -156,7 +156,7 @@ fun Market(
                     } else {
                         null
                     }
-                    LineChart(prices, time, type, highlightChange)
+                    LineChart(prices, time, type, highlightChange, showMinMaxMarkers = true)
                 }
             }
 

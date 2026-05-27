@@ -120,6 +120,7 @@ import one.mixin.android.extension.matchResourcePattern
 import one.mixin.android.extension.openAsUrl
 import one.mixin.android.extension.openAsUrlOrQrScan
 import one.mixin.android.extension.openCamera
+import one.mixin.android.extension.openInBrowser
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putString
@@ -951,7 +952,10 @@ class WebFragment : BaseFragment() {
                     },
                     signBotSignature = { appId, reloadPublicKey, metho, path, body, callbackFunction ->
                         botSign(appId, reloadPublicKey, metho, path, body, callbackFunction)
-                    }
+                    },
+                    openInBrowserAction = { url ->
+                        openInBrowser(url)
+                    },
                 )
             webAppInterface?.let { webView.addJavascriptInterface(it, "MixinContext") }
             webView.addJavascriptInterface(
@@ -1035,6 +1039,36 @@ class WebFragment : BaseFragment() {
             } else {
                 Log.e("WebFragment", "WebView does not support passkeys.")
             }
+        }
+    }
+
+    private fun openInBrowser(url: String): Boolean {
+        if (viewDestroyed()) return false
+        val browserUrl = url.toOpenInBrowserUrlOrNull() ?: return false
+        val context = context ?: return false
+        lifecycleScope.launch {
+            if (viewDestroyed()) return@launch
+            context.openInBrowser(
+                browserUrl,
+                Bundle().apply {
+                    putString("Mixin", BuildConfig.VERSION_NAME)
+                },
+            )
+        }
+        return true
+    }
+
+    private fun String.toOpenInBrowserUrlOrNull(): String? {
+        val url = trim()
+        if (url.isBlank() || url.equals("undefined", true) || url.equals("null", true)) {
+            return null
+        }
+        var uri = url.toUri()
+        if (uri.scheme.isNullOrBlank()) {
+            uri = Uri.parse("http://$url")
+        }
+        return url.takeIf {
+            uri.scheme.equals("http", true) || uri.scheme.equals("https", true)
         }
     }
 
@@ -2171,6 +2205,7 @@ class WebFragment : BaseFragment() {
         var tipSignAction: ((String, String, String) -> Unit)? = null,
         var getAssetAction: ((Array<String>, String) -> Unit)? = null,
         var signBotSignature: ((String, Boolean, String, String, String, String) -> Unit)? = null,
+        var openInBrowserAction: ((String) -> Boolean)? = null,
     ) {
         @JavascriptInterface
         fun showToast(toast: String) {
@@ -2213,6 +2248,11 @@ class WebFragment : BaseFragment() {
         @JavascriptInterface
         fun close() {
             closeAction?.invoke()
+        }
+
+        @JavascriptInterface
+        fun openInBrowser(url: String): Boolean {
+            return openInBrowserAction?.invoke(url) ?: false
         }
 
         @JavascriptInterface

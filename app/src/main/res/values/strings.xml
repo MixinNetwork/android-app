@@ -2338,7 +2338,6 @@
     <string name="example_scene2_decreasing">Scenario 2: Price Falls</string>
     <string name="example_scene2_increasing">Scenario 2: Price Rises</string>
     <string name="PnL">PnL</string>
-    <string name="RoE">RoE</string>
     <string name="perps_long_overview">You open a long position when you expect the price to rise. If the price rises, you profit; if the price falls, you incur a loss.</string>
     <string name="perps_short_overview">You open a short position when you expect the price to fall. If the price falls, you profit; if the price rises, you incur a loss.</string>
     <string name="pnl_rule_price_fall_loss">Price falls, loss</string>
