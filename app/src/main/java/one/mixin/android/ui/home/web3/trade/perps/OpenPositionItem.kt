@@ -133,7 +133,7 @@ fun OpenPositionItem(
                         modifier = Modifier
                             .clip(RoundedCornerShape(4.dp))
                             .background(leverageBackgroundColor)
-                            .padding(horizontal = 3.dp, vertical = 2.dp)
+                            .padding(horizontal = 3.dp, vertical = 1.dp)
                     )
                     if (tpSlTagText != null) {
                         Spacer(modifier = Modifier.width(4.dp))
@@ -227,13 +227,13 @@ private fun TpSlStatusTag(
     val backgroundColor = Color(LocalContext.current.colorAttr(R.attr.bg_market_gradient_start))
     Text(
         text = text,
-        fontSize = 11.sp,
+        fontSize = 12.sp,
         fontWeight = FontWeight.W500,
         color = Color.White,
         lineHeight = 14.sp,
         modifier = Modifier
             .clip(RoundedCornerShape(4.dp))
             .background(backgroundColor)
-            .padding(horizontal = 4.dp, vertical = 2.dp),
+            .padding(horizontal = 3.dp, vertical = 1.dp),
     )
 }

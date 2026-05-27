@@ -180,14 +180,14 @@ private fun TopMoverGridItem(
         BasicText(
             text = changeText,
             style = TextStyle(
-                fontSize = 14.sp,
+                fontSize = 13.sp,
                 color = changeColor,
                 textAlign = TextAlign.Center,
             ),
             maxLines = 1,
             autoSize = TextAutoSize.StepBased(
                 minFontSize = 8.sp,
-                maxFontSize = 14.sp,
+                maxFontSize = 13.sp,
                 stepSize = 0.5.sp
             ),
         )
