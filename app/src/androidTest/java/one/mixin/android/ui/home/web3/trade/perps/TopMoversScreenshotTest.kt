@@ -100,7 +100,7 @@ class TopMoversScreenshotTest {
     }
 
     private val topMoverMarkets = listOf(
-        topMoverMarket("04315ccb-211c-3a12-b28f-60fec2ea69e8", "HYPE", "0.0268", 100, "https://coin-images.coingecko.com/coins/images/50882/large/hyperliquid.jpg?1729431300"),
+        topMoverMarket("04315ccb-211c-3a12-b28f-60fec2ea69e8", "HYPE", "15.00", 100, "https://coin-images.coingecko.com/coins/images/50882/large/hyperliquid.jpg?1729431300"),
         topMoverMarket("411aae6f-2596-3668-9fca-85f1c4dcd3c6", "TON", "0.0245", 100, "https://images.mixin.one/Qh7MjeINQ6ad68E0FI4iS7bbLGEuF7CZJlTkW1kSAiq8EaFngIZ1tDG0CRHz_hjz8gsiTmHKcdu_0UE1ugmUiHzNwJRm9fjoqJcb=s128"),
         topMoverMarket("2c03fc3c-f7c9-39bd-8cdb-ba8a52476dc1", "ALGO", "0.0240", 100, "https://images.mixin.one/-oE4Jsi3aMIkxUPUsvDozyL8D0ccmPkggIdIDu1z8THDQyJcCIsbNwC4amFBiRlkQiLNNjiuMBsNw8sAnehTuI0=s128"),
         topMoverMarket("c0349d7b-1b40-3fb7-804a-475abf4aadb7", "BERA", "0.0195", 100, "https://coin-images.coingecko.com/coins/images/25235/large/BERA.png?1738822008"),

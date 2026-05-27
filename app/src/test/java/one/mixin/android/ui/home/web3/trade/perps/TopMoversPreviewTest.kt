@@ -1,6 +1,7 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
 import one.mixin.android.api.response.perps.PerpsMarket
+import java.math.BigDecimal
 import kotlin.test.assertEquals
 import org.junit.Test
 
@@ -26,6 +27,16 @@ class TopMoversPreviewTest {
             listOf("h", "b", "j", "f", "i", "e", "c", "g"),
             result,
         )
+    }
+
+    @Test
+    fun formatPerpsSignedPercent_formatsLargeValuesWithK() {
+        assertEquals("+1.5K%", formatPerpsSignedPercent(BigDecimal(1500)))
+        assertEquals("+1K%", formatPerpsSignedPercent(BigDecimal(1000)))
+        assertEquals("-2.3K%", formatPerpsSignedPercent(BigDecimal(-2300)))
+        assertEquals("+500%", formatPerpsSignedPercent(BigDecimal(500)))
+        assertEquals("+999.99%", formatPerpsSignedPercent(BigDecimal(999.99)))
+        assertEquals("+10.5K%", formatPerpsSignedPercent(BigDecimal(10500)))
     }
 
     private fun market(

@@ -155,7 +155,7 @@ private fun TopMoverGridItem(
         )
         Text(
             text = changeText,
-            fontSize = 12.sp,
+            fontSize = 14.sp,
             color = changeColor,
             maxLines = 1,
             textAlign = TextAlign.Center,
