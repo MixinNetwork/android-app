@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -134,6 +135,7 @@ private fun TopMoverGridItem(
                 fontSize = 12.sp,
                 lineHeight = 14.sp,
                 color = MixinAppTheme.colors.textAssist,
+                fontWeight = FontWeight.W500,
                 modifier = Modifier
                     .offset(y = 32.dp)
                     .clip(RoundedCornerShape(4.dp))
@@ -144,7 +146,8 @@ private fun TopMoverGridItem(
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = market.tokenSymbol,
-            fontSize = 13.sp,
+            fontSize = 14.sp,
+            lineHeight = 18.sp,
             color = MixinAppTheme.colors.textPrimary,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
