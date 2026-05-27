@@ -22,6 +22,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -45,6 +46,8 @@ import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemContentType
+import androidx.paging.compose.itemKey
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.isActive
@@ -306,7 +309,7 @@ private fun LazyListScope.openPositionItems(
     onPositionClick: (PerpsPositionItem) -> Unit,
 ) {
     if (positions.itemCount == 0) return
-    item {
+    item(key = "open_positions_card") {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -319,10 +322,12 @@ private fun LazyListScope.openPositionItems(
         ) {
             for (index in 0 until positions.itemCount) {
                 val position = positions[index] ?: continue
-                OpenPositionItem(
-                    position = position,
-                    onClick = { onPositionClick(position) },
-                )
+                key(position.positionId) {
+                    OpenPositionItem(
+                        position = position,
+                        onClick = { onPositionClick(position) },
+                    )
+                }
             }
         }
     }
@@ -332,7 +337,13 @@ private fun LazyListScope.closedPositionItems(
     positions: LazyPagingItems<PerpsOrderItem>,
     onPositionClick: (PerpsOrderItem) -> Unit,
 ) {
-    items(count = positions.itemCount) { index ->
+    items(
+        count = positions.itemCount,
+        key = positions.itemKey { it.orderId },
+        contentType = positions.itemContentType { order ->
+            if (order.orderType == PerpsOrder.TYPE_CLOSE) "close" else "open"
+        },
+    ) { index ->
         val order = positions[index] ?: return@items
         if (order.orderType == PerpsOrder.TYPE_CLOSE) {
             ClosedActivityItem(
