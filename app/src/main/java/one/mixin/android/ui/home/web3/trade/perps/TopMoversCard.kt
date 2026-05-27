@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -22,9 +24,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
@@ -130,12 +132,20 @@ private fun TopMoverGridItem(
                     .size(42.dp)
                     .clip(CircleShape),
             )
-            Text(
+            BasicText(
                 text = "${market.leverage}x",
-                fontSize = 12.sp,
-                lineHeight = 14.sp,
-                color = MixinAppTheme.colors.textAssist,
-                fontWeight = FontWeight.W500,
+                style = TextStyle(
+                    fontSize = 12.sp,
+                    lineHeight = 14.sp,
+                    color = MixinAppTheme.colors.textAssist,
+                    fontWeight = FontWeight.W500,
+                ),
+                maxLines = 1,
+                autoSize = TextAutoSize.StepBased(
+                    minFontSize = 8.sp,
+                    maxFontSize = 12.sp,
+                    stepSize = 0.5.sp
+                ),
                 modifier = Modifier
                     .offset(y = 32.dp)
                     .clip(RoundedCornerShape(4.dp))
@@ -144,21 +154,34 @@ private fun TopMoverGridItem(
             )
         }
         Spacer(modifier = Modifier.height(4.dp))
-        Text(
+        BasicText(
             text = market.tokenSymbol,
-            fontSize = 14.sp,
-            lineHeight = 18.sp,
-            color = MixinAppTheme.colors.textPrimary,
+            style = TextStyle(
+                fontSize = 14.sp,
+                lineHeight = 18.sp,
+                color = MixinAppTheme.colors.textPrimary,
+                textAlign = TextAlign.Center,
+            ),
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            textAlign = TextAlign.Center,
+            autoSize = TextAutoSize.StepBased(
+                minFontSize = 8.sp,
+                maxFontSize = 14.sp,
+                stepSize = 0.5.sp
+            ),
         )
-        Text(
+        BasicText(
             text = changeText,
-            fontSize = 14.sp,
-            color = changeColor,
+            style = TextStyle(
+                fontSize = 14.sp,
+                color = changeColor,
+                textAlign = TextAlign.Center,
+            ),
             maxLines = 1,
-            textAlign = TextAlign.Center,
+            autoSize = TextAutoSize.StepBased(
+                minFontSize = 8.sp,
+                maxFontSize = 14.sp,
+                stepSize = 0.5.sp
+            ),
         )
     }
 }
