@@ -104,7 +104,7 @@ fun PerpetualContent(
     val openPositionsPreview = openPositions.take(3)
     val marketsPreview = markets.take(3)
     val topMoversPreview = remember(markets) {
-        markets.sortedByDescending { it.changePercent() }.take(8)
+        markets.topMoversPreview()
     }
     val sourceOrder = remember(markets) {
         markets.withIndex().associate { it.value.marketId to it.index }
