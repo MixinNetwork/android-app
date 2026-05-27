@@ -1,5 +1,7 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
+import android.graphics.BlurMaskFilter
+import android.graphics.Paint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -22,9 +24,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -148,6 +154,7 @@ private fun TopMoverGridItem(
                 ),
                 modifier = Modifier
                     .offset(y = 32.dp)
+                    .topMoverLeverageShadow()
                     .clip(RoundedCornerShape(4.dp))
                     .background(MixinAppTheme.colors.background)
                     .padding(horizontal = 3.dp, vertical = 1.dp),
@@ -185,4 +192,23 @@ private fun TopMoverGridItem(
             ),
         )
     }
+}
+
+private fun Modifier.topMoverLeverageShadow(): Modifier = drawBehind {
+    val blur = 2.dp.toPx()
+    val offsetY = (-1).dp.toPx()
+    val radius = 4.dp.toPx()
+    val paint = Paint().apply {
+        color = Color.Black.copy(alpha = 0.04f).toArgb()
+        maskFilter = BlurMaskFilter(blur, BlurMaskFilter.Blur.NORMAL)
+    }
+    drawContext.canvas.nativeCanvas.drawRoundRect(
+        0f,
+        offsetY,
+        size.width,
+        size.height + offsetY,
+        radius,
+        radius,
+        paint,
+    )
 }
