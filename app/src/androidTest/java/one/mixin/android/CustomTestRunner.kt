@@ -11,6 +11,6 @@ class CustomTestRunner : AndroidJUnitRunner() {
         name: String?,
         context: Context?,
     ): Application {
-        return super.newApplication(cl, MixinTestApplication_Application::class.java.name, context)
+        return super.newApplication(cl, HiltTestApplication::class.java.name, context)
     }
 }

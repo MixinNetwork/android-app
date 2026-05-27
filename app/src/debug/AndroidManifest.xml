@@ -1,18 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application>
-        <meta-data
-            android:name="firebase_performance_collection_deactivated"
-            android:value="true" />
-        <meta-data
-            android:name="firebase_performance_collection_enabled"
-            android:value="false" />
-
         <activity
             android:name=".HiltTestActivity"
-            android:theme="@style/AppTheme.NoActionBar"
             android:exported="false"  />
     </application>
 

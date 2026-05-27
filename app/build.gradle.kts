@@ -153,7 +153,6 @@ android {
             excludes += "META-INF/DISCLAIMER"
             excludes += "META-INF/NOTICE.md"
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
-            excludes += "google/protobuf/descriptor.proto"
         }
         jniLibs {
             useLegacyPackaging = true
@@ -327,7 +326,7 @@ dependencies {
     }
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:$desugarJdkLibsVersion")
     implementation(platform("com.google.firebase:firebase-bom:$firebaseBomVersion"))
-    releaseImplementation("com.google.firebase:firebase-perf")
+    implementation("com.google.firebase:firebase-perf")
     implementation(fileTree(mapOf("include" to listOf("*.aar"), "dir" to "libs")))
     implementation("androidx.fragment:fragment-ktx:$fragmentVersion")
     implementation("androidx.activity:activity-ktx:$activity_version")
@@ -440,7 +439,7 @@ dependencies {
 
     implementation("com.google.protobuf:protobuf-javalite") {
         version {
-            strictly("4.29.3")
+            strictly("3.11.0")
         }
     }
 
@@ -557,7 +556,6 @@ dependencies {
     }
     androidTestImplementation("androidx.test.espresso:espresso-idling-resource:$espressoVersion")
     androidTestImplementation("androidx.test.ext:junit:$androidxJunitVersion")
-    androidTestImplementation("org.hamcrest:hamcrest:2.2")
     androidTestImplementation("androidx.fragment:fragment-testing:$fragmentVersion")
     androidTestImplementation("androidx.navigation:navigation-testing:$navigationVersion")
 
@@ -571,7 +569,7 @@ dependencies {
 
     testImplementation("com.google.protobuf:protobuf-javalite") {
         version {
-            strictly("4.29.3")
+            strictly("3.11.0")
         }
     }
 
