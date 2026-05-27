@@ -1,5 +1,7 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
+import android.graphics.BlurMaskFilter
+import android.graphics.Paint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -30,7 +32,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -318,6 +323,7 @@ fun PerpetualContent(
                     Modifier
                         .fillMaxWidth()
                         .wrapContentHeight()
+                        .topMoversCardShadow()
                         .clip(RoundedCornerShape(8.dp))
                         .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
                         .padding(vertical = 16.dp)
@@ -661,6 +667,24 @@ private fun calculatePnlPercent(
         .toDouble()
 }
 
+private fun Modifier.topMoversCardShadow(): Modifier = drawBehind {
+    val blur = 2.dp.toPx()
+    val offsetY = (-1).dp.toPx()
+    val radius = 8.dp.toPx()
+    val paint = Paint().apply {
+        color = Color.Black.copy(alpha = 0.04f).toArgb()
+        maskFilter = BlurMaskFilter(blur, BlurMaskFilter.Blur.NORMAL)
+    }
+    drawContext.canvas.nativeCanvas.drawRoundRect(
+        0f,
+        offsetY,
+        size.width,
+        size.height + offsetY,
+        radius,
+        radius,
+        paint,
+    )
+}
 
 @Composable
 private fun ViewAllAction(onClick: () -> Unit) {

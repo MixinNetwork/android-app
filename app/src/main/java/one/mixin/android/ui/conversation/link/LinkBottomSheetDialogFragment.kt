@@ -1107,7 +1107,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
     private suspend fun handleTradeScheme(uri: Uri) {
         val type = uri.getQueryParameter("type")
         
-        if (type.equals("perps", true)) {
+        if (type.equals("perps", true) || type.equals("perpetual", true)) {
             val marketId = uri.getQueryParameter("market")
             if (marketId.isNullOrBlank() || !marketId.isUUID()) {
                 showError(R.string.Invalid_payment_link)
