@@ -209,6 +209,9 @@ abstract class MixinJob(
     }
 
     protected fun checkConversationExist(conversation: Conversation): Long? {
+        if (conversation.isGroupConversation()) {
+            return conversation.expireIn
+        }
         return if (conversation.status != ConversationStatus.SUCCESS.ordinal) {
             createConversation(conversation)
         } else {
