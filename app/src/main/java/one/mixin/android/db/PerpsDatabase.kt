@@ -83,6 +83,7 @@ abstract class PerpsDatabase : RoomDatabase() {
             object : Migration(4, 5) {
                 override fun migrate(db: SupportSQLiteDatabase) {
                     db.execSQL("ALTER TABLE perps_orders ADD COLUMN pay_amount TEXT NOT NULL DEFAULT '0'")
+                    db.execSQL("DELETE FROM perps_orders")
                 }
             }
 
