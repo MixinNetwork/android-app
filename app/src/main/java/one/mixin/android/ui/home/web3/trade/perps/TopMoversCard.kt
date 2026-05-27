@@ -169,6 +169,7 @@ private fun TopMoverGridItem(
                 stepSize = 0.5.sp
             ),
         )
+        Spacer(modifier = Modifier.height(2.dp))
         BasicText(
             text = changeText,
             style = TextStyle(

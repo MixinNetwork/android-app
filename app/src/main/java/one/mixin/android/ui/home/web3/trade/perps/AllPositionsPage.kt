@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
@@ -22,7 +23,6 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -309,26 +309,32 @@ private fun LazyListScope.openPositionItems(
     onPositionClick: (PerpsPositionItem) -> Unit,
 ) {
     if (positions.itemCount == 0) return
-    item(key = "open_positions_card") {
-        Column(
+    items(
+        count = positions.itemCount,
+        key = positions.itemKey { it.positionId },
+        contentType = positions.itemContentType { "open_position" },
+    ) { index ->
+        val position = positions[index] ?: return@items
+        val shape = when {
+            positions.itemCount == 1 -> RoundedCornerShape(8.dp)
+            index == 0 -> RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)
+            index == positions.itemCount - 1 -> RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp)
+            else -> RoundedCornerShape(0.dp)
+        }
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(8.dp))
+                .clip(shape)
                 .cardBackground(
                     backgroundColor = MixinAppTheme.colors.background,
                     borderColor = MixinAppTheme.colors.borderColor,
+                    cornerRadius = if (index == 0 || index == positions.itemCount - 1) 8.dp else 0.dp,
                 )
-                .padding(vertical = 8.dp)
         ) {
-            for (index in 0 until positions.itemCount) {
-                val position = positions[index] ?: continue
-                key(position.positionId) {
-                    OpenPositionItem(
-                        position = position,
-                        onClick = { onPositionClick(position) },
-                    )
-                }
-            }
+            OpenPositionItem(
+                position = position,
+                onClick = { onPositionClick(position) },
+            )
         }
     }
 }
