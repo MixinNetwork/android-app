@@ -153,6 +153,7 @@ android {
             excludes += "META-INF/DISCLAIMER"
             excludes += "META-INF/NOTICE.md"
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "google/protobuf/descriptor.proto"
         }
         jniLibs {
             useLegacyPackaging = true
@@ -439,7 +440,7 @@ dependencies {
 
     implementation("com.google.protobuf:protobuf-javalite") {
         version {
-            strictly("3.25.5")
+            strictly("4.29.3")
         }
     }
 
@@ -570,7 +571,7 @@ dependencies {
 
     testImplementation("com.google.protobuf:protobuf-javalite") {
         version {
-            strictly("3.11.0")
+            strictly("4.29.3")
         }
     }
 
