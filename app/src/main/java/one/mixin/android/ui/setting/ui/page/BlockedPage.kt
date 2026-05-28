@@ -40,6 +40,13 @@ import one.mixin.android.vo.User
 
 @Composable
 fun BlockedPage() {
+    val viewModel = hiltViewModel<SettingBlockedViewModel>()
+    val users by viewModel.blockingUsers(rememberComposeScope()).observeAsState()
+    BlockedPageContent(users)
+}
+
+@Composable
+fun BlockedPageContent(users: List<User>?) {
     Scaffold(
         backgroundColor = MixinAppTheme.colors.backgroundWindow,
         topBar = {
@@ -58,12 +65,10 @@ fun BlockedPage() {
                 .padding(it)
                 .fillMaxSize(),
         ) {
-            val viewModel = hiltViewModel<SettingBlockedViewModel>()
-            val users by viewModel.blockingUsers(rememberComposeScope()).observeAsState()
             if (users.isNullOrEmpty()) {
                 EmptyBlockedView()
             } else {
-                BlockedList(users = users!!)
+                BlockedList(users = users)
             }
         }
     }
@@ -137,6 +142,14 @@ private fun BlockedUserItem(user: User) {
             text = user.fullName ?: "",
             color = MixinAppTheme.colors.textPrimary,
         )
+    }
+}
+
+@Composable
+@Preview
+fun BlockedPagePreview() {
+    MixinAppTheme {
+        BlockedPageContent(users = emptyList())
     }
 }
 

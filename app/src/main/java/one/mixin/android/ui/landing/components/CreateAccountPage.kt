@@ -126,5 +126,7 @@ fun CreateItem(@DrawableRes iconId: Int, @StringRes titleId: Int, @StringRes sub
 @Preview
 @Composable
 fun CreateAccountPagePreview() {
-    CreateAccountPage({},{}, {}, {}, {}, {})
+    MixinAppTheme {
+        CreateAccountPage({}, {}, {}, {}, {}, {})
+    }
 }

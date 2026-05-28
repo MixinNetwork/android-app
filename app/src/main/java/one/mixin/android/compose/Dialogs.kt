@@ -25,6 +25,11 @@ fun IndeterminateProgressDialog(
     title: String = "",
     cancelable: Boolean? = null,
 ) {
+    val isInPreview = androidx.compose.ui.platform.LocalInspectionMode.current
+    if (isInPreview) {
+        // Don't show legacy ProgressDialog in previews
+        return
+    }
     val context = LocalContext.current
 
     val activity = context.findFragmentActivityOrNull()

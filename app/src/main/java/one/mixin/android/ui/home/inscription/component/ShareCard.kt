@@ -36,6 +36,7 @@ import coil3.request.transformations
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.CoilImageCompat
+import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.inscription.compose.Barcode
 import one.mixin.android.inscription.compose.TextInscription
 import one.mixin.android.ui.home.web3.components.InscriptionState
@@ -143,12 +144,14 @@ fun ShareCard(modifier: Modifier, qrcode: Bitmap, inscriptionHash: String, value
 @Preview
 @Composable
 private fun DashedDividerPreview() {
-    DashedDivider(
-        thickness = 1.dp,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-    )
+    MixinAppTheme {
+        DashedDivider(
+            thickness = 1.dp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+    }
 }
 
 @Composable
