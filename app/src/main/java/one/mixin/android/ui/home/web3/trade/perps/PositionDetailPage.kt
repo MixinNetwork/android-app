@@ -945,12 +945,7 @@ fun OpenedOrderDetailPage(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    val amountValue = if (leverage > 0) {
-                        absQuantity.multiply(entryPrice)
-                            .divide(BigDecimal(leverage), 8, RoundingMode.HALF_UP)
-                    } else {
-                        BigDecimal.ZERO
-                    }
+                    val amountValue = openedOrder.payAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
                     PositionDetailItem(
                         label = stringResource(R.string.Amount).uppercase(),
                         value = formatPerpsUsdDecimal(amountValue)
