@@ -554,7 +554,10 @@ class WebFragment : BaseFragment() {
             WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
         webView.settings.mediaPlaybackRequiresUserGesture = false
         webView.settings.userAgentString =
-            webView.settings.userAgentString + " Mixin/" + BuildConfig.VERSION_NAME
+            webView.settings.userAgentString + " Mixin/" + BuildConfig.VERSION_NAME + " GOOGLE_PAY_SUPPORTED"
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.PAYMENT_REQUEST)) {
+            WebSettingsCompat.setPaymentRequestEnabled(webView.settings, true)
+        }
 
         webView.webViewClient =
             WebViewClientImpl(
