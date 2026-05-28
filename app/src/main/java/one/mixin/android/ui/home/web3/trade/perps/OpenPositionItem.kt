@@ -129,6 +129,7 @@ fun OpenPositionItem(
                     Text(
                         text = "${position.leverage}x",
                         fontSize = 12.sp,
+                        fontWeight = FontWeight.W500,
                         color = leverageTextColor,
                         lineHeight = 14.sp,
                         modifier = Modifier
