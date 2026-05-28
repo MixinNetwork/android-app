@@ -34,7 +34,7 @@
             android:background="?android:attr/selectableItemBackground"
             android:contentDescription="@null"
             android:padding="14dp"
-            android:src="@drawable/ic_float_close" />
+            android:src="@drawable/ic_circle_close" />
     </FrameLayout>
 
     <LinearLayout
