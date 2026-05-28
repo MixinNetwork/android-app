@@ -6,7 +6,6 @@ import android.content.ClipData
 import android.graphics.Bitmap
 import android.graphics.Typeface
 import android.media.MediaScannerConnection
-import android.os.Bundle
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.ForegroundColorSpan
