@@ -474,6 +474,9 @@ fun PerpsMarketDetailPage(
                                         val activity = context as? FragmentActivity ?: run { isAddingProcessing = false; return@MixinButton }
                                         val positionForAdd = currentPosition
                                         PerpsAddBottomSheetDialogFragment.newInstance(positionForAdd)
+                                            .setOnDestroy {
+                                                isAddingProcessing = false
+                                            }
                                             .setOnAdd { token, amount ->
                                                 isAddingProcessing = false
                                                 val referencePrice = market?.last

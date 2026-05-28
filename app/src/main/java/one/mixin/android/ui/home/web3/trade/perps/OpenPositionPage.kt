@@ -735,6 +735,8 @@ fun OpenPositionPage(
                                         payUrl = response.paymentUrl
                                     ).setOnDone {
                                             onOpenSuccess(m.marketId)
+                                        }.setOnDestroy {
+                                            isProcessing = false
                                         }.show(activity.supportFragmentManager, PerpsConfirmBottomSheetDialogFragment.TAG)
                                     },
                                 onError = { errorCode, errorMessage ->
