@@ -63,4 +63,6 @@ data class PerpsOrderItem(
     val iconUrl: String? = null,
     @ColumnInfo(name = "token_symbol")
     val tokenSymbol: String? = null,
+    @ColumnInfo(name = "price_scale")
+    val priceScale: Int = 2,
 ) : Parcelable

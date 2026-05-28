@@ -200,10 +200,6 @@ fun PositionDetailPage(
         return formatPerpsSignedRawUsdDecimal(value)
     }
 
-    fun formatPriceUsd(value: BigDecimal): String {
-        return formatPerpsUsdDecimal(value)
-    }
-
     PageScaffold(
         title = title,
         verticalScrollable = false,
@@ -397,7 +393,7 @@ fun PositionDetailPage(
 
                 PositionDetailItem(
                     label = stringResource(R.string.Entry_Price).uppercase(),
-                    value = formatPriceUsd(entryPrice)
+                    value = formatPerpsPrice(entryPrice, position.priceScale)
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -549,10 +545,6 @@ fun PositionDetailPage(
 
     fun formatSignedFiat(value: BigDecimal): String {
         return formatPerpsSignedRawUsdDecimal(value)
-    }
-
-    fun formatPriceUsd(value: BigDecimal): String {
-        return formatPerpsUsdDecimal(value)
     }
 
     PageScaffold(
@@ -712,14 +704,14 @@ fun PositionDetailPage(
 
                 PositionDetailItem(
                     label = stringResource(R.string.Entry_Price).uppercase(),
-                    value = formatPriceUsd(closeOrder.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+                    value = formatPerpsPrice(closeOrder.entryPrice, closeOrder.priceScale)
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
 
                 PositionDetailItem(
                     label = stringResource(R.string.Close_Price).uppercase(),
-                    value = formatPriceUsd(closeOrder.closePrice.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+                    value = formatPerpsPrice(closeOrder.closePrice, closeOrder.priceScale)
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -801,12 +793,7 @@ fun OpenedOrderDetailPage(
 
     val quantity = openedOrder.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val absQuantity = quantity.abs()
-    val entryPrice = openedOrder.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val leverage = openedOrder.leverage
-
-    fun formatPriceUsd(value: BigDecimal): String {
-        return formatPerpsUsdDecimal(value)
-    }
 
     PageScaffold(
         title = title,
@@ -942,13 +929,13 @@ fun OpenedOrderDetailPage(
                 if (!isFailed) {
                     PositionDetailItem(
                         label = stringResource(R.string.Entry_Price).uppercase(),
-                        value = formatPriceUsd(entryPrice)
+                        value = formatPerpsPrice(openedOrder.entryPrice, openedOrder.priceScale)
                     )
 
                     Spacer(modifier = Modifier.height(20.dp))
 
                     val amountValue = if (leverage > 0) {
-                        absQuantity.multiply(entryPrice)
+                        absQuantity.multiply(openedOrder.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO)
                             .divide(BigDecimal(leverage), 8, RoundingMode.HALF_UP)
                     } else {
                         BigDecimal.ZERO
