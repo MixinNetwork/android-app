@@ -22,6 +22,7 @@ import one.mixin.android.Constants.Account.PREF_WALLET_RECEIVE
 import one.mixin.android.Constants.Account.PREF_WALLET_SEND
 import one.mixin.android.Constants.ChainId.Arbitrum
 import one.mixin.android.Constants.ChainId.Avalanche
+import one.mixin.android.Constants.ChainId.HyperEVM
 import one.mixin.android.Constants.ChainId.BITCOIN_CHAIN_ID
 import one.mixin.android.Constants.ChainId.Base
 import one.mixin.android.Constants.ChainId.BinanceSmartChain
@@ -152,6 +153,10 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
                     R.id.radio_avalanche -> {
                         Avalanche
+                    }
+
+                    R.id.radio_hyperevm -> {
+                        HyperEVM
                     }
 
                     else -> {
