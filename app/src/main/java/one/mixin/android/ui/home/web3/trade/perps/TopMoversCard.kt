@@ -144,7 +144,6 @@ private fun TopMoverGridItem(
                     fontSize = 12.sp,
                     lineHeight = 14.sp,
                     color = MixinAppTheme.colors.textAssist,
-                    fontWeight = FontWeight.W500,
                 ),
                 maxLines = 1,
                 autoSize = TextAutoSize.StepBased(
