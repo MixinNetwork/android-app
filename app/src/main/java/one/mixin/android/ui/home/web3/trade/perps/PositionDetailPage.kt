@@ -44,6 +44,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsOrderItem
+import one.mixin.android.api.response.perps.PerpsPosition
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -137,7 +138,8 @@ fun PositionDetailPage(
         }
     }
 
-    val isPending = position.state == "processing" || position.state == "adding"
+    val isAdding = position.state == PerpsPosition.STATE_ADDING
+    val isPending = position.state == PerpsPosition.STATE_OPENING || isAdding
     val leverageTextColor = if (isPending) MixinAppTheme.colors.textAssist else sideColor
     val leverageBackgroundColor = if (isPending) {
         MixinAppTheme.colors.backgroundGrayLight
@@ -296,7 +298,7 @@ fun PositionDetailPage(
                 ) {
                     if (isPending) {
                         Text(
-                            text = stringResource(if (position.state == "adding") R.string.adding_position else R.string.Pending),
+                            text = stringResource(if (isAdding) R.string.adding_position else R.string.Pending),
                             color = MixinAppTheme.colors.textAssist,
                             fontWeight = FontWeight.W500,
                             modifier = Modifier

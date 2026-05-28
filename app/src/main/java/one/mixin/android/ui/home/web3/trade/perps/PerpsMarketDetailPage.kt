@@ -61,6 +61,7 @@ import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsOrderItem
+import one.mixin.android.api.response.perps.PerpsPosition
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.api.response.perps.toPosition
 import one.mixin.android.compose.CoilImage
@@ -437,9 +438,9 @@ fun PerpsMarketDetailPage(
                         .padding(bottom = 20.dp, top = 20.dp)
                 ) {
                     if (currentPosition != null) {
-                        val isOpen = currentPosition.state == "open"
-                        val isAdding = currentPosition.state == "adding"
-                        val isPending = currentPosition.state == "processing" || isAdding
+                        val isOpen = currentPosition.state == PerpsPosition.STATE_OPEN
+                        val isAdding = currentPosition.state == PerpsPosition.STATE_ADDING
+                        val isPending = currentPosition.state == PerpsPosition.STATE_OPENING || isAdding
                         if (isPending) {
                             MixinButton(
                                 modifier = Modifier

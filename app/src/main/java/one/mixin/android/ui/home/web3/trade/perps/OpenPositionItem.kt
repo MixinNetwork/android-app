@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.api.response.perps.PerpsPosition
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -56,8 +57,8 @@ fun OpenPositionItem(
         ?.toPlainString()
         ?: position.quantity.removePrefix("-")
     val isLong = position.side.equals("long", true)
-    val isOpening = position.state.equals("processing", true)
-    val isAdding = position.state.equals("adding", true)
+    val isOpening = position.state.equals(PerpsPosition.STATE_OPENING, true)
+    val isAdding = position.state.equals(PerpsPosition.STATE_ADDING, true)
     val isPending = isOpening || isAdding
     val sideColor = if (isLong) {
         if (quoteColorPref) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
