@@ -6,7 +6,6 @@ import android.content.ClipData
 import android.graphics.Bitmap
 import android.graphics.Typeface
 import android.media.MediaScannerConnection
-import android.os.Bundle
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.ForegroundColorSpan
@@ -424,7 +423,7 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun buildPerpsAppCardMessage(): ForwardMessage {
-        val action = "${Constants.Scheme.HTTPS_TRADE}?type=perpetual&market=${shareData.marketId}"
+        val action = "${Constants.Scheme.HTTPS_TRADE}?type=perps&market=${shareData.marketId}"
         val side = if (shareData.side.equals("long", ignoreCase = true)) getString(R.string.Long) else getString(R.string.Short)
         val market = shareData.displaySymbol.ifBlank { shareData.tokenSymbol }
         val title = getString(R.string.perps_share_card_title, shareData.tokenSymbol)
