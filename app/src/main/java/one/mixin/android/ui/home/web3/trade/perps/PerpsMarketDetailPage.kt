@@ -116,6 +116,7 @@ fun PerpsMarketDetailPage(
         }
     }.collectAsStateWithLifecycle(initialValue = emptyList())
     var previousOpenPositionsCount by remember(walletId) { mutableStateOf<Int?>(null) }
+    var isAddingProcessing by remember { mutableStateOf(false) }
     val currentPosition = openPositions?.firstOrNull { it.marketId == marketId }
     val hasLoadedOpenPositions = openPositions != null
     val closedPositions = allClosedPositions.filter { it.marketId == marketId }
@@ -465,12 +466,15 @@ fun PerpsMarketDetailPage(
                                     modifier = Modifier
                                         .weight(1f)
                                         .height(48.dp),
-                                    enabled = true,
+                                    enabled = !isAddingProcessing,
                                     onClick = {
-                                        val activity = context as? FragmentActivity ?: return@MixinButton
+                                        if (isAddingProcessing) return@MixinButton
+                                        isAddingProcessing = true
+                                        val activity = context as? FragmentActivity ?: run { isAddingProcessing = false; return@MixinButton }
                                         val positionForAdd = currentPosition
                                         PerpsAddBottomSheetDialogFragment.newInstance(positionForAdd)
                                             .setOnAdd { token, amount ->
+                                                isAddingProcessing = false
                                                 val referencePrice = market?.last
                                                     ?: positionForAdd.markPrice
                                                     ?: positionForAdd.entryPrice
@@ -503,6 +507,7 @@ fun PerpsMarketDetailPage(
                                                         ).show(activity.supportFragmentManager, PerpsConfirmBottomSheetDialogFragment.TAG)
                                                     },
                                                     onError = { errorCode, errorMessage ->
+                                                        isAddingProcessing = false
                                                         val message = if (errorCode > 0) {
                                                             context.getMixinErrorStringByCode(errorCode, errorMessage)
                                                         } else {
