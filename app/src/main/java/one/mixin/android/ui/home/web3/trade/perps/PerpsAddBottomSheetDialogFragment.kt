@@ -27,6 +27,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -55,7 +56,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
@@ -112,10 +115,10 @@ class PerpsAddBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
         requireArguments().getParcelableCompat(ARGS_POSITION, PerpsPositionItem::class.java)!!
     }
 
-    private var onAddAction: ((TokenItem, String) -> Unit)? = null
+    private var onAddAction: ((TokenItem, String, String?) -> Unit)? = null
     private var onDestroyAction: (() -> Unit)? = null
 
-    fun setOnAdd(callback: (TokenItem, String) -> Unit): PerpsAddBottomSheetDialogFragment {
+    fun setOnAdd(callback: (TokenItem, String, String?) -> Unit): PerpsAddBottomSheetDialogFragment {
         onAddAction = callback
         return this
     }
@@ -217,9 +220,9 @@ class PerpsAddBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
                     }.show(parentFragmentManager, TokenListBottomSheetDialogFragment.TAG)
                 },
                 onCancel = { dismiss() },
-                onAdd = { token, amount ->
+                onAdd = { token, amount, liquidationPrice ->
                     onAddAction?.let { action ->
-                        action(token, amount)
+                        action(token, amount, liquidationPrice)
                         dismiss()
                     }
                 },
@@ -246,13 +249,17 @@ private fun PerpsAddContent(
     selectedToken: TokenItem?,
     onTokenSelect: () -> Unit,
     onCancel: () -> Unit,
-    onAdd: (TokenItem, String) -> Unit,
+    onAdd: (TokenItem, String, String?) -> Unit,
 ) {
     val context = LocalContext.current
     val density = LocalDensity.current
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
+    val viewModel = hiltViewModel<PerpetualViewModel>()
     var amount by remember(position.positionId) { mutableStateOf("") }
+    var remoteLiquidationPrice by remember(position.positionId) { mutableStateOf<String?>(null) }
+    var isLiquidationLoading by remember(position.positionId) { mutableStateOf(false) }
+    var liquidationJob by remember(position.positionId) { mutableStateOf<Job?>(null) }
     val tokenBalance = selectedToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val amountValue = amount.toBigDecimalOrNull()
     val hasInputAmount = amountValue != null && amountValue > BigDecimal.ZERO
@@ -263,13 +270,37 @@ private fun PerpsAddContent(
     val aboveMaximumMargin = amountValue != null && maximumMargin > BigDecimal.ZERO && amountValue > maximumMargin
 
     val insufficientBalance = amountValue != null && amountValue > BigDecimal.ZERO && amountValue > tokenBalance
-    val canAdd = selectedToken != null && hasInputAmount && !insufficientBalance && !belowMinimumMargin && !aboveMaximumMargin
+    val canAdd = selectedToken != null && hasInputAmount && !insufficientBalance && !belowMinimumMargin && !aboveMaximumMargin && !isLiquidationLoading
     val marketSymbol = position.tokenSymbol ?: position.displaySymbol.orEmpty()
     val currentPrice = market?.last.orEmpty()
         .ifBlank { market?.markPrice.orEmpty() }
         .ifBlank { position.markPrice.orEmpty() }
         .ifBlank { position.entryPrice }
     val priceScale = market?.priceScale ?: position.priceScale
+
+    LaunchedEffect(amount) {
+        val addMargin = amount.toBigDecimalOrNull()
+        if (addMargin == null || addMargin <= BigDecimal.ZERO) {
+            return@LaunchedEffect
+        }
+        liquidationJob?.cancel()
+        liquidationJob = launch {
+            isLiquidationLoading = true
+            delay(200L)
+            while (true) {
+                val result = viewModel.estimateLiquidationPrice(
+                    amount = addMargin.stripTrailingZeros().toPlainString(),
+                    positionId = position.positionId,
+                )
+                if (result != null) {
+                    remoteLiquidationPrice = result
+                    isLiquidationLoading = false
+                    break
+                }
+                delay(1000L)
+            }
+        }
+    }
 
     val minimumMarginError = stringResource(
         R.string.perps_minimum_margin,
@@ -288,6 +319,7 @@ private fun PerpsAddContent(
     }
 
     val currentPriceText = formatPerpsPrice(currentPrice, priceScale)
+    val displayLiquidationPrice = remoteLiquidationPrice
     val entryPriceText = position.entryPrice
         .takeIf { it.isNotBlank() }
         ?.let { formatPerpsPrice(it, priceScale) }
@@ -535,12 +567,8 @@ private fun PerpsAddContent(
                     Spacer(modifier = Modifier.height(16.dp))
                     PerpsAddInfoRow(
                         title = stringResource(R.string.Liquidation_Price),
-                        value = calculateEstimatedLiquidationPrice(
-                            position = position,
-                            amount = amount,
-                            currentPrice = currentPrice,
-                            priceScale = priceScale,
-                        ),
+                        value = displayLiquidationPrice?.let { formatPerpsPrice(it, priceScale) } ?: "--",
+                        isLoading = isLiquidationLoading,
                         onTipClick = {
                             showPerpsGuide(PerpetualGuideBottomSheetDialogFragment.TAB_LIQUIDATION)
                         },
@@ -559,13 +587,13 @@ private fun PerpsAddContent(
                         onAdd = {
                             val token = selectedToken ?: return@PerpsAddActionFooter
                             val normalizedAmount = amount.toBigDecimalOrNull()
-                                ?.stripTrailingZeros()
-                                ?.toPlainString()
-                                ?: return@PerpsAddActionFooter
-                            onAdd(token, normalizedAmount)
-                        },
-                    )
-                }
+                            ?.stripTrailingZeros()
+                            ?.toPlainString()
+                            ?: return@PerpsAddActionFooter
+                        onAdd(token, normalizedAmount, displayLiquidationPrice)
+                    },
+                )
+            }
             }
         },
         floating = {
@@ -596,7 +624,7 @@ private fun PerpsAddContent(
                             ?.stripTrailingZeros()
                             ?.toPlainString()
                             ?: return@PerpsAddActionFooter
-                        onAdd(token, normalizedAmount)
+                        onAdd(token, normalizedAmount, displayLiquidationPrice)
                     },
                 )
                 Row(
@@ -714,6 +742,7 @@ private fun PerpsAddInfoRow(
     title: String,
     value: String,
     valueColor: Color = MixinAppTheme.colors.textAssist,
+    isLoading: Boolean = false,
     onTipClick: (() -> Unit)? = null,
 ) {
     Row(
@@ -746,12 +775,20 @@ private fun PerpsAddInfoRow(
                 )
             }
         }
-        Text(
-            text = value,
-            fontSize = 14.sp,
-            color = valueColor,
-            textAlign = TextAlign.End,
-        )
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(16.dp),
+                strokeWidth = 2.dp,
+                color = MixinAppTheme.colors.textAssist,
+            )
+        } else {
+            Text(
+                text = value,
+                fontSize = 14.sp,
+                color = valueColor,
+                textAlign = TextAlign.End,
+            )
+        }
     }
 }
 
@@ -833,12 +870,8 @@ private fun calculateEstimatedLiquidationPrice(
     position: PerpsPositionItem,
     amount: String,
     currentPrice: String,
-    priceScale: Int,
-): String {
-    val existingLiquidationPrice = position.liquidationPrice
-        ?.takeIf { it.isNotBlank() }
-        ?.let { formatPerpsPrice(it, priceScale) }
-        ?: "--"
+): String? {
+    val existingLiquidationPrice = position.liquidationPrice?.takeIf { it.isNotBlank() }
     val addMargin = amount.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: return existingLiquidationPrice
     val currentQuantity = position.quantity.toBigDecimalOrNull()?.abs() ?: BigDecimal.ZERO
     val addQuantity = calculateAddQuantity(amount, position.leverage, currentPrice)
@@ -858,5 +891,5 @@ private fun calculateEstimatedLiquidationPrice(
     } else {
         averageEntry.multiply(BigDecimal.ONE.subtract(liquidationRatio))
     }
-    return formatPerpsPrice(estimatedPrice, priceScale)
+    return estimatedPrice.stripTrailingZeros().toPlainString()
 }

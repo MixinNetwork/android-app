@@ -289,6 +289,35 @@ class PerpetualViewModel @Inject constructor(
         }
     }
 
+    suspend fun estimateLiquidationPrice(
+        amount: String,
+        marketId: String? = null,
+        side: String? = null,
+        leverage: Int? = null,
+        positionId: String? = null,
+    ): String? {
+        return try {
+            val response = withContext(Dispatchers.IO) {
+                routeService.getPerpsLiquidationPrice(
+                    marketId = marketId,
+                    amount = amount,
+                    side = side,
+                    leverage = leverage,
+                    positionId = positionId,
+                )
+            }
+            if (response.isSuccess) {
+                response.data?.liquidationPrice?.takeIf { it.isNotBlank() }
+            } else {
+                Timber.e("Failed to estimate liquidation price: ${response.errorDescription}")
+                null
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Error estimating liquidation price")
+            null
+        }
+    }
+
     fun loadUsdTokens(onSuccess: (List<TokenItem>) -> Unit) {
         viewModelScope.launch {
             try {

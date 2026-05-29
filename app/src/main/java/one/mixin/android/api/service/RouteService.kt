@@ -34,6 +34,7 @@ import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.api.response.UserAddressView
 import one.mixin.android.api.response.perps.CandleView
+import one.mixin.android.api.response.perps.MarketLiquidationPriceView
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsPosition
@@ -395,6 +396,15 @@ interface RouteService {
         @Query("market_id") marketId: String,
         @Query("time_frame") timeFrame: String
     ): MixinResponse<CandleView>
+
+    @GET("perps/markets/liquidation-price")
+    suspend fun getPerpsLiquidationPrice(
+        @Query("market_id") marketId: String? = null,
+        @Query("amount") amount: String,
+        @Query("side") side: String? = null,
+        @Query("leverage") leverage: Int? = null,
+        @Query("position_id") positionId: String? = null,
+    ): MixinResponse<MarketLiquidationPriceView>
 
     @GET("perps/orders/accepted-assets")
     suspend fun getAcceptedAssets(): MixinResponse<List<String>>
