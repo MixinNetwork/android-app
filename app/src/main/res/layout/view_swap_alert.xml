@@ -20,7 +20,7 @@
         android:layout_width="2dp"
         android:layout_height="20dp"
         android:layout_gravity="center_vertical"
-        android:background="#0D000000" />
+        android:background="?attr/bg_divider" />
 
     <ViewAnimator
         android:id="@+id/alert_va"

@@ -15,6 +15,7 @@ import androidx.room.Relation
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemAlbumBinding
 import one.mixin.android.databinding.ItemStickerBinding
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadSticker
 import one.mixin.android.extension.textColor
@@ -145,7 +146,7 @@ fun TextView.updateAlbumAdd(
 ) {
     if (added) {
         text = ctx.getString(R.string.Added)
-        textColor = ctx.getColor(R.color.colorAccent)
+        textColor = ctx.colorFromAttribute(R.attr.color_accent)
         setBackgroundResource(R.drawable.bg_round_gray_btn)
         isEnabled = false
         setOnClickListener(null)
