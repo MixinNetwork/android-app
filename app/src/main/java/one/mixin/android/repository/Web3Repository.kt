@@ -66,7 +66,7 @@ import javax.inject.Inject
 class Web3Repository
 @Inject
 constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     val routeService: RouteService,
     val web3TokenDao: Web3TokenDao,
     val web3TransactionDao: Web3TransactionDao,

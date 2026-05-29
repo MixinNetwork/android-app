@@ -737,7 +737,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     }
 
                     val transactionHash = runCatching {
-                        val data = response.data as? List<TransactionResponse>
+                        val data = (response.data as? List<*>)?.filterIsInstance<TransactionResponse>()
                         if (data?.size == 1) {
                             data.first().transactionHash
                         } else {

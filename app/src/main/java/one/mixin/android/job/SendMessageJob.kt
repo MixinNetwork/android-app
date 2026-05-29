@@ -275,7 +275,7 @@ open class SendMessageJob(
             encryptedProtocol.encryptMessage(
                 keyPair,
                 plaintext,
-                participantSessionKey.publicKey!!.base64RawURLDecode(),
+                participantSessionKey.publicKey.base64RawURLDecode(),
                 participantSessionKey.sessionId,
                 extensionSessionKey?.publicKey?.base64RawURLDecode(),
                 extensionSessionKey?.sessionId,

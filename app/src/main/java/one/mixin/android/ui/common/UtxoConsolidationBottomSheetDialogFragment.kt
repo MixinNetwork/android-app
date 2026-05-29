@@ -121,9 +121,7 @@ class UtxoConsolidationBottomSheetDialogFragment : ValuableBiometricBottomSheetD
                 BLOCKCHAIN_ERROR,
             )
         ) {
-            t.traceId?.let { traceId ->
-                bottomViewModel.suspendDeleteTraceById(traceId)
-            }
+            bottomViewModel.suspendDeleteTraceById(t.traceId)
         }
         return null
     }

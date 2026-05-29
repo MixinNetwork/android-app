@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package one.mixin.android.crypto
 
 import android.content.Context
@@ -323,6 +325,7 @@ object CryptoWalletHelper {
         encryptedPrefs?.remove(walletId)
     }
 
+    @Suppress("DEPRECATION")
     fun clear(context: Context) {
         context.deleteSharedPreferences(ENCRYPTED_WEB3_KEY)
     }

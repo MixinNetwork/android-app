@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package one.mixin.android.ui.home.web3
 
 import androidx.compose.foundation.ExperimentalFoundationApi

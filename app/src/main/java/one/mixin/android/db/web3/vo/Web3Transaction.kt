@@ -49,17 +49,17 @@ data class Web3Transaction(
     @SerializedName("fee")
     val fee: String,
 
-    @TypeConverters(AssetChangeListConverter::class)
+    @param:TypeConverters(AssetChangeListConverter::class)
     @ColumnInfo(name = "senders")
     @SerializedName("senders")
     val senders: List<AssetChange>?,
 
-    @TypeConverters(AssetChangeListConverter::class)
+    @param:TypeConverters(AssetChangeListConverter::class)
     @ColumnInfo(name = "receivers")
     @SerializedName("receivers")
     val receivers: List<AssetChange>?,
 
-    @TypeConverters(AssetChangeListConverter::class)
+    @param:TypeConverters(AssetChangeListConverter::class)
     @ColumnInfo(name = "approvals")
     @SerializedName("approvals")
     val approvals: List<AssetChange>? = null,

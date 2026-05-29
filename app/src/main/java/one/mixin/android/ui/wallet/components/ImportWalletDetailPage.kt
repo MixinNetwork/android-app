@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package one.mixin.android.ui.wallet.components
 
 import one.mixin.android.ui.home.web3.components.PageScaffold

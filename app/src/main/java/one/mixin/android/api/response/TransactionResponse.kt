@@ -116,6 +116,6 @@ fun getTransactionResult(
     if (firstTransaction == null) {
         throw NullPointerException("The first transaction was not found")
     } else {
-        return Pair(firstTransaction!!, secondTransaction)
+        return Pair(firstTransaction, secondTransaction)
     }
 }

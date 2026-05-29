@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package one.mixin.android.util.mlkit.scan.manager
 
 import android.content.Context

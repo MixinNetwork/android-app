@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package one.mixin.android.db.provider
 
 import android.annotation.SuppressLint

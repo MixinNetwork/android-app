@@ -202,7 +202,7 @@ fun TradePage(
         perpetualTabIndex = tabs.size
         tabs += TabItem(title = stringResource(R.string.Perpetual)) {
             PerpetualContent(
-                onShowTradingGuide = { onShowTradingGuide(perpetualTabIndex ?: 0) },
+                onShowTradingGuide = { onShowTradingGuide(perpetualTabIndex) },
                 onShowMarketList = onShowMarketList,
                 onShowAllMarkets = onShowAllMarkets,
                 onShowAllOpenPositions = onShowAllOpenPositions,

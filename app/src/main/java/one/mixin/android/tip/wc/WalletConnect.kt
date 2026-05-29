@@ -33,7 +33,7 @@ abstract class WalletConnect {
 
         fun isPaymentLink(url: String): Boolean =
             try {
-                url.toUri()?.host == "pay.walletconnect.com" && WalletKit.Pay.isPaymentLink(url)
+                url.toUri().host == "pay.walletconnect.com" && WalletKit.Pay.isPaymentLink(url)
             } catch (e: Exception) {
                 false
             }

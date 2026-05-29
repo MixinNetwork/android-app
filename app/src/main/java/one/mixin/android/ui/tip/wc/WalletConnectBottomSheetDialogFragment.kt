@@ -337,10 +337,6 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         val tx = signData.signMessage
         if (tx !is WCEthereumTransaction) return
         val assetId = chain.getWeb3ChainId()
-        if (assetId == null) {
-            Timber.d("$TAG refreshEstimatedGasAndAsset assetId not support")
-            return
-        }
 
         tickerFlow(15.seconds)
             .onEach {
@@ -365,8 +361,8 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                         } else {
                             tipGas = buildTipGas(chain.chainId, r.data!!)
                         }
-                        if (tipGas != null) {
-                            (signData as? WalletConnect.WCSignData.V2SignData)?.tipGas = tipGas
+                        if (tipGas != null && signData is WalletConnect.WCSignData.V2SignData) {
+                            signData.tipGas = tipGas
                         }
                     } catch (e: Exception) {
                         Timber.e(e)

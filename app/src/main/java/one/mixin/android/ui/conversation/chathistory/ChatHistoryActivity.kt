@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package one.mixin.android.ui.conversation.chathistory
 
 import android.Manifest

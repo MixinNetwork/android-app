@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package one.mixin.android.ui.group
 
 import android.annotation.SuppressLint
@@ -108,7 +110,7 @@ class InviteQrBottomFragment : MixinBottomSheetDialogFragment() {
                     )
             }
             qr.doOnPreDraw {
-                Observable.create<Pair<Bitmap, Int>?> { e ->
+                Observable.create<Pair<Bitmap, Int>> { e ->
                     url?.generateQRCode(qr.width)?.let {
                         e.onNext(it)
                     }

@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.paging.DataSource
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.RoomWarnings
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationItem
@@ -14,6 +15,8 @@ import one.mixin.android.vo.GroupMinimal
 import one.mixin.android.vo.ParticipantSessionMinimal
 
 @Dao
+@RewriteQueriesToDropUnusedColumns
+@SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
 interface ConversationDao : BaseDao<Conversation> {
     companion object {
         const val PREFIX_CONVERSATION_ITEM =
@@ -39,7 +42,7 @@ interface ConversationDao : BaseDao<Conversation> {
     }
 
     // Read SQL
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH, RoomWarnings.QUERY_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """$PREFIX_CONVERSATION_ITEM
         WHERE c.category IN ('CONTACT', 'GROUP')
@@ -48,7 +51,7 @@ interface ConversationDao : BaseDao<Conversation> {
     )
     fun conversationList(): DataSource.Factory<Int, ConversationItem>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH, RoomWarnings.QUERY_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """
         SELECT c.conversation_id AS conversationId, c.icon_url AS groupIconUrl, c.category AS category,
@@ -112,7 +115,7 @@ interface ConversationDao : BaseDao<Conversation> {
     @Query("SELECT c.draft FROM conversations c WHERE c.conversation_id = :conversationId")
     suspend fun getConversationDraftById(conversationId: String): String?
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH, RoomWarnings.QUERY_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         "SELECT c.conversation_id AS conversationId, c.icon_url AS groupIconUrl, c.category AS category, " +
             "c.name AS groupName, c.status AS status, c.last_read_message_id AS lastReadMessageId, " +
