@@ -1104,4 +1104,5 @@
     <string name="perps_tpsl_key_point_2">觸發止損：控制虧損</string>
     <string name="take_profit_label">止盈</string>
     <string name="stop_loss_label">止損</string>
+    <string name="perps_top_movers">漲跌榜</string>
 </resources>

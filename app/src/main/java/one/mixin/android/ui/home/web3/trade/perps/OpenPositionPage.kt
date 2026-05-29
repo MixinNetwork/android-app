@@ -145,6 +145,7 @@ fun OpenPositionPage(
     var takeProfitPrice by remember { mutableStateOf("") }
     var stopLossPrice by remember { mutableStateOf("") }
     var errorInfo by remember { mutableStateOf<String?>(null) }
+    var isProcessing by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
     val savedLeverage = remember(marketId) {
@@ -672,35 +673,40 @@ fun OpenPositionPage(
                         .fillMaxWidth()
                         .height(48.dp),
                     onClick = {
+                        if (isProcessing) return@MixinButton
+                        isProcessing = true
                         AnalyticsTracker.trackPerpsPreview(leverage.toInt().toPerpsLeverageValue())
                         errorInfo = null
-                        val token = currentToken ?: return@MixinButton
-                        val amount = usdtAmount.toBigDecimalOrNull() ?: return@MixinButton
+                        val token = currentToken ?: run { isProcessing = false; return@MixinButton }
+                        val amount = usdtAmount.toBigDecimalOrNull() ?: run { isProcessing = false; return@MixinButton }
 
-                        if (amount <= BigDecimal.ZERO) return@MixinButton
+                        if (amount <= BigDecimal.ZERO) { isProcessing = false; return@MixinButton }
                         if (minimumMargin > BigDecimal.ZERO && amount < minimumMargin) {
                             errorInfo = minimumMarginError
+                            isProcessing = false
                             return@MixinButton
                         }
                         if (maximumMargin > BigDecimal.ZERO && amount > maximumMargin) {
                             errorInfo = maximumMarginError
+                            isProcessing = false
                             return@MixinButton
                         }
-                        if (amount > (token.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO)) return@MixinButton
+                        if (amount > (token.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO)) { isProcessing = false; return@MixinButton }
 
                         val m = currentMarket
                         val walletId = Session.getAccountId() ?: "" // Privacy Wallet
-                        if (walletId.isEmpty()) return@MixinButton
+                        if (walletId.isEmpty()) { isProcessing = false; return@MixinButton }
 
-                        val activity = context as? FragmentActivity ?: return@MixinButton
+                        val activity = context as? FragmentActivity ?: run { isProcessing = false; return@MixinButton }
 
                         val price = m.last.toBigDecimalOrNull() ?: BigDecimal.ZERO
-                        if (price == BigDecimal.ZERO) return@MixinButton
+                        if (price == BigDecimal.ZERO) { isProcessing = false; return@MixinButton }
                         scope.launch {
                             val hasOpeningPosition = viewModel.getOpenPositionsFromDb(walletId)
                                 .any { it.marketId == m.marketId }
                             if (hasOpeningPosition) {
                                 errorInfo = waitingOtherOrdersError
+                                isProcessing = false
                                 return@launch
                             }
 
@@ -729,9 +735,12 @@ fun OpenPositionPage(
                                         payUrl = response.paymentUrl
                                     ).setOnDone {
                                             onOpenSuccess(m.marketId)
+                                        }.setOnDestroy {
+                                            isProcessing = false
                                         }.show(activity.supportFragmentManager, PerpsConfirmBottomSheetDialogFragment.TAG)
                                     },
                                 onError = { errorCode, errorMessage ->
+                                    isProcessing = false
                                     errorInfo = if (errorCode > 0) {
                                         context.getMixinErrorStringByCode(errorCode, errorMessage)
                                     } else {

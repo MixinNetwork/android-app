@@ -16,8 +16,10 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.content.FileProvider
 import androidx.core.content.ContextCompat
 import androidx.core.view.doOnAttach
+import androidx.core.view.doOnPreDraw
 import androidx.core.view.drawToBitmap
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
@@ -68,6 +70,7 @@ import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.widget.BottomSheet
+import one.mixin.android.widget.getMaxCustomViewHeight
 
 @AndroidEntryPoint
 class MarketShareBottomFragment : MixinBottomSheetDialogFragment() {
@@ -112,7 +115,14 @@ class MarketShareBottomFragment : MixinBottomSheetDialogFragment() {
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
         contentView = binding.root
-        (dialog as BottomSheet).setCustomView(contentView)
+        val bottomSheet = dialog as BottomSheet
+        bottomSheet.setCustomView(contentView)
+        contentView.doOnPreDraw {
+            val maxHeight = bottomSheet.getMaxCustomViewHeight()
+            if (it.height > maxHeight) {
+                it.updateLayoutParams { height = maxHeight }
+            }
+        }
         selectedType = arguments?.getString(ARGS_TYPE) ?: "1D"
         bindMarketCard()
         setupMarketChart()

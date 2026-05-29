@@ -19,7 +19,7 @@ interface PerpsOrderDao : BaseDao<PerpsOrder> {
     suspend fun insertAll(orders: List<PerpsOrder>)
 
     @Query("""
-        SELECT o.*, m.display_symbol, m.icon_url, m.token_symbol
+        SELECT o.*, m.display_symbol, m.icon_url, m.token_symbol, m.price_scale
         FROM perps_orders o
         LEFT JOIN markets m ON m.market_id = o.market_id
         WHERE o.order_type IN ('open', 'increase_position', 'close')
@@ -31,7 +31,7 @@ interface PerpsOrderDao : BaseDao<PerpsOrder> {
     suspend fun getOrders(limit: Int, offset: String? = null): List<PerpsOrderItem>
 
     @Query("""
-        SELECT o.*, m.display_symbol, m.icon_url, m.token_symbol
+        SELECT o.*, m.display_symbol, m.icon_url, m.token_symbol, m.price_scale
         FROM perps_orders o
         LEFT JOIN markets m ON m.market_id = o.market_id
         WHERE o.order_type IN ('open', 'increase_position', 'close')
@@ -42,7 +42,7 @@ interface PerpsOrderDao : BaseDao<PerpsOrder> {
     fun observeOrders(limit: Int): Flow<List<PerpsOrderItem>>
 
     @Query("""
-        SELECT o.*, m.display_symbol, m.icon_url, m.token_symbol
+        SELECT o.*, m.display_symbol, m.icon_url, m.token_symbol, m.price_scale
         FROM perps_orders o
         LEFT JOIN markets m ON m.market_id = o.market_id
         WHERE o.order_type IN ('open', 'increase_position', 'close')
@@ -52,7 +52,7 @@ interface PerpsOrderDao : BaseDao<PerpsOrder> {
     fun getOrdersPaged(): PagingSource<Int, PerpsOrderItem>
 
     @Query("""
-        SELECT o.*, m.display_symbol, m.icon_url, m.token_symbol
+        SELECT o.*, m.display_symbol, m.icon_url, m.token_symbol, m.price_scale
         FROM perps_orders o
         LEFT JOIN markets m ON m.market_id = o.market_id
         WHERE o.order_type IN ('open', 'increase_position', 'close')
@@ -64,7 +64,7 @@ interface PerpsOrderDao : BaseDao<PerpsOrder> {
     suspend fun getOrdersByMarket(marketId: String, limit: Int = 100): List<PerpsOrderItem>
 
     @Query("""
-        SELECT o.*, m.display_symbol, m.icon_url, m.token_symbol
+        SELECT o.*, m.display_symbol, m.icon_url, m.token_symbol, m.price_scale
         FROM perps_orders o
         LEFT JOIN markets m ON m.market_id = o.market_id
         WHERE o.order_id = :orderId
@@ -72,7 +72,7 @@ interface PerpsOrderDao : BaseDao<PerpsOrder> {
     suspend fun getOrder(orderId: String): PerpsOrderItem?
 
     @Query("""
-        SELECT o.*, m.display_symbol, m.icon_url, m.token_symbol
+        SELECT o.*, m.display_symbol, m.icon_url, m.token_symbol, m.price_scale
         FROM perps_orders o
         LEFT JOIN markets m ON m.market_id = o.market_id
         WHERE o.position_id = :positionId

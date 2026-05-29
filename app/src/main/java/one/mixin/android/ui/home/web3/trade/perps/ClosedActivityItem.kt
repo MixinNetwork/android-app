@@ -116,7 +116,7 @@ fun ClosedActivityItem(
                     modifier = Modifier
                         .clip(RoundedCornerShape(4.dp))
                         .background(leverageBackgroundColor)
-                        .padding(horizontal = 3.dp, vertical = 2.dp),
+                        .padding(horizontal = 3.dp, vertical = 1.dp),
                 )
             }
             Spacer(modifier = Modifier.height(4.dp))

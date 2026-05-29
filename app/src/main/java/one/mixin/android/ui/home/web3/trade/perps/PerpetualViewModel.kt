@@ -343,11 +343,23 @@ class PerpetualViewModel @Inject constructor(
                 if (response.isSuccess && data != null) {
                     Timber.d("Perps order opened: ${data.orderId}, payUrl: ${data.paymentUrl}")
                     
+                    val entryPriceDecimal = entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                    val amountDecimal = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                    val quantityValue = if (entryPriceDecimal > BigDecimal.ZERO) {
+                        amountDecimal
+                            .multiply(BigDecimal(leverage))
+                            .divide(entryPriceDecimal, 8, java.math.RoundingMode.HALF_UP)
+                            .stripTrailingZeros()
+                            .toPlainString()
+                    } else {
+                        "0"
+                    }
+                    
                     val position = PerpsPosition(
                         positionId = data.orderId,
                         marketId = marketId,
                         side = side,
-                        quantity = amount,
+                        quantity = quantityValue,
                         settleAssetId = assetId,
                         botId = "",
                         entryPrice = entryPrice,
@@ -358,7 +370,7 @@ class PerpetualViewModel @Inject constructor(
                         stopLossPrice = stopLossPrice,
                         liquidationPrice = null,
                         leverage = leverage,
-                        state = "processing",
+                        state = PerpsPosition.STATE_OPENING,
                         markPrice = entryPrice,
                         unrealizedPnl = "0",
                         roe = "0",
@@ -425,12 +437,12 @@ class PerpetualViewModel @Inject constructor(
                         if (localPosition != null) {
                             perpsPositionDao.upsertSuspend(
                                 localPosition.copy(
-                                    state = "adding",
+                                    state = PerpsPosition.STATE_ADDING,
                                     updatedAt = now,
                                 )
                             )
                         } else {
-                            perpsPositionDao.updateStatus(positionId, "adding", now)
+                            perpsPositionDao.updateStatus(positionId, PerpsPosition.STATE_ADDING, now)
                         }
                     }
                     onSuccess(data)

@@ -113,9 +113,15 @@ class PerpsAddBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
     }
 
     private var onAddAction: ((TokenItem, String) -> Unit)? = null
+    private var onDestroyAction: (() -> Unit)? = null
 
     fun setOnAdd(callback: (TokenItem, String) -> Unit): PerpsAddBottomSheetDialogFragment {
         onAddAction = callback
+        return this
+    }
+
+    fun setOnDestroy(callback: () -> Unit): PerpsAddBottomSheetDialogFragment {
+        onDestroyAction = callback
         return this
     }
 
@@ -223,6 +229,7 @@ class PerpsAddBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
 
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
+        onDestroyAction?.invoke()
     }
 
     override fun dismiss() {
