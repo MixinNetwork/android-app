@@ -168,6 +168,7 @@
                     android:textColor="@color/white"
                     android:textSize="14sp"
                     android:textFontWeight="600"
+                    android:layout_marginBottom="8dp"
                     tools:text="$3,412.23" />
             </LinearLayout>
 
