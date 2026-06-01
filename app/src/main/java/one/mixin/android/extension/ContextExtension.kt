@@ -908,15 +908,8 @@ fun Context.openInBrowser(
     url: String,
     extraHeaders: Bundle? = null,
 ): Boolean {
-    val browserUrl = url.trim()
-    if (browserUrl.isBlank()) return false
-    var uri = browserUrl.toUri()
-    if (uri.scheme.isNullOrBlank()) {
-        uri = Uri.parse("http://$browserUrl")
-    }
-    if (!uri.scheme.equals("http", true) && !uri.scheme.equals("https", true)) {
-        return false
-    }
+    val browserUrl = url.toOpenInBrowserUrlOrNull() ?: return false
+    val uri = browserUrl.toUri()
 
     try {
         val customTabsIntent =
