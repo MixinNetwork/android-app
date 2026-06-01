@@ -267,12 +267,7 @@ fun OpenPositionPage(
         maximumMargin.stripTrailingZeros().toPlainString(),
         currentToken?.symbol.orEmpty(),
     )
-    val localLiquidationPrice = calculateLiquidationPrice(
-        currentMarket.last,
-        leverage,
-        isLong,
-    )
-    val displayLiquidationPrice = remoteLiquidationPrice ?: localLiquidationPrice
+    val displayLiquidationPrice = remoteLiquidationPrice
     val marginLimitError = when {
         belowMinimumMargin -> minimumMarginError
         aboveMaximumMargin -> maximumMarginError
@@ -679,7 +674,7 @@ fun OpenPositionPage(
                     Spacer(modifier = Modifier.height(16.dp))
                     PerpsInfoRow(
                         title = stringResource(R.string.Liquidation_Price),
-                        value = displayLiquidationPrice?.let { formatPerpsPrice(it, currentMarket.priceScale) } ?: "--",
+                        value = displayLiquidationPrice?.let { formatPerpsPrice(it, currentMarket.priceScale) } ?: "-",
                         isLoading = isLiquidationLoading,
                         onTipClick = {
                             showPerpsGuide(PerpetualGuideBottomSheetDialogFragment.TAB_LIQUIDATION)
