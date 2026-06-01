@@ -1551,6 +1551,8 @@ class TokenRepository
             nonce = nonce,
             createdAt = createdAt,
             updatedAt = updatedAt,
+            sponsorFeeAssetId = assetId,
+            sponsorFeeAmount = fee,
         )
     }
 
@@ -1593,9 +1595,12 @@ class TokenRepository
         nonce: String,
         createdAt: String,
         updatedAt: String,
+        sponsorFeeAssetId: String? = null,
+        sponsorFeeAmount: String? = null,
     ) {
         val normalizedAmount = amount.removePrefix("-")
         val normalizedFee = fee.toBigDecimalOrNull()?.stripTrailingZeros()?.toPlainString() ?: fee
+        val normalizedSponsorFeeAmount = sponsorFeeAmount?.toBigDecimalOrNull()?.stripTrailingZeros()?.toPlainString() ?: sponsorFeeAmount
         appDatabase.withTransaction {
             web3RawTransactionDao.insertSuspend(
                 Web3RawTransaction(
@@ -1619,6 +1624,8 @@ class TokenRepository
                     status = TransactionStatus.PENDING.value,
                     blockNumber = 0,
                     fee = normalizedFee,
+                    sponsorFeeAssetId = sponsorFeeAssetId,
+                    sponsorFeeAmount = normalizedSponsorFeeAmount,
                     senders = listOf(
                         AssetChange(
                             assetId = assetId,

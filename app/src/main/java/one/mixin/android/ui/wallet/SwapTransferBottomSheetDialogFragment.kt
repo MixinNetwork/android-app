@@ -319,6 +319,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
 
     private var web3Transaction: JsSignMessage? by mutableStateOf(null)
     private var gaslessPrepareResponse: GaslessTxResponse? by mutableStateOf(null)
+    private var gaslessFeeAmount: String? by mutableStateOf(null)
     private var isGaslessLoading by mutableStateOf(false)
     private var tipGas: TipGas? by mutableStateOf(null)
     private var solanaFee: BigDecimal? by mutableStateOf(null)
@@ -1075,6 +1076,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         gaslessPrepareResponse = previewData.gaslessPrepareResponseJson?.let {
             GsonHelper.customGson.fromJson(it, GaslessTxResponse::class.java)
         }
+        gaslessFeeAmount = previewData.feeAmount
 
         val previewFee = previewData.feeAmount.toBigDecimalOrNull()
         when (token.chainId) {
@@ -1110,6 +1112,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         amount: String,
     ): GaslessTxResponse? {
         val feeAmount = resolveGaslessFeeAmount(token, fromAddress, toAddress) ?: return null
+        gaslessFeeAmount = feeAmount
         return runCatching {
             web3ViewModel.gaslessPrepare(
                 GaslessTxRequest(
@@ -1135,6 +1138,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         val feeAmount = requireNotNull(resolveGaslessFeeAmount(token, fromAddress, toAddress)) {
             "gasless fee amount is required"
         }
+        gaslessFeeAmount = feeAmount
         val response = web3ViewModel.gaslessPrepare(
             GaslessTxRequest(
                 from = fromAddress,
@@ -1196,6 +1200,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                 amount = amount,
                 chainId = preparedResponse.chainId,
                 payload = preparedResponse.payload,
+                fee = normalizeGaslessPendingFeeAmount(gaslessFeeAmount),
                 privateKey = privateKey,
             )
             else -> throw IllegalArgumentException("Gasless is not supported for ${transferToken.chainId}")
@@ -1256,6 +1261,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         amount: String,
         chainId: String,
         payload: JsonElement,
+        fee: String,
         privateKey: ByteArray,
     ) {
         if (!payload.isJsonObject) {
@@ -1288,7 +1294,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
             account = fromAddress,
             assetId = token.assetId,
             amount = amount.stripAmountZero(),
-            fee = "",
+            fee = fee,
             to = toAddress,
             nonce = ethPayload.userOperation.nonce,
             createdAt = now,
