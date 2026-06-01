@@ -1,7 +1,6 @@
 package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
-import android.app.Dialog
 import android.content.ClipData
 import android.graphics.Bitmap
 import android.graphics.Typeface
@@ -11,13 +10,18 @@ import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.content.FileProvider
 import androidx.core.content.ContextCompat
 import androidx.core.view.doOnAttach
+import androidx.core.view.doOnPreDraw
 import androidx.core.view.drawToBitmap
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
@@ -41,17 +45,20 @@ import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getPublicDownloadPath
+import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.marketPriceFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.round
+import one.mixin.android.extension.roundTopOrBottom
+import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.setQuoteTextWithBackgroud
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.repository.ReferralRepository
 import one.mixin.android.session.Session
-import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
+import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.common.applyReferralTitleTypeface
 import one.mixin.android.ui.common.buildReferralDescription
 import one.mixin.android.ui.common.isZeroPercent
@@ -67,10 +74,9 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.market.MarketItem
-import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
-class MarketShareBottomFragment : MixinBottomSheetDialogFragment() {
+class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
     companion object {
         const val TAG = "MarketShareBottomFragment"
         private const val ARGS_MARKET = "market"
@@ -108,11 +114,28 @@ class MarketShareBottomFragment : MixinBottomSheetDialogFragment() {
     private var isChartLoading = true
     private var isChartContentSet = false
 
+    override fun getTheme() = R.style.AppTheme_Dialog
+
+    @Composable
+    override fun ComposeContent() {
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
+    ): View = binding.root.apply {
+        roundTopOrBottom(11.dp.toFloat(), top = true, bottom = false)
+    }
+
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
-        super.setupDialog(dialog, style)
-        contentView = binding.root
-        (dialog as BottomSheet).setCustomView(contentView)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        view.doOnPreDraw {
+            it.updateLayoutParams<ViewGroup.LayoutParams> {
+                height = getBottomSheetHeight(view)
+            }
+        }
         selectedType = arguments?.getString(ARGS_TYPE) ?: "1D"
         bindMarketCard()
         setupMarketChart()
@@ -159,6 +182,13 @@ class MarketShareBottomFragment : MixinBottomSheetDialogFragment() {
                 updateLoadingState()
             }
         }
+    }
+
+    override fun getBottomSheetHeight(view: View): Int {
+        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+    }
+
+    override fun showError(error: String) {
     }
 
     private fun bindMarketCard() {

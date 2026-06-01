@@ -908,15 +908,8 @@ fun Context.openInBrowser(
     url: String,
     extraHeaders: Bundle? = null,
 ): Boolean {
-    val browserUrl = url.trim()
-    if (browserUrl.isBlank()) return false
-    var uri = browserUrl.toUri()
-    if (uri.scheme.isNullOrBlank()) {
-        uri = Uri.parse("http://$browserUrl")
-    }
-    if (!uri.scheme.equals("http", true) && !uri.scheme.equals("https", true)) {
-        return false
-    }
+    val browserUrl = url.toOpenInBrowserUrlOrNull() ?: return false
+    val uri = browserUrl.toUri()
 
     try {
         val customTabsIntent =
@@ -1170,7 +1163,8 @@ fun Fragment.getTipsByAsset(asset: TokenItem) =
         Constants.ChainId.Optimism,
         Constants.ChainId.Polygon,
         Constants.ChainId.BitShares,
-        Constants.ChainId.Avalanche
+        Constants.ChainId.Avalanche,
+        Constants.ChainId.HyperEVM
             -> getString(R.string.deposit_tip_chain, asset.symbol, asset.chainName ?: getChainName(asset.chainId, asset.chainName, asset.assetKey ?: ""))
         else -> getString(R.string.deposit_tip_common, asset.symbol)
     }

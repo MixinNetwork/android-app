@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
@@ -28,13 +29,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
@@ -45,6 +53,8 @@ import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemContentType
+import androidx.paging.compose.itemKey
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.isActive
@@ -306,33 +316,99 @@ private fun LazyListScope.openPositionItems(
     onPositionClick: (PerpsPositionItem) -> Unit,
 ) {
     if (positions.itemCount == 0) return
-    item {
-        Column(
+    items(
+        count = positions.itemCount,
+        key = positions.itemKey { it.positionId },
+        contentType = positions.itemContentType { "open_position" },
+    ) { index ->
+        val position = positions[index] ?: return@items
+        val isFirst = index == 0
+        val isLast = index == positions.itemCount - 1
+        val shape = when {
+            isFirst && isLast -> RoundedCornerShape(8.dp)
+            isFirst -> RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)
+            isLast -> RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp)
+            else -> RoundedCornerShape(0.dp)
+        }
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(8.dp))
-                .cardBackground(
+                .clip(shape)
+                .groupedItemBorder(
                     backgroundColor = MixinAppTheme.colors.background,
                     borderColor = MixinAppTheme.colors.borderColor,
+                    isFirst = isFirst,
+                    isLast = isLast,
                 )
-                .padding(vertical = 8.dp)
         ) {
-            for (index in 0 until positions.itemCount) {
-                val position = positions[index] ?: continue
-                OpenPositionItem(
-                    position = position,
-                    onClick = { onPositionClick(position) },
-                )
-            }
+            OpenPositionItem(
+                position = position,
+                onClick = { onPositionClick(position) },
+            )
         }
     }
+}
+
+private fun Modifier.groupedItemBorder(
+    backgroundColor: Color,
+    borderColor: Color,
+    isFirst: Boolean,
+    isLast: Boolean,
+    cornerRadius: Dp = 8.dp,
+    borderWidth: Dp = 0.8.dp,
+): Modifier = this.drawBehind {
+    drawRect(color = backgroundColor)
+    val r = cornerRadius.toPx()
+    val sw = borderWidth.toPx()
+    val half = sw / 2f
+    val w = size.width
+    val h = size.height
+    val left = half
+    val top = half
+    val right = w - half
+    val bottom = h - half
+    val path = Path()
+    when {
+        isFirst && isLast -> path.addRoundRect(
+            RoundRect(Rect(left, top, right, bottom), CornerRadius(r, r)),
+        )
+        isFirst -> {
+            path.moveTo(left, h)
+            path.lineTo(left, top + r)
+            path.arcTo(Rect(left, top, left + 2 * r, top + 2 * r), 180f, 90f, false)
+            path.lineTo(right - r, top)
+            path.arcTo(Rect(right - 2 * r, top, right, top + 2 * r), 270f, 90f, false)
+            path.lineTo(right, h)
+        }
+        isLast -> {
+            path.moveTo(left, 0f)
+            path.lineTo(left, bottom - r)
+            path.arcTo(Rect(left, bottom - 2 * r, left + 2 * r, bottom), 180f, -90f, false)
+            path.lineTo(right - r, bottom)
+            path.arcTo(Rect(right - 2 * r, bottom - 2 * r, right, bottom), 90f, -90f, false)
+            path.lineTo(right, 0f)
+        }
+        else -> {
+            path.moveTo(left, 0f)
+            path.lineTo(left, h)
+            path.moveTo(right, 0f)
+            path.lineTo(right, h)
+        }
+    }
+    drawPath(path, color = borderColor, style = Stroke(width = sw))
 }
 
 private fun LazyListScope.closedPositionItems(
     positions: LazyPagingItems<PerpsOrderItem>,
     onPositionClick: (PerpsOrderItem) -> Unit,
 ) {
-    items(count = positions.itemCount) { index ->
+    items(
+        count = positions.itemCount,
+        key = positions.itemKey { it.orderId },
+        contentType = positions.itemContentType { order ->
+            if (order.orderType == PerpsOrder.TYPE_CLOSE) "close" else "open"
+        },
+    ) { index ->
         val order = positions[index] ?: return@items
         if (order.orderType == PerpsOrder.TYPE_CLOSE) {
             ClosedActivityItem(

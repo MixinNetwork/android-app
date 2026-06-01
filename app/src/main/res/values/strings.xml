@@ -2471,6 +2471,7 @@
     <string name="title">Choose a Country or Region</string>
     <string name="anonymous_number">Anonymous Number</string>
     <string name="perps_markets">Trending</string>
+    <string name="perps_top_movers">Top Movers</string>
     <string name="perps_market">Market</string>
     <string name="perps_share_card_title">🚀 Perps %1$s</string>
     <string name="perps_share_card_market">- 📈 Market: %1$s</string>

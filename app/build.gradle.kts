@@ -14,6 +14,12 @@ plugins {
 apply(plugin = "com.google.gms.google-services")
 apply(plugin = "com.google.firebase.crashlytics")
 
+val versionMajor = 4
+val versionMinor = 3
+val versionPatch = 1
+val versionBuild = 0
+
+
 val bitcoinVersion: String by rootProject.extra
 val fragmentVersion: String by rootProject.extra
 val activity_version: String by rootProject.extra
@@ -121,11 +127,6 @@ val datastoreVersion: String by rootProject.extra
 val appsFlyerVersion: String by rootProject.extra
 val installreferrerVersion: String by rootProject.extra
 val billingVersion: String by rootProject.extra
-
-val versionMajor = 4
-val versionMinor = 3
-val versionPatch = 0
-val versionBuild = 0
 
 val includeDebugX86_64 = project.findProperty("includeDebugX86_64")?.toString()?.toBoolean() ?: false
 

@@ -34,7 +34,7 @@
             android:background="?android:attr/selectableItemBackground"
             android:contentDescription="@null"
             android:padding="14dp"
-            android:src="@drawable/ic_float_close" />
+            android:src="@drawable/ic_circle_close" />
     </FrameLayout>
 
     <LinearLayout
@@ -68,6 +68,8 @@
                     android:background="@drawable/selector_radio"
                     android:button="@null"
                     android:checked="true"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
                     android:paddingStart="16dp"
                     android:paddingEnd="16dp"
                     android:text="@string/perps_share_pnl"
@@ -80,6 +82,8 @@
                     android:layout_height="wrap_content"
                     android:background="@drawable/selector_radio"
                     android:button="@null"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
                     android:paddingStart="16dp"
                     android:paddingEnd="16dp"
                     android:text="@string/perps_share_roe"

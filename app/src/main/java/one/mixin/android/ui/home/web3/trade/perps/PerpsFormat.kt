@@ -143,6 +143,14 @@ fun formatPerpsSignedPercent(value: Double, withSign: Boolean = true): String {
 
 private fun formatPerpsPercentDecimal(value: BigDecimal): String {
     val safeValue = value.abs()
+    if (safeValue >= BigDecimal(1000)) {
+        val thousands = safeValue.divide(BigDecimal(1000), 1, RoundingMode.FLOOR)
+        return if (thousands.stripTrailingZeros().scale() <= 0) {
+            "${thousands.toBigInteger()}K"
+        } else {
+            "${thousands.stripTrailingZeros().toPlainString()}K"
+        }
+    }
     val scaled = safeValue.setScale(2, RoundingMode.FLOOR)
     if (scaled.compareTo(BigDecimal.ZERO) == 0) return "0.0"
     return scaled.stripTrailingZeros().toPlainString()
