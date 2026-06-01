@@ -22,6 +22,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -51,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.FragmentActivity
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
@@ -144,9 +146,12 @@ fun OpenPositionPage(
     var usdtAmount by remember { mutableStateOf("") }
     var takeProfitPrice by remember { mutableStateOf("") }
     var stopLossPrice by remember { mutableStateOf("") }
+    var remoteLiquidationPrice by remember { mutableStateOf<String?>(null) }
+    var isLiquidationLoading by remember { mutableStateOf(false) }
     var errorInfo by remember { mutableStateOf<String?>(null) }
     var isProcessing by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+    var liquidationJob by remember { mutableStateOf<Job?>(null) }
 
     val savedLeverage = remember(marketId) {
         context.defaultSharedPreferences
@@ -213,6 +218,34 @@ fun OpenPositionPage(
         }
     }
 
+    LaunchedEffect(usdtAmount, leverage) {
+        val amount = usdtAmount.toBigDecimalOrNull()
+        if (amount == null || amount <= BigDecimal.ZERO) {
+            remoteLiquidationPrice = null
+            isLiquidationLoading = false
+            return@LaunchedEffect
+        }
+        liquidationJob?.cancel()
+        liquidationJob = launch {
+            isLiquidationLoading = true
+            delay(200L)
+            while (true) {
+                val result = viewModel.estimateLiquidationPrice(
+                    marketId = currentMarket.marketId,
+                    amount = amount.stripTrailingZeros().toPlainString(),
+                    side = if (isLong) "long" else "short",
+                    leverage = leverage.toInt(),
+                )
+                if (result != null) {
+                    remoteLiquidationPrice = result
+                    isLiquidationLoading = false
+                    break
+                }
+                delay(1000L)
+            }
+        }
+    }
+
     val leverageOptions = generateLeverageOptions(maxLeverage)
     val inputAmount = usdtAmount.toBigDecimalOrNull()
     val tokenBalance = currentToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
@@ -223,7 +256,7 @@ fun OpenPositionPage(
     val aboveMaximumMargin = hasInputAmount && maximumMargin > BigDecimal.ZERO && inputAmount > maximumMargin
     val insufficientBalance = hasInputAmount && inputAmount > tokenBalance
     val showAddAction = insufficientBalance || tokenBalance <= BigDecimal.ZERO
-    val canReview = hasInputAmount && !belowMinimumMargin && !aboveMaximumMargin && !insufficientBalance
+    val canReview = hasInputAmount && !belowMinimumMargin && !aboveMaximumMargin && !insufficientBalance && !isLiquidationLoading
     val minimumMarginError = stringResource(
         R.string.perps_minimum_margin,
         minimumMargin.stripTrailingZeros().toPlainString(),
@@ -234,6 +267,12 @@ fun OpenPositionPage(
         maximumMargin.stripTrailingZeros().toPlainString(),
         currentToken?.symbol.orEmpty(),
     )
+    val localLiquidationPrice = calculateLiquidationPrice(
+        currentMarket.last,
+        leverage,
+        isLong,
+    )
+    val displayLiquidationPrice = remoteLiquidationPrice ?: localLiquidationPrice
     val marginLimitError = when {
         belowMinimumMargin -> minimumMarginError
         aboveMaximumMargin -> maximumMarginError
@@ -640,11 +679,8 @@ fun OpenPositionPage(
                     Spacer(modifier = Modifier.height(16.dp))
                     PerpsInfoRow(
                         title = stringResource(R.string.Liquidation_Price),
-                        value = calculateLiquidationPrice(
-                            currentMarket.last,
-                            leverage,
-                            isLong,
-                        ),
+                        value = displayLiquidationPrice?.let { formatPerpsPrice(it, currentMarket.priceScale) } ?: "--",
+                        isLoading = isLiquidationLoading,
                         onTipClick = {
                             showPerpsGuide(PerpetualGuideBottomSheetDialogFragment.TAB_LIQUIDATION)
                         },
@@ -732,6 +768,8 @@ fun OpenPositionPage(
                                         tokenSymbol = token.symbol,
                                         takeProfitPrice = takeProfitPrice.takeIf { it.isNotBlank() },
                                         stopLossPrice = stopLossPrice.takeIf { it.isNotBlank() },
+                                        liquidationPrice = displayLiquidationPrice,
+                                        priceScale = m.priceScale,
                                         payUrl = response.paymentUrl
                                     ).setOnDone {
                                             onOpenSuccess(m.marketId)
@@ -902,22 +940,19 @@ private fun calculateLiquidationPrice(
     currentPrice: String,
     leverage: Float,
     isLong: Boolean,
-): String {
-    val price = currentPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
-
-
-    if (price == BigDecimal.ZERO) {
-        return formatPerpsUsdDecimal(BigDecimal.ZERO)
+): String? {
+    val price = currentPrice.toBigDecimalOrNull() ?: return null
+    if (price <= BigDecimal.ZERO || leverage <= 0f) {
+        return null
     }
 
-    val liquidationPercent = BigDecimal(100.0 / leverage)
-    val liquidationRatio = liquidationPercent.divide(BigDecimal(100), 8, RoundingMode.HALF_UP)
+    val liquidationRatio = BigDecimal.ONE.divide(BigDecimal(leverage.toDouble()), 8, RoundingMode.HALF_UP)
     val liquidationPrice = if (isLong) {
         price * (BigDecimal.ONE - liquidationRatio)
     } else {
         price * (BigDecimal.ONE + liquidationRatio)
     }
-    return formatPerpsUsdDecimal(liquidationPrice)
+    return liquidationPrice.stripTrailingZeros().toPlainString()
 }
 
 private fun formatPerpsPrice(
@@ -983,6 +1018,7 @@ private fun PerpsActionRow(
 private fun PerpsInfoRow(
     title: String,
     value: String,
+    isLoading: Boolean = false,
     onTipClick: (() -> Unit)? = null,
 ) {
     Row(
@@ -1012,11 +1048,19 @@ private fun PerpsInfoRow(
                 )
             }
         }
-        Text(
-            text = value,
-            fontSize = 14.sp,
-            color = MixinAppTheme.colors.textAssist,
-            textAlign = TextAlign.End,
-        )
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(16.dp),
+                strokeWidth = 2.dp,
+                color = MixinAppTheme.colors.textAssist,
+            )
+        } else {
+            Text(
+                text = value,
+                fontSize = 14.sp,
+                color = MixinAppTheme.colors.textAssist,
+                textAlign = TextAlign.End,
+            )
+        }
     }
 }

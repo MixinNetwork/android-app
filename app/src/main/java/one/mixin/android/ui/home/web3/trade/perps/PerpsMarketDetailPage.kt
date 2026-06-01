@@ -477,7 +477,7 @@ fun PerpsMarketDetailPage(
                                             .setOnDestroy {
                                                 isAddingProcessing = false
                                             }
-                                            .setOnAdd { token, amount ->
+                                            .setOnAdd { token, amount, liquidationPrice ->
                                                 isAddingProcessing = false
                                                 val referencePrice = market?.last
                                                     ?: positionForAdd.markPrice
@@ -506,6 +506,8 @@ fun PerpsMarketDetailPage(
                                                             tokenSymbol = token.symbol,
                                                             takeProfitPrice = null,
                                                             stopLossPrice = null,
+                                                            liquidationPrice = liquidationPrice,
+                                                            priceScale = market?.priceScale ?: positionForAdd.priceScale,
                                                             payUrl = response.paymentUrl,
                                                             isAddPosition = true,
                                                         ).show(activity.supportFragmentManager, PerpsConfirmBottomSheetDialogFragment.TAG)
