@@ -150,3 +150,10 @@ data class Cover(
             return thumbnail?.toDrawable(width, height)?.toBitmap()
         }
 }
+
+fun MessageItem.appCardCoverUrl(): String? =
+    if (isAppCard()) {
+        appCardData?.let { it.coverUrl ?: it.cover?.url }
+    } else {
+        null
+    }

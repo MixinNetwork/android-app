@@ -96,7 +96,7 @@ interface MessageDao : BaseDao<Message> {
         INDEXED BY index_messages_conversation_id_category
         INNER JOIN users u ON m.user_id = u.user_id 
         WHERE m.conversation_id = :conversationId
-        AND m.category IN ($IMAGES, $VIDEOS, $LIVES) 
+        AND (m.category IN ($IMAGES, $VIDEOS, $LIVES) OR (m.category = 'APP_CARD' AND (m.content LIKE '%cover_url%' OR m.content LIKE '%"cover":{%')))
         ORDER BY m.created_at ASC, m.rowid ASC
     """,
     )
@@ -125,7 +125,7 @@ interface MessageDao : BaseDao<Message> {
         SELECT count(1) FROM messages 
         INDEXED BY index_messages_conversation_id_category
         WHERE conversation_id = :conversationId
-        AND category IN ($IMAGES, $VIDEOS, $LIVES) 
+        AND (category IN ($IMAGES, $VIDEOS, $LIVES) OR (category = 'APP_CARD' AND (content LIKE '%cover_url%' OR content LIKE '%"cover":{%')))
         AND (created_at < (SELECT created_at FROM messages WHERE id = :messageId) OR (created_at = (SELECT created_at FROM messages WHERE id = :messageId) AND rowid < (SELECT rowid FROM messages WHERE id = :messageId)))
     """,
     )
@@ -136,9 +136,9 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         """
-        SELECT count(1) FROM messages 
+        SELECT count(1) FROM messages
         WHERE conversation_id = :conversationId
-        AND category IN ($IMAGES, $VIDEOS, $LIVES) 
+        AND (category IN ($IMAGES, $VIDEOS, $LIVES) OR (category = 'APP_CARD' AND (content LIKE '%cover_url%' OR content LIKE '%"cover":{%')))
         """)
     suspend fun countIndexMediaMessages(conversationId: String): Int
 
