@@ -1163,7 +1163,8 @@ fun Fragment.getTipsByAsset(asset: TokenItem) =
         Constants.ChainId.Optimism,
         Constants.ChainId.Polygon,
         Constants.ChainId.BitShares,
-        Constants.ChainId.Avalanche
+        Constants.ChainId.Avalanche,
+        Constants.ChainId.HyperEVM
             -> getString(R.string.deposit_tip_chain, asset.symbol, asset.chainName ?: getChainName(asset.chainId, asset.chainName, asset.assetKey ?: ""))
         else -> getString(R.string.deposit_tip_common, asset.symbol)
     }
