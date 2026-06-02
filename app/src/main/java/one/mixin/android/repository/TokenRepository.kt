@@ -457,6 +457,8 @@ class TokenRepository
 
         fun snapshotsLimit(id: String) = safeSnapshotDao.snapshotsLimit(id)
 
+        fun recentSnapshotsLimit() = safeSnapshotDao.recentSnapshotsLimit()
+
         suspend fun snapshotLocal(
             assetId: String,
             snapshotId: String,
@@ -691,6 +693,8 @@ class TokenRepository
         private suspend fun getIconUrl(id: String) = chainDao.getIconUrl(id)
 
         fun observeTopAssets() = hotAssetDao.topAssets()
+
+        fun topAssetItemsNotHiddenLimit() = tokenDao.topAssetItemsNotHiddenLimit()
 
         suspend fun findAssetItemById(assetId: String) = tokenDao.findAssetItemById(assetId)
 

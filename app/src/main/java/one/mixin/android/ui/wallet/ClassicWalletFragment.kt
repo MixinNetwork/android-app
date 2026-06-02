@@ -8,6 +8,8 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
@@ -20,6 +22,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -35,30 +38,45 @@ import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.db.web3.vo.toWeb3Wallet
 import one.mixin.android.event.QuoteColorEvent
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
+import one.mixin.android.extension.openUrl
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshSingleWalletJob
 import one.mixin.android.job.RefreshWeb3TokenJob
 import one.mixin.android.job.RefreshWeb3TransactionsJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.common.PendingTransactionRefreshHelper
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.trade.SwapActivity
+import one.mixin.android.ui.wallet.home.WalletHomeBuilder
+import one.mixin.android.ui.wallet.home.WalletHomeCallbacks
+import one.mixin.android.ui.wallet.home.WalletHomePage
+import one.mixin.android.ui.wallet.home.WalletHomeSection
+import one.mixin.android.ui.wallet.home.WalletHomeState
+import one.mixin.android.ui.wallet.home.WalletHomeType
 import one.mixin.android.ui.wallet.adapter.WalletWeb3TokenAdapter
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
+import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.web3.details.Web3TransactionFragment
+import one.mixin.android.web3.details.Web3TransactionsFragment
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
@@ -77,6 +95,9 @@ import kotlin.time.measureTime
 class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), HeaderAdapter.OnItemListener {
     companion object {
         const val TAG = "ClassicWalletFragment"
+        private const val PREF_WALLET_HOME_ADD_WALLET_BANNER_CLOSED = "pref_wallet_home_add_wallet_banner_closed"
+        private const val PREF_WALLET_HOME_CASHBACK_BANNER_CLOSED = "pref_wallet_home_cashback_banner_closed"
+        private const val PREF_WALLET_HOME_REFERRAL_CLOSED = "pref_wallet_home_referral_closed"
 
         fun newInstance(): ClassicWalletFragment = ClassicWalletFragment()
     }
@@ -90,11 +111,16 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
 
     private val web3ViewModel by viewModels<Web3ViewModel>()
     private var assets: List<Web3TokenItem> = listOf()
+    private var topTokens: List<Web3TokenItem> = emptyList()
+    private var recentTransactions: List<Web3TransactionItem> = emptyList()
+    private var isWatchWallet: Boolean = false
     private val assetsAdapter by lazy { WalletWeb3TokenAdapter(false) }
 
     private var distance = 0
     private var snackBar: Snackbar? = null
     private var lastFiatCurrency :String? = null
+    private var cachedBtcTotal: String = "0.00"
+    private val _homeState = MutableStateFlow(WalletHomeState(walletType = WalletHomeType.CLASSIC))
 
     private val _walletId = MutableLiveData<String>()
     var walletId: String = ""
@@ -124,6 +150,24 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             }
         }
     }
+    private val topTokensLiveData by lazy {
+        _walletId.switchMap { id ->
+            if (id.isNullOrEmpty()) {
+                MutableLiveData<List<Web3TokenItem>>(emptyList())
+            } else {
+                web3ViewModel.topWeb3TokenItems(id)
+            }
+        }
+    }
+    private val recentTransactionsLiveData by lazy {
+        _walletId.switchMap { id ->
+            if (id.isNullOrEmpty()) {
+                MutableLiveData<List<Web3TransactionItem>>(emptyList())
+            } else {
+                web3ViewModel.recentWeb3Transactions(id)
+            }
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -131,6 +175,14 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         savedInstanceState: Bundle?,
     ): View {
         _binding = FragmentPrivacyWalletBinding.inflate(inflater, container, false)
+        binding.compose.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+        binding.compose.setContent {
+            val homeState = _homeState.collectAsState().value
+            WalletHomePage(
+                state = homeState,
+                callbacks = walletHomeCallbacks,
+            )
+        }
         return binding.root
     }
 
@@ -157,6 +209,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
 
                 val bitcoin = web3ViewModel.findOrSyncAsset(Constants.ChainId.BITCOIN_CHAIN_ID)
                 renderPie(assets, bitcoin)
+                renderHome()
             }
         }
 
@@ -330,10 +383,12 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             if (id.isNotEmpty()) {
                 lifecycleScope.launch {
                     val wallet = web3ViewModel.findWalletById(id)
-                    _headBinding?.sendReceiveView?.isVisible = wallet?.isWatch() == false
-                    _headBinding?.watchLayout?.isVisible = wallet?.isWatch() == true
+                    isWatchWallet = wallet?.isWatch() == true
+                    _headBinding?.sendReceiveView?.isVisible = !isWatchWallet
+                    _headBinding?.watchLayout?.isVisible = isWatchWallet
+                    renderHome()
 
-                    if (wallet?.isWatch() == true) {
+                    if (isWatchWallet) {
                         val addresses = web3ViewModel.getAddressesGroupedByDestination(id)
                         if (addresses.isNotEmpty()) {
                             if (addresses.size == 1) {
@@ -350,6 +405,14 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
 
         _headBinding?.web3PendingView?.observePendingCount(viewLifecycleOwner, pendingTxCountLiveData)
         tokensLiveData.observe(viewLifecycleOwner, observer)
+        topTokensLiveData.observe(viewLifecycleOwner) {
+            topTokens = it
+            renderHome()
+        }
+        recentTransactionsLiveData.observe(viewLifecycleOwner) {
+            recentTransactions = it.take(WalletHomeSection.MORE_DETECTION_LIMIT)
+            renderHome()
+        }
 
         RxBus.listen(QuoteColorEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
@@ -357,6 +420,8 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             .subscribe { _ ->
                 assetsAdapter.notifyDataSetChanged()
             }
+
+        renderHome()
     }
 
     private val observer = Observer<List<Web3TokenItem>> { data ->
@@ -369,6 +434,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                 lastFiatCurrency = Session.getFiatCurrency()
                 assetsAdapter.notifyDataSetChanged()
             }
+            renderHome()
         } else {
             assets = data
             assetsAdapter.setAssetList(data)
@@ -379,8 +445,159 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             lifecycleScope.launch(Dispatchers.IO) {
                 val bitcoin = web3ViewModel.findOrSyncAsset(Constants.ChainId.BITCOIN_CHAIN_ID)
                 renderPie(assets, bitcoin)
+                renderHome()
             }
         }
+    }
+
+    private fun renderHome() {
+        mainThread {
+            if (_binding == null) return@mainThread
+            _homeState.value = buildHomeState()
+        }
+    }
+
+    private var referralAlreadyInvited = false
+
+    private fun buildHomeState(): WalletHomeState {
+        val totalFiat = assets.fold(BigDecimal.ZERO) { acc, item -> acc + item.fiat() }
+        val showAddWalletBanner = !defaultSharedPreferences.getBoolean(PREF_WALLET_HOME_ADD_WALLET_BANNER_CLOSED, false)
+        val showCashbackBanner = !defaultSharedPreferences.getBoolean(PREF_WALLET_HOME_CASHBACK_BANNER_CLOSED, false)
+        val showBanner = showAddWalletBanner || showCashbackBanner
+        val showReferral = !defaultSharedPreferences.getBoolean(PREF_WALLET_HOME_REFERRAL_CLOSED, false) && !referralAlreadyInvited
+        val cards = WalletHomeBuilder.build(
+            walletType = WalletHomeType.CLASSIC,
+            hasAssetValue = totalFiat > BigDecimal.ZERO,
+            showBanner = showBanner,
+            showReferral = showReferral,
+            hasPositions = false,
+            hasTopMovers = false,
+            hasTransactions = recentTransactions.isNotEmpty(),
+        )
+        return WalletHomeState(
+            walletType = WalletHomeType.CLASSIC,
+            cards = cards,
+            fiatTotal = totalFiat.numberFormat2(),
+            btcTotal = cachedBtcTotal,
+            fiatSymbol = Fiats.getSymbol(),
+            web3Tokens = assets.take(WalletHomeSection.PREVIEW_LIMIT),
+            web3Transactions = recentTransactions.take(WalletHomeSection.PREVIEW_LIMIT),
+            totalTokenCount = assets.size,
+            totalTransactionCount = recentTransactions.size,
+            allTokensHidden = assets.isEmpty() && topTokens.isNotEmpty(),
+            isWatchWallet = isWatchWallet,
+            showAddWalletBanner = showAddWalletBanner,
+            showCashbackBanner = showCashbackBanner,
+            showReferralBanner = showReferral,
+        )
+    }
+
+    private val walletHomeCallbacks = object : WalletHomeCallbacks {
+        override fun onAddWalletClicked() {
+            AddWalletBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, AddWalletBottomSheetDialogFragment.TAG)
+        }
+
+        override fun onBannerClosed() {
+            defaultSharedPreferences.putBoolean(PREF_WALLET_HOME_ADD_WALLET_BANNER_CLOSED, true)
+            renderHome()
+        }
+
+        override fun onCashbackBannerClosed() {
+            defaultSharedPreferences.putBoolean(PREF_WALLET_HOME_CASHBACK_BANNER_CLOSED, true)
+            renderHome()
+        }
+
+        override fun onReferralClicked() {
+            context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+        }
+
+        override fun onReferralClosed() {
+            defaultSharedPreferences.putBoolean(PREF_WALLET_HOME_REFERRAL_CLOSED, true)
+            renderHome()
+        }
+
+        override fun onSupportClicked() {
+            lifecycleScope.launch {
+                val user = web3ViewModel.refreshUser(Constants.TEAM_MIXIN_USER_ID)
+                if (user == null) {
+                    toast(R.string.Data_error)
+                } else {
+                    ConversationActivity.show(requireContext(), recipientId = Constants.TEAM_MIXIN_USER_ID)
+                }
+            }
+        }
+
+        override fun onHelpCenterClicked() {
+            context?.openUrl(getString(R.string.wallet_home_help_center_url))
+        }
+
+        override fun onBuyClicked() {
+            _headBinding?.sendReceiveView?.buy?.performClick()
+        }
+
+        override fun onReceiveClicked() {
+            _headBinding?.sendReceiveView?.receive?.performClick()
+        }
+
+        override fun onSendClicked() {
+            _headBinding?.sendReceiveView?.send?.performClick()
+        }
+
+        override fun onSwapClicked() {
+            _headBinding?.sendReceiveView?.swap?.performClick()
+        }
+
+        override fun onViewMoreTokensClicked() {
+            WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Tokens(walletId))
+        }
+
+        override fun onAllTokensBackClicked() = Unit
+
+        override fun onViewMoreTransactionsClicked() {
+            if (walletId.isNotEmpty()) {
+                WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Transactions(walletId))
+            }
+        }
+
+        override fun onViewMorePositionsClicked() = Unit
+
+        override fun onTokenClicked(index: Int) {
+            assets.getOrNull(index)?.let { token ->
+                lifecycleScope.launch {
+                    val address = web3ViewModel.getAddressesByChainId(walletId, token.chainId)
+                    WalletActivity.showWithWeb3Token(
+                        requireActivity(),
+                        token,
+                        address?.destination,
+                        WalletActivity.Destination.Web3Transactions
+                    )
+                }
+            }
+        }
+
+        override fun onTransactionClicked(index: Int) {
+            val transaction = recentTransactions.getOrNull(index) ?: return
+            lifecycleScope.launch {
+                val token = web3ViewModel.web3TokenItemById(walletId, transaction.getMainAssetId()) ?: return@launch
+                val wallet = web3ViewModel.findWalletById(walletId) ?: return@launch
+                if (!isAdded) return@launch
+                activity?.addFragment(
+                    this@ClassicWalletFragment,
+                    Web3TransactionFragment().withArgs {
+                        putParcelable(Web3TransactionFragment.ARGS_TRANSACTION, transaction)
+                        putString(Web3TransactionFragment.ARGS_CHAIN, transaction.chainId)
+                        putParcelable(Web3TransactionsFragment.ARGS_TOKEN, token)
+                        putParcelable(Web3TransactionFragment.ARGS_WALLET, wallet.toWeb3Wallet())
+                    },
+                    Web3TransactionFragment.TAG,
+                    name = Web3TransactionsFragment.TAG,
+                )
+            }
+        }
+
+        override fun onPositionClicked(index: Int) = Unit
+
+        override fun onTopMoverClicked(index: Int) = Unit
     }
 
     fun update() {
@@ -401,8 +618,19 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             jobManager = jobManager,
             refreshJob = refreshJob
         )
+        refreshReferralStatus()
     }
     private var refreshJob: Job? = null
+
+    private fun refreshReferralStatus() {
+        if (referralAlreadyInvited) return
+        lifecycleScope.launch {
+            if (web3ViewModel.hasBeenReferred() == true) {
+                referralAlreadyInvited = true
+                renderHome()
+            }
+        }
+    }
 
     override fun onPause() {
         super.onPause()
@@ -445,6 +673,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                 totalFiat.divide(BigDecimal(Fiats.getRate()), 16, RoundingMode.HALF_UP)
                     .divide(BigDecimal(bitcoin.priceUsd), 16, RoundingMode.HALF_UP)
         }
+        cachedBtcTotal = totalBTC.numberFormat8()
         withContext(Dispatchers.Main) {
             _headBinding?.apply {
                 totalAsTv.text =

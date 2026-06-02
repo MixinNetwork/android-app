@@ -44,6 +44,7 @@ import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.job.RefreshTopAssetsJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.repository.AccountRepository
+import one.mixin.android.repository.ReferralRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
@@ -74,6 +75,7 @@ internal constructor(
     private val assetRepository: AssetRepository,
     private val jobManager: MixinJobManager,
     private val pinCipher: PinCipher,
+    private val referralRepository: ReferralRepository,
 ) : ViewModel() {
 
     private val _walletsFlow = MutableStateFlow<List<WalletItem>>(emptyList())
@@ -119,6 +121,8 @@ internal constructor(
             .cachedIn(viewModelScope)
 
     fun snapshotsLimit(id: String) = tokenRepository.snapshotsLimit(id)
+
+    fun recentSnapshotsLimit() = tokenRepository.recentSnapshotsLimit()
 
     fun findAddressByReceiver(receiver: String, tag: String, chainId: String?) = tokenRepository.findAddressByDestination(receiver, tag, chainId)
 
@@ -255,6 +259,8 @@ internal constructor(
 
     fun observeTopAssets() = tokenRepository.observeTopAssets()
 
+    fun topAssetItemsNotHiddenLimit() = tokenRepository.topAssetItemsNotHiddenLimit()
+
     fun getUser(userId: String) = userRepository.getUserById(userId)
 
     suspend fun errorCount() = accountRepository.errorCount()
@@ -332,6 +338,8 @@ internal constructor(
     suspend fun removeUtxo(outputId: String) = tokenRepository.removeUtxo(outputId)
 
     suspend fun refreshUser(userId: String) = userRepository.refreshUser(userId)
+
+    suspend fun hasBeenReferred(): Boolean? = referralRepository.fetchHasBeenInvitedOrNull("wallet_home")
 
     suspend fun findLatestOutputSequenceByAsset(asset: String) = tokenRepository.findLatestOutputSequenceByAsset(asset)
 

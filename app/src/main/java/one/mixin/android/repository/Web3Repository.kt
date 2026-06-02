@@ -179,6 +179,8 @@ constructor(
     
     fun web3TokensExcludeHidden(walletId: String) = web3TokenDao.web3TokenItemsExcludeHidden(walletId)
 
+    fun topWeb3TokenItems(walletId: String) = web3TokenDao.topWeb3TokenItems(walletId)
+
     fun web3TokensExcludeHiddenRaw(walletId: String, defaultIconUrl: String = Constants.DEFAULT_ICON_URL) = web3TokenDao.web3TokenItemsExcludeHiddenRaw(
         RoomRawQuery(
             """SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
@@ -207,6 +209,32 @@ constructor(
         web3TransactionDao.web3Transactions(walletId, assetId).switchMap { list ->
             liveData {
                 val assetIds = list.flatMap { it.senders.map { it.assetId } + it.receivers.map { it.assetId } + (it.approvals?.map { it.assetId } ?: emptyList()) }.distinct()
+                val tokens = web3TokenDao.findWeb3TokenItemsByIds(walletId, assetIds).associateBy { it.assetId }
+                val result = list.map { transaction ->
+                    transaction.copy(
+                        senders = transaction.senders.map {
+                            it.copy(symbol = tokens[it.assetId]?.symbol)
+                        },
+                        receivers = transaction.receivers.map {
+                            it.copy(symbol = tokens[it.assetId]?.symbol)
+                        },
+                        approvals = transaction.approvals?.map {
+                            it.copy(symbol = tokens[it.assetId]?.symbol)
+                        }
+                    )
+                }
+                emit(result)
+            }
+        }
+
+    fun recentWeb3Transactions(walletId: String) =
+        web3TransactionDao.recentWeb3Transactions(walletId).switchMap { list ->
+            liveData {
+                val assetIds = list.flatMap { transaction ->
+                    transaction.senders.map { it.assetId } +
+                        transaction.receivers.map { it.assetId } +
+                        (transaction.approvals?.map { it.assetId } ?: emptyList())
+                }.distinct()
                 val tokens = web3TokenDao.findWeb3TokenItemsByIds(walletId, assetIds).associateBy { it.assetId }
                 val result = list.map { transaction ->
                     transaction.copy(
