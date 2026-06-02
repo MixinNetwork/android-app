@@ -252,6 +252,23 @@ interface MessageDao : BaseDao<Message> {
     )
     fun getPostMessages(conversationId: String): DataSource.Factory<Int, MessageItem>
 
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query(
+        """
+        SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
+        u.full_name AS userFullName, u.identity_number AS userIdentityNumber, m.category AS type,
+        m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus, m.media_size AS mediaSize,
+        m.media_width AS mediaWidth, m.media_height AS mediaHeight, m.thumb_image AS thumbImage, m.thumb_url AS thumbUrl,
+        m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.media_duration AS mediaDuration
+        FROM messages m 
+        INNER JOIN users u ON m.user_id = u.user_id 
+        WHERE m.conversation_id = :conversationId
+        AND m.category IN ($AUDIOS)
+        ORDER BY m.created_at DESC
+    """,
+    )
+    suspend fun getAudioMessagesList(conversationId: String): List<MessageItem>
+
     @Query(
         """
         SELECT m.id AS messageId, h.hyperlink AS hyperlink, h.site_description AS siteDescription, h.site_image AS siteImage,

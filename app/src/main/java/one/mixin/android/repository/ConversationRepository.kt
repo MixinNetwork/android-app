@@ -761,6 +761,4 @@ class ConversationRepository
         suspend fun getMediaMessagesExcludeLiveList(conversationId: String) = messageDao.getMediaMessagesExcludeLiveList(conversationId)
 
         suspend fun getAudioMessagesList(conversationId: String) = messageDao.getAudioMessagesList(conversationId)
-
-        suspend fun getLinkMessagesList(conversationId: String) = messageDao.getLinkMessagesList(conversationId)
     }
