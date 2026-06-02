@@ -109,6 +109,13 @@ fun AllPositionsPage(
             flowOf(0.0)
         }
     }.collectAsStateWithLifecycle(initialValue = 0.0)
+    val totalRealizedPnl by remember(walletId) {
+        if (walletId.isNotEmpty()) {
+            viewModel.observeTotalRealizedPnl(walletId)
+        } else {
+            flowOf(0.0)
+        }
+    }.collectAsStateWithLifecycle(initialValue = 0.0)
     val openPositionsPaging = remember(walletId) {
         if (walletId.isNotEmpty()) {
             viewModel.getOpenPositionsPaged(walletId)
@@ -195,6 +202,8 @@ fun AllPositionsPage(
                 } else {
                     ClosedPositionsContent(
                         positions = closedPositionsPaging,
+                        totalRealizedPnl = BigDecimal.valueOf(totalRealizedPnl),
+                        quoteColorReversed = quoteColorReversed,
                         onPositionClick = onClosedPositionClick,
                     )
                 }
@@ -265,6 +274,8 @@ private fun OpenPositionsContent(
 @Composable
 private fun ClosedPositionsContent(
     positions: LazyPagingItems<PerpsOrderItem>,
+    totalRealizedPnl: BigDecimal,
+    quoteColorReversed: Boolean,
     onPositionClick: (PerpsOrderItem) -> Unit,
 ) {
     val refreshState = positions.loadState.refresh
@@ -275,15 +286,15 @@ private fun ClosedPositionsContent(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 16.dp, vertical = 16.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .cardBackground(
-                        backgroundColor = MixinAppTheme.colors.background,
-                        borderColor = MixinAppTheme.colors.borderColor,
-                    ),
-                contentPadding = PaddingValues(vertical = 16.dp),
+                    .padding(horizontal = 16.dp, vertical = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
+                item {
+                    TotalRealizedPnlCard(
+                        totalPnl = totalRealizedPnl,
+                        quoteColorReversed = quoteColorReversed,
+                    )
+                }
                 closedPositionItems(
                     positions = positions,
                     onPositionClick = onPositionClick,
@@ -410,17 +421,75 @@ private fun LazyListScope.closedPositionItems(
         },
     ) { index ->
         val order = positions[index] ?: return@items
-        if (order.orderType == PerpsOrder.TYPE_CLOSE) {
-            ClosedActivityItem(
-                order = order,
-                onClick = { onPositionClick(order) },
-            )
-        } else {
-            OpenedOrderItem(
-                order = order,
-                onClick = { onPositionClick(order) },
-            )
+        val isFirst = index == 0
+        val isLast = index == positions.itemCount - 1
+        val shape = when {
+            isFirst && isLast -> RoundedCornerShape(8.dp)
+            isFirst -> RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)
+            isLast -> RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp)
+            else -> RoundedCornerShape(0.dp)
         }
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(shape)
+                .groupedItemBorder(
+                    backgroundColor = MixinAppTheme.colors.background,
+                    borderColor = MixinAppTheme.colors.borderColor,
+                    isFirst = isFirst,
+                    isLast = isLast,
+                )
+        ) {
+            if (order.orderType == PerpsOrder.TYPE_CLOSE) {
+                ClosedActivityItem(
+                    order = order,
+                    onClick = { onPositionClick(order) },
+                )
+            } else {
+                OpenedOrderItem(
+                    order = order,
+                    onClick = { onPositionClick(order) },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TotalRealizedPnlCard(
+    totalPnl: BigDecimal,
+    quoteColorReversed: Boolean,
+) {
+    val gainColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+    val lossColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+    val pnlColor = when {
+        totalPnl > BigDecimal.ZERO -> gainColor
+        totalPnl < BigDecimal.ZERO -> lossColor
+        else -> MixinAppTheme.colors.textAssist
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .cardBackground(
+                backgroundColor = MixinAppTheme.colors.background,
+                borderColor = MixinAppTheme.colors.borderColor,
+            )
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+    ) {
+        Text(
+            text = stringResource(R.string.Total_Realized_PnL),
+            fontSize = 13.sp,
+            color = MixinAppTheme.colors.textAssist,
+        )
+        Spacer(modifier = Modifier.height(6.dp))
+        Text(
+            text = formatPerpsSignedUsdDecimal(totalPnl),
+            fontSize = 18.sp,
+            fontWeight = FontWeight.W500,
+            color = pnlColor,
+        )
     }
 }
 
