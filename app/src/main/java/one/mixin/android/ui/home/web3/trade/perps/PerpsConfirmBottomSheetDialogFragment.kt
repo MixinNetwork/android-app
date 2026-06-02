@@ -198,7 +198,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     private val stopLossFiatPrice by lazy { formatOptionalPerpsPrice(stopLossPrice) }
 
     private val liquidationPrice by lazy {
-        rawLiquidationPrice?.let { formatPerpsPrice(it, priceScale) } ?: "--"
+        rawLiquidationPrice?.let { formatPerpsPrice(it, priceScale) } ?: "-"
     }
 
     private var step by mutableStateOf(Step.Pending)

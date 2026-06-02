@@ -103,16 +103,24 @@ class PerpsAddBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
     companion object {
         const val TAG = "PerpsAddBottomSheetDialogFragment"
         private const val ARGS_POSITION = "args_position"
+        private const val ARGS_SHOW_LIQUIDATION_PRICE = "args_show_liquidation_price"
 
-        fun newInstance(position: PerpsPositionItem): PerpsAddBottomSheetDialogFragment {
+        fun newInstance(
+            position: PerpsPositionItem,
+            showLiquidationPrice: Boolean = true,
+        ): PerpsAddBottomSheetDialogFragment {
             return PerpsAddBottomSheetDialogFragment().withArgs {
                 putParcelable(ARGS_POSITION, position)
+                putBoolean(ARGS_SHOW_LIQUIDATION_PRICE, showLiquidationPrice)
             }
         }
     }
 
     private val position: PerpsPositionItem by lazy {
         requireArguments().getParcelableCompat(ARGS_POSITION, PerpsPositionItem::class.java)!!
+    }
+    private val showLiquidationPrice by lazy {
+        requireArguments().getBoolean(ARGS_SHOW_LIQUIDATION_PRICE, true)
     }
 
     private var onAddAction: ((TokenItem, String, String?) -> Unit)? = null
@@ -211,6 +219,7 @@ class PerpsAddBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
                 position = position,
                 market = market,
                 selectedToken = selectedToken,
+                showLiquidationPrice = showLiquidationPrice,
                 onTokenSelect = {
                     TokenListBottomSheetDialogFragment.newInstance(
                         fromType = TokenListBottomSheetDialogFragment.TYPE_FROM_PERP,
@@ -247,6 +256,7 @@ private fun PerpsAddContent(
     position: PerpsPositionItem,
     market: PerpsMarket?,
     selectedToken: TokenItem?,
+    showLiquidationPrice: Boolean = true,
     onTokenSelect: () -> Unit,
     onCancel: () -> Unit,
     onAdd: (TokenItem, String, String?) -> Unit,
@@ -278,9 +288,18 @@ private fun PerpsAddContent(
         .ifBlank { position.entryPrice }
     val priceScale = market?.priceScale ?: position.priceScale
 
-    LaunchedEffect(amount) {
+    LaunchedEffect(amount, belowMinimumMargin, aboveMaximumMargin) {
         val addMargin = amount.toBigDecimalOrNull()
+        if (belowMinimumMargin || aboveMaximumMargin) {
+            liquidationJob?.cancel()
+            remoteLiquidationPrice = null
+            isLiquidationLoading = false
+            return@LaunchedEffect
+        }
         if (addMargin == null || addMargin <= BigDecimal.ZERO) {
+            liquidationJob?.cancel()
+            remoteLiquidationPrice = null
+            isLiquidationLoading = false
             return@LaunchedEffect
         }
         liquidationJob?.cancel()
@@ -319,11 +338,17 @@ private fun PerpsAddContent(
     }
 
     val currentPriceText = formatPerpsPrice(currentPrice, priceScale)
-    val displayLiquidationPrice = remoteLiquidationPrice
+    val defaultLiquidationPrice = position.liquidationPrice
+        ?.takeIf { showLiquidationPrice && it.isNotBlank() }
+    val displayLiquidationPrice = when {
+        belowMinimumMargin || aboveMaximumMargin -> "-"
+        remoteLiquidationPrice != null -> remoteLiquidationPrice
+        else -> defaultLiquidationPrice
+    }
     val entryPriceText = position.entryPrice
         .takeIf { it.isNotBlank() }
         ?.let { formatPerpsPrice(it, priceScale) }
-        ?: "--"
+        ?: "-"
     val subtitleRawText = stringResource(R.string.auto_close_subtitle_after_open, entryPriceText, currentPriceText)
     val subtitleLabelColor = MixinAppTheme.colors.textRemarks
     val subtitleValueColor = MixinAppTheme.colors.textAssist
@@ -567,8 +592,12 @@ private fun PerpsAddContent(
                     Spacer(modifier = Modifier.height(16.dp))
                     PerpsAddInfoRow(
                         title = stringResource(R.string.Liquidation_Price),
-                        value = displayLiquidationPrice?.let { formatPerpsPrice(it, priceScale) } ?: "--",
-                        isLoading = isLiquidationLoading,
+                        value = when (displayLiquidationPrice) {
+                            "-" -> "-"
+                            null -> "-"
+                            else -> formatPerpsPrice(displayLiquidationPrice, priceScale)
+                        },
+                        isLoading = isLiquidationLoading && displayLiquidationPrice != "-",
                         onTipClick = {
                             showPerpsGuide(PerpetualGuideBottomSheetDialogFragment.TAB_LIQUIDATION)
                         },
