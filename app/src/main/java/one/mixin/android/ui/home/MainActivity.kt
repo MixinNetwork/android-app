@@ -343,7 +343,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        initFragmentsFromSavedState(savedInstanceState)
+        initFragmentsFromSavedState(restoreState)
 
         val account = Session.getAccount()
         account?.let {
