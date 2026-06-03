@@ -22,7 +22,47 @@ data class WalletHomeCache(
     val totalTokenCount: Int,
     val totalTransactionCount: Int,
     val isWatchWallet: Boolean = false,
-)
+    val watchAddresses: List<String>? = null,
+    val pendingIndicator: WalletHomePendingIndicator? = null,
+    val importKeyAction: WalletHomeImportKeyAction? = null,
+    val importKeyChainId: String? = null,
+) {
+
+    fun toState(): WalletHomeState {
+        val cachedImportKeyAction = importKeyAction
+        val cards = WalletHomeBuilder.build(
+            walletType = walletType,
+            hasAssetValue = true,
+            showBanner = false,
+            showReferral = false,
+            hasPositions = false,
+            hasTopMovers = false,
+            hasTransactions = totalTransactionCount > 0,
+            hasImportKeyAction = cachedImportKeyAction != null,
+            hasPendingIndicator = pendingIndicator != null,
+            isLoading = false,
+        )
+        return WalletHomeState(
+            walletType = walletType,
+            cards = cards,
+            isLoading = false,
+            fiatTotal = fiatTotal,
+            btcTotal = btcTotal,
+            fiatSymbol = fiatSymbol,
+            privacyTokens = privacyTokens,
+            web3Tokens = web3Tokens,
+            privacyTransactions = privacyTransactions,
+            web3Transactions = web3Transactions,
+            totalTokenCount = totalTokenCount,
+            totalTransactionCount = totalTransactionCount,
+            isWatchWallet = isWatchWallet,
+            pendingIndicator = pendingIndicator,
+            watchIndicator = if (isWatchWallet) walletHomeWatchIndicator(watchAddresses.orEmpty()) else null,
+            importKeyAction = cachedImportKeyAction,
+            showImportSafetyFooter = false,
+        )
+    }
+}
 
 fun walletHomeCacheKey(
     walletType: WalletHomeType,
@@ -32,17 +72,29 @@ fun walletHomeCacheKey(
 fun SharedPreferences.getWalletHomeCacheState(
     key: String,
 ): WalletHomeState? =
+    getWalletHomeCache(key)?.toState()
+
+fun SharedPreferences.getWalletHomeCache(
+    key: String,
+): WalletHomeCache? =
     runCatching {
         getString(key, null)
             ?.let { GsonHelper.customGson.fromJson(it, WalletHomeCache::class.java) }
-            ?.toState()
     }.getOrNull()
 
 fun SharedPreferences.putWalletHomeCache(
     key: String,
     state: WalletHomeState,
+    watchAddresses: List<String> = emptyList(),
+    importKeyChainId: String? = null,
 ) {
-    if (state.totalTokenCount == 0 && state.totalTransactionCount == 0) return
+    if (
+        state.totalTokenCount == 0 &&
+        state.totalTransactionCount == 0 &&
+        state.pendingIndicator == null &&
+        state.importKeyAction == null &&
+        state.watchIndicator == null
+    ) return
     val cache = WalletHomeCache(
         walletType = state.walletType,
         fiatTotal = state.fiatTotal,
@@ -55,35 +107,10 @@ fun SharedPreferences.putWalletHomeCache(
         totalTokenCount = state.totalTokenCount,
         totalTransactionCount = state.totalTransactionCount,
         isWatchWallet = state.isWatchWallet,
+        watchAddresses = watchAddresses,
+        pendingIndicator = state.pendingIndicator,
+        importKeyAction = state.importKeyAction,
+        importKeyChainId = importKeyChainId,
     )
     putString(key, GsonHelper.customGson.toJson(cache))
-}
-
-private fun WalletHomeCache.toState(): WalletHomeState {
-    val cards = WalletHomeBuilder.build(
-        walletType = walletType,
-        hasAssetValue = true,
-        showBanner = false,
-        showReferral = false,
-        hasPositions = false,
-        hasTopMovers = false,
-        hasTransactions = totalTransactionCount > 0,
-        isLoading = false,
-    )
-    return WalletHomeState(
-        walletType = walletType,
-        cards = cards,
-        isLoading = false,
-        fiatTotal = fiatTotal,
-        btcTotal = btcTotal,
-        fiatSymbol = fiatSymbol,
-        privacyTokens = privacyTokens,
-        web3Tokens = web3Tokens,
-        privacyTransactions = privacyTransactions,
-        web3Transactions = web3Transactions,
-        totalTokenCount = totalTokenCount,
-        totalTransactionCount = totalTransactionCount,
-        isWatchWallet = isWatchWallet,
-        showImportSafetyFooter = false,
-    )
 }

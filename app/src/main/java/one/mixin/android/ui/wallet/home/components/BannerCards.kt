@@ -65,7 +65,7 @@ internal fun BannerPager(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 20.dp)
                 .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor),
         ) {
             Column(modifier = Modifier.padding(20.dp)) {

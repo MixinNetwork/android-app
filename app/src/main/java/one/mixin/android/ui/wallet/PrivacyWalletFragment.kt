@@ -401,6 +401,7 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             hasPositions = positions.isNotEmpty(),
             hasTopMovers = topMovers.isNotEmpty(),
             hasTransactions = recentSnapshots.isNotEmpty(),
+            hasPendingIndicator = pendingDisplays.isNotEmpty(),
             isLoading = isLoading,
         )
         val state = WalletHomeState(

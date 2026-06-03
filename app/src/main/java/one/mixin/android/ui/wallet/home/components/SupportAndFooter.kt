@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -39,7 +40,7 @@ internal fun SupportCard(callbacks: WalletHomeCallbacks) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 20.dp)
             .clip(RoundedCornerShape(8.dp))
             .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor),
     ) {
@@ -96,7 +97,7 @@ private fun SupportRow(
             Icon(
                 painter = painterResource(iconRes),
                 contentDescription = null,
-                tint = MixinAppTheme.colors.textAssist,
+                tint = Color.Unspecified,
                 modifier = Modifier.size(20.dp),
             )
         }
@@ -118,7 +119,7 @@ private fun SupportRow(
         Icon(
             painter = painterResource(trailingRes),
             contentDescription = null,
-            tint = MixinAppTheme.colors.textAssist,
+            tint = Color.Unspecified,
             modifier = Modifier.size(16.dp),
         )
     }
@@ -129,7 +130,7 @@ internal fun ImportSafetyFooter(walletType: WalletHomeType) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 32.dp),
+            .padding(horizontal = 28.dp),
     ) {
         val titleRes: Int
         val bulletRes: List<Int>
@@ -186,10 +187,9 @@ private fun ImportSafetySection(
         text = stringResource(titleRes),
         color = MixinAppTheme.colors.textAssist,
         fontSize = 14.sp,
-        fontWeight = FontWeight.W600,
     )
     bulletRes.forEachIndexed { index, res ->
-        ImportSafetyBullet(res, topPadding = if (index == 0) 12.dp else 8.dp)
+        ImportSafetyBullet(res, topPadding = if (index == 0) 32.dp else 8.dp)
     }
 }
 

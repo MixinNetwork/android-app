@@ -1,6 +1,7 @@
 package one.mixin.android.ui.wallet.home.components
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -9,16 +10,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.home.web3.trade.perps.TopMoversCard
+import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.ui.wallet.home.PositionRecycler
 import one.mixin.android.ui.wallet.home.PrivacyTokenRecycler
 import one.mixin.android.ui.wallet.home.PrivacyTransactionRecycler
 import one.mixin.android.ui.wallet.home.WalletHomeCallbacks
 import one.mixin.android.ui.wallet.home.WalletHomeCardType
+import one.mixin.android.ui.wallet.home.WalletHomeImportKeyAction
 import one.mixin.android.ui.wallet.home.WalletHomeSection
 import one.mixin.android.ui.wallet.home.WalletHomeSection.PREVIEW_LIMIT
 import one.mixin.android.ui.wallet.home.WalletHomeState
@@ -32,11 +37,18 @@ internal fun WalletHomeCard(
     state: WalletHomeState,
     callbacks: WalletHomeCallbacks,
 ) {
+    state.importKeyAction?.let { importKeyAction ->
+        if (card == WalletHomeCardType.BALANCE) {
+            BalanceCardGroup(state, importKeyAction, callbacks)
+            return
+        }
+    }
+
     val contentPadding = if (card.hasSelfPaddedItems()) Modifier else Modifier.padding(20.dp)
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 20.dp)
             .clip(RoundedCornerShape(8.dp))
             .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
             .then(contentPadding),
@@ -117,6 +129,46 @@ internal fun WalletHomeCard(
             }
             WalletHomeCardType.REFERRAL -> ReferralBannerCard(callbacks)
             WalletHomeCardType.SUPPORT -> Unit
+        }
+    }
+}
+
+@Composable
+private fun BalanceCardGroup(
+    state: WalletHomeState,
+    importKeyAction: WalletHomeImportKeyAction,
+    callbacks: WalletHomeCallbacks,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(8.dp))
+                .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
+                .padding(20.dp),
+        ) {
+            BalanceCard(state, callbacks)
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        HighlightedTextWithClick(
+            fullText = stringResource(
+                importKeyAction.descriptionRes,
+                stringResource(R.string.Learn_More),
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            stringResource(R.string.Learn_More),
+            color = MixinAppTheme.colors.textAssist,
+            fontSize = 12.sp,
+            lineHeight = 14.sp,
+            textAlign = TextAlign.Start,
+        ) {
+            callbacks.onImportKeyLearnMoreClicked()
         }
     }
 }

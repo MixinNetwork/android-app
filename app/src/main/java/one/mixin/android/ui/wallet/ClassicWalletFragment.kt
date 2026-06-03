@@ -67,7 +67,7 @@ import one.mixin.android.ui.wallet.home.WalletHomePage
 import one.mixin.android.ui.wallet.home.WalletHomeSection
 import one.mixin.android.ui.wallet.home.WalletHomeState
 import one.mixin.android.ui.wallet.home.WalletHomeType
-import one.mixin.android.ui.wallet.home.getWalletHomeCacheState
+import one.mixin.android.ui.wallet.home.getWalletHomeCache
 import one.mixin.android.ui.wallet.home.putWalletHomeCache
 import one.mixin.android.ui.wallet.home.WalletHomeImportKeyAction
 import one.mixin.android.ui.wallet.home.WalletHomeImportKeyKind
@@ -495,6 +495,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             hasTopMovers = false,
             hasTransactions = recentTransactions.isNotEmpty(),
             hasImportKeyAction = currentImportKeyAction != null,
+            hasPendingIndicator = pendingTransactionCount > 0,
             isLoading = isLoading,
         )
         val state = WalletHomeState(
@@ -518,7 +519,12 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             showReferralBanner = showReferral,
             showImportSafetyFooter = !isLoading || cards.isNotEmpty(),
         )
-        defaultSharedPreferences.putWalletHomeCache(classicWalletHomeCacheKey(), state)
+        defaultSharedPreferences.putWalletHomeCache(
+            classicWalletHomeCacheKey(),
+            state,
+            watchAddresses = watchAddresses,
+            importKeyChainId = importKeyChainId,
+        )
         return state
     }
 
@@ -560,8 +566,13 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
 
     private fun loadWalletHomeCache() {
         if (!isAdded || walletId.isEmpty()) return
-        defaultSharedPreferences.getWalletHomeCacheState(classicWalletHomeCacheKey())?.let {
-            _homeState.value = it
+        defaultSharedPreferences.getWalletHomeCache(classicWalletHomeCacheKey())?.let { cache ->
+            _homeState.value = cache.toState()
+            isWatchWallet = cache.isWatchWallet
+            watchAddresses = cache.watchAddresses.orEmpty()
+            pendingTransactionCount = cache.pendingIndicator?.value?.toIntOrNull() ?: pendingTransactionCount
+            importKeyAction = cache.importKeyAction
+            importKeyChainId = cache.importKeyChainId
             hasLoadedHomeCache = true
             isLoading = false
         }

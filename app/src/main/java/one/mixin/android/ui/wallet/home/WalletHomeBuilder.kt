@@ -10,12 +10,13 @@ object WalletHomeBuilder {
         hasTopMovers: Boolean,
         hasTransactions: Boolean,
         hasImportKeyAction: Boolean = false,
+        hasPendingIndicator: Boolean = false,
         isLoading: Boolean = false,
     ): List<WalletHomeCardType> {
         if (isLoading && !hasAssetValue) return emptyList()
         val cards = mutableListOf<WalletHomeCardType>()
 
-        cards += if (hasAssetValue || hasImportKeyAction) WalletHomeCardType.BALANCE else WalletHomeCardType.EMPTY_GUIDE
+        cards += if (hasAssetValue || hasImportKeyAction || hasPendingIndicator) WalletHomeCardType.BALANCE else WalletHomeCardType.EMPTY_GUIDE
         if (showBanner) cards += WalletHomeCardType.BANNER
         if (walletType == WalletHomeType.PRIVACY && hasPositions) cards += WalletHomeCardType.POSITIONS
 

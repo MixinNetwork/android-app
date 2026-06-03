@@ -47,7 +47,7 @@ fun WalletHomeAllTokensPage(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
+                    .padding(horizontal = 20.dp)
                     .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor),
             ) {
                 val tokensEmpty = if (state.walletType == WalletHomeType.PRIVACY) {

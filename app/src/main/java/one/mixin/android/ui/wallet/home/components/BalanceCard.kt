@@ -25,13 +25,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 import one.mixin.android.ui.wallet.home.WalletHomeCallbacks
 import one.mixin.android.ui.wallet.home.WalletHomeImportKeyAction
 import one.mixin.android.ui.wallet.home.WalletHomePendingIndicator
@@ -52,16 +50,16 @@ internal fun EmptyGuideCard(callbacks: WalletHomeCallbacks) {
         Image(
             painter = painterResource(id = R.drawable.ic_wallet_home_fund),
             contentDescription = null,
-            modifier = Modifier.size(72.dp),
+            modifier = Modifier.size(70.dp),
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = stringResource(R.string.wallet_home_empty_title),
             color = MixinAppTheme.colors.textPrimary,
             fontSize = 16.sp,
-            fontWeight = FontWeight.W600,
+            fontWeight = FontWeight.W500,
         )
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = stringResource(R.string.wallet_home_empty_desc),
             color = MixinAppTheme.colors.textAssist,
@@ -76,13 +74,17 @@ internal fun EmptyGuideCard(callbacks: WalletHomeCallbacks) {
                 textRes = R.string.wallet_home_buy_crypto,
                 onClick = callbacks::onBuyClicked,
                 primary = true,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
             )
             WalletHomeButton(
                 textRes = R.string.wallet_home_receive_crypto,
                 onClick = callbacks::onReceiveClicked,
                 primary = false,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
             )
         }
     }
@@ -94,11 +96,12 @@ private fun WalletHomeButton(
     onClick: () -> Unit,
     primary: Boolean,
     modifier: Modifier = Modifier,
+    cornerRadius: Int = 12,
 ) {
     Box(
         modifier = modifier
             .height(44.dp)
-            .clip(RoundedCornerShape(24.dp))
+            .clip(RoundedCornerShape(cornerRadius.dp))
             .background(if (primary) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundWindow)
             .clickable { onClick() },
         contentAlignment = Alignment.Center,
@@ -136,32 +139,18 @@ internal fun BalanceCard(state: WalletHomeState, callbacks: WalletHomeCallbacks)
             color = MixinAppTheme.colors.textAssist,
             fontSize = 13.sp,
         )
-        if (state.pendingIndicator != null || state.watchIndicator != null) {
+        state.watchIndicator?.let {
             Spacer(modifier = Modifier.height(14.dp))
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                state.pendingIndicator?.let {
-                    PendingIndicator(
-                        indicator = it,
-                        onClick = callbacks::onPendingIndicatorClicked,
-                    )
-                }
-                state.watchIndicator?.let {
-                    WatchIndicator(
-                        indicator = it,
-                        onClick = callbacks::onWatchIndicatorClicked,
-                    )
-                }
-            }
+            WatchIndicator(
+                indicator = it,
+                onClick = callbacks::onWatchIndicatorClicked,
+            )
         }
         state.importKeyAction?.let {
             Spacer(modifier = Modifier.height(20.dp))
             ImportKeyAction(
                 action = it,
                 onClick = callbacks::onImportKeyClicked,
-                onLearnMoreClick = callbacks::onImportKeyLearnMoreClicked,
             )
         }
         val showActions = state.importKeyAction == null && !(state.walletType == WalletHomeType.CLASSIC && state.isWatchWallet)
@@ -197,6 +186,13 @@ internal fun BalanceCard(state: WalletHomeState, callbacks: WalletHomeCallbacks)
                     onClick = callbacks::onSwapClicked,
                 )
             }
+        }
+        state.pendingIndicator?.let {
+            Spacer(modifier = Modifier.height(if (showActions) 12.dp else 14.dp))
+            PendingIndicator(
+                indicator = it,
+                onClick = callbacks::onPendingIndicatorClicked,
+            )
         }
     }
 }
@@ -288,13 +284,12 @@ private fun WatchIndicator(
                 WalletHomeWatchKind.MULTIPLE_ADDRESSES -> stringResource(R.string.watching_addresses, indicator.value.toIntOrNull() ?: 0)
             },
             color = MixinAppTheme.colors.textPrimary,
-            fontSize = 13.sp,
-            fontWeight = FontWeight.W500,
+            fontSize = 12.sp,
         )
         Image(
             painter = painterResource(id = R.drawable.ic_watch_arrow),
             contentDescription = null,
-            modifier = Modifier.padding(start = 2.dp),
+            modifier = Modifier.padding(start = 4.dp),
         )
     }
 }
@@ -303,28 +298,14 @@ private fun WatchIndicator(
 private fun ImportKeyAction(
     action: WalletHomeImportKeyAction,
     onClick: () -> Unit,
-    onLearnMoreClick: () -> Unit,
 ) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        WalletHomeButton(
-            textRes = action.buttonTextRes,
-            onClick = onClick,
-            primary = true,
-            modifier = Modifier.fillMaxWidth(),
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-        HighlightedTextWithClick(
-            fullText = stringResource(action.descriptionRes, stringResource(R.string.Learn_More)),
-            modifier = Modifier.fillMaxWidth(),
-            stringResource(R.string.Learn_More),
-            color = MixinAppTheme.colors.textAssist,
-            fontSize = 13.sp,
-            lineHeight = 18.sp,
-            textAlign = TextAlign.Start,
-        ) {
-            onLearnMoreClick()
-        }
-    }
+    WalletHomeButton(
+        textRes = action.buttonTextRes,
+        onClick = onClick,
+        primary = true,
+        modifier = Modifier.fillMaxWidth(),
+        cornerRadius = 8,
+    )
 }
 
 @Composable
@@ -381,7 +362,6 @@ private fun ActionItem(
             text = stringResource(labelRes),
             color = MixinAppTheme.colors.textPrimary,
             fontSize = 12.sp,
-            fontWeight = FontWeight.W600,
         )
     }
 }
