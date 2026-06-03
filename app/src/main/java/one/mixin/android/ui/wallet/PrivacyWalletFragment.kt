@@ -65,6 +65,9 @@ import one.mixin.android.ui.wallet.home.WalletHomePage
 import one.mixin.android.ui.wallet.home.WalletHomeSection
 import one.mixin.android.ui.wallet.home.WalletHomeState
 import one.mixin.android.ui.wallet.home.WalletHomeType
+import one.mixin.android.ui.wallet.home.getWalletHomeCacheState
+import one.mixin.android.ui.wallet.home.putWalletHomeCache
+import one.mixin.android.ui.wallet.home.walletHomeCacheKey
 import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
 import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_SEND
 import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
@@ -114,7 +117,14 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     private var topMovers: List<PerpsMarket> = emptyList()
     private val assetsAdapter by lazy { WalletAssetAdapter(false) }
     private val perpetualViewModel by viewModels<PerpetualViewModel>()
-    private val _homeState = MutableStateFlow(WalletHomeState(walletType = WalletHomeType.PRIVACY))
+    private var hasLoadedHomeCache = false
+    private val _homeState = MutableStateFlow(
+        WalletHomeState(
+            walletType = WalletHomeType.PRIVACY,
+            isLoading = true,
+            showImportSafetyFooter = false,
+        )
+    )
     private val _walletId = MutableLiveData<String>()
     private val positionsLiveData by lazy {
         _walletId.switchMap { walletId ->
@@ -138,6 +148,11 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         savedInstanceState: Bundle?,
     ): View {
         _binding = FragmentPrivacyWalletBinding.inflate(inflater, container, false)
+        defaultSharedPreferences.getWalletHomeCacheState(privacyWalletHomeCacheKey())?.let {
+            _homeState.value = it
+            hasLoadedHomeCache = true
+            isLoading = false
+        }
         binding.compose.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
         binding.compose.setContent {
             val homeState = _homeState.collectAsState().value
@@ -355,6 +370,8 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
 
     private fun renderHome() {
         if (_binding == null) return
+        if (hasLoadedHomeCache && assets.isEmpty() && recentSnapshots.isEmpty()) return
+        hasLoadedHomeCache = false
         if (assets.isNotEmpty() || recentSnapshots.isNotEmpty() || topMovers.isNotEmpty() || positions.isNotEmpty()) {
             isLoading = false
         }
@@ -381,7 +398,7 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             hasTransactions = recentSnapshots.isNotEmpty(),
             isLoading = isLoading,
         )
-        return WalletHomeState(
+        val state = WalletHomeState(
             walletType = WalletHomeType.PRIVACY,
             cards = cards,
             fiatTotal = totalFiat.numberFormat2(),
@@ -402,8 +419,14 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             showReferralBanner = showReferral,
             showBuyBadge = defaultSharedPreferences.getBoolean(PREF_HAS_USED_BUY, true),
             showSwapBadge = defaultSharedPreferences.getBoolean(PREF_HAS_USED_SWAP, true),
+            showImportSafetyFooter = !isLoading || cards.isNotEmpty(),
         )
+        defaultSharedPreferences.putWalletHomeCache(privacyWalletHomeCacheKey(), state)
+        return state
     }
+
+    private fun privacyWalletHomeCacheKey(): String =
+        walletHomeCacheKey(WalletHomeType.PRIVACY, Session.getAccountId().orEmpty())
 
     private val walletHomeCallbacks = object : WalletHomeCallbacks {
         override fun onAddWalletClicked() {

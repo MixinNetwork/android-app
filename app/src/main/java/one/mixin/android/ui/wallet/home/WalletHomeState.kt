@@ -31,6 +31,7 @@ data class WalletHomeState(
     val showReferralBanner: Boolean = false,
     val showBuyBadge: Boolean = false,
     val showSwapBadge: Boolean = false,
+    val showImportSafetyFooter: Boolean = true,
 )
 
 interface WalletHomeCallbacks {

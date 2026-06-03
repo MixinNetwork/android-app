@@ -60,8 +60,10 @@ fun WalletHomePage(
                 }
                 Spacer(modifier = Modifier.height(10.dp))
             }
-            ImportSafetyFooter(state.walletType)
-            Spacer(modifier = Modifier.height(20.dp))
+            if (state.showImportSafetyFooter) {
+                ImportSafetyFooter(state.walletType)
+                Spacer(modifier = Modifier.height(20.dp))
+            }
         }
     }
 }

@@ -67,6 +67,9 @@ import one.mixin.android.ui.wallet.home.WalletHomePage
 import one.mixin.android.ui.wallet.home.WalletHomeSection
 import one.mixin.android.ui.wallet.home.WalletHomeState
 import one.mixin.android.ui.wallet.home.WalletHomeType
+import one.mixin.android.ui.wallet.home.getWalletHomeCacheState
+import one.mixin.android.ui.wallet.home.putWalletHomeCache
+import one.mixin.android.ui.wallet.home.walletHomeCacheKey
 import one.mixin.android.ui.wallet.adapter.WalletWeb3TokenAdapter
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
@@ -120,7 +123,14 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     private var snackBar: Snackbar? = null
     private var lastFiatCurrency :String? = null
     private var cachedBtcTotal: String = "0.00"
-    private val _homeState = MutableStateFlow(WalletHomeState(walletType = WalletHomeType.CLASSIC))
+    private var hasLoadedHomeCache = false
+    private val _homeState = MutableStateFlow(
+        WalletHomeState(
+            walletType = WalletHomeType.CLASSIC,
+            isLoading = true,
+            showImportSafetyFooter = false,
+        )
+    )
     private var isLoading = true
 
     private val _walletId = MutableLiveData<String>()
@@ -129,6 +139,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             if (value != field) {
                 field = value
                 _walletId.value = value
+                loadWalletHomeCache()
             }
             Timber.e("walletId set to $value")
         }
@@ -176,6 +187,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         savedInstanceState: Bundle?,
     ): View {
         _binding = FragmentPrivacyWalletBinding.inflate(inflater, container, false)
+        loadWalletHomeCache()
         binding.compose.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
         binding.compose.setContent {
             val homeState = _homeState.collectAsState().value
@@ -459,6 +471,8 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     private fun renderHome() {
         mainThread {
             if (_binding == null) return@mainThread
+            if (hasLoadedHomeCache && assets.isEmpty() && recentTransactions.isEmpty()) return@mainThread
+            hasLoadedHomeCache = false
             if (assets.isNotEmpty() || recentTransactions.isNotEmpty()) {
                 isLoading = false
             }
@@ -484,7 +498,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             hasTransactions = recentTransactions.isNotEmpty(),
             isLoading = isLoading,
         )
-        return WalletHomeState(
+        val state = WalletHomeState(
             walletType = WalletHomeType.CLASSIC,
             cards = cards,
             fiatTotal = totalFiat.numberFormat2(),
@@ -500,8 +514,23 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             showAddWalletBanner = showAddWalletBanner,
             showCashbackBanner = showCashbackBanner,
             showReferralBanner = showReferral,
+            showImportSafetyFooter = !isLoading || cards.isNotEmpty(),
         )
+        defaultSharedPreferences.putWalletHomeCache(classicWalletHomeCacheKey(), state)
+        return state
     }
+
+    private fun loadWalletHomeCache() {
+        if (!isAdded || walletId.isEmpty()) return
+        defaultSharedPreferences.getWalletHomeCacheState(classicWalletHomeCacheKey())?.let {
+            _homeState.value = it
+            hasLoadedHomeCache = true
+            isLoading = false
+        }
+    }
+
+    private fun classicWalletHomeCacheKey(): String =
+        walletHomeCacheKey(WalletHomeType.CLASSIC, walletId)
 
     private val walletHomeCallbacks = object : WalletHomeCallbacks {
         override fun onAddWalletClicked() {
