@@ -3,6 +3,7 @@ package one.mixin.android.ui.wallet.home
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
+import one.mixin.android.R
 import one.mixin.android.vo.PendingDisplay
 
 class WalletHomeBalanceIndicatorsTest {
@@ -92,6 +93,12 @@ class WalletHomeBalanceIndicatorsTest {
 
         assertEquals(WalletHomeImportKeyKind.MNEMONIC_PHRASE, mnemonic?.kind)
         assertEquals(WalletHomeImportKeyKind.PRIVATE_KEY, privateKey?.kind)
+        assertEquals(R.string.import_mnemonic_phrase, mnemonic?.buttonTextRes)
+        assertEquals(R.string.Import_Mnemonic_Phrase_Desc, mnemonic?.descriptionRes)
+        assertEquals(R.string.import_mnemonic_phrase_url, mnemonic?.learnMoreUrlRes)
+        assertEquals(R.string.import_private_key, privateKey?.buttonTextRes)
+        assertEquals(R.string.Import_Private_Key_Desc, privateKey?.descriptionRes)
+        assertEquals(R.string.import_private_key_url, privateKey?.learnMoreUrlRes)
     }
 
     @Test

@@ -644,6 +644,10 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             WalletSecurityActivity.show(requireActivity(), mode, chainId = importKeyChainId, walletId = walletId)
         }
 
+        override fun onImportKeyLearnMoreClicked() {
+            importKeyAction?.let { context?.openUrl(getString(it.learnMoreUrlRes)) }
+        }
+
         override fun onViewMoreTokensClicked() {
             WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Tokens(walletId))
         }

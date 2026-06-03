@@ -2,6 +2,7 @@ package one.mixin.android.ui.wallet.home
 
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.api.response.perps.PerpsMarket
+import one.mixin.android.R
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.vo.PendingDisplay
@@ -54,6 +55,7 @@ interface WalletHomeCallbacks {
     fun onPendingIndicatorClicked()
     fun onWatchIndicatorClicked()
     fun onImportKeyClicked()
+    fun onImportKeyLearnMoreClicked()
     fun onViewMoreTokensClicked()
     fun onAllTokensBackClicked()
     fun onViewMoreTransactionsClicked()
@@ -92,6 +94,9 @@ enum class WalletHomeWatchKind {
 
 data class WalletHomeImportKeyAction(
     val kind: WalletHomeImportKeyKind,
+    val buttonTextRes: Int,
+    val descriptionRes: Int,
+    val learnMoreUrlRes: Int,
 )
 
 enum class WalletHomeImportKeyKind {
@@ -149,8 +154,18 @@ fun walletHomeImportKeyAction(
 ): WalletHomeImportKeyAction? {
     if (hasLocalPrivateKey) return null
     return when (category) {
-        WalletCategory.IMPORTED_MNEMONIC.value -> WalletHomeImportKeyAction(WalletHomeImportKeyKind.MNEMONIC_PHRASE)
-        WalletCategory.IMPORTED_PRIVATE_KEY.value -> WalletHomeImportKeyAction(WalletHomeImportKeyKind.PRIVATE_KEY)
+        WalletCategory.IMPORTED_MNEMONIC.value -> WalletHomeImportKeyAction(
+            kind = WalletHomeImportKeyKind.MNEMONIC_PHRASE,
+            buttonTextRes = R.string.import_mnemonic_phrase,
+            descriptionRes = R.string.Import_Mnemonic_Phrase_Desc,
+            learnMoreUrlRes = R.string.import_mnemonic_phrase_url,
+        )
+        WalletCategory.IMPORTED_PRIVATE_KEY.value -> WalletHomeImportKeyAction(
+            kind = WalletHomeImportKeyKind.PRIVATE_KEY,
+            buttonTextRes = R.string.import_private_key,
+            descriptionRes = R.string.Import_Private_Key_Desc,
+            learnMoreUrlRes = R.string.import_private_key_url,
+        )
         else -> null
     }
 }

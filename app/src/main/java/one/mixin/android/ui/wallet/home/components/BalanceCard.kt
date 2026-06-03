@@ -25,14 +25,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 import one.mixin.android.ui.wallet.home.WalletHomeCallbacks
 import one.mixin.android.ui.wallet.home.WalletHomeImportKeyAction
-import one.mixin.android.ui.wallet.home.WalletHomeImportKeyKind
 import one.mixin.android.ui.wallet.home.WalletHomePendingIndicator
 import one.mixin.android.ui.wallet.home.WalletHomePendingKind
 import one.mixin.android.ui.wallet.home.WalletHomeState
@@ -135,7 +136,7 @@ internal fun BalanceCard(state: WalletHomeState, callbacks: WalletHomeCallbacks)
             color = MixinAppTheme.colors.textAssist,
             fontSize = 13.sp,
         )
-        if (state.pendingIndicator != null || state.watchIndicator != null || state.importKeyAction != null) {
+        if (state.pendingIndicator != null || state.watchIndicator != null) {
             Spacer(modifier = Modifier.height(14.dp))
             Column(
                 modifier = Modifier.fillMaxWidth(),
@@ -153,15 +154,17 @@ internal fun BalanceCard(state: WalletHomeState, callbacks: WalletHomeCallbacks)
                         onClick = callbacks::onWatchIndicatorClicked,
                     )
                 }
-                state.importKeyAction?.let {
-                    ImportKeyAction(
-                        action = it,
-                        onClick = callbacks::onImportKeyClicked,
-                    )
-                }
             }
         }
-        val showActions = !(state.walletType == WalletHomeType.CLASSIC && state.isWatchWallet)
+        state.importKeyAction?.let {
+            Spacer(modifier = Modifier.height(20.dp))
+            ImportKeyAction(
+                action = it,
+                onClick = callbacks::onImportKeyClicked,
+                onLearnMoreClick = callbacks::onImportKeyLearnMoreClicked,
+            )
+        }
+        val showActions = state.importKeyAction == null && !(state.walletType == WalletHomeType.CLASSIC && state.isWatchWallet)
         if (showActions) {
             Spacer(modifier = Modifier.height(28.dp))
             Row(
@@ -300,33 +303,27 @@ private fun WatchIndicator(
 private fun ImportKeyAction(
     action: WalletHomeImportKeyAction,
     onClick: () -> Unit,
+    onLearnMoreClick: () -> Unit,
 ) {
-    IndicatorPill(onClick = onClick) {
-        val iconRes = when (action.kind) {
-            WalletHomeImportKeyKind.MNEMONIC_PHRASE -> R.drawable.ic_menu_mnemonic_phrase
-            WalletHomeImportKeyKind.PRIVATE_KEY -> R.drawable.ic_menu_private_key
-        }
-        val textRes = when (action.kind) {
-            WalletHomeImportKeyKind.MNEMONIC_PHRASE -> R.string.import_mnemonic_phrase
-            WalletHomeImportKeyKind.PRIVATE_KEY -> R.string.import_private_key
-        }
-        Image(
-            painter = painterResource(id = iconRes),
-            contentDescription = null,
-            modifier = Modifier.size(18.dp),
+    Column(modifier = Modifier.fillMaxWidth()) {
+        WalletHomeButton(
+            textRes = action.buttonTextRes,
+            onClick = onClick,
+            primary = true,
+            modifier = Modifier.fillMaxWidth(),
         )
-        Spacer(modifier = Modifier.width(6.dp))
-        Text(
-            text = stringResource(textRes),
-            color = MixinAppTheme.colors.textPrimary,
+        Spacer(modifier = Modifier.height(12.dp))
+        HighlightedTextWithClick(
+            fullText = stringResource(action.descriptionRes, stringResource(R.string.Learn_More)),
+            modifier = Modifier.fillMaxWidth(),
+            stringResource(R.string.Learn_More),
+            color = MixinAppTheme.colors.textAssist,
             fontSize = 13.sp,
-            fontWeight = FontWeight.W500,
-        )
-        Image(
-            painter = painterResource(id = R.drawable.ic_watch_arrow),
-            contentDescription = null,
-            modifier = Modifier.padding(start = 2.dp),
-        )
+            lineHeight = 18.sp,
+            textAlign = TextAlign.Start,
+        ) {
+            onLearnMoreClick()
+        }
     }
 }
 
