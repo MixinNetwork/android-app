@@ -6,7 +6,7 @@ plugins {
     id("com.google.devtools.ksp")
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
     id("org.jetbrains.kotlin.plugin.serialization")
-    id("org.jetbrains.kotlin.plugin.compose") version "2.3.21"
+    id("org.jetbrains.kotlin.plugin.compose") version "2.4.0"
     id("com.google.firebase.firebase-perf")
     id("com.bugsnag.android.gradle")
 }
@@ -453,7 +453,7 @@ dependencies {
     implementation("com.google.zxing:core:$zxingVersion")
     implementation("com.github.tougee:sticky-headers-recyclerview:$stickyheadersrecyclerviewVersion")
     implementation("org.whispersystems:signal-protocol-android:$signalVersion")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.3.21")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.4.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion")
     implementation("com.github.zjupure:webpdecoder:$webpdecoderVersion")
