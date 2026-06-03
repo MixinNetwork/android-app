@@ -361,6 +361,7 @@ interface TransactionInterface {
             transactionIdTv.text = snapshot.snapshotId
             transactionHashLayout.isVisible = !snapshot.transactionHash.isNullOrBlank()
             transactionHashTv.text = snapshot.transactionHash
+            hashPendingPb.isVisible = false
             dateTv.text = snapshot.createdAt.fullDate()
             memoLl.isVisible = snapshot.formatMemo != null
             memoTv.text = snapshot.formatMemo?.utf ?: snapshot.formatMemo?.hex
@@ -434,9 +435,8 @@ interface TransactionInterface {
                     if (snapshot.withdrawal != null) {
                         hashLl.isVisible = true
                         hashTitle.text = fragment.getString(R.string.withdrawal_hash)
-                        if (showPendingHash) {
-                            hashTv.text = fragment.getString(R.string.State_Pending)
-                        } else if (snapshot.withdrawal.withdrawalHash.isBlank()) {
+                        hashPendingPb.isVisible = showPendingHash
+                        if (snapshot.withdrawal.withdrawalHash.isBlank()) {
                             hashTv.text = fragment.getString(R.string.withdrawal_pending)
                         } else {
                             hashTv.text = snapshot.withdrawal.withdrawalHash
