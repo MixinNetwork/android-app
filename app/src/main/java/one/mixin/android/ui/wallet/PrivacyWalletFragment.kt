@@ -8,15 +8,21 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.switchMap
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_HAS_USED_BUY
@@ -28,12 +34,15 @@ import one.mixin.android.databinding.FragmentPrivacyWalletBinding
 import one.mixin.android.databinding.ViewWalletFragmentHeaderBinding
 import one.mixin.android.event.BadgeEvent
 import one.mixin.android.event.QuoteColorEvent
+import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
+import one.mixin.android.extension.openUrl
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshSnapshotsJob
@@ -41,9 +50,21 @@ import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.trade.SwapActivity
+import one.mixin.android.ui.home.web3.trade.perps.PerpsActivity
+import one.mixin.android.ui.home.web3.trade.perps.PerpsMarketListBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.trade.perps.PerpetualViewModel
+import one.mixin.android.ui.home.web3.trade.perps.topMoversPreview
+import one.mixin.android.ui.home.web3.widget.MarketSort
+import one.mixin.android.ui.wallet.home.WalletHomeBuilder
+import one.mixin.android.ui.wallet.home.WalletHomeCallbacks
+import one.mixin.android.ui.wallet.home.WalletHomePage
+import one.mixin.android.ui.wallet.home.WalletHomeSection
+import one.mixin.android.ui.wallet.home.WalletHomeState
+import one.mixin.android.ui.wallet.home.WalletHomeType
 import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
 import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_SEND
 import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
@@ -52,8 +73,11 @@ import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.Fiats
+import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.toSnapshot
+import one.mixin.android.api.response.perps.PerpsMarket
+import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.widget.PercentItemView
 import one.mixin.android.widget.PercentView
 import one.mixin.android.widget.calcPercent
@@ -68,6 +92,9 @@ import kotlin.time.measureTime
 class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), HeaderAdapter.OnItemListener {
     companion object {
         const val TAG = "PrivacyWalletFragment"
+        private const val PREF_WALLET_HOME_ADD_WALLET_BANNER_CLOSED = "pref_wallet_home_add_wallet_banner_closed"
+        private const val PREF_WALLET_HOME_CASHBACK_BANNER_CLOSED = "pref_wallet_home_cashback_banner_closed"
+        private const val PREF_WALLET_HOME_REFERRAL_CLOSED = "pref_wallet_home_referral_closed"
 
         fun newInstance(): PrivacyWalletFragment = PrivacyWalletFragment()
     }
@@ -81,7 +108,26 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
 
     private val walletViewModel by viewModels<WalletViewModel>()
     private var assets: List<TokenItem> = listOf()
+    private var topTokens: List<TokenItem> = emptyList()
+    private var recentSnapshots: List<SnapshotItem> = emptyList()
+    private var positions: List<PerpsPositionItem> = emptyList()
+    private var topMovers: List<PerpsMarket> = emptyList()
     private val assetsAdapter by lazy { WalletAssetAdapter(false) }
+    private val perpetualViewModel by viewModels<PerpetualViewModel>()
+    private val _homeState = MutableStateFlow(WalletHomeState(walletType = WalletHomeType.PRIVACY))
+    private val _walletId = MutableLiveData<String>()
+    private val positionsLiveData by lazy {
+        _walletId.switchMap { walletId ->
+            if (walletId.isNullOrEmpty()) {
+                MutableLiveData<List<PerpsPositionItem>>(emptyList())
+            } else {
+                perpetualViewModel.observeOpenPositions(walletId).asLiveData()
+            }
+        }
+    }
+    private val marketsLiveData by lazy {
+        perpetualViewModel.observeMarkets().asLiveData()
+    }
 
     private var distance = 0
     private var snackBar: Snackbar? = null
@@ -92,6 +138,14 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         savedInstanceState: Bundle?,
     ): View {
         _binding = FragmentPrivacyWalletBinding.inflate(inflater, container, false)
+        binding.compose.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+        binding.compose.setContent {
+            val homeState = _homeState.collectAsState().value
+            WalletHomePage(
+                state = homeState,
+                callbacks = walletHomeCallbacks,
+            )
+        }
         return binding.root
     }
 
@@ -102,6 +156,7 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     ) {
         super.onViewCreated(view, savedInstanceState)
         Timber.e("onViewCreated called in PrivacyWalletFragment")
+        _walletId.value = Session.getAccountId().orEmpty()
         lifecycleScope.launch {
             val queryDuration = measureTime {
                 val data = walletViewModel.assetItemsNotHiddenRaw()
@@ -115,11 +170,16 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     lastFiatCurrency = Session.getFiatCurrency()
                     assetsAdapter.notifyDataSetChanged()
                 }
+                if (assets.isNotEmpty()) {
+                    isLoading = false
+                    renderHome()
+                }
                 var bitcoin = assets.find { a -> a.assetId == Constants.ChainId.BITCOIN_CHAIN_ID }
                 if (bitcoin == null) {
                     bitcoin = walletViewModel.findOrSyncAsset(Constants.ChainId.BITCOIN_CHAIN_ID)
                 }
                 renderPie(assets, bitcoin)
+                renderHome()
             }
         }
 
@@ -216,8 +276,11 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
 
         walletViewModel.assetItemsNotHidden().observe(viewLifecycleOwner) {
             Timber.e("observe assetItemsNotHidden data size: ${it.size}")
+            isLoading = false
             if (it.isEmpty()) {
                 setEmpty()
+                assets = emptyList()
+                renderHome()
             } else {
                 assets = it
                 assetsAdapter.setAssetList(it)
@@ -233,8 +296,29 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     }
 
                     renderPie(assets, bitcoin)
+                    renderHome()
                 }
             }
+        }
+
+        walletViewModel.topAssetItemsNotHiddenLimit().observe(viewLifecycleOwner) {
+            topTokens = it
+            renderHome()
+        }
+
+        walletViewModel.recentSnapshotsLimit().observe(viewLifecycleOwner) {
+            recentSnapshots = it.take(WalletHomeSection.MORE_DETECTION_LIMIT)
+            renderHome()
+        }
+
+        marketsLiveData.observe(viewLifecycleOwner) {
+            topMovers = it.topMoversPreview()
+            renderHome()
+        }
+
+        positionsLiveData.observe(viewLifecycleOwner) {
+            positions = it
+            renderHome()
         }
 
         walletViewModel.getPendingDisplays().observe(viewLifecycleOwner) {
@@ -265,18 +349,211 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         _headBinding?.sendReceiveView?.swapBadge?.isVisible = swap
         val buy = defaultSharedPreferences.getBoolean(PREF_HAS_USED_BUY, true)
         _headBinding?.sendReceiveView?.buyBadge?.isVisible = buy
+
+        renderHome()
+    }
+
+    private fun renderHome() {
+        if (_binding == null) return
+        if (assets.isNotEmpty() || recentSnapshots.isNotEmpty() || topMovers.isNotEmpty() || positions.isNotEmpty()) {
+            isLoading = false
+        }
+        _homeState.value = buildHomeState()
+    }
+
+    private var referralAlreadyInvited = false
+    private var isLoading = true
+
+    private fun buildHomeState(): WalletHomeState {
+        val totalFiat = assets.fold(BigDecimal.ZERO) { acc, item -> acc + item.fiat() }
+        val totalBtc = assets.fold(BigDecimal.ZERO) { acc, item -> acc + item.btc() }
+        val showAddWalletBanner = !defaultSharedPreferences.getBoolean(PREF_WALLET_HOME_ADD_WALLET_BANNER_CLOSED, false)
+        val showCashbackBanner = !defaultSharedPreferences.getBoolean(PREF_WALLET_HOME_CASHBACK_BANNER_CLOSED, false)
+        val showBanner = showAddWalletBanner || showCashbackBanner
+        val showReferral = !defaultSharedPreferences.getBoolean(PREF_WALLET_HOME_REFERRAL_CLOSED, false) && !referralAlreadyInvited
+        val cards = WalletHomeBuilder.build(
+            walletType = WalletHomeType.PRIVACY,
+            hasAssetValue = totalFiat > BigDecimal.ZERO,
+            showBanner = showBanner,
+            showReferral = showReferral,
+            hasPositions = positions.isNotEmpty(),
+            hasTopMovers = topMovers.isNotEmpty(),
+            hasTransactions = recentSnapshots.isNotEmpty(),
+            isLoading = isLoading,
+        )
+        return WalletHomeState(
+            walletType = WalletHomeType.PRIVACY,
+            cards = cards,
+            fiatTotal = totalFiat.numberFormat2(),
+            btcTotal = totalBtc.numberFormat8(),
+            fiatSymbol = Fiats.getSymbol(),
+            privacyTokens = assets.take(WalletHomeSection.PREVIEW_LIMIT),
+            privacyTransactions = recentSnapshots.take(WalletHomeSection.PREVIEW_LIMIT),
+            positions = positions.take(WalletHomeSection.PREVIEW_LIMIT),
+            totalTokenCount = assets.size,
+            totalTransactionCount = recentSnapshots.size,
+            totalPositionCount = positions.size,
+            isLoading = isLoading,
+            topMovers = topMovers,
+            allTokensHidden = assets.isEmpty() && topTokens.isNotEmpty(),
+            quoteColorReversed = defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false),
+            showAddWalletBanner = showAddWalletBanner,
+            showCashbackBanner = showCashbackBanner,
+            showReferralBanner = showReferral,
+            showBuyBadge = defaultSharedPreferences.getBoolean(PREF_HAS_USED_BUY, true),
+            showSwapBadge = defaultSharedPreferences.getBoolean(PREF_HAS_USED_SWAP, true),
+        )
+    }
+
+    private val walletHomeCallbacks = object : WalletHomeCallbacks {
+        override fun onAddWalletClicked() {
+            AddWalletBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, AddWalletBottomSheetDialogFragment.TAG)
+        }
+
+        override fun onBannerClosed() {
+            defaultSharedPreferences.putBoolean(PREF_WALLET_HOME_ADD_WALLET_BANNER_CLOSED, true)
+            renderHome()
+        }
+
+        override fun onCashbackBannerClosed() {
+            defaultSharedPreferences.putBoolean(PREF_WALLET_HOME_CASHBACK_BANNER_CLOSED, true)
+            renderHome()
+        }
+
+        override fun onReferralClicked() {
+            context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+        }
+
+        override fun onReferralClosed() {
+            defaultSharedPreferences.putBoolean(PREF_WALLET_HOME_REFERRAL_CLOSED, true)
+            renderHome()
+        }
+
+        override fun onSupportClicked() {
+            lifecycleScope.launch {
+                val user = walletViewModel.refreshUser(Constants.TEAM_MIXIN_USER_ID)
+                if (user == null) {
+                    toast(R.string.Data_error)
+                } else {
+                    ConversationActivity.show(requireContext(), recipientId = Constants.TEAM_MIXIN_USER_ID)
+                }
+            }
+        }
+
+        override fun onHelpCenterClicked() {
+            context?.openUrl(getString(R.string.wallet_home_help_center_url))
+        }
+
+        override fun onBuyClicked() {
+            _headBinding?.sendReceiveView?.buy?.performClick()
+            renderHome()
+        }
+
+        override fun onReceiveClicked() {
+            _headBinding?.sendReceiveView?.receive?.performClick()
+        }
+
+        override fun onSendClicked() {
+            _headBinding?.sendReceiveView?.send?.performClick()
+        }
+
+        override fun onSwapClicked() {
+            _headBinding?.sendReceiveView?.swap?.performClick()
+            renderHome()
+        }
+
+        override fun onViewMoreTokensClicked() {
+            WalletActivity.show(requireActivity(), WalletActivity.Destination.AllTokens)
+        }
+
+        override fun onAllTokensBackClicked() = Unit
+
+        override fun onViewMoreTransactionsClicked() {
+            WalletActivity.show(requireActivity(), WalletActivity.Destination.AllTransactions)
+        }
+
+        override fun onViewMorePositionsClicked() {
+            AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.WALLET_HOME)
+            SwapActivity.show(
+                requireActivity(),
+                inMixin = true,
+                entrySource = TradeSource.WALLET_HOME,
+                entryType = AnalyticsTracker.SpotTradeType.PERPETUAL,
+            )
+        }
+
+        override fun onTokenClicked(index: Int) {
+            assets.getOrNull(index)?.let {
+                WalletActivity.showWithToken(requireActivity(), it, WalletActivity.Destination.Transactions)
+            }
+        }
+
+        override fun onTransactionClicked(index: Int) {
+            val snapshot = recentSnapshots.getOrNull(index) ?: return
+            lifecycleScope.launch {
+                val asset = walletViewModel.simpleAssetItem(snapshot.assetId) ?: return@launch
+                if (!isAdded) return@launch
+                activity?.addFragment(
+                    this@PrivacyWalletFragment,
+                    TransactionFragment.newInstance(snapshot, asset),
+                    TransactionFragment.TAG,
+                )
+            }
+        }
+
+        override fun onPositionClicked(index: Int) {
+            onViewMorePositionsClicked()
+        }
+
+        override fun onTopMoverClicked(index: Int) {
+            topMovers.getOrNull(index)?.let(::onTopMoverMarketClicked) ?: onViewMoreTopMoversClicked()
+        }
+
+        override fun onTopMoverMarketClicked(market: PerpsMarket) {
+            PerpsActivity.showDetail(
+                requireActivity(),
+                market.marketId,
+                market.displaySymbol,
+                market.displaySymbol,
+                market.tokenSymbol,
+                AnalyticsTracker.PerpsSource.PERPS_HOME_LIST,
+            )
+        }
+
+        override fun onViewMoreTopMoversClicked() {
+            PerpsMarketListBottomSheetDialogFragment.newInstance(
+                initialSort = MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_DESCENDING,
+            ).show(parentFragmentManager, PerpsMarketListBottomSheetDialogFragment.TAG)
+        }
     }
 
     override fun onResume() {
         super.onResume()
+        _walletId.value = Session.getAccountId().orEmpty()
         jobManager.addJobInBackground(RefreshTokensJob())
         jobManager.addJobInBackground(RefreshSnapshotsJob())
         jobManager.addJobInBackground(SyncOutputJob())
+        perpetualViewModel.loadMarkets(
+            onSuccess = { },
+            onError = { error -> Timber.e(error) },
+        )
         refreshAllPendingDeposit()
+        refreshReferralStatus()
+    }
+
+    private fun refreshReferralStatus() {
+        if (referralAlreadyInvited) return
+        lifecycleScope.launch {
+            if (walletViewModel.hasBeenReferred() == true) {
+                referralAlreadyInvited = true
+                renderHome()
+            }
+        }
     }
 
     override fun onHiddenChanged(hidden: Boolean) {
         if (!hidden) {
+            _walletId.value = Session.getAccountId().orEmpty()
             jobManager.addJobInBackground(RefreshTokensJob())
             jobManager.addJobInBackground(RefreshSnapshotsJob())
             jobManager.addJobInBackground(SyncOutputJob())
