@@ -153,11 +153,11 @@ fun LimitOrderContent(
 
     val viewModel = hiltViewModel<SwapViewModel>()
 
-    var inputText by remember { mutableStateOf(initialAmount ?: "") }
+    var inputText by remember { mutableStateOf(limitTradeInputDecimalPlaces(initialAmount ?: "")) }
     var outputText by remember { mutableStateOf("") }
 
     LaunchedEffect(lastOrderTime) {
-        inputText = initialAmount ?: ""
+        inputText = limitTradeInputDecimalPlaces(initialAmount ?: "")
         outputText = ""
     }
 
@@ -273,7 +273,7 @@ fun LimitOrderContent(
                                     .clickable {
                                         AnalyticsTracker.trackSpotSwitchSendReceive()
                                         isReverse = !isReverse
-                                        inputText = outputText
+                                        inputText = limitTradeInputDecimalPlaces(outputText)
 
                                         val oldPrice = limitPriceText.toBigDecimalOrNull()
                                         if (oldPrice != null && oldPrice > BigDecimal.ZERO) {
@@ -327,9 +327,9 @@ fun LimitOrderContent(
                                         outputText = ""
                                     }
                                 }
-                            }, onDeposit = onDeposit, displayBalanceOverride = if (it.isNativeSolAsset()) fromBalance else null, onMax = {
+                            }, onDeposit = onDeposit, displayBalanceOverride = if (it.isNativeSolAsset()) fromBalance else null, maxDecimalPlaces = TRADE_INPUT_MAX_DECIMAL_PLACES, onMax = {
                                 AnalyticsTracker.trackSpotSendInputBalance()
-                                inputText = formatBalanceInput(availableFromBalance, fromToken?.isWeb3 == true)
+                                inputText = limitTradeInputDecimalPlaces(formatBalanceInput(availableFromBalance, fromToken?.isWeb3 == true))
                                 if (inputText.isNotBlank()) {
                                     val fromAmount = inputText.toBigDecimalOrNull()
                                     val standardPrice = limitPriceText.toBigDecimalOrNull()
@@ -373,8 +373,9 @@ fun LimitOrderContent(
                                     }
                                 },
                                 onDeposit = null,
+                                maxDecimalPlaces = TRADE_INPUT_MAX_DECIMAL_PLACES,
                                 onMax = {
-                                    outputText = formatBalanceInput(toBalance, toToken?.isWeb3 == true)
+                                    outputText = limitTradeInputDecimalPlaces(formatBalanceInput(toBalance, toToken?.isWeb3 == true))
                                     if (outputText.isNotBlank()) {
                                         val toAmount = outputText.toBigDecimalOrNull()
                                         val standardPrice = limitPriceText.toBigDecimalOrNull()
@@ -632,8 +633,9 @@ fun LimitOrderContent(
                     AnalyticsTracker.trackSpotPriceInputPercent(label)
                 },
                 onSetInput = {
-                    inputText = it
-                    val fromAmount = it.toBigDecimalOrNull()
+                    val limitedInput = limitTradeInputDecimalPlaces(it)
+                    inputText = limitedInput
+                    val fromAmount = limitedInput.toBigDecimalOrNull()
                     val standardPrice = limitPriceText.toBigDecimalOrNull()
                     if (fromAmount != null && standardPrice != null && fromAmount > BigDecimal.ZERO && standardPrice > BigDecimal.ZERO) {
                         val calculatedOutput = fromAmount.multiply(standardPrice).setScale(8, RoundingMode.DOWN)
