@@ -7,6 +7,14 @@ import kotlin.test.assertTrue
 
 class TradeInputTest {
     @Test
+    fun tradeAmountInputUsesWalletSpecificDecimalPlaces() {
+        assertEquals(8, tradeInputMaxDecimalPlaces(isCommonWallet = false, precision = 18))
+        assertEquals(6, tradeInputMaxDecimalPlaces(isCommonWallet = true, precision = 6))
+        assertEquals(0, tradeInputMaxDecimalPlaces(isCommonWallet = true, precision = 0))
+        assertEquals(8, tradeInputMaxDecimalPlaces(isCommonWallet = true, precision = -1))
+    }
+
+    @Test
     fun tradeAmountInputAllowsAtMostEightDecimalPlaces() {
         assertTrue(isTradeInputDecimalAllowed(""))
         assertTrue(isTradeInputDecimalAllowed("12"))

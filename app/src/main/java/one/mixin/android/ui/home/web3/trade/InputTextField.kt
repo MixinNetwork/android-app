@@ -57,6 +57,23 @@ import java.math.BigDecimal
 
 internal const val TRADE_INPUT_MAX_DECIMAL_PLACES = 8
 
+internal fun tradeInputMaxDecimalPlaces(
+    isCommonWallet: Boolean,
+    precision: Int,
+): Int {
+    return if (isCommonWallet && precision >= 0) {
+        precision
+    } else {
+        TRADE_INPUT_MAX_DECIMAL_PLACES
+    }
+}
+
+internal fun SwapToken?.tradeInputMaxDecimalPlaces(): Int {
+    return this?.let { token ->
+        tradeInputMaxDecimalPlaces(token.walletId != null, token.decimals)
+    } ?: TRADE_INPUT_MAX_DECIMAL_PLACES
+}
+
 internal fun isTradeInputDecimalAllowed(
     value: String,
     maxDecimalPlaces: Int? = TRADE_INPUT_MAX_DECIMAL_PLACES,

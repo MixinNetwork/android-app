@@ -153,14 +153,6 @@ fun LimitOrderContent(
 
     val viewModel = hiltViewModel<SwapViewModel>()
 
-    var inputText by remember { mutableStateOf(limitTradeInputDecimalPlaces(initialAmount ?: "")) }
-    var outputText by remember { mutableStateOf("") }
-
-    LaunchedEffect(lastOrderTime) {
-        inputText = limitTradeInputDecimalPlaces(initialAmount ?: "")
-        outputText = ""
-    }
-
     var limitPriceText by remember { mutableStateOf("") }
     var marketPriceClickTime by remember { mutableStateOf(lastOrderTime) }
     var priceMultiplier by remember { mutableStateOf<Float?>(null) }
@@ -176,6 +168,18 @@ fun LimitOrderContent(
     }
     var toToken by remember(from, to, isReverse) {
         mutableStateOf(if (isReverse) from else to)
+    }
+    val fromMaxDecimalPlaces = fromToken.tradeInputMaxDecimalPlaces()
+    val toMaxDecimalPlaces = toToken.tradeInputMaxDecimalPlaces()
+
+    var inputText by remember {
+        mutableStateOf(limitTradeInputDecimalPlaces(initialAmount ?: "", fromMaxDecimalPlaces))
+    }
+    var outputText by remember { mutableStateOf("") }
+
+    LaunchedEffect(lastOrderTime, fromMaxDecimalPlaces) {
+        inputText = limitTradeInputDecimalPlaces(initialAmount ?: "", fromMaxDecimalPlaces)
+        outputText = ""
     }
 
     var isButtonEnabled by remember { mutableStateOf(true) }
@@ -217,7 +221,7 @@ fun LimitOrderContent(
 
         if (fromAmount != null && standardPrice != null && fromAmount > BigDecimal.ZERO && standardPrice > BigDecimal.ZERO) {
             val toAmount = fromAmount.multiply(standardPrice).setScale(8, RoundingMode.DOWN)
-            outputText = toAmount.stripTrailingZeros().toPlainString()
+            outputText = limitTradeInputDecimalPlaces(toAmount.stripTrailingZeros().toPlainString(), toMaxDecimalPlaces)
         } else {
             outputText = ""
         }
@@ -273,7 +277,8 @@ fun LimitOrderContent(
                                     .clickable {
                                         AnalyticsTracker.trackSpotSwitchSendReceive()
                                         isReverse = !isReverse
-                                        inputText = limitTradeInputDecimalPlaces(outputText)
+                                        val nextFromMaxDecimalPlaces = toToken.tradeInputMaxDecimalPlaces()
+                                        inputText = limitTradeInputDecimalPlaces(outputText, nextFromMaxDecimalPlaces)
 
                                         val oldPrice = limitPriceText.toBigDecimalOrNull()
                                         if (oldPrice != null && oldPrice > BigDecimal.ZERO) {
@@ -322,20 +327,20 @@ fun LimitOrderContent(
                                     val standardPrice = limitPriceText.toBigDecimalOrNull()
                                     if (fromAmount != null && standardPrice != null && fromAmount > BigDecimal.ZERO && standardPrice > BigDecimal.ZERO) {
                                         val calculatedOutput = fromAmount.multiply(standardPrice).setScale(8, RoundingMode.DOWN)
-                                        outputText = calculatedOutput.stripTrailingZeros().toPlainString()
+                                        outputText = limitTradeInputDecimalPlaces(calculatedOutput.stripTrailingZeros().toPlainString(), toMaxDecimalPlaces)
                                     } else if (fromAmount == null || fromAmount == BigDecimal.ZERO) {
                                         outputText = ""
                                     }
                                 }
-                            }, onDeposit = onDeposit, displayBalanceOverride = if (it.isNativeSolAsset()) fromBalance else null, maxDecimalPlaces = TRADE_INPUT_MAX_DECIMAL_PLACES, onMax = {
+                            }, onDeposit = onDeposit, displayBalanceOverride = if (it.isNativeSolAsset()) fromBalance else null, maxDecimalPlaces = fromMaxDecimalPlaces, onMax = {
                                 AnalyticsTracker.trackSpotSendInputBalance()
-                                inputText = limitTradeInputDecimalPlaces(formatBalanceInput(availableFromBalance, fromToken?.isWeb3 == true))
+                                inputText = limitTradeInputDecimalPlaces(formatBalanceInput(availableFromBalance, fromToken?.isWeb3 == true), fromMaxDecimalPlaces)
                                 if (inputText.isNotBlank()) {
                                     val fromAmount = inputText.toBigDecimalOrNull()
                                     val standardPrice = limitPriceText.toBigDecimalOrNull()
                                     if (fromAmount != null && standardPrice != null && fromAmount > BigDecimal.ZERO && standardPrice > BigDecimal.ZERO) {
                                         val calculatedOutput = fromAmount.multiply(standardPrice).setScale(8, RoundingMode.DOWN)
-                                        outputText = calculatedOutput.stripTrailingZeros().toPlainString()
+                                        outputText = limitTradeInputDecimalPlaces(calculatedOutput.stripTrailingZeros().toPlainString(), toMaxDecimalPlaces)
                                     } else if (fromAmount == null || fromAmount == BigDecimal.ZERO) {
                                         outputText = ""
                                     }
@@ -366,22 +371,22 @@ fun LimitOrderContent(
                                         val standardPrice = limitPriceText.toBigDecimalOrNull()
                                         if (toAmount != null && standardPrice != null && toAmount > BigDecimal.ZERO && standardPrice > BigDecimal.ZERO) {
                                             val calculatedInput = toAmount.divide(standardPrice, 8, RoundingMode.DOWN)
-                                            inputText = calculatedInput.stripTrailingZeros().toPlainString()
+                                            inputText = limitTradeInputDecimalPlaces(calculatedInput.stripTrailingZeros().toPlainString(), fromMaxDecimalPlaces)
                                         } else if (toAmount == null || toAmount == BigDecimal.ZERO) {
                                             inputText = ""
                                         }
                                     }
                                 },
                                 onDeposit = null,
-                                maxDecimalPlaces = TRADE_INPUT_MAX_DECIMAL_PLACES,
+                                maxDecimalPlaces = toMaxDecimalPlaces,
                                 onMax = {
-                                    outputText = limitTradeInputDecimalPlaces(formatBalanceInput(toBalance, toToken?.isWeb3 == true))
+                                    outputText = limitTradeInputDecimalPlaces(formatBalanceInput(toBalance, toToken?.isWeb3 == true), toMaxDecimalPlaces)
                                     if (outputText.isNotBlank()) {
                                         val toAmount = outputText.toBigDecimalOrNull()
                                         val standardPrice = limitPriceText.toBigDecimalOrNull()
                                         if (toAmount != null && standardPrice != null && toAmount > BigDecimal.ZERO && standardPrice > BigDecimal.ZERO) {
                                             val calculatedInput = toAmount.divide(standardPrice, 8, RoundingMode.DOWN)
-                                            inputText = calculatedInput.stripTrailingZeros().toPlainString()
+                                            inputText = limitTradeInputDecimalPlaces(calculatedInput.stripTrailingZeros().toPlainString(), fromMaxDecimalPlaces)
                                         } else if (toAmount == null || toAmount == BigDecimal.ZERO) {
                                             inputText = ""
                                         }
@@ -633,13 +638,13 @@ fun LimitOrderContent(
                     AnalyticsTracker.trackSpotPriceInputPercent(label)
                 },
                 onSetInput = {
-                    val limitedInput = limitTradeInputDecimalPlaces(it)
+                    val limitedInput = limitTradeInputDecimalPlaces(it, fromMaxDecimalPlaces)
                     inputText = limitedInput
                     val fromAmount = limitedInput.toBigDecimalOrNull()
                     val standardPrice = limitPriceText.toBigDecimalOrNull()
                     if (fromAmount != null && standardPrice != null && fromAmount > BigDecimal.ZERO && standardPrice > BigDecimal.ZERO) {
                         val calculatedOutput = fromAmount.multiply(standardPrice).setScale(8, RoundingMode.DOWN)
-                        outputText = calculatedOutput.stripTrailingZeros().toPlainString()
+                        outputText = limitTradeInputDecimalPlaces(calculatedOutput.stripTrailingZeros().toPlainString(), toMaxDecimalPlaces)
                     } else if (fromAmount == null || fromAmount == BigDecimal.ZERO) {
                         outputText = ""
                     }
