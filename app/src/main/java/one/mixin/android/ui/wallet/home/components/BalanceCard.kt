@@ -7,11 +7,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
@@ -26,10 +28,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
+import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.wallet.home.WalletHomeCallbacks
+import one.mixin.android.ui.wallet.home.WalletHomePendingIndicator
+import one.mixin.android.ui.wallet.home.WalletHomePendingKind
 import one.mixin.android.ui.wallet.home.WalletHomeState
 import one.mixin.android.ui.wallet.home.WalletHomeType
+import one.mixin.android.ui.wallet.home.WalletHomeWatchIndicator
+import one.mixin.android.ui.wallet.home.WalletHomeWatchKind
 
 @Composable
 internal fun EmptyGuideCard(callbacks: WalletHomeCallbacks) {
@@ -126,6 +133,23 @@ internal fun BalanceCard(state: WalletHomeState, callbacks: WalletHomeCallbacks)
             color = MixinAppTheme.colors.textAssist,
             fontSize = 13.sp,
         )
+        if (state.pendingIndicator != null || state.watchIndicator != null) {
+            Spacer(modifier = Modifier.height(14.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                state.pendingIndicator?.let {
+                    PendingIndicator(
+                        indicator = it,
+                        onClick = callbacks::onPendingIndicatorClicked,
+                    )
+                }
+                state.watchIndicator?.let {
+                    WatchIndicator(
+                        indicator = it,
+                        onClick = callbacks::onWatchIndicatorClicked,
+                    )
+                }
+            }
+        }
         val showActions = !(state.walletType == WalletHomeType.CLASSIC && state.isWatchWallet)
         if (showActions) {
             Spacer(modifier = Modifier.height(28.dp))
@@ -161,6 +185,102 @@ internal fun BalanceCard(state: WalletHomeState, callbacks: WalletHomeCallbacks)
             }
         }
     }
+}
+
+@Composable
+private fun PendingIndicator(
+    indicator: WalletHomePendingIndicator,
+    onClick: () -> Unit,
+) {
+    IndicatorPill(onClick = onClick) {
+        PendingIconGroup(indicator)
+        if (indicator.iconUrls.isNotEmpty()) {
+            Spacer(modifier = Modifier.width(8.dp))
+        }
+        Text(
+            text = pendingIndicatorText(indicator),
+            color = MixinAppTheme.colors.textPrimary,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.W500,
+        )
+    }
+}
+
+@Composable
+private fun PendingIconGroup(indicator: WalletHomePendingIndicator) {
+    val icons = indicator.iconUrls.take(2)
+    if (icons.isEmpty()) return
+    Row(horizontalArrangement = Arrangement.spacedBy((-6).dp)) {
+        icons.forEach { iconUrl ->
+            CoilImage(
+                model = iconUrl,
+                placeholder = R.drawable.ic_avatar_place_holder,
+                modifier = Modifier
+                    .size(20.dp)
+                    .clip(CircleShape),
+            )
+        }
+        val hiddenCount = indicator.value.toIntOrNull()?.minus(2) ?: 0
+        if (hiddenCount > 0) {
+            Box(
+                modifier = Modifier
+                    .size(20.dp)
+                    .clip(CircleShape)
+                    .background(MixinAppTheme.colors.backgroundWindow),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = "+$hiddenCount",
+                    color = MixinAppTheme.colors.textAssist,
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.W600,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun pendingIndicatorText(indicator: WalletHomePendingIndicator): String =
+    when (indicator.kind) {
+        WalletHomePendingKind.SINGLE_DEPOSIT -> stringResource(R.string.Deposit_Pending_Confirmation, indicator.value)
+        WalletHomePendingKind.MULTIPLE_DEPOSITS -> stringResource(R.string.Deposits_Pending_Confirmation, indicator.value.toIntOrNull() ?: 0)
+        WalletHomePendingKind.SINGLE_TRANSACTION -> stringResource(R.string.Transaction_Pending_Confirmation)
+        WalletHomePendingKind.MULTIPLE_TRANSACTIONS -> stringResource(R.string.Transactions_Pending_Confirmation, indicator.value.toIntOrNull() ?: 0)
+    }
+
+@Composable
+private fun WatchIndicator(
+    indicator: WalletHomeWatchIndicator,
+    onClick: () -> Unit,
+) {
+    IndicatorPill(onClick = onClick) {
+        Text(
+            text = when (indicator.kind) {
+                WalletHomeWatchKind.SINGLE_ADDRESS -> stringResource(R.string.watching_address, indicator.value)
+                WalletHomeWatchKind.MULTIPLE_ADDRESSES -> stringResource(R.string.watching_addresses, indicator.value.toIntOrNull() ?: 0)
+            },
+            color = MixinAppTheme.colors.textPrimary,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.W500,
+        )
+    }
+}
+
+@Composable
+private fun IndicatorPill(
+    onClick: () -> Unit,
+    content: @Composable RowScope.() -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .clip(RoundedCornerShape(20.dp))
+            .background(MixinAppTheme.colors.backgroundWindow)
+            .clickable { onClick() }
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        content = content,
+    )
 }
 
 @Composable

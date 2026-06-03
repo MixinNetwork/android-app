@@ -69,6 +69,8 @@ import one.mixin.android.ui.wallet.home.WalletHomeState
 import one.mixin.android.ui.wallet.home.WalletHomeType
 import one.mixin.android.ui.wallet.home.getWalletHomeCacheState
 import one.mixin.android.ui.wallet.home.putWalletHomeCache
+import one.mixin.android.ui.wallet.home.walletHomePendingTransactionIndicator
+import one.mixin.android.ui.wallet.home.walletHomeWatchIndicator
 import one.mixin.android.ui.wallet.home.walletHomeCacheKey
 import one.mixin.android.ui.wallet.adapter.WalletWeb3TokenAdapter
 import one.mixin.android.util.analytics.AnalyticsTracker
@@ -117,6 +119,8 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     private var topTokens: List<Web3TokenItem> = emptyList()
     private var recentTransactions: List<Web3TransactionItem> = emptyList()
     private var isWatchWallet: Boolean = false
+    private var pendingTransactionCount: Int = 0
+    private var watchAddresses: List<String> = emptyList()
     private val assetsAdapter by lazy { WalletWeb3TokenAdapter(false) }
 
     private var distance = 0
@@ -403,10 +407,10 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     isWatchWallet = wallet?.isWatch() == true
                     _headBinding?.sendReceiveView?.isVisible = !isWatchWallet
                     _headBinding?.watchLayout?.isVisible = isWatchWallet
-                    renderHome()
 
                     if (isWatchWallet) {
                         val addresses = web3ViewModel.getAddressesGroupedByDestination(id)
+                        watchAddresses = addresses.map { it.destination }
                         if (addresses.isNotEmpty()) {
                             if (addresses.size == 1) {
                                 val address = addresses.first().destination
@@ -415,12 +419,19 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                                 _headBinding?.watchTv?.text = getString(R.string.watching_addresses, addresses.size)
                             }
                         }
+                    } else {
+                        watchAddresses = emptyList()
                     }
+                    renderHome()
                 }
             }
         }
 
         _headBinding?.web3PendingView?.observePendingCount(viewLifecycleOwner, pendingTxCountLiveData)
+        pendingTxCountLiveData.observe(viewLifecycleOwner) {
+            pendingTransactionCount = it
+            renderHome()
+        }
         tokensLiveData.observe(viewLifecycleOwner, observer)
         topTokensLiveData.observe(viewLifecycleOwner) {
             topTokens = it
@@ -511,6 +522,8 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             isLoading = isLoading,
             allTokensHidden = assets.isEmpty() && topTokens.isNotEmpty(),
             isWatchWallet = isWatchWallet,
+            pendingIndicator = walletHomePendingTransactionIndicator(pendingTransactionCount),
+            watchIndicator = if (isWatchWallet) walletHomeWatchIndicator(watchAddresses) else null,
             showAddWalletBanner = showAddWalletBanner,
             showCashbackBanner = showCashbackBanner,
             showReferralBanner = showReferral,
@@ -585,6 +598,16 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
 
         override fun onSwapClicked() {
             _headBinding?.sendReceiveView?.swap?.performClick()
+        }
+
+        override fun onPendingIndicatorClicked() {
+            if (pendingTransactionCount > 0) {
+                WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Transactions(walletId = walletId), pendingType = true)
+            }
+        }
+
+        override fun onWatchIndicatorClicked() {
+            WalletSecurityActivity.show(requireActivity(), WalletSecurityActivity.Mode.VIEW_ADDRESS, walletId = walletId)
         }
 
         override fun onViewMoreTokensClicked() {

@@ -67,6 +67,7 @@ import one.mixin.android.ui.wallet.home.WalletHomeState
 import one.mixin.android.ui.wallet.home.WalletHomeType
 import one.mixin.android.ui.wallet.home.getWalletHomeCacheState
 import one.mixin.android.ui.wallet.home.putWalletHomeCache
+import one.mixin.android.ui.wallet.home.toWalletHomePendingIndicator
 import one.mixin.android.ui.wallet.home.walletHomeCacheKey
 import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
 import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_SEND
@@ -76,6 +77,7 @@ import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.Fiats
+import one.mixin.android.vo.PendingDisplay
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.toSnapshot
@@ -115,6 +117,7 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     private var recentSnapshots: List<SnapshotItem> = emptyList()
     private var positions: List<PerpsPositionItem> = emptyList()
     private var topMovers: List<PerpsMarket> = emptyList()
+    private var pendingDisplays: List<PendingDisplay> = emptyList()
     private val assetsAdapter by lazy { WalletAssetAdapter(false) }
     private val perpetualViewModel by viewModels<PerpetualViewModel>()
     private var hasLoadedHomeCache = false
@@ -337,6 +340,7 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         }
 
         walletViewModel.getPendingDisplays().observe(viewLifecycleOwner) {
+            pendingDisplays = it
             _headBinding?.apply {
                 pendingView.isVisible = it.isNotEmpty()
                 pendingView.updateTokens(it)
@@ -351,6 +355,7 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     }
                 }
             }
+            renderHome()
         }
 
         RxBus.listen(QuoteColorEvent::class.java)
@@ -413,6 +418,7 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             isLoading = isLoading,
             topMovers = topMovers,
             allTokensHidden = assets.isEmpty() && topTokens.isNotEmpty(),
+            pendingIndicator = pendingDisplays.toWalletHomePendingIndicator(),
             quoteColorReversed = defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false),
             showAddWalletBanner = showAddWalletBanner,
             showCashbackBanner = showCashbackBanner,
@@ -484,6 +490,19 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             _headBinding?.sendReceiveView?.swap?.performClick()
             renderHome()
         }
+
+        override fun onPendingIndicatorClicked() {
+            if (pendingDisplays.size == 1) {
+                lifecycleScope.launch {
+                    val token = walletViewModel.simpleAssetItem(pendingDisplays[0].assetId) ?: return@launch
+                    WalletActivity.showWithToken(requireActivity(), token, WalletActivity.Destination.Transactions)
+                }
+            } else if (pendingDisplays.size > 1) {
+                WalletActivity.show(requireActivity(), WalletActivity.Destination.AllTransactions, true)
+            }
+        }
+
+        override fun onWatchIndicatorClicked() = Unit
 
         override fun onViewMoreTokensClicked() {
             WalletActivity.show(requireActivity(), WalletActivity.Destination.AllTokens)
