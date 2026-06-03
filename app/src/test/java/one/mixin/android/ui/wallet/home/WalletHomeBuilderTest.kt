@@ -101,6 +101,29 @@ class WalletHomeBuilderTest {
     }
 
     @Test
+    fun `wallet without asset value but missing key starts with balance`() {
+        val cards = WalletHomeBuilder.build(
+            walletType = WalletHomeType.CLASSIC,
+            hasAssetValue = false,
+            showBanner = false,
+            showReferral = false,
+            hasPositions = false,
+            hasTopMovers = false,
+            hasTransactions = false,
+            hasImportKeyAction = true,
+        )
+
+        assertEquals(
+            listOf(
+                WalletHomeCardType.BALANCE,
+                WalletHomeCardType.TOKENS,
+                WalletHomeCardType.SUPPORT,
+            ),
+            cards,
+        )
+    }
+
+    @Test
     fun `referral shows above support at the bottom`() {
         val cards = WalletHomeBuilder.build(
             walletType = WalletHomeType.PRIVACY,

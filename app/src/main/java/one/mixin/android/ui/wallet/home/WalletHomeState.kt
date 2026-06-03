@@ -6,6 +6,7 @@ import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.vo.PendingDisplay
 import one.mixin.android.vo.SnapshotItem
+import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.safe.TokenItem
 
 data class WalletHomeState(
@@ -28,6 +29,7 @@ data class WalletHomeState(
     val isWatchWallet: Boolean = false,
     val pendingIndicator: WalletHomePendingIndicator? = null,
     val watchIndicator: WalletHomeWatchIndicator? = null,
+    val importKeyAction: WalletHomeImportKeyAction? = null,
     val quoteColorReversed: Boolean = false,
     val showAddWalletBanner: Boolean = false,
     val showCashbackBanner: Boolean = false,
@@ -51,6 +53,7 @@ interface WalletHomeCallbacks {
     fun onSwapClicked()
     fun onPendingIndicatorClicked()
     fun onWatchIndicatorClicked()
+    fun onImportKeyClicked()
     fun onViewMoreTokensClicked()
     fun onAllTokensBackClicked()
     fun onViewMoreTransactionsClicked()
@@ -85,6 +88,15 @@ data class WalletHomeWatchIndicator(
 enum class WalletHomeWatchKind {
     SINGLE_ADDRESS,
     MULTIPLE_ADDRESSES,
+}
+
+data class WalletHomeImportKeyAction(
+    val kind: WalletHomeImportKeyKind,
+)
+
+enum class WalletHomeImportKeyKind {
+    MNEMONIC_PHRASE,
+    PRIVATE_KEY,
 }
 
 fun List<PendingDisplay>.toWalletHomePendingIndicator(): WalletHomePendingIndicator? {
@@ -128,5 +140,17 @@ fun walletHomeWatchIndicator(addresses: List<String>): WalletHomeWatchIndicator?
             kind = WalletHomeWatchKind.MULTIPLE_ADDRESSES,
             value = addresses.size.toString(),
         )
+    }
+}
+
+fun walletHomeImportKeyAction(
+    category: String,
+    hasLocalPrivateKey: Boolean,
+): WalletHomeImportKeyAction? {
+    if (hasLocalPrivateKey) return null
+    return when (category) {
+        WalletCategory.IMPORTED_MNEMONIC.value -> WalletHomeImportKeyAction(WalletHomeImportKeyKind.MNEMONIC_PHRASE)
+        WalletCategory.IMPORTED_PRIVATE_KEY.value -> WalletHomeImportKeyAction(WalletHomeImportKeyKind.PRIVATE_KEY)
+        else -> null
     }
 }

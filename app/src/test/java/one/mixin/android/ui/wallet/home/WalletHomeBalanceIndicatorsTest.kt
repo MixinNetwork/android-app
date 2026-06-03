@@ -78,4 +78,41 @@ class WalletHomeBalanceIndicatorsTest {
     fun `watch address indicator is absent without addresses`() {
         assertNull(walletHomeWatchIndicator(emptyList()))
     }
+
+    @Test
+    fun `missing imported wallet key exposes import key action`() {
+        val mnemonic = walletHomeImportKeyAction(
+            category = "imported_mnemonic",
+            hasLocalPrivateKey = false,
+        )
+        val privateKey = walletHomeImportKeyAction(
+            category = "imported_private_key",
+            hasLocalPrivateKey = false,
+        )
+
+        assertEquals(WalletHomeImportKeyKind.MNEMONIC_PHRASE, mnemonic?.kind)
+        assertEquals(WalletHomeImportKeyKind.PRIVATE_KEY, privateKey?.kind)
+    }
+
+    @Test
+    fun `import key action is absent when wallet has key or is not imported`() {
+        assertNull(
+            walletHomeImportKeyAction(
+                category = "imported_mnemonic",
+                hasLocalPrivateKey = true,
+            ),
+        )
+        assertNull(
+            walletHomeImportKeyAction(
+                category = "classic",
+                hasLocalPrivateKey = false,
+            ),
+        )
+        assertNull(
+            walletHomeImportKeyAction(
+                category = "watch_address",
+                hasLocalPrivateKey = false,
+            ),
+        )
+    }
 }

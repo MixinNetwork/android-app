@@ -504,6 +504,8 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
 
         override fun onWatchIndicatorClicked() = Unit
 
+        override fun onImportKeyClicked() = Unit
+
         override fun onViewMoreTokensClicked() {
             WalletActivity.show(requireActivity(), WalletActivity.Destination.AllTokens)
         }

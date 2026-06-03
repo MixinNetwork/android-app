@@ -31,6 +31,8 @@ import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.wallet.home.WalletHomeCallbacks
+import one.mixin.android.ui.wallet.home.WalletHomeImportKeyAction
+import one.mixin.android.ui.wallet.home.WalletHomeImportKeyKind
 import one.mixin.android.ui.wallet.home.WalletHomePendingIndicator
 import one.mixin.android.ui.wallet.home.WalletHomePendingKind
 import one.mixin.android.ui.wallet.home.WalletHomeState
@@ -133,9 +135,12 @@ internal fun BalanceCard(state: WalletHomeState, callbacks: WalletHomeCallbacks)
             color = MixinAppTheme.colors.textAssist,
             fontSize = 13.sp,
         )
-        if (state.pendingIndicator != null || state.watchIndicator != null) {
+        if (state.pendingIndicator != null || state.watchIndicator != null || state.importKeyAction != null) {
             Spacer(modifier = Modifier.height(14.dp))
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
                 state.pendingIndicator?.let {
                     PendingIndicator(
                         indicator = it,
@@ -146,6 +151,12 @@ internal fun BalanceCard(state: WalletHomeState, callbacks: WalletHomeCallbacks)
                     WatchIndicator(
                         indicator = it,
                         onClick = callbacks::onWatchIndicatorClicked,
+                    )
+                }
+                state.importKeyAction?.let {
+                    ImportKeyAction(
+                        action = it,
+                        onClick = callbacks::onImportKeyClicked,
                     )
                 }
             }
@@ -203,6 +214,13 @@ private fun PendingIndicator(
             fontSize = 13.sp,
             fontWeight = FontWeight.W500,
         )
+        if (indicator.kind == WalletHomePendingKind.SINGLE_DEPOSIT || indicator.kind == WalletHomePendingKind.MULTIPLE_DEPOSITS) {
+            Image(
+                painter = painterResource(id = R.drawable.ic_arrow_gray_right),
+                contentDescription = null,
+                modifier = Modifier.padding(start = 2.dp),
+            )
+        }
     }
 }
 
@@ -255,6 +273,12 @@ private fun WatchIndicator(
     onClick: () -> Unit,
 ) {
     IndicatorPill(onClick = onClick) {
+        Image(
+            painter = painterResource(id = R.drawable.ic_wallet_watch),
+            contentDescription = null,
+            modifier = Modifier.size(18.dp),
+        )
+        Spacer(modifier = Modifier.width(6.dp))
         Text(
             text = when (indicator.kind) {
                 WalletHomeWatchKind.SINGLE_ADDRESS -> stringResource(R.string.watching_address, indicator.value)
@@ -263,6 +287,45 @@ private fun WatchIndicator(
             color = MixinAppTheme.colors.textPrimary,
             fontSize = 13.sp,
             fontWeight = FontWeight.W500,
+        )
+        Image(
+            painter = painterResource(id = R.drawable.ic_watch_arrow),
+            contentDescription = null,
+            modifier = Modifier.padding(start = 2.dp),
+        )
+    }
+}
+
+@Composable
+private fun ImportKeyAction(
+    action: WalletHomeImportKeyAction,
+    onClick: () -> Unit,
+) {
+    IndicatorPill(onClick = onClick) {
+        val iconRes = when (action.kind) {
+            WalletHomeImportKeyKind.MNEMONIC_PHRASE -> R.drawable.ic_menu_mnemonic_phrase
+            WalletHomeImportKeyKind.PRIVATE_KEY -> R.drawable.ic_menu_private_key
+        }
+        val textRes = when (action.kind) {
+            WalletHomeImportKeyKind.MNEMONIC_PHRASE -> R.string.import_mnemonic_phrase
+            WalletHomeImportKeyKind.PRIVATE_KEY -> R.string.import_private_key
+        }
+        Image(
+            painter = painterResource(id = iconRes),
+            contentDescription = null,
+            modifier = Modifier.size(18.dp),
+        )
+        Spacer(modifier = Modifier.width(6.dp))
+        Text(
+            text = stringResource(textRes),
+            color = MixinAppTheme.colors.textPrimary,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.W500,
+        )
+        Image(
+            painter = painterResource(id = R.drawable.ic_watch_arrow),
+            contentDescription = null,
+            modifier = Modifier.padding(start = 2.dp),
         )
     }
 }
@@ -274,10 +337,12 @@ private fun IndicatorPill(
 ) {
     Row(
         modifier = Modifier
+            .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
             .background(MixinAppTheme.colors.backgroundWindow)
             .clickable { onClick() }
             .padding(horizontal = 12.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
         content = content,
     )

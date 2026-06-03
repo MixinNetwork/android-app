@@ -299,6 +299,7 @@ class WalletHomeAllTokensFragment : BaseFragment() {
         override fun onSwapClicked() = Unit
         override fun onPendingIndicatorClicked() = Unit
         override fun onWatchIndicatorClicked() = Unit
+        override fun onImportKeyClicked() = Unit
         override fun onViewMoreTokensClicked() = Unit
         override fun onAllTokensBackClicked() {
             activity?.onBackPressedDispatcher?.onBackPressed()

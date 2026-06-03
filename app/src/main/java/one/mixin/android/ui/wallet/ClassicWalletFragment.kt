@@ -69,9 +69,12 @@ import one.mixin.android.ui.wallet.home.WalletHomeState
 import one.mixin.android.ui.wallet.home.WalletHomeType
 import one.mixin.android.ui.wallet.home.getWalletHomeCacheState
 import one.mixin.android.ui.wallet.home.putWalletHomeCache
+import one.mixin.android.ui.wallet.home.WalletHomeImportKeyAction
+import one.mixin.android.ui.wallet.home.WalletHomeImportKeyKind
 import one.mixin.android.ui.wallet.home.walletHomePendingTransactionIndicator
 import one.mixin.android.ui.wallet.home.walletHomeWatchIndicator
 import one.mixin.android.ui.wallet.home.walletHomeCacheKey
+import one.mixin.android.ui.wallet.home.walletHomeImportKeyAction
 import one.mixin.android.ui.wallet.adapter.WalletWeb3TokenAdapter
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
@@ -119,6 +122,8 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     private var topTokens: List<Web3TokenItem> = emptyList()
     private var recentTransactions: List<Web3TransactionItem> = emptyList()
     private var isWatchWallet: Boolean = false
+    private var importKeyAction: WalletHomeImportKeyAction? = null
+    private var importKeyChainId: String? = null
     private var pendingTransactionCount: Int = 0
     private var watchAddresses: List<String> = emptyList()
     private val assetsAdapter by lazy { WalletWeb3TokenAdapter(false) }
@@ -403,26 +408,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         _walletId.observe(viewLifecycleOwner) { id ->
             if (id.isNotEmpty()) {
                 lifecycleScope.launch {
-                    val wallet = web3ViewModel.findWalletById(id)
-                    isWatchWallet = wallet?.isWatch() == true
-                    _headBinding?.sendReceiveView?.isVisible = !isWatchWallet
-                    _headBinding?.watchLayout?.isVisible = isWatchWallet
-
-                    if (isWatchWallet) {
-                        val addresses = web3ViewModel.getAddressesGroupedByDestination(id)
-                        watchAddresses = addresses.map { it.destination }
-                        if (addresses.isNotEmpty()) {
-                            if (addresses.size == 1) {
-                                val address = addresses.first().destination
-                                _headBinding?.watchTv?.text = getString(R.string.watching_address, "${address.take(6)}..${address.takeLast(4)}")
-                            } else {
-                                _headBinding?.watchTv?.text = getString(R.string.watching_addresses, addresses.size)
-                            }
-                        }
-                    } else {
-                        watchAddresses = emptyList()
-                    }
-                    renderHome()
+                    refreshWalletHomeMetadata(id)
                 }
             }
         }
@@ -499,6 +485,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         val showCashbackBanner = !defaultSharedPreferences.getBoolean(PREF_WALLET_HOME_CASHBACK_BANNER_CLOSED, false)
         val showBanner = showAddWalletBanner || showCashbackBanner
         val showReferral = !defaultSharedPreferences.getBoolean(PREF_WALLET_HOME_REFERRAL_CLOSED, false) && !referralAlreadyInvited
+        val currentImportKeyAction = importKeyAction
         val cards = WalletHomeBuilder.build(
             walletType = WalletHomeType.CLASSIC,
             hasAssetValue = totalFiat > BigDecimal.ZERO,
@@ -507,6 +494,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             hasPositions = false,
             hasTopMovers = false,
             hasTransactions = recentTransactions.isNotEmpty(),
+            hasImportKeyAction = currentImportKeyAction != null,
             isLoading = isLoading,
         )
         val state = WalletHomeState(
@@ -524,6 +512,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             isWatchWallet = isWatchWallet,
             pendingIndicator = walletHomePendingTransactionIndicator(pendingTransactionCount),
             watchIndicator = if (isWatchWallet) walletHomeWatchIndicator(watchAddresses) else null,
+            importKeyAction = currentImportKeyAction,
             showAddWalletBanner = showAddWalletBanner,
             showCashbackBanner = showCashbackBanner,
             showReferralBanner = showReferral,
@@ -531,6 +520,42 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         )
         defaultSharedPreferences.putWalletHomeCache(classicWalletHomeCacheKey(), state)
         return state
+    }
+
+    private suspend fun refreshWalletHomeMetadata(id: String) {
+        val wallet = web3ViewModel.findWalletById(id)
+        isWatchWallet = wallet?.isWatch() == true
+        importKeyAction = wallet?.let { walletHomeImportKeyAction(it.category, it.hasLocalPrivateKey) }
+        importKeyChainId = if (importKeyAction?.kind == WalletHomeImportKeyKind.PRIVATE_KEY) {
+            web3ViewModel.getAddresses(id).firstOrNull()?.chainId
+        } else {
+            null
+        }
+        _headBinding?.sendReceiveView?.isVisible = !isWatchWallet
+        _headBinding?.watchLayout?.isVisible = isWatchWallet
+
+        if (isWatchWallet) {
+            val addresses = web3ViewModel.getAddressesGroupedByDestination(id)
+            watchAddresses = addresses.map { it.destination }
+            if (addresses.isNotEmpty()) {
+                if (addresses.size == 1) {
+                    val address = addresses.first().destination
+                    _headBinding?.watchTv?.text = getString(R.string.watching_address, "${address.take(6)}..${address.takeLast(4)}")
+                } else {
+                    _headBinding?.watchTv?.text = getString(R.string.watching_addresses, addresses.size)
+                }
+            }
+        } else {
+            watchAddresses = emptyList()
+        }
+        if (hasLoadedHomeCache) {
+            _homeState.value = _homeState.value.copy(
+                isWatchWallet = isWatchWallet,
+                watchIndicator = if (isWatchWallet) walletHomeWatchIndicator(watchAddresses) else null,
+                importKeyAction = importKeyAction,
+            )
+        }
+        renderHome()
     }
 
     private fun loadWalletHomeCache() {
@@ -610,6 +635,15 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             WalletSecurityActivity.show(requireActivity(), WalletSecurityActivity.Mode.VIEW_ADDRESS, walletId = walletId)
         }
 
+        override fun onImportKeyClicked() {
+            val mode = when (importKeyAction?.kind) {
+                WalletHomeImportKeyKind.MNEMONIC_PHRASE -> WalletSecurityActivity.Mode.RE_IMPORT_MNEMONIC
+                WalletHomeImportKeyKind.PRIVATE_KEY -> WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY
+                null -> return
+            }
+            WalletSecurityActivity.show(requireActivity(), mode, chainId = importKeyChainId, walletId = walletId)
+        }
+
         override fun onViewMoreTokensClicked() {
             WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Tokens(walletId))
         }
@@ -675,6 +709,11 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     override fun onResume() {
         super.onResume()
         jobManager.addJobInBackground(RefreshSingleWalletJob(Web3Signer.currentWalletId))
+        if (walletId.isNotEmpty()) {
+            lifecycleScope.launch {
+                refreshWalletHomeMetadata(walletId)
+            }
+        }
         refreshJob = PendingTransactionRefreshHelper.startRefreshData(
             fragment = this,
             web3ViewModel = web3ViewModel,
