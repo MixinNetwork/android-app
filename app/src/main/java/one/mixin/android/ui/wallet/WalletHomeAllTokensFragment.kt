@@ -22,6 +22,8 @@ import one.mixin.android.R
 import one.mixin.android.Constants
 import one.mixin.android.db.web3.vo.WalletItem
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.isMixinSafe
+import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.databinding.FragmentWalletHomeAllTokensBinding
 import one.mixin.android.databinding.ViewClassicWalletBottomBinding
 import one.mixin.android.databinding.ViewPrivacyWalletBottomBinding
@@ -112,7 +114,7 @@ class WalletHomeAllTokensFragment : BaseFragment() {
         }
         lifecycleScope.launch {
             homeState.collect {
-                binding.titleView.setSubTitle(getString(R.string.wallet_home_tokens), getWalletName(), getWalletIcon())
+                updateTitle()
             }
         }
         binding.searchIb.setOnClickListener {
@@ -273,15 +275,34 @@ class WalletHomeAllTokensFragment : BaseFragment() {
         return if (walletType == WalletHomeType.PRIVACY) {
             getString(R.string.Privacy_Wallet)
         } else {
-            wallet?.name ?: ""
+            wallet?.name?.takeIf { it.isNotBlank() } ?: if (wallet?.isWatch() == true) {
+                getString(R.string.Watch_Wallet)
+            } else {
+                getString(R.string.Common_Wallet)
+            }
         }
     }
 
-    private fun getWalletIcon(): Int {
+    private fun updateTitle() {
+        val title = getString(R.string.wallet_home_tokens)
+        val subtitle = getWalletName()
+        val icon = getWalletIcon()
+        if (icon != null) {
+            binding.titleView.setSubTitle(title, subtitle, icon)
+        } else {
+            binding.titleView.setSubTitle(title, subtitle)
+        }
+    }
+
+    private fun getWalletIcon(): Int? {
         return if (walletType == WalletHomeType.PRIVACY) {
             R.drawable.ic_wallet_privacy
         } else {
-            R.drawable.ic_wallet_safe
+            when {
+                wallet?.isMixinSafe() == true -> R.drawable.ic_wallet_safe
+                wallet?.isWatch() == true && wallet?.hasLocalPrivateKey != true -> R.drawable.ic_wallet_watch
+                else -> null
+            }
         }
     }
 

@@ -88,6 +88,7 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
         second: String,
     ) {
         binding.titleTv.setTextOnly(first)
+        clearSubTitleIcon()
         if (second.isBlank()) {
             binding.subTitleTv.visibility = GONE
         } else {
@@ -112,6 +113,11 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
             binding.subTitleTv.textView.compoundDrawablePadding = 4.dp
             binding.subTitleTv.textView.setCompoundDrawablesRelative(null, null, drawable, null)
         }
+    }
+
+    private fun clearSubTitleIcon() {
+        binding.subTitleTv.textView.compoundDrawablePadding = 0
+        binding.subTitleTv.textView.setCompoundDrawablesRelative(null, null, null, null)
     }
 
     fun setSubTitle(
