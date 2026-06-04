@@ -22,7 +22,7 @@ data class RawTransaction(
     @ColumnInfo(name = "type")
     val type: RawTransactionType,
     @ColumnInfo(name = "state")
-    val state: OutputState,
+    val state: RawTransactionState,
     @ColumnInfo(name = "created_at")
     val createdAt: String,
     @ColumnInfo(name = "inscription_hash")

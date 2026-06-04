@@ -69,6 +69,7 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_65_66
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_66_67
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_67_68
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_68_69
+import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_69_70
 import one.mixin.android.db.converter.DepositEntryListConverter
 import one.mixin.android.db.converter.FiatOrderConverter
  
@@ -76,6 +77,7 @@ import one.mixin.android.db.converter.MembershipConverter
 import one.mixin.android.db.converter.MessageStatusConverter
 import one.mixin.android.db.converter.OutputStateConverter
 import one.mixin.android.db.converter.PriceListConverter
+import one.mixin.android.db.converter.RawTransactionStateConverter
 import one.mixin.android.db.converter.RawTransactionTypeConverter
 import one.mixin.android.db.converter.SafeDepositConverter
 import one.mixin.android.db.converter.SafeWithdrawalConverter
@@ -207,6 +209,7 @@ import kotlin.math.min
     SafeDepositConverter::class,
     SafeWithdrawalConverter::class,
     RawTransactionTypeConverter::class,
+    RawTransactionStateConverter::class,
     OutputStateConverter::class,
     TreasuryConverter::class,
     PriceListConverter::class,
@@ -424,7 +427,8 @@ abstract class MixinDatabase : RoomDatabase() {
                                 MIGRATION_65_66,
                                 MIGRATION_66_67,
                                 MIGRATION_67_68,
-                                MIGRATION_68_69
+                                MIGRATION_68_69,
+                                MIGRATION_69_70
                             )
                             .enableMultiInstanceInvalidation()
                             .setQueryExecutor(

@@ -21,7 +21,7 @@ import one.mixin.android.vo.createConversation
 import one.mixin.android.vo.createMessage
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.notMessengerUser
-import one.mixin.android.vo.safe.OutputState
+import one.mixin.android.vo.safe.RawTransactionState
 import one.mixin.android.vo.safe.RawTransactionType
 import one.mixin.android.vo.safe.SafeSnapshotType
 import timber.log.Timber
@@ -55,9 +55,9 @@ class RestoreTransactionJob : BaseJob(
                         Timber.e("Restore Transaction(${transaction.requestId}): db begin")
                         appDatabase.runInTransaction {
                             Timber.e("Restore Transaction(${transaction.requestId}): update raw transaction ${transaction.requestId}")
-                            rawTransactionDao.updateRawTransaction(transaction.requestId, OutputState.signed.name)
+                            rawTransactionDao.updateRawTransaction(transaction.requestId, RawTransactionState.spent.name)
                             Timber.e("Restore Transaction(${transaction.requestId}): update raw transaction $feeTraceId")
-                            rawTransactionDao.updateRawTransaction(feeTraceId, OutputState.signed.name)
+                            rawTransactionDao.updateRawTransaction(feeTraceId, RawTransactionState.spent.name)
                         }
                         Timber.e("Restore Transaction(${transaction.requestId}): db end")
                         if (feeTransaction == null) {
@@ -82,9 +82,9 @@ class RestoreTransactionJob : BaseJob(
                             Timber.e("Restore Transaction(${transaction.requestId}): db begin")
                             appDatabase.runInTransaction {
                                 Timber.e("Restore Transaction(${transaction.requestId}): update raw transaction ${transaction.requestId}")
-                                rawTransactionDao.updateRawTransaction(transaction.requestId, OutputState.signed.name)
+                                rawTransactionDao.updateRawTransaction(transaction.requestId, RawTransactionState.spent.name)
                                 Timber.e("Restore Transaction(${transaction.requestId}): update raw transaction $feeTraceId")
-                                rawTransactionDao.updateRawTransaction(feeTraceId, OutputState.signed.name)
+                                rawTransactionDao.updateRawTransaction(feeTraceId, RawTransactionState.spent.name)
                             }
                             Timber.e("Restore Transaction(${transaction.requestId}): db end")
                             if (feeTransaction == null && transaction.receiverId.isNotBlank()) {
@@ -93,8 +93,8 @@ class RestoreTransactionJob : BaseJob(
                         } else {
                             Timber.e("Restore Transaction(${transaction.requestId}): Post Transaction Error ${transactionRsp.errorDescription}")
                             reportException(e = Throwable("Transaction Error ${transactionRsp.errorDescription}"))
-                            rawTransactionDao.updateRawTransaction(transaction.requestId, OutputState.signed.name)
-                            rawTransactionDao.updateRawTransaction(feeTraceId, OutputState.signed.name)
+                            rawTransactionDao.updateRawTransaction(transaction.requestId, RawTransactionState.spent.name)
+                            rawTransactionDao.updateRawTransaction(feeTraceId, RawTransactionState.spent.name)
                         }
                         jobManager.addJobInBackground(SyncOutputJob())
                     } else if (response.errorCode >= 500) {
