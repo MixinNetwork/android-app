@@ -46,6 +46,10 @@ open class SnapshotHolder(
             }
         }
         if (compact) {
+            itemView.updateLayoutParams {
+                height = RelativeLayout.LayoutParams.WRAP_CONTENT
+            }
+            itemView.setPadding(0, 4.dp, 0, 4.dp)
             binding.avatar.updateLayoutParams<MarginLayoutParams> {
                 marginEnd = 14.dp
                 marginStart = 16.dp

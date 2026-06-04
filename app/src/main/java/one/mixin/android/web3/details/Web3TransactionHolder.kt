@@ -2,6 +2,7 @@ package one.mixin.android.web3.details
 
 import android.annotation.SuppressLint
 import android.util.TypedValue
+import android.view.ViewGroup
 import android.view.ViewGroup.MarginLayoutParams
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -48,6 +49,10 @@ class Web3TransactionHolder(
 ) : RecyclerView.ViewHolder(binding.root) {
     init {
         if (compact) {
+            binding.root.updateLayoutParams<ViewGroup.LayoutParams> {
+                height = ViewGroup.LayoutParams.WRAP_CONTENT
+            }
+            binding.root.setPadding(0, 4.dip, 0, 4.dip)
             binding.avatarFl.updateLayoutParams<MarginLayoutParams> {
                 marginStart = 16.dip
                 marginEnd = 14.dip
