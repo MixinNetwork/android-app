@@ -142,8 +142,11 @@ android {
         versionName = "$versionMajor.$versionMinor.$versionPatch"
         multiDexEnabled = true
         testInstrumentationRunner = "one.mixin.android.CustomTestRunner"
-        resourceConfigurations += listOf("en", "es", "in", "ja", "ms", "ru", "zh-rCN", "zh-rTW")
         vectorDrawables.useSupportLibrary = true
+    }
+
+    androidResources {
+        localeFilters += listOf("en", "es", "in", "ja", "ms", "ru", "zh-rCN", "zh-rTW")
     }
 
     packaging {
@@ -185,11 +188,11 @@ android {
     sourceSets {
         val sharedTestDir = "src/sharedTest/java"
         getByName("test") {
-            java.srcDirs(sharedTestDir)
+            java.directories.add(sharedTestDir)
         }
         getByName("androidTest") {
-            java.srcDirs(sharedTestDir)
-            assets.srcDirs(files("$projectDir/schemas"))
+            java.directories.add(sharedTestDir)
+            assets.directories.add("$projectDir/schemas")
         }
     }
 
@@ -303,6 +306,7 @@ android {
             force("org.bouncycastle:bcprov-jdk15to18:$bcVersion")
             force("org.bouncycastle:bcutil-jdk15to18:$bcVersion")
             force("org.bouncycastle:bcpkix-jdk15to18:$bcVersion")
+            force("org.jetbrains.kotlin:kotlin-metadata-jvm:2.4.0")
             dependencySubstitution {
                 substitute(module("org.bouncycastle:bcprov-jdk15on")).using(module("org.bouncycastle:bcprov-jdk15to18:$bcVersion"))
                 substitute(module("org.bouncycastle:bcutil-jdk15on")).using(module("org.bouncycastle:bcutil-jdk15to18:$bcVersion"))
@@ -601,9 +605,8 @@ dependencies {
 }
 
 composeCompiler {
-    enableStrongSkippingMode = true
     reportsDestination = layout.buildDirectory.dir("compose_compiler")
-    stabilityConfigurationFile = rootProject.layout.projectDirectory.file("stability_config.conf")
+    stabilityConfigurationFiles.add(rootProject.layout.projectDirectory.file("stability_config.conf"))
 }
 
 secrets {
