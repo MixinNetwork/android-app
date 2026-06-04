@@ -221,7 +221,7 @@ internal fun ReferralBannerCard(callbacks: WalletHomeCallbacks) {
             )
             Spacer(modifier = Modifier.height(12.dp))
             Text(
-                text = stringResource(R.string.Referral),
+                text = stringResource(R.string.wallet_home_referral_banner_title),
                 color = MixinAppTheme.colors.textPrimary,
                 fontSize = 16.sp,
                 lineHeight = 20.sp,

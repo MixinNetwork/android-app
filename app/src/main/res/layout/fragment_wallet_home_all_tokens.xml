@@ -7,7 +7,7 @@
     android:background="?attr/bg_white"
     android:orientation="vertical">
 
-    <FrameLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="?android:attr/actionBarSize"
         android:background="?attr/bg_white">
@@ -16,13 +16,16 @@
             android:id="@+id/title_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_alignParentStart="true"
+            android:layout_toStartOf="@id/title_actions"
             app:need_divider="false"
             app:titleText="@string/wallet_home_tokens" />
 
         <LinearLayout
+            android:id="@+id/title_actions"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_gravity="end"
+            android:layout_alignParentEnd="true"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:paddingEnd="6dp">
@@ -54,7 +57,7 @@
                 app:srcCompat="@drawable/ic_more"
                 tools:ignore="ContentDescription" />
         </LinearLayout>
-    </FrameLayout>
+    </RelativeLayout>
 
     <androidx.compose.ui.platform.ComposeView
         android:id="@+id/compose"

@@ -2,12 +2,12 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="84dp">
 
     <RelativeLayout
         android:id="@+id/background_rl"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="84dp"
         android:background="@color/wallet_green">
 
         <TextView
@@ -34,14 +34,14 @@
     <one.mixin.android.widget.ConfirmationBgView
         android:id="@+id/foreground_rl"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="84dp"
         android:foreground="?android:attr/selectableItemBackground">
 
         <one.mixin.android.widget.BadgeCircleImageView
             android:id="@+id/avatar"
-            android:layout_width="42dp"
-            android:layout_height="42dp"
-            android:layout_centerVertical="true"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginTop="22dp"
             android:layout_marginStart="20dp"/>
 
         <ImageView
@@ -60,7 +60,7 @@
             android:id="@+id/balance"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
+            android:layout_alignTop="@+id/avatar"
             android:layout_toEndOf="@id/ic_spam"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="2dp"

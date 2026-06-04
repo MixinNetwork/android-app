@@ -99,6 +99,8 @@ class Web3ViewModel @Inject constructor(
 
     suspend fun refreshUser(userId: String) = userRepository.refreshUser(userId)
 
+    suspend fun findOrSyncApp(appId: String) = userRepository.findOrSyncApp(appId)
+
     suspend fun findMarketItemByAssetId(assetId: String) = tokenRepository.findMarketItemByAssetId(assetId)
 
     fun web3TokensExcludeHidden(walletId: String) = web3Repository.web3TokensExcludeHidden(walletId)

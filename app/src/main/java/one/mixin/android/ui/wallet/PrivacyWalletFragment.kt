@@ -39,6 +39,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.mainThread
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.openUrl
@@ -53,7 +54,9 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
+import one.mixin.android.ui.home.bot.INTERNAL_REFERRAL_ID
 import one.mixin.android.ui.home.web3.trade.SwapActivity
+import one.mixin.android.ui.home.web3.trade.perps.AllPositionsFragment
 import one.mixin.android.ui.home.web3.trade.perps.PerpsActivity
 import one.mixin.android.ui.home.web3.trade.perps.PerpsMarketListBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.trade.perps.PerpetualViewModel
@@ -62,6 +65,7 @@ import one.mixin.android.ui.home.web3.widget.MarketSort
 import one.mixin.android.ui.wallet.home.WalletHomeBuilder
 import one.mixin.android.ui.wallet.home.WalletHomeCallbacks
 import one.mixin.android.ui.wallet.home.WalletHomePage
+import one.mixin.android.ui.wallet.home.WalletHomePositionSummary
 import one.mixin.android.ui.wallet.home.WalletHomeSection
 import one.mixin.android.ui.wallet.home.WalletHomeState
 import one.mixin.android.ui.wallet.home.WalletHomeType
@@ -81,6 +85,7 @@ import one.mixin.android.vo.PendingDisplay
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.toSnapshot
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.widget.PercentItemView
@@ -413,6 +418,7 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             privacyTokens = assets.take(WalletHomeSection.PREVIEW_LIMIT),
             privacyTransactions = recentSnapshots.take(WalletHomeSection.PREVIEW_LIMIT),
             positions = positions.take(WalletHomeSection.PREVIEW_LIMIT),
+            positionSummary = positions.toWalletHomePositionSummary(),
             totalTokenCount = assets.size,
             totalTransactionCount = recentSnapshots.size,
             totalPositionCount = positions.size,
@@ -435,6 +441,31 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     private fun privacyWalletHomeCacheKey(): String =
         walletHomeCacheKey(WalletHomeType.PRIVACY, Session.getAccountId().orEmpty())
 
+    private fun List<PerpsPositionItem>.toWalletHomePositionSummary(): WalletHomePositionSummary? {
+        if (isEmpty()) return null
+        val totalMargin = fold(BigDecimal.ZERO) { total, position ->
+            total + (position.margin?.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+        }.multiply(BigDecimal(Fiats.getRate()))
+        val totalPnl = fold(BigDecimal.ZERO) { total, position ->
+            total + (position.unrealizedPnl?.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+        }.multiply(BigDecimal(Fiats.getRate()))
+        val isProfit = when {
+            totalPnl > BigDecimal.ZERO -> true
+            totalPnl < BigDecimal.ZERO -> false
+            else -> null
+        }
+        val absPnlText = "${Fiats.getSymbol()}${totalPnl.abs().numberFormat2()}"
+        return WalletHomePositionSummary(
+            valueText = "${Fiats.getSymbol()}${totalMargin.abs().numberFormat2()}",
+            pnlText = when {
+                totalPnl > BigDecimal.ZERO -> "+$absPnlText"
+                totalPnl < BigDecimal.ZERO -> "-$absPnlText"
+                else -> absPnlText
+            },
+            isProfit = isProfit,
+        )
+    }
+
     private val walletHomeCallbacks = object : WalletHomeCallbacks {
         override fun onAddWalletClicked() {
             AddWalletBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, AddWalletBottomSheetDialogFragment.TAG)
@@ -451,7 +482,11 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         }
 
         override fun onReferralClicked() {
-            context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+            lifecycleScope.launch {
+                walletViewModel.findOrSyncApp(INTERNAL_REFERRAL_ID)?.let { app ->
+                    WebActivity.show(requireActivity(), url = app.homeUri, app = app, conversationId = null)
+                }
+            }
         }
 
         override fun onReferralClosed() {
@@ -521,11 +556,9 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
 
         override fun onViewMorePositionsClicked() {
             AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.WALLET_HOME)
-            SwapActivity.show(
-                requireActivity(),
-                inMixin = true,
-                entrySource = TradeSource.WALLET_HOME,
-                entryType = AnalyticsTracker.SpotTradeType.PERPETUAL,
+            navTo(
+                AllPositionsFragment.newOpenInstance(AnalyticsTracker.PerpsSource.WALLET_HOME),
+                AllPositionsFragment.TAG,
             )
         }
 

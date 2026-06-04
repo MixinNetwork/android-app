@@ -4,11 +4,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -18,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
@@ -31,6 +34,7 @@ internal fun SectionCard(
     contentUsesOwnPadding: Boolean = false,
     contentFlush: Boolean = false,
     showBottomSpacer: Boolean = true,
+    headerTrailing: (@Composable RowScope.() -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
     Row(
@@ -51,13 +55,21 @@ internal fun SectionCard(
             color = MixinAppTheme.colors.textMinor,
             fontSize = 14.sp,
             fontWeight = FontWeight.W400,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = if (headerTrailing == null) Modifier else Modifier.weight(1f),
         )
-        Icon(
-            painter = painterResource(R.drawable.ic_arrow_gray_right),
-            contentDescription = null,
-            tint = Color.Unspecified,
-            modifier = Modifier.size(16.dp),
-        )
+        if (headerTrailing == null) {
+            Icon(
+                painter = painterResource(R.drawable.ic_arrow_gray_right),
+                contentDescription = null,
+                tint = Color.Unspecified,
+                modifier = Modifier.size(16.dp),
+            )
+        } else {
+            Spacer(modifier = Modifier.width(8.dp))
+            headerTrailing()
+        }
     }
     if (contentUsesOwnPadding) {
         content()

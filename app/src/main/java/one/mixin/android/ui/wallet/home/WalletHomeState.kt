@@ -22,6 +22,7 @@ data class WalletHomeState(
     val privacyTransactions: List<SnapshotItem> = emptyList(),
     val web3Transactions: List<Web3TransactionItem> = emptyList(),
     val positions: List<PerpsPositionItem> = emptyList(),
+    val positionSummary: WalletHomePositionSummary? = null,
     val totalTokenCount: Int = 0,
     val totalTransactionCount: Int = 0,
     val totalPositionCount: Int = 0,
@@ -38,6 +39,12 @@ data class WalletHomeState(
     val showBuyBadge: Boolean = false,
     val showSwapBadge: Boolean = false,
     val showImportSafetyFooter: Boolean = true,
+)
+
+data class WalletHomePositionSummary(
+    val valueText: String,
+    val pnlText: String,
+    val isProfit: Boolean?,
 )
 
 interface WalletHomeCallbacks {

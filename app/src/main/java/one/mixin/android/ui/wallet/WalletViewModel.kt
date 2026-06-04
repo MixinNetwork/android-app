@@ -331,6 +331,8 @@ internal constructor(
 
     suspend fun findBondBotUrl() = userRepository.findOrSyncApp(MIXIN_BOND_USER_ID)
 
+    suspend fun findOrSyncApp(appId: String) = userRepository.findOrSyncApp(appId)
+
     fun utxoItem(asset: String): LiveData<PagingData<UtxoItem>> {
         return tokenRepository.utxoItem(asset)
     }

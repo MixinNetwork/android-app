@@ -2587,8 +2587,10 @@
     <string name="wallet_home_add_wallet_banner_cta">Add Wallet</string>
     <string name="wallet_home_cashback_banner_title">Buy crypto with 100% fee cashback</string>
     <string name="wallet_home_cashback_banner_cta">Claim Now</string>
+    <string name="wallet_home_referral_banner_title">Referral Rewards</string>
     <string name="wallet_home_referral_banner_desc">Invite and get up to 60% trading fee and exclusive revenue sharing.</string>
     <string name="wallet_home_positions">Positions</string>
+    <string name="wallet_home_positions_count">Positions(%1$d)</string>
     <string name="wallet_home_top_movers">Top Movers</string>
     <string name="wallet_home_tokens">Tokens</string>
     <string name="wallet_home_transactions">Transactions</string>

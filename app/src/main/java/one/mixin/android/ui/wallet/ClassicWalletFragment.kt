@@ -58,6 +58,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.common.PendingTransactionRefreshHelper
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
+import one.mixin.android.ui.home.bot.INTERNAL_REFERRAL_ID
 import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.trade.SwapActivity
@@ -89,6 +90,7 @@ import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_SEND
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.widget.PercentItemView
 import one.mixin.android.widget.PercentView
 import one.mixin.android.widget.calcPercent
@@ -597,7 +599,11 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         }
 
         override fun onReferralClicked() {
-            context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+            lifecycleScope.launch {
+                web3ViewModel.findOrSyncApp(INTERNAL_REFERRAL_ID)?.let { app ->
+                    WebActivity.show(requireActivity(), url = app.homeUri, app = app, conversationId = null)
+                }
+            }
         }
 
         override fun onReferralClosed() {

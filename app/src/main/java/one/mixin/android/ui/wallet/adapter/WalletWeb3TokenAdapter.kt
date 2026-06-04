@@ -7,6 +7,7 @@ import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.RelativeLayout
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.DiffUtil
@@ -100,13 +101,30 @@ class WalletWeb3TokenAdapter(
             val binding = ItemWalletAssetBinding.bind(holder.itemView)
             val asset = data!![getPos(position)]
             if (compact) {
-                binding.avatar.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                holder.itemView.updateLayoutParams<ViewGroup.LayoutParams> {
+                    height = ViewGroup.LayoutParams.WRAP_CONTENT
+                }
+                binding.backgroundRl.updateLayoutParams<ViewGroup.LayoutParams> {
+                    height = ViewGroup.LayoutParams.MATCH_PARENT
+                }
+                binding.foregroundRl.updateLayoutParams<ViewGroup.LayoutParams> {
+                    height = ViewGroup.LayoutParams.WRAP_CONTENT
+                }
+                binding.foregroundRl.setPadding(0, 4.dp, 0, 4.dp)
+                binding.avatar.updateLayoutParams<RelativeLayout.LayoutParams> {
+                    width = 42.dp
+                    height = 42.dp
                     marginStart = 16.dp
+                    topMargin = 0
+                    removeRule(RelativeLayout.ALIGN_TOP)
+                    addRule(RelativeLayout.CENTER_VERTICAL)
                 }
-                binding.balance.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                binding.balance.updateLayoutParams<RelativeLayout.LayoutParams> {
                     topMargin = 3.dp
+                    removeRule(RelativeLayout.ALIGN_TOP)
+                    addRule(RelativeLayout.ALIGN_PARENT_TOP)
                 }
-                binding.balanceAs.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                binding.balanceAs.updateLayoutParams<RelativeLayout.LayoutParams> {
                     marginStart = 14.dp
                     topMargin = 4.dp
                 }

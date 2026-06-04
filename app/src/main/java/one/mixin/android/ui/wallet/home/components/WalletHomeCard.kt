@@ -1,16 +1,28 @@
 package one.mixin.android.ui.wallet.home.components
 
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Icon
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
@@ -27,6 +39,7 @@ import one.mixin.android.ui.wallet.home.WalletHomeImportKeyAction
 import one.mixin.android.ui.wallet.home.WalletHomeSection
 import one.mixin.android.ui.wallet.home.WalletHomeSection.PREVIEW_LIMIT
 import one.mixin.android.ui.wallet.home.WalletHomeState
+import one.mixin.android.ui.wallet.home.WalletHomePositionSummary
 import one.mixin.android.ui.wallet.home.WalletHomeType
 import one.mixin.android.ui.wallet.home.Web3TokenRecycler
 import one.mixin.android.ui.wallet.home.Web3TransactionRecycler
@@ -58,10 +71,16 @@ internal fun WalletHomeCard(
             WalletHomeCardType.BALANCE -> BalanceCard(state, callbacks)
             WalletHomeCardType.BANNER -> Unit
             WalletHomeCardType.POSITIONS -> SectionCard(
-                title = stringResource(R.string.wallet_home_positions),
+                title = stringResource(R.string.wallet_home_positions_count, state.totalPositionCount),
                 showViewAll = WalletHomeSection.hasMore(state.totalPositionCount),
                 onClick = callbacks::onViewMorePositionsClicked,
                 contentUsesOwnPadding = true,
+                headerTrailing = {
+                    PositionSummaryHeader(
+                        summary = state.positionSummary,
+                        quoteColorReversed = state.quoteColorReversed,
+                    )
+                },
             ) {
                 PositionRecycler(
                     positions = state.positions.take(PREVIEW_LIMIT),
@@ -77,6 +96,7 @@ internal fun WalletHomeCard(
                         quoteColorReversed = state.quoteColorReversed,
                         onViewAllClick = callbacks::onViewMoreTopMoversClicked,
                         onMarketItemClick = callbacks::onTopMoverMarketClicked,
+                        titleRes = R.string.Perpetual,
                     )
                 }
             }
@@ -137,6 +157,45 @@ internal fun WalletHomeCard(
             WalletHomeCardType.REFERRAL -> ReferralBannerCard(callbacks)
             WalletHomeCardType.SUPPORT -> Unit
         }
+    }
+}
+
+@Composable
+private fun PositionSummaryHeader(
+    summary: WalletHomePositionSummary?,
+    quoteColorReversed: Boolean,
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (summary != null) {
+            val pnlColor = when (summary.isProfit) {
+                true -> if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+                false -> if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+                null -> MixinAppTheme.colors.textAssist
+            }
+            Text(
+                text = buildAnnotatedString {
+                    append(summary.valueText)
+                    append("（")
+                    withStyle(SpanStyle(color = pnlColor)) {
+                        append(summary.pnlText)
+                    }
+                    append("）")
+                },
+                color = MixinAppTheme.colors.textPrimary,
+                fontSize = 14.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.widthIn(max = 190.dp),
+            )
+        }
+        Icon(
+            painter = painterResource(R.drawable.ic_arrow_gray_right),
+            contentDescription = null,
+            tint = Color.Unspecified,
+            modifier = Modifier.size(16.dp),
+        )
     }
 }
 
