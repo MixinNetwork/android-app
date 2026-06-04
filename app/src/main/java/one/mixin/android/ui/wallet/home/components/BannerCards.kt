@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -210,9 +211,11 @@ internal fun ReferralBannerCard(callbacks: WalletHomeCallbacks) {
         Column(
             modifier = Modifier
                 .align(Alignment.TopCenter)
+                .fillMaxSize()
                 .padding(horizontal = 16.dp)
-                .padding(top = 30.dp),
+                .padding(bottom = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Bottom,
         ) {
             Image(
                 painter = painterResource(id = R.drawable.ic_wallet_home_referral),

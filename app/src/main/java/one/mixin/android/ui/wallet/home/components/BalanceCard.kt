@@ -26,6 +26,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
@@ -213,6 +214,9 @@ private fun PendingIndicator(
             color = MixinAppTheme.colors.textPrimary,
             fontSize = 13.sp,
             fontWeight = FontWeight.W500,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f, fill = false),
         )
         if (indicator.kind == WalletHomePendingKind.SINGLE_DEPOSIT || indicator.kind == WalletHomePendingKind.MULTIPLE_DEPOSITS) {
             Image(
