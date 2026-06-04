@@ -1,6 +1,5 @@
 package one.mixin.android.ui.wallet
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -13,13 +12,10 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.switchMap
-import androidx.fragment.app.DialogFragment
-import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import one.mixin.android.R
-import one.mixin.android.Constants
 import one.mixin.android.db.web3.vo.WalletItem
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.isMixinSafe
@@ -27,22 +23,15 @@ import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.databinding.FragmentWalletHomeAllTokensBinding
 import one.mixin.android.databinding.ViewClassicWalletBottomBinding
 import one.mixin.android.databinding.ViewPrivacyWalletBottomBinding
-import one.mixin.android.extension.isExternalTransferUrl
-import one.mixin.android.extension.isLightningUrl
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
-import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
-import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
-import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.wallet.home.WalletHomeCallbacks
 import one.mixin.android.ui.wallet.home.WalletHomeCardType
 import one.mixin.android.ui.wallet.home.WalletHomeState
 import one.mixin.android.ui.wallet.home.WalletHomeType
 import one.mixin.android.ui.wallet.home.components.WalletHomeAllTokensPage
-import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.BottomSheet
@@ -50,11 +39,6 @@ import java.math.BigDecimal
 
 @AndroidEntryPoint
 class WalletHomeAllTokensFragment : BaseFragment() {
-    private val getScanResult =
-        registerForActivityResult(CaptureActivity.CaptureContract()) { data ->
-            data?.getStringExtra(CaptureActivity.ARGS_FOR_SCAN_RESULT)?.let(::showScanBottom)
-        }
-
     companion object {
         const val ARGS_WALLET_TYPE = "args_wallet_type"
         const val ARGS_WALLET_ID = "args_wallet_id"
@@ -72,7 +56,6 @@ class WalletHomeAllTokensFragment : BaseFragment() {
     private var privacyTokens: List<TokenItem> = emptyList()
     private var web3Tokens: List<Web3TokenItem> = emptyList()
     private var wallet: WalletItem? = null
-    private var bottomSheet: DialogFragment? = null
     private var _binding: FragmentWalletHomeAllTokensBinding? = null
     private val binding get() = requireNotNull(_binding)
 
@@ -124,17 +107,6 @@ class WalletHomeAllTokensFragment : BaseFragment() {
                 WalletActivity.show(requireActivity(), WalletActivity.Destination.SearchWeb3(walletId))
             }
         }
-        binding.scanIb.setOnClickListener {
-            RxPermissions(requireActivity()).request(Manifest.permission.CAMERA)
-                .autoDispose(stopScope)
-                .subscribe { granted ->
-                    if (granted) {
-                        getScanResult.launch(Pair(CaptureActivity.ARGS_FOR_SCAN_RESULT, true))
-                    } else {
-                        context?.openPermissionSetting()
-                    }
-                }
-        }
         binding.moreIb.setOnClickListener {
             if (walletType == WalletHomeType.PRIVACY) {
                 showPrivacyBottom()
@@ -177,19 +149,6 @@ class WalletHomeAllTokensFragment : BaseFragment() {
             }
         }
         renderHome()
-    }
-
-    private fun showScanBottom(scan: String) {
-        bottomSheet?.dismiss()
-        if (scan.isLightningUrl() || scan.isExternalTransferUrl()) {
-            LinkBottomSheetDialogFragment.newInstance(scan).show(
-                parentFragmentManager,
-                LinkBottomSheetDialogFragment.TAG,
-            )
-        } else {
-            bottomSheet = QrScanBottomSheetDialogFragment.newInstance(scan)
-            bottomSheet?.showNow(parentFragmentManager, QrScanBottomSheetDialogFragment.TAG)
-        }
     }
 
     @SuppressLint("InflateParams")
@@ -358,7 +317,6 @@ class WalletHomeAllTokensFragment : BaseFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        bottomSheet = null
         _binding = null
     }
 }
