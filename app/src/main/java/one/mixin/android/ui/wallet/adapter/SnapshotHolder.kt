@@ -24,7 +24,11 @@ import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.safe.SafeSnapshotType
 import one.mixin.android.widget.linktext.RoundBackgroundColorSpan
 
-open class SnapshotHolder(itemView: View, layout: Boolean = false) : NormalHolder(itemView) {
+open class SnapshotHolder(
+    itemView: View,
+    layout: Boolean = false,
+    compact: Boolean = false,
+) : NormalHolder(itemView) {
     private val binding = ItemWalletTransactionsBinding.bind(itemView)
 
     init {
@@ -39,6 +43,12 @@ open class SnapshotHolder(itemView: View, layout: Boolean = false) : NormalHolde
                 (this as MarginLayoutParams).apply {
                     marginEnd = 16.dp
                 }
+            }
+        }
+        if (compact) {
+            binding.avatar.updateLayoutParams<MarginLayoutParams> {
+                marginEnd = 14.dp
+                marginStart = 16.dp
             }
         }
     }

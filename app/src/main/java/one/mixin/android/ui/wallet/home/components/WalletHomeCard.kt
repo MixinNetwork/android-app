@@ -66,9 +66,8 @@ internal fun WalletHomeCard(
                 PositionRecycler(
                     positions = state.positions.take(PREVIEW_LIMIT),
                     onClick = callbacks::onPositionClicked,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(positionListHeight(state.positions.take(PREVIEW_LIMIT).size)),
+                    compact = true,
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
             WalletHomeCardType.TOP_MOVERS -> {
@@ -113,17 +112,13 @@ internal fun WalletHomeCard(
                     PrivacyTransactionRecycler(
                         transactions = state.privacyTransactions.take(PREVIEW_LIMIT),
                         onClick = callbacks::onTransactionClicked,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(transactionListHeight(state.privacyTransactions.take(PREVIEW_LIMIT).size)),
+                        modifier = Modifier.fillMaxWidth(),
                     )
                 } else {
                     Web3TransactionRecycler(
                         transactions = state.web3Transactions.take(PREVIEW_LIMIT),
                         onClick = callbacks::onTransactionClicked,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(transactionListHeight(state.web3Transactions.take(PREVIEW_LIMIT).size)),
+                        modifier = Modifier.fillMaxWidth(),
                     )
                 }
             }
@@ -179,7 +174,3 @@ private fun WalletHomeCardType.hasSelfPaddedItems(): Boolean =
         this == WalletHomeCardType.TOKENS ||
         this == WalletHomeCardType.TRANSACTIONS ||
         this == WalletHomeCardType.REFERRAL
-
-private fun transactionListHeight(count: Int) = (62 * WalletHomeSection.previewCount(count)).dp
-
-private fun positionListHeight(count: Int) = (82 * WalletHomeSection.previewCount(count)).dp

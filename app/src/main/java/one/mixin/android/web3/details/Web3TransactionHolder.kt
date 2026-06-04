@@ -2,6 +2,7 @@ package one.mixin.android.web3.details
 
 import android.annotation.SuppressLint
 import android.util.TypedValue
+import android.view.ViewGroup.MarginLayoutParams
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,6 +26,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemWeb3TokenHeaderBinding
@@ -38,10 +40,23 @@ import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.ui.home.web3.StakeAccountSummary
+import one.mixin.android.extension.dp as dip
 
 class Web3TransactionHolder(
-    val binding: ItemWeb3TransactionsBinding
+    val binding: ItemWeb3TransactionsBinding,
+    private val compact: Boolean = false,
 ) : RecyclerView.ViewHolder(binding.root) {
+    init {
+        if (compact) {
+            binding.avatarFl.updateLayoutParams<MarginLayoutParams> {
+                marginStart = 16.dip
+                marginEnd = 14.dip
+            }
+            binding.amountAnimator.updateLayoutParams<MarginLayoutParams> {
+                marginEnd = 16.dip
+            }
+        }
+    }
 
     fun formatAmountWithSign(amount: String?, positive: Boolean): String {
         if (amount.isNullOrEmpty()) return "N/A"

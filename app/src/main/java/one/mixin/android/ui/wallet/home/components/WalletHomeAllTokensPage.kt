@@ -38,7 +38,7 @@ fun WalletHomeAllTokensPage(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MixinAppTheme.colors.backgroundWindow)
+                .background(MixinAppTheme.colors.background)
                 .verticalScroll(rememberScrollState()),
         ) {
             Spacer(modifier = Modifier.height(10.dp))

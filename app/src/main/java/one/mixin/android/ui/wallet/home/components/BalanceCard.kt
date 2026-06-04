@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
@@ -123,7 +124,7 @@ internal fun BalanceCard(state: WalletHomeState, callbacks: WalletHomeCallbacks)
     ) {
         Text(
             text = stringResource(R.string.Total_Balance),
-            color = MixinAppTheme.colors.textAssist,
+            color = MixinAppTheme.colors.textRemarks,
             fontSize = 13.sp,
         )
         Spacer(modifier = Modifier.height(6.dp))
@@ -181,7 +182,7 @@ internal fun BalanceCard(state: WalletHomeState, callbacks: WalletHomeCallbacks)
                 )
                 ActionItem(
                     iconRes = R.drawable.ic_wallet_swap,
-                    labelRes = R.string.Trade,
+                    labelRes = R.string.Swap,
                     showBadge = state.showSwapBadge,
                     onClick = callbacks::onSwapClicked,
                 )
@@ -345,6 +346,7 @@ private fun ActionItem(
             Image(
                 painter = painterResource(id = iconRes),
                 contentDescription = null,
+                modifier = Modifier.size(42.dp),
             )
             if (showBadge) {
                 Box(
@@ -357,11 +359,14 @@ private fun ActionItem(
                 )
             }
         }
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(11.dp))
         Text(
             text = stringResource(labelRes),
-            color = MixinAppTheme.colors.textPrimary,
+            color = MixinAppTheme.colors.textMinor,
             fontSize = 12.sp,
+            fontWeight = FontWeight.W500,
+            lineHeight = 16.sp,
+            textAlign = TextAlign.Center,
         )
     }
 }

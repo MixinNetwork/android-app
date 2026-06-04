@@ -48,7 +48,7 @@ fun PrivacyTokenRecycler(
                 if (itemSpacing > 0) {
                     addItemDecoration(TokenItemSpacingDecoration(itemSpacing))
                 }
-                adapter = WalletAssetAdapter(false).apply {
+                adapter = WalletAssetAdapter(false, compact = true).apply {
                     onItemListener = object : HeaderAdapter.OnItemListener {
                         override fun <T> onNormalItemClick(item: T) {
                             currentOnClick.value(currentTokens.value.indexOf(item as TokenItem))
@@ -89,7 +89,7 @@ fun Web3TokenRecycler(
                 if (itemSpacing > 0) {
                     addItemDecoration(TokenItemSpacingDecoration(itemSpacing))
                 }
-                adapter = WalletWeb3TokenAdapter(false).apply {
+                adapter = WalletWeb3TokenAdapter(false, compact = true).apply {
                     onItemListener = object : HeaderAdapter.OnItemListener {
                         override fun <T> onNormalItemClick(item: T) {
                             currentOnClick.value(currentTokens.value.indexOf(item as Web3TokenItem))
@@ -116,6 +116,7 @@ fun PrivacyTransactionRecycler(
     transactions: List<SnapshotItem>,
     onClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    itemSpacing: Int = 20.dp,
 ) {
     val currentTransactions = rememberUpdatedState(transactions)
     val currentOnClick = rememberUpdatedState(onClick)
@@ -126,7 +127,10 @@ fun PrivacyTransactionRecycler(
                 layoutManager = LinearLayoutManager(context)
                 itemAnimator = null
                 isNestedScrollingEnabled = false
-                adapter = SnapshotAdapter().apply {
+                if (itemSpacing > 0) {
+                    addItemDecoration(TokenItemSpacingDecoration(itemSpacing))
+                }
+                adapter = SnapshotAdapter(compact = true).apply {
                     listener = object : OnSnapshotListener {
                         override fun <T> onNormalItemClick(item: T) {
                             currentOnClick.value(currentTransactions.value.indexOf(item as SnapshotItem))
@@ -161,6 +165,7 @@ fun Web3TransactionRecycler(
     transactions: List<Web3TransactionItem>,
     onClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    itemSpacing: Int = 20.dp,
 ) {
     val currentOnClick = rememberUpdatedState(onClick)
     AndroidView(
@@ -170,7 +175,10 @@ fun Web3TransactionRecycler(
                 layoutManager = LinearLayoutManager(context)
                 itemAnimator = null
                 isNestedScrollingEnabled = false
-                adapter = Web3TransactionListAdapter()
+                if (itemSpacing > 0) {
+                    addItemDecoration(TokenItemSpacingDecoration(itemSpacing))
+                }
+                adapter = Web3TransactionListAdapter(compact = true)
             }
         },
         update = { recyclerView ->
@@ -187,6 +195,8 @@ fun PositionRecycler(
     positions: List<PerpsPositionItem>,
     onClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    compact: Boolean = false,
+    itemSpacing: Int = 20.dp,
 ) {
     val currentOnClick = rememberUpdatedState(onClick)
     AndroidView(
@@ -196,7 +206,10 @@ fun PositionRecycler(
                 layoutManager = LinearLayoutManager(context)
                 itemAnimator = null
                 isNestedScrollingEnabled = false
-                adapter = PositionListAdapter()
+                if (itemSpacing > 0) {
+                    addItemDecoration(TokenItemSpacingDecoration(itemSpacing))
+                }
+                adapter = PositionListAdapter(compact)
             }
         },
         update = { recyclerView ->
@@ -225,6 +238,7 @@ private class TokenItemSpacingDecoration(
 }
 
 private class Web3TransactionListAdapter(
+    private val compact: Boolean,
 ) : RecyclerView.Adapter<Web3TransactionHolder>() {
     private var items: List<Web3TransactionItem> = emptyList()
     private var onClick: (Int) -> Unit = {}
@@ -240,7 +254,7 @@ private class Web3TransactionListAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Web3TransactionHolder {
         val binding = ItemWeb3TransactionsBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return Web3TransactionHolder(binding)
+        return Web3TransactionHolder(binding, compact)
     }
 
     override fun onBindViewHolder(holder: Web3TransactionHolder, position: Int) {
@@ -252,6 +266,7 @@ private class Web3TransactionListAdapter(
 }
 
 private class PositionListAdapter(
+    private val compact: Boolean,
 ) : RecyclerView.Adapter<PositionListAdapter.PositionHolder>() {
     private var items: List<PerpsPositionItem> = emptyList()
     private var onClick: (Int) -> Unit = {}
@@ -274,7 +289,7 @@ private class PositionListAdapter(
     }
 
     override fun onBindViewHolder(holder: PositionHolder, position: Int) {
-        holder.bind(items[position]) { onClick(position) }
+        holder.bind(items[position], compact) { onClick(position) }
     }
 
     override fun getItemCount(): Int = items.size
@@ -284,11 +299,12 @@ private class PositionListAdapter(
     ) : RecyclerView.ViewHolder(composeView) {
         fun bind(
             position: PerpsPositionItem,
+            compact: Boolean,
             onClick: () -> Unit,
         ) {
             composeView.setContent {
                 MixinAppTheme {
-                    OpenPositionItem(position = position, onClick = onClick)
+                    OpenPositionItem(position = position, onClick = onClick, compact = compact)
                 }
             }
         }

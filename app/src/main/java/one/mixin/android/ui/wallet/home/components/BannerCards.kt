@@ -4,11 +4,11 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -66,14 +66,15 @@ internal fun BannerPager(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp)
+                .height(116.dp)
                 .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor),
         ) {
-            Column(modifier = Modifier.padding(20.dp)) {
+            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 20.dp)) {
                 HorizontalPager(
                     state = pagerState,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(90.dp),
+                        .height(76.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) { page ->
                     when (pages[page]) {
@@ -113,12 +114,14 @@ internal fun BannerPager(
         }
         if (pages.size > 1) {
             Spacer(modifier = Modifier.height(8.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 repeat(pages.size) { index ->
                     Box(
                         modifier = Modifier
-                            .padding(horizontal = 4.dp)
-                            .size(if (pagerState.currentPage == index) 8.dp else 6.dp)
+                            .size(8.dp)
                             .clip(CircleShape)
                             .background(
                                 if (pagerState.currentPage == index) {
@@ -145,21 +148,21 @@ private fun BannerCard(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(end = 16.dp)
-            .padding(vertical = 4.dp),
+            .padding(end = 16.dp),
         verticalAlignment = Alignment.Top,
     ) {
         Image(
             painter = painterResource(id = iconRes),
             contentDescription = null,
-            modifier = Modifier.size(40.dp),
+            modifier = Modifier.size(42.dp),
         )
         Spacer(modifier = Modifier.width(14.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = stringResource(titleRes),
-                color = MixinAppTheme.colors.textPrimary,
+                color = MixinAppTheme.colors.textMinor,
                 fontSize = 14.sp,
+                lineHeight = 20.sp,
                 fontWeight = FontWeight.W400,
             )
             if (descriptionRes != null) {
@@ -170,7 +173,7 @@ private fun BannerCard(
                     fontSize = 12.sp,
                 )
             }
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             BannerAction(textRes = ctaRes, onClick = onClick)
         }
     }
@@ -181,7 +184,8 @@ internal fun ReferralBannerCard(callbacks: WalletHomeCallbacks) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .wrapContentWidth(),
+            .wrapContentWidth()
+            .height(244.dp),
     ) {
         Image(
             painter = painterResource(id = R.drawable.bg_wallet_reffal),
@@ -189,7 +193,8 @@ internal fun ReferralBannerCard(callbacks: WalletHomeCallbacks) {
             contentScale = ContentScale.Fit,
             alignment = Alignment.TopCenter,
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
+                .height(130.dp)
                 .align(Alignment.TopCenter),
         )
         Icon(
@@ -204,9 +209,9 @@ internal fun ReferralBannerCard(callbacks: WalletHomeCallbacks) {
         )
         Column(
             modifier = Modifier
-                .align(Alignment.Center)
+                .align(Alignment.TopCenter)
                 .padding(horizontal = 16.dp)
-                .padding(top = 30.dp, bottom = 20.dp),
+                .padding(top = 30.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Image(
@@ -219,6 +224,7 @@ internal fun ReferralBannerCard(callbacks: WalletHomeCallbacks) {
                 text = stringResource(R.string.Referral),
                 color = MixinAppTheme.colors.textPrimary,
                 fontSize = 16.sp,
+                lineHeight = 20.sp,
                 fontWeight = FontWeight.W500,
                 textAlign = TextAlign.Center,
             )
@@ -230,7 +236,7 @@ internal fun ReferralBannerCard(callbacks: WalletHomeCallbacks) {
                     val start = description.indexOf(highlight)
                     if (start >= 0) {
                         append(description.substring(0, start))
-                        withStyle(SpanStyle(color = Color(0xFF7B61FF), fontWeight = FontWeight.W600)) {
+                        withStyle(SpanStyle(color = Color(0xFFAA71FA), fontWeight = FontWeight.W500)) {
                             append(highlight)
                         }
                         append(description.substring(start + highlight.length))
@@ -240,11 +246,23 @@ internal fun ReferralBannerCard(callbacks: WalletHomeCallbacks) {
                 },
                 color = MixinAppTheme.colors.textAssist,
                 fontSize = 14.sp,
+                lineHeight = 18.sp,
                 textAlign = TextAlign.Center,
             )
             Spacer(modifier = Modifier.height(16.dp))
-            BannerAction(textRes = R.string.Learn_More, primary = true, onClick = callbacks::onReferralClicked)
-            Spacer(modifier = Modifier.height(20.dp))
+            BannerAction(
+                textRes = R.string.Learn_More,
+                primary = true,
+                onClick = callbacks::onReferralClicked,
+                modifier = Modifier
+                    .width(123.dp)
+                    .height(32.dp),
+                cornerRadius = 42,
+                horizontalPadding = 0,
+                verticalPadding = 0,
+                fontWeight = FontWeight.W400,
+                lineHeight = 18,
+            )
         }
     }
 }
@@ -254,20 +272,27 @@ private fun BannerAction(
     textRes: Int,
     primary: Boolean = false,
     onClick: (() -> Unit)? = null,
+    modifier: Modifier = Modifier,
+    cornerRadius: Int = 24,
+    horizontalPadding: Int = 12,
+    verticalPadding: Int = 3,
+    fontWeight: FontWeight = FontWeight.W500,
+    lineHeight: Int? = null,
 ) {
     Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(24.dp))
+        modifier = modifier
+            .clip(RoundedCornerShape(cornerRadius.dp))
             .background(if (primary) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundWindow)
             .then(if (onClick == null) Modifier else Modifier.clickable { onClick() })
-            .padding(horizontal = 12.dp, vertical = 3.dp),
+            .padding(horizontal = horizontalPadding.dp, vertical = verticalPadding.dp),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             text = stringResource(textRes),
             color = if (primary) Color.White else MixinAppTheme.colors.accent,
             fontSize = 14.sp,
-            fontWeight = FontWeight.W500,
+            fontWeight = fontWeight,
+            lineHeight = lineHeight?.sp ?: 18.sp,
             textAlign = TextAlign.Center,
         )
     }

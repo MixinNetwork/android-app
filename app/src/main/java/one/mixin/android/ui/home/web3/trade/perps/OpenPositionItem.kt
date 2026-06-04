@@ -43,6 +43,7 @@ import java.math.BigDecimal
 fun OpenPositionItem(
     position: PerpsPositionItem,
     onClick: () -> Unit = {},
+    compact: Boolean = false,
 ) {
     val context = LocalContext.current
     val quoteColorPref = context.defaultSharedPreferences
@@ -84,7 +85,7 @@ fun OpenPositionItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = if (compact) 4.dp else 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         CoilImage(
@@ -95,7 +96,7 @@ fun OpenPositionItem(
                 .clip(CircleShape)
         )
 
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(if (compact) 14.dp else 12.dp))
 
         Column(modifier = Modifier.weight(1f)) {
             Row(

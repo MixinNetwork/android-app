@@ -3,7 +3,7 @@ package one.mixin.android.ui.wallet.home.components
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
@@ -42,16 +41,16 @@ internal fun SupportCard(callbacks: WalletHomeCallbacks) {
             .fillMaxWidth()
             .padding(horizontal = 20.dp)
             .clip(RoundedCornerShape(8.dp))
-            .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor),
+            .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
+            .padding(horizontal = 16.dp, vertical = 20.dp),
     ) {
         Text(
             text = stringResource(R.string.wallet_home_support),
             color = MixinAppTheme.colors.textMinor,
             fontSize = 14.sp,
             fontWeight = FontWeight.W400,
-            modifier = Modifier.padding(start = 20.dp, top = 20.dp, end = 20.dp),
         )
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(20.dp))
         SupportRow(
             iconRes = R.drawable.ic_help_outline,
             titleRes = R.string.wallet_home_contact_us,
@@ -59,6 +58,7 @@ internal fun SupportCard(callbacks: WalletHomeCallbacks) {
             trailingRes = R.drawable.ic_arrow_gray_right,
             onClick = callbacks::onSupportClicked,
         )
+        Spacer(modifier = Modifier.height(20.dp))
         SupportRow(
             iconRes = R.drawable.ic_bot_category_books,
             titleRes = R.string.wallet_home_help_center,
@@ -66,7 +66,6 @@ internal fun SupportCard(callbacks: WalletHomeCallbacks) {
             trailingRes = R.drawable.ic_wallet_home_external_link,
             onClick = callbacks::onHelpCenterClicked,
         )
-        Spacer(modifier = Modifier.height(10.dp))
     }
 }
 
@@ -81,15 +80,14 @@ private fun SupportRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(72.dp)
+            .height(50.dp)
             .clip(RoundedCornerShape(8.dp))
-            .clickable { onClick() }
-            .padding(horizontal = 20.dp),
+            .clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
             modifier = Modifier
-                .size(40.dp)
+                .size(42.dp)
                 .clip(CircleShape)
                 .background(MixinAppTheme.colors.backgroundWindow),
             contentAlignment = Alignment.Center,
@@ -98,22 +96,23 @@ private fun SupportRow(
                 painter = painterResource(iconRes),
                 contentDescription = null,
                 tint = Color.Unspecified,
-                modifier = Modifier.size(20.dp),
+                modifier = Modifier.size(24.dp),
             )
         }
-        Spacer(modifier = Modifier.width(16.dp))
+        Spacer(modifier = Modifier.width(14.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = stringResource(titleRes),
                 color = MixinAppTheme.colors.textPrimary,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.W600,
+                fontSize = 16.sp,
+                lineHeight = 20.sp,
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = stringResource(subtitleRes),
                 color = MixinAppTheme.colors.textAssist,
-                fontSize = 13.sp,
+                fontSize = 14.sp,
+                lineHeight = 18.sp,
             )
         }
         Icon(
@@ -153,8 +152,8 @@ internal fun ImportSafetyFooter(walletType: WalletHomeType) {
         Spacer(modifier = Modifier.height(24.dp))
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState()),
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
         ) {
             val previews = listOf(
@@ -187,9 +186,10 @@ private fun ImportSafetySection(
         text = stringResource(titleRes),
         color = MixinAppTheme.colors.textAssist,
         fontSize = 14.sp,
+        lineHeight = 21.sp,
     )
-    bulletRes.forEachIndexed { index, res ->
-        ImportSafetyBullet(res, topPadding = if (index == 0) 32.dp else 8.dp)
+    bulletRes.forEach { res ->
+        ImportSafetyBullet(res, topPadding = 8.dp)
     }
 }
 
@@ -203,8 +203,8 @@ private fun ImportSafetyBullet(textRes: Int, topPadding: Dp) {
     ) {
         Box(
             modifier = Modifier
-                .padding(top = 6.dp)
-                .size(6.dp)
+                .padding(top = 8.dp)
+                .size(4.dp)
                 .clip(CircleShape)
                 .background(MixinAppTheme.colors.textAssist),
         )
@@ -212,8 +212,9 @@ private fun ImportSafetyBullet(textRes: Int, topPadding: Dp) {
             text = stringResource(textRes),
             color = MixinAppTheme.colors.textAssist,
             fontSize = 14.sp,
+            lineHeight = 18.sp,
             modifier = Modifier
-                .padding(start = 8.dp)
+                .padding(start = 12.dp)
                 .weight(1f),
         )
     }

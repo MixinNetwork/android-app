@@ -3,14 +3,17 @@ package one.mixin.android.ui.wallet.adapter
 import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.Context
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemWalletAssetBinding
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
@@ -24,7 +27,10 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
 
-class WalletAssetAdapter(private val slideShow: Boolean) : HeaderAdapter<TokenItem>() {
+class WalletAssetAdapter(
+    private val slideShow: Boolean,
+    private val compact: Boolean = false,
+) : HeaderAdapter<TokenItem>() {
     fun setAssetList(newAssets: List<TokenItem>) {
         if (data == null) {
             data = newAssets
@@ -93,6 +99,30 @@ class WalletAssetAdapter(private val slideShow: Boolean) : HeaderAdapter<TokenIt
         if (holder is NormalHolder) {
             val binding = ItemWalletAssetBinding.bind(holder.itemView)
             val asset = data!![getPos(position)]
+            if (compact) {
+                binding.avatar.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    marginStart = 16.dp
+                }
+                binding.balance.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    marginStart = 14.dp
+                    topMargin = 3.dp
+                }
+                binding.balanceAs.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    marginStart = 14.dp
+                    topMargin = 4.dp
+                }
+                binding.changeTv.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    marginEnd = 16.dp
+                }
+                binding.priceTv.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    marginEnd = 16.dp
+                }
+                binding.naTv.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    marginEnd = 16.dp
+                }
+                binding.balance.setTextSize(TypedValue.COMPLEX_UNIT_SP, 19f)
+                binding.changeTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+            }
             binding.balance.text =
                 try {
                     if (asset.balance.numberFormat().toFloat() == 0f) {

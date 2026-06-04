@@ -52,15 +52,18 @@ fun WalletHomePage(
                 }
             }
 
-            state.cards.forEach { card ->
+            state.cards.forEachIndexed { index, card ->
                 when (card) {
                     WalletHomeCardType.BANNER -> BannerPager(state, callbacks)
                     WalletHomeCardType.SUPPORT -> SupportCard(callbacks)
                     else -> WalletHomeCard(card, state, callbacks)
                 }
-                Spacer(modifier = Modifier.height(10.dp))
+                if (index != state.cards.lastIndex || !state.showImportSafetyFooter) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
             }
             if (state.showImportSafetyFooter) {
+                Spacer(modifier = Modifier.height(36.dp))
                 ImportSafetyFooter(state.walletType)
                 Spacer(modifier = Modifier.height(20.dp))
             }
