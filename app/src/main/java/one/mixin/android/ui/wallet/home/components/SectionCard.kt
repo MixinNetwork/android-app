@@ -30,6 +30,7 @@ internal fun SectionCard(
     onClick: () -> Unit,
     contentUsesOwnPadding: Boolean = false,
     contentFlush: Boolean = false,
+    showBottomSpacer: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     Row(
@@ -84,7 +85,7 @@ internal fun SectionCard(
                 fontWeight = FontWeight.W500,
             )
         }
-    } else {
+    } else if (showBottomSpacer) {
         Spacer(modifier = Modifier.height(20.dp))
     }
 }

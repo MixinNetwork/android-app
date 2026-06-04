@@ -182,7 +182,7 @@ internal fun BalanceCard(state: WalletHomeState, callbacks: WalletHomeCallbacks)
                 )
                 ActionItem(
                     iconRes = R.drawable.ic_wallet_swap,
-                    labelRes = R.string.Swap,
+                    labelRes = R.string.Trade,
                     showBadge = state.showSwapBadge,
                     onClick = callbacks::onSwapClicked,
                 )

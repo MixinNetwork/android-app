@@ -375,7 +375,7 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
 
     private fun renderHome() {
         if (_binding == null) return
-        if (hasLoadedHomeCache && assets.isEmpty() && recentSnapshots.isEmpty()) return
+        if (hasLoadedHomeCache && isLoading && assets.isEmpty() && recentSnapshots.isEmpty()) return
         hasLoadedHomeCache = false
         if (assets.isNotEmpty() || recentSnapshots.isNotEmpty() || topMovers.isNotEmpty() || positions.isNotEmpty()) {
             isLoading = false
@@ -426,7 +426,7 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             showReferralBanner = showReferral,
             showBuyBadge = defaultSharedPreferences.getBoolean(PREF_HAS_USED_BUY, true),
             showSwapBadge = defaultSharedPreferences.getBoolean(PREF_HAS_USED_SWAP, true),
-            showImportSafetyFooter = !isLoading || cards.isNotEmpty(),
+            showImportSafetyFooter = !isLoading,
         )
         defaultSharedPreferences.putWalletHomeCache(privacyWalletHomeCacheKey(), state)
         return state

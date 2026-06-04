@@ -468,7 +468,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     private fun renderHome() {
         mainThread {
             if (_binding == null) return@mainThread
-            if (hasLoadedHomeCache && assets.isEmpty() && recentTransactions.isEmpty()) return@mainThread
+            if (hasLoadedHomeCache && isLoading && assets.isEmpty() && recentTransactions.isEmpty()) return@mainThread
             hasLoadedHomeCache = false
             if (assets.isNotEmpty() || recentTransactions.isNotEmpty()) {
                 isLoading = false
@@ -517,7 +517,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             showAddWalletBanner = showAddWalletBanner,
             showCashbackBanner = showCashbackBanner,
             showReferralBanner = showReferral,
-            showImportSafetyFooter = !isLoading || cards.isNotEmpty(),
+            showImportSafetyFooter = !isLoading,
         )
         defaultSharedPreferences.putWalletHomeCache(
             classicWalletHomeCacheKey(),

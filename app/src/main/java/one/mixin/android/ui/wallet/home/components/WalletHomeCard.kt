@@ -80,25 +80,37 @@ internal fun WalletHomeCard(
                     )
                 }
             }
-            WalletHomeCardType.TOKENS -> SectionCard(
-                title = stringResource(R.string.wallet_home_tokens),
-                showViewAll = WalletHomeSection.hasMore(state.totalTokenCount),
-                onClick = callbacks::onViewMoreTokensClicked,
-                contentUsesOwnPadding = true,
-            ) {
-                if (!state.allTokensHidden) {
+            WalletHomeCardType.TOKENS -> {
+                val privacyTokens = state.privacyTokens.filter { it.hidden != true }
+                val web3Tokens = state.web3Tokens.filter { it.hidden != true }
+                val hasTokens = !state.allTokensHidden && (
                     if (state.walletType == WalletHomeType.PRIVACY) {
-                        PrivacyTokenRecycler(
-                            tokens = state.privacyTokens.take(PREVIEW_LIMIT),
-                            onClick = callbacks::onTokenClicked,
-                            modifier = Modifier.fillMaxWidth(),
-                        )
+                        privacyTokens.isNotEmpty()
                     } else {
-                        Web3TokenRecycler(
-                            tokens = state.web3Tokens.take(PREVIEW_LIMIT),
-                            onClick = callbacks::onTokenClicked,
-                            modifier = Modifier.fillMaxWidth(),
-                        )
+                        web3Tokens.isNotEmpty()
+                    }
+                )
+                SectionCard(
+                    title = stringResource(R.string.wallet_home_tokens),
+                    showViewAll = WalletHomeSection.hasMore(state.totalTokenCount),
+                    onClick = callbacks::onViewMoreTokensClicked,
+                    contentUsesOwnPadding = true,
+                    showBottomSpacer = hasTokens,
+                ) {
+                    if (!state.allTokensHidden) {
+                        if (state.walletType == WalletHomeType.PRIVACY) {
+                            PrivacyTokenRecycler(
+                                tokens = privacyTokens.take(PREVIEW_LIMIT),
+                                onClick = callbacks::onTokenClicked,
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        } else {
+                            Web3TokenRecycler(
+                                tokens = web3Tokens.take(PREVIEW_LIMIT),
+                                onClick = callbacks::onTokenClicked,
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        }
                     }
                 }
             }
