@@ -34,7 +34,7 @@ fun PrivacyTokenRecycler(
     tokens: List<TokenItem>,
     onClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
-    itemSpacing: Int = 0.dp,
+    itemSpacing: Int = 20.dp,
 ) {
     val currentTokens = rememberUpdatedState(tokens)
     val currentOnClick = rememberUpdatedState(onClick)
@@ -75,7 +75,7 @@ fun Web3TokenRecycler(
     tokens: List<Web3TokenItem>,
     onClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
-    itemSpacing: Int = 0.dp,
+    itemSpacing: Int = 20.dp,
 ) {
     val currentTokens = rememberUpdatedState(tokens)
     val currentOnClick = rememberUpdatedState(onClick)
