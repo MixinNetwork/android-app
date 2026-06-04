@@ -290,13 +290,7 @@ private fun PerpsAddContent(
 
     LaunchedEffect(amount, belowMinimumMargin, aboveMaximumMargin) {
         val addMargin = amount.toBigDecimalOrNull()
-        if (belowMinimumMargin || aboveMaximumMargin) {
-            liquidationJob?.cancel()
-            remoteLiquidationPrice = null
-            isLiquidationLoading = false
-            return@LaunchedEffect
-        }
-        if (addMargin == null || addMargin <= BigDecimal.ZERO) {
+        if (addMargin == null || addMargin <= BigDecimal.ZERO || belowMinimumMargin || aboveMaximumMargin) {
             liquidationJob?.cancel()
             remoteLiquidationPrice = null
             isLiquidationLoading = false
@@ -340,11 +334,7 @@ private fun PerpsAddContent(
     val currentPriceText = formatPerpsPrice(currentPrice, priceScale)
     val defaultLiquidationPrice = position.liquidationPrice
         ?.takeIf { showLiquidationPrice && it.isNotBlank() }
-    val displayLiquidationPrice = when {
-        belowMinimumMargin || aboveMaximumMargin -> "-"
-        remoteLiquidationPrice != null -> remoteLiquidationPrice
-        else -> defaultLiquidationPrice
-    }
+    val displayLiquidationPrice = remoteLiquidationPrice ?: defaultLiquidationPrice
     val entryPriceText = position.entryPrice
         .takeIf { it.isNotBlank() }
         ?.let { formatPerpsPrice(it, priceScale) }
