@@ -71,7 +71,7 @@ internal fun WalletHomeCard(
             WalletHomeCardType.BALANCE -> BalanceCard(state, callbacks)
             WalletHomeCardType.BANNER -> Unit
             WalletHomeCardType.POSITIONS -> SectionCard(
-                title = stringResource(R.string.wallet_home_positions_count, state.totalPositionCount),
+                title = stringResource(R.string.positions_count, state.totalPositionCount),
                 showViewAll = WalletHomeSection.hasMore(state.totalPositionCount),
                 onClick = callbacks::onViewMorePositionsClicked,
                 contentUsesOwnPadding = true,
@@ -135,7 +135,7 @@ internal fun WalletHomeCard(
                 }
             }
             WalletHomeCardType.TRANSACTIONS -> SectionCard(
-                title = stringResource(R.string.wallet_home_transactions),
+                title = stringResource(R.string.Transactions),
                 showViewAll = WalletHomeSection.hasMore(state.totalTransactionCount),
                 onClick = callbacks::onViewMoreTransactionsClicked,
                 contentUsesOwnPadding = true,

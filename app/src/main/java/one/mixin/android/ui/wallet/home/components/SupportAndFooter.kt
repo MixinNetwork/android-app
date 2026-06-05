@@ -54,14 +54,14 @@ internal fun SupportCard(callbacks: WalletHomeCallbacks) {
         SupportRow(
             iconRes = R.drawable.ic_help_outline,
             titleRes = R.string.wallet_home_contact_us,
-            subtitleRes = R.string.wallet_home_contact_us_desc,
+            subtitleRes = R.string.leave_message_to_team_mixin,
             trailingRes = R.drawable.ic_arrow_gray_right,
             onClick = callbacks::onSupportClicked,
         )
         Spacer(modifier = Modifier.height(20.dp))
         SupportRow(
             iconRes = R.drawable.ic_bot_category_books,
-            titleRes = R.string.wallet_home_help_center,
+            titleRes = R.string.Help_center,
             subtitleRes = R.string.wallet_home_help_center_desc,
             trailingRes = R.drawable.ic_wallet_home_external_link,
             onClick = callbacks::onHelpCenterClicked,

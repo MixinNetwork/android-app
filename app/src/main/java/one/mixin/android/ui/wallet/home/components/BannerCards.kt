@@ -83,7 +83,7 @@ internal fun BannerPager(
                             iconRes = R.drawable.ic_wallet_home_add,
                             titleRes = R.string.wallet_home_add_wallet_banner_title,
                             descriptionRes = null,
-                            ctaRes = R.string.wallet_home_add_wallet_banner_cta,
+                            ctaRes = R.string.add_wallet,
                             onClick = callbacks::onAddWalletClicked,
                         )
                         WalletHomeBannerPage.CASHBACK -> BannerCard(
