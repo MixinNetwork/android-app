@@ -12,6 +12,7 @@ import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.appCardCoverUrl
+import one.mixin.android.vo.isAppCard
 import one.mixin.android.widget.CircleProgress
 import one.mixin.android.widget.PhotoView.PhotoView
 import one.mixin.android.widget.gallery.MimeType
@@ -25,10 +26,12 @@ class PhotoHolder(itemView: View) : MediaPagerHolder(itemView) {
         val imageView = (itemView as ViewGroup).getChildAt(0) as PhotoView
         val photoViewAttacher = imageView.attacher
         val circleProgress = itemView.findViewById<CircleProgress>(R.id.circle_progress)
-        val coverUrl = messageItem.appCardCoverUrl()
-        if (coverUrl != null) {
+        val appCardData = messageItem.appCardData
+        if (messageItem.isAppCard()) {
             imageView.loadImage(
-                coverUrl,
+                messageItem.appCardCoverUrl(),
+                holder = R.drawable.bot_default,
+                base64Holder = appCardData?.cover?.thumbnail,
                 onSuccess = { _, _ ->
                     photoViewAttacher.isZoomable = true
                     if (needPostTransition) {
@@ -39,6 +42,7 @@ class PhotoHolder(itemView: View) : MediaPagerHolder(itemView) {
             )
             circleProgress.isVisible = false
             circleProgress.setBindId(messageItem.messageId)
+            imageView.setOnLongClickListener(null)
         } else {
             if (messageItem.mediaMimeType.equals(MimeType.GIF.toString(), true)) {
                 imageView.loadImage(
@@ -90,9 +94,11 @@ class PhotoHolder(itemView: View) : MediaPagerHolder(itemView) {
         imageView.setOnClickListener {
             mediaPagerAdapterListener.onClick(messageItem)
         }
-        imageView.setOnLongClickListener {
-            mediaPagerAdapterListener.onLongClick(messageItem, itemView)
-            return@setOnLongClickListener true
+        if (!messageItem.isAppCard()) {
+            imageView.setOnLongClickListener {
+                mediaPagerAdapterListener.onLongClick(messageItem, itemView)
+                return@setOnLongClickListener true
+            }
         }
         if (needPostTransition) {
             ViewCompat.setTransitionName(imageView, "transition")

@@ -218,6 +218,11 @@ data class MessageItem(
     fun canNotPin() =
         this.canNotReply() || this.type == MessageCategory.MESSAGE_PIN.name || (status != MessageStatus.SENT.name && status != MessageStatus.DELIVERED.name && status != MessageStatus.READ.name)
 
+    fun isAppCardWithCover(): Boolean {
+        if (!isAppCard()) return false
+        return appCardData?.hashCover == true
+    }
+
     private fun unfinishedAttachment(): Boolean = !mediaDownloaded(this.mediaStatus) && (isData() || isImage() || isVideo() || isAudio())
 
     fun isMembership() = membership?.isMembership() == true
