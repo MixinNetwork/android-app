@@ -315,7 +315,12 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
     private fun observeAllDataSource() =
         lifecycleScope.launch {
             val excludeLive = mediaSource == MediaSource.SharedMedia
-            initialIndex = viewModel.indexMediaMessages(conversationId, messageId, excludeLive)
+            val index = viewModel.indexMediaMessages(conversationId, messageId, excludeLive)
+            if (index < 0) {
+                reportEvent("Media message not found，conversationId: $conversationId，messageId: $messageId")
+                return@launch
+            }
+            initialIndex = index
             viewModel.getMediaMessages(conversationId, initialIndex, excludeLive)
                 .observe(
                     this@MediaPagerActivity,
@@ -326,9 +331,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                             runCatching {
                                 adapter.initialPos = initialIndex
                                 it.loadAround(initialIndex)
-                                if (excludeLive) {
-                                    binding.viewPager.setCurrentItem(initialIndex, false)
-                                } else if (it.getOrNull(initialIndex)?.messageId == messageId) { // Only change when data is same
+                                if (it.getOrNull(initialIndex)?.messageId == messageId) {
                                     binding.viewPager.setCurrentItem(initialIndex, false)
                                 } else {
                                     lifecycleScope.launch {
