@@ -15,27 +15,45 @@ import androidx.lifecycle.switchMap
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.db.web3.vo.WalletItem
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.isClassic
+import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.db.web3.vo.isMixinSafe
 import one.mixin.android.db.web3.vo.isWatch
+import one.mixin.android.db.web3.vo.toWeb3Wallet
 import one.mixin.android.databinding.FragmentWalletHomeAllTokensBinding
 import one.mixin.android.databinding.ViewClassicWalletBottomBinding
 import one.mixin.android.databinding.ViewPrivacyWalletBottomBinding
 import one.mixin.android.extension.numberFormat2
-import one.mixin.android.extension.numberFormat8
+import one.mixin.android.extension.openUrl
+import one.mixin.android.extension.toast
+import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.wallet.home.WalletHomeCallbacks
 import one.mixin.android.ui.wallet.home.WalletHomeCardType
+import one.mixin.android.ui.wallet.home.WalletHomeImportKeyAction
+import one.mixin.android.ui.wallet.home.WalletHomeImportKeyKind
 import one.mixin.android.ui.wallet.home.WalletHomeState
 import one.mixin.android.ui.wallet.home.WalletHomeType
+import one.mixin.android.ui.wallet.home.formatWalletHomeBtcTotal
 import one.mixin.android.ui.wallet.home.components.WalletHomeAllTokensPage
+import one.mixin.android.ui.wallet.home.walletHomeImportKeyAction
+import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
+import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE as WEB3_TYPE_FROM_RECEIVE
+import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_SEND as WEB3_TYPE_FROM_SEND
 import one.mixin.android.widget.BottomSheet
 import java.math.BigDecimal
+import java.math.RoundingMode
 
 @AndroidEntryPoint
 class WalletHomeAllTokensFragment : BaseFragment() {
@@ -56,6 +74,9 @@ class WalletHomeAllTokensFragment : BaseFragment() {
     private var privacyTokens: List<TokenItem> = emptyList()
     private var web3Tokens: List<Web3TokenItem> = emptyList()
     private var wallet: WalletItem? = null
+    private var bitcoinPriceUsd: BigDecimal? = null
+    private var importKeyAction: WalletHomeImportKeyAction? = null
+    private var importKeyChainId: String? = null
     private var _binding: FragmentWalletHomeAllTokensBinding? = null
     private val binding get() = requireNotNull(_binding)
 
@@ -118,6 +139,16 @@ class WalletHomeAllTokensFragment : BaseFragment() {
         if (walletType == WalletHomeType.CLASSIC) {
             lifecycleScope.launch {
                 wallet = walletViewModel.findWalletById(walletId)
+                importKeyAction = wallet?.let { walletHomeImportKeyAction(it.category, it.hasLocalPrivateKey) }
+                importKeyChainId = if (importKeyAction?.kind == WalletHomeImportKeyKind.PRIVATE_KEY) {
+                    web3ViewModel.getAddresses(walletId).firstOrNull()?.chainId
+                } else {
+                    null
+                }
+                bitcoinPriceUsd = web3ViewModel.findOrSyncAsset(Constants.ChainId.BITCOIN_CHAIN_ID)
+                    ?.priceUsd
+                    ?.toBigDecimalOrNull()
+                    ?.takeIf { it > BigDecimal.ZERO }
                 renderHome()
             }
         }
@@ -211,7 +242,7 @@ class WalletHomeAllTokensFragment : BaseFragment() {
             walletType = WalletHomeType.PRIVACY,
             cards = listOf(WalletHomeCardType.BALANCE),
             fiatTotal = totalFiat.numberFormat2(),
-            btcTotal = totalBtc.numberFormat8(),
+            btcTotal = formatWalletHomeBtcTotal(totalBtc),
             fiatSymbol = Fiats.getSymbol(),
             privacyTokens = privacyTokens,
             totalTokenCount = privacyTokens.size,
@@ -220,14 +251,30 @@ class WalletHomeAllTokensFragment : BaseFragment() {
 
     private fun buildWeb3State(): WalletHomeState {
         val totalFiat = web3Tokens.fold(BigDecimal.ZERO) { acc, item -> acc + item.fiat() }
+        val totalBtc = bitcoinPriceUsd?.let { priceUsd ->
+            totalFiat
+                .divide(BigDecimal(Fiats.getRate()), 16, RoundingMode.HALF_UP)
+                .divide(priceUsd, 16, RoundingMode.HALF_UP)
+        } ?: BigDecimal.ZERO
         return WalletHomeState(
             walletType = WalletHomeType.CLASSIC,
             cards = listOf(WalletHomeCardType.BALANCE),
             fiatTotal = totalFiat.numberFormat2(),
+            btcTotal = formatWalletHomeBtcTotal(totalBtc),
             fiatSymbol = Fiats.getSymbol(),
             web3Tokens = web3Tokens,
             totalTokenCount = web3Tokens.size,
+            isWatchWallet = wallet?.isWatch() == true,
+            importKeyAction = importKeyAction,
+            hideActions = shouldHideWeb3Actions(),
         )
+    }
+
+    private fun shouldHideWeb3Actions(): Boolean {
+        val currentWallet = wallet ?: return false
+        return currentWallet.isWatch() ||
+            (currentWallet.isImported() && !currentWallet.hasLocalPrivateKey) ||
+            (currentWallet.isClassic() && !currentWallet.hasLocalPrivateKey)
     }
 
     private fun getWalletName(): String {
@@ -251,6 +298,7 @@ class WalletHomeAllTokensFragment : BaseFragment() {
         } else {
             binding.titleView.setSubTitle(title, subtitle)
         }
+        binding.titleView.setWalletNameSubTitleStyle()
     }
 
     private fun getWalletIcon(): Int? {
@@ -273,14 +321,61 @@ class WalletHomeAllTokensFragment : BaseFragment() {
         override fun onReferralClosed() = Unit
         override fun onSupportClicked() = Unit
         override fun onHelpCenterClicked() = Unit
-        override fun onBuyClicked() = Unit
-        override fun onReceiveClicked() = Unit
-        override fun onSendClicked() = Unit
-        override fun onSwapClicked() = Unit
+        override fun onBuyClicked() {
+            if (walletType == WalletHomeType.CLASSIC) {
+                if (shouldHideWeb3Actions()) return
+                WalletActivity.showBuy(requireActivity(), true, null, null, walletId)
+            } else {
+                WalletActivity.showBuy(requireActivity(), false, null, null)
+            }
+        }
+
+        override fun onReceiveClicked() {
+            if (walletType == WalletHomeType.CLASSIC) {
+                if (shouldHideWeb3Actions()) return
+                if (showRecoveryReminderForRiskAction { showWeb3ReceiveAssetList() }) return
+                showWeb3ReceiveAssetList()
+            } else {
+                if (showRecoveryReminderForRiskAction { showPrivacyReceiveAssetList() }) return
+                showPrivacyReceiveAssetList()
+            }
+        }
+
+        override fun onSendClicked() {
+            if (walletType == WalletHomeType.CLASSIC) {
+                if (shouldHideWeb3Actions()) return
+                if (showRecoveryReminderForRiskAction { showWeb3SendAssetList() }) return
+                showWeb3SendAssetList()
+            } else {
+                if (showRecoveryReminderForRiskAction { showPrivacySendAssetList() }) return
+                showPrivacySendAssetList()
+            }
+        }
+
+        override fun onSwapClicked() {
+            if (walletType == WalletHomeType.CLASSIC) {
+                if (shouldHideWeb3Actions()) return
+                if (showRecoveryReminderForRiskAction { showWeb3Swap() }) return
+                showWeb3Swap()
+            } else {
+                if (showRecoveryReminderForRiskAction { showPrivacySwap() }) return
+                showPrivacySwap()
+            }
+        }
         override fun onPendingIndicatorClicked() = Unit
         override fun onWatchIndicatorClicked() = Unit
-        override fun onImportKeyClicked() = Unit
-        override fun onImportKeyLearnMoreClicked() = Unit
+        override fun onImportKeyClicked() {
+            val mode = when (importKeyAction?.kind) {
+                WalletHomeImportKeyKind.MNEMONIC_PHRASE -> WalletSecurityActivity.Mode.RE_IMPORT_MNEMONIC
+                WalletHomeImportKeyKind.PRIVATE_KEY -> WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY
+                null -> return
+            }
+            WalletSecurityActivity.show(requireActivity(), mode, chainId = importKeyChainId, walletId = walletId)
+        }
+
+        override fun onImportKeyLearnMoreClicked() {
+            importKeyAction?.let { context?.openUrl(getString(it.learnMoreUrlRes)) }
+        }
         override fun onViewMoreTokensClicked() = Unit
         override fun onAllTokensBackClicked() {
             activity?.onBackPressedDispatcher?.onBackPressed()
@@ -313,6 +408,78 @@ class WalletHomeAllTokensFragment : BaseFragment() {
         override fun onTopMoverClicked(index: Int) {
             WalletActivity.show(requireActivity(), WalletActivity.Destination.Market)
         }
+    }
+
+    private fun showPrivacySendAssetList() {
+        TokenListBottomSheetDialogFragment.newInstance(TokenListBottomSheetDialogFragment.TYPE_FROM_SEND)
+            .setOnAssetClick {
+                WalletActivity.navigateToWalletActivity(requireActivity(), it)
+            }.setOnDepositClick {
+                // do nothing
+            }
+            .showNow(parentFragmentManager, TokenListBottomSheetDialogFragment.TAG)
+    }
+
+    private fun showPrivacyReceiveAssetList() {
+        TokenListBottomSheetDialogFragment.newInstance(TokenListBottomSheetDialogFragment.TYPE_FROM_RECEIVE)
+            .setOnAssetClick { asset ->
+                WalletActivity.showWithToken(requireActivity(), asset, WalletActivity.Destination.Deposit)
+            }.showNow(parentFragmentManager, TokenListBottomSheetDialogFragment.TAG)
+    }
+
+    private fun showPrivacySwap() {
+        AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.WALLET_HOME)
+        SwapActivity.show(
+            requireActivity(),
+            inMixin = true,
+            entrySource = TradeSource.WALLET_HOME,
+            entryType = AnalyticsTracker.SpotTradeType.SIMPLE,
+        )
+    }
+
+    private fun showWeb3SendAssetList() {
+        Web3TokenListBottomSheetDialogFragment.newInstance(walletId = walletId, WEB3_TYPE_FROM_SEND).apply {
+            setOnClickListener { token ->
+                this@WalletHomeAllTokensFragment.lifecycleScope.launch {
+                    val walletValue = web3ViewModel.findWalletById(walletId)?.toWeb3Wallet()
+                    val address = web3ViewModel.getAddressesByChainId(walletId, token.chainId)
+                    val chain = web3ViewModel.web3TokenItemById(token.walletId, token.chainId)
+                    if (walletValue == null || chain == null) {
+                        toast(R.string.Data_error)
+                        return@launch
+                    }
+                    WalletActivity.navigateToWalletActivity(requireActivity(), address?.destination, token, chain, walletValue)
+                }
+                dismissNow()
+            }
+        }.show(parentFragmentManager, Web3TokenListBottomSheetDialogFragment.TAG)
+    }
+
+    private fun showWeb3ReceiveAssetList() {
+        Web3TokenListBottomSheetDialogFragment.newInstance(walletId = walletId, WEB3_TYPE_FROM_RECEIVE).apply {
+            setOnClickListener { token ->
+                this@WalletHomeAllTokensFragment.lifecycleScope.launch {
+                    val address = web3ViewModel.getAddressesByChainId(walletId, token.chainId)
+                    WalletActivity.showWithAddress(requireActivity(), address?.destination, token, WalletActivity.Destination.Address)
+                }
+                dismissNow()
+            }
+        }.show(parentFragmentManager, Web3TokenListBottomSheetDialogFragment.TAG)
+    }
+
+    private fun showWeb3Swap() {
+        AnalyticsTracker.trackTradeStart(TradeWallet.WEB3, TradeSource.WALLET_HOME)
+        SwapActivity.show(
+            requireActivity(),
+            inMixin = false,
+            walletId = walletId,
+            entrySource = TradeSource.WALLET_HOME,
+            entryType = AnalyticsTracker.SpotTradeType.SIMPLE,
+        )
+    }
+
+    private fun showRecoveryReminderForRiskAction(onContinue: () -> Unit): Boolean {
+        return RecoveryReminderBottomSheetDialogFragment.showForRiskAction(parentFragmentManager, onContinue)
     }
 
     override fun onDestroyView() {

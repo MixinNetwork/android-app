@@ -69,6 +69,7 @@ import one.mixin.android.ui.wallet.home.WalletHomePositionSummary
 import one.mixin.android.ui.wallet.home.WalletHomeSection
 import one.mixin.android.ui.wallet.home.WalletHomeState
 import one.mixin.android.ui.wallet.home.WalletHomeType
+import one.mixin.android.ui.wallet.home.formatWalletHomeBtcTotal
 import one.mixin.android.ui.wallet.home.getWalletHomeCacheState
 import one.mixin.android.ui.wallet.home.putWalletHomeCache
 import one.mixin.android.ui.wallet.home.toWalletHomePendingIndicator
@@ -413,7 +414,7 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             walletType = WalletHomeType.PRIVACY,
             cards = cards,
             fiatTotal = totalFiat.numberFormat2(),
-            btcTotal = totalBtc.numberFormat8(),
+            btcTotal = formatWalletHomeBtcTotal(totalBtc),
             fiatSymbol = Fiats.getSymbol(),
             privacyTokens = assets.take(WalletHomeSection.PREVIEW_LIMIT),
             privacyTransactions = recentSnapshots.take(WalletHomeSection.PREVIEW_LIMIT),

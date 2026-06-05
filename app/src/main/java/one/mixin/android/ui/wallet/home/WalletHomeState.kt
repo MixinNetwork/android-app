@@ -5,10 +5,12 @@ import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.R
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
+import one.mixin.android.extension.numberFormat8
 import one.mixin.android.vo.PendingDisplay
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.safe.TokenItem
+import java.math.BigDecimal
 
 data class WalletHomeState(
     val walletType: WalletHomeType,
@@ -32,6 +34,7 @@ data class WalletHomeState(
     val pendingIndicator: WalletHomePendingIndicator? = null,
     val watchIndicator: WalletHomeWatchIndicator? = null,
     val importKeyAction: WalletHomeImportKeyAction? = null,
+    val hideActions: Boolean = false,
     val quoteColorReversed: Boolean = false,
     val showAddWalletBanner: Boolean = false,
     val showCashbackBanner: Boolean = false,
@@ -127,6 +130,19 @@ fun List<PendingDisplay>.toWalletHomePendingIndicator(): WalletHomePendingIndica
             value = size.toString(),
             iconUrls = take(2).map { it.iconUrl },
         )
+    }
+}
+
+fun formatWalletHomeBtcTotal(totalBtc: BigDecimal): String {
+    val formatted = totalBtc.numberFormat8()
+    return try {
+        if (formatted.toFloat() == 0f) {
+            "0.00"
+        } else {
+            formatted
+        }
+    } catch (ignored: NumberFormatException) {
+        formatted
     }
 }
 

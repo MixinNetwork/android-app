@@ -155,7 +155,9 @@ internal fun BalanceCard(state: WalletHomeState, callbacks: WalletHomeCallbacks)
                 onClick = callbacks::onImportKeyClicked,
             )
         }
-        val showActions = state.importKeyAction == null && !(state.walletType == WalletHomeType.CLASSIC && state.isWatchWallet)
+        val showActions = state.importKeyAction == null &&
+            !state.hideActions &&
+            !(state.walletType == WalletHomeType.CLASSIC && state.isWatchWallet)
         if (showActions) {
             Spacer(modifier = Modifier.height(28.dp))
             Row(

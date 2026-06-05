@@ -68,6 +68,7 @@ import one.mixin.android.ui.wallet.home.WalletHomePage
 import one.mixin.android.ui.wallet.home.WalletHomeSection
 import one.mixin.android.ui.wallet.home.WalletHomeState
 import one.mixin.android.ui.wallet.home.WalletHomeType
+import one.mixin.android.ui.wallet.home.formatWalletHomeBtcTotal
 import one.mixin.android.ui.wallet.home.getWalletHomeCache
 import one.mixin.android.ui.wallet.home.putWalletHomeCache
 import one.mixin.android.ui.wallet.home.WalletHomeImportKeyAction
@@ -796,7 +797,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                 totalFiat.divide(BigDecimal(Fiats.getRate()), 16, RoundingMode.HALF_UP)
                     .divide(BigDecimal(bitcoin.priceUsd), 16, RoundingMode.HALF_UP)
         }
-        cachedBtcTotal = totalBTC.numberFormat8()
+        cachedBtcTotal = formatWalletHomeBtcTotal(totalBTC)
         withContext(Dispatchers.Main) {
             _headBinding?.apply {
                 totalAsTv.text =
