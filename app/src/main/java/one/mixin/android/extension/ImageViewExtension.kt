@@ -52,9 +52,18 @@ fun ImageView.loadImage(
     onError: ((request: ImageRequest, result: ErrorResult) -> Unit)? = null,
     transformation: Transformation? = null,
 ) {
+    if (data == null) {
+        dispose()
+        if (base64Holder != null) {
+            setImageDrawable(base64Holder.toDrawable(layoutParams?.width ?: 0, layoutParams?.height ?: 0))
+        } else if (holder != null) {
+            setImageResource(holder)
+        }
+        return
+    }
     this.load(data) {
         if (base64Holder != null) {
-            placeholder(base64Holder.toDrawable(layoutParams.width, layoutParams.height))
+            placeholder(base64Holder.toDrawable(layoutParams?.width ?: 0, layoutParams?.height ?: 0))
         } else if (holder != null) {
             placeholder(holder)
             error(holder)
@@ -83,9 +92,18 @@ fun ImageView.loadImageCompat(
     onError: ((request: ImageRequest, result: ErrorResult) -> Unit)? = null,
     transformation: Transformation? = null,
 ) {
+    if (data == null) {
+        dispose()
+        if (base64Holder != null) {
+            setImageDrawable(base64Holder.toDrawable(layoutParams?.width ?: 0, layoutParams?.height ?: 0))
+        } else if (holder != null) {
+            setImageResource(holder)
+        }
+        return
+    }
     this.load(data) {
         if (base64Holder != null) {
-            placeholder(base64Holder.toDrawable(layoutParams.width, layoutParams.height))
+            placeholder(base64Holder.toDrawable(layoutParams?.width ?: 0, layoutParams?.height ?: 0))
         } else if (holder != null) {
             placeholder(holder)
             error(holder)
@@ -107,9 +125,18 @@ fun ImageView.loadImage(
     @DrawableRes holder: Int? = null,
     base64Holder: String? = null,
 ) {
+    if (uri == null) {
+        dispose()
+        if (base64Holder != null) {
+            setImageDrawable(base64Holder.toDrawable(layoutParams?.width ?: 0, layoutParams?.height ?: 0))
+        } else if (holder != null) {
+            setImageResource(holder)
+        }
+        return
+    }
     this.load(uri) {
         if (base64Holder != null) {
-            placeholder(base64Holder.toDrawable(layoutParams.width, layoutParams.height))
+            placeholder(base64Holder.toDrawable(layoutParams?.width ?: 0, layoutParams?.height ?: 0))
         } else if (holder != null) {
             placeholder(holder)
             error(holder)
@@ -425,6 +452,10 @@ fun ImageView.loadRoundImage(
 }
 
 fun TextView.loadImage(data: Any?, size: Int, @DrawableRes placeholder: Int? = null) {
+    if (data == null) {
+        TextViewCompat.setCompoundDrawablesRelative(this, null, null, null, null)
+        return
+    }
     val request = ImageRequest.Builder(context).data(data).apply {
         placeholder?.let { placeholder(it) }
         transformations(CoilRoundedHexagonTransformation())

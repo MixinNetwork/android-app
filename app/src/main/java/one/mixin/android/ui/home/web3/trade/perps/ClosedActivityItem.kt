@@ -71,8 +71,8 @@ fun ClosedActivityItem(
     }
     val pnlPercent = order.roe.toBigDecimalOrNull()?.multiply(BigDecimal(100))
     val titleRes = when {
-        isFailed && isLong -> R.string.Close_Long_Failed
-        isFailed -> R.string.Close_Short_Failed
+        isFailed && isLong -> R.string.Closed_Long_Failed
+        isFailed -> R.string.Closed_Short_Failed
         isLong -> R.string.Closed_Long
         else -> R.string.Closed_Short
     }
@@ -116,7 +116,7 @@ fun ClosedActivityItem(
                     modifier = Modifier
                         .clip(RoundedCornerShape(4.dp))
                         .background(leverageBackgroundColor)
-                        .padding(horizontal = 3.dp, vertical = 2.dp),
+                        .padding(horizontal = 3.dp, vertical = 1.dp),
                 )
             }
             Spacer(modifier = Modifier.height(4.dp))

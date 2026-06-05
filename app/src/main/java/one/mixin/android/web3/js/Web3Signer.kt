@@ -143,6 +143,7 @@ object Web3Signer {
             Chain.Avalanche.hexReference -> Chain.Avalanche
             Chain.Polygon.hexReference -> Chain.Polygon
             Chain.BinanceSmartChain.hexReference -> Chain.BinanceSmartChain
+            Chain.HyperEVM.hexReference -> Chain.HyperEVM
             Chain.Solana.hexReference -> Chain.Solana
             else -> null
         }
@@ -265,6 +266,11 @@ object Web3Signer {
                 currentChain = Chain.BinanceSmartChain
                 persist()
                 Result.success(Chain.BinanceSmartChain.name)
+            }
+            Chain.HyperEVM.hexReference -> {
+                currentChain = Chain.HyperEVM
+                persist()
+                Result.success(Chain.HyperEVM.name)
             }
             Chain.Solana.hexReference -> {
                 currentChain = Chain.Solana

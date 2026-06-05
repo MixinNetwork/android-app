@@ -289,6 +289,35 @@ class PerpetualViewModel @Inject constructor(
         }
     }
 
+    suspend fun estimateLiquidationPrice(
+        amount: String,
+        marketId: String? = null,
+        side: String? = null,
+        leverage: Int? = null,
+        positionId: String? = null,
+    ): String? {
+        return try {
+            val response = withContext(Dispatchers.IO) {
+                routeService.getPerpsLiquidationPrice(
+                    marketId = marketId,
+                    amount = amount,
+                    side = side,
+                    leverage = leverage,
+                    positionId = positionId,
+                )
+            }
+            if (response.isSuccess) {
+                response.data?.liquidationPrice?.takeIf { it.isNotBlank() }
+            } else {
+                Timber.e("Failed to estimate liquidation price: ${response.errorDescription}")
+                null
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Error estimating liquidation price")
+            null
+        }
+    }
+
     fun loadUsdTokens(onSuccess: (List<TokenItem>) -> Unit) {
         viewModelScope.launch {
             try {
@@ -343,11 +372,23 @@ class PerpetualViewModel @Inject constructor(
                 if (response.isSuccess && data != null) {
                     Timber.d("Perps order opened: ${data.orderId}, payUrl: ${data.paymentUrl}")
                     
+                    val entryPriceDecimal = entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                    val amountDecimal = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                    val quantityValue = if (entryPriceDecimal > BigDecimal.ZERO) {
+                        amountDecimal
+                            .multiply(BigDecimal(leverage))
+                            .divide(entryPriceDecimal, 8, java.math.RoundingMode.HALF_UP)
+                            .stripTrailingZeros()
+                            .toPlainString()
+                    } else {
+                        "0"
+                    }
+                    
                     val position = PerpsPosition(
                         positionId = data.orderId,
                         marketId = marketId,
                         side = side,
-                        quantity = amount,
+                        quantity = quantityValue,
                         settleAssetId = assetId,
                         botId = "",
                         entryPrice = entryPrice,
@@ -358,7 +399,7 @@ class PerpetualViewModel @Inject constructor(
                         stopLossPrice = stopLossPrice,
                         liquidationPrice = null,
                         leverage = leverage,
-                        state = "processing",
+                        state = PerpsPosition.STATE_OPENING,
                         markPrice = entryPrice,
                         unrealizedPnl = "0",
                         roe = "0",
@@ -425,12 +466,12 @@ class PerpetualViewModel @Inject constructor(
                         if (localPosition != null) {
                             perpsPositionDao.upsertSuspend(
                                 localPosition.copy(
-                                    state = "adding",
+                                    state = PerpsPosition.STATE_ADDING,
                                     updatedAt = now,
                                 )
                             )
                         } else {
-                            perpsPositionDao.updateStatus(positionId, "adding", now)
+                            perpsPositionDao.updateStatus(positionId, PerpsPosition.STATE_ADDING, now)
                         }
                     }
                     onSuccess(data)
@@ -878,6 +919,12 @@ class PerpetualViewModel @Inject constructor(
     suspend fun getOrderFromDb(orderId: String): PerpsOrderItem? {
         return withContext(Dispatchers.IO) {
             perpsOrderDao.getOrder(orderId)
+        }
+    }
+
+    suspend fun getCloseOrderFromDb(positionId: String): PerpsOrderItem? {
+        return withContext(Dispatchers.IO) {
+            perpsOrderDao.getCloseOrderByPositionId(positionId)
         }
     }
 

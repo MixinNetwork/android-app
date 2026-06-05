@@ -61,8 +61,6 @@ import androidx.annotation.ColorInt
 import androidx.annotation.RequiresApi
 import androidx.browser.customtabs.CustomTabColorSchemeParams
 import androidx.browser.customtabs.CustomTabsIntent
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.ui.platform.LocalDensity
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -908,6 +906,45 @@ fun Context.openUrl(
     }
 }
 
+fun Context.openInBrowser(
+    url: String,
+    extraHeaders: Bundle? = null,
+): Boolean {
+    val browserUrl = url.toOpenInBrowserUrlOrNull() ?: return false
+    val uri = browserUrl.toUri()
+
+    try {
+        val customTabsIntent =
+            CustomTabsIntent.Builder()
+                .setDefaultColorSchemeParams(
+                    CustomTabColorSchemeParams.Builder()
+                        .setToolbarColor(ContextCompat.getColor(this, android.R.color.white))
+                        .build(),
+                )
+                .setShowTitle(true)
+                .build()
+        extraHeaders?.let {
+            customTabsIntent.intent.putExtra(Browser.EXTRA_HEADERS, it)
+        }
+        customTabsIntent.launchUrl(this, uri)
+        return true
+    } catch (e: Exception) {
+        Timber.e(e, "OpenInBrowser")
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, uri)
+                .putExtra(Browser.EXTRA_APPLICATION_ID, packageName)
+            extraHeaders?.let {
+                intent.putExtra(Browser.EXTRA_HEADERS, it)
+            }
+            startActivity(intent)
+            return true
+        } catch (e: Exception) {
+            Timber.e(e, "OpenInBrowser")
+        }
+    }
+    return false
+}
+
 fun Context.openExternalUrl(url: String) {
     try {
         var uri = Uri.parse(url)
@@ -1128,7 +1165,8 @@ fun Fragment.getTipsByAsset(asset: TokenItem) =
         Constants.ChainId.Optimism,
         Constants.ChainId.Polygon,
         Constants.ChainId.BitShares,
-        Constants.ChainId.Avalanche
+        Constants.ChainId.Avalanche,
+        Constants.ChainId.HyperEVM
             -> getString(R.string.deposit_tip_chain, asset.symbol, asset.chainName ?: getChainName(asset.chainId, asset.chainName, asset.assetKey ?: ""))
         else -> getString(R.string.deposit_tip_common, asset.symbol)
     }

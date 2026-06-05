@@ -1,12 +1,10 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
 import android.annotation.SuppressLint
-import android.app.Dialog
 import android.content.ClipData
 import android.graphics.Bitmap
 import android.graphics.Typeface
 import android.media.MediaScannerConnection
-import android.os.Bundle
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.ForegroundColorSpan
@@ -14,6 +12,7 @@ import android.text.style.StyleSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.runtime.Composable
 import androidx.core.content.FileProvider
 import androidx.core.content.ContextCompat
 import androidx.core.view.doOnPreDraw
@@ -33,6 +32,7 @@ import one.mixin.android.R
 import one.mixin.android.api.referral.ReferralShareInfo
 import one.mixin.android.api.referral.buildReferralCopyUrl
 import one.mixin.android.api.referral.buildReferralShareUrl
+import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.databinding.FragmentPerpsPositionShareBottomBinding
@@ -43,13 +43,16 @@ import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getPublicDownloadPath
+import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.priceFormat
+import one.mixin.android.extension.roundTopOrBottom
+import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.repository.ReferralRepository
 import one.mixin.android.session.Session
-import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
+import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.common.applyReferralTitleTypeface
 import one.mixin.android.ui.common.isZeroPercent
 import one.mixin.android.ui.common.roundQrBackground
@@ -60,7 +63,6 @@ import one.mixin.android.vo.ActionButtonData
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
-import one.mixin.android.widget.BottomSheet
 import java.io.File
 import java.io.FileOutputStream
 import java.math.BigDecimal
@@ -69,7 +71,7 @@ import javax.inject.Inject
 import kotlin.math.absoluteValue
 
 @AndroidEntryPoint
-class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
+class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
     companion object {
         const val TAG = "PerpsPositionShareBottomFragment"
         private const val ARGS_POSITION = "args_position"
@@ -110,16 +112,28 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
 
     private var referralShareInfo: ReferralShareInfo? = null
     private var isLoading = false
-    private var currentDisplayMetric = ShareDisplayMetric.ROE
+    private var currentDisplayMetric = ShareDisplayMetric.PNL
     private var currentPosterStyle = SharePosterStyle.CLASSIC
     private lateinit var shareData: ShareCardData
     private lateinit var posterAdapter: PosterAdapter
 
+    override fun getTheme() = R.style.AppTheme_Dialog
+
+    @Composable
+    override fun ComposeContent() {
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: android.os.Bundle?,
+    ): View = binding.root.apply {
+        roundTopOrBottom(11.dp.toFloat(), top = true, bottom = false)
+    }
+
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
-        super.setupDialog(dialog, style)
-        contentView = binding.root
-        (dialog as BottomSheet).setCustomView(contentView)
+    override fun onViewCreated(view: View, savedInstanceState: android.os.Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         if (!bindContent()) {
             dismiss()
@@ -171,6 +185,13 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
+    override fun getBottomSheetHeight(view: View): Int {
+        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+    }
+
+    override fun showError(error: String) {
+    }
+
     private fun showLoading(show: Boolean) {
         isLoading = show
         binding.posterPager.visibility = if (show) View.INVISIBLE else View.VISIBLE
@@ -205,20 +226,17 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
         }
 
         val closed = closeOrder ?: return false
+        if (closed.orderType != PerpsOrder.TYPE_CLOSE) return false
         val pnlAmount = closed.realizedPnl.toBigDecimalSafely() ?: BigDecimal.ZERO
         val effectiveLeverage = if (closed.leverage > 0) closed.leverage else 1
+        val pnlPercent = (closed.roe.toBigDecimalSafely() ?: BigDecimal.ZERO).multiply(BigDecimal(100))
         bindCardData(
             marketId = closed.marketId,
             iconUrl = closed.iconUrl,
             side = closed.side,
             leverage = effectiveLeverage,
             pnlAmount = pnlAmount,
-            pnlPercent = calculateClosedRoe(
-                entryPrice = closed.entryPrice,
-                closePrice = closed.closePrice,
-                side = closed.side,
-                leverage = effectiveLeverage,
-            ),
+            pnlPercent = pnlPercent,
             tokenSymbol = closed.tokenSymbol.orEmpty(),
             displaySymbol = closed.displaySymbol.orEmpty(),
             entryPrice = closed.entryPrice,
@@ -426,7 +444,7 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun buildPerpsAppCardMessage(): ForwardMessage {
-        val action = "${Constants.Scheme.HTTPS_TRADE}?type=perpetual&market=${shareData.marketId}"
+        val action = "${Constants.Scheme.HTTPS_TRADE}?type=perps&market=${shareData.marketId}"
         val side = if (shareData.side.equals("long", ignoreCase = true)) getString(R.string.Long) else getString(R.string.Short)
         val market = shareData.displaySymbol.ifBlank { shareData.tokenSymbol }
         val title = getString(R.string.perps_share_card_title, shareData.tokenSymbol)
@@ -564,8 +582,8 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
     )
 
     private enum class ShareDisplayMetric(val labelRes: Int) {
-        ROE(R.string.RoE),
-        PNL(R.string.PnL),
+        ROE(R.string.perps_share_roe),
+        PNL(R.string.perps_share_pnl),
     }
 
     private enum class SharePosterStyle {
@@ -599,8 +617,8 @@ class PerpsPositionShareBottomFragment : MixinBottomSheetDialogFragment() {
             itemBinding.topCard.setBackgroundResource(cardBackground(useProfitStyle))
             itemBinding.assetIcon.loadImage(data.iconUrl, R.drawable.ic_avatar_place_holder)
             itemBinding.pnlTv.text = when (currentDisplayMetric) {
-                ShareDisplayMetric.ROE -> formatSignedPercent(data.pnlPercent)
-                ShareDisplayMetric.PNL -> formatSignedAmount(data.pnlAmount)
+                ShareDisplayMetric.ROE -> formatSignedAmount(data.pnlAmount)
+                ShareDisplayMetric.PNL -> formatSignedPercent(data.pnlPercent)
             }
             itemBinding.pnlLabelTv.text = getString(currentDisplayMetric.labelRes)
 

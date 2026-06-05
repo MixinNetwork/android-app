@@ -56,6 +56,13 @@ data class AppCardData(
             }
         }
 
+    val hashCover: Boolean
+        get() {
+            if (oldVersion) return false
+            if (coverUrl.isNullOrBlank()) return false
+            return true
+        }
+
     val hasValidCoverSize: Boolean
         get() {
             return cover?.let { it.width in APP_CARD_COVER_MIN_SIZE..APP_CARD_COVER_MAX_SIZE && it.height in APP_CARD_COVER_MIN_SIZE..APP_CARD_COVER_MAX_SIZE } ?: true
@@ -134,7 +141,7 @@ data class Cover(
     @SerializedName("mime_type")
     val mimeType: String,
     val url: String?,
-    val thumbnail: String?
+    val thumbnail: String?,
 ) : Parcelable {
     @IgnoredOnParcel
     val radio: Float
@@ -150,3 +157,10 @@ data class Cover(
             return thumbnail?.toDrawable(width, height)?.toBitmap()
         }
 }
+
+fun MessageItem.appCardCoverUrl(): String? =
+    if (isAppCard()) {
+        appCardData?.let { it.coverUrl?.takeIf(String::isNotBlank) ?: it.cover?.url?.takeIf(String::isNotBlank) }
+    } else {
+        null
+    }

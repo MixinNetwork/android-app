@@ -40,6 +40,7 @@ import dagger.hilt.components.SingletonComponent
 import io.reactivex.plugins.RxJavaPlugins
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -146,12 +147,26 @@ open class MixinApplication :
     private var activityReferences: Int = 0
     private var isActivityChangingConfigurations = false
 
-    @Inject
-    @ApplicationScope
+    @EntryPoint
+    @InstallIn(SingletonComponent::class)
+    interface ApplicationScopeEntryPoint {
+        @one.mixin.android.di.ApplicationScope
+        fun getApplicationScope(): CoroutineScope
+    }
+
+    private fun getAppScope(): CoroutineScope {
+        return try {
+            EntryPointAccessors.fromApplication(this, ApplicationScopeEntryPoint::class.java).getApplicationScope()
+        } catch (e: Exception) {
+            CoroutineScope(Dispatchers.Main + SupervisorJob())
+        }
+    }
+
     lateinit var applicationScope: CoroutineScope
 
     override fun onCreate() {
         super.onCreate()
+        applicationScope = getAppScope()
         init()
         registerActivityLifecycleCallbacks(this)
         SignalProtocolLoggerProvider.setProvider(MixinSignalProtocolLogger())

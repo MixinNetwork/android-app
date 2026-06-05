@@ -495,6 +495,27 @@ private fun generateDepositUri(
             }
         }
 
+        ChainId.HyperEVM -> {
+            if (assetId == ChainId.HyperEVM) {
+                val weiAmount = try {
+                    BigDecimal(cleanAmount).multiply(BigDecimal.TEN.pow(18)).toBigInteger().toString()
+                } catch (_: Exception) {
+                    cleanAmount
+                }
+                "ethereum:$address@999?value=$weiAmount"
+            } else {
+                val uint256Amount = try {
+                    val tokenAmount = BigDecimal(cleanAmount)
+                    val decimals = precision ?: 18
+                    val multiplier = BigDecimal.TEN.pow(decimals)
+                    tokenAmount.multiply(multiplier).toBigInteger().toString()
+                } catch (_: Exception) {
+                    cleanAmount
+                }
+                "ethereum:${assetKey}@999/transfer?address=$address&amount=$cleanAmount&uint256=$uint256Amount"
+            }
+        }
+
         ChainId.Litecoin -> {
             "litecoin:$address?amount=$cleanAmount"
         }

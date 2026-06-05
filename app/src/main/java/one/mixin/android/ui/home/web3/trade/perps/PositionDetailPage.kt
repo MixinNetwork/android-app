@@ -44,6 +44,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsOrderItem
+import one.mixin.android.api.response.perps.PerpsPosition
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -53,7 +54,6 @@ import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.tip.wc.compose.ItemWalletContent
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.getMixinErrorStringByCode
-import one.mixin.android.vo.Fiats
 import org.threeten.bp.Instant
 import org.threeten.bp.ZoneId
 import org.threeten.bp.format.DateTimeFormatter
@@ -108,8 +108,6 @@ fun PositionDetailPage(
         ?.takeIf { it.isNotBlank() }
         ?.let { formatPerpsPrice(it, position.priceScale) }
         ?: "--"
-    val fiatRate = BigDecimal(Fiats.getRate())
-    val fiatSymbol = Fiats.getSymbol()
     val hasTakeProfit = !position.takeProfitPrice.isNullOrBlank()
     val hasStopLoss = !position.stopLossPrice.isNullOrBlank()
     var hideTakeProfitGuideUntil by remember(preferences) {
@@ -140,7 +138,8 @@ fun PositionDetailPage(
         }
     }
 
-    val isPending = position.state == "processing" || position.state == "adding"
+    val isAdding = position.state == PerpsPosition.STATE_ADDING
+    val isPending = position.state == PerpsPosition.STATE_OPENING || isAdding
     val leverageTextColor = if (isPending) MixinAppTheme.colors.textAssist else sideColor
     val leverageBackgroundColor = if (isPending) {
         MixinAppTheme.colors.backgroundGrayLight
@@ -199,10 +198,6 @@ fun PositionDetailPage(
 
     fun formatSignedFiat(value: BigDecimal): String {
         return formatPerpsSignedRawUsdDecimal(value)
-    }
-
-    fun formatPriceUsd(value: BigDecimal): String {
-        return formatPerpsUsdDecimal(value)
     }
 
     PageScaffold(
@@ -299,7 +294,7 @@ fun PositionDetailPage(
                 ) {
                     if (isPending) {
                         Text(
-                            text = stringResource(if (position.state == "adding") R.string.adding_position else R.string.Pending),
+                            text = stringResource(if (isAdding) R.string.adding_position else R.string.Pending),
                             color = MixinAppTheme.colors.textAssist,
                             fontWeight = FontWeight.W500,
                             modifier = Modifier
@@ -398,7 +393,7 @@ fun PositionDetailPage(
 
                 PositionDetailItem(
                     label = stringResource(R.string.Entry_Price).uppercase(),
-                    value = formatPriceUsd(entryPrice)
+                    value = formatPerpsPrice(entryPrice, position.priceScale)
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -527,7 +522,7 @@ fun PositionDetailPage(
     }
     val isFailed = closeOrder.status == PerpsOrder.STATUS_REJECTED
     val title = if (isFailed) {
-        stringResource(if (isLong) R.string.Close_Long_Failed else R.string.Close_Short_Failed)
+        stringResource(if (isLong) R.string.Closed_Long_Failed else R.string.Closed_Short_Failed)
     } else {
         stringResource(if (isLong) R.string.Closed_Long else R.string.Closed_Short)
     }
@@ -541,8 +536,6 @@ fun PositionDetailPage(
 
     val quantity = closeOrder.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val absQuantity = quantity.abs()
-    val fiatRate = BigDecimal(Fiats.getRate())
-    val fiatSymbol = Fiats.getSymbol()
     val effectiveLeverage = leverage ?: closeOrder.leverage
     val roe = (closeOrder.roe.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(BigDecimal(100))
 
@@ -552,10 +545,6 @@ fun PositionDetailPage(
 
     fun formatSignedFiat(value: BigDecimal): String {
         return formatPerpsSignedRawUsdDecimal(value)
-    }
-
-    fun formatPriceUsd(value: BigDecimal): String {
-        return formatPerpsUsdDecimal(value)
     }
 
     PageScaffold(
@@ -715,14 +704,14 @@ fun PositionDetailPage(
 
                 PositionDetailItem(
                     label = stringResource(R.string.Entry_Price).uppercase(),
-                    value = formatPriceUsd(closeOrder.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+                    value = formatPerpsPrice(closeOrder.entryPrice, closeOrder.priceScale)
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
 
                 PositionDetailItem(
                     label = stringResource(R.string.Close_Price).uppercase(),
-                    value = formatPriceUsd(closeOrder.closePrice.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+                    value = formatPerpsPrice(closeOrder.closePrice, closeOrder.priceScale)
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -786,11 +775,11 @@ fun OpenedOrderDetailPage(
     val isFailed = openedOrder.status == PerpsOrder.STATUS_REJECTED
     val title = when {
         isIncrease && isFailed ->
-            stringResource(if (isLong) R.string.Add_Long_Failed else R.string.Add_Short_Failed)
+            stringResource(if (isLong) R.string.Added_Long_Failed else R.string.Added_Short_Failed)
         isIncrease ->
             stringResource(if (isLong) R.string.Added_Long else R.string.Added_Short)
         isFailed ->
-            stringResource(if (isLong) R.string.Open_Long_Failed else R.string.Open_Short_Failed)
+            stringResource(if (isLong) R.string.Opened_Long_Failed else R.string.Opened_Short_Failed)
         else ->
             stringResource(if (isLong) R.string.Opened_Long else R.string.Opened_Short)
     }
@@ -804,12 +793,7 @@ fun OpenedOrderDetailPage(
 
     val quantity = openedOrder.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val absQuantity = quantity.abs()
-    val entryPrice = openedOrder.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val leverage = openedOrder.leverage
-
-    fun formatPriceUsd(value: BigDecimal): String {
-        return formatPerpsUsdDecimal(value)
-    }
 
     PageScaffold(
         title = title,
@@ -904,28 +888,12 @@ fun OpenedOrderDetailPage(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = stringResource(R.string.View_Market),
+                            text = stringResource(R.string.view_perps_market),
                             color = MixinAppTheme.colors.textPrimary,
                             fontWeight = FontWeight.W500,
                             modifier = Modifier
                                 .weight(1f)
                                 .clickable { onViewMarket?.invoke() }
-                                .padding(vertical = 10.dp),
-                            textAlign = TextAlign.Center
-                        )
-                        Box(
-                            modifier = Modifier
-                                .width(2.dp)
-                                .height(24.dp)
-                                .background(Color(0x0D000000))
-                        )
-                        Text(
-                            text = stringResource(R.string.Share),
-                            color = MixinAppTheme.colors.textPrimary,
-                            fontWeight = FontWeight.W500,
-                            modifier = Modifier
-                                .weight(1f)
-                                .clickable { onShare?.invoke() }
                                 .padding(vertical = 10.dp),
                             textAlign = TextAlign.Center
                         )
@@ -961,7 +929,20 @@ fun OpenedOrderDetailPage(
                 if (!isFailed) {
                     PositionDetailItem(
                         label = stringResource(R.string.Entry_Price).uppercase(),
-                        value = formatPriceUsd(entryPrice)
+                        value = formatPerpsPrice(openedOrder.entryPrice, openedOrder.priceScale)
+                    )
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    val amountValue = if (leverage > 0) {
+                        absQuantity.multiply(openedOrder.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+                            .divide(BigDecimal(leverage), 8, RoundingMode.HALF_UP)
+                    } else {
+                        BigDecimal.ZERO
+                    }
+                    PositionDetailItem(
+                        label = stringResource(R.string.Amount).uppercase(),
+                        value = formatPerpsUsdDecimal(amountValue)
                     )
 
                     Spacer(modifier = Modifier.height(20.dp))

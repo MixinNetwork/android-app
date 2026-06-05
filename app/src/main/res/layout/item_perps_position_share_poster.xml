@@ -17,56 +17,36 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/card_content"
             android:layout_width="match_parent"
-            android:layout_height="250dp"
+            android:layout_height="wrap_content"
             android:paddingStart="20dp"
-            android:paddingTop="18dp"
-            android:paddingEnd="20dp">
+            android:paddingTop="16dp">
 
             <ImageView
                 android:id="@+id/card_bg_mixin"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
-                android:alpha="0.45"
                 android:contentDescription="@null"
-                android:scaleType="centerCrop"
+                android:scaleType="fitEnd"
                 android:src="@drawable/img_perps_position_share_bg_mixin"
                 app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintDimensionRatio="885:516"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="@id/pnl_tv" />
 
-            <LinearLayout
+            <ImageView
                 android:id="@+id/header"
                 android:layout_width="wrap_content"
-                android:layout_height="24dp"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/mixin_messenger"
+                android:src="@drawable/perpetual_logo"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
-
-                <ImageView
-                    android:id="@+id/logo"
-                    android:layout_width="22dp"
-                    android:layout_height="14dp"
-                    android:contentDescription="@string/mixin_messenger"
-                    android:src="@drawable/ic_mixin_white" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:includeFontPadding="false"
-                    android:text="@string/mixin_messenger"
-                    android:textColor="@color/white"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
+                app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
                 android:id="@+id/pnl_tv"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="18dp"
                 android:ellipsize="end"
                 android:includeFontPadding="false"
                 android:maxLines="1"
@@ -108,11 +88,11 @@
                 android:background="@drawable/bg_perps_share_tag"
                 android:gravity="center"
                 android:includeFontPadding="false"
-                android:paddingStart="3dp"
-                android:paddingEnd="3dp"
+                android:paddingStart="6dp"
+                android:paddingEnd="6dp"
                 android:textColor="@color/white"
-                android:paddingTop="6dp"
-                android:paddingBottom="6dp"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"
                 android:textSize="12sp"
                 app:layout_constraintStart_toEndOf="@id/asset_icon"
                 app:layout_constraintTop_toTopOf="@id/asset_icon"
@@ -127,10 +107,10 @@
                 android:background="@drawable/bg_perps_share_tag"
                 android:gravity="center"
                 android:includeFontPadding="false"
-                android:paddingStart="3dp"
-                android:paddingEnd="3dp"
-                android:paddingTop="6dp"
-                android:paddingBottom="6dp"
+                android:paddingStart="6dp"
+                android:paddingEnd="6dp"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"
                 android:textColor="@color/white"
                 android:textSize="12sp"
                 app:layout_constraintStart_toEndOf="@id/side_tag_tv"
@@ -143,6 +123,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
+                android:layout_marginBottom="16dp"
                 android:orientation="vertical"
                 app:layout_constraintEnd_toStartOf="@id/trend_image"
                 app:layout_constraintStart_toStartOf="parent"
@@ -164,7 +145,7 @@
                     android:layout_marginTop="2dp"
                     android:includeFontPadding="false"
                     android:textColor="@color/white"
-                    android:textSize="13sp"
+                    android:textSize="14sp"
                     android:textFontWeight="600"
                     tools:text="$45,328.6" />
 
@@ -185,8 +166,9 @@
                     android:layout_marginTop="2dp"
                     android:includeFontPadding="false"
                     android:textColor="@color/white"
-                    android:textSize="13sp"
+                    android:textSize="14sp"
                     android:textFontWeight="600"
+                    android:layout_marginBottom="8dp"
                     tools:text="$3,412.23" />
             </LinearLayout>
 
@@ -194,7 +176,7 @@
                 android:id="@+id/trend_image"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
-                android:layout_marginBottom="6dp"
+                android:layout_marginBottom="24dp"
                 android:adjustViewBounds="true"
                 android:contentDescription="@null"
                 android:scaleType="fitCenter"
@@ -203,6 +185,7 @@
                 app:layout_constraintDimensionRatio="1:1"
                 app:layout_constraintTop_toTopOf="@id/pnl_tv"
                 android:layout_marginTop="26dp"
+                android:layout_marginEnd="16dp"
                 app:layout_constraintEnd_toEndOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>

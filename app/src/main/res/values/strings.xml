@@ -1569,6 +1569,7 @@
     <string name="Optimism">Optimism</string>
     <string name="Arbitrum">Arbitrum</string>
     <string name="Avalanche">Avalanche</string>
+    <string name="HyperEVM">HyperEVM</string>
     <string name="Toncoin">TON</string>
     <string name="web3_account_network">%1$s Account</string>
     <string name="web3_account">Account</string>
@@ -2270,7 +2271,7 @@
     <string name="input_referral_code_hint">Invited by a friend?</string>
     <string name="referral_description">Invite friends, earn crypto</string>
     <string name="Address_not_found">This user has not registered a common wallet</string>
-    <string name="limit_price">Limit Price</string>
+    <string name="limit_price">Price</string>
     <string name="Order_Type">Order Type</string>
     <string name="Forever">Forever</string>
     <string name="Trade_Simple">Simple</string>
@@ -2338,7 +2339,6 @@
     <string name="example_scene2_decreasing">Scenario 2: Price Falls</string>
     <string name="example_scene2_increasing">Scenario 2: Price Rises</string>
     <string name="PnL">PnL</string>
-    <string name="RoE">RoE</string>
     <string name="perps_long_overview">You open a long position when you expect the price to rise. If the price rises, you profit; if the price falls, you incur a loss.</string>
     <string name="perps_short_overview">You open a short position when you expect the price to fall. If the price falls, you profit; if the price rises, you incur a loss.</string>
     <string name="pnl_rule_price_fall_loss">Price falls, loss</string>
@@ -2438,14 +2438,14 @@
     <string name="Closed_Short">Closed Short</string>
     <string name="Added_Long">Added Long</string>
     <string name="Added_Short">Added Short</string>
-    <string name="Open_Long_Failed">Open Long Failed</string>
-    <string name="Open_Short_Failed">Open Short Failed</string>
-    <string name="Close_Long_Failed">Close Long Failed</string>
-    <string name="Close_Short_Failed">Close Short Failed</string>
-    <string name="Add_Long_Failed">Add Long Failed</string>
-    <string name="Add_Short_Failed">Add Short Failed</string>
+    <string name="Opened_Long_Failed">Opened Long Failed</string>
+    <string name="Opened_Short_Failed">Opened Short Failed</string>
+    <string name="Closed_Long_Failed">Closed Long Failed</string>
+    <string name="Closed_Short_Failed">Closed Short Failed</string>
+    <string name="Added_Long_Failed">Added Long Failed</string>
+    <string name="Added_Short_Failed">Added Short Failed</string>
     <string name="add_position_title_failed">Add to %1$s %2$s Failed</string>
-    <string name="View_Market">View Market</string>
+    <string name="view_perps_market">View Market</string>
     <string name="Estimated_Liquidation_Price">Estimated Liquidation Price</string>
     <string name="Total_Position_Value">Total Position Value</string>
     <string name="Perpetual_Side_Symbol_Title">%1$s %2$s</string>
@@ -2471,6 +2471,7 @@
     <string name="title">Choose a Country or Region</string>
     <string name="anonymous_number">Anonymous Number</string>
     <string name="perps_markets">Trending</string>
+    <string name="perps_top_movers">Top Movers</string>
     <string name="perps_market">Market</string>
     <string name="perps_share_card_title">🚀 Perps %1$s</string>
     <string name="perps_share_card_market">- 📈 Market: %1$s</string>
@@ -2478,10 +2479,9 @@
     <string name="perps_share_card_trade_now">💰 Trade Now</string>
     <string name="market_share_card_title">Trade %1$s</string>
     <string name="market_share_card_asset">🔥 %1$s (%2$s)</string>
-    <string name="market_share_card_market_cap">📈 Market Cap: %1$s%2$s</string>
-    <string name="market_share_card_price">🏷️ Price: %1$s%2$s</string>
+    <string name="market_share_card_market_cap">📈 Market Cap: %1$s</string>
+    <string name="market_share_card_price">🏷️ Price: %1$s</string>
     <string name="market_share_card_price_change">💰 24h Price Change: %1$s</string>
-    <string name="market_share_card_market_button">%1$s Market</string>
     <string name="perps_category_all">All</string>
     <string name="perps_category_crypto">Crypto</string>
     <string name="perps_category_stocks">Stocks</string>
@@ -2575,6 +2575,8 @@
     <string name="pin_log_subtitle_mnemonic_phrase_exported">✅ Mnemonic Phrase exported</string>
     <string name="pin_log_subtitle_mobile_number_changed">✅ Mobile Number changed</string>
     <string name="perps_share_to_mixin_contact">Send to Mixin Contact</string>
+    <string name="perps_share_pnl">PnL</string>
+    <string name="perps_share_roe">ROE</string>
     <string name="perps_share_mixin_contact_desc">Bring your friends on board</string>
     <string name="perps_share_mixin_contact_desc_with_percent">Earn %1$s commission via this link</string>
 </resources>

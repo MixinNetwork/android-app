@@ -31,12 +31,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.api.response.perps.PerpsPosition
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
 @Composable
@@ -48,8 +48,6 @@ fun OpenPositionItem(
     val quoteColorPref = context.defaultSharedPreferences
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     val margin = position.margin?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    val fiatRate = BigDecimal(Fiats.getRate())
-    val fiatSymbol = Fiats.getSymbol()
 
     val displaySymbol = position.tokenSymbol ?: stringResource(R.string.Unknown)
     val quantity = position.quantity
@@ -59,8 +57,8 @@ fun OpenPositionItem(
         ?.toPlainString()
         ?: position.quantity.removePrefix("-")
     val isLong = position.side.equals("long", true)
-    val isOpening = position.state.equals("processing", true)
-    val isAdding = position.state.equals("adding", true)
+    val isOpening = position.state.equals(PerpsPosition.STATE_OPENING, true)
+    val isAdding = position.state.equals(PerpsPosition.STATE_ADDING, true)
     val isPending = isOpening || isAdding
     val sideColor = if (isLong) {
         if (quoteColorPref) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
@@ -136,7 +134,7 @@ fun OpenPositionItem(
                         modifier = Modifier
                             .clip(RoundedCornerShape(4.dp))
                             .background(leverageBackgroundColor)
-                            .padding(horizontal = 3.dp, vertical = 2.dp)
+                            .padding(horizontal = 3.dp, vertical = 1.dp)
                     )
                     if (tpSlTagText != null) {
                         Spacer(modifier = Modifier.width(4.dp))
@@ -230,13 +228,13 @@ private fun TpSlStatusTag(
     val backgroundColor = Color(LocalContext.current.colorAttr(R.attr.bg_market_gradient_start))
     Text(
         text = text,
-        fontSize = 11.sp,
+        fontSize = 12.sp,
         fontWeight = FontWeight.W500,
         color = Color.White,
         lineHeight = 14.sp,
         modifier = Modifier
             .clip(RoundedCornerShape(4.dp))
             .background(backgroundColor)
-            .padding(horizontal = 4.dp, vertical = 2.dp),
+            .padding(horizontal = 3.dp, vertical = 1.dp),
     )
 }

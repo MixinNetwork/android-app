@@ -3,6 +3,7 @@
 package one.mixin.android.ui.conversation.holder
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -73,7 +74,8 @@ fun AppCard(
     isPin: Boolean = false,
     isRepresentative: Boolean = false,
     isSecret: Boolean = false,
-    isWhite: Boolean = false
+    isWhite: Boolean = false,
+    coverClick: (() -> Unit)? = null
 ) {
     val configuration = LocalConfiguration.current
     val screenWidthDp = configuration.screenWidthDp.dp
@@ -104,6 +106,16 @@ fun AppCard(
                             } else 0.dp
                         )
                         .clip(RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
+                        .then(
+                            if (coverClick != null) {
+                                Modifier.clickable(
+                                    indication = null,
+                                    interactionSource = remember { MutableInteractionSource() },
+                                ) { coverClick() }
+                            } else {
+                                Modifier
+                            }
+                        )
                 )
             } else if (appCardData.cover != null) {
                 CoilImage(
@@ -120,6 +132,16 @@ fun AppCard(
                             } else 0.dp
                         )
                         .clip(RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
+                        .then(
+                            if (coverClick != null) {
+                                Modifier.clickable(
+                                    indication = null,
+                                    interactionSource = remember { MutableInteractionSource() },
+                                ) { coverClick() }
+                            } else {
+                                Modifier
+                            }
+                        )
                 )
             }
             Spacer(modifier = Modifier.height(8.dp))

@@ -184,17 +184,15 @@ class PositionDetailFragment : BaseFragment() {
                                     openViewMarket(closeOrder)
                                 },
                                 onShare = {
-                                    val active = cachedPosition.value
-                                    if (active != null) {
-                                        sharePosition(active)
-                                    } else {
-                                        lifecycleScope.launch {
-                                            val fromDb = viewModel.getPositionFromDb(closeOrder.positionId)
-                                            if (fromDb != null) {
-                                                sharePosition(fromDb)
-                                            } else {
-                                                sharePosition(closeOrder, closeOrder.leverage)
-                                            }
+                                    lifecycleScope.launch {
+                                        val closed = viewModel.getCloseOrderFromDb(closeOrder.positionId)
+                                        if (closed != null && closed.orderType == PerpsOrder.TYPE_CLOSE) {
+                                            sharePosition(closed, closed.leverage)
+                                            return@launch
+                                        }
+                                        val active = cachedPosition.value ?: viewModel.getPositionFromDb(closeOrder.positionId)
+                                        if (active != null) {
+                                            sharePosition(active)
                                         }
                                     }
                                 },
