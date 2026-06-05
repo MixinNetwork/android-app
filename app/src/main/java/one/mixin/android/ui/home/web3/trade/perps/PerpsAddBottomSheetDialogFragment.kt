@@ -356,6 +356,7 @@ private fun PerpsAddContent(
     } else {
         defaultLiquidationPrice
     }
+    val visibleLiquidationPrice = displayLiquidationPrice?.takeIf { it != "-" }
     val entryPriceText = position.entryPrice
         .takeIf { it.isNotBlank() }
         ?.let { formatPerpsPrice(it, priceScale) }
@@ -604,12 +605,8 @@ private fun PerpsAddContent(
                     Spacer(modifier = Modifier.height(16.dp))
                     PerpsAddInfoRow(
                         title = stringResource(R.string.Liquidation_Price),
-                        value = when (displayLiquidationPrice) {
-                            "-" -> "-"
-                            null -> "-"
-                            else -> formatPerpsPrice(displayLiquidationPrice, priceScale)
-                        },
-                        isLoading = isLiquidationLoading && displayLiquidationPrice != "-",
+                        value = visibleLiquidationPrice?.let { formatPerpsPrice(it, priceScale) } ?: "-",
+                        isLoading = isLiquidationLoading && visibleLiquidationPrice != null,
                         onTipClick = {
                             showPerpsGuide(PerpetualGuideBottomSheetDialogFragment.TAB_LIQUIDATION)
                         },

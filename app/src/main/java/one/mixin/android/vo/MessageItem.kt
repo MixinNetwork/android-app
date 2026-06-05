@@ -220,7 +220,7 @@ data class MessageItem(
 
     fun isAppCardWithCover(): Boolean {
         if (!isAppCard()) return false
-        return appCardData?.hashCover == true
+        return appCardData?.hasCover == true
     }
 
     private fun unfinishedAttachment(): Boolean = !mediaDownloaded(this.mediaStatus) && (isData() || isImage() || isVideo() || isAudio())

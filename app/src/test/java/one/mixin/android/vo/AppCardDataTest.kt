@@ -1,12 +1,14 @@
 package one.mixin.android.vo
 
+import one.mixin.android.util.GsonHelper
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class AppCardDataTest {
     @Test
-    fun `hashCover returns true when nested cover url exists`() {
+    fun `hasCover returns true when nested cover url exists`() {
         val appCardData = AppCardData(
             appId = "app-id",
             iconUrl = null,
@@ -25,11 +27,16 @@ class AppCardDataTest {
             shareable = null,
         )
 
-        assertTrue(appCardData.hashCover)
+        val message = create(MessageCategory.APP_CARD.name).copy(
+            content = GsonHelper.customGson.toJson(appCardData),
+        )
+
+        assertTrue(appCardData.hasCover)
+        assertEquals("https://example.com/cover.jpg", message.appCardCoverUrl())
     }
 
     @Test
-    fun `hashCover returns false when cover urls are blank`() {
+    fun `hasCover returns false when cover urls are blank`() {
         val appCardData = AppCardData(
             appId = "app-id",
             iconUrl = null,
@@ -48,11 +55,11 @@ class AppCardDataTest {
             shareable = null,
         )
 
-        assertFalse(appCardData.hashCover)
+        assertFalse(appCardData.hasCover)
     }
 
     @Test
-    fun `hashCover keeps cover url compatibility`() {
+    fun `hasCover keeps cover url compatibility`() {
         val appCardData = AppCardData(
             appId = "app-id",
             iconUrl = null,
@@ -65,7 +72,7 @@ class AppCardDataTest {
             shareable = null,
         )
 
-        assertTrue(appCardData.hashCover)
+        assertTrue(appCardData.hasCover)
     }
 
     @Test
