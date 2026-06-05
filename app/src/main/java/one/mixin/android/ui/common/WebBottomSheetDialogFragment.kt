@@ -288,6 +288,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                 request.grant(request.resources)
                             } else {
                                 lastGrantedUri = null
+                                request.deny()
                                 context?.openPermissionSetting()
                             }
                         },
@@ -387,6 +388,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         resultCode: Int,
         data: Intent?,
     ) {
+        super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK && requestCode == REQUEST_CAMERA) {
             imageUri?.let {
                 uploadMessage?.onReceiveValue(arrayOf(it))
@@ -522,7 +524,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     action = ACTION_VIEW
                     addCategory(CATEGORY_BROWSABLE)
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                        flags = FLAG_ACTIVITY_REQUIRE_NON_BROWSER
+                        addFlags(FLAG_ACTIVITY_REQUIRE_NON_BROWSER)
                     }
                     if (context !is Activity) {
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
