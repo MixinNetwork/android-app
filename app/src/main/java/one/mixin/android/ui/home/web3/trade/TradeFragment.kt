@@ -1470,6 +1470,8 @@ class TradeFragment : BaseFragment() {
     }
 
     private fun getInitialTabIndex(currentWalletId: String): Int {
+        val entryType = arguments?.getString(ARGS_ENTRY_TYPE)
+        if (entryType == AnalyticsTracker.SpotTradeType.SIMPLE) return TAB_SIMPLE
         val preferenceKey = "$PREF_TRADE_SELECTED_TAB_PREFIX$currentWalletId"
         return defaultSharedPreferences.getInt(preferenceKey, 0)
     }
