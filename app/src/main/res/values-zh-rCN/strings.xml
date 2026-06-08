@@ -2290,6 +2290,15 @@
     <string name="perps_liquidation_price_key_point_1">强平触发价格为标记价格</string>
     <string name="perps_liquidation_price_key_point_2">强平不会影响钱包其他资产</string>
     <string name="perps_liquidation_price_key_point_3">高杠杆会增加被强制平仓的风险</string>
+    <string name="perps_funding_rate_overview">资金费率是多头和空头之间定期结算的费用，用于让永续合约价格接近现货市场价格。</string>
+    <string name="perps_funding_rate_purpose">作用</string>
+    <string name="perps_funding_rate_key_point_1">资金费率为正时，多头向空头支付资金费。</string>
+    <string name="perps_funding_rate_key_point_2">资金费率为负时，空头向多头支付资金费。</string>
+    <string name="perps_funding_rate_key_point_3">实际资金费取决于您的仓位价值和当前资金费率。</string>
+    <string name="perps_funding_frequency">频率</string>
+    <string name="perps_funding_frequency_value">8 小时</string>
+    <string name="perps_receive">收到</string>
+    <string name="perps_liquidation_price_short">强平价</string>
     <string name="Take_Profit_When">止盈条件</string>
     <string name="Stop_Loss_When">止损条件</string>
     <string name="profit_reaches_percent">盈利达到 %</string>

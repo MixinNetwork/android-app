@@ -521,10 +521,11 @@ fun OpenPositionPage(
                                 context.defaultSharedPreferences.putInt(getLeveragePrefKey(marketId), newLeverage.toInt())
                                 AnalyticsTracker.trackPerpsLeverageSelect(PERPS_LEVERAGE_CUSTOM_INPUT)
                             }.show(activity.supportFragmentManager, LeverageBottomSheetDialogFragment.TAG)
-                        },
+                        }.widthIn(min = 52.dp),
                         text = "${leverage.toInt()}x",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Black,
+                        textAlign = TextAlign.Center,
                         color = MixinAppTheme.colors.textPrimary
                     )
 
