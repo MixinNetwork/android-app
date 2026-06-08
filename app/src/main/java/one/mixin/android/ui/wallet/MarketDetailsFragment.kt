@@ -20,6 +20,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentDetailsMarketBinding
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.dayTime
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.indeterminateProgressDialog
@@ -29,6 +30,7 @@ import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.priceFormat2
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.setQuoteText
 import one.mixin.android.extension.setQuoteTextWithBackgroud
 import one.mixin.android.extension.toast
@@ -62,6 +64,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
         const val ARGS_MARKET = "args_market"
         const val ARGS_ASSET_ID = "args_asset_id"
         const val ARGS_MARKET_SOURCE = "args_market_source"
+        private const val PREF_MARKET_CHART_TYPE = "pref_market_chart_type"
     }
 
     private val binding by viewBinding(FragmentDetailsMarketBinding::bind)
@@ -263,31 +266,29 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
             radio1m.text = getString(R.string.months_count_short, 1)
             radioYtd.text = getString(R.string.ytd)
             radioAll.text = getString(R.string.All).uppercase()
+            val savedType = defaultSharedPreferences.getString(PREF_MARKET_CHART_TYPE, "1D") ?: "1D"
+            typeState.value = savedType
+            radioGroup.check(
+                when (savedType) {
+                    "1W" -> R.id.radio_1w
+                    "1M" -> R.id.radio_1m
+                    "1Y" -> R.id.radio_ytd
+                    "ALL" -> R.id.radio_all
+                    else -> R.id.radio_1d
+                },
+            )
             radioGroup.setOnCheckedChangeListener { _, checkedId ->
                 requireActivity().heavyClickVibrate()
-                typeState.value =
+                val type =
                     when (checkedId) {
-
-                        R.id.radio_1d -> {
-                            "1D"
-                        }
-
-                        R.id.radio_1w -> {
-                            "1W"
-                        }
-
-                        R.id.radio_1m -> {
-                            "1M"
-                        }
-
-                        R.id.radio_ytd -> {
-                            "1Y"
-                        }
-
-                        else -> {
-                            "ALL"
-                        }
+                        R.id.radio_1d -> "1D"
+                        R.id.radio_1w -> "1W"
+                        R.id.radio_1m -> "1M"
+                        R.id.radio_ytd -> "1Y"
+                        else -> "ALL"
                     }
+                typeState.value = type
+                defaultSharedPreferences.putString(PREF_MARKET_CHART_TYPE, type)
             }
 
             name.text = marketItem.name

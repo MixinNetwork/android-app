@@ -343,7 +343,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        initFragmentsFromSavedState(savedInstanceState)
+        initFragmentsFromSavedState(restoreState)
 
         val account = Session.getAccount()
         account?.let {
@@ -1057,7 +1057,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             bottomNav.setOnApplyWindowInsetsListener(null)
             bottomNav.setPadding(0,0,0,0)
             bottomNav.itemIconTintList = null
-            bottomNav.menu.findItem(R.id.nav_chat).isChecked = true
+            bottomNav.menu.findItem(lastBottomNavItemId).isChecked = true
 
             bottomNav.setOnItemSelectedListener {
                 if (isRestoringBottomNavSelection) {
@@ -1336,10 +1336,17 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         }
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt(KEY_LAST_BOTTOM_NAV, lastBottomNavItemId)
+    }
+
     private fun initFragmentsFromSavedState(savedInstanceState: Bundle?) {
+        if (savedInstanceState != null) {
+            lastBottomNavItemId = savedInstanceState.getInt(KEY_LAST_BOTTOM_NAV, R.id.nav_chat)
+            return
+        }
         navigationController.navigate(supportFragmentManager, NavigationController.ConversationList, ConversationListFragment.newInstance())
-        binding.bottomNav.selectedItemId = R.id.nav_chat
-        Timber.e("initFragmentsFromSavedState: nav_chat")
     }
 
     companion object {
@@ -1348,6 +1355,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         const val TRANSFER = "transfer"
         private const val WALLET = "wallet"
         const val WALLET_CONNECT = "wallet_connect"
+        private const val KEY_LAST_BOTTOM_NAV = "last_bottom_nav_item_id"
 
         fun showWallet(
             context: Context,

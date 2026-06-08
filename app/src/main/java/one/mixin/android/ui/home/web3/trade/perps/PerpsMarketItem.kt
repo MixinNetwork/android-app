@@ -97,7 +97,7 @@ fun PerpsMarketItem(
                         modifier = Modifier
                             .clip(RoundedCornerShape(4.dp))
                             .background(MixinAppTheme.colors.backgroundGrayLight)
-                            .padding(horizontal = 3.dp, vertical = 2.dp)
+                            .padding(horizontal = 3.dp, vertical = 1.dp)
                     )
                 }
                 Text(

@@ -191,4 +191,18 @@ class StringExtensionTest {
     fun isMixinUrlRecognizesMixinBuy() {
         assertTrue("mixin://mixin.one/buy".isMixinUrl())
     }
+
+    @Test
+    fun openInBrowserUrlRequiresExplicitWebScheme() {
+        assertEquals("https://mixin.one/pay", " https://mixin.one/pay ".toOpenInBrowserUrlOrNull())
+        assertEquals("http://mixin.one/pay", "http://mixin.one/pay".toOpenInBrowserUrlOrNull())
+        assertEquals(null, "mixin.one/pay".toOpenInBrowserUrlOrNull())
+        assertEquals(null, "http:foo".toOpenInBrowserUrlOrNull())
+        assertEquals(null, "https:mixin.one".toOpenInBrowserUrlOrNull())
+        assertEquals(null, "https://".toOpenInBrowserUrlOrNull())
+        assertEquals(null, "".toOpenInBrowserUrlOrNull())
+        assertEquals(null, "undefined".toOpenInBrowserUrlOrNull())
+        assertEquals(null, "javascript:alert(1)".toOpenInBrowserUrlOrNull())
+        assertEquals(null, "mixin://codes/test".toOpenInBrowserUrlOrNull())
+    }
 }

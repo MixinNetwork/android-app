@@ -264,6 +264,18 @@ inline fun String.isWebUrl(): Boolean {
     return startsWith("http://", true) || startsWith("https://", true)
 }
 
+fun String.toOpenInBrowserUrlOrNull(): String? {
+    val url = trim()
+    if (url.isBlank() || url.equals("undefined", true) || url.equals("null", true)) {
+        return null
+    }
+    val uri = Uri.parse(url)
+    return url.takeIf {
+        (uri.scheme.equals("http", true) || uri.scheme.equals("https", true)) &&
+            !uri.host.isNullOrBlank()
+    }
+}
+
 inline fun String.isAppUrl(): Boolean {
     val pattern = Regex("^.+:/.+$|^.+://.+$")
     return pattern.matches(this)
@@ -823,10 +835,12 @@ fun BigDecimal.currencyFormat(): String {
 
 fun String?.isValidMao(): Boolean {
     if (this.isNullOrBlank()) return false
-    val text = this.trimEnd('.').lowercase()
-    if (text.all { it.isDigit() }) return false
-    val regex = Regex("^[^\\sA-Z]{1,128}$")
-    return regex.matches(text)
+    val text = this.lowercase()
+    val regex = Regex("^[^\\sA-Z]{1,128}\\.mao$")
+    if (!regex.matches(text)) return false
+    val name = text.removeSuffix(".mao")
+    if (name.isBlank() || name.all { it.isDigit() }) return false
+    return true
 }
 
 fun String.isMao(): Boolean {

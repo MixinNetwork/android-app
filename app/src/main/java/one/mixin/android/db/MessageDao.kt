@@ -61,6 +61,8 @@ interface MessageDao : BaseDao<Message> {
         LEFT JOIN expired_messages em ON m.id = em.message_id
         """
         private const val CHAT_CATEGORY = "('SIGNAL_TEXT', 'SIGNAL_IMAGE', 'SIGNAL_VIDEO', 'SIGNAL_STICKER', 'SIGNAL_DATA', 'SIGNAL_CONTACT', 'SIGNAL_AUDIO', 'SIGNAL_LIVE', 'SIGNAL_POST', 'SIGNAL_LOCATION', 'ENCRYPTED_TEXT', 'ENCRYPTED_IMAGE', 'ENCRYPTED_VIDEO', 'ENCRYPTED_STICKER', 'ENCRYPTED_DATA', 'ENCRYPTED_CONTACT', 'ENCRYPTED_AUDIO', 'ENCRYPTED_LIVE', 'ENCRYPTED_POST', 'ENCRYPTED_LOCATION', 'PLAIN_TEXT', 'PLAIN_IMAGE', 'PLAIN_VIDEO', 'PLAIN_DATA', 'PLAIN_STICKER', 'PLAIN_CONTACT', 'PLAIN_AUDIO', 'PLAIN_LIVE', 'PLAIN_POST', 'PLAIN_LOCATION', 'APP_BUTTON_GROUP', 'APP_CARD', 'SYSTEM_ACCOUNT_SNAPSHOT', 'SYSTEM_SAFE_SNAPSHOT')"
+        private const val APP_CARD_COVER_MEDIA = "category = 'APP_CARD'"
+        private const val APP_CARD_COVER_MEDIA_ALIAS = "m.category = 'APP_CARD'"
     }
 
     // Read SQL
@@ -96,11 +98,47 @@ interface MessageDao : BaseDao<Message> {
         INDEXED BY index_messages_conversation_id_category
         INNER JOIN users u ON m.user_id = u.user_id 
         WHERE m.conversation_id = :conversationId
-        AND m.category IN ($IMAGES, $VIDEOS, $LIVES) 
+        AND (m.category IN ($IMAGES, $VIDEOS, $LIVES) OR ($APP_CARD_COVER_MEDIA_ALIAS))
         ORDER BY m.created_at ASC, m.rowid ASC
     """,
     )
     fun getMediaMessages(conversationId: String): DataSource.Factory<Int, MessageItem>
+
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query(
+        """
+        SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
+        u.full_name AS userFullName, u.identity_number AS userIdentityNumber, m.category AS type,
+        m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus, m.media_size AS mediaSize,
+        m.media_width AS mediaWidth, m.media_height AS mediaHeight, m.thumb_image AS thumbImage, m.thumb_url AS thumbUrl,
+        m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.media_duration AS mediaDuration
+        FROM messages m
+        INDEXED BY index_messages_conversation_id_category
+        INNER JOIN users u ON m.user_id = u.user_id 
+        WHERE m.conversation_id = :conversationId
+        AND (m.category IN ($IMAGES, $VIDEOS, $LIVES) OR ($APP_CARD_COVER_MEDIA_ALIAS))
+        ORDER BY m.created_at ASC, m.rowid ASC
+    """,
+    )
+    suspend fun getMediaMessagesList(conversationId: String): List<MessageItem>
+
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query(
+        """
+        SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
+        u.full_name AS userFullName, u.identity_number AS userIdentityNumber, m.category AS type,
+        m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus, m.media_size AS mediaSize,
+        m.media_width AS mediaWidth, m.media_height AS mediaHeight, m.thumb_image AS thumbImage, m.thumb_url AS thumbUrl,
+        m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.media_duration AS mediaDuration
+        FROM messages m
+        INDEXED BY index_messages_conversation_id_category
+        INNER JOIN users u ON m.user_id = u.user_id 
+        WHERE m.conversation_id = :conversationId
+        AND m.category IN ($IMAGES, $VIDEOS)
+        ORDER BY m.created_at DESC, m.rowid DESC
+    """,
+    )
+    suspend fun getMediaMessagesExcludeLiveList(conversationId: String): List<MessageItem>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
@@ -113,6 +151,7 @@ interface MessageDao : BaseDao<Message> {
         FROM messages m 
         INNER JOIN users u ON m.user_id = u.user_id 
         WHERE m.id = :messageId AND m.conversation_id = :conversationId
+        AND (m.category IN ($IMAGES, $VIDEOS, $LIVES) OR ($APP_CARD_COVER_MEDIA_ALIAS))
     """,
     )
     suspend fun getMediaMessage(
@@ -125,7 +164,7 @@ interface MessageDao : BaseDao<Message> {
         SELECT count(1) FROM messages 
         INDEXED BY index_messages_conversation_id_category
         WHERE conversation_id = :conversationId
-        AND category IN ($IMAGES, $VIDEOS, $LIVES) 
+        AND (category IN ($IMAGES, $VIDEOS, $LIVES) OR ($APP_CARD_COVER_MEDIA))
         AND (created_at < (SELECT created_at FROM messages WHERE id = :messageId) OR (created_at = (SELECT created_at FROM messages WHERE id = :messageId) AND rowid < (SELECT rowid FROM messages WHERE id = :messageId)))
     """,
     )
@@ -136,9 +175,9 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         """
-        SELECT count(1) FROM messages 
+        SELECT count(1) FROM messages
         WHERE conversation_id = :conversationId
-        AND category IN ($IMAGES, $VIDEOS, $LIVES) 
+        AND (category IN ($IMAGES, $VIDEOS, $LIVES) OR ($APP_CARD_COVER_MEDIA))
         """)
     suspend fun countIndexMediaMessages(conversationId: String): Int
 
@@ -212,6 +251,23 @@ interface MessageDao : BaseDao<Message> {
         """,
     )
     fun getPostMessages(conversationId: String): DataSource.Factory<Int, MessageItem>
+
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query(
+        """
+        SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
+        u.full_name AS userFullName, u.identity_number AS userIdentityNumber, m.category AS type,
+        m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus, m.media_size AS mediaSize,
+        m.media_width AS mediaWidth, m.media_height AS mediaHeight, m.thumb_image AS thumbImage, m.thumb_url AS thumbUrl,
+        m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.media_duration AS mediaDuration
+        FROM messages m 
+        INNER JOIN users u ON m.user_id = u.user_id 
+        WHERE m.conversation_id = :conversationId
+        AND m.category IN ($AUDIOS)
+        ORDER BY m.created_at DESC
+    """,
+    )
+    suspend fun getAudioMessagesList(conversationId: String): List<MessageItem>
 
     @Query(
         """

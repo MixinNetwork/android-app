@@ -29,7 +29,6 @@ import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.ResponseBody.Companion.toResponseBody
 import okhttp3.logging.HttpLoggingInterceptor
-import okio.Timeout
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.ALLOW_INTERVAL
@@ -176,7 +175,7 @@ object AppModule {
             reportException(e)
             null
         } catch (e: Exception) {
-            if (e is TimeoutException || e is Timeout) {
+            if (e is TimeoutException) {
                 Timber.e(e)
             } else {
                 reportException(e)

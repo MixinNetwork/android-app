@@ -124,7 +124,7 @@ fun OpenedOrderItem(
                     modifier = Modifier
                         .clip(RoundedCornerShape(4.dp))
                         .background(leverageBackgroundColor)
-                        .padding(horizontal = 3.dp, vertical = 2.dp),
+                        .padding(horizontal = 3.dp, vertical = 1.dp),
                 )
             }
 

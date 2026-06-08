@@ -18,8 +18,9 @@ object Web3ChainId {
     const val ArbitrumChainId = 42161
     const val AvalancheChainId = 43114
     const val BlastChainId = 81457
+    const val HyperEvmChainId = 999
 
-    val eip155ChainIds = listOf(EthChainId, OptimismChainId, BscChainId, PolygonChainId, BaseChainId, ArbitrumChainId, AvalancheChainId, BlastChainId)
+    val eip155ChainIds = listOf(EthChainId, OptimismChainId, BscChainId, PolygonChainId, BaseChainId, ArbitrumChainId, AvalancheChainId, BlastChainId, HyperEvmChainId)
 
     fun getChainType(id: Int): ChainType =
         when {
@@ -37,6 +38,7 @@ object Web3ChainId {
             BaseChainId -> Chain.Base
             ArbitrumChainId -> Chain.Arbitrum
             AvalancheChainId -> Chain.Avalanche
+            HyperEvmChainId -> Chain.HyperEVM
             else -> Chain.Solana
         }
 }
