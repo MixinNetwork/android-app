@@ -545,9 +545,9 @@ class Web3ViewModel @Inject constructor(
     }
 
 
-    suspend fun firstUnspentTransaction() =
+    suspend fun firstSignedTransaction() =
         withContext(Dispatchers.IO) {
-            tokenRepository.firstUnspentTransaction()
+            tokenRepository.firstSignedTransaction()
         }
 
     suspend fun findLatestTrace(

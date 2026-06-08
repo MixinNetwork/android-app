@@ -38,13 +38,13 @@ interface MessageDao : BaseDao<Message> {
         m.name AS mediaName, m.media_mime_type AS mediaMimeType, m.media_size AS mediaSize, m.media_width AS mediaWidth, m.media_height AS mediaHeight,
         m.thumb_image AS thumbImage, m.thumb_url AS thumbUrl, m.media_url AS mediaUrl, m.media_duration AS mediaDuration, m.quote_message_id as quoteId,
         m.quote_content as quoteContent, m.caption as caption, u1.full_name AS participantFullName, m.action AS actionName, u1.user_id AS participantUserId,
-        COALESCE(s.snapshot_id, ss.snapshot_id) AS snapshotId, COALESCE(s.type, ss.type) AS snapshotType, COALESCE(s.memo, ss.memo) AS snapshotMemo, COALESCE(s.amount, ss.amount) AS snapshotAmount, 
+        COALESCE(s.snapshot_id, ss.snapshot_id) AS snapshotId, COALESCE(s.type, ss.type) AS snapshotType, COALESCE(s.memo, ss.memo) AS snapshotMemo, COALESCE(s.amount, ss.amount) AS snapshotAmount,
         COALESCE(a.symbol, t.symbol) AS assetSymbol, COALESCE(s.asset_id, ss.asset_id) AS assetId, COALESCE(a.icon_url, t.icon_url) AS assetIcon,
         st.asset_url AS assetUrl, st.asset_width AS assetWidth, st.asset_height AS assetHeight, st.sticker_id AS stickerId,
         st.name AS assetName, st.asset_type AS assetType, h.site_name AS siteName, h.site_title AS siteTitle, h.site_description AS siteDescription,
         h.site_image AS siteImage, m.shared_user_id AS sharedUserId, su.full_name AS sharedUserFullName, su.identity_number AS sharedUserIdentityNumber,
-        su.avatar_url AS sharedUserAvatarUrl, su.is_verified AS sharedUserIsVerified, su.app_id AS sharedUserAppId, mm.mentions AS mentions, mm.has_read as mentionRead, 
-        pm.message_id IS NOT NULL as isPin, c.name AS groupName, em.expire_in AS expireIn, em.expire_at AS expireAt 
+        su.avatar_url AS sharedUserAvatarUrl, su.is_verified AS sharedUserIsVerified, su.app_id AS sharedUserAppId, mm.mentions AS mentions, mm.has_read as mentionRead,
+        pm.message_id IS NOT NULL as isPin, c.name AS groupName, em.expire_in AS expireIn, em.expire_at AS expireAt
         FROM messages m
         INNER JOIN users u ON m.user_id = u.user_id
         LEFT JOIN users u1 ON m.participant_id = u1.user_id
@@ -56,11 +56,13 @@ interface MessageDao : BaseDao<Message> {
         LEFT JOIN hyperlinks h ON m.hyperlink = h.hyperlink
         LEFT JOIN users su ON m.shared_user_id = su.user_id
         LEFT JOIN conversations c ON m.conversation_id = c.conversation_id
-        LEFT JOIN message_mentions mm ON m.id = mm.message_id 
+        LEFT JOIN message_mentions mm ON m.id = mm.message_id
         LEFT JOIN pin_messages pm ON m.id = pm.message_id
         LEFT JOIN expired_messages em ON m.id = em.message_id
         """
         private const val CHAT_CATEGORY = "('SIGNAL_TEXT', 'SIGNAL_IMAGE', 'SIGNAL_VIDEO', 'SIGNAL_STICKER', 'SIGNAL_DATA', 'SIGNAL_CONTACT', 'SIGNAL_AUDIO', 'SIGNAL_LIVE', 'SIGNAL_POST', 'SIGNAL_LOCATION', 'ENCRYPTED_TEXT', 'ENCRYPTED_IMAGE', 'ENCRYPTED_VIDEO', 'ENCRYPTED_STICKER', 'ENCRYPTED_DATA', 'ENCRYPTED_CONTACT', 'ENCRYPTED_AUDIO', 'ENCRYPTED_LIVE', 'ENCRYPTED_POST', 'ENCRYPTED_LOCATION', 'PLAIN_TEXT', 'PLAIN_IMAGE', 'PLAIN_VIDEO', 'PLAIN_DATA', 'PLAIN_STICKER', 'PLAIN_CONTACT', 'PLAIN_AUDIO', 'PLAIN_LIVE', 'PLAIN_POST', 'PLAIN_LOCATION', 'APP_BUTTON_GROUP', 'APP_CARD', 'SYSTEM_ACCOUNT_SNAPSHOT', 'SYSTEM_SAFE_SNAPSHOT')"
+        private const val APP_CARD_COVER_MEDIA = "category = 'APP_CARD'"
+        private const val APP_CARD_COVER_MEDIA_ALIAS = "m.category = 'APP_CARD'"
     }
 
     // Read SQL
@@ -94,9 +96,9 @@ interface MessageDao : BaseDao<Message> {
         m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.media_duration AS mediaDuration
         FROM messages m
         INDEXED BY index_messages_conversation_id_category
-        INNER JOIN users u ON m.user_id = u.user_id 
+        INNER JOIN users u ON m.user_id = u.user_id
         WHERE m.conversation_id = :conversationId
-        AND (m.category IN ($IMAGES, $VIDEOS, $LIVES) OR (m.category = 'APP_CARD' AND (m.content LIKE '%cover_url%' OR m.content LIKE '%"cover":{%')))
+        AND (m.category IN ($IMAGES, $VIDEOS, $LIVES) OR ($APP_CARD_COVER_MEDIA_ALIAS))
         ORDER BY m.created_at ASC, m.rowid ASC
     """,
     )
@@ -106,13 +108,50 @@ interface MessageDao : BaseDao<Message> {
     @Query(
         """
         SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
+        u.full_name AS userFullName, u.identity_number AS userIdentityNumber, m.category AS type,
+        m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus, m.media_size AS mediaSize,
+        m.media_width AS mediaWidth, m.media_height AS mediaHeight, m.thumb_image AS thumbImage, m.thumb_url AS thumbUrl,
+        m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.media_duration AS mediaDuration
+        FROM messages m
+        INDEXED BY index_messages_conversation_id_category
+        INNER JOIN users u ON m.user_id = u.user_id
+        WHERE m.conversation_id = :conversationId
+        AND (m.category IN ($IMAGES, $VIDEOS, $LIVES) OR ($APP_CARD_COVER_MEDIA_ALIAS))
+        ORDER BY m.created_at ASC, m.rowid ASC
+    """,
+    )
+    suspend fun getMediaMessagesList(conversationId: String): List<MessageItem>
+
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query(
+        """
+        SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
+        u.full_name AS userFullName, u.identity_number AS userIdentityNumber, m.category AS type,
+        m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus, m.media_size AS mediaSize,
+        m.media_width AS mediaWidth, m.media_height AS mediaHeight, m.thumb_image AS thumbImage, m.thumb_url AS thumbUrl,
+        m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.media_duration AS mediaDuration
+        FROM messages m
+        INDEXED BY index_messages_conversation_id_category
+        INNER JOIN users u ON m.user_id = u.user_id
+        WHERE m.conversation_id = :conversationId
+        AND m.category IN ($IMAGES, $VIDEOS)
+        ORDER BY m.created_at DESC, m.rowid DESC
+    """,
+    )
+    suspend fun getMediaMessagesExcludeLiveList(conversationId: String): List<MessageItem>
+
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query(
+        """
+        SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
         u.full_name AS userFullName, u.identity_number AS userIdentityNumber, m.category AS type, m.media_size AS mediaSize,
         m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus,
         m.media_width AS mediaWidth, m.media_height AS mediaHeight, m.thumb_image AS thumbImage, m.thumb_url AS thumbUrl,
         m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.media_duration AS mediaDuration
-        FROM messages m 
-        INNER JOIN users u ON m.user_id = u.user_id 
+        FROM messages m
+        INNER JOIN users u ON m.user_id = u.user_id
         WHERE m.id = :messageId AND m.conversation_id = :conversationId
+        AND (m.category IN ($IMAGES, $VIDEOS, $LIVES) OR ($APP_CARD_COVER_MEDIA_ALIAS))
     """,
     )
     suspend fun getMediaMessage(
@@ -122,10 +161,10 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         """
-        SELECT count(1) FROM messages 
+        SELECT count(1) FROM messages
         INDEXED BY index_messages_conversation_id_category
         WHERE conversation_id = :conversationId
-        AND (category IN ($IMAGES, $VIDEOS, $LIVES) OR (category = 'APP_CARD' AND (content LIKE '%cover_url%' OR content LIKE '%"cover":{%')))
+        AND (category IN ($IMAGES, $VIDEOS, $LIVES) OR ($APP_CARD_COVER_MEDIA))
         AND (created_at < (SELECT created_at FROM messages WHERE id = :messageId) OR (created_at = (SELECT created_at FROM messages WHERE id = :messageId) AND rowid < (SELECT rowid FROM messages WHERE id = :messageId)))
     """,
     )
@@ -138,7 +177,7 @@ interface MessageDao : BaseDao<Message> {
         """
         SELECT count(1) FROM messages
         WHERE conversation_id = :conversationId
-        AND (category IN ($IMAGES, $VIDEOS, $LIVES) OR (category = 'APP_CARD' AND (content LIKE '%cover_url%' OR content LIKE '%"cover":{%')))
+        AND (category IN ($IMAGES, $VIDEOS, $LIVES) OR ($APP_CARD_COVER_MEDIA))
         """)
     suspend fun countIndexMediaMessages(conversationId: String): Int
 
@@ -163,7 +202,7 @@ interface MessageDao : BaseDao<Message> {
     @Query(
         """
         SELECT count(1) FROM messages
-        WHERE conversation_id = :conversationId 
+        WHERE conversation_id = :conversationId
         AND category IN ($IMAGES, $VIDEOS)
         AND (created_at > (SELECT created_at FROM messages WHERE id = :messageId) OR (created_at = (SELECT created_at FROM messages WHERE id = :messageId) AND rowid > (SELECT rowid FROM messages WHERE id = :messageId)))
         """,
@@ -175,9 +214,9 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         """
-        SELECT count(1) FROM messages 
+        SELECT count(1) FROM messages
         WHERE conversation_id = :conversationId
-        AND category IN ($IMAGES, $VIDEOS) 
+        AND category IN ($IMAGES, $VIDEOS)
         """)
     suspend fun countIndexMediaMessagesExcludeLive(conversationId: String): Int
 
@@ -189,7 +228,7 @@ interface MessageDao : BaseDao<Message> {
         m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus,
         m.media_width AS mediaWidth, m.media_height AS mediaHeight, m.thumb_image AS thumbImage, m.thumb_url AS thumbUrl,
         m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.media_duration AS mediaDuration,  m.media_waveform AS mediaWaveform
-        FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
+        FROM messages m INNER JOIN users u ON m.user_id = u.user_id
         WHERE m.conversation_id = :conversationId
         AND m.category IN ($AUDIOS)
         ORDER BY m.created_at DESC
@@ -205,13 +244,30 @@ interface MessageDao : BaseDao<Message> {
         m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus,
         m.media_width AS mediaWidth, m.media_height AS mediaHeight, m.thumb_image AS thumbImage, m.thumb_url AS thumbUrl,
         m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.media_duration AS mediaDuration,  m.media_waveform AS mediaWaveform
-        FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
+        FROM messages m INNER JOIN users u ON m.user_id = u.user_id
         WHERE m.conversation_id = :conversationId
         AND m.category IN ('SIGNAL_POST', 'PLAIN_POST', 'ENCRYPTED_POST')
         ORDER BY m.created_at DESC
         """,
     )
     fun getPostMessages(conversationId: String): DataSource.Factory<Int, MessageItem>
+
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query(
+        """
+        SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
+        u.full_name AS userFullName, u.identity_number AS userIdentityNumber, m.category AS type,
+        m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus, m.media_size AS mediaSize,
+        m.media_width AS mediaWidth, m.media_height AS mediaHeight, m.thumb_image AS thumbImage, m.thumb_url AS thumbUrl,
+        m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.media_duration AS mediaDuration
+        FROM messages m
+        INNER JOIN users u ON m.user_id = u.user_id
+        WHERE m.conversation_id = :conversationId
+        AND m.category IN ($AUDIOS)
+        ORDER BY m.created_at DESC
+    """,
+    )
+    suspend fun getAudioMessagesList(conversationId: String): List<MessageItem>
 
     @Query(
         """
@@ -232,7 +288,7 @@ interface MessageDao : BaseDao<Message> {
         u.full_name AS userFullName, u.identity_number AS userIdentityNumber, m.category AS type,
         m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus,
         m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.name AS mediaName, m.media_size AS mediaSize
-        FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
+        FROM messages m INNER JOIN users u ON m.user_id = u.user_id
         WHERE m.conversation_id = :conversationId
         AND m.category IN ($DATA)
         ORDER BY m.created_at DESC
@@ -243,20 +299,20 @@ interface MessageDao : BaseDao<Message> {
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """
-        SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId, 
-        u.full_name AS userFullName, u.identity_number AS userIdentityNumber, u.app_id AS appId, m.category AS type, 
-        m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus, m.media_waveform AS mediaWaveform, 
-        m.name AS mediaName, m.media_mime_type AS mediaMimeType, m.media_size AS mediaSize, m.media_width AS mediaWidth, m.media_height AS mediaHeight, 
-        m.thumb_image AS thumbImage, m.thumb_url AS thumbUrl, m.media_url AS mediaUrl, m.media_duration AS mediaDuration, 
-        m.quote_message_id as quoteId, m.quote_content as quoteContent, 
-        st.asset_url AS assetUrl, st.asset_width AS assetWidth, st.asset_height AS assetHeight, st.sticker_id AS stickerId, 
-        st.name AS assetName, st.asset_type AS assetType, m.shared_user_id AS sharedUserId, su.full_name AS sharedUserFullName, su.identity_number AS sharedUserIdentityNumber, 
-        su.avatar_url AS sharedUserAvatarUrl, su.is_verified AS sharedUserIsVerified, su.app_id AS sharedUserAppId, mm.mentions AS mentions, u.membership 
-        FROM messages m 
-        INNER JOIN users u ON m.user_id = u.user_id 
-        LEFT JOIN stickers st ON st.sticker_id = m.sticker_id 
-        LEFT JOIN users su ON m.shared_user_id = su.user_id 
-        LEFT JOIN message_mentions mm ON m.id = mm.message_id 
+        SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
+        u.full_name AS userFullName, u.identity_number AS userIdentityNumber, u.app_id AS appId, m.category AS type,
+        m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus, m.media_waveform AS mediaWaveform,
+        m.name AS mediaName, m.media_mime_type AS mediaMimeType, m.media_size AS mediaSize, m.media_width AS mediaWidth, m.media_height AS mediaHeight,
+        m.thumb_image AS thumbImage, m.thumb_url AS thumbUrl, m.media_url AS mediaUrl, m.media_duration AS mediaDuration,
+        m.quote_message_id as quoteId, m.quote_content as quoteContent,
+        st.asset_url AS assetUrl, st.asset_width AS assetWidth, st.asset_height AS assetHeight, st.sticker_id AS stickerId,
+        st.name AS assetName, st.asset_type AS assetType, m.shared_user_id AS sharedUserId, su.full_name AS sharedUserFullName, su.identity_number AS sharedUserIdentityNumber,
+        su.avatar_url AS sharedUserAvatarUrl, su.is_verified AS sharedUserIsVerified, su.app_id AS sharedUserAppId, mm.mentions AS mentions, u.membership
+        FROM messages m
+        INNER JOIN users u ON m.user_id = u.user_id
+        LEFT JOIN stickers st ON st.sticker_id = m.sticker_id
+        LEFT JOIN users su ON m.shared_user_id = su.user_id
+        LEFT JOIN message_mentions mm ON m.id = mm.message_id
         WHERE m.conversation_id = :conversationId AND m.id = :messageId AND m.status != 'FAILED'
         """,
     )
@@ -285,8 +341,8 @@ interface MessageDao : BaseDao<Message> {
         SELECT m.id AS messageId, u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName,
         m.category AS type, m.content AS content, m.created_at AS createdAt, m.name AS mediaName, u.membership AS membership,
         u.identity_number AS userIdentityNumber,
-        u.app_id AS app_id, u.is_verified AS isVerified  
-        FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
+        u.app_id AS app_id, u.is_verified AS isVerified
+        FROM messages m INNER JOIN users u ON m.user_id = u.user_id
         WHERE  m.id IN (:ids)
         ORDER BY m.created_at DESC
     """,
@@ -331,8 +387,8 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         """
-        SELECT m.* FROM messages m 
-        WHERE m.rowid < :rowId AND m.category IN ('SIGNAL_TEXT', 'PLAIN_TEXT', 'ENCRYPTED_TEXT', 'SIGNAL_TRANSCRIPT', 'PLAIN_TRANSCRIPT', 'ENCRYPTED_TRANSCRIPT', 
+        SELECT m.* FROM messages m
+        WHERE m.rowid < :rowId AND m.category IN ('SIGNAL_TEXT', 'PLAIN_TEXT', 'ENCRYPTED_TEXT', 'SIGNAL_TRANSCRIPT', 'PLAIN_TRANSCRIPT', 'ENCRYPTED_TRANSCRIPT',
         'SIGNAL_POST', 'PLAIN_POST', 'ENCRYPTED_POST', 'SIGNAL_DATA', 'PLAIN_DATA', 'ENCRYPTED_DATA', 'SIGNAL_CONTACT', 'PLAIN_CONTACT', 'ENCRYPTED_CONTACT', 'APP_CARD')
         AND m.status != 'FAILED' AND m.status != 'UNKNOWN'
         ORDER BY m.rowid DESC
@@ -347,10 +403,10 @@ interface MessageDao : BaseDao<Message> {
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """
-        SELECT m.* FROM messages m 
+        SELECT m.* FROM messages m
         WHERE m.rowid >= :rowId
         ORDER BY m.rowid ASC
-        LIMIT :limit 
+        LIMIT :limit
     """,
     )
     fun getMessageByLimitAndRowId(
@@ -361,10 +417,10 @@ interface MessageDao : BaseDao<Message> {
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """
-        SELECT m.* FROM messages m 
-        WHERE m.rowid >= :rowId AND m.conversation_id IN (:conversationIds) 
+        SELECT m.* FROM messages m
+        WHERE m.rowid >= :rowId AND m.conversation_id IN (:conversationIds)
         ORDER BY m.rowid ASC
-        LIMIT :limit 
+        LIMIT :limit
     """,
     )
     fun getMessageByLimitAndRowId(
@@ -376,10 +432,10 @@ interface MessageDao : BaseDao<Message> {
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """
-        SELECT m.* FROM messages m 
-        WHERE m.rowid >= :rowId AND m.created_at >= :createdAt 
+        SELECT m.* FROM messages m
+        WHERE m.rowid >= :rowId AND m.created_at >= :createdAt
         ORDER BY m.rowid ASC
-        LIMIT :limit 
+        LIMIT :limit
     """,
     )
     fun getMessageByLimitAndRowId(
@@ -391,10 +447,10 @@ interface MessageDao : BaseDao<Message> {
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """
-        SELECT m.* FROM messages m 
-        WHERE m.rowid >= :rowId AND m.conversation_id IN (:conversationIds) AND m.created_at >= :createdAt 
+        SELECT m.* FROM messages m
+        WHERE m.rowid >= :rowId AND m.conversation_id IN (:conversationIds) AND m.created_at >= :createdAt
         ORDER BY m.rowid ASC
-        LIMIT :limit 
+        LIMIT :limit
     """,
     )
     fun getMessageByLimitAndRowId(
@@ -434,8 +490,8 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         """
-        SELECT m.category as type, m.id as messageId, m.media_url as mediaUrl FROM messages m 
-        WHERE conversation_id = :conversationId AND media_status = 'DONE' 
+        SELECT m.category as type, m.id as messageId, m.media_url as mediaUrl FROM messages m
+        WHERE conversation_id = :conversationId AND media_status = 'DONE'
         AND category IN (:signalCategory, :plainCategory, :encryptedCategory) ORDER BY created_at ASC
         """,
     )
@@ -449,7 +505,7 @@ interface MessageDao : BaseDao<Message> {
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """
-        $PREFIX_MESSAGE_ITEM WHERE m.conversation_id = :conversationId AND (m.category IN ($AUDIOS)) AND m.created_at >= :createdAt AND 
+        $PREFIX_MESSAGE_ITEM WHERE m.conversation_id = :conversationId AND (m.category IN ($AUDIOS)) AND m.created_at >= :createdAt AND
         m.rowid > (SELECT rowid FROM messages WHERE id = :messageId) LIMIT 1
         """,
     )
@@ -489,7 +545,7 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         """
-        SELECT id FROM messages WHERE conversation_id =:conversationId AND user_id !=:userId AND messages.rowid > 
+        SELECT id FROM messages WHERE conversation_id =:conversationId AND user_id !=:userId AND messages.rowid >
         (SELECT rowid FROM messages WHERE id = :messageId) ORDER BY rowid ASC LIMIT 1
         """,
     )
@@ -501,7 +557,7 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         """
-        SELECT rowid FROM messages 
+        SELECT rowid FROM messages
         WHERE conversation_id =:conversationId
         AND status IN ('SENDING', 'SENT', 'DELIVERED', 'READ')  /* Make use of `index_messages_conversation_id_status_user_id_created_at` */
         AND user_id =:userId
@@ -541,8 +597,8 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         """
-        SELECT id, conversation_id, name, category, media_url, media_mine_type 
-        FROM messages WHERE category IN ($IMAGES, $VIDEOS, $DATA, $AUDIOS) 
+        SELECT id, conversation_id, name, category, media_url, media_mine_type
+        FROM messages WHERE category IN ($IMAGES, $VIDEOS, $DATA, $AUDIOS)
         AND media_status = 'DONE' AND rowid <= :rowId LIMIT :limit OFFSET :offset
         """,
     )
@@ -573,7 +629,7 @@ interface MessageDao : BaseDao<Message> {
     // DELETE COUNT
     @Query(
         """
-        SELECT count(id) FROM messages 
+        SELECT count(id) FROM messages
         WHERE conversation_id = :conversationId AND media_status = 'DONE' AND category IN (:signalCategory, :plainCategory, :encryptedCategory)
         """,
     )
@@ -594,9 +650,9 @@ interface MessageDao : BaseDao<Message> {
         u.full_name AS userFullName, u.identity_number AS userIdentityNumber, m.category AS type,
         m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus,
         m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.name AS mediaName, m.media_size AS mediaSize
-        FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
+        FROM messages m INNER JOIN users u ON m.user_id = u.user_id
         WHERE m.conversation_id = :conversationId
-        AND (m.category IN ($DATA)) 
+        AND (m.category IN ($DATA))
         AND m.media_mime_type LIKE 'audio%'
         AND m.media_status != 'EXPIRED'
         ORDER BY m.created_at ASC, m.rowid ASC
@@ -608,8 +664,8 @@ interface MessageDao : BaseDao<Message> {
     @Query(
         """
         SELECT count(1) FROM messages
-        WHERE conversation_id = :conversationId 
-        AND category IN ($DATA) 
+        WHERE conversation_id = :conversationId
+        AND category IN ($DATA)
         AND media_mime_type LIKE 'audio%'
         AND media_status != 'EXPIRED'
         AND created_at < (SELECT created_at FROM messages WHERE id = :messageId)
@@ -628,7 +684,7 @@ interface MessageDao : BaseDao<Message> {
         u.full_name AS userFullName, u.identity_number AS userIdentityNumber, m.category AS type,
         m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus,
         m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.name AS mediaName, m.media_size AS mediaSize
-        FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
+        FROM messages m INNER JOIN users u ON m.user_id = u.user_id
         WHERE m.conversation_id = :conversationId
         AND m.id IN (:ids)
         """,
@@ -683,9 +739,9 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         """
-        UPDATE messages SET category = 'MESSAGE_RECALL', content = NULL, media_url = NULL, media_mime_type = NULL, media_size = NULL, 
-        media_duration = NULL, media_width = NULL, media_height = NULL, media_hash = NULL, thumb_image = NULL, media_key = NULL, 
-        media_digest = NUll, media_status = NULL, `action` = NULL, participant_id = NULL, snapshot_id = NULL, hyperlink = NULL, name = NULL, 
+        UPDATE messages SET category = 'MESSAGE_RECALL', content = NULL, media_url = NULL, media_mime_type = NULL, media_size = NULL,
+        media_duration = NULL, media_width = NULL, media_height = NULL, media_hash = NULL, thumb_image = NULL, media_key = NULL,
+        media_digest = NUll, media_status = NULL, `action` = NULL, participant_id = NULL, snapshot_id = NULL, hyperlink = NULL, name = NULL,
         album_id = NULL, sticker_id = NULL, shared_user_id = NULL, media_waveform = NULL, quote_message_id = NULL, quote_content = NULL WHERE id = :id
         """,
     )
@@ -749,10 +805,10 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         """
-        UPDATE messages SET content = :content, media_mime_type = :mediaMimeType, 
-        media_size = :mediaSize, media_width = :mediaWidth, media_height = :mediaHeight, 
-        thumb_image = :thumbImage, media_key = :mediaKey, media_digest = :mediaDigest, media_duration = :mediaDuration, 
-        media_status = :mediaStatus, status = :status, name = :name, media_waveform = :mediaWaveform WHERE id = :messageId 
+        UPDATE messages SET content = :content, media_mime_type = :mediaMimeType,
+        media_size = :mediaSize, media_width = :mediaWidth, media_height = :mediaHeight,
+        thumb_image = :thumbImage, media_key = :mediaKey, media_digest = :mediaDigest, media_duration = :mediaDuration,
+        media_status = :mediaStatus, status = :status, name = :name, media_waveform = :mediaWaveform WHERE id = :messageId
         AND category != 'MESSAGE_RECALL'
         """,
     )
@@ -789,7 +845,7 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         """
-        UPDATE messages SET media_width = :width, media_height = :height, media_url=:url, thumb_url = :thumbUrl, status = :status 
+        UPDATE messages SET media_width = :width, media_height = :height, media_url=:url, thumb_url = :thumbUrl, status = :status
         WHERE id = :messageId AND category != 'MESSAGE_RECALL'
     """,
     )
@@ -804,7 +860,7 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         """
-        UPDATE messages SET content = :content, media_size = :mediaSize, media_status = :mediaStatus, status = :status 
+        UPDATE messages SET content = :content, media_size = :mediaSize, media_status = :mediaStatus, status = :status
         WHERE id = :messageId AND category != 'MESSAGE_RECALL'
         """,
     )

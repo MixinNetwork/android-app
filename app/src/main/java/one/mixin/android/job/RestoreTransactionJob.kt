@@ -44,7 +44,7 @@ class RestoreTransactionJob : BaseJob(
         ) {
             while (true) {
                 val transaction =
-                    rawTransactionDao.findUnspentTransaction() ?: return@runBlocking
+                    rawTransactionDao.findSignedTransaction() ?: return@runBlocking
 
                 val feeTraceId = uniqueObjectId(transaction.requestId, "FEE")
                 val feeTransaction = rawTransactionDao.findRawTransaction(feeTraceId, RawTransactionType.FEE.value)

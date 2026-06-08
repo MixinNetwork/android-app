@@ -1758,9 +1758,9 @@ class BottomSheetViewModel
             }
         }
 
-        suspend fun firstUnspentTransaction() =
+        suspend fun firstSignedTransaction() =
             withContext(Dispatchers.IO) {
-                tokenRepository.firstUnspentTransaction()
+                tokenRepository.firstSignedTransaction()
             }
 
         suspend fun getScheme(id: String) = accountRepository.getScheme(id)

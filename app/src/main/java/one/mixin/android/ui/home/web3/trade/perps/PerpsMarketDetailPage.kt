@@ -67,6 +67,7 @@ import one.mixin.android.api.response.perps.toPosition
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.putInt
 import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.priceFormat
@@ -82,6 +83,7 @@ import java.math.BigDecimal
 
 private const val CLOSED_POSITION_PREVIEW_LIMIT = 100
 private const val MARKET_REFRESH_INTERVAL_MS = 10_000L
+private const val PREF_MARKET_DETAIL_TIME_FRAME = "perps_market_detail_time_frame"
 
 @Composable
 fun PerpsMarketDetailPage(
@@ -100,7 +102,7 @@ fun PerpsMarketDetailPage(
     val lifecycleOwner = LocalLifecycleOwner.current
     var market by remember(marketId, initialMarket) { mutableStateOf(initialMarket) }
     var isLoading by remember(marketId, initialMarket) { mutableStateOf(initialMarket == null) }
-    var selectedTimeFrame by remember { mutableIntStateOf(0) }
+    val timeFramePreferenceKey = PREF_MARKET_DETAIL_TIME_FRAME
     val walletId = Session.getAccountId().orEmpty()
     val openPositions by remember(walletId) {
         if (walletId.isNotEmpty()) {
@@ -131,6 +133,10 @@ fun PerpsMarketDetailPage(
         stringResource(R.string.days_count_short, 1),
         stringResource(R.string.weeks_count_short, 1),
     )
+    var selectedTimeFrame by remember(timeFramePreferenceKey, timeFrameValues.size) {
+        val savedIndex = preferences.getInt(timeFramePreferenceKey, 0)
+        mutableIntStateOf(savedIndex.takeIf { it in timeFrameValues.indices } ?: 0)
+    }
     val quoteColorReversed = context.defaultSharedPreferences
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
@@ -219,6 +225,7 @@ fun PerpsMarketDetailPage(
                             timeFrameLabels = timeFrameLabels,
                             onTimeFrameChange = { index ->
                                 selectedTimeFrame = index
+                                preferences.putInt(timeFramePreferenceKey, index)
                             }
                         )
                     } else if (isLoading) {

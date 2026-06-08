@@ -18,10 +18,8 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.content.FileProvider
 import androidx.core.content.ContextCompat
 import androidx.core.view.doOnAttach
-import androidx.core.view.doOnPreDraw
 import androidx.core.view.drawToBitmap
 import androidx.core.view.isVisible
-import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
@@ -131,11 +129,6 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
     @SuppressLint("RestrictedApi")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        view.doOnPreDraw {
-            it.updateLayoutParams<ViewGroup.LayoutParams> {
-                height = getBottomSheetHeight(view)
-            }
-        }
         selectedType = arguments?.getString(ARGS_TYPE) ?: "1D"
         bindMarketCard()
         setupMarketChart()
