@@ -24,6 +24,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.PlatformTextStyle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -40,6 +44,7 @@ import one.mixin.android.ui.wallet.home.WalletHomeState
 import one.mixin.android.ui.wallet.home.WalletHomeType
 import one.mixin.android.ui.wallet.home.WalletHomeWatchIndicator
 import one.mixin.android.ui.wallet.home.WalletHomeWatchKind
+import one.mixin.android.vo.Fiats
 
 @Composable
 internal fun EmptyGuideCard(callbacks: WalletHomeCallbacks) {
@@ -119,37 +124,58 @@ private fun WalletHomeButton(
 
 @Composable
 internal fun BalanceCard(state: WalletHomeState, callbacks: WalletHomeCallbacks) {
+    val compactTextStyle = TextStyle(
+        platformStyle = PlatformTextStyle(includeFontPadding = false),
+    )
+
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.Start,
     ) {
         Text(
             text = stringResource(R.string.Total_Balance),
-            color = MixinAppTheme.colors.textRemarks,
-            fontSize = 13.sp,
+            color = MixinAppTheme.colors.textMinor,
+            fontSize = 14.sp,
+            lineHeight = 14.sp,
+            style = compactTextStyle,
         )
-        Spacer(modifier = Modifier.height(6.dp))
-        Text(
-            text = "${state.fiatSymbol}${state.fiatTotal}",
-            color = MixinAppTheme.colors.textPrimary,
-            fontSize = 32.sp,
-            fontWeight = FontWeight.W600,
-        )
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(verticalAlignment = Alignment.Bottom) {
+            Text(
+                text = state.fiatTotal.uppercase(),
+                color = MixinAppTheme.colors.textPrimary,
+                fontSize = 30.sp,
+                lineHeight = 30.sp,
+                fontFamily = FontFamily(Font(R.font.mixin_font)),
+                style = compactTextStyle,
+                modifier = Modifier.alignByBaseline(),
+            )
+            Spacer(modifier = Modifier.width(2.dp))
+            Text(
+                text = Fiats.getAccountCurrencyAppearance(),
+                color = MixinAppTheme.colors.textPrimary,
+                fontSize = 14.sp,
+                lineHeight = 14.sp,
+                style = compactTextStyle,
+                modifier = Modifier.alignByBaseline(),
+            )
+        }
         Text(
             text = "${state.btcTotal} BTC",
-            color = MixinAppTheme.colors.textAssist,
+            color = MixinAppTheme.colors.textRemarks,
             fontSize = 13.sp,
+            lineHeight = 13.sp,
+            style = compactTextStyle,
         )
         state.watchIndicator?.let {
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(28.dp))
             WatchIndicator(
                 indicator = it,
                 onClick = callbacks::onWatchIndicatorClicked,
             )
         }
         state.importKeyAction?.let {
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(28.dp))
             ImportKeyAction(
                 action = it,
                 onClick = callbacks::onImportKeyClicked,
@@ -159,7 +185,7 @@ internal fun BalanceCard(state: WalletHomeState, callbacks: WalletHomeCallbacks)
             !state.hideActions &&
             !(state.walletType == WalletHomeType.CLASSIC && state.isWatchWallet)
         if (showActions) {
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(20.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,

@@ -480,14 +480,12 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         }
     }
 
-    private var referralAlreadyInvited = false
-
     private fun buildHomeState(): WalletHomeState {
         val totalFiat = assets.fold(BigDecimal.ZERO) { acc, item -> acc + item.fiat() }
         val showAddWalletBanner = !defaultSharedPreferences.getBoolean(PREF_WALLET_HOME_ADD_WALLET_BANNER_CLOSED, false)
         val showCashbackBanner = !defaultSharedPreferences.getBoolean(PREF_WALLET_HOME_CASHBACK_BANNER_CLOSED, false)
         val showBanner = showAddWalletBanner || showCashbackBanner
-        val showReferral = !defaultSharedPreferences.getBoolean(PREF_WALLET_HOME_REFERRAL_CLOSED, false) && !referralAlreadyInvited
+        val showReferral = !defaultSharedPreferences.getBoolean(PREF_WALLET_HOME_REFERRAL_CLOSED, false)
         val currentImportKeyAction = importKeyAction
         val cards = WalletHomeBuilder.build(
             walletType = WalletHomeType.CLASSIC,
@@ -742,19 +740,8 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             jobManager = jobManager,
             refreshJob = refreshJob
         )
-        refreshReferralStatus()
     }
     private var refreshJob: Job? = null
-
-    private fun refreshReferralStatus() {
-        if (referralAlreadyInvited) return
-        lifecycleScope.launch {
-            if (web3ViewModel.hasBeenReferred() == true) {
-                referralAlreadyInvited = true
-                renderHome()
-            }
-        }
-    }
 
     override fun onPause() {
         super.onPause()

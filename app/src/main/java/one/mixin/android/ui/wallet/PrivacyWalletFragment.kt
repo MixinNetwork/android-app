@@ -389,7 +389,6 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         _homeState.value = buildHomeState()
     }
 
-    private var referralAlreadyInvited = false
     private var isLoading = true
 
     private fun buildHomeState(): WalletHomeState {
@@ -398,7 +397,7 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         val showAddWalletBanner = !defaultSharedPreferences.getBoolean(PREF_WALLET_HOME_ADD_WALLET_BANNER_CLOSED, false)
         val showCashbackBanner = !defaultSharedPreferences.getBoolean(PREF_WALLET_HOME_CASHBACK_BANNER_CLOSED, false)
         val showBanner = showAddWalletBanner || showCashbackBanner
-        val showReferral = !defaultSharedPreferences.getBoolean(PREF_WALLET_HOME_REFERRAL_CLOSED, false) && !referralAlreadyInvited
+        val showReferral = !defaultSharedPreferences.getBoolean(PREF_WALLET_HOME_REFERRAL_CLOSED, false)
         val cards = WalletHomeBuilder.build(
             walletType = WalletHomeType.PRIVACY,
             hasAssetValue = totalFiat > BigDecimal.ZERO,
@@ -619,17 +618,6 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             onError = { error -> Timber.e(error) },
         )
         refreshAllPendingDeposit()
-        refreshReferralStatus()
-    }
-
-    private fun refreshReferralStatus() {
-        if (referralAlreadyInvited) return
-        lifecycleScope.launch {
-            if (walletViewModel.hasBeenReferred() == true) {
-                referralAlreadyInvited = true
-                renderHome()
-            }
-        }
     }
 
     override fun onHiddenChanged(hidden: Boolean) {

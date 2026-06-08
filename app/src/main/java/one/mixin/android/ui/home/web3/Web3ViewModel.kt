@@ -46,7 +46,6 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.repository.AccountRepository
-import one.mixin.android.repository.ReferralRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
@@ -91,11 +90,8 @@ class Web3ViewModel @Inject constructor(
     private val web3Repository: Web3Repository,
     private val rpc: Rpc,
     private val tip: Tip,
-    private val referralRepository: ReferralRepository,
 ) : ViewModel() {
     var scrollOffset: Int = 0
-
-    suspend fun hasBeenReferred(): Boolean? = referralRepository.fetchHasBeenInvitedOrNull("wallet_home")
 
     suspend fun refreshUser(userId: String) = userRepository.refreshUser(userId)
 
