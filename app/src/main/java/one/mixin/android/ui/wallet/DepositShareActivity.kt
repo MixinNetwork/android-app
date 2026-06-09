@@ -42,6 +42,7 @@ import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.common.roundQrBackground
 import one.mixin.android.ui.web.getScreenshot
 import one.mixin.android.ui.web.refreshScreenshot
 import one.mixin.android.vo.User
@@ -168,7 +169,10 @@ class DepositShareActivity : BaseActivity() {
             }
         }
         Session.getAccount()?.identityNumber.let {
-            val qrCode = SHARE_QR_URL.generateQRCode(200.dp, 8.dp).first
+            val qrSize = 78.dp
+            val qrPadding = 8.dp
+            val qrCode = SHARE_QR_URL.generateQRCode(qrSize, qrPadding, outputSize = qrSize).first
+                .roundQrBackground(qrPadding, 6.dp.toFloat())
             binding.qr.setImageBitmap(qrCode)
         }
         applyFadeInAnimation(binding.root)

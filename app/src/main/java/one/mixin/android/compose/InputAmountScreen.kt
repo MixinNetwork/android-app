@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.IconButton
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
@@ -729,7 +730,9 @@ fun InputAmountPreviewScreen(
             ) {
                 Box(
                     modifier = Modifier
-                        .size(200.dp),
+                        .size(200.dp)
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(Color.White),
                     contentAlignment = Alignment.Center
                 ) {
                     Image(
