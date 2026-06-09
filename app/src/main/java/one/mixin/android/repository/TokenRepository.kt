@@ -1754,6 +1754,8 @@ class TokenRepository
 
     fun getPendingTransactionCount(walletId: String): LiveData<Int> = web3TransactionDao.getPendingTransactionCount(walletId)
 
+    fun getPendingRawTransactionCount(walletId: String): LiveData<Int> = web3RawTransactionDao.getPendingRawTransactionCount(walletId)
+
     suspend fun rampWebUrl(request: RampWebUrlRequest): MixinResponse<RampWebUrlResponse> = routeService.rampWebUrl(request)
 
     suspend fun getAddressById(chainId: String) = addressDao.getAddressById(chainId)

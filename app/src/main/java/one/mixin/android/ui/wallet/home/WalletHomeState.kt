@@ -156,6 +156,11 @@ fun walletHomePendingTransactionIndicator(count: Int): WalletHomePendingIndicato
     )
 }
 
+fun walletHomePendingTransactionCount(
+    rawPendingCount: Int,
+    transactionPendingCount: Int,
+): Int = maxOf(rawPendingCount, transactionPendingCount)
+
 fun walletHomeWatchIndicator(addresses: List<String>): WalletHomeWatchIndicator? {
     if (addresses.isEmpty()) return null
     return if (addresses.size == 1) {

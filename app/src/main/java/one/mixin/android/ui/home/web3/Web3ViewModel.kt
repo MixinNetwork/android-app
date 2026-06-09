@@ -588,6 +588,8 @@ class Web3ViewModel @Inject constructor(
 
     suspend fun getPendingTransactions(walletId: String) = tokenRepository.getPendingTransactions(walletId)
 
+    fun getPendingRawTransactionCount(walletId: String): LiveData<Int> = tokenRepository.getPendingRawTransactionCount(walletId)
+
     fun getPendingTransactionCount(walletId: String): LiveData<Int> = tokenRepository.getPendingTransactionCount(walletId)
 
     suspend fun transaction(hash: String, chainId: String) = tokenRepository.transaction(hash, chainId)

@@ -73,6 +73,7 @@ import one.mixin.android.ui.wallet.home.getWalletHomeCache
 import one.mixin.android.ui.wallet.home.putWalletHomeCache
 import one.mixin.android.ui.wallet.home.WalletHomeImportKeyAction
 import one.mixin.android.ui.wallet.home.WalletHomeImportKeyKind
+import one.mixin.android.ui.wallet.home.walletHomePendingTransactionCount
 import one.mixin.android.ui.wallet.home.walletHomePendingTransactionIndicator
 import one.mixin.android.ui.wallet.home.walletHomeWatchIndicator
 import one.mixin.android.ui.wallet.home.walletHomeCacheKey
@@ -127,6 +128,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     private var isWatchWallet: Boolean = false
     private var importKeyAction: WalletHomeImportKeyAction? = null
     private var importKeyChainId: String? = null
+    private var pendingRawTransactionCount: Int = 0
     private var pendingTransactionCount: Int = 0
     private var watchAddresses: List<String> = emptyList()
     private val assetsAdapter by lazy { WalletWeb3TokenAdapter(false) }
@@ -171,6 +173,15 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                 MutableLiveData(0)
             } else {
                 web3ViewModel.getPendingTransactionCount(id)
+            }
+        }
+    }
+    private val pendingRawTxCountLiveData by lazy {
+        _walletId.switchMap { id ->
+            if (id.isNullOrEmpty()) {
+                MutableLiveData(0)
+            } else {
+                web3ViewModel.getPendingRawTransactionCount(id)
             }
         }
     }
@@ -417,6 +428,10 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         }
 
         _headBinding?.web3PendingView?.observePendingCount(viewLifecycleOwner, pendingTxCountLiveData)
+        pendingRawTxCountLiveData.observe(viewLifecycleOwner) {
+            pendingRawTransactionCount = it
+            renderHome()
+        }
         pendingTxCountLiveData.observe(viewLifecycleOwner) {
             pendingTransactionCount = it
             renderHome()
@@ -487,6 +502,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         val showBanner = showAddWalletBanner || showCashbackBanner
         val showReferral = !defaultSharedPreferences.getBoolean(PREF_WALLET_HOME_REFERRAL_CLOSED, false)
         val currentImportKeyAction = importKeyAction
+        val pendingCount = walletHomePendingTransactionCount(pendingRawTransactionCount, pendingTransactionCount)
         val cards = WalletHomeBuilder.build(
             walletType = WalletHomeType.CLASSIC,
             hasAssetValue = totalFiat > BigDecimal.ZERO,
@@ -496,7 +512,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             hasTopMovers = false,
             hasTransactions = recentTransactions.isNotEmpty(),
             hasImportKeyAction = currentImportKeyAction != null,
-            hasPendingIndicator = pendingTransactionCount > 0,
+            hasPendingIndicator = pendingCount > 0,
             isLoading = isLoading,
         )
         val state = WalletHomeState(
@@ -512,7 +528,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             isLoading = isLoading,
             allTokensHidden = assets.isEmpty() && topTokens.isNotEmpty(),
             isWatchWallet = isWatchWallet,
-            pendingIndicator = walletHomePendingTransactionIndicator(pendingTransactionCount),
+            pendingIndicator = walletHomePendingTransactionIndicator(pendingCount),
             watchIndicator = if (isWatchWallet) walletHomeWatchIndicator(watchAddresses) else null,
             importKeyAction = currentImportKeyAction,
             showAddWalletBanner = showAddWalletBanner,
@@ -642,7 +658,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         }
 
         override fun onPendingIndicatorClicked() {
-            if (pendingTransactionCount > 0) {
+            if (walletHomePendingTransactionCount(pendingRawTransactionCount, pendingTransactionCount) > 0) {
                 WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Transactions(walletId = walletId), pendingType = true)
             }
         }
