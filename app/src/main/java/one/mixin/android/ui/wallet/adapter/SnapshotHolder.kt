@@ -69,7 +69,7 @@ open class SnapshotHolder(
                     binding.name.textColor = binding.root.context.colorFromAttribute(R.attr.text_assist)
                     binding.avatar.setAnonymous()
                 } else if (snapshot.opponentId.startsWith("XIN", true)) {
-                    binding.name.text = snapshot.opponentId
+                    binding.name.text = snapshot.opponentId.formatPublicKey(limit = 14, prefixLen = 8, suffixLen = 6)
                     binding.name.textColor = binding.root.context.colorFromAttribute(R.attr.text_assist)
                     binding.avatar.setAnonymous()
                 } else {

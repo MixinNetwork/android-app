@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.widget.LinearLayoutCompat
+import androidx.core.content.ContextCompat
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewSendReceiveBinding
 import one.mixin.android.extension.colorAttr
@@ -51,7 +52,9 @@ class SendReceiveView : LinearLayoutCompat {
         listOf(binding.buy, binding.receive, binding.send, binding.swap).forEach { item ->
             item.layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
             item.setPadding(4.dp, 8.dp, 4.dp, 8.dp)
+            item.foreground = ContextCompat.getDrawable(context, R.drawable.mixin_ripple_8)
             item.collectViews(ImageView::class.java).forEach { image ->
+                image.foreground = null
                 image.layoutParams = image.layoutParams.apply {
                     width = 42.dp
                     height = 42.dp
