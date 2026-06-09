@@ -5,6 +5,12 @@ enum class WalletHomeType {
     CLASSIC,
 }
 
+enum class WalletHomeDataState {
+    EMPTY,
+    CACHE,
+    DATABASE,
+}
+
 enum class WalletHomeCardType {
     EMPTY_GUIDE,
     BALANCE,

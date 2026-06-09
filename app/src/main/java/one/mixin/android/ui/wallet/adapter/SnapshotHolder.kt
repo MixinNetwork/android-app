@@ -15,7 +15,9 @@ import one.mixin.android.databinding.ItemTransactionHeaderBinding
 import one.mixin.android.databinding.ItemWalletTransactionsBinding
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.formatPublicKey
+import one.mixin.android.extension.formatTransactionHash
+import one.mixin.android.extension.formatTransactionHashIfNeeded
+import one.mixin.android.extension.isTransactionHashLike
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.timeAgoDay
@@ -68,8 +70,8 @@ open class SnapshotHolder(
                     binding.name.text = "N/A"
                     binding.name.textColor = binding.root.context.colorFromAttribute(R.attr.text_assist)
                     binding.avatar.setAnonymous()
-                } else if (snapshot.opponentId.startsWith("XIN", true)) {
-                    binding.name.text = snapshot.opponentId.formatPublicKey(limit = 14, prefixLen = 8, suffixLen = 6)
+                } else if (snapshot.opponentId.startsWith("XIN", true) || snapshot.opponentId.isTransactionHashLike()) {
+                    binding.name.text = snapshot.opponentId.formatTransactionHash()
                     binding.name.textColor = binding.root.context.colorFromAttribute(R.attr.text_assist)
                     binding.avatar.setAnonymous()
                 } else {
@@ -174,15 +176,6 @@ open class SnapshotHolder(
         itemView.setOnClickListener {
             listener?.onNormalItemClick(snapshot)
         }
-    }
-}
-
-private fun String.formatTransactionHashIfNeeded(): String {
-    val normalized = removePrefix("0x").removePrefix("0X")
-    return if (normalized.length == 64 && normalized.all { it in '0'..'9' || it in 'a'..'f' || it in 'A'..'F' }) {
-        formatPublicKey(limit = 14, prefixLen = 8, suffixLen = 6)
-    } else {
-        formatPublicKey()
     }
 }
 
