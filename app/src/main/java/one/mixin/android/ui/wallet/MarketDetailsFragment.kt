@@ -6,6 +6,7 @@ import android.view.View
 import android.view.View.VISIBLE
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.text.HtmlCompat
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
@@ -52,6 +53,7 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
+import java.util.Locale
 import javax.inject.Inject
 import timber.log.Timber
 
@@ -146,42 +148,20 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         toast(getString(R.string.swap_not_supported, marketItem.name))
                         return@launch
                     }
-                    val assets = walletViewModel.allAssetItems()
-                    if (nowTokens.size == 1) {
-                        val input = if (nowTokens.first().assetId == USDT_ASSET_ETH_ID) {
-                            XIN_ASSET_ID
-                        } else {
-                            USDT_ASSET_ETH_ID
-                        }
-
-                        AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.MARKET_DETAIL)
-                        view.navigate(R.id.action_market_details_to_swap,
-                            Bundle().apply {
-                                putString(ARGS_INPUT, input)
-                                putString(ARGS_OUTPUT, nowTokens.first().assetId)
-                                putString(TradeFragment.ARGS_ENTRY_SOURCE, TradeSource.MARKET_DETAIL)
-                                putString(TradeFragment.ARGS_ENTRY_TYPE, AnalyticsTracker.SpotTradeType.SIMPLE)
-                            })
+                    val token = nowTokens.first()
+                    val input = if (token.assetId == USDT_ASSET_ETH_ID) {
+                        XIN_ASSET_ID
                     } else {
-                        DepositTokensBottomSheetDialogFragment.newInstance(ArrayList<TokenItem>().apply { addAll(nowTokens) }).apply {
-                            callback = { token ->
-                                val output = if (token.assetId == USDT_ASSET_ETH_ID) {
-                                    XIN_ASSET_ID
-                                } else {
-                                    USDT_ASSET_ETH_ID
-                                }
-
-                                AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.MARKET_DETAIL)
-                                view.navigate(R.id.action_market_details_to_swap,
-                                    Bundle().apply {
-                                        putString(ARGS_INPUT, token.assetId)
-                                        putString(ARGS_OUTPUT, output)
-                                        putString(TradeFragment.ARGS_ENTRY_SOURCE, TradeSource.MARKET_DETAIL)
-                                        putString(TradeFragment.ARGS_ENTRY_TYPE, AnalyticsTracker.SpotTradeType.SIMPLE)
-                                    })
-                            }
-                        }.show(parentFragmentManager, DepositTokensBottomSheetDialogFragment.TAG)
+                        USDT_ASSET_ETH_ID
                     }
+                    AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.MARKET_DETAIL)
+                    view.navigate(R.id.action_market_details_to_swap,
+                        Bundle().apply {
+                            putString(ARGS_INPUT, input)
+                            putString(ARGS_OUTPUT, token.assetId)
+                            putString(TradeFragment.ARGS_ENTRY_SOURCE, TradeSource.MARKET_DETAIL)
+                            putString(TradeFragment.ARGS_ENTRY_TYPE, AnalyticsTracker.SpotTradeType.SIMPLE)
+                        })
                 }
             }
             if (marketItem.coinId.isBlank()) {
@@ -370,6 +350,15 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     lowTime.isVisible = true
                     lowTime.text = info.atlDate.dayTime()
 
+                    val desc = info.descriptions?.let { map ->
+                        val lang = Locale.getDefault().language
+                        (map[lang]?.takeIf { it.isNotBlank() }
+                            ?: map["en"]?.takeIf { it.isNotBlank() }
+                            ?: map.values.firstOrNull { it.isNotBlank() })
+                    }?.let { HtmlCompat.fromHtml(it, HtmlCompat.FROM_HTML_MODE_LEGACY).toString().trim() }
+                    aboutContainer.isVisible = !desc.isNullOrBlank()
+                    aboutContent.text = desc.orEmpty()
+
                     priceValue.setTextColor(textPrimary)
                     marketCap.setTextColor(textPrimary)
                     marketHigh.setTextColor(textPrimary)
@@ -404,6 +393,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     highValue.setText(R.string.N_A)
                     lowValue.setTextColor(textAssist)
                     lowValue.setText(R.string.N_A)
+                    aboutContainer.isVisible = false
                 }
             }
         }
