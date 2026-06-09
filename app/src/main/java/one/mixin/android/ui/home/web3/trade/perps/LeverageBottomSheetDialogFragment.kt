@@ -15,8 +15,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Icon
 import androidx.compose.material.Slider
 import androidx.compose.material.SliderDefaults
 import androidx.compose.material.Text
@@ -27,9 +31,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -174,16 +180,31 @@ private fun LeverageContent(
                 .padding(16.dp)
         ) {
             Spacer(modifier = Modifier.height(24.dp))
-            Text(
-                text = "${tempLeverage}x",
-                fontSize = 48.sp,
-                fontWeight = FontWeight.Bold,
-                color = MixinAppTheme.colors.textPrimary,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .widthIn(min = 112.dp)
-                    .align(Alignment.CenterHorizontally)
-            )
+            Row(
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                LeverageStepperButton(
+                    iconRes = R.drawable.ic_perps_minus,
+                    enabled = tempLeverage > 1,
+                    onClick = { tempLeverage = (tempLeverage - 1).coerceAtLeast(1) },
+                )
+                Spacer(modifier = Modifier.width(24.dp))
+                Text(
+                    text = "${tempLeverage}x",
+                    fontSize = 48.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MixinAppTheme.colors.textPrimary,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.widthIn(min = 112.dp),
+                )
+                Spacer(modifier = Modifier.width(24.dp))
+                LeverageStepperButton(
+                    iconRes = R.drawable.ic_perps_add,
+                    enabled = tempLeverage < boundedMaxLeverage,
+                    onClick = { tempLeverage = (tempLeverage + 1).coerceAtMost(boundedMaxLeverage) },
+                )
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -277,6 +298,30 @@ private fun LeverageContent(
         }
 
         Spacer(modifier = Modifier.height(16.dp))
+    }
+}
+
+@Composable
+private fun LeverageStepperButton(
+    iconRes: Int,
+    enabled: Boolean,
+    onClick: () -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .size(32.dp)
+            .clip(CircleShape)
+            .background(MixinAppTheme.colors.backgroundWindow)
+            .alpha(if (enabled) 1f else 0.5f)
+            .clickable(enabled = enabled, onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            painter = painterResource(id = iconRes),
+            contentDescription = null,
+            tint = Color.Unspecified,
+            modifier = Modifier.size(18.dp),
+        )
     }
 }
 
