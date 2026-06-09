@@ -458,7 +458,7 @@ fun PerpsMarketDetailPage(
                                 onClick = {},
                                 backgroundColor = MixinAppTheme.colors.backgroundWindow,
                                 contentColor = MixinAppTheme.colors.textAssist,
-                                shape = RoundedCornerShape(32.dp),
+                                shape = RoundedCornerShape(24.dp),
                             ) {
                                 Text(
                                     fontSize = 16.sp,
@@ -534,7 +534,7 @@ fun PerpsMarketDetailPage(
                                     },
                                     backgroundColor = MixinAppTheme.colors.walletGreen,
                                     contentColor = Color.White,
-                                    shape = RoundedCornerShape(32.dp),
+                                    shape = RoundedCornerShape(24.dp),
                                 ) {
                                     Text(
                                         fontSize = 16.sp,
@@ -557,7 +557,7 @@ fun PerpsMarketDetailPage(
                                     },
                                     backgroundColor = MixinAppTheme.colors.accent,
                                     contentColor = Color.White,
-                                    shape = RoundedCornerShape(32.dp),
+                                    shape = RoundedCornerShape(24.dp),
                                 ) {
                                     Text(
                                         fontSize = 16.sp,
@@ -575,7 +575,7 @@ fun PerpsMarketDetailPage(
                                 onClick = {},
                                 backgroundColor = MixinAppTheme.colors.backgroundWindow,
                                 contentColor = MixinAppTheme.colors.textAssist,
-                                shape = RoundedCornerShape(32.dp),
+                                shape = RoundedCornerShape(24.dp),
                                 contentPadding = PaddingValues(horizontal = 32.dp, vertical = 12.dp),
                             ) {
                                 Text(
@@ -606,7 +606,7 @@ fun PerpsMarketDetailPage(
                                 },
                                 backgroundColor = risingColor,
                                 contentColor = Color.White,
-                                shape = RoundedCornerShape(32.dp),
+                                shape = RoundedCornerShape(24.dp),
                             ) {
                                 Text(
                                     fontSize = 16.sp,
@@ -631,7 +631,7 @@ fun PerpsMarketDetailPage(
                                 },
                                 backgroundColor = fallingColor,
                                 contentColor = Color.White,
-                                shape = RoundedCornerShape(32.dp),
+                                shape = RoundedCornerShape(24.dp),
                             ) {
                                 Text(
                                     fontSize = 16.sp,
@@ -866,25 +866,7 @@ private fun OpenPositionCard(
     onShare: () -> Unit,
 ) {
     val context = LocalContext.current
-    val quoteColorReversed = context.defaultSharedPreferences
-        .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
-    val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
-    val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
-    val pnl = position.unrealizedPnl?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    val roe = (position.roe?.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(BigDecimal(100))
-    val isProfit = pnl >= BigDecimal.ZERO
-    val pnlColor = if (isProfit) risingColor else fallingColor
-
     val isLong = position.side.equals("long", ignoreCase = true)
-    val directionColor = if (isLong) risingColor else fallingColor
-
-    val quantity = position.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    val marginAmount = position.margin?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    val amountValue = marginAmount
-    val currentPrice = position.markPrice.orEmpty()
-        .ifBlank { position.entryPrice }
-        .toBigDecimalOrNull() ?: BigDecimal.ZERO
-    val positionValue = quantity.abs().multiply(currentPrice)
     var tpSlLoadingMode by remember(position.positionId) {
         mutableStateOf<PerpsTpSlBottomSheetDialogFragment.Mode?>(null)
     }
@@ -992,128 +974,11 @@ private fun OpenPositionCard(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        Column {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = stringResource(R.string.PnL).uppercase(),
-                    fontSize = 12.sp,
-                    lineHeight = 14.sp,
-                    style = compactTextStyle,
-                    color = MixinAppTheme.colors.textAssist
-                )
-                Text(
-                    text = stringResource(R.string.Direction).uppercase(),
-                    fontSize = 12.sp,
-                    lineHeight = 14.sp,
-                    style = compactTextStyle,
-                    color = MixinAppTheme.colors.textAssist
-                )
-            }
-            Spacer(modifier = Modifier.height(7.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "${formatPerpsSignedRawUsdDecimal(pnl)} (${formatPerpsSignedPercent(roe, withSign = false)})",
-                    fontSize = 14.sp,
-                    lineHeight = 17.sp,
-                    style = compactTextStyle,
-                    color = pnlColor
-                )
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(directionColor)
-                            .padding(horizontal = 6.dp, vertical = 2.dp)
-                    ) {
-                        Text(
-                            text = if (isLong) stringResource(R.string.Long) else stringResource(R.string.Short),
-                            fontSize = 10.sp,
-                            lineHeight = 12.sp,
-                            style = compactTextStyle,
-                            color = Color.White
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "${position.leverage}x",
-                        fontSize = 14.sp,
-                        lineHeight = 17.sp,
-                        style = compactTextStyle,
-                        color = MixinAppTheme.colors.textPrimary
-                    )
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        Column {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = stringResource(R.string.position_size).uppercase(),
-                        fontSize = 12.sp,
-                        lineHeight = 14.sp,
-                        style = compactTextStyle,
-                        color = MixinAppTheme.colors.textAssist
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_tip),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(12.dp)
-                            .clickable {
-                                val activity = context as? FragmentActivity ?: return@clickable
-                                PerpetualGuideBottomSheetDialogFragment.newInstance(
-                                    PerpetualGuideBottomSheetDialogFragment.TAB_POSITION
-                                ).show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
-                            },
-                        tint = MixinAppTheme.colors.textAssist
-                    )
-                }
-                Text(
-                    text = stringResource(R.string.Margin).uppercase(),
-                    fontSize = 12.sp,
-                    lineHeight = 14.sp,
-                    style = compactTextStyle,
-                    color = MixinAppTheme.colors.textAssist
-                )
-            }
-            Spacer(modifier = Modifier.height(10.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "${formatPerpsQuantity(quantity.abs())} ${position.tokenSymbol} (${formatPerpsUsdDecimal(positionValue)})",
-                    fontSize = 14.sp,
-                    lineHeight = 17.sp,
-                    style = compactTextStyle,
-                    color = MixinAppTheme.colors.textPrimary
-                )
-                Text(
-                    text = formatPerpsUsdDecimal(amountValue),
-                    fontSize = 14.sp,
-                    lineHeight = 17.sp,
-                    style = compactTextStyle,
-                    color = MixinAppTheme.colors.textPrimary
-                )
-            }
-        }
+        OpenPositionItem(
+            position = position,
+            enabled = false,
+            contentPadding = PaddingValues(0.dp),
+        )
 
         Spacer(modifier = Modifier.height(20.dp))
 

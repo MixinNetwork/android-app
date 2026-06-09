@@ -20,7 +20,7 @@ import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentTransactionsBinding
 import one.mixin.android.databinding.ViewWalletTransactionsBottomBinding
-import one.mixin.android.extension.buildAmountSymbol
+import one.mixin.android.extension.buildBalanceAmountSymbol
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
@@ -464,7 +464,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                     asset.balance.numberFormat()
                 }
             val color = requireContext().colorFromAttribute(R.attr.text_primary)
-            balance.text = buildAmountSymbol(requireContext(), amountText, asset.symbol, color, color)
+            balance.text = buildBalanceAmountSymbol(requireContext(), amountText, asset.symbol, color, color)
             balanceAs.text =
                 try {
                     if (asset.fiat().toFloat() == 0f) {

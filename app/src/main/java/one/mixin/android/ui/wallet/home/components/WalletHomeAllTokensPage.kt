@@ -35,11 +35,17 @@ fun WalletHomeAllTokensPage(
     callbacks: WalletHomeCallbacks,
 ) {
     MixinAppTheme {
+        val tokensEmpty = if (state.walletType == WalletHomeType.PRIVACY) {
+            state.privacyTokens.isEmpty()
+        } else {
+            state.web3Tokens.isEmpty()
+        }
+        val scrollState = rememberScrollState()
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(MixinAppTheme.colors.background)
-                .verticalScroll(rememberScrollState()),
+                .then(if (tokensEmpty) Modifier else Modifier.verticalScroll(scrollState)),
         ) {
             Spacer(modifier = Modifier.height(10.dp))
             WalletHomeCard(WalletHomeCardType.BALANCE, state, callbacks)
@@ -47,14 +53,10 @@ fun WalletHomeAllTokensPage(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .then(if (tokensEmpty) Modifier.weight(1f) else Modifier)
                     .padding(horizontal = 20.dp)
                     .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor),
             ) {
-                val tokensEmpty = if (state.walletType == WalletHomeType.PRIVACY) {
-                    state.privacyTokens.isEmpty()
-                } else {
-                    state.web3Tokens.isEmpty()
-                }
                 if (tokensEmpty) {
                     EmptyTokens()
                 } else if (state.walletType == WalletHomeType.PRIVACY) {
@@ -85,8 +87,7 @@ fun WalletHomeAllTokensPage(
 private fun EmptyTokens() {
     Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 48.dp),
+            .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {

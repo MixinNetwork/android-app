@@ -177,11 +177,11 @@ private fun PositionSummaryHeader(
             Text(
                 text = buildAnnotatedString {
                     append(summary.valueText)
-                    append("（")
                     withStyle(SpanStyle(color = pnlColor)) {
+                        append("(")
                         append(summary.pnlText)
+                        append(")")
                     }
-                    append("）")
                 },
                 color = MixinAppTheme.colors.textPrimary,
                 fontSize = 14.sp,

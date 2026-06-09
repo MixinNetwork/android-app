@@ -582,7 +582,19 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         }
 
         override fun onPositionClicked(index: Int) {
-            onViewMorePositionsClicked()
+            val position = positions.getOrNull(index) ?: return
+            lifecycleScope.launch {
+                val market = perpetualViewModel.getMarketFromDb(position.marketId)
+                val activity = activity ?: return@launch
+                PerpsActivity.showDetail(
+                    activity,
+                    position.marketId,
+                    market?.displaySymbol ?: position.displaySymbol.orEmpty(),
+                    market?.displaySymbol ?: position.displaySymbol.orEmpty(),
+                    market?.tokenSymbol ?: position.tokenSymbol.orEmpty(),
+                    AnalyticsTracker.PerpsSource.WALLET_HOME,
+                )
+            }
         }
 
         override fun onTopMoverClicked(index: Int) {
