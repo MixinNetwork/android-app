@@ -307,15 +307,18 @@ private fun PerpsTpSlContent(
     var inputType by rememberSaveable(initialPrice, mode.name) {
         mutableStateOf(defaultInputType)
     }
+    val initialPriceInput = remember(initialPrice, safePriceScale) {
+        normalizePriceInput(initialPrice, safePriceScale)
+    }
     var priceFieldValue by rememberSaveable(stateSaver = TextFieldValue.Saver) {
-        mutableStateOf(textFieldValueAtEnd(initialPrice))
+        mutableStateOf(textFieldValueAtEnd(initialPriceInput))
     }
     var percentFieldValue by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(
             textFieldValueAtEnd(
                 normalizePercentInput(
                     derivePercentMagnitudeInput(
-                        priceInput = initialPrice,
+                        priceInput = initialPriceInput,
                         percentBasePrice = percentBasePrice,
                         leverage = leverageValue,
                         isLong = isLong,

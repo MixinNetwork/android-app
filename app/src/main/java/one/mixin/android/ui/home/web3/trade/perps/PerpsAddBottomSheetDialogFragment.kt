@@ -83,6 +83,7 @@ import one.mixin.android.ui.home.web3.trade.InputContent
 import one.mixin.android.ui.home.web3.trade.KeyboardAwareBox
 import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.home.web3.trade.TradeFragment
+import one.mixin.android.ui.home.web3.trade.limitTradeInputDecimalPlaces
 import one.mixin.android.ui.home.web3.trade.perps.formatPerpsPrice
 import one.mixin.android.ui.home.web3.trade.perps.formatPerpsQuantity
 import one.mixin.android.ui.home.web3.trade.perps.formatPerpsUsdDecimal
@@ -267,6 +268,7 @@ private fun PerpsAddContent(
     val focusManager = LocalFocusManager.current
     val viewModel = hiltViewModel<PerpetualViewModel>()
     var amount by remember(position.positionId) { mutableStateOf("") }
+    val amountMaxDecimalPlaces = PERPS_AMOUNT_MAX_DECIMAL_PLACES
     var remoteLiquidationPrice by remember(position.positionId) { mutableStateOf<String?>(null) }
     var isLiquidationLoading by remember(position.positionId) { mutableStateOf(false) }
     var liquidationJob by remember(position.positionId) { mutableStateOf<Job?>(null) }
@@ -287,6 +289,10 @@ private fun PerpsAddContent(
         .ifBlank { position.markPrice.orEmpty() }
         .ifBlank { position.entryPrice }
     val priceScale = market?.priceScale ?: position.priceScale
+
+    LaunchedEffect(selectedToken?.assetId, amountMaxDecimalPlaces) {
+        amount = limitTradeInputDecimalPlaces(amount, amountMaxDecimalPlaces)
+    }
 
     LaunchedEffect(amount, belowMinimumMargin, aboveMaximumMargin) {
         val addMargin = amount.toBigDecimalOrNull()
@@ -472,6 +478,7 @@ private fun PerpsAddContent(
                         onInputChanged = { amount = it },
                         tokenIconSize = 25.dp,
                         autoFocus = true,
+                        maxDecimalPlaces = amountMaxDecimalPlaces,
                     )
 
                     Row(
@@ -493,7 +500,7 @@ private fun PerpsAddContent(
                                 textAlign = TextAlign.Start,
                             ),
                             modifier = Modifier.clickable {
-                                amount = selectedToken?.balance ?: "0"
+                                amount = limitTradeInputDecimalPlaces(selectedToken?.balance ?: "0", amountMaxDecimalPlaces)
                             },
                         )
                         if (insufficientBalance || tokenBalance <= BigDecimal.ZERO) {
@@ -618,7 +625,10 @@ private fun PerpsAddContent(
         floating = {
             fun applyBalancePercent(percent: BigDecimal) {
                 amount = if (tokenBalance > BigDecimal.ZERO) {
-                    tokenBalance.multiply(percent).stripTrailingZeros().toPlainString()
+                    limitTradeInputDecimalPlaces(
+                        tokenBalance.multiply(percent).stripTrailingZeros().toPlainString(),
+                        amountMaxDecimalPlaces,
+                    )
                 } else {
                     ""
                 }

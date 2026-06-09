@@ -33,6 +33,7 @@ import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.home.web3.trade.SwapViewModel
+import one.mixin.android.ui.home.web3.trade.TRADE_INPUT_MAX_DECIMAL_PLACES
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -175,6 +176,7 @@ fun PriceInputArea(
         title = stringResource(id = R.string.limit_price, priceDisplayState.displayChainName),
         readOnly = false,
         selectClick = null,
+        maxDecimalPlaces = TRADE_INPUT_MAX_DECIMAL_PLACES,
         onInputChanged = { userInput ->
             displayPrice = userInput
             val inputPrice = userInput.toBigDecimalOrNull()

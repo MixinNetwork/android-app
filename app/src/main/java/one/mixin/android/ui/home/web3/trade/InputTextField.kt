@@ -55,6 +55,50 @@ import one.mixin.android.ui.home.inscription.component.AutoSizeText
 import one.mixin.android.widget.CoilRoundedHexagonTransformation
 import java.math.BigDecimal
 
+internal const val TRADE_INPUT_MAX_DECIMAL_PLACES = 8
+
+internal fun tradeInputMaxDecimalPlaces(
+    isCommonWallet: Boolean,
+    precision: Int,
+): Int {
+    return if (isCommonWallet && precision >= 0) {
+        precision
+    } else {
+        TRADE_INPUT_MAX_DECIMAL_PLACES
+    }
+}
+
+internal fun SwapToken?.tradeInputMaxDecimalPlaces(): Int {
+    return this?.let { token ->
+        tradeInputMaxDecimalPlaces(token.walletId != null, token.decimals)
+    } ?: TRADE_INPUT_MAX_DECIMAL_PLACES
+}
+
+internal fun isTradeInputDecimalAllowed(
+    value: String,
+    maxDecimalPlaces: Int? = TRADE_INPUT_MAX_DECIMAL_PLACES,
+): Boolean {
+    maxDecimalPlaces ?: return true
+    if (maxDecimalPlaces < 0) return true
+    val decimalIndex = value.indexOf('.')
+    if (decimalIndex < 0) return true
+    if (maxDecimalPlaces == 0) return false
+    return value.length - decimalIndex - 1 <= maxDecimalPlaces
+}
+
+internal fun limitTradeInputDecimalPlaces(
+    value: String,
+    maxDecimalPlaces: Int? = TRADE_INPUT_MAX_DECIMAL_PLACES,
+): String {
+    maxDecimalPlaces ?: return value
+    if (maxDecimalPlaces < 0) return value
+    val decimalIndex = value.indexOf('.')
+    if (decimalIndex < 0) return value
+    if (maxDecimalPlaces == 0) return value.substring(0, decimalIndex)
+    val endIndex = (decimalIndex + 1 + maxDecimalPlaces).coerceAtMost(value.length)
+    return value.substring(0, endIndex)
+}
+
 @SuppressLint("UnrememberedMutableState")
 @Composable
 fun InputContent(
@@ -68,6 +112,7 @@ fun InputContent(
     inputFontSize: TextUnit = 24.sp,
     inputFontWeight: FontWeight = FontWeight.Black,
     autoFocus: Boolean = false,
+    maxDecimalPlaces: Int? = null,
 ) {
     if (readOnly) {
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -105,21 +150,24 @@ fun InputContent(
         }
         val interactionSource = remember { MutableInteractionSource() }
         var textFieldValue by remember {
+            val limitedText = limitTradeInputDecimalPlaces(text, maxDecimalPlaces)
             mutableStateOf(
                 TextFieldValue(
-                    text = text,
-                    selection = TextRange(text.length)
+                    text = limitedText,
+                    selection = TextRange(limitedText.length)
                 )
             )
         }
 
-        LaunchedEffect(text) {
-            if (textFieldValue.text != text) {
+        LaunchedEffect(text, maxDecimalPlaces) {
+            val limitedText = limitTradeInputDecimalPlaces(text, maxDecimalPlaces)
+            if (textFieldValue.text != limitedText) {
                 textFieldValue = TextFieldValue(
-                    text = text,
-                    selection = TextRange(text.length)
+                    text = limitedText,
+                    selection = TextRange(limitedText.length)
                 )
             }
+            if (text != limitedText) onInputChanged?.invoke(limitedText)
         }
 
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -136,8 +184,11 @@ fun InputContent(
                     BasicTextField(
                         value = textFieldValue,
                         onValueChange = {
+                            if (!isTradeInputDecimalAllowed(it.text, maxDecimalPlaces)) {
+                                return@BasicTextField
+                            }
                             textFieldValue = it
-                            val v = try {
+                            try {
                                 if (it.text.isBlank()) BigDecimal.ZERO else BigDecimal(it.text)
                             } catch (e: Exception) {
                                 return@BasicTextField
