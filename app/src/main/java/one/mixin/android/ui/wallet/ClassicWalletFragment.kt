@@ -138,6 +138,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     private var lastFiatCurrency :String? = null
     private var cachedBtcTotal: String = "0.00"
     private var hasLoadedHomeCache = false
+    private var hasLoadedWalletAssets = false
     private val _homeState = MutableStateFlow(
         WalletHomeState(
             walletType = WalletHomeType.CLASSIC,
@@ -152,6 +153,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         set(value) {
             if (value != field) {
                 field = value
+                hasLoadedWalletAssets = false
                 _walletId.value = value
                 loadWalletHomeCache()
             }
@@ -458,6 +460,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
 
     private val observer = Observer<List<Web3TokenItem>> { data ->
         Timber.e("observe web3TokensExcludeHidden data size: ${data.size}, walletId: $walletId")
+        hasLoadedWalletAssets = true
         isLoading = false
         if (data.isEmpty()) {
             setEmpty()
@@ -486,6 +489,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     private fun renderHome() {
         mainThread {
             if (_binding == null) return@mainThread
+            if (!hasLoadedHomeCache && isLoading && !hasLoadedWalletAssets) return@mainThread
             if (hasLoadedHomeCache && isLoading && assets.isEmpty() && recentTransactions.isEmpty()) return@mainThread
             hasLoadedHomeCache = false
             if (assets.isNotEmpty() || recentTransactions.isNotEmpty()) {
@@ -583,7 +587,16 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
 
     private fun loadWalletHomeCache() {
         if (!isAdded || walletId.isEmpty()) return
-        defaultSharedPreferences.getWalletHomeCache(classicWalletHomeCacheKey())?.let { cache ->
+        hasLoadedHomeCache = false
+        val cache = defaultSharedPreferences.getWalletHomeCache(classicWalletHomeCacheKey())
+        if (cache == null) {
+            isLoading = true
+            _homeState.value = WalletHomeState(
+                walletType = WalletHomeType.CLASSIC,
+                isLoading = true,
+                showImportSafetyFooter = false,
+            )
+        } else {
             _homeState.value = cache.toState()
             isWatchWallet = cache.isWatchWallet
             watchAddresses = cache.watchAddresses.orEmpty()
