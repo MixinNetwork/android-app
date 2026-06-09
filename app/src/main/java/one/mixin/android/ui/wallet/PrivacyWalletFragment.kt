@@ -662,6 +662,7 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             jobManager.addJobInBackground(RefreshTokensJob())
             jobManager.addJobInBackground(RefreshSnapshotsJob())
             jobManager.addJobInBackground(SyncOutputJob())
+            refreshAllPendingDeposit()
         }
     }
 
