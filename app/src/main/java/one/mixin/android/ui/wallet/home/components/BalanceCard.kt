@@ -241,7 +241,7 @@ private fun PendingIndicator(
             text = pendingIndicatorText(indicator),
             color = MixinAppTheme.colors.textPrimary,
             fontSize = 13.sp,
-            fontWeight = FontWeight.W500,
+            fontWeight = FontWeight.W400,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f, fill = false),
@@ -283,7 +283,7 @@ private fun PendingIconGroup(indicator: WalletHomePendingIndicator) {
                     text = "+$hiddenCount",
                     color = MixinAppTheme.colors.textAssist,
                     fontSize = 9.sp,
-                    fontWeight = FontWeight.W600,
+                    fontWeight = FontWeight.W400,
                 )
             }
         }

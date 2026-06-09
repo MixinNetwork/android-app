@@ -1957,8 +1957,8 @@
     <string name="url_perps_stop_loss">https://support.mixin.one/en/article/how-to-set-take-profit-and-stop-loss-1eoepxc/#1-stop-loss</string>
     <string name="deposit_url">https://support.mixin.one/en/article/how-to-deposit-assets-to-mixin-messenger-1usvjod</string>
     <string name="emergency_url">https://support.mixin.one/en/article/how-to-set-up-an-emergency-contact-1kvd6g8</string>
-    <string name="Deposit_Pending_Confirmation">%1$s Pending Confirmation</string>
-    <string name="Deposits_Pending_Confirmation">%1$d Deposits Pending Confirmation</string>
+    <string name="Deposit_Pending_Confirmation">%1$s Confirming</string>
+    <string name="Deposits_Pending_Confirmation">%1$d Deposits Confirming</string>
     <string name="open_source"> Copyright Mixin\nLicensed under the GPLv3</string>
     <string name="asset_changes">Asset changes</string>
     <string name="asset_changes_estimate">Asset changes (estimate)</string>
@@ -2062,8 +2062,8 @@
     <string name="Approval">Approval</string>
     <string name="Approved">Approved</string>
     <string name="unlimited">unlimited</string>
-    <string name="Transaction_Pending_Confirmation">1 Pending Transaction</string>
-    <string name="Transactions_Pending_Confirmation">%1$d Pending Transactions</string>
+    <string name="Transaction_Pending_Confirmation">1 Transaction Confirming</string>
+    <string name="Transactions_Pending_Confirmation">%1$d Transactions Confirming</string>
     <string name="Speed_Up">Speed Up</string>
     <string name="Cancel_Transaction">Cancel Transaction</string>
     <string name="Speed_Up_Transaction">Speed Up Transaction</string>
