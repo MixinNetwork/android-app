@@ -14,6 +14,7 @@ import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.Shader.TileMode
 import android.graphics.drawable.Drawable
+import android.os.SystemClock
 import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextPaint
@@ -33,6 +34,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.toRectF
 import one.mixin.android.R
 import one.mixin.android.extension.dp
+import kotlin.math.roundToInt
 
 class ViewfinderView
     @JvmOverloads
@@ -94,6 +96,14 @@ class ViewfinderView
             private set
         private var onItemClickListener: OnItemClickListener? = null
         private var gestureDetector: GestureDetector? = null
+        private val trackedFromBounds = RectF()
+        private val trackedBounds = RectF()
+        private val trackedDrawBounds = RectF()
+        private val trackedFrame = Rect()
+        private var hasTrackedBounds = false
+        private var lastTrackedBoundsUpdate = 0L
+        private val trackedBoundsUpdateDuration = 75L
+        private val currentScannerFrame = Rect()
 
         @IntDef(ViewfinderStyle.CLASSIC, ViewfinderStyle.POPULAR)
         @Retention(AnnotationRetention.SOURCE)
@@ -421,17 +431,7 @@ class ViewfinderView
                     topOffsets.toInt() + frameHeight,
                 )
             if (laserStyle == LaserStyle.RADAR) {
-                this.radarPath.reset()
-                this.radarPath.addRoundRect(
-                    frame.left.toFloat(),
-                    frame.top.toFloat(),
-                    frame.right.toFloat(),
-                    frame.bottom.toFloat(),
-                    cornerRadius,
-                    cornerRadius,
-                    Path.Direction.CW,
-                )
-                this.radarPath.close()
+                updateRadarPath(frame)
             }
         }
 
@@ -444,31 +444,54 @@ class ViewfinderView
                 }
                 return
             }
-            if (scannerStart == 0 || scannerEnd == 0) {
-                scannerStart = frame.top
-                scannerEnd = frame.bottom - scannerLineHeight
+            val drawingFrame = getTrackedFrame() ?: frame
+            prepareScannerFrame(drawingFrame)
+            if (laserStyle == LaserStyle.RADAR) {
+                updateRadarPath(drawingFrame)
             }
             when (viewfinderStyle) {
                 ViewfinderStyle.CLASSIC -> {
-                    drawExterior(canvas, frame, width, height)
-                    drawLaserScanner(canvas, frame)
-                    drawFrame(canvas, frame)
-                    drawCorner(canvas, frame)
-                    drawTextInfo(canvas, frame)
+                    drawExterior(canvas, drawingFrame, width, height)
+                    drawLaserScanner(canvas, drawingFrame)
+                    drawFrame(canvas, drawingFrame)
+                    drawCorner(canvas, drawingFrame)
+                    drawTextInfo(canvas, drawingFrame)
                     postInvalidateDelayed(
                         scannerAnimationDelay.toLong(),
-                        frame.left,
-                        frame.top,
-                        frame.right,
-                        frame.bottom,
+                        drawingFrame.left,
+                        drawingFrame.top,
+                        drawingFrame.right,
+                        drawingFrame.bottom,
                     )
                 }
 
                 ViewfinderStyle.POPULAR -> {
-                    drawLaserScanner(canvas, frame)
+                    drawLaserScanner(canvas, drawingFrame)
                     postInvalidateDelayed(scannerAnimationDelay.toLong())
                 }
             }
+        }
+
+        private fun prepareScannerFrame(frame: Rect) {
+            if (scannerStart == 0 || scannerEnd == 0 || currentScannerFrame != frame) {
+                currentScannerFrame.set(frame)
+                scannerStart = frame.top
+                scannerEnd = frame.bottom - scannerLineHeight
+            }
+        }
+
+        private fun updateRadarPath(frame: Rect) {
+            radarPath.reset()
+            radarPath.addRoundRect(
+                frame.left.toFloat(),
+                frame.top.toFloat(),
+                frame.right.toFloat(),
+                frame.bottom.toFloat(),
+                cornerRadius,
+                cornerRadius,
+                Path.Direction.CW,
+            )
+            radarPath.close()
         }
 
         private fun drawTextInfo(
@@ -604,7 +627,12 @@ class ViewfinderView
                 canvas.clipPath(radarPath)
                 paint.shader = null
                 radarGrid.run {
-                    canvas.drawBitmap(this, rFrame.left, scannerStart.toFloat() - height, paint)
+                    canvas.drawBitmap(
+                        this,
+                        null,
+                        RectF(rFrame.left, scannerStart - rFrame.height(), rFrame.right, scannerStart.toFloat()),
+                        paint,
+                    )
                 }
                 paint.shader =
                     LinearGradient(
@@ -623,7 +651,7 @@ class ViewfinderView
                 scannerStart = frame.top
             }
             radarFrame.run {
-                canvas.drawBitmap(this, rFrame.left, rFrame.top, paint)
+                canvas.drawBitmap(this, null, rFrame, paint)
             }
         }
 
@@ -913,17 +941,87 @@ class ViewfinderView
 
         fun showScanner() {
             isShowPoints = false
+            clearTrackedBounds()
             invalidate()
         }
 
         fun showResultPoints(points: List<Point>?) {
             pointList = points
             isShowPoints = true
+            hasTrackedBounds = false
             zoomCount = 0
             lastZoomRatio = 0f
             currentZoomRatio = 1f
             invalidate()
         }
+
+        fun trackResultBounds(bounds: RectF) {
+            if (width <= 0 || height <= 0) return
+            val paddedBounds =
+                RectF(bounds).apply {
+                    inset(-24.dp.toFloat(), -16.dp.toFloat())
+                    left = left.coerceIn(0f, width.toFloat())
+                    top = top.coerceIn(0f, height.toFloat())
+                    right = right.coerceIn(left, width.toFloat())
+                    bottom = bottom.coerceIn(top, height.toFloat())
+                }
+            val now = SystemClock.elapsedRealtime()
+            if (!hasTrackedBounds) {
+                trackedFromBounds.set(paddedBounds)
+                trackedBounds.set(paddedBounds)
+                lastTrackedBoundsUpdate = now - trackedBoundsUpdateDuration
+            } else {
+                getTrackedBounds(now)
+                trackedFromBounds.set(trackedDrawBounds)
+                trackedBounds.set(paddedBounds)
+                lastTrackedBoundsUpdate = now
+            }
+            hasTrackedBounds = true
+            isShowPoints = false
+            invalidate()
+        }
+
+        fun clearTrackedBounds() {
+            if (!hasTrackedBounds) return
+            hasTrackedBounds = false
+            scannerStart = 0
+            scannerEnd = 0
+            invalidate()
+        }
+
+        private fun getTrackedFrame(): Rect? {
+            if (!hasTrackedBounds) return null
+            val bounds = getTrackedBounds(SystemClock.elapsedRealtime())
+            trackedFrame.set(
+                bounds.left.roundToInt(),
+                bounds.top.roundToInt(),
+                bounds.right.roundToInt(),
+                bounds.bottom.roundToInt(),
+            )
+            return trackedFrame
+        }
+
+        private fun getTrackedBounds(now: Long): RectF {
+            val t =
+                ((now - lastTrackedBoundsUpdate).toFloat() / trackedBoundsUpdateDuration)
+                    .coerceIn(0f, 1f)
+            trackedDrawBounds.set(
+                lerp(trackedFromBounds.left, trackedBounds.left, t),
+                lerp(trackedFromBounds.top, trackedBounds.top, t),
+                lerp(trackedFromBounds.right, trackedBounds.right, t),
+                lerp(trackedFromBounds.bottom, trackedBounds.bottom, t),
+            )
+            if (t < 1f) {
+                invalidate()
+            }
+            return trackedDrawBounds
+        }
+
+        private fun lerp(
+            from: Float,
+            to: Float,
+            t: Float,
+        ) = from + (to - from) * t
 
         fun setOnItemClickListener(listener: OnItemClickListener?) {
             onItemClickListener = listener
