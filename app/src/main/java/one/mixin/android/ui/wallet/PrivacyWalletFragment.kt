@@ -60,12 +60,11 @@ import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
 import one.mixin.android.ui.home.bot.INTERNAL_REFERRAL_ID
 import one.mixin.android.ui.home.web3.trade.SwapActivity
+import one.mixin.android.ui.home.web3.trade.TradeFragment
 import one.mixin.android.ui.home.web3.trade.perps.AllPositionsFragment
 import one.mixin.android.ui.home.web3.trade.perps.PerpsActivity
-import one.mixin.android.ui.home.web3.trade.perps.PerpsMarketListBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.trade.perps.PerpetualViewModel
 import one.mixin.android.ui.home.web3.trade.perps.topMoversPreview
-import one.mixin.android.ui.home.web3.widget.MarketSort
 import one.mixin.android.ui.wallet.home.WalletHomeBuilder
 import one.mixin.android.ui.wallet.home.WalletHomeCallbacks
 import one.mixin.android.ui.wallet.home.WalletHomePage
@@ -634,9 +633,13 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         }
 
         override fun onViewMoreTopMoversClicked() {
-            PerpsMarketListBottomSheetDialogFragment.newInstance(
-                initialSort = MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_DESCENDING,
-            ).show(parentFragmentManager, PerpsMarketListBottomSheetDialogFragment.TAG)
+            AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.WALLET_HOME)
+            SwapActivity.show(
+                requireActivity(),
+                inMixin = true,
+                entrySource = TradeSource.WALLET_HOME,
+                initialTab = TradeFragment.TAB_PERPETUAL,
+            )
         }
     }
 

@@ -247,9 +247,13 @@ fun ImportWalletDetailPage(
         else -> ""
     }
     val hint = when (mode) {
-        WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY -> stringResource(R.string.private_key_hint)
+        WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY,
+        WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY -> when {
+            isSolana -> stringResource(R.string.solana_private_key_hint)
+            isBitcoin -> stringResource(R.string.bitcoin_private_key_hint)
+            else -> stringResource(R.string.ethereum_private_key_hint)
+        }
         WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS -> stringResource(R.string.address_hint)
-        WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY -> stringResource(R.string.private_key_hint)
         else -> ""
     }
 

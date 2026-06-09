@@ -38,6 +38,7 @@ import one.mixin.android.db.web3.vo.TransactionType
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.extension.colorAttr
+import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.ui.home.web3.StakeAccountSummary
@@ -77,11 +78,7 @@ class Web3TransactionHolder(
     fun bind(transaction: Web3TransactionItem) {
         binding.apply {
             val hash = transaction.transactionHash
-            name.text = if (hash.length > 14) {
-                "${hash.substring(0, 8)}...${hash.substring(hash.length - 6)}"
-            } else {
-                hash
-            }
+            name.text = hash.formatPublicKey(limit = 14, prefixLen = 8, suffixLen = 6)
             icSpam.isVisible = transaction.isNotVerified()
             val amount = transaction.getFormattedAmount()
             when {

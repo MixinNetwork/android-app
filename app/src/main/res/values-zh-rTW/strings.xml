@@ -1132,4 +1132,7 @@
     <string name="wallet_home_privacy_wallet_reason_1">隱藏餘額與交易紀錄，鏈上完全匿名</string>
     <string name="wallet_home_privacy_wallet_reason_2">不必輸入複雜地址，徹底告別轉帳錯誤</string>
     <string name="wallet_home_privacy_wallet_reason_3">攔截惡意授權，杜絕應用偷轉資產</string>
+    <string name="solana_private_key_hint">輸入 Base58 或 64 字節 HEX 格式私鑰，例如 3fZb...9Qp 或 0x1a2b...cdef</string>
+    <string name="bitcoin_private_key_hint">輸入 WIF 或 32 字節 HEX 格式私鑰，例如 Kx45...9Ab 或 0x1a2b...cdef</string>
+    <string name="ethereum_private_key_hint">輸入 HEX 格式私鑰，例如 0x1a2b...cdef</string>
 </resources>

@@ -2144,6 +2144,9 @@
     <string name="import_private_key">导入私钥</string>
     <string name="add_watch_address">添加观察地址</string>
     <string name="private_key_hint">输入你的私钥</string>
+    <string name="solana_private_key_hint">输入 Base58 或 64 字节 HEX 格式私钥，例如 3fZb...9Qp 或 0x1a2b...cdef</string>
+    <string name="bitcoin_private_key_hint">输入 WIF 或 32 字节 HEX 格式私钥，例如 Kx45...9Ab 或 0x1a2b...cdef</string>
+    <string name="ethereum_private_key_hint">输入 HEX 格式私钥，例如 0x1a2b...cdef</string>
     <string name="address_hint">输入你的钱包地址</string>
     <string name="import_private_key_description">导入单链钱包。</string>
     <string name="add_watch_address_description">追踪公开钱包地址。</string>

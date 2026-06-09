@@ -57,6 +57,7 @@ import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.session.Session
+import one.mixin.android.ui.common.roundQrBackground
 import one.mixin.android.ui.home.web3.components.ActionButton
 import one.mixin.android.util.getChainName
 import one.mixin.android.vo.safe.TokenItem
@@ -574,7 +575,6 @@ private fun generateDepositUri(
 }
 
 // Helper function to generate QR code bitmap from deposit URI
-@Composable
 private fun generateQrCodeBitmap(
     assetId: String,
     chainId: String,
@@ -591,9 +591,15 @@ private fun generateQrCodeBitmap(
         amount = amount.split(" ").first(),
         precision = precision
     )
-    return depositUri?.generateQRCode(200.dip, 0, 32.dip)?.first
-        ?: // Generate a fallback QR code with the address if URI generation fails
-        (address ?: "").generateQRCode(200.dip, 0, 32.dip).first
+    return (depositUri ?: address.orEmpty()).generateInputAmountQrCode()
+}
+
+private fun String.generateInputAmountQrCode(): Bitmap {
+    val qrSize = 200.dip
+    val qrPadding = 8.dip
+    return generateQRCode(qrSize, qrPadding, outputSize = qrSize)
+        .first
+        .roundQrBackground(qrPadding, 6.dip.toFloat())
 }
 
 @Composable
@@ -727,7 +733,7 @@ fun InputAmountPreviewScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Image(
-                        bitmap = invoiceUri?.generateQRCode(200.dip, 0, 32.dip)?.first?.asImageBitmap() ?: generateQrCodeBitmap(
+                        bitmap = invoiceUri?.generateInputAmountQrCode()?.asImageBitmap() ?: generateQrCodeBitmap(
                             assetId = tokenAssetId,
                             chainId = tokenChainId,
                             assetKey = tokenAssetKey,

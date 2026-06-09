@@ -2201,6 +2201,9 @@
     <string name="import_private_key">Import Private Key</string>
     <string name="add_watch_address">Add Watch Address</string>
     <string name="private_key_hint">Type your private key</string>
+    <string name="solana_private_key_hint">Enter Base58 or 64-byte HEX private key. Example: 3fZb...9Qp or 0x1a2b...cdef</string>
+    <string name="bitcoin_private_key_hint">Enter WIF or 32-byte HEX private key. Example: Kx45...9Ab or 0x1a2b...cdef</string>
+    <string name="ethereum_private_key_hint">Enter HEX private key. Example: 0x1a2b...cdef</string>
     <string name="address_hint">Type your wallet address</string>
     <string name="import_private_key_description">Import a single-chain wallet.</string>
     <string name="add_watch_address_description">Track any public wallet address.</string>

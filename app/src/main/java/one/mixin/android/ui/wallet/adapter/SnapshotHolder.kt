@@ -104,13 +104,11 @@ open class SnapshotHolder(
                     binding.avatar.setDeposit()
                     val sender = snapshot.deposit?.sender
                     binding.name.text =
-                        (
-                            if (sender.isNullOrBlank()) {
-                                "N/A"
-                            } else {
-                                sender
-                            }
-                            ).formatPublicKey()
+                        if (sender.isNullOrBlank()) {
+                            "N/A"
+                        } else {
+                            sender.formatTransactionHashIfNeeded()
+                        }
                 } else {
                     binding.avatar.setWithdrawal()
                     val receiver = snapshot.withdrawal?.receiver
@@ -118,9 +116,9 @@ open class SnapshotHolder(
                     if (receiver.isNullOrBlank()) {
                         binding.name.text = "N/A"
                     } else if (label.isNullOrBlank()) {
-                        binding.name.text = receiver.formatPublicKey()
+                        binding.name.text = receiver.formatTransactionHashIfNeeded()
                     } else {
-                        val fullText = "${snapshot.withdrawal.receiver} $label"
+                        val fullText = "${receiver.formatTransactionHashIfNeeded()} $label"
                         val spannableString = SpannableString(fullText)
                         val start = fullText.lastIndexOf(label)
                         val end = start + label.length
@@ -176,6 +174,15 @@ open class SnapshotHolder(
         itemView.setOnClickListener {
             listener?.onNormalItemClick(snapshot)
         }
+    }
+}
+
+private fun String.formatTransactionHashIfNeeded(): String {
+    val normalized = removePrefix("0x").removePrefix("0X")
+    return if (normalized.length == 64 && normalized.all { it in '0'..'9' || it in 'a'..'f' || it in 'A'..'F' }) {
+        formatPublicKey(limit = 14, prefixLen = 8, suffixLen = 6)
+    } else {
+        formatPublicKey()
     }
 }
 
