@@ -2298,7 +2298,7 @@
     <string name="perps_funding_frequency">频率</string>
     <string name="perps_funding_frequency_value">8 小时</string>
     <string name="perps_receive">收到</string>
-    <string name="perps_liquidation_price_short">强平价</string>
+    <string name="perps_liquidation_price_short">强平价格</string>
     <string name="Take_Profit_When">止盈条件</string>
     <string name="Stop_Loss_When">止损条件</string>
     <string name="profit_reaches_percent">盈利达到 %</string>
