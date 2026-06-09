@@ -72,6 +72,7 @@ interface WalletHomeCallbacks {
     fun onViewMorePositionsClicked()
     fun onTokenClicked(index: Int)
     fun onTransactionClicked(index: Int)
+    fun onTransactionUserClicked(userId: String)
     fun onPositionClicked(index: Int)
     fun onTopMoverClicked(index: Int)
     fun onTopMoverMarketClicked(market: PerpsMarket) = Unit

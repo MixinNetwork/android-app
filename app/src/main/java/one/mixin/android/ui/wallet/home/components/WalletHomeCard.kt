@@ -144,6 +144,7 @@ internal fun WalletHomeCard(
                     PrivacyTransactionRecycler(
                         transactions = state.privacyTransactions.take(PREVIEW_LIMIT),
                         onClick = callbacks::onTransactionClicked,
+                        onUserClick = callbacks::onTransactionUserClicked,
                         modifier = Modifier.fillMaxWidth(),
                     )
                 } else {

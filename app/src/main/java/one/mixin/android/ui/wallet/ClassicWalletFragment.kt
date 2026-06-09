@@ -712,6 +712,8 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             }
         }
 
+        override fun onTransactionUserClicked(userId: String) = Unit
+
         override fun onPositionClicked(index: Int) = Unit
 
         override fun onTopMoverClicked(index: Int) = Unit

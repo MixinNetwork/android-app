@@ -22,8 +22,10 @@ import com.google.android.material.snackbar.Snackbar
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_HAS_USED_BUY
 import one.mixin.android.Constants.Account.PREF_HAS_USED_SWAP
@@ -51,6 +53,8 @@ import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
+import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
@@ -84,6 +88,7 @@ import one.mixin.android.util.reportException
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.PendingDisplay
 import one.mixin.android.vo.SnapshotItem
+import one.mixin.android.vo.notMessengerUser
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.toSnapshot
 import one.mixin.android.ui.web.WebActivity
@@ -578,6 +583,22 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     TransactionFragment.newInstance(snapshot, asset),
                     TransactionFragment.TAG,
                 )
+            }
+        }
+
+        override fun onTransactionUserClicked(userId: String) {
+            lifecycleScope.launch {
+                val user =
+                    withContext(Dispatchers.IO) {
+                        walletViewModel.getUser(userId)
+                    } ?: return@launch
+                if (user.notMessengerUser()) {
+                    NonMessengerUserBottomSheetDialogFragment.newInstance(user)
+                        .showNow(parentFragmentManager, NonMessengerUserBottomSheetDialogFragment.TAG)
+                } else {
+                    val f = UserBottomSheetDialogFragment.newInstance(user)
+                    f?.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                }
             }
         }
 

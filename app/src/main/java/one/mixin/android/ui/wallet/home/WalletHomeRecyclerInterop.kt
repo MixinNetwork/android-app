@@ -115,11 +115,13 @@ fun Web3TokenRecycler(
 fun PrivacyTransactionRecycler(
     transactions: List<SnapshotItem>,
     onClick: (Int) -> Unit,
+    onUserClick: (String) -> Unit,
     modifier: Modifier = Modifier,
     itemSpacing: Int = 20.dp,
 ) {
     val currentTransactions = rememberUpdatedState(transactions)
     val currentOnClick = rememberUpdatedState(onClick)
+    val currentOnUserClick = rememberUpdatedState(onUserClick)
     AndroidView(
         modifier = modifier,
         factory = { context ->
@@ -136,7 +138,9 @@ fun PrivacyTransactionRecycler(
                             currentOnClick.value(currentTransactions.value.indexOf(item as SnapshotItem))
                         }
 
-                        override fun onUserClick(userId: String) = Unit
+                        override fun onUserClick(userId: String) {
+                            currentOnUserClick.value(userId)
+                        }
 
                         override fun onMoreClick() = Unit
                     }
@@ -150,7 +154,9 @@ fun PrivacyTransactionRecycler(
                         currentOnClick.value(currentTransactions.value.indexOf(item as SnapshotItem))
                     }
 
-                    override fun onUserClick(userId: String) = Unit
+                    override fun onUserClick(userId: String) {
+                        currentOnUserClick.value(userId)
+                    }
 
                     override fun onMoreClick() = Unit
                 }

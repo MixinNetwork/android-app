@@ -404,6 +404,7 @@ class WalletHomeAllTokensFragment : BaseFragment() {
         }
 
         override fun onTransactionClicked(index: Int) = Unit
+        override fun onTransactionUserClicked(userId: String) = Unit
         override fun onPositionClicked(index: Int) = Unit
         override fun onTopMoverClicked(index: Int) {
             WalletActivity.show(requireActivity(), WalletActivity.Destination.Market)
