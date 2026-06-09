@@ -186,7 +186,9 @@ private fun LeverageContent(
                     iconRes = R.drawable.ic_perps_minus,
                     enabled = tempLeverage > 1,
                     onClick = { tempLeverage = (tempLeverage - 1).coerceAtLeast(1) },
-                    modifier = Modifier.align(Alignment.CenterStart),
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .padding(start = 60.dp),
                 )
                 Box(contentAlignment = Alignment.Center) {
                     Text(
@@ -208,7 +210,9 @@ private fun LeverageContent(
                     iconRes = R.drawable.ic_perps_add,
                     enabled = tempLeverage < boundedMaxLeverage,
                     onClick = { tempLeverage = (tempLeverage + 1).coerceAtMost(boundedMaxLeverage) },
-                    modifier = Modifier.align(Alignment.CenterEnd),
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .padding(end = 60.dp),
                 )
             }
 
