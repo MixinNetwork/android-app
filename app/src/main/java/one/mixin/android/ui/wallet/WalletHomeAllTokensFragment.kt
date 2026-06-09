@@ -448,7 +448,7 @@ class WalletHomeAllTokensFragment : BaseFragment() {
                         toast(R.string.Data_error)
                         return@launch
                     }
-                    WalletActivity.navigateToWalletActivity(requireActivity(), address?.destination, token, chain, walletValue)
+                    WalletActivity.navigateToWalletActivity(this@WalletHomeAllTokensFragment.requireActivity(), address?.destination, token, chain, walletValue)
                 }
                 dismissNow()
             }
@@ -460,7 +460,7 @@ class WalletHomeAllTokensFragment : BaseFragment() {
             setOnClickListener { token ->
                 this@WalletHomeAllTokensFragment.lifecycleScope.launch {
                     val address = web3ViewModel.getAddressesByChainId(walletId, token.chainId)
-                    WalletActivity.showWithAddress(requireActivity(), address?.destination, token, WalletActivity.Destination.Address)
+                    WalletActivity.showWithAddress(this@WalletHomeAllTokensFragment.requireActivity(), address?.destination, token, WalletActivity.Destination.Address)
                 }
                 dismissNow()
             }
