@@ -69,6 +69,7 @@ import one.mixin.android.ui.wallet.ImportKeyBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_ASSET_ID
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET_SOURCE
+import one.mixin.android.ui.wallet.WalletSecurityActivity
 import one.mixin.android.ui.wallet.Web3FilterParams
 import one.mixin.android.ui.wallet.Web3FilterParams.Companion.FILTER_GOOD_AND_SPAM
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
@@ -524,7 +525,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
         binding.sendReceiveView.isVisible = wallet?.isWatch() != true
         binding.empty.isVisible = wallet?.isWatch() == true
 
-        if (isMissingKey && wallet != null) {
+        if (isMissingKey) {
             val isMnemonic = wallet.category == WalletCategory.IMPORTED_MNEMONIC.value
             binding.missingKeyView.setMissingKey(isMnemonic) {
                 val mode = if (isMnemonic) {

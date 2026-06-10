@@ -175,8 +175,6 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                 dismiss()
             }
 
-            createdTv.text = getString(R.string.Joined_in, account.createdAt.dayTime())
-
             bottomViewModel.loadFavoriteApps(account.userId)
             bottomViewModel.observerFavoriteApps(account.userId)
                 .observe(this@ProfileBottomSheetDialogFragment) { apps ->
@@ -312,7 +310,10 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
             }
 
         menuListLayout?.removeAllViews()
-        list.createMenuLayout(requireContext()).let { layout ->
+        list.createMenuLayout(
+            requireContext(),
+            getString(R.string.Joined_in, account.createdAt.dayTime()),
+        ).let { layout ->
             menuListLayout = layout
             binding.scrollContent.addView(layout, binding.scrollContent.childCount - 1)
             val safeBottomHeight = layout.getSafeAreaInsetsBottom()
