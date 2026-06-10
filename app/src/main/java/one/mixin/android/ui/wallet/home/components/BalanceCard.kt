@@ -130,7 +130,9 @@ internal fun BalanceCard(state: WalletHomeState, callbacks: WalletHomeCallbacks)
     )
 
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .holidaySurpriseEffect(),
         horizontalAlignment = Alignment.Start,
     ) {
         Text(
