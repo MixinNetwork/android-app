@@ -146,6 +146,15 @@ fun SelectContent(
                 .fillMaxSize()
                 .padding(horizontal = 20.dp)
         ) {
+            Text(
+                text = stringResource(R.string.import_wallet_title),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = MixinAppTheme.colors.textPrimary
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
             Row {
                 Text(
                     text = pluralStringResource(

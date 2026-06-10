@@ -19,13 +19,15 @@ object WalletHomeBuilder {
 
         cards += if (hasAssetValue || hasImportKeyAction || hasPendingIndicator) WalletHomeCardType.BALANCE else WalletHomeCardType.EMPTY_GUIDE
         if (showBanner) cards += WalletHomeCardType.BANNER
+        val showTopMovers = walletType == WalletHomeType.PRIVACY && hasTopMovers
         if (walletType == WalletHomeType.PRIVACY && hasPositions) cards += WalletHomeCardType.POSITIONS
+        if (!hasPositions && showTopMovers) cards += WalletHomeCardType.TOP_MOVERS
 
         cards += WalletHomeCardType.TOKENS
 
         if (hasTransactions) cards += WalletHomeCardType.TRANSACTIONS
 
-        if (walletType == WalletHomeType.PRIVACY && !hasPositions && hasTopMovers) {
+        if (hasPositions && showTopMovers) {
             cards += WalletHomeCardType.TOP_MOVERS
         }
 

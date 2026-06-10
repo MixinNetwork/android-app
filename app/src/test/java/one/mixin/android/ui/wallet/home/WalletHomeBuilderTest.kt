@@ -5,7 +5,7 @@ import org.junit.Test
 
 class WalletHomeBuilderTest {
     @Test
-    fun privacyWalletWithPositionsShowsPositionsBeforeTokensWithoutTopMovers() {
+    fun privacyWalletWithPositionsShowsTopMoversAfterTransactions() {
         val cards = WalletHomeBuilder.build(
             walletType = WalletHomeType.PRIVACY,
             hasAssetValue = true,
@@ -22,6 +22,7 @@ class WalletHomeBuilderTest {
                 WalletHomeCardType.POSITIONS,
                 WalletHomeCardType.TOKENS,
                 WalletHomeCardType.TRANSACTIONS,
+                WalletHomeCardType.TOP_MOVERS,
                 WalletHomeCardType.SUPPORT,
             ),
             cards,
@@ -29,7 +30,7 @@ class WalletHomeBuilderTest {
     }
 
     @Test
-    fun privacyWalletWithoutPositionsShowsTopMoversAfterTransactions() {
+    fun privacyWalletWithoutPositionsShowsTopMoversBeforeTokens() {
         val cards = WalletHomeBuilder.build(
             walletType = WalletHomeType.PRIVACY,
             hasAssetValue = true,
@@ -43,9 +44,9 @@ class WalletHomeBuilderTest {
         assertEquals(
             listOf(
                 WalletHomeCardType.BALANCE,
+                WalletHomeCardType.TOP_MOVERS,
                 WalletHomeCardType.TOKENS,
                 WalletHomeCardType.TRANSACTIONS,
-                WalletHomeCardType.TOP_MOVERS,
                 WalletHomeCardType.SUPPORT,
             ),
             cards,

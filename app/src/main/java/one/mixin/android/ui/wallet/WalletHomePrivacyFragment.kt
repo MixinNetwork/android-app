@@ -76,7 +76,7 @@ import one.mixin.android.ui.wallet.home.WalletHomeType
 import one.mixin.android.ui.wallet.home.calculateWalletHomeTotalFiat
 import one.mixin.android.ui.wallet.home.formatWalletHomeBtcTotal
 import one.mixin.android.ui.wallet.home.getWalletHomeCacheState
-import one.mixin.android.ui.wallet.home.positionMarginFiatTotal
+import one.mixin.android.ui.wallet.home.positionMarginUsdTotal
 import one.mixin.android.ui.wallet.home.putWalletHomeCache
 import one.mixin.android.ui.wallet.home.toWalletHomePendingIndicator
 import one.mixin.android.ui.wallet.home.walletHomeCacheKey
@@ -399,7 +399,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
 
     private fun buildHomeState(): WalletHomeState {
         val tokenFiat = assets.fold(BigDecimal.ZERO) { acc, item -> acc + item.fiat() }
-        val totalFiat = calculateWalletHomeTotalFiat(tokenFiat, positions.positionMarginFiatTotal())
+        val totalFiat = calculateWalletHomeTotalFiat(tokenFiat, positions.positionMarginUsdTotal())
         val tokenBtc = assets.fold(BigDecimal.ZERO) { acc, item -> acc + item.btc() }
         val totalBtc = assets
             .find { it.assetId == Constants.ChainId.BITCOIN_CHAIN_ID }
@@ -458,18 +458,18 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
 
     private fun List<PerpsPositionItem>.toWalletHomePositionSummary(): WalletHomePositionSummary? {
         if (isEmpty()) return null
-        val totalMargin = positionMarginFiatTotal()
+        val totalMargin = positionMarginUsdTotal()
         val totalPnl = fold(BigDecimal.ZERO) { total, position ->
             total + (position.unrealizedPnl?.toBigDecimalOrNull() ?: BigDecimal.ZERO)
-        }.multiply(BigDecimal(Fiats.getRate()))
+        }
         val isProfit = when {
             totalPnl > BigDecimal.ZERO -> true
             totalPnl < BigDecimal.ZERO -> false
             else -> null
         }
-        val absPnlText = "${Fiats.getSymbol()}${totalPnl.abs().numberFormat2()}"
+        val absPnlText = "\$${totalPnl.abs().numberFormat2()}"
         return WalletHomePositionSummary(
-            valueText = "${Fiats.getSymbol()}${totalMargin.abs().numberFormat2()}",
+            valueText = "\$${totalMargin.abs().numberFormat2()}",
             pnlText = when {
                 totalPnl > BigDecimal.ZERO -> "+$absPnlText"
                 totalPnl < BigDecimal.ZERO -> "-$absPnlText"

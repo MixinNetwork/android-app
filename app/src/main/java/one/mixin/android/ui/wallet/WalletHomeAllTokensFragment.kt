@@ -46,7 +46,7 @@ import one.mixin.android.ui.wallet.home.WalletHomeType
 import one.mixin.android.ui.wallet.home.calculateWalletHomeTotalFiat
 import one.mixin.android.ui.wallet.home.formatWalletHomeBtcTotal
 import one.mixin.android.ui.wallet.home.components.WalletHomeAllTokensPage
-import one.mixin.android.ui.wallet.home.positionMarginFiatTotal
+import one.mixin.android.ui.wallet.home.positionMarginUsdTotal
 import one.mixin.android.ui.wallet.home.walletHomeImportKeyAction
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
@@ -258,7 +258,7 @@ class WalletHomeAllTokensFragment : BaseFragment() {
 
     private fun buildPrivacyState(): WalletHomeState {
         val tokenFiat = privacyTokens.fold(BigDecimal.ZERO) { acc, item -> acc + item.fiat() }
-        val totalFiat = calculateWalletHomeTotalFiat(tokenFiat, positions.positionMarginFiatTotal())
+        val totalFiat = calculateWalletHomeTotalFiat(tokenFiat, positions.positionMarginUsdTotal())
         val tokenBtc = privacyTokens.fold(BigDecimal.ZERO) { acc, item -> acc + item.btc() }
         val totalBtc = privacyTokens
             .find { it.assetId == Constants.ChainId.BITCOIN_CHAIN_ID }
