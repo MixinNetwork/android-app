@@ -27,10 +27,6 @@ object WalletHomeBuilder {
 
         if (hasTransactions) cards += WalletHomeCardType.TRANSACTIONS
 
-        if (hasPositions && showTopMovers) {
-            cards += WalletHomeCardType.TOP_MOVERS
-        }
-
         if (showReferral) cards += WalletHomeCardType.REFERRAL
         cards += WalletHomeCardType.SUPPORT
 

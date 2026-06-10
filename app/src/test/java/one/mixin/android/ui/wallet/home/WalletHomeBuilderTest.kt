@@ -5,7 +5,7 @@ import org.junit.Test
 
 class WalletHomeBuilderTest {
     @Test
-    fun privacyWalletWithPositionsShowsTopMoversAfterTransactions() {
+    fun privacyWalletWithPositionsDoesNotShowTopMovers() {
         val cards = WalletHomeBuilder.build(
             walletType = WalletHomeType.PRIVACY,
             hasAssetValue = true,
@@ -22,7 +22,6 @@ class WalletHomeBuilderTest {
                 WalletHomeCardType.POSITIONS,
                 WalletHomeCardType.TOKENS,
                 WalletHomeCardType.TRANSACTIONS,
-                WalletHomeCardType.TOP_MOVERS,
                 WalletHomeCardType.SUPPORT,
             ),
             cards,

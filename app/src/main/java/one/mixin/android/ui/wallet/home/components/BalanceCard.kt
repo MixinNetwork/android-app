@@ -32,6 +32,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
@@ -46,6 +47,10 @@ import one.mixin.android.ui.wallet.home.WalletHomeType
 import one.mixin.android.ui.wallet.home.WalletHomeWatchIndicator
 import one.mixin.android.ui.wallet.home.WalletHomeWatchKind
 import one.mixin.android.vo.Fiats
+
+private val WalletHomeActionWidth = 64.dp
+private val WalletHomeActionIconSize = 42.dp
+private val WalletHomeActionRowHorizontalPadding = 9.dp
 
 @Composable
 internal fun EmptyGuideCard(callbacks: WalletHomeCallbacks) {
@@ -124,7 +129,11 @@ private fun WalletHomeButton(
 }
 
 @Composable
-internal fun BalanceCard(state: WalletHomeState, callbacks: WalletHomeCallbacks) {
+internal fun BalanceCard(
+    state: WalletHomeState,
+    callbacks: WalletHomeCallbacks,
+    contentHorizontalPadding: Dp = 0.dp,
+) {
     val compactTextStyle = TextStyle(
         platformStyle = PlatformTextStyle(includeFontPadding = false),
     )
@@ -135,7 +144,13 @@ internal fun BalanceCard(state: WalletHomeState, callbacks: WalletHomeCallbacks)
             .holidaySurpriseEffect(),
         horizontalAlignment = Alignment.Start,
     ) {
-        Text(
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = contentHorizontalPadding),
+            horizontalAlignment = Alignment.Start,
+        ) {
+            Text(
             text = stringResource(R.string.Total_Balance),
             color = MixinAppTheme.colors.textMinor,
             fontSize = 14.sp,
@@ -184,52 +199,64 @@ internal fun BalanceCard(state: WalletHomeState, callbacks: WalletHomeCallbacks)
                 onClick = callbacks::onImportKeyClicked,
             )
         }
+        }
+        val actions = listOf(
+            WalletHomeAction(
+                iconRes = R.drawable.ic_wallet_buy,
+                labelRes = R.string.Buy,
+                showBadge = state.showBuyBadge,
+                onClick = callbacks::onBuyClicked,
+            ),
+            WalletHomeAction(
+                iconRes = R.drawable.ic_wallet_receive,
+                labelRes = R.string.Receive,
+                showBadge = false,
+                onClick = callbacks::onReceiveClicked,
+            ),
+            WalletHomeAction(
+                iconRes = R.drawable.ic_wallet_send,
+                labelRes = R.string.Send_transfer,
+                showBadge = false,
+                onClick = callbacks::onSendClicked,
+            ),
+            WalletHomeAction(
+                iconRes = R.drawable.ic_wallet_swap,
+                labelRes = R.string.Trade,
+                showBadge = state.showSwapBadge,
+                onClick = callbacks::onSwapClicked,
+            ),
+        )
         val showActions = state.importKeyAction == null &&
             !state.hideActions &&
             !(state.walletType == WalletHomeType.CLASSIC && state.isWatchWallet)
         if (showActions) {
             Spacer(modifier = Modifier.height(20.dp))
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = walletHomeActionRowHorizontalPadding(actions.size)),
+                horizontalArrangement = walletHomeActionArrangement(actions.size),
                 verticalAlignment = Alignment.Top,
             ) {
-                ActionItem(
-                    iconRes = R.drawable.ic_wallet_buy,
-                    labelRes = R.string.Buy,
-                    showBadge = state.showBuyBadge,
-                    modifier = Modifier.weight(1f),
-                    onClick = callbacks::onBuyClicked,
-                )
-                ActionItem(
-                    iconRes = R.drawable.ic_wallet_receive,
-                    labelRes = R.string.Receive,
-                    showBadge = false,
-                    modifier = Modifier.weight(1f),
-                    onClick = callbacks::onReceiveClicked,
-                )
-                ActionItem(
-                    iconRes = R.drawable.ic_wallet_send,
-                    labelRes = R.string.Send_transfer,
-                    showBadge = false,
-                    modifier = Modifier.weight(1f),
-                    onClick = callbacks::onSendClicked,
-                )
-                ActionItem(
-                    iconRes = R.drawable.ic_wallet_swap,
-                    labelRes = R.string.Trade,
-                    showBadge = state.showSwapBadge,
-                    modifier = Modifier.weight(1f),
-                    onClick = callbacks::onSwapClicked,
-                )
+                actions.forEach { action ->
+                    ActionItem(
+                        iconRes = action.iconRes,
+                        labelRes = action.labelRes,
+                        showBadge = action.showBadge,
+                        modifier = Modifier.width(WalletHomeActionWidth),
+                        onClick = action.onClick,
+                    )
+                }
             }
         }
         state.pendingIndicator?.let {
             Spacer(modifier = Modifier.height(if (showActions) 12.dp else 14.dp))
-            PendingIndicator(
-                indicator = it,
-                onClick = callbacks::onPendingIndicatorClicked,
-            )
+            Box(modifier = Modifier.padding(horizontal = contentHorizontalPadding)) {
+                PendingIndicator(
+                    indicator = it,
+                    onClick = callbacks::onPendingIndicatorClicked,
+                )
+            }
         }
     }
 }
@@ -350,6 +377,24 @@ private fun ImportKeyAction(
     )
 }
 
+private data class WalletHomeAction(
+    val iconRes: Int,
+    val labelRes: Int,
+    val showBadge: Boolean,
+    val onClick: () -> Unit,
+)
+
+private fun walletHomeActionArrangement(actionCount: Int) = when (actionCount) {
+    3 -> Arrangement.SpaceAround
+    4 -> Arrangement.SpaceBetween
+    else -> Arrangement.SpaceAround
+}
+
+private fun walletHomeActionRowHorizontalPadding(actionCount: Int) = when (actionCount) {
+    4 -> WalletHomeActionRowHorizontalPadding
+    else -> 0.dp
+}
+
 @Composable
 private fun IndicatorPill(
     onClick: () -> Unit,
@@ -383,12 +428,12 @@ private fun ActionItem(
             .padding(horizontal = 4.dp, vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Box {
-            Image(
-                painter = painterResource(id = iconRes),
-                contentDescription = null,
-                modifier = Modifier.size(42.dp),
-            )
+            Box {
+                Image(
+                    painter = painterResource(id = iconRes),
+                    contentDescription = null,
+                    modifier = Modifier.size(WalletHomeActionIconSize),
+                )
             if (showBadge) {
                 Box(
                     modifier = Modifier

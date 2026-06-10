@@ -50,7 +50,7 @@ class SendReceiveView : LinearLayoutCompat {
     private fun applyWalletHomeStyle() {
         weightSum = 0f
         listOf(binding.buy, binding.receive, binding.send, binding.swap).forEach { item ->
-            item.layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
+            item.layoutParams = LayoutParams(WALLET_HOME_ACTION_WIDTH_DP.dp, LayoutParams.WRAP_CONTENT)
             item.setPadding(4.dp, 8.dp, 4.dp, 8.dp)
             item.foreground = ContextCompat.getDrawable(context, R.drawable.mixin_ripple_8)
             item.collectViews(ImageView::class.java).forEach { image ->
@@ -91,22 +91,53 @@ class SendReceiveView : LinearLayoutCompat {
             return
         }
         val contentWidth = (right - left - paddingLeft - paddingRight).coerceAtLeast(0)
+        val childrenWidth = visibleChildren.sumOf { it.measuredWidth }
         val childTop = paddingTop
-        val slotWidth = contentWidth.toFloat() / visibleChildren.size
-        visibleChildren.forEachIndexed { index, child ->
-            val childLeft = paddingLeft + (slotWidth * index).toInt()
-            val childRight = if (index == visibleChildren.lastIndex) {
-                paddingLeft + contentWidth
-            } else {
-                paddingLeft + (slotWidth * (index + 1)).toInt()
-            }
+        val (startOffset, spacing) = walletHomeActionSpacing(
+            contentWidth = contentWidth,
+            childrenWidth = childrenWidth,
+            actionCount = visibleChildren.size,
+        )
+        var childLeft = paddingLeft + startOffset
+        visibleChildren.forEach { child ->
             child.layout(
                 childLeft,
                 childTop,
-                childRight,
+                childLeft + child.measuredWidth,
                 childTop + child.measuredHeight,
             )
+            childLeft += child.measuredWidth + spacing
         }
+    }
+
+    private fun walletHomeActionSpacing(
+        contentWidth: Int,
+        childrenWidth: Int,
+        actionCount: Int,
+    ): Pair<Int, Int> {
+        val remainingWidth = (contentWidth - childrenWidth).coerceAtLeast(0)
+        return when (actionCount) {
+            WALLET_HOME_ACTION_COUNT_WITHOUT_BUY -> {
+                val spacing = remainingWidth / actionCount
+                spacing / 2 to spacing
+            }
+            WALLET_HOME_ACTION_COUNT_WITH_BUY -> {
+                val outerPadding = WALLET_HOME_ACTION_ROW_HORIZONTAL_PADDING_DP.dp
+                val spacing = ((remainingWidth - outerPadding * 2).coerceAtLeast(0)) / (actionCount - 1)
+                outerPadding to spacing
+            }
+            else -> {
+                val spacing = remainingWidth / actionCount
+                spacing / 2 to spacing
+            }
+        }
+    }
+
+    private companion object {
+        const val WALLET_HOME_ACTION_WIDTH_DP = 64
+        const val WALLET_HOME_ACTION_COUNT_WITHOUT_BUY = 3
+        const val WALLET_HOME_ACTION_COUNT_WITH_BUY = 4
+        const val WALLET_HOME_ACTION_ROW_HORIZONTAL_PADDING_DP = 9
     }
 
     private fun <T : View> View.collectViews(clazz: Class<T>): List<T> {

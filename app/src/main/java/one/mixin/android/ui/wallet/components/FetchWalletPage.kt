@@ -132,7 +132,6 @@ fun SelectContent(
     selectedWalletInfos: Set<IndexedWallet>,
     onWalletToggle: (IndexedWallet) -> Unit,
     onContinue: (Set<IndexedWallet>) -> Unit,
-    onBackPressed: () -> Unit,
     onSelectAll: () -> Unit,
     onFindMore: () -> Unit,
     isLoadingMore: Boolean,
@@ -146,15 +145,6 @@ fun SelectContent(
                 .fillMaxSize()
                 .padding(horizontal = 20.dp)
         ) {
-            Text(
-                text = stringResource(R.string.import_wallet_title),
-                fontSize = 18.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = MixinAppTheme.colors.textPrimary
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
-
             Row {
                 Text(
                     text = pluralStringResource(

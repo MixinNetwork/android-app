@@ -57,7 +57,11 @@ internal fun WalletHomeCard(
         }
     }
 
-    val contentPadding = if (card.hasSelfPaddedItems()) Modifier else Modifier.padding(20.dp)
+    val contentPadding = when {
+        card.hasSelfPaddedItems() -> Modifier
+        card == WalletHomeCardType.BALANCE -> Modifier.padding(vertical = 20.dp)
+        else -> Modifier.padding(20.dp)
+    }
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -68,7 +72,11 @@ internal fun WalletHomeCard(
     ) {
         when (card) {
             WalletHomeCardType.EMPTY_GUIDE -> EmptyGuideCard(callbacks)
-            WalletHomeCardType.BALANCE -> BalanceCard(state, callbacks)
+            WalletHomeCardType.BALANCE -> BalanceCard(
+                state,
+                callbacks,
+                contentHorizontalPadding = 20.dp,
+            )
             WalletHomeCardType.BANNER -> Unit
             WalletHomeCardType.POSITIONS -> SectionCard(
                 title = stringResource(R.string.positions_count, state.totalPositionCount),
@@ -187,7 +195,7 @@ private fun PositionSummaryHeader(
                         append(")")
                     }
                 },
-                color = MixinAppTheme.colors.textPrimary,
+                color = MixinAppTheme.colors.textMinor,
                 fontSize = 14.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -210,7 +218,7 @@ private fun TokenBalanceHeader(balanceText: String) {
     ) {
         Text(
             text = balanceText,
-            color = MixinAppTheme.colors.textPrimary,
+            color = MixinAppTheme.colors.textMinor,
             fontSize = 14.sp,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -245,7 +253,7 @@ private fun BalanceCardGroup(
         ) {
             BalanceCard(state, callbacks)
         }
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(10.dp))
         HighlightedTextWithClick(
             fullText = stringResource(
                 importKeyAction.descriptionRes,
@@ -257,7 +265,7 @@ private fun BalanceCardGroup(
             stringResource(R.string.Learn_More),
             color = MixinAppTheme.colors.textAssist,
             fontSize = 12.sp,
-            lineHeight = 14.sp,
+            lineHeight = 12.sp,
             textAlign = TextAlign.Start,
         ) {
             callbacks.onImportKeyLearnMoreClicked()
