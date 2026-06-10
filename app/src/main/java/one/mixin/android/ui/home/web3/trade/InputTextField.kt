@@ -57,6 +57,8 @@ import java.math.BigDecimal
 
 internal const val TRADE_INPUT_MAX_DECIMAL_PLACES = 8
 
+internal fun tradePriceInputMaxDecimalPlaces(): Int = TRADE_INPUT_MAX_DECIMAL_PLACES
+
 internal fun tradeInputMaxDecimalPlaces(
     isCommonWallet: Boolean,
     precision: Int,

@@ -128,7 +128,7 @@ fun SwapContent(
     var inputText by remember {
         mutableStateOf(limitTradeInputDecimalPlaces(initialAmount ?: "", fromMaxDecimalPlaces))
     }
-    LaunchedEffect(lastOrderTime) {
+    LaunchedEffect(lastOrderTime, fromMaxDecimalPlaces) {
         inputText = limitTradeInputDecimalPlaces(initialAmount ?: "", fromMaxDecimalPlaces)
     }
 

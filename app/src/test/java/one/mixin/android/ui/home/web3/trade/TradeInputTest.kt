@@ -15,6 +15,13 @@ class TradeInputTest {
     }
 
     @Test
+    fun tradePriceInputAllowsAtMostEightDecimalPlaces() {
+        assertEquals(8, tradePriceInputMaxDecimalPlaces())
+        assertTrue(isTradeInputDecimalAllowed("1.12345678", tradePriceInputMaxDecimalPlaces()))
+        assertFalse(isTradeInputDecimalAllowed("1.123456789", tradePriceInputMaxDecimalPlaces()))
+    }
+
+    @Test
     fun tradeAmountInputAllowsConfiguredDecimalPlaces() {
         assertTrue(isTradeInputDecimalAllowed(""))
         assertTrue(isTradeInputDecimalAllowed("12"))
@@ -42,6 +49,9 @@ class TradeInputTest {
         assertEquals("1.23", limitTradeInputDecimalPlaces("1.234", maxDecimalPlaces = 2))
         assertEquals("5", limitTradeInputDecimalPlaces("5.", maxDecimalPlaces = 0))
         assertEquals("5", limitTradeInputDecimalPlaces("5.123", maxDecimalPlaces = 0))
-        assertEquals("12.123456789", limitTradeInputDecimalPlaces("12.123456789", maxDecimalPlaces = null))
+        assertEquals(
+            "12.123456789",
+            limitTradeInputDecimalPlaces("12.123456789", maxDecimalPlaces = null)
+        )
     }
 }

@@ -177,7 +177,7 @@ fun LimitOrderContent(
     }
     var outputText by remember { mutableStateOf("") }
 
-    LaunchedEffect(lastOrderTime) {
+    LaunchedEffect(lastOrderTime, fromMaxDecimalPlaces) {
         inputText = limitTradeInputDecimalPlaces(initialAmount ?: "", fromMaxDecimalPlaces)
         outputText = ""
     }
