@@ -2,8 +2,8 @@ package one.mixin.android.vo
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import one.mixin.android.vo.safe.OutputState
 import one.mixin.android.vo.safe.RawTransaction
+import one.mixin.android.vo.safe.RawTransactionState
 import one.mixin.android.vo.safe.RawTransactionType
 import one.mixin.android.vo.safe.SafeSnapshotType
 
@@ -11,7 +11,7 @@ class SnapshotItemTest {
     @Test
     fun `pending hash is shown when raw transaction is unspent`() {
         val snapshot = snapshotItem(type = SafeSnapshotType.snapshot.name, traceId = "trace-id")
-        val rawTransaction = rawTransaction("trace-id", OutputState.unspent)
+        val rawTransaction = rawTransaction("trace-id", RawTransactionState.signed)
 
         assertEquals(true, snapshot.shouldShowPendingHash(rawTransaction))
     }
@@ -19,7 +19,7 @@ class SnapshotItemTest {
     @Test
     fun `pending hash is hidden when raw transaction was sent`() {
         val snapshot = snapshotItem(type = SafeSnapshotType.snapshot.name, traceId = "trace-id")
-        val rawTransaction = rawTransaction("trace-id", OutputState.signed)
+        val rawTransaction = rawTransaction("trace-id", RawTransactionState.spent)
 
         assertEquals(false, snapshot.shouldShowPendingHash(rawTransaction))
     }
@@ -33,7 +33,7 @@ class SnapshotItemTest {
 
     private fun rawTransaction(
         requestId: String,
-        state: OutputState,
+        state: RawTransactionState,
     ) = RawTransaction(
         requestId = requestId,
         rawTransaction = "raw",
