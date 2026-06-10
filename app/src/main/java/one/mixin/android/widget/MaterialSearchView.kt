@@ -4,10 +4,8 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
 import android.graphics.Color
-import android.os.Build
 import android.os.Parcel
 import android.os.Parcelable
 import android.text.InputType
@@ -32,7 +30,6 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ViewMaterialSearchBinding
 import one.mixin.android.extension.ANIMATION_DURATION_SHORT
 import one.mixin.android.extension.appCompatActionBarHeight
-import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
@@ -61,8 +58,10 @@ class MaterialSearchView : FrameLayout {
     private var binding: ViewMaterialSearchBinding =
         ViewMaterialSearchBinding.inflate(LayoutInflater.from(context), this, true)
     val actionVa get() = binding.actionVa
+    val avatar get() = binding.avatar
     val logo get() = binding.logo
     val dot get() = binding.dot
+    val scan get() = binding.scanIb
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
@@ -70,7 +69,7 @@ class MaterialSearchView : FrameLayout {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
         context,
         attrs,
-        defStyleAttr
+        defStyleAttr,
     ) {
         initStyle(attrs, defStyleAttr)
         initSearchView()
@@ -82,18 +81,25 @@ class MaterialSearchView : FrameLayout {
 
     @Suppress("unused")
     val currentQuery: String
-        get() = if (!TextUtils.isEmpty(mCurrentQuery)) {
-            mCurrentQuery.toString()
-        } else ""
+        get() =
+            if (!TextUtils.isEmpty(mCurrentQuery)) {
+                mCurrentQuery.toString()
+            } else {
+                ""
+            }
 
-    private fun initStyle(attributeSet: AttributeSet?, defStyleAttribute: Int) {
+    private fun initStyle(
+        attributeSet: AttributeSet?,
+        defStyleAttribute: Int,
+    ) {
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
-        val typedArray = context.obtainStyledAttributes(
-            attributeSet,
-            R.styleable.MaterialSearchView,
-            defStyleAttribute,
-            0
-        )
+        val typedArray =
+            context.obtainStyledAttributes(
+                attributeSet,
+                R.styleable.MaterialSearchView,
+                defStyleAttribute,
+                0,
+            )
         if (typedArray.hasValue(R.styleable.MaterialSearchView_android_hint)) {
             setHint(typedArray.getString(R.styleable.MaterialSearchView_android_hint))
         }
@@ -101,32 +107,32 @@ class MaterialSearchView : FrameLayout {
             setCancelIcon(
                 typedArray.getResourceId(
                     R.styleable.MaterialSearchView_searchCloseIcon,
-                    R.drawable.ic_action_navigation_close
-                )
+                    R.drawable.ic_action_navigation_close,
+                ),
             )
         }
         if (typedArray.hasValue(R.styleable.MaterialSearchView_searchBackIcon)) {
             setBackIcon(
                 typedArray.getResourceId(
                     R.styleable.MaterialSearchView_searchBackIcon,
-                    R.drawable.ic_wallet
-                )
+                    R.drawable.ic_wallet,
+                ),
             )
         }
         if (typedArray.hasValue(R.styleable.MaterialSearchView_android_inputType)) {
             setInputType(
                 typedArray.getInteger(
                     R.styleable.MaterialSearchView_android_inputType,
-                    InputType.TYPE_CLASS_TEXT
-                )
+                    InputType.TYPE_CLASS_TEXT,
+                ),
             )
         }
         if (typedArray.hasValue(R.styleable.MaterialSearchView_searchBarHeight)) {
             setSearchBarHeight(
                 typedArray.getDimensionPixelSize(
                     R.styleable.MaterialSearchView_searchBarHeight,
-                    context.appCompatActionBarHeight()
-                )
+                    context.appCompatActionBarHeight(),
+                ),
             )
         } else {
             setSearchBarHeight(context.appCompatActionBarHeight())
@@ -134,22 +140,9 @@ class MaterialSearchView : FrameLayout {
         @Suppress("DEPRECATION")
         ViewCompat.setFitsSystemWindows(
             this,
-            typedArray.getBoolean(R.styleable.MaterialSearchView_android_fitsSystemWindows, false)
+            typedArray.getBoolean(R.styleable.MaterialSearchView_android_fitsSystemWindows, false),
         )
         typedArray.recycle()
-    }
-
-    override fun onSaveInstanceState(): Parcelable? {
-        val parcelable = super.onSaveInstanceState() ?: return null
-        return SavedState(parcelable).apply {
-            this.isOpen = this@MaterialSearchView.isOpen
-        }
-    }
-
-    override fun onRestoreInstanceState(state: Parcelable?) {
-        isOpen = (state as? SavedState)?.isOpen ?: false
-        if (isOpen) openSearch() else closeSearch()
-        super.onRestoreInstanceState(state)
     }
 
     @SuppressLint("CheckResult")
@@ -169,14 +162,16 @@ class MaterialSearchView : FrameLayout {
             binding.avatar.setTextSize(14f)
         }
 
-        disposable = binding.searchEt.textChanges().debounce(SEARCH_DEBOUNCE, TimeUnit.MILLISECONDS)
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                {
-                    this@MaterialSearchView.onTextChanged(it)
-                },
-                {}
-            )
+        // Don't auto dispose
+        disposable =
+            binding.searchEt.textChanges().debounce(SEARCH_DEBOUNCE, TimeUnit.MILLISECONDS)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    {
+                        this@MaterialSearchView.onTextChanged(it)
+                    },
+                    {},
+                )
 
         binding.rightClear.setOnClickListener {
             if (!binding.searchEt.text.isNullOrEmpty()) {
@@ -198,23 +193,20 @@ class MaterialSearchView : FrameLayout {
     fun hideContainer() {
         containerDisplay = false
         binding.searchIb.fadeIn()
+        binding.scanIb.fadeIn()
         binding.avatar.fadeIn()
         binding.actionVa.fadeOut()
         ValueAnimator.ofFloat(1f, 0f).apply {
-            addListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator?) {
-                    binding.containerShadow.isVisible = false
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        (context as Activity).window.navigationBarColor = context.colorFromAttribute(R.attr.bg_white)
+            addListener(
+                object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator) {
+                        binding.containerShadow.isVisible = false
                     }
-                }
-            })
+                },
+            )
             addUpdateListener {
                 val c = Color.BLACK.withAlpha(0.32f * it.animatedValue as Float)
                 binding.containerShadow.setBackgroundColor(c)
-                if (c > 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    (context as Activity).window.navigationBarColor = c
-                }
             }
             interpolator = AccelerateInterpolator()
             duration = ANIMATION_DURATION_SHORT
@@ -224,26 +216,28 @@ class MaterialSearchView : FrameLayout {
     }
 
     var hideAction: (() -> Unit)? = null
+    var showAction: (() -> Unit)? = null
 
     fun showContainer() {
         containerDisplay = true
         binding.searchIb.fadeOut()
+        binding.scanIb.fadeOut()
         binding.avatar.fadeOut()
         binding.actionVa.fadeIn()
         binding.containerCircle.isVisible = true
+        showAction?.invoke()
         ValueAnimator.ofFloat(0f, 1f).apply {
-            addListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationStart(animation: Animator) {
-                    binding.containerShadow.isVisible = true
-                    binding.containerShadow.setBackgroundColor(Color.TRANSPARENT)
-                }
-            })
+            addListener(
+                object : AnimatorListenerAdapter() {
+                    override fun onAnimationStart(animation: Animator) {
+                        binding.containerShadow.isVisible = true
+                        binding.containerShadow.setBackgroundColor(Color.TRANSPARENT)
+                    }
+                },
+            )
             addUpdateListener {
                 val c = Color.BLACK.withAlpha(0.32f * it.animatedValue as Float)
                 binding.containerShadow.setBackgroundColor(c)
-                if (c > 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    (context as Activity).window.navigationBarColor = c
-                }
             }
             interpolator = DecelerateInterpolator()
             duration = ANIMATION_DURATION_SHORT
@@ -259,14 +253,18 @@ class MaterialSearchView : FrameLayout {
     private var oldLeftX = 0f
     private var oldSearchWidth = 0
 
+    private val rightTranslationX = 168f
+
     fun dragSearch(progress: Float) {
-        binding.avatar.translationX = context.dpToPx(88f) * progress
-        binding.searchIb.translationX = context.dpToPx(88f) * progress
+        binding.avatar.translationX = context.dpToPx(rightTranslationX) * progress
+        binding.searchIb.translationX = context.dpToPx(rightTranslationX) * progress
+        binding.scanIb.translationX = context.dpToPx(rightTranslationX) * progress
         val fastFadeOut = (1 - 2 * progress).coerceAtLeast(0f)
         val fastFadeIn = (progress.coerceAtLeast(.5f) - .5f) * 2
         binding.searchEt.isVisible = true
         binding.searchEt.alpha = fastFadeIn
         binding.searchIb.isVisible = true
+        binding.scanIb.isVisible = true
         binding.logoLayout.isVisible = true
         binding.backIb.isVisible = true
         binding.logoLayout.alpha = fastFadeOut
@@ -277,11 +275,11 @@ class MaterialSearchView : FrameLayout {
         binding.logoLayout.animate().apply {
             setListener(
                 object : AnimatorListenerAdapter() {
-                    override fun onAnimationEnd(animation: Animator?) {
+                    override fun onAnimationEnd(animation: Animator) {
                         op()
                     }
 
-                    override fun onAnimationCancel(animation: Animator?) {
+                    override fun onAnimationCancel(animation: Animator) {
                         op()
                     }
 
@@ -293,24 +291,24 @@ class MaterialSearchView : FrameLayout {
                         binding.searchEt.animate().apply {
                             setListener(
                                 object : AnimatorListenerAdapter() {
-                                    override fun onAnimationCancel(animation: Animator?) {
+                                    override fun onAnimationCancel(animation: Animator) {
                                         binding.searchEt.alpha = 1f
                                     }
-                                }
+                                },
                             )
                         }.setDuration(150L).alpha(1f).start()
                         binding.backIb.isVisible = true
                         binding.backIb.animate().apply {
                             setListener(
                                 object : AnimatorListenerAdapter() {
-                                    override fun onAnimationCancel(animation: Animator?) {
+                                    override fun onAnimationCancel(animation: Animator) {
                                         binding.backIb.alpha = 1f
                                     }
-                                }
+                                },
                             )
                         }.setDuration(150L).alpha(1f).start()
                     }
-                }
+                },
             )
         }.alpha(0f).setDuration(150L).start()
 
@@ -319,8 +317,9 @@ class MaterialSearchView : FrameLayout {
         binding.searchEt.setText("")
         oldLeftX = binding.logoLayout.x
         oldSearchWidth = binding.searchEt.measuredWidth
-        binding.avatar.translationX(context.dpToPx(88f).toFloat())
-        binding.searchIb.translationX(context.dpToPx(88f).toFloat())
+        binding.avatar.translationX(context.dpToPx(rightTranslationX).toFloat())
+        binding.searchIb.translationX(context.dpToPx(rightTranslationX).toFloat())
+        binding.scanIb.translationX(context.dpToPx(rightTranslationX).toFloat())
         mSearchViewListener?.onSearchViewOpened()
         isOpen = true
     }
@@ -329,11 +328,11 @@ class MaterialSearchView : FrameLayout {
         binding.searchEt.animate().apply {
             setListener(
                 object : AnimatorListenerAdapter() {
-                    override fun onAnimationEnd(animation: Animator?) {
+                    override fun onAnimationEnd(animation: Animator) {
                         op()
                     }
 
-                    override fun onAnimationCancel(animation: Animator?) {
+                    override fun onAnimationCancel(animation: Animator) {
                         op()
                     }
 
@@ -341,17 +340,17 @@ class MaterialSearchView : FrameLayout {
                         setListener(null)
                         binding.searchEt.isGone = true
                     }
-                }
+                },
             )
         }.alpha(0f).setDuration(150L).start()
         binding.backIb.animate().apply {
             setListener(
                 object : AnimatorListenerAdapter() {
-                    override fun onAnimationEnd(animation: Animator?) {
+                    override fun onAnimationEnd(animation: Animator) {
                         op()
                     }
 
-                    override fun onAnimationCancel(animation: Animator?) {
+                    override fun onAnimationCancel(animation: Animator) {
                         op()
                     }
 
@@ -363,14 +362,14 @@ class MaterialSearchView : FrameLayout {
                         binding.logoLayout.animate().apply {
                             setListener(
                                 object : AnimatorListenerAdapter() {
-                                    override fun onAnimationCancel(animation: Animator?) {
+                                    override fun onAnimationCancel(animation: Animator) {
                                         binding.logoLayout.alpha = 1f
                                     }
-                                }
+                                },
                             )
                         }.setDuration(150L).alpha(1f).start()
                     }
-                }
+                },
             )
         }.setDuration(150L).alpha(0f).start()
         binding.rightClear.visibility = View.GONE
@@ -378,6 +377,7 @@ class MaterialSearchView : FrameLayout {
 
         binding.avatar.translationX(0f)
         binding.searchIb.translationX(0f)
+        binding.scanIb.translationX(0f)
         clearFocus()
         binding.searchEt.hideKeyboard()
         binding.searchEt.setText("")
@@ -418,7 +418,10 @@ class MaterialSearchView : FrameLayout {
         this.mSearchViewListener = mSearchViewListener
     }
 
-    fun setQuery(query: CharSequence?, submit: Boolean) {
+    fun setQuery(
+        query: CharSequence?,
+        submit: Boolean,
+    ) {
         binding.searchEt.setText(query)
 
         if (query != null) {
@@ -435,7 +438,10 @@ class MaterialSearchView : FrameLayout {
         binding.searchEt.setBackgroundColor(color)
     }
 
-    private fun adjustAlpha(color: Int, factor: Float): Int {
+    private fun adjustAlpha(
+        color: Int,
+        factor: Float,
+    ): Int {
         if (factor < 0) return color
 
         val alpha = (Color.alpha(color) * factor).roundToInt()
@@ -514,7 +520,10 @@ internal class SavedState : View.BaseSavedState {
 
     constructor(superState: Parcelable) : super(superState)
 
-    override fun writeToParcel(out: Parcel, flags: Int) {
+    override fun writeToParcel(
+        out: Parcel,
+        flags: Int,
+    ) {
         super.writeToParcel(out, flags)
         out.writeInt(if (isOpen) 1 else 0)
     }
@@ -522,14 +531,15 @@ internal class SavedState : View.BaseSavedState {
     companion object {
         @JvmField
         @NotNull
-        val CREATOR: Parcelable.Creator<SavedState> = object : Parcelable.Creator<SavedState> {
-            override fun createFromParcel(`in`: Parcel): SavedState {
-                return SavedState(`in`)
-            }
+        val CREATOR: Parcelable.Creator<SavedState> =
+            object : Parcelable.Creator<SavedState> {
+                override fun createFromParcel(`in`: Parcel): SavedState {
+                    return SavedState(`in`)
+                }
 
-            override fun newArray(size: Int): Array<SavedState?> {
-                return arrayOfNulls(size)
+                override fun newArray(size: Int): Array<SavedState?> {
+                    return arrayOfNulls(size)
+                }
             }
-        }
     }
 }

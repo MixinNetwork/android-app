@@ -1,9 +1,10 @@
 package one.mixin.android.util;
 
 import android.os.SystemClock;
-import android.util.Log;
 
 import java.util.ArrayList;
+
+import timber.log.Timber;
 
 public class TimingLogger {
 
@@ -43,7 +44,7 @@ public class TimingLogger {
     }
 
     public void dumpToLog() {
-        Log.d(mTag, mLabel + ": begin");
+        Timber.d("%s: begin", mLabel);
         final long first = mSplits.get(0);
         long now = first;
         for (int i = 1; i < mSplits.size(); i++) {
@@ -51,8 +52,8 @@ public class TimingLogger {
             final String splitLabel = mSplitLabels.get(i);
             final long prev = mSplits.get(i - 1);
 
-            Log.d(mTag, mLabel + ":      " + (now - prev) + " ms, " + splitLabel);
+            Timber.d(mLabel + ":      " + (now - prev) + " ms, " + splitLabel);
         }
-        Log.d(mTag, mLabel + ": end, " + (now - first) + " ms");
+        Timber.d(mLabel + ": end, " + (now - first) + " ms");
     }
 }

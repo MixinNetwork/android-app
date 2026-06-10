@@ -3,7 +3,6 @@ package one.mixin.android.util
 import androidx.room.TypeConverter
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import java.util.ArrayList
 
 object Converters {
     @TypeConverter

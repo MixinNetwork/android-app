@@ -16,7 +16,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:leftIcon="@drawable/ic_arrow_back"
         app:need_divider="false"
-        app:titleText="@string/wallet_hidden_assets"/>
+        app:titleText="@string/Hidden_Assets"/>
 
     <ViewAnimator
         android:id="@+id/assets_va"
@@ -36,9 +36,9 @@
             tools:ignore="UseCompoundDrawables">
 
             <ImageView
-                android:layout_width="42dp"
-                android:layout_height="42dp"
-                android:layout_marginBottom="8dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
                 android:src="@drawable/ic_hidden_assets"
                 android:contentDescription="@null"
                 android:layout_above="@+id/empty_tv"
@@ -49,8 +49,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
-                android:text="@string/asset_no_hidden"
-                android:textColor="?attr/text_minor"
+                android:text="@string/No_hidden_assets"
+                android:textColor="?attr/text_assist"
                 android:textSize="16sp"/>
         </RelativeLayout>
     </ViewAnimator>

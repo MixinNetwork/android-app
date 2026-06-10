@@ -9,14 +9,16 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.drawable.GradientDrawable
+import android.icu.text.CompactDecimalFormat
 import android.net.Uri
 import android.text.Editable
 import android.text.SpannableStringBuilder
+import android.text.TextUtils
 import android.text.style.BackgroundColorSpan
-import androidx.core.net.toUri
-import com.google.android.exoplayer2.util.Util
+import androidx.media3.common.util.Util
 import com.google.gson.Gson
 import com.google.gson.JsonElement
+import com.google.gson.JsonSyntaxException
 import com.google.gson.reflect.TypeToken
 import com.google.zxing.EncodeHintType
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
@@ -29,6 +31,7 @@ import okio.GzipSource
 import okio.Source
 import okio.buffer
 import one.mixin.android.util.GzipException
+import org.sol4k.Base58
 import org.threeten.bp.Instant
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -37,23 +40,31 @@ import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.io.Serializable
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.nio.ByteBuffer
+import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.text.DecimalFormat
 import java.util.Arrays
 import java.util.Formatter
-import java.util.HashMap
 import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
-import kotlin.collections.set
+import javax.crypto.Mac
+import javax.crypto.spec.SecretKeySpec
 import kotlin.math.abs
 import kotlin.math.roundToInt
-
 private const val QUIET_ZONE_SIZE = 4
 private val radii = FloatArray(8)
-fun String.generateQRCode(qrSize: Int, padding: Int = 32.dp): Pair<Bitmap, Int> {
+
+fun String.generateQRCode(
+    qrSize: Int,
+    padding: Int = 32.dp,
+    innerPadding: Int = 0.dp,
+    foregroundColor: Int = Color.BLACK,
+    outputSize: Int? = null,
+): Pair<Bitmap, Int> {
     require(isNotEmpty()) { "Found empty contents" }
     require(qrSize >= 0) { "Requested dimensions are too small: $qrSize" }
     var errorCorrectionLevel = ErrorCorrectionLevel.M
@@ -92,17 +103,23 @@ fun String.generateQRCode(qrSize: Int, padding: Int = 32.dp): Pair<Bitmap, Int> 
     blackPaint.style = Paint.Style.FILL
     canvas.drawRoundRect(
         RectF(padding / 2f, padding / 2f, size.toFloat() - padding / 2f, size.toFloat() - padding / 2f),
-        padding / 2f,
-        padding / 2f,
-        blackPaint
+        innerPadding / 2f,
+        innerPadding / 2f,
+        blackPaint,
     )
-    blackPaint.color = Color.BLACK
+    blackPaint.color = foregroundColor
     val rect = GradientDrawable()
     rect.shape = GradientDrawable.RECTANGLE
     rect.cornerRadii = radii
-    var imageIgnore = ((size - padding * 2) / 4.65f / multiple).roundToInt()
-    if (imageIgnore % 2 != inputWidth % 2) {
-        imageIgnore++
+
+    val imageIgnore = if (innerPadding == 0) {
+        0
+    } else {
+        var ignore = (innerPadding / multiple).coerceAtLeast(1)
+        if (ignore % 2 != inputWidth % 2) {
+            ignore++
+        }
+        ignore
     }
     val imageBlockX = (inputWidth - imageIgnore) / 2
     for (a in 0..2) {
@@ -113,10 +130,12 @@ fun String.generateQRCode(qrSize: Int, padding: Int = 32.dp): Pair<Bitmap, Int> 
                 x = padding
                 y = padding
             }
+
             1 -> {
                 x = size - sideQuadSize * multiple - padding
                 y = padding
             }
+
             else -> {
                 x = padding
                 y = size - sideQuadSize * multiple - padding
@@ -124,7 +143,7 @@ fun String.generateQRCode(qrSize: Int, padding: Int = 32.dp): Pair<Bitmap, Int> 
         }
         var r = sideQuadSize * multiple / 3.0f
         Arrays.fill(radii, r)
-        rect.setColor(-0x1000000)
+        rect.setColor(foregroundColor)
         rect.setBounds(x, y, x + sideQuadSize * multiple, y + sideQuadSize * multiple)
         rect.draw(canvas)
         canvas.drawRect(
@@ -132,7 +151,7 @@ fun String.generateQRCode(qrSize: Int, padding: Int = 32.dp): Pair<Bitmap, Int> 
             (y + multiple).toFloat(),
             (x + (sideQuadSize - 1) * multiple).toFloat(),
             (y + (sideQuadSize - 1) * multiple).toFloat(),
-            blackPaint
+            blackPaint,
         )
         r = sideQuadSize * multiple / 4.0f
         Arrays.fill(radii, r)
@@ -141,7 +160,7 @@ fun String.generateQRCode(qrSize: Int, padding: Int = 32.dp): Pair<Bitmap, Int> 
         rect.draw(canvas)
         r = (sideQuadSize - 2) * multiple / 4.0f
         Arrays.fill(radii, r)
-        rect.setColor(-0x1000000)
+        rect.setColor(foregroundColor)
         rect.setBounds(x + multiple * 2, y + multiple * 2, x + (sideQuadSize - 2) * multiple, y + (sideQuadSize - 2) * multiple)
         rect.draw(canvas)
     }
@@ -161,10 +180,24 @@ fun String.generateQRCode(qrSize: Int, padding: Int = 32.dp): Pair<Bitmap, Int> 
         outputY += multiple
     }
     canvas.setBitmap(null)
-    return Pair(bitmap, imageIgnore * multiple - 2.dp)
+    val outputBitmap = outputSize?.let { size ->
+        if (bitmap.width == size && bitmap.height == size) {
+            bitmap
+        } else {
+            Bitmap.createScaledBitmap(bitmap, size, size, false)
+        }
+    } ?: bitmap
+    return Pair(outputBitmap, imageIgnore * multiple - 2.dp)
 }
 
-private fun has(input: ByteMatrix, imageBlockX: Int, imageBloks: Int, sideQuadSize: Int, x: Int, y: Int): Boolean {
+private fun has(
+    input: ByteMatrix,
+    imageBlockX: Int,
+    imageBloks: Int,
+    sideQuadSize: Int,
+    x: Int,
+    y: Int,
+): Boolean {
     if (x >= imageBlockX && x < imageBlockX + imageBloks && y >= imageBlockX && y < imageBlockX + imageBloks) {
         return false
     }
@@ -173,7 +206,9 @@ private fun has(input: ByteMatrix, imageBlockX: Int, imageBloks: Int, sideQuadSi
     }
     return if (x < sideQuadSize && y >= input.height - sideQuadSize) {
         false
-    } else x >= 0 && y >= 0 && x < input.width && y < input.height && input[x, y].toInt() == 1
+    } else {
+        x >= 0 && y >= 0 && x < input.width && y < input.height && input[x, y].toInt() == 1
+    }
 }
 
 fun String.getEpochNano(): Long {
@@ -209,18 +244,52 @@ inline fun String.md5(): String {
     }
 }
 
-inline fun String.sha256(): ByteArray {
+inline fun String.sha256(): ByteArray = toByteArray().sha256()
+
+inline fun ByteArray.sha256(): ByteArray {
     val md = MessageDigest.getInstance("SHA256")
-    return md.digest(toByteArray())
+    return md.digest(this)
+}
+
+inline fun String.hmacSha256(key: ByteArray) = toByteArray().hmacSha256(key)
+
+inline fun ByteArray.hmacSha256(key: ByteArray): ByteArray {
+    val alg = "HmacSHA256"
+    val mac = Mac.getInstance(alg)
+    mac.init(SecretKeySpec(key, alg))
+    return mac.doFinal(this)
 }
 
 inline fun String.isWebUrl(): Boolean {
     return startsWith("http://", true) || startsWith("https://", true)
 }
 
-inline fun <reified T> Gson.fromJson(json: JsonElement) = this.fromJson<T>(json, object : TypeToken<T>() {}.type)!!
+fun String.toOpenInBrowserUrlOrNull(): String? {
+    val url = trim()
+    if (url.isBlank() || url.equals("undefined", true) || url.equals("null", true)) {
+        return null
+    }
+    val uri = Uri.parse(url)
+    return url.takeIf {
+        (uri.scheme.equals("http", true) || uri.scheme.equals("https", true)) &&
+            !uri.host.isNullOrBlank()
+    }
+}
+
+inline fun String.isAppUrl(): Boolean {
+    val pattern = Regex("^.+:/.+$|^.+://.+$")
+    return pattern.matches(this)
+}
+
+inline fun <reified T> Gson.fromJson(json: JsonElement) =
+    try {
+        this.fromJson<T>(json, object : TypeToken<T>() {}.type)!!
+    } catch (_: JsonSyntaxException) {
+        null
+    }
 
 private val HEX_CHARS = "0123456789abcdef"
+
 fun ByteArray.toHex(): String {
     val hex = HEX_CHARS.toCharArray()
     val result = StringBuffer()
@@ -236,6 +305,8 @@ fun ByteArray.toHex(): String {
     return result.toString()
 }
 
+fun String.toHex() = toByteArray().toHex()
+
 fun String.hexStringToByteArray(): ByteArray {
     val result = ByteArray(length / 2)
     for (i in 0 until length step 2) {
@@ -248,6 +319,12 @@ fun String.hexStringToByteArray(): ByteArray {
     return result
 }
 
+inline fun Long.toBeByteArray(): ByteArray {
+    val buffer = Buffer()
+    buffer.writeLong(this)
+    return buffer.readByteArray()
+}
+
 inline fun Long.toLeByteArray(): ByteArray {
     var num = this
     val result = ByteArray(8)
@@ -258,7 +335,6 @@ inline fun Long.toLeByteArray(): ByteArray {
     return result
 }
 
-@ExperimentalUnsignedTypes
 fun toLeByteArray(v: UInt): ByteArray {
     val b = ByteArray(2)
     b[0] = v.toByte()
@@ -266,7 +342,6 @@ fun toLeByteArray(v: UInt): ByteArray {
     return b
 }
 
-@ExperimentalUnsignedTypes
 fun leByteArrayToInt(bytes: ByteArray): UInt {
     return bytes[0].toUInt() + (bytes[1].toUInt() shl 8)
 }
@@ -278,9 +353,11 @@ fun UUID.toByteArray(): ByteArray {
     return bb.array()
 }
 
-fun String.formatPublicKey(): String {
-    if (this.length <= 10) return this
-    return substring(0, 6) + "..." + substring(length - 4, length)
+fun String.formatPublicKey( limit: Int = 50, prefixLen: Int = 8, suffixLen: Int = 6): String {
+    if (this.length <= limit) return this
+    val prefix = substring(0, prefixLen.coerceAtMost(length))
+    val suffix = substring(length - suffixLen.coerceAtLeast(0), length)
+    return "$prefix...$suffix"
 }
 
 fun String.numberFormat(): String {
@@ -301,7 +378,7 @@ fun String.numberFormat8(): String {
 
     return try {
         val big = BigDecimal(this)
-        DecimalFormat(big.toPlainString().getPattern()).format(big)
+        DecimalFormat(",###.########").format(big)
     } catch (e: NumberFormatException) {
         this
     } catch (e: IllegalArgumentException) {
@@ -341,14 +418,36 @@ fun BigDecimal.priceFormat(): String {
     }
 }
 
+fun BigDecimal.marketPriceFormat(): String {
+    return if (this.compareTo(BigDecimal.ONE) == 1 || this.compareTo(BigDecimal.ONE) == 0) {
+        priceFormat2()
+    } else {
+        numberFormat12()
+    }
+}
+
 fun BigDecimal.numberFormat8(): String {
     return try {
-        DecimalFormat(this.toPlainString().getPattern()).format(this)
+        DecimalFormat(",###.########").format(this)
     } catch (e: NumberFormatException) {
         this.toPlainString()
     } catch (e: IllegalArgumentException) {
         this.toPlainString()
     }
+}
+
+fun BigDecimal.numberFormat12(): String {
+    return try {
+        DecimalFormat(",###.############").format(this)
+    } catch (e: NumberFormatException) {
+        this.toPlainString()
+    } catch (e: IllegalArgumentException) {
+        this.toPlainString()
+    }
+}
+
+fun String.numberFormat12(): String {
+    return runCatching { BigDecimal(this).numberFormat12() }.getOrNull() ?: this
 }
 
 fun BigDecimal.priceFormat2(): String {
@@ -359,6 +458,21 @@ fun BigDecimal.priceFormat2(): String {
     } catch (e: IllegalArgumentException) {
         this.toPlainString()
     }
+}
+
+fun String.stripAmountZero(): String {
+    return BigDecimal(this).stripTrailingZeros().toPlainString()
+}
+
+fun BigDecimal.numberFormatCompact(): String {
+    val formatter = CompactDecimalFormat.getInstance(
+        Locale.US,
+        CompactDecimalFormat.CompactStyle.SHORT
+    ).apply {
+        minimumFractionDigits = 2
+        maximumFractionDigits = 2
+    }
+    return formatter.format(this)
 }
 
 fun BigDecimal.numberFormat2(): String {
@@ -378,11 +492,14 @@ fun String.getPattern(count: Int = 8): String {
     if (index == -1) return ",###"
     if (index >= count) return ",###"
 
-    val bit = if (index == 1 && this[0] == '0')
-        count + 1
-    else if (index == 2 && this[0] == '-' && this[1] == '0')
-        count + 2
-    else count
+    val bit =
+        if (index == 1 && this[0] == '0') {
+            count + 1
+        } else if (index == 2 && this[0] == '-' && this[1] == '0') {
+            count + 2
+        } else {
+            count
+        }
 
     val sb = StringBuilder(",###.")
     for (i in 0 until (bit - index)) {
@@ -401,11 +518,14 @@ fun Long.formatMillis(): String {
 fun Editable.maxDecimal(bit: Int = 8) {
     val index = this.indexOf('.')
     if (index > -1) {
-        val max = if (index == 1 && this[0] == '0')
-            bit
-        else if (index == 2 && this[0] == '-' && this[1] == '0')
-            bit + 1
-        else bit - 1
+        val max =
+            if (index == 1 && this[0] == '0') {
+                bit
+            } else if (index == 2 && this[0] == '-' && this[1] == '0') {
+                bit + 1
+            } else {
+                bit - 1
+            }
         if (this.length - 1 - index > max) {
             this.delete(this.length - 1, this.length)
         }
@@ -426,24 +546,37 @@ val idNameCodeMap = ConcurrentHashMap<String, Int>()
 
 sealed class CodeType(val count: Int) {
     class Name(count: Int) : CodeType(count)
+
     class Avatar(count: Int) : CodeType(count)
 }
 
 fun String.getColorCode(codeType: CodeType): Int {
-    val cacheMap = when (codeType) {
-        is CodeType.Name -> idNameCodeMap
-        is CodeType.Avatar -> idAvatarCodeMap
-    }
-    var code = cacheMap[this]
+    val cacheMap =
+        when (codeType) {
+            is CodeType.Name -> idNameCodeMap
+            is CodeType.Avatar -> idAvatarCodeMap
+        }
+    var code =
+        try {
+            cacheMap[this]
+        } catch (e: NullPointerException) {
+            null
+        }
     if (code != null) return code
 
-    val hashcode = try {
-        UUID.fromString(this).hashCode()
-    } catch (e: IllegalArgumentException) {
-        hashCode()
-    }
+    val hashcode =
+        try {
+            UUID.fromString(this).hashCode()
+        } catch (e: IllegalArgumentException) {
+            hashCode()
+        } catch (e: NullPointerException) {
+            0
+        }
     code = abs(hashcode).rem(codeType.count)
-    cacheMap[this] = code
+    try {
+        cacheMap[this] = code
+    } catch (ignored: NullPointerException) {
+    }
     return code
 }
 
@@ -535,16 +668,18 @@ fun String.joinStar() = joinWithCharacter('*')
 fun String.joinWithCharacter(char: Char): String {
     val result = StringBuilder()
     this.trim().forEachIndexed { i, c ->
-        val lookAhead = try {
-            this[i + 1]
-        } catch (ignored: IndexOutOfBoundsException) {
-            char
-        }
-        val isSameType = if (c.isAlphabet() && lookAhead.isAlphabet()) {
-            true
-        } else {
-            c.isDigit() && lookAhead.isDigit()
-        }
+        val lookAhead =
+            try {
+                this[i + 1]
+            } catch (ignored: IndexOutOfBoundsException) {
+                char
+            }
+        val isSameType =
+            if (c.isAlphabet() && lookAhead.isAlphabet()) {
+                true
+            } else {
+                c.isDigit() && lookAhead.isDigit()
+            }
 
         val needWhiteSpace = !isSameType && !c.isWhitespace()
         result.append(c)
@@ -557,10 +692,16 @@ fun String.joinWithCharacter(char: Char): String {
 
 private fun Char.isAlphabet() = this in 'a'..'z' || this in 'A'..'Z'
 
-fun String.appendQueryParamsFromOtherUri(otherUri: Uri, exclusiveKey: String = "action"): String =
+fun String.appendQueryParamsFromOtherUri(
+    otherUri: Uri,
+    exclusiveKey: String = "action",
+): String =
     this.toUri().appendQueryParamsFromOtherUri(otherUri, exclusiveKey)
 
-fun Uri.appendQueryParamsFromOtherUri(otherUri: Uri, exclusiveKey: String = "action"): String {
+fun Uri.appendQueryParamsFromOtherUri(
+    otherUri: Uri,
+    exclusiveKey: String = "action",
+): String {
     val builder = this.buildUpon()
     otherUri.queryParameterNames
         .filter { it != exclusiveKey }
@@ -586,9 +727,127 @@ fun String?.containsCaseInsensitive(other: String?) =
     }
 
 fun String?.equalsIgnoreCase(other: String?): Boolean = this?.equals(other, true) == true
+
 fun String?.equalsIgnoreCase(other: CharSequence?): Boolean = equalsIgnoreCase(other.toString())
+
 fun String?.containsIgnoreCase(other: CharSequence?): Boolean = this?.contains(other.toString(), true) == true
+
 fun String?.startsWithIgnoreCase(other: CharSequence?): Boolean = this?.startsWith(other.toString(), true) == true
 
 inline fun SpannableStringBuilder.backgroundColor(color: Int): BackgroundColorSpan =
     BackgroundColorSpan(color)
+
+fun String.matchResourcePattern(resourcePatterns: Collection<String>?): Boolean {
+    val url: Uri = try {
+        this.toUri()
+    } catch (ignored: Exception) {
+        Uri.EMPTY
+    }
+    if (url == Uri.EMPTY) return false
+    val urlScheme: String = url.scheme?.lowercase(Locale.getDefault()) ?: return false
+    val urlHost: String = url.host?.lowercase(Locale.getDefault()) ?: return false
+    val urlPath: String = url.path ?: ""
+    return resourcePatterns?.any { pattern: String ->
+        val rule: Uri = try {
+            pattern.toUri()
+        } catch (ignored: Exception) {
+            Uri.EMPTY
+        }
+        if (rule == Uri.EMPTY) return@any false
+        val ruleScheme: String = rule.scheme?.lowercase(Locale.getDefault()) ?: return@any false
+        val ruleHost: String = rule.host?.lowercase(Locale.getDefault()) ?: return@any false
+        val rulePath: String = rule.path ?: ""
+        val isSchemeMatches: Boolean = ruleScheme == urlScheme
+        val isHostMatches: Boolean = ruleHost == urlHost
+        val isPathMatches: Boolean = urlPath.startsWith(rulePath)
+        isSchemeMatches && isHostMatches && isPathMatches
+    } == true
+}
+
+// Copy from hidden API android.os.FileUtils.buildValidExtFilename
+fun String.toValidFileName(): String {
+    if (TextUtils.isEmpty(this) || "." == this || ".." == this) {
+        return "(invalid)"
+    }
+    val res = java.lang.StringBuilder(this.length)
+    for (element in this) {
+        if (element.isValidFatFilenameChar()) {
+            res.append(element)
+        } else {
+            res.append('_')
+        }
+    }
+    trimFilename(res)
+    return res.toString()
+}
+
+private fun Char.isValidFatFilenameChar(): Boolean {
+    return if (code in 0x00..0x1f) {
+        false
+    } else {
+        when (this) {
+            '"', '*', '/', ':', '<', '>', '?', '\\', '|', 0x7F.toChar() -> false
+            else -> true
+        }
+    }
+}
+
+private fun trimFilename(res: java.lang.StringBuilder) {
+    var mb = 255
+    var raw = res.toString().toByteArray(StandardCharsets.UTF_8)
+    if (raw.size > mb) {
+        mb -= 3
+        while (raw.size > mb) {
+            res.deleteCharAt(res.length / 2)
+            raw = res.toString().toByteArray(StandardCharsets.UTF_8)
+        }
+        res.insert(res.length / 2, "...")
+    }
+}
+
+fun ByteArray.hexString(): String {
+    return joinToString("") { byte -> "%02x".format(byte) }
+}
+
+fun ByteArray.isByteArrayValidUtf8(): Boolean {
+    return try {
+        val decodedString = toString(Charsets.UTF_8)
+        val reEncodeBytes = decodedString.toByteArray(Charsets.UTF_8)
+        reEncodeBytes.contentEquals(this)
+    } catch (e: Exception) {
+        false
+    }
+}
+
+fun String.isValidHex(): Boolean {
+    return matches("[0-9a-fA-F]+".toRegex())
+}
+
+fun BigDecimal.currencyFormat(): String {
+    return if (this == BigDecimal.ZERO) {
+        "$0"
+    } else if (this < BigDecimal("0.01")) {
+        "< $0.01"
+    } else {
+        "≈ $${this.setScale(2, RoundingMode.HALF_UP)}"
+    }
+}
+
+fun String?.isValidMao(): Boolean {
+    if (this.isNullOrBlank()) return false
+    val text = this.lowercase()
+    val regex = Regex("^[^\\sA-Z]{1,128}\\.mao$")
+    if (!regex.matches(text)) return false
+    val name = text.removeSuffix(".mao")
+    if (name.isBlank() || name.all { it.isDigit() }) return false
+    return true
+}
+
+fun String.isMao(): Boolean {
+    val regex = Regex("^[^\\sA-Z]{1,128}\\.mao$")
+    return regex.matches(this)
+}
+
+fun String.isValidBase58(): Boolean = runCatching {
+    Base58.decode(this)
+}.getOrNull() != null

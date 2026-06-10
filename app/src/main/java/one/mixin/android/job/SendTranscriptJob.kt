@@ -3,13 +3,15 @@ package one.mixin.android.job
 import android.net.Uri
 import com.birbit.android.jobqueue.Params
 import one.mixin.android.MixinApplication
+import one.mixin.android.db.flow.MessageFlow
+import one.mixin.android.db.insertMessage
 import one.mixin.android.extension.copy
 import one.mixin.android.extension.getExtensionName
 import one.mixin.android.extension.getTranscriptFile
 import one.mixin.android.extension.joinWhiteSpace
 import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.fts.insertFts4
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.MessageFts4Helper
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.EncryptCategory
 import one.mixin.android.vo.MediaStatus
@@ -29,9 +31,8 @@ import java.io.File
 class SendTranscriptJob(
     val message: Message,
     private val transcriptMessages: List<TranscriptMessage>,
-    messagePriority: Int = PRIORITY_SEND_MESSAGE
-) : MixinJob(Params(messagePriority).groupBy("send_message_group").persist(), message.id) {
-
+    messagePriority: Int = PRIORITY_SEND_MESSAGE,
+) : MixinJob(Params(messagePriority).groupBy("send_message_group").persist(), message.messageId) {
     companion object {
         private const val serialVersionUID = 1L
     }
@@ -47,16 +48,19 @@ class SendTranscriptJob(
             transcriptMessages.filter { it.isText() || it.isPost() || it.isData() || it.isContact() }.forEach { transcript ->
                 if (transcript.isData()) {
                     transcript.mediaName
-                } else if (transcript.isContact()) {
-                    transcript.sharedUserId?.let { userId -> userDao.findUser(userId) }?.fullName
                 } else {
-                    transcript.content
-                }?.joinWhiteSpace()?.let {
-                    stringBuffer.append(it)
+                    if (transcript.isContact()) {
+                        transcript.sharedUserId?.let { userId -> userDao.findUser(userId) }?.fullName
+                    } else {
+                        transcript.content
+                    }?.joinWhiteSpace()?.let {
+                        stringBuffer.append(it)
+                    }
                 }
             }
-            MessageFts4Helper.insertMessageFts4(message.id, stringBuffer.toString())
-            messageDao.insert(message)
+            ftsDatabase.insertFts4(stringBuffer.toString(), message.conversationId, message.messageId, message.category, message.userId, message.createdAt)
+            appDatabase.insertMessage(message)
+            MessageFlow.insert(message.conversationId, message.messageId)
             transcriptMessages.forEach { transcript ->
                 if (transcript.isAttachment()) {
                     val mediaUrl = Uri.parse(transcript.absolutePath())
@@ -66,10 +70,11 @@ class SendTranscriptJob(
                     } else {
                         val file = File(requireNotNull(Uri.parse(transcript.absolutePath()).path))
                         if (file.exists()) {
-                            val outFile = MixinApplication.appContext.getTranscriptFile(
-                                transcript.messageId,
-                                file.name.getExtensionName().notNullWithElse({ ".$it" }, ""),
-                            )
+                            val outFile =
+                                MixinApplication.appContext.getTranscriptFile(
+                                    transcript.messageId,
+                                    file.name.getExtensionName().notNullWithElse({ ".$it" }, ""),
+                                )
                             if (!outFile.exists() || outFile.length() <= 0) {
                                 file.copy(outFile)
                             }
@@ -93,30 +98,36 @@ class SendTranscriptJob(
 
     override fun onRun() {
         val transcripts = mutableSetOf<TranscriptMessage>()
-        getTranscripts(message.id, transcripts)
+        getTranscripts(message.messageId, transcripts)
 
         if (transcripts.any { t -> t.isAttachment() }) {
             val mediaSize = transcripts.sumOf { t -> t.mediaSize ?: 0 }
-            messageDao.updateMediaSize(mediaSize, message.id)
+            messageDao.updateMediaSize(mediaSize, message.messageId)
+            MessageFlow.update(message.conversationId, message.messageId)
             transcripts.filter { t ->
                 t.isAttachment()
             }.forEach { t ->
-                val encryptCategory = when {
-                    message.isEncrypted() -> EncryptCategory.ENCRYPTED
-                    message.isSignal() -> EncryptCategory.SIGNAL
-                    else -> EncryptCategory.PLAIN
-                }
-                jobManager.addJob(SendTranscriptAttachmentMessageJob(t, encryptCategory, message.id))
+                val encryptCategory =
+                    when {
+                        message.isEncrypted() -> EncryptCategory.ENCRYPTED
+                        message.isSignal() -> EncryptCategory.SIGNAL
+                        else -> EncryptCategory.PLAIN
+                    }
+                jobManager.addJob(SendTranscriptAttachmentMessageJob(t, encryptCategory, message.messageId))
             }
         } else {
-            messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
+            messageDao.updateMediaStatus(MediaStatus.DONE.name, message.messageId)
+            MessageFlow.update(message.conversationId, message.messageId)
             message.mediaStatus = MediaStatus.DONE.name
             message.content = GsonHelper.customGson.toJson(transcripts)
             jobManager.addJob(SendMessageJob(message))
         }
     }
 
-    private fun getTranscripts(transcriptId: String, list: MutableSet<TranscriptMessage>) {
+    private fun getTranscripts(
+        transcriptId: String,
+        list: MutableSet<TranscriptMessage>,
+    ) {
         val transcripts = transcriptMessageDao.getTranscript(transcriptId)
         list.addAll(transcripts)
         transcripts.asSequence().filter { t -> t.isTranscript() }.forEach { transcriptMessage ->

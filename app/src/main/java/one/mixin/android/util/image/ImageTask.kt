@@ -3,7 +3,6 @@ package one.mixin.android.util.image
 import android.os.Handler
 import android.os.Looper
 import timber.log.Timber
-import java.util.ArrayList
 import java.util.concurrent.Callable
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Executors
@@ -11,7 +10,7 @@ import java.util.concurrent.FutureTask
 
 class ImageTask<T>(
     runnable: Callable<ImageResult<T>>,
-    runNow: Boolean = false
+    runNow: Boolean = false,
 ) {
     private val executor = Executors.newCachedThreadPool()
     private val successListeners = LinkedHashSet<ImageListener<T>>(1)
@@ -80,7 +79,7 @@ class ImageTask<T>(
                         r.exception?.let { notifyFailureListeners(it) }
                     }
                 }
-            }
+            },
         )
     }
 
@@ -105,7 +104,7 @@ class ImageTask<T>(
     }
 
     inner class LottieFutureTask(
-        callable: Callable<ImageResult<T>>
+        callable: Callable<ImageResult<T>>,
     ) : FutureTask<ImageResult<T>>(callable) {
         override fun done() {
             if (isCancelled) return

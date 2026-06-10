@@ -2,245 +2,341 @@ package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.View.GONE
-import android.view.View.VISIBLE
-import android.view.ViewGroup
 import androidx.appcompat.view.ContextThemeWrapper
+import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
-import androidx.lifecycle.Observer
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.paging.PagedList
-import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
+import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import one.mixin.android.Constants
+import one.mixin.android.Constants.AssetId.USDT_ASSET_ETH_ID
+import one.mixin.android.Constants.AssetId.XIN_ASSET_ID
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentTransactionsBinding
-import one.mixin.android.databinding.ViewBadgeCircleImageBinding
-import one.mixin.android.databinding.ViewTransactionsFragmentHeaderBinding
 import one.mixin.android.databinding.ViewWalletTransactionsBottomBinding
-import one.mixin.android.databinding.ViewWalletTransactionsSendBottomBinding
 import one.mixin.android.extension.buildAmountSymbol
+import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.colorFromAttribute
-import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.dp
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.navigate
+import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
-import one.mixin.android.extension.putString
+import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.screenHeight
-import one.mixin.android.extension.toast
+import one.mixin.android.extension.setQuoteText
+import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.viewDestroyed
+import one.mixin.android.job.CheckBalanceJob
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshMarketJob
+import one.mixin.android.job.RefreshPriceJob
+import one.mixin.android.tip.Tip
+import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
-import one.mixin.android.ui.conversation.TransferFragment
+import one.mixin.android.ui.home.market.Market
+import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.trade.SwapActivity
+import one.mixin.android.ui.wallet.AllTransactionsFragment.Companion.ARGS_TOKEN
+import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_ASSET_ID
+import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET
+import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET_SOURCE
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
-import one.mixin.android.ui.wallet.adapter.TransactionsAdapter
-import one.mixin.android.util.ErrorHandler
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
+import one.mixin.android.util.getChainName
+import one.mixin.android.util.reportException
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.SnapshotItem
-import one.mixin.android.vo.SnapshotType
-import one.mixin.android.vo.differentProcess
+import one.mixin.android.vo.assetIdToAsset
+import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.notMessengerUser
-import one.mixin.android.vo.toAssetItem
+import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.safe.toSnapshot
 import one.mixin.android.widget.BottomSheet
+import one.mixin.android.widget.DebugClickListener
+import java.math.BigDecimal
+import javax.inject.Inject
 
 @AndroidEntryPoint
-class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(), OnSnapshotListener {
-
+class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSnapshotListener {
     companion object {
         const val TAG = "TransactionsFragment"
         const val ARGS_ASSET = "args_asset"
+        const val ARGS_FROM_MARKET = "args_from_market"
     }
 
-    private var _binding: FragmentTransactionsBinding? = null
-    private val binding get() = requireNotNull(_binding)
-    private var _headBinding: ViewTransactionsFragmentHeaderBinding? = null
-    private val headBinding get() = requireNotNull(_headBinding)
+    private val binding by viewBinding(FragmentTransactionsBinding::bind)
     private var _bottomBinding: ViewWalletTransactionsBottomBinding? = null
-    private val bottomBinding get() = requireNotNull(_bottomBinding)
-    private var _bottomSendBinding: ViewWalletTransactionsSendBottomBinding? = null
-    private val bottomSendBinding get() = requireNotNull(_bottomSendBinding)
+    private val bottomBinding get() = requireNotNull(_bottomBinding) { "required _bottomBinding is null" }
 
-    private val adapter = TransactionsAdapter()
-    lateinit var asset: AssetItem
+    @Inject
+    lateinit var tip: Tip
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        _binding = FragmentTransactionsBinding.inflate(layoutInflater, container, false)
-        return binding.root
+    @Inject
+    lateinit var jobManager: MixinJobManager
+
+    private val walletViewModel by viewModels<WalletViewModel>()
+
+    lateinit var asset: TokenItem
+
+    private val fromMarket by lazy {
+        requireArguments().getBoolean(ARGS_FROM_MARKET, false)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        asset = requireArguments().getParcelable(ARGS_ASSET)!!
+        asset = requireArguments().getParcelableCompat(ARGS_ASSET, TokenItem::class.java)!!
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    private var scrollY = 0
+
+    override fun onPause() {
+        super.onPause()
+        scrollY = binding.scrollView.scrollY
+    }
+
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
+        AnalyticsTracker.trackAssetDetail(TradeWallet.MAIN, if (fromMarket) AnalyticsTracker.AssetSource.MARKET_DETAIL else AnalyticsTracker.AssetSource.WALLET_HOME)
+        jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(asset.assetId))))
+        jobManager.addJobInBackground(RefreshPriceJob(asset.assetId))
+
         binding.titleView.apply {
-            titleTv.text = asset.name
-            leftIb.setOnClickListener { activity?.onBackPressed() }
+            val sub = getChainName(asset.chainId, asset.chainName, asset.assetKey)
+            if (sub != null)
+                setSubTitle(asset.name, sub)
+            else
+                titleTv.setTextOnly(asset.name)
+            leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             rightAnimator.setOnClickListener {
                 showBottom()
             }
         }
-
-        _headBinding = ViewTransactionsFragmentHeaderBinding.bind(layoutInflater.inflate(R.layout.view_transactions_fragment_header, binding.transactionsRv, false))
-        headBinding.apply {
-            groupInfoMemberTitleSort.setOnClickListener {
-                showFiltersSheet()
-            }
-            topRl.setOnClickListener {
-                AssetKeyBottomSheetDialogFragment.newInstance(asset)
-                    .showNow(parentFragmentManager, AssetKeyBottomSheetDialogFragment.TAG)
-            }
-            updateHeader(asset)
-            sendTv.setOnClickListener {
-                showSendBottom()
-            }
-            receiveTv.setOnClickListener {
-                asset.differentProcess(
-                    {
-                        view.navigate(
-                            R.id.action_transactions_to_deposit_public_key,
-                            Bundle().apply { putParcelable(ARGS_ASSET, asset) }
-                        )
-                    },
-                    {
-                        view.navigate(
-                            R.id.action_transactions_to_deposit_account,
-                            Bundle().apply { putParcelable(ARGS_ASSET, asset) }
-                        )
-                    },
-                    {
-                        toast(getString(R.string.error_bad_data, ErrorHandler.BAD_DATA))
-                    }
-                )
-            }
-
-            adapter.listener = this@TransactionsFragment
-            adapter.headerView = headBinding.root
-            adapter.setShowHeader(true, binding.transactionsRv)
-            binding.transactionsRv.itemAnimator = null
-            binding.transactionsRv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
-            binding.transactionsRv.adapter = adapter
-            root.post {
-                if (viewDestroyed()) return@post
-
-                bottomRl.updateLayoutParams<ViewGroup.LayoutParams> {
-                    height = requireContext().screenHeight() - binding.titleView.height - topLl.height - groupInfoMemberTitleLayout.height
-                }
-            }
-        }
-
-        dataObserver = Observer { pagedList ->
-            if (pagedList != null && pagedList.isNotEmpty()) {
-                updateHeaderBottomLayout(false)
-                val opponentIds = pagedList.filter {
-                    it?.opponentId != null
-                }.map {
-                    it.opponentId!!
-                }
-                walletViewModel.checkAndRefreshUsers(opponentIds)
-            } else {
-                updateHeaderBottomLayout(true)
-            }
-            adapter.submitList(pagedList)
-
-            if (!refreshedSnapshots) {
-                walletViewModel.refreshSnapshots(asset.assetId)
-                refreshedSnapshots = true
-            }
-        }
-        bindLiveData()
-        walletViewModel.assetItem(asset.assetId).observe(
-            viewLifecycleOwner
-        ) { assetItem ->
-            assetItem?.let {
-                asset = it
-                updateHeader(it)
-            }
-        }
-
-        refreshPendingDeposits(asset)
-    }
-
-    override fun onDestroyView() {
-        adapter.headerView = null
-        adapter.listener = null
-        _binding?.transactionsRv?.adapter = null
-        _binding = null
-        _headBinding = null
-        _bottomBinding = null
-        _bottomSendBinding = null
-        super.onDestroyView()
-    }
-
-    @SuppressLint("SetTextI18n")
-    private fun updateHeader(asset: AssetItem) {
-        headBinding.apply {
-            val amountText = try {
-                if (asset.balance.toFloat() == 0f) {
-                    "0.00"
-                } else {
-                    asset.balance.numberFormat()
-                }
-            } catch (ignored: NumberFormatException) {
-                asset.balance.numberFormat()
-            }
-            val color = requireContext().colorFromAttribute(R.attr.text_primary)
-            balance.text = buildAmountSymbol(requireContext(), amountText, asset.symbol, color, color)
-            balanceAs.text = try {
-                if (asset.fiat().toFloat() == 0f) {
-                    "≈ ${Fiats.getSymbol()}0.00"
-                } else {
-                    "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
-                }
-            } catch (ignored: NumberFormatException) {
-                "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
-            }
-            ViewBadgeCircleImageBinding.bind(avatar).apply {
-                bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-                badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
-            }
-        }
-    }
-
-    private fun refreshPendingDeposits(asset: AssetItem) {
-        lifecycleScope.launch {
-            if (asset.destination.isNotEmpty()) {
-                walletViewModel.refreshAsset(asset.assetId)
-                walletViewModel.refreshPendingDeposits(asset)
-            } else {
-                headBinding.apply {
-                    receiveTv.visibility = GONE
-                    receiveProgress.visibility = VISIBLE
-                    handleMixinResponse(
-                        invokeNetwork = {
-                            walletViewModel.getAsset(asset.assetId)
-                        },
-                        successBlock = { response ->
-                            receiveTv.visibility = VISIBLE
-                            receiveProgress.visibility = GONE
-                            response.data?.let { asset ->
-                                walletViewModel.upsetAsset(asset)
-                                asset.toAssetItem().let { assetItem ->
-                                    this@TransactionsFragment.asset = assetItem
-                                    refreshPendingDeposits(assetItem)
-                                }
+        binding.apply {
+            sendReceiveView.swap.setOnClickListener {
+                if (
+                    showRecoveryReminderForRiskAction {
+                        AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.ASSET_DETAIL)
+                        lifecycleScope.launch {
+                            val output = if (asset.assetId == USDT_ASSET_ETH_ID) {
+                                XIN_ASSET_ID
+                            } else {
+                                USDT_ASSET_ETH_ID
                             }
+                            SwapActivity.show(
+                                requireActivity(),
+                                inMixin = true,
+                                input = asset.assetId,
+                                output = output,
+                                entrySource = TradeSource.ASSET_DETAIL,
+                                entryType = AnalyticsTracker.SpotTradeType.SIMPLE,
+                            )
                         }
+                    }
+                ) {
+                    return@setOnClickListener
+                }
+                AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.ASSET_DETAIL)
+                lifecycleScope.launch {
+                    val output = if (asset.assetId == USDT_ASSET_ETH_ID) {
+                        XIN_ASSET_ID
+                    } else {
+                        USDT_ASSET_ETH_ID
+                    }
+                    SwapActivity.show(
+                        requireActivity(),
+                        inMixin = true,
+                        input = asset.assetId,
+                        output = output,
+                        entrySource = TradeSource.ASSET_DETAIL,
+                        entryType = AnalyticsTracker.SpotTradeType.SIMPLE,
                     )
                 }
             }
+            value.text = try {
+                if (asset.priceFiat().toFloat() == 0f) {
+                    getString(R.string.NA)
+                } else {
+                    "${Fiats.getSymbol()}${asset.priceFiat().priceFormat()}"
+                }
+            } catch (ignored: NumberFormatException) {
+                "${Fiats.getSymbol()}${asset.priceFiat().priceFormat()}"
+            }
+
+            walletViewModel.marketById(asset.assetId).observe(viewLifecycleOwner) { market ->
+                if (market != null) {
+                    val priceChangePercentage24H = BigDecimal(market.priceChangePercentage24H)
+                    val isRising = priceChangePercentage24H >= BigDecimal.ZERO
+                    rise.setQuoteText("${(priceChangePercentage24H).numberFormat2()}%", isRising)
+                } else if (asset.priceUsd == "0") {
+                    rise.setTextColor(requireContext().colorAttr(R.attr.text_assist))
+                    rise.text = "0.00%"
+                } else if (asset.changeUsd.isNotEmpty()) {
+                    val changeUsd = BigDecimal(asset.changeUsd)
+                    val isRising = changeUsd >= BigDecimal.ZERO
+                    rise.setQuoteText("${(changeUsd * BigDecimal(100)).numberFormat2()}%", isRising)
+                }
+            }
+            transactionsTitleLl.setOnClickListener {
+                view.navigate(
+                    R.id.action_transactions_fragment_to_all_transactions_fragment,
+                    Bundle().apply {
+                        putParcelable(ARGS_TOKEN, asset)
+                    },
+                )
+            }
+            transactionsRv.listener = this@TransactionsFragment
+            bottomCard.post {
+                bottomCard.isVisible = true
+                val remainingHeight = requireContext().screenHeight() - requireContext().statusBarHeight() - requireContext().navigationBarHeight() - titleView.height - topLl.height - marketRl.height - 70.dp
+                bottomRl.updateLayoutParams {
+                    height = remainingHeight
+                }
+                transactionsRv.list = snapshotItems
+                if (scrollY > 0) {
+                    scrollView.isInvisible = true
+                    scrollView.postDelayed(
+                        {
+                            scrollView.scrollTo(0, scrollY)
+                            scrollView.isInvisible = false
+                        }, 1
+                    )
+                }
+            }
+            marketRl.setOnClickListener {
+                lifecycleScope.launch {
+                    if (fromMarket) {
+                        activity?.onBackPressedDispatcher?.onBackPressed()
+                        return@launch
+                    }
+                    var market = walletViewModel.findMarketItemByAssetId(asset.assetId)
+                    if (market == null) {
+                        jobManager.addJobInBackground(RefreshMarketJob(asset.assetId))
+                        market = MarketItem(
+                            "", asset.name, asset.symbol, asset.iconUrl, asset.priceUsd,
+                            "", "", "", "", "", runCatching {
+                                (BigDecimal(asset.priceUsd) * BigDecimal(asset.changeUsd)).toPlainString()
+                            }.getOrNull() ?: "0", "", asset.changeUsd, "", "", "", "", "", "", "", "", "",
+                            "", "", "", "", listOf(asset.assetId), "", "", null
+                        )
+                    }
+                    view.navigate(
+                        R.id.action_transactions_to_market_details,
+                        Bundle().apply {
+                            putParcelable(ARGS_MARKET, market)
+                            putString(ARGS_ASSET_ID, asset.assetId)
+                            putString(ARGS_MARKET_SOURCE, AnalyticsTracker.MarketSource.TOKEN_DETAIL)
+                        },
+                    )
+                }
+            }
+        }
+
+        walletViewModel.snapshotsLimit(asset.assetId).observe(viewLifecycleOwner) { list ->
+            binding.apply {
+                transactionsRv.isVisible = list.isNotEmpty()
+                bottomRl.isVisible = list.isEmpty()
+                if (snapshotItems != list) {
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        snapshotItems = list.map {
+                            if (!it.withdrawal?.receiver.isNullOrBlank()) {
+                                val receiver = it.withdrawal!!.receiver
+                                val index: Int = receiver.indexOf(":")
+                                if (index == -1) {
+                                    it.label = walletViewModel.findAddressByReceiver(receiver, "", asset.chainId)
+                                } else {
+                                    val destination: String = receiver.substring(0, index)
+                                    val tag: String = receiver.substring(index + 1)
+                                    it.label = walletViewModel.findAddressByReceiver(destination, tag, asset.chainId)
+                                }
+                            }
+                            it
+                        }
+                        withContext(Dispatchers.Main) {
+                            transactionsRv.list = snapshotItems
+                        }
+                    }
+                }
+            }
+        }
+
+        walletViewModel.assetItem(asset.assetId).observe(
+            viewLifecycleOwner,
+        ) { assetItem ->
+            assetItem?.let {
+                asset = it
+                bindHeader()
+            }
+        }
+
+        walletViewModel.refreshAsset(asset.assetId)
+        lifecycleScope.launch {
+            val depositEntry = walletViewModel.findAndSyncDepositEntry(asset.chainId, asset.assetId)
+            if (depositEntry != null && depositEntry.destination.isNotBlank()) {
+                refreshPendingDeposits(asset)
+            }
+        }
+    }
+
+    private var snapshotItems: List<SnapshotItem> = emptyList()
+
+    override fun onDestroyView() {
+        _bottomBinding = null
+        super.onDestroyView()
+    }
+
+    private fun refreshPendingDeposits(
+        asset: TokenItem,
+    ) {
+        if (viewDestroyed()) return
+        lifecycleScope.launch {
+            handleMixinResponse(
+                invokeNetwork = {
+                    walletViewModel.refreshPendingDeposits(asset.assetId)
+                },
+                exceptionBlock = { e ->
+                    reportException(e)
+                    false
+                },
+                successBlock = { list ->
+                    withContext(Dispatchers.IO) {
+                        val pendingDeposits = list.data ?: emptyList()
+                        val destinationTags = walletViewModel.findDepositEntryDestinations()
+                        pendingDeposits.filter { pd ->
+                            destinationTags.any { dt ->
+                                dt.destination == pd.destination && (dt.tag.isNullOrBlank() || dt.tag == pd.tag)
+                            }
+                        }.map { pd -> pd.toSnapshot() }.let { snapshots ->
+                            // If there are no pending deposit snapshots belonging to the current user, clear token pending deposits
+                            if (snapshots.isEmpty()) {
+                                walletViewModel.clearPendingDepositsByAssetId(asset.assetId)
+                                return@let
+                            }
+                            lifecycleScope.launch {
+                                snapshots.map { it.assetId }.distinct().forEach {
+                                    walletViewModel.findOrSyncAsset(it)
+                                }
+                                walletViewModel.insertPendingDeposit(snapshots)
+                            }
+                        }
+                    }
+                },
+            )
         }
     }
 
@@ -251,13 +347,14 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         builder.setCustomView(bottomBinding.root)
         val bottomSheet = builder.create()
         bottomBinding.apply {
-            hide.setText(if (asset.hidden == true) R.string.wallet_transactions_show else R.string.wallet_transactions_hide)
+            hide.setText(if (asset.hidden == true) R.string.Show else R.string.Hide)
             hide.setOnClickListener {
+                AnalyticsTracker.trackAssetDetailHide()
                 lifecycleScope.launch(Dispatchers.IO) {
                     walletViewModel.updateAssetHidden(asset.assetId, asset.hidden != true)
                 }
                 bottomSheet.dismiss()
-                activity?.mainThreadDelayed({ activity?.onBackPressed() }, 200)
+                mainThreadDelayed({ activity?.onBackPressedDispatcher?.onBackPressed() }, 200)
             }
             cancel.setOnClickListener { bottomSheet.dismiss() }
         }
@@ -265,145 +362,135 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         bottomSheet.show()
     }
 
-    private fun showSendBottom() {
-        val builder = BottomSheet.Builder(requireActivity())
-        _bottomSendBinding = ViewWalletTransactionsSendBottomBinding.bind(View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_wallet_transactions_send_bottom, null))
-        builder.setCustomView(bottomSendBinding.root)
-        val bottomSheet = builder.create()
-        bottomSendBinding.apply {
-            contact.setOnClickListener {
-                bottomSheet.dismiss()
-                defaultSharedPreferences.putString(TransferFragment.ASSET_PREFERENCE, asset.assetId)
-                this@TransactionsFragment.view?.navigate(R.id.action_transactions_to_single_friend_select)
-            }
-            address.setOnClickListener {
-                bottomSheet.dismiss()
-                this@TransactionsFragment.view?.navigate(
-                    R.id.action_transactions_to_address_management,
-                    Bundle().apply {
-                        putParcelable(ARGS_ASSET, asset)
-                    }
-                )
-            }
-            sendCancel.setOnClickListener { bottomSheet.dismiss() }
-        }
-
-        bottomSheet.show()
-    }
-
     override fun <T> onNormalItemClick(item: T) {
+        AnalyticsTracker.trackTransactionDetail(AnalyticsTracker.AssetSource.ASSET_DETAIL)
         view?.navigate(
             R.id.action_transactions_fragment_to_transaction_fragment,
             Bundle().apply {
                 putParcelable(TransactionFragment.ARGS_SNAPSHOT, item as SnapshotItem)
-                putParcelable(ARGS_ASSET, asset)
-            }
+                putParcelable(TransactionsFragment.ARGS_ASSET, asset)
+            },
         )
     }
 
     override fun onUserClick(userId: String) {
         lifecycleScope.launch {
-            val user = withContext(Dispatchers.IO) {
-                walletViewModel.getUser(userId)
-            } ?: return@launch
+            val user =
+                withContext(Dispatchers.IO) {
+                    walletViewModel.getUser(userId)
+                } ?: return@launch
 
             if (user.notMessengerUser()) {
                 NonMessengerUserBottomSheetDialogFragment.newInstance(user)
                     .showNow(parentFragmentManager, NonMessengerUserBottomSheetDialogFragment.TAG)
             } else {
                 val f = UserBottomSheetDialogFragment.newInstance(user)
-                f?.showUserTransactionAction = {
-                    view?.navigate(
-                        R.id.action_transactions_to_user_transactions,
-                        Bundle().apply { putString(Constants.ARGS_USER_ID, userId) }
-                    )
-                }
                 f?.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
             }
         }
     }
 
-    override fun refreshSnapshots() {
-        walletViewModel.refreshSnapshots(asset.assetId, offset = refreshOffset)
+    override fun onMoreClick() {
+        AnalyticsTracker.trackAllTransactions(AnalyticsTracker.AssetSource.ASSET_DETAIL)
+        view?.navigate(
+            R.id.action_transactions_fragment_to_all_transactions_fragment,
+            Bundle().apply {
+                putParcelable(ARGS_TOKEN, asset)
+            },
+        )
     }
 
-    override fun onApplyClick() {
-        bindLiveData()
-        filtersSheet.dismiss()
+    private fun navigateToTransferDestination(asset: TokenItem) {
+        AnalyticsTracker.trackAssetSendStart(TradeWallet.MAIN, AnalyticsTracker.AssetSource.ASSET_DETAIL)
+        findNavController().navigate(
+            R.id.action_transactions_to_transfer_destination,
+            Bundle().apply {
+                putParcelable(TransactionsFragment.ARGS_ASSET, asset)
+            }
+        )
     }
 
-    private fun bindLiveData() {
-        val orderByAmount = currentOrder == R.id.sort_amount
-        headBinding.apply {
-            when (currentType) {
-                R.id.filters_radio_all -> {
-                    bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
-                    groupInfoMemberTitle.setText(R.string.wallet_transactions_title)
-                    walletTransactionsEmpty.setText(R.string.wallet_transactions_empty)
+    private fun bindHeader() {
+        binding.apply {
+            if (asset.collectionHash.isNullOrEmpty()) {
+                topRl.setOnClickListener {
+                    AssetKeyBottomSheetDialogFragment.newInstance(asset)
+                        .showNow(parentFragmentManager, AssetKeyBottomSheetDialogFragment.TAG)
                 }
-                R.id.filters_radio_transfer -> {
-                    bindLiveData(
-                        walletViewModel.snapshotsFromDb(
-                            asset.assetId,
-                            SnapshotType.transfer.name,
-                            SnapshotType.pending.name,
-                            initialLoadKey = initialLoadKey,
-                            orderByAmount = orderByAmount
+            }
+            updateHeader(asset)
+            sendReceiveView.send.setOnClickListener {
+                if (showRecoveryReminderForRiskAction { navigateToTransferDestination(asset) }) return@setOnClickListener
+                navigateToTransferDestination(asset)
+            }
+            sendReceiveView.receive.setOnClickListener {
+                if (
+                    showRecoveryReminderForRiskAction {
+                        AnalyticsTracker.trackAssetReceiveStart(AnalyticsTracker.AssetSource.ASSET_DETAIL, TradeWallet.MAIN)
+                        sendReceiveView.navigate(
+                            R.id.action_transactions_to_deposit,
+                            Bundle().apply { putParcelable(ARGS_ASSET, asset) },
                         )
-                    )
-                    groupInfoMemberTitle.setText(R.string.filters_transfer)
-                    walletTransactionsEmpty.setText(R.string.wallet_transactions_empty)
+                    }
+                ) {
+                    return@setOnClickListener
                 }
-                R.id.filters_radio_deposit -> {
-                    bindLiveData(
-                        walletViewModel.snapshotsFromDb(
-                            asset.assetId,
-                            SnapshotType.deposit.name,
-                            initialLoadKey = initialLoadKey,
-                            orderByAmount = orderByAmount
-                        )
-                    )
-                    groupInfoMemberTitle.setText(R.string.filters_deposit)
-                    walletTransactionsEmpty.setText(R.string.wallet_deposits_empty)
-                }
-                R.id.filters_radio_withdrawal -> {
-                    bindLiveData(
-                        walletViewModel.snapshotsFromDb(
-                            asset.assetId,
-                            SnapshotType.withdrawal.name,
-                            initialLoadKey = initialLoadKey,
-                            orderByAmount = orderByAmount
-                        )
-                    )
-                    groupInfoMemberTitle.setText(R.string.filters_withdrawal)
-                    walletTransactionsEmpty.setText(R.string.wallet_withdrawals_empty)
-                }
-                R.id.filters_radio_fee -> {
-                    bindLiveData(
-                        walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.fee.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount)
-                    )
-                    groupInfoMemberTitle.setText(R.string.filters_fee)
-                    walletTransactionsEmpty.setText(R.string.wallet_fees_empty)
-                }
-                R.id.filters_radio_rebate -> {
-                    bindLiveData(
-                        walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.rebate.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount)
-                    )
-                    groupInfoMemberTitle.setText(R.string.filters_rebate)
-                    walletTransactionsEmpty.setText(R.string.wallet_rebates_empty)
-                }
-                R.id.filters_radio_raw -> {
-                    bindLiveData(
-                        walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.raw.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount)
-                    )
-                    groupInfoMemberTitle.setText(R.string.filters_raw)
-                    walletTransactionsEmpty.setText(R.string.wallet_raw_empty)
-                }
+                AnalyticsTracker.trackAssetReceiveStart(AnalyticsTracker.AssetSource.ASSET_DETAIL, TradeWallet.MAIN)
+                sendReceiveView.navigate(
+                    R.id.action_transactions_to_deposit,
+                    Bundle().apply { putParcelable(ARGS_ASSET, asset) },
+                )
+            }
+            marketView.setContent {
+                Market(asset.assetId)
             }
         }
     }
 
-    private fun updateHeaderBottomLayout(show: Boolean) {
-        headBinding.bottomRl.isVisible = show
+    private fun showRecoveryReminderForRiskAction(onContinue: (() -> Unit)? = null): Boolean {
+        return RecoveryReminderBottomSheetDialogFragment.showForRiskAction(parentFragmentManager, onContinue)
+    }
+
+    private fun updateHeader(asset: TokenItem) {
+        binding.apply {
+            val amountText =
+                try {
+                    if (asset.balance.toFloat() == 0f) {
+                        "0.00"
+                    } else {
+                        asset.balance.numberFormat()
+                    }
+                } catch (ignored: NumberFormatException) {
+                    asset.balance.numberFormat()
+                }
+            val color = requireContext().colorFromAttribute(R.attr.text_primary)
+            balance.text = buildAmountSymbol(requireContext(), amountText, asset.symbol, color, color)
+            balanceAs.text =
+                try {
+                    if (asset.fiat().toFloat() == 0f) {
+                        "≈ ${Fiats.getSymbol()}0.00"
+                    } else {
+                        "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
+                    }
+                } catch (ignored: NumberFormatException) {
+                    "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
+                }
+            avatar.loadToken(asset)
+            avatar.setOnClickListener(
+                object : DebugClickListener() {
+                    override fun onDebugClick() {
+                        view?.navigate(
+                            R.id.action_transactions_to_utxo,
+                            Bundle().apply {
+                                putParcelable(ARGS_ASSET, asset)
+                            },
+                        )
+                    }
+
+                    override fun onSingleClick() {
+                    }
+                },
+            )
+        }
     }
 }

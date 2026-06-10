@@ -54,18 +54,18 @@
                 android:layout_toStartOf="@id/chat_sticker_ib"
                 android:background="@null"
                 android:gravity="center_vertical"
-                android:inputType="textMultiLine"
+                android:inputType="textMultiLine|textCapSentences"
                 android:maxLines="5"
-                android:minHeight="36dp"
+                android:minHeight="38dp"
                 android:paddingStart="12dp"
+                android:paddingEnd="6dp"
                 android:paddingTop="2dp"
-                android:paddingEnd="12dp"
                 android:paddingBottom="2dp"
                 android:importantForAutofill="no"
                 android:textColor="?attr/text_primary"
-                android:textColorHint="?attr/text_minor"
-                android:textSize="14sp"
-                tools:ignore="LabelFor" />
+                android:textColorHint="?attr/text_assist"
+                android:textSize="15sp"
+                tools:ignore="LabelFor,RtlSymmetry" />
 
             <ImageView
                 android:id="@+id/chat_sticker_ib"

@@ -2,6 +2,7 @@ package one.mixin.android.ui.landing
 
 import android.os.Bundle
 import android.view.View
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
@@ -9,10 +10,21 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import net.i2p.crypto.eddsa.EdDSAPrivateKey
-import net.i2p.crypto.eddsa.EdDSAPublicKey
-import one.mixin.android.Constants
+import one.mixin.android.BuildConfig
+import one.mixin.android.Constants.Account.PREF_LOGIN_OR_SIGN_UP
+import one.mixin.android.Constants.Account.PREF_LOGIN_VERIFY
 import one.mixin.android.Constants.Account.PREF_TRIED_UPDATE_KEY
+import one.mixin.android.Constants.DEFAULT_BOTS
+import one.mixin.android.Constants.DEFAULT_CN_BOTS
+import one.mixin.android.Constants.DEVICE_ID
+import one.mixin.android.Constants.MIXIN_ALERT_USER_ID
+import one.mixin.android.Constants.MIXIN_CARD_USER_ID
+import one.mixin.android.Constants.MIXIN_COMMUNITY_USER_ID
+import one.mixin.android.Constants.MIXIN_DISCOURSE_USER_ID
+import one.mixin.android.Constants.MIXIN_REWARD_USER_ID
+import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
+import one.mixin.android.Constants.TEAM_MIXIN_USER_ID
+import one.mixin.android.Constants.TEAM_MIXIN_USER_NAME
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.request.SessionSecretRequest
@@ -21,64 +33,131 @@ import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
 import one.mixin.android.crypto.PrivacyPreference.putIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.putIsSyncSession
 import one.mixin.android.crypto.generateEd25519KeyPair
+import one.mixin.android.databinding.FragmentLoadingBinding
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.getStringDeviceId
 import one.mixin.android.extension.putBoolean
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.InitializeJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.session.decryptPinToken
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.tip.TipActivity
+import one.mixin.android.ui.tip.TipType
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
+import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.isSimplifiedChineseLocale
 import one.mixin.android.util.reportException
+import one.mixin.android.util.viewBinding
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
-
     companion object {
         const val TAG: String = "LoadingFragment"
+        private const val ARGS_SOURCE = "args_source"
 
-        fun newInstance() = LoadingFragment()
+        fun newInstance(source: String? = null) = LoadingFragment().apply {
+            arguments = Bundle().apply {
+                source?.let { putString(ARGS_SOURCE, it) }
+            }
+        }
     }
 
     @Inject
     lateinit var jobManager: MixinJobManager
 
     private val loadingViewModel by viewModels<LoadingViewModel>()
+    private val binding by viewBinding(FragmentLoadingBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
-        MixinApplication.get().onlining.set(true)
+        MixinApplication.get().isOnline.set(true)
+        when (arguments?.getString(ARGS_SOURCE)) {
+            InitializeActivity.SOURCE_SIGN_UP -> AnalyticsTracker.trackSignUpSignalInit()
+            InitializeActivity.SOURCE_LOGIN -> AnalyticsTracker.trackLoginSignalInit()
+        }
+        checkAndLoad()
+    }
+
+    private fun checkAndLoad() =
         lifecycleScope.launch {
+            showLoading()
+
             if (Session.shouldUpdateKey()) {
                 updateRsa2EdDsa()
+
+                if (Session.shouldUpdateKey()) {
+                    showRetry()
+                    return@launch
+                }
             }
 
             if (!getIsLoaded(requireContext(), false)) {
                 load()
+
+                if (!getIsLoaded(requireContext(), false)) {
+                    showRetry()
+                    return@launch
+                }
             }
 
             if (!getIsSyncSession(requireContext(), false)) {
                 syncSession()
-            }
 
-            if (Constants.TEAM_BOT_ID.isNotEmpty()) {
-                jobManager.addJobInBackground(InitializeJob(Constants.TEAM_BOT_ID, Constants.TEAM_BOT_NAME))
+                if (!getIsSyncSession(requireContext(), false)) {
+                    showRetry()
+                    return@launch
+                }
             }
-            MainActivity.show(requireContext())
+            if (Session.hasSafe()) {
+                defaultSharedPreferences.putBoolean(PREF_LOGIN_OR_SIGN_UP, true)
+                defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, true)
+                defaultSharedPreferences.putBoolean(PREF_LOGIN_OR_SIGN_UP, true)
+                MainActivity.show(requireContext())
+            } else {
+                var deviceId = defaultSharedPreferences.getString(DEVICE_ID, null)
+                if (deviceId == null) {
+                    deviceId = requireActivity().getStringDeviceId()
+                }
+                val tipType = if (Session.getAccount()?.hasPin == true) TipType.Upgrade else TipType.Create
+                if (TipType.Create == tipType) {
+                    InitializeActivity.showSetupPin(requireActivity())
+                } else {
+                    TipActivity.show(requireActivity(), tipType, shouldWatch = true)
+                }
+            }
+            initializeBots()
             activity?.finish()
+        }
+
+    private fun initializeBots() {
+        val phone = Session.getAccount()?.phone.orEmpty()
+        val testAccountPrefix = BuildConfig.TEST_ACCOUNT_PREFIX
+        if (testAccountPrefix.isNotBlank() && phone.startsWith(testAccountPrefix)) {
+            return
+        }
+
+        val bots = if (isSimplifiedChineseLocale()) DEFAULT_CN_BOTS else DEFAULT_BOTS
+        bots.forEach { botId ->
+            jobManager.addJobInBackground(InitializeJob(botId))
         }
     }
 
     private suspend fun updateRsa2EdDsa() {
         val sessionKey = generateEd25519KeyPair()
-        val publicKey = sessionKey.public as EdDSAPublicKey
-        val privateKey = sessionKey.private as EdDSAPrivateKey
-        val sessionSecret = publicKey.abyte.base64Encode()
+        val publicKey = sessionKey.publicKey
+        val privateKey = sessionKey.privateKey
+        val sessionSecret = publicKey.base64Encode()
 
         while (true) {
             try {
@@ -88,8 +167,8 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
                         val account = Session.getAccount()
                         account?.let { acc ->
                             acc.pinToken = r.pinToken
-                            val pinToken = decryptPinToken(r.pinToken.decodeBase64(), privateKey) ?: return
-                            Session.storeEd25519Seed(privateKey.seed.base64Encode())
+                            val pinToken = decryptPinToken(r.pinToken.decodeBase64(), privateKey)
+                            Session.storeEd25519Seed(privateKey.base64Encode())
                             Session.storePinToken(pinToken.base64Encode())
                             Session.storeAccount(acc)
                         }
@@ -98,6 +177,7 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
                 } else {
                     val code = response.errorCode
                     reportException("Update EdDSA key", IllegalStateException("errorCode: $code, errorDescription: ${response.errorDescription}"))
+                    Timber.e("errorCode: $code, errorDescription: ${response.errorDescription}")
                     ErrorHandler.handleMixinError(code, response.errorDescription)
 
                     if (code == ErrorHandler.AUTHENTICATION || code == FORBIDDEN) {
@@ -106,7 +186,8 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
                     }
                 }
             } catch (t: Throwable) {
-                reportException("Update EdDSA key", t)
+                reportException("$TAG Update EdDSA key", t)
+                Timber.e(t)
                 ErrorHandler.handleError(t)
             }
 
@@ -121,6 +202,32 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
             putIsSyncSession(requireContext(), true)
         } catch (e: Exception) {
             ErrorHandler.handleError(e)
+            reportException("$TAG syncSession", e)
+            Timber.e(e)
+        }
+    }
+
+    private fun showRetry() {
+        if (viewDestroyed()) return
+
+        count = 2
+        binding.apply {
+            subTitle.isVisible = false
+            pb.isVisible = false
+            retryTv.isVisible = true
+            retryTv.setOnClickListener {
+                checkAndLoad()
+            }
+        }
+    }
+
+    private fun showLoading() {
+        if (viewDestroyed()) return
+
+        binding.apply {
+            subTitle.isVisible = true
+            pb.isVisible = true
+            retryTv.isVisible = false
         }
     }
 
@@ -143,6 +250,8 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
                 }
             } catch (e: Exception) {
                 ErrorHandler.handleError(e)
+                reportException("$TAG pushAsyncSignalKeys", e)
+
                 load()
             }
         }

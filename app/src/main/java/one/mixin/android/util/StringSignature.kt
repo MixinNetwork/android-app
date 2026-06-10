@@ -5,7 +5,6 @@ import java.io.UnsupportedEncodingException
 import java.security.MessageDigest
 
 class StringSignature(private val signature: String?) : Key {
-
     init {
         if (signature == null) {
             throw NullPointerException("Signature cannot be null!")
@@ -42,6 +41,6 @@ class StringSignature(private val signature: String?) : Key {
             "StringSignature{" +
                 "signature='" + signature + '\''.toString() +
                 '}'.toString()
-            )
+        )
     }
 }

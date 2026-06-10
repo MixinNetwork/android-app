@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.util.AttributeSet
+import android.util.TypedValue
 import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -38,10 +39,11 @@ class AvatarsView : ViewGroup {
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
         val ta = context.obtainStyledAttributes(attrs, R.styleable.AvatarsView)
 
-        borderWidth = ta.getDimensionPixelSize(
-            R.styleable.AvatarsView_avatar_border_width,
-            DEFAULT_BORDER_WIDTH
-        )
+        borderWidth =
+            ta.getDimensionPixelSize(
+                R.styleable.AvatarsView_avatar_border_width,
+                DEFAULT_BORDER_WIDTH,
+            )
         borderColor = ta.getColor(R.styleable.AvatarsView_avatar_border_color, DEFAULT_BORDER_COLOR)
         avatarSize =
             ta.getDimensionPixelSize(R.styleable.AvatarsView_avatar_size, DEFAULT_AVATAR_SIZE)
@@ -55,7 +57,10 @@ class AvatarsView : ViewGroup {
         initWithList()
     }
 
-    fun initParams(borderWith: Int, avatarSize: Int) {
+    fun initParams(
+        borderWith: Int,
+        avatarSize: Int,
+    ) {
         this.borderWidth = borderWith.dp
         this.avatarSize = avatarSize.dp
     }
@@ -66,37 +71,47 @@ class AvatarsView : ViewGroup {
         requestLayout()
     }
 
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+    override fun onMeasure(
+        widthMeasureSpec: Int,
+        heightMeasureSpec: Int,
+    ) {
         val parentWidth = avatarSize + (childCount - 1) * avatarSize * ratio
         setMeasuredDimension(
             MeasureSpec.makeMeasureSpec(parentWidth.toInt(), MeasureSpec.EXACTLY),
-            MeasureSpec.makeMeasureSpec(avatarSize, MeasureSpec.EXACTLY)
+            MeasureSpec.makeMeasureSpec(avatarSize, MeasureSpec.EXACTLY),
         )
 
         for (i in 0 until childCount) {
             val c = getChildAt(i)
             c.measure(
                 MeasureSpec.makeMeasureSpec(avatarSize, MeasureSpec.EXACTLY),
-                MeasureSpec.makeMeasureSpec(avatarSize, MeasureSpec.EXACTLY)
+                MeasureSpec.makeMeasureSpec(avatarSize, MeasureSpec.EXACTLY),
             )
         }
     }
 
-    override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
+    override fun onLayout(
+        changed: Boolean,
+        l: Int,
+        t: Int,
+        r: Int,
+        b: Int,
+    ) {
         val offset = avatarSize * ratio
         for (i in 0 until childCount) {
-            val index = if (rtl) {
-                i
-            } else {
-                childCount - i - 1
-            }
+            val index =
+                if (rtl) {
+                    i
+                } else {
+                    childCount - i - 1
+                }
             val c = getChildAt(i)
             val offsetLeft = index * offset
             c.layout(
                 offsetLeft.toInt(),
                 0,
                 (offsetLeft + avatarSize).toInt(),
-                measuredHeight
+                measuredHeight,
             )
         }
     }
@@ -104,18 +119,20 @@ class AvatarsView : ViewGroup {
     private fun isUser(): Boolean = data.isNotEmpty() && data[0] is User
 
     private var overView: OverView? = null
+
     private fun initWithList() {
         removeAllViews()
         overView = null
         val overSize = data.size > MAX_VISIBLE_COUNT
         if (overSize) {
-            val overView = if (isUser()) {
-                getTextView(data.size - MAX_VISIBLE_COUNT + 1)
-            } else {
-                getOverView(context, rtl).apply {
-                    overView = this
+            val overView =
+                if (isUser()) {
+                    getTextView(data.size - MAX_VISIBLE_COUNT + 1)
+                } else {
+                    getOverView(context, rtl).apply {
+                        overView = this
+                    }
                 }
-            }
             addView(overView)
         }
         val takeCount = if (overSize) MAX_VISIBLE_COUNT - 1 else data.size
@@ -123,37 +140,43 @@ class AvatarsView : ViewGroup {
             .take(takeCount)
             .forEachReversedWithIndex { _, t ->
                 if (t is User) {
-                    val avatarView = AvatarView(context).apply {
-                        setBorderWidth(borderWidth)
-                        setBorderColor(borderColor)
-                    }
+                    val avatarView =
+                        AvatarView(context).apply {
+                            setBorderWidth(borderWidth)
+                            setBorderColor(borderColor)
+                        }
                     avatarView.avatarSimple.setCircleBackgroundColorResource(R.color.white)
                     addView(avatarView)
                     avatarView.setInfo(t.fullName, t.avatarUrl, t.userId)
                 } else if (t is String) {
-                    val circleView = CircleImageView(context).apply {
-                        borderWidth = this@AvatarsView.borderWidth
-                        borderColor = this@AvatarsView.borderColor
-                    }
+                    val circleView =
+                        CircleImageView(context).apply {
+                            borderWidth = this@AvatarsView.borderWidth
+                            borderColor = this@AvatarsView.borderColor
+                        }
                     addView(circleView)
-                    circleView.loadImage(t, R.drawable.ic_link_place_holder, true)
+                    circleView.loadImage(t, R.drawable.ic_link_place_holder)
                 }
             }
     }
 
     @SuppressLint("SetTextI18n")
-    private fun getTextView(num: Int) = TextView(context).apply {
-        text = "+$num"
-        setTextColor(resources.getColor(R.color.wallet_pending_text_color, null))
-        setBackgroundResource(R.drawable.bg_multisigs_gray)
-        gravity = Gravity.CENTER
-    }
+    private fun getTextView(num: Int) =
+        TextView(context).apply {
+            text = "+$num"
+            setTextSize(TypedValue.COMPLEX_UNIT_PX, (avatarSize * 0.4f).toFloat())
+            setTextColor(resources.getColor(R.color.wallet_pending_text_color, null))
+            setBackgroundResource(R.drawable.bg_multisigs_gray)
+            gravity = Gravity.CENTER
+        }
 
-    private fun getOverView(context: Context, rtl: Boolean) = OverView(context, rtl)
+    private fun getOverView(
+        context: Context,
+        rtl: Boolean,
+    ) = OverView(context, rtl)
 
     @SuppressLint("ViewConstructor")
     class OverView(context: Context, private var rtl: Boolean) : ViewGroup(context) {
-
         fun setRTL(rtl: Boolean) {
             this.rtl = rtl
             requestLayout()
@@ -164,12 +187,18 @@ class AvatarsView : ViewGroup {
                 addView(
                     ImageView(context).apply {
                         setBackgroundResource(R.drawable.bg_multisigs_gray)
-                    }
+                    },
                 )
             }
         }
 
-        override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
+        override fun onLayout(
+            changed: Boolean,
+            l: Int,
+            t: Int,
+            r: Int,
+            b: Int,
+        ) {
             val offset = measuredWidth / 6
             for (i in 0 until childCount) {
                 if (rtl) {
@@ -177,14 +206,14 @@ class AvatarsView : ViewGroup {
                         0 + offset * i,
                         0,
                         measuredWidth + offset * i,
-                        measuredHeight
+                        measuredHeight,
                     )
                 } else {
                     getChildAt(i).layout(
                         0 - i * offset,
                         0,
                         measuredWidth - i * offset,
-                        measuredHeight
+                        measuredHeight,
                     )
                 }
             }

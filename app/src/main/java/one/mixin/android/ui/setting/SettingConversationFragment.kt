@@ -22,15 +22,19 @@ class SettingConversationFragment : BaseFragment(R.layout.fragment_setting_conve
         const val TAG = "SettingConversationFragment"
         const val CONVERSATION_KEY = "conversation_key"
         const val CONVERSATION_GROUP_KEY = "conversation_group_key"
+
         fun newInstance() = SettingConversationFragment()
     }
 
     private val viewModel by viewModels<SettingConversationViewModel>()
     private val binding by viewBinding(FragmentSettingConversationBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
-        binding.titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
+        binding.titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
         viewModel.initPreferences(requireContext())
             .observe(
                 viewLifecycleOwner,
@@ -38,7 +42,7 @@ class SettingConversationFragment : BaseFragment(R.layout.fragment_setting_conve
                     it?.let {
                         render(it)
                     }
-                }
+                },
             )
         viewModel.initGroupPreferences(requireContext())
             .observe(
@@ -47,7 +51,7 @@ class SettingConversationFragment : BaseFragment(R.layout.fragment_setting_conve
                     it?.let {
                         renderGroup(it)
                     }
-                }
+                },
             )
     }
 
@@ -85,7 +89,7 @@ class SettingConversationFragment : BaseFragment(R.layout.fragment_setting_conve
                             },
                             doAfterNetworkSuccess = {
                                 myContactsPb.visibility = View.GONE
-                            }
+                            },
                         )
                     }
                 }
@@ -121,7 +125,7 @@ class SettingConversationFragment : BaseFragment(R.layout.fragment_setting_conve
                             },
                             doAfterNetworkSuccess = {
                                 everybodyPb.visibility = View.GONE
-                            }
+                            },
                         )
                     }
                 }
@@ -163,7 +167,7 @@ class SettingConversationFragment : BaseFragment(R.layout.fragment_setting_conve
                             },
                             doAfterNetworkSuccess = {
                                 myContactsGroupPb.visibility = View.GONE
-                            }
+                            },
                         )
                     }
                 }
@@ -199,7 +203,7 @@ class SettingConversationFragment : BaseFragment(R.layout.fragment_setting_conve
                             },
                             doAfterNetworkSuccess = {
                                 everybodyGroupPb.visibility = View.GONE
-                            }
+                            },
                         )
                     }
                 }

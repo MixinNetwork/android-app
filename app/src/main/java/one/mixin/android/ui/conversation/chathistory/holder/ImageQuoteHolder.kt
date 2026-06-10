@@ -4,18 +4,15 @@ import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatImageQuoteBinding
-import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadLongImageMark
 import one.mixin.android.extension.round
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.ChatHistoryAdapter
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageStatus
-import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.absolutePath
 import kotlin.math.min
 
@@ -28,7 +25,11 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
         binding.chatTime.round(radius)
     }
 
-    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+    override fun chatLayout(
+        isMe: Boolean,
+        isLast: Boolean,
+        isBlink: Boolean,
+    ) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
             (binding.chatMsgLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
@@ -36,13 +37,13 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_reply_me_last,
-                    R.drawable.chat_bubble_reply_me_last_night
+                    R.drawable.chat_bubble_reply_me_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_reply_me,
-                    R.drawable.chat_bubble_reply_me_night
+                    R.drawable.chat_bubble_reply_me_night,
                 )
             }
         } else {
@@ -51,13 +52,13 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_reply_other_last,
-                    R.drawable.chat_bubble_reply_other_last_night
+                    R.drawable.chat_bubble_reply_other_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_reply_other,
-                    R.drawable.chat_bubble_reply_other_night
+                    R.drawable.chat_bubble_reply_other_night,
                 )
             }
         }
@@ -69,7 +70,7 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
         messageItem: ChatHistoryMessageItem,
         isLast: Boolean,
         isFirst: Boolean = false,
-        onItemListener: ChatHistoryAdapter.OnItemListener
+        onItemListener: ChatHistoryAdapter.OnItemListener,
     ) {
         super.bind(messageItem)
         this.onItemListener = onItemListener
@@ -102,7 +103,9 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
                 MediaStatus.CANCELED.name -> {
                     binding.chatWarning.visibility = View.GONE
                     binding.progress.visibility = View.VISIBLE
-                    if (isMe && messageItem.mediaUrl != null) {
+                    if (messageItem.transcriptId != null && messageItem.mediaUrl != null) {
+                        binding.progress.enableUpload()
+                    } else if (messageItem.mediaUrl != null && isMe) {
                         binding.progress.enableUpload()
                     } else {
                         binding.progress.enableDownload()
@@ -139,24 +142,11 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
         val isMe = messageItem.userId == Session.getAccountId()
         if (isFirst && !isMe) {
             binding.chatName.visibility = View.VISIBLE
-            binding.chatName.text = messageItem.userFullName
-            if (messageItem.appId != null) {
-                binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-                binding.chatName.compoundDrawablePadding = 3.dp
-            } else {
-                binding.chatName.setCompoundDrawables(null, null, null, null)
-            }
+            binding.chatName.setMessageName(messageItem)
             binding.chatName.setTextColor(getColorById(messageItem.userId))
             binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
         } else {
             binding.chatName.visibility = View.GONE
-        }
-
-        if (messageItem.appId != null) {
-            binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-            binding.chatName.compoundDrawablePadding = 3.dp
-        } else {
-            binding.chatName.setCompoundDrawables(null, null, null, null)
         }
 
         binding.chatTime.load(
@@ -166,10 +156,10 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
             false,
             isRepresentative = false,
             isSecret = false,
-            isWhite = true
+            isWhite = true,
         )
 
-        binding.chatQuote.bind(GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java))
+        binding.chatQuote.bind(fromJsonQuoteMessage(messageItem.quoteContent))
 
         binding.chatQuote.setOnClickListener {
             onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)

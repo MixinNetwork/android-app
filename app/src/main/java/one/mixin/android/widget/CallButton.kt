@@ -10,7 +10,6 @@ import one.mixin.android.databinding.ViewCallButtonBinding
 import one.mixin.android.extension.backgroundResource
 
 class CallButton(context: Context, attr: AttributeSet) : LinearLayout(context, attr), Checkable {
-
     private var checkable: Boolean = false
     private var checked: Boolean = true
     private var bgChecked: Int = 0
@@ -82,7 +81,10 @@ class CallButton(context: Context, attr: AttributeSet) : LinearLayout(context, a
     private var listener: OnCheckedChangeListener? = null
 
     interface OnCheckedChangeListener {
-        fun onCheckedChanged(id: Int, checked: Boolean)
+        fun onCheckedChanged(
+            id: Int,
+            checked: Boolean,
+        )
     }
 
     fun setOnCheckedChangeListener(listener: OnCheckedChangeListener?) {

@@ -1,16 +1,23 @@
 package one.mixin.android.widget
 
 import android.content.Context
+import android.graphics.Color
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.style.RelativeSizeSpan
 import android.util.AttributeSet
 import android.view.LayoutInflater
-import android.view.View
 import android.widget.RelativeLayout
+import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewTitleBinding
+import one.mixin.android.extension.dp
+import one.mixin.android.vo.User
+import one.mixin.android.widget.linktext.RoundBackgroundColorSpan
 
 class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context, attrs) {
-
     private val binding: ViewTitleBinding =
         ViewTitleBinding.inflate(LayoutInflater.from(context), this, true)
 
@@ -18,6 +25,7 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
     val leftIb = binding.leftIb
     val rightIb = binding.rightIb
     val rightTv = binding.rightTv
+    val rightExtraIb = binding.rightExtraIb
     val rightAnimator = binding.rightAnimator
     val avatarIv = binding.avatarIv
     val titleContainer = binding.titleContainer
@@ -25,7 +33,7 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
     init {
         val ta = context.obtainStyledAttributes(attrs, R.styleable.TitleView)
         if (ta.hasValue(R.styleable.TitleView_titleText)) {
-            binding.titleTv.text = ta.getString(R.styleable.TitleView_titleText)
+            binding.titleTv.setTextOnly(ta.getString(R.styleable.TitleView_titleText))
         }
         if (ta.hasValue(R.styleable.TitleView_rightIcon)) {
             binding.rightIb.setImageResource(ta.getResourceId(R.styleable.TitleView_rightIcon, 0))
@@ -38,8 +46,8 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
             binding.rightTv.setTextColor(
                 ta.getColor(
                     R.styleable.TitleView_rightTextColor,
-                    ContextCompat.getColor(context, R.color.text_gray)
-                )
+                    ContextCompat.getColor(context, R.color.text_gray),
+                ),
             )
             binding.rightAnimator.displayedChild = POS_TEXT
         }
@@ -50,16 +58,16 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
             binding.titleTv.setTextColor(
                 ta.getColor(
                     R.styleable.TitleView_titleColor,
-                    ContextCompat.getColor(context, android.R.color.black)
-                )
+                    ContextCompat.getColor(context, android.R.color.black),
+                ),
             )
         }
         if (ta.hasValue(R.styleable.TitleView_android_background)) {
             setBackgroundResource(
                 ta.getResourceId(
                     R.styleable.TitleView_android_background,
-                    ContextCompat.getColor(context, android.R.color.white)
-                )
+                    ContextCompat.getColor(context, android.R.color.white),
+                ),
             )
         } else {
             setBackgroundResource(android.R.color.white)
@@ -68,24 +76,136 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
             binding.divider.visibility = if (ta.getBoolean(R.styleable.TitleView_need_divider, false)) VISIBLE else GONE
         }
         if (ta.hasValue(R.styleable.TitleView_rightIcon) || ta.hasValue(R.styleable.TitleView_rightText)) {
-            binding.rightAnimator.visibility = View.VISIBLE
+            binding.rightAnimator.visibility = VISIBLE
         } else {
-            binding.rightAnimator.visibility = View.GONE
+            binding.rightAnimator.visibility = GONE
         }
         ta.recycle()
     }
 
-    fun setSubTitle(first: String, second: String) {
-        binding.titleTv.text = first
+    fun setSubTitle(
+        first: String,
+        second: String,
+    ) {
+        binding.titleTv.setTextOnly(first)
         if (second.isBlank()) {
-            binding.subTitleTv.visibility = View.GONE
+            binding.subTitleTv.visibility = GONE
         } else {
-            binding.subTitleTv.visibility = View.VISIBLE
-            binding.subTitleTv.text = second
+            binding.subTitleTv.visibility = VISIBLE
+            binding.subTitleTv.setTextOnly(second)
         }
     }
 
+    fun setSubTitle(
+        first: String,
+        second: String,
+        @DrawableRes icon: Int
+    ) {
+        binding.titleTv.setTextOnly(first)
+        if (second.isBlank()) {
+            binding.subTitleTv.visibility = GONE
+        } else {
+            binding.subTitleTv.visibility = VISIBLE
+            binding.subTitleTv.setTextOnly(second)
+            val drawable = ContextCompat.getDrawable(context, icon)
+            drawable?.setBounds(0, 0, 12.dp, 12.dp)
+            binding.subTitleTv.textView.compoundDrawablePadding = 4.dp
+            binding.subTitleTv.textView.setCompoundDrawablesRelative(null, null, drawable, null)
+        }
+    }
+
+    fun setSubTitle(
+        first: String,
+        second: User?,
+    ) {
+        binding.titleTv.setTextOnly(first)
+        if (second == null) {
+            binding.subTitleTv.visibility = GONE
+            binding.subTitleAvatar.visibility = GONE
+        } else {
+            binding.subTitleTv.visibility = VISIBLE
+            binding.subTitleAvatar.visibility = VISIBLE
+            binding.subTitleTv.setName(second)
+            binding.subTitleAvatar.setInfo(second.fullName, second.avatarUrl, second.userId)
+        }
+    }
+
+    fun setSubTitle(
+        title: String,
+        users: List<User>,
+        callback: () -> Unit,
+    ) {
+        binding.titleTv.setTextOnly(title)
+        if (users.isEmpty()) {
+            binding.subTitleTv.visibility = GONE
+            binding.subTitleAvatar.visibility = GONE
+        } else if (users.size == 1) {
+            val user = users.first()
+            binding.subTitleTv.visibility = VISIBLE
+            binding.subTitleAvatar.visibility = VISIBLE
+            binding.subTitleTv.setName(user)
+            binding.subTitleAvatar.setInfo(user.fullName, user.avatarUrl, user.userId)
+        } else {
+            binding.subTitleTv.visibility = GONE
+            binding.subTitleAvatar.visibility = GONE
+            binding.receiversView.visibility = VISIBLE
+            binding.receiversView.addList(users)
+            binding.receiversView.setOnClickListener {
+                callback()
+            }
+        }
+    }
+
+    fun setLabel(
+        title: String,
+        label: String?,
+        content: String,
+        index: Int = 0,
+    ) {
+        binding.titleTv.setTextOnly(title)
+        if (index != 0) {
+            binding.subTitleTv.isVisible = true
+            if (index == 1) {
+                setSubTitle(title, label ?: "", R.drawable.ic_wallet_privacy)
+            } else if (index == 2) {
+                setSubTitle(title, label ?: "", R.drawable.ic_wallet_safe)
+            } else {
+                setSubTitle(title, label ?: "")
+            }
+        } else if (label != null) {
+            binding.subTitleTv.isVisible = false
+            binding.labelTitleTv.isVisible = true
+            binding.labelTitleTv.text = label
+        } else {
+            binding.subTitleTv.isVisible = true
+            binding.subTitleTv.setTextOnly(content)
+        }
+    }
+
+    fun setUser(user: User, onClickListener: OnClickListener) {
+        binding.titleTv.setName(user)
+        binding.titleTv.setOnIconClickListener(onClickListener)
+        binding.subTitleTv.visibility = VISIBLE
+        binding.subTitleTv.setTextOnly(user.identityNumber)
+    }
+
+    fun initProgress(
+        max: Int,
+        progress: Int,
+    ) {
+        binding.pb.max = max
+        binding.pb.indicatorSize = 24.dp
+        binding.pb.progress = progress
+        binding.rightAnimator.isVisible = true
+        binding.rightAnimator.displayedChild = POS_PROGRESS
+    }
+
+    fun setProgress(index: Int) {
+        binding.pb.setProgress(index, true)
+    }
+
     companion object {
-        val POS_TEXT = 1
+        const val POS_TEXT = 1
+        const val POS_PROGRESS = 2
     }
 }

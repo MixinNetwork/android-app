@@ -1,5 +1,6 @@
 package one.mixin.android.ui.group.adapter
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,12 +11,10 @@ import one.mixin.android.databinding.ItemContactHeaderBinding
 import one.mixin.android.databinding.ItemGroupFriendBinding
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.vo.User
-import one.mixin.android.vo.showVerifiedOrBot
 
 class GroupFriendAdapter :
     RecyclerView.Adapter<GroupFriendAdapter.FriendViewHolder>(),
     StickyRecyclerHeadersAdapter<GroupFriendAdapter.HeaderViewHolder> {
-
     private var data: List<User>? = null
     private var mShowHeader: Boolean = false
     private var mListener: GroupFriendListener? = null
@@ -23,7 +22,11 @@ class GroupFriendAdapter :
     var alreadyUserIds: List<String>? = null
     var isAdd: Boolean = true
 
-    fun setData(data: List<User>?, showHeader: Boolean) {
+    @SuppressLint("NotifyDataSetChanged")
+    fun setData(
+        data: List<User>?,
+        showHeader: Boolean,
+    ) {
         this.data = data
         mShowHeader = showHeader
         data?.filterNot { mCheckedMap.containsKey(it.identityNumber) }
@@ -31,10 +34,12 @@ class GroupFriendAdapter :
         notifyDataSetChanged()
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     fun clearUser(user: User) {
         mCheckedMap[user.identityNumber] = false
         notifyDataSetChanged()
     }
+
     override fun getItemCount(): Int = data?.size ?: 0
 
     override fun getHeaderId(position: Int): Long {
@@ -45,16 +50,19 @@ class GroupFriendAdapter :
             {
                 val u = it[position]
                 if (u.fullName != null) {
-                    if (u.fullName.isEmpty()) ' '.toLong() else u.fullName[0].toLong()
+                    if (u.fullName.isEmpty()) ' '.code.toLong() else u.fullName[0].code.toLong()
                 } else {
                     -1L
                 }
             },
-            -1L
+            -1L,
         )
     }
 
-    override fun onBindHeaderViewHolder(holder: HeaderViewHolder, position: Int) {
+    override fun onBindHeaderViewHolder(
+        holder: HeaderViewHolder,
+        position: Int,
+    ) {
         if (data == null || data!!.isEmpty()) {
             return
         }
@@ -66,7 +74,10 @@ class GroupFriendAdapter :
         return HeaderViewHolder(ItemContactHeaderBinding.inflate(LayoutInflater.from(parent.context), parent, false))
     }
 
-    override fun onBindViewHolder(holder: FriendViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: FriendViewHolder,
+        position: Int,
+    ) {
         if (data == null || data!!.isEmpty()) {
             return
         }
@@ -74,7 +85,10 @@ class GroupFriendAdapter :
         holder.bind(user, mListener, mCheckedMap, alreadyUserIds, isAdd)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FriendViewHolder =
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): FriendViewHolder =
         FriendViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_group_friend, parent, false))
 
     fun setGroupFriendListener(listener: GroupFriendListener) {
@@ -83,21 +97,22 @@ class GroupFriendAdapter :
 
     class FriendViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val binding = ItemGroupFriendBinding.bind(itemView)
+
         fun bind(
             user: User,
             listener: GroupFriendListener?,
             checkedMap: HashMap<String, Boolean>,
             alreadyUserIds: List<String>?,
-            isAdd: Boolean
+            isAdd: Boolean,
         ) {
-            binding.name.text = user.fullName
+            binding.normal.setName(user)
+            binding.mixinIdTv.text = user.identityNumber
             binding.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
             if (isAdd) {
                 alreadyUserIds?.let {
                     if (it.contains(user.userId)) {
                         binding.cb.setButtonDrawable(R.drawable.ic_round_gray)
                         itemView.isEnabled = false
-                        user.showVerifiedOrBot(binding.verifiedIv, binding.botIv)
                         return
                     } else {
                         binding.cb.setButtonDrawable(R.drawable.cb_add_member)
@@ -108,7 +123,6 @@ class GroupFriendAdapter :
             if (checkedMap.containsKey(user.identityNumber)) {
                 binding.cb.isChecked = checkedMap[user.identityNumber]!!
             }
-            user.showVerifiedOrBot(binding.verifiedIv, binding.botIv)
             binding.cb.isClickable = false
             itemView.setOnClickListener {
                 binding.cb.isChecked = !binding.cb.isChecked
@@ -117,14 +131,22 @@ class GroupFriendAdapter :
             }
         }
     }
+
     class HeaderViewHolder(val binding: ItemContactHeaderBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(user: User) {
-            binding.header.text = if (user.fullName != null && user.fullName.isNotEmpty())
-                user.fullName[0].toString() else ""
+            binding.header.text =
+                if (!user.fullName.isNullOrEmpty()) {
+                    user.fullName[0].toString()
+                } else {
+                    ""
+                }
         }
     }
 
     interface GroupFriendListener {
-        fun onItemClick(user: User, checked: Boolean)
+        fun onItemClick(
+            user: User,
+            checked: Boolean,
+        )
     }
 }

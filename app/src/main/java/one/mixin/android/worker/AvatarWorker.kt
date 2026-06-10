@@ -17,6 +17,7 @@ abstract class AvatarWorker(context: Context, parameters: WorkerParameters) : Ba
 
     @Inject
     lateinit var participantDao: ParticipantDao
+
     @Inject
     lateinit var conversationDao: ConversationDao
 

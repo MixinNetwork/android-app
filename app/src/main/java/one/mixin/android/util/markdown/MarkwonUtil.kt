@@ -32,6 +32,7 @@ import one.mixin.android.extension.isActivityNotDestroyed
 import one.mixin.android.extension.isMixinUrl
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.postOptimize
+import one.mixin.android.util.getLocalString
 import one.mixin.android.util.markdown.table.TableEntryPlugin
 import one.mixin.android.widget.markdown.SimplePlugin
 import org.commonmark.node.FencedCodeBlock
@@ -40,7 +41,6 @@ import org.commonmark.node.SoftLineBreak
 
 class MarkwonUtil {
     companion object {
-
         val simpleMarkwon by lazy {
             Markwon.builderNoCore(MixinApplication.appContext).usePlugin(SimplePlugin()).build()
         }
@@ -48,13 +48,16 @@ class MarkwonUtil {
         fun getMarkwon(
             context: Activity,
             mixinLinkResolver: (String) -> Unit,
-            linkResolver: (String) -> Unit
+            linkResolver: (String) -> Unit,
         ): Markwon {
             val isNightMode = context.isNightMode()
             val prism4j = Prism4j(LanguageGrammerLocator())
-            val prism4jTheme = if (isNightMode) {
-                Prism4jThemeDarkula.create()
-            } else Prism4jThemeDefault.create()
+            val prism4jTheme =
+                if (isNightMode) {
+                    Prism4jThemeDarkula.create()
+                } else {
+                    Prism4jThemeDefault.create()
+                }
             return Markwon.builder(context)
                 .usePlugin(CorePlugin.create())
                 .usePlugin(HtmlPlugin.create())
@@ -74,8 +77,8 @@ class MarkwonUtil {
                                         1.18F,
                                         1.1F,
                                         1.0F,
-                                        0.9F
-                                    )
+                                        0.9F,
+                                    ),
                                 )
                         }
 
@@ -87,8 +90,8 @@ class MarkwonUtil {
                                         RemoveUnderlineSpan(),
                                         spansFactory.getSpans(
                                             configuration,
-                                            props
-                                        )
+                                            props,
+                                        ),
                                     )
                                 }
                             }
@@ -96,12 +99,13 @@ class MarkwonUtil {
 
                         override fun configureVisitor(builder: MarkwonVisitor.Builder) {
                             builder.on(FencedCodeBlock::class.java) { visitor: MarkwonVisitor, fencedCodeBlock: FencedCodeBlock ->
-                                val code = visitor.configuration()
-                                    .syntaxHighlight()
-                                    .highlight(
-                                        fencedCodeBlock.info,
-                                        fencedCodeBlock.literal.trim { it <= ' ' }
-                                    )
+                                val code =
+                                    visitor.configuration()
+                                        .syntaxHighlight()
+                                        .highlight(
+                                            fencedCodeBlock.info,
+                                            fencedCodeBlock.literal.trim { it <= ' ' },
+                                        )
                                 visitor.builder().append(code)
                             }
                             builder.on(SoftLineBreak::class.java) { visitor: MarkwonVisitor, _: SoftLineBreak ->
@@ -112,26 +116,32 @@ class MarkwonUtil {
                         override fun configureConfiguration(builder: MarkwonConfiguration.Builder) {
                             builder.linkResolver(
                                 object : LinkResolverDef() {
-                                    override fun resolve(view: View, link: String) {
+                                    override fun resolve(
+                                        view: View,
+                                        link: String,
+                                    ) {
                                         if (link.isMixinUrl()) {
                                             mixinLinkResolver.invoke(link)
                                         } else {
                                             linkResolver.invoke(link)
                                         }
                                     }
-                                }
+                                },
                             )
                         }
-                    }
+                    },
                 ).build()
         }
 
         fun getMiniMarkwon(context: Activity): Markwon {
             val isNightMode = context.isNightMode()
             val prism4j = Prism4j(LanguageGrammerLocator())
-            val prism4jTheme = if (isNightMode) {
-                Prism4jThemeDarkula.create()
-            } else Prism4jThemeDefault.create()
+            val prism4jTheme =
+                if (isNightMode) {
+                    Prism4jThemeDarkula.create()
+                } else {
+                    Prism4jThemeDefault.create()
+                }
             return Markwon.builder(context)
                 .usePlugin(CorePlugin.create())
                 .usePlugin(HtmlPlugin.create())
@@ -153,8 +163,8 @@ class MarkwonUtil {
                                         1.18F,
                                         1.1F,
                                         1.0F,
-                                        0.9F
-                                    )
+                                        0.9F,
+                                    ),
                                 )
                         }
 
@@ -170,8 +180,8 @@ class MarkwonUtil {
                                         RemoveUnderlineSpan(),
                                         spansFactory.getSpans(
                                             configuration,
-                                            props
-                                        )
+                                            props,
+                                        ),
                                     )
                                 }
                             }
@@ -179,19 +189,20 @@ class MarkwonUtil {
 
                         override fun configureVisitor(builder: MarkwonVisitor.Builder) {
                             builder.on(FencedCodeBlock::class.java) { visitor: MarkwonVisitor, fencedCodeBlock: FencedCodeBlock ->
-                                val code = visitor.configuration()
-                                    .syntaxHighlight()
-                                    .highlight(
-                                        fencedCodeBlock.info,
-                                        fencedCodeBlock.literal.trim { it <= ' ' }
-                                    )
+                                val code =
+                                    visitor.configuration()
+                                        .syntaxHighlight()
+                                        .highlight(
+                                            fencedCodeBlock.info,
+                                            fencedCodeBlock.literal.trim { it <= ' ' },
+                                        )
                                 visitor.builder().append(code)
                             }
                             builder.on(SoftLineBreak::class.java) { visitor: MarkwonVisitor, _: SoftLineBreak ->
                                 visitor.forceNewLine()
                             }
                         }
-                    }
+                    },
                 )
                 .build()
         }
@@ -201,8 +212,7 @@ class MarkwonUtil {
         }
 
         fun parseContent(content: String?): String {
-            content
-                ?: return MixinApplication.appContext.getString(R.string.conversation_status_post)
+            content ?: return getLocalString(MixinApplication.appContext, R.string.content_post)
             return markwon.toMarkdown(content.postOptimize()).toString()
         }
 
@@ -218,7 +228,7 @@ class MarkwonUtil {
                     override fun load(drawable: AsyncDrawable): RequestBuilder<Drawable> {
                         return Glide.with(context).load(drawable.destination)
                     }
-                }
+                },
             )
     }
 }

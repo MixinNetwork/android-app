@@ -7,8 +7,10 @@ import one.mixin.android.job.BlazeMessageService
 import one.mixin.android.job.BlazeMessageService.Companion.ACTION_TO_BACKGROUND
 
 class ExitBroadcastReceiver : BroadcastReceiver() {
-
-    override fun onReceive(context: Context, intent: Intent?) {
+    override fun onReceive(
+        context: Context,
+        intent: Intent?,
+    ) {
         if (intent == null) return
 
         if (intent.action == ACTION_TO_BACKGROUND) {

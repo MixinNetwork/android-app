@@ -5,17 +5,17 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.RenderEffect
 import android.graphics.Shader
-import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
-import android.view.View
+import androidx.core.graphics.drawable.toDrawable
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityWebBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.blurBitmap
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.isDarkColor
 import one.mixin.android.extension.isNightMode
-import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.extension.openCustomerServiceIfMatched
 import one.mixin.android.extension.supportsS
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
@@ -27,7 +27,6 @@ import one.mixin.android.widget.SixLayout
 
 @AndroidEntryPoint
 class WebActivity : BaseActivity() {
-
     companion object {
         fun show(context: Context) {
             context.startActivity(
@@ -36,7 +35,7 @@ class WebActivity : BaseActivity() {
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     }
                     addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                }
+                },
             )
         }
 
@@ -45,8 +44,13 @@ class WebActivity : BaseActivity() {
             url: String,
             conversationId: String?,
             app: App? = null,
-            appCard: AppCardData? = null
+            appCard: AppCardData? = null,
+            saveName: Boolean? = null,
+            fixedTitle: String? = null
         ) {
+            if (context.openCustomerServiceIfMatched(url)) {
+                return
+            }
             context.startActivity(
                 Intent(context, WebActivity::class.java).apply {
                     if (context !is Activity) {
@@ -60,13 +64,15 @@ class WebActivity : BaseActivity() {
                                 WebFragment.CONVERSATION_ID,
                                 conversationId ?: app?.let {
                                     generateConversationId(Session.getAccountId()!!, it.appId)
-                                }
+                                },
                             )
                             putParcelable(WebFragment.ARGS_APP, app)
                             putParcelable(WebFragment.ARGS_APP_CARD, appCard)
-                        }
+                            putBoolean(WebFragment.ARGS_SAVE_NAME, saveName ?: false)
+                            putString(WebFragment.ARGS_FIXED_TITLE, fixedTitle)
+                        },
                     )
-                }
+                },
             )
         }
     }
@@ -76,6 +82,7 @@ class WebActivity : BaseActivity() {
     override fun getDefaultThemeId(): Int = R.style.AppTheme_Blur
 
     private lateinit var binding: ActivityWebBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         if (intent.extras != null) {
             overridePendingTransition(R.anim.slide_in_bottom, R.anim.stay)
@@ -83,34 +90,41 @@ class WebActivity : BaseActivity() {
             overridePendingTransition(R.anim.fade_in, R.anim.stay)
         }
         super.onCreate(savedInstanceState)
+        SystemUIManager.setSafePaddingOnce(window = window, color = colorFromAttribute(R.attr.bg_white), R.id.container)
         binding = ActivityWebBinding.inflate(layoutInflater)
         setContentView(binding.root)
         getScreenshot()?.let {
             supportsS({
-                binding.background.background = BitmapDrawable(resources, it)
+                binding.background.background = it.toDrawable(resources)
                 binding.background.setRenderEffect(RenderEffect.createBlurEffect(10f, 10f, Shader.TileMode.MIRROR))
             }, {
-                binding.container.background = BitmapDrawable(resources, it.blurBitmap(25))
+                binding.container.background = it.blurBitmap(25).toDrawable(resources)
             })
         }
         binding.container.setOnClickListener {
             onBackPressed()
         }
 
-        binding.six.setOnCloseListener(object : SixLayout.OnCloseListener {
-            override fun onClose(index: Int) {
-                releaseClip(index)
-                binding.six.loadData(clips, loadViewAction)
-            }
-        })
+        binding.six.setOnCloseListener(
+            object : SixLayout.OnCloseListener {
+                override fun onClose(index: Int) {
+                    releaseClip(index)
+                    supportFragmentManager.findFragmentByTag(WebFragment.TAG)?.run {
+                        val fragment = (this as WebFragment)
+                        fragment.resetIndex(index)
+                    }
+                    binding.six.loadData(clips, loadViewAction)
+                }
+            },
+        )
 
         binding.clear.setOnClickListener {
             alertDialogBuilder()
-                .setMessage(getString(R.string.web_delete_tip))
-                .setNegativeButton(R.string.cancel) { dialog, _ ->
+                .setMessage(getString(R.string.Remove_all_floats))
+                .setNegativeButton(R.string.Cancel) { dialog, _ ->
                     dialog.dismiss()
                 }
-                .setPositiveButton(R.string.confirm) { _, _ ->
+                .setPositiveButton(R.string.Confirm) { _, _ ->
                     releaseAll()
                     onBackPressed()
                 }
@@ -123,40 +137,22 @@ class WebActivity : BaseActivity() {
         handleExtras(intent)
     }
 
-    override fun onResume() {
-        super.onResume()
-        supportFragmentManager.findFragmentByTag(WebFragment.TAG).run {
-            if (this != null && this.isVisible) {
-                showClip()
-            }
-        }
-    }
-
     override fun onBackPressed() {
         if (!isExpand) {
-            supportFragmentManager.findFragmentByTag(WebFragment.TAG).notNullWithElse(
-                {
-                    showClip()
-                    isExpand = true
-                    supportFragmentManager.beginTransaction().show(it).commit()
-                    if (it is WebFragment) {
-                        val dark = isDarkColor(it.titleColor)
-                        window.statusBarColor = it.titleColor
-                        if (dark) {
-                            window.decorView.systemUiVisibility =
-                                window.decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
-                        } else {
-                            window.decorView.systemUiVisibility =
-                                window.decorView.systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-                        }
-                    }
-                },
-                {
-                    super.onBackPressed()
+            val f = supportFragmentManager.findFragmentByTag(WebFragment.TAG)
+            if (f != null) {
+                showClip()
+                isExpand = true
+                supportFragmentManager.beginTransaction().show(f).commit()
+                if (f is WebFragment) {
+                    val isDark: Boolean = isDarkColor(f.titleColor)
+                    SystemUIManager.lightUI(window, !isDark)
                 }
-            )
+            } else {
+                onBackPressedDispatcher.onBackPressed()
+            }
         } else {
-            super.onBackPressed()
+            onBackPressedDispatcher.onBackPressed()
         }
     }
 
@@ -186,50 +182,35 @@ class WebActivity : BaseActivity() {
         extras.putParcelable(WebFragment.ARGS_APP, clip.app)
         clip.shareable?.let { extras.putBoolean(WebFragment.ARGS_SHAREABLE, it) }
         isExpand = true
-
-        window.statusBarColor = clip.titleColor.apply {
-            val dark = isDarkColor(this)
-            if (dark) {
-                window.decorView.systemUiVisibility =
-                    window.decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
-            } else {
-                window.decorView.systemUiVisibility =
-                    window.decorView.systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-            }
+        val safeColor: Int = clip.titleColor.apply {
+            val isDark: Boolean = isDarkColor(this)
+            SystemUIManager.lightUI(window, !isDark)
         }
         releaseWeb()
         supportFragmentManager.beginTransaction().add(
             R.id.container,
             WebFragment.newInstance(extras),
-            WebFragment.TAG
+            WebFragment.TAG,
         ).commit()
     }
 
     private fun handleExtras(intent: Intent) {
         binding.six.loadData(clips, loadViewAction)
-        intent.extras.notNullWithElse(
-            { extras ->
-                isExpand = true
-                releaseWeb()
-                supportFragmentManager.beginTransaction().add(
-                    R.id.container,
-                    WebFragment.newInstance(extras),
-                    WebFragment.TAG
-                ).commit()
-            },
-            {
-                isExpand = false
-                FloatingWebClip.getInstance(this.isNightMode()).hide()
-                window.decorView.systemUiVisibility =
-                    window.decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
-                if (isNightMode()) {
-                    SystemUIManager.lightUI(window, false)
-                } else {
-                    SystemUIManager.lightUI(window, true)
-                }
-                hideWeb()
-            }
-        )
+        val extras = intent.extras
+        if (extras != null) {
+            isExpand = true
+            releaseWeb()
+            supportFragmentManager.beginTransaction().add(
+                R.id.container,
+                WebFragment.newInstance(extras),
+                WebFragment.TAG,
+            ).commit()
+        } else {
+            isExpand = false
+            FloatingWebClip.getInstance(this.isNightMode()).hide()
+            SystemUIManager.lightUI(window, !isNightMode())
+            hideWeb()
+        }
     }
 
     override fun onNewIntent(intent: Intent) {

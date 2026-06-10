@@ -10,15 +10,34 @@ data class SearchMessageDetailItem(
     val mediaName: String?,
     val userId: String,
     val userFullName: String?,
-    val userAvatarUrl: String?
+    val userAvatarUrl: String?,
+    val userIdentityNumber: String?,
+    val appId: String?,
+    val isVerified: Boolean,
+    val membership: Membership?
 ) : ICategory {
-    companion object {
-        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<SearchMessageDetailItem>() {
-            override fun areItemsTheSame(oldItem: SearchMessageDetailItem, newItem: SearchMessageDetailItem) =
-                oldItem.messageId == newItem.messageId
+    fun isMembership(): Boolean {
+        return membership?.isMembership() == true
+    }
 
-            override fun areContentsTheSame(oldItem: SearchMessageDetailItem, newItem: SearchMessageDetailItem) =
-                oldItem == newItem
-        }
+    fun isProsperity(): Boolean {
+        return membership?.isProsperity() == true
+    }
+
+    companion object {
+        val DIFF_CALLBACK =
+            object : DiffUtil.ItemCallback<SearchMessageDetailItem>() {
+                override fun areItemsTheSame(
+                    oldItem: SearchMessageDetailItem,
+                    newItem: SearchMessageDetailItem,
+                ) =
+                    oldItem.messageId == newItem.messageId
+
+                override fun areContentsTheSame(
+                    oldItem: SearchMessageDetailItem,
+                    newItem: SearchMessageDetailItem,
+                ) =
+                    oldItem == newItem
+            }
     }
 }

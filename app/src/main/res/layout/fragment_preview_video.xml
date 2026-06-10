@@ -47,7 +47,7 @@
             android:textSize="18sp" />
     </FrameLayout>
 
-    <one.mixin.android.widget.VideoTimelineView
+    <one.mixin.android.widget.VideoTimelinePlayView
         android:id="@+id/time"
         android:layout_width="match_parent"
         android:layout_height="72dp"

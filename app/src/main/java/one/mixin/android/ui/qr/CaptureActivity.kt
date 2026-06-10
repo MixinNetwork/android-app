@@ -9,7 +9,6 @@ import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.result.contract.ActivityResultContract
-import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
@@ -19,10 +18,10 @@ import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.conversation.ConversationActivity.Companion.ARGS_SHORTCUT
 import one.mixin.android.util.isCameraCanUse
+import one.mixin.android.util.rxpermission.RxPermissions
 
 @AndroidEntryPoint
 class CaptureActivity : BlazeBaseActivity() {
-
     override fun getDefaultThemeId(): Int {
         return R.style.AppTheme_Capture
     }
@@ -83,13 +82,19 @@ class CaptureActivity : BlazeBaseActivity() {
     }
 
     class CaptureContract : ActivityResultContract<Pair<String, Boolean>, Intent?>() {
-        override fun createIntent(context: Context, input: Pair<String, Boolean>): Intent {
+        override fun createIntent(
+            context: Context,
+            input: Pair<String, Boolean>,
+        ): Intent {
             return Intent(context, CaptureActivity::class.java).apply {
                 putExtra(input.first, input.second)
             }
         }
 
-        override fun parseResult(resultCode: Int, intent: Intent?): Intent? {
+        override fun parseResult(
+            resultCode: Int,
+            intent: Intent?,
+        ): Intent? {
             if (intent == null || resultCode != Activity.RESULT_OK) return null
             return intent
         }
@@ -101,7 +106,7 @@ class CaptureActivity : BlazeBaseActivity() {
         const val ARGS_SHOW_SCAN = "args_show_scan"
         const val ARGS_FOR_SCAN_RESULT = "args_for_scan_result"
 
-        const val MAX_DURATION = 15
+        const val MAX_DURATION = 30
         const val MIN_DURATION = 1
     }
 }

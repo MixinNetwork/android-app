@@ -1,0 +1,159 @@
+package one.mixin.android.web3.receive
+
+import android.annotation.SuppressLint
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.RelativeLayout
+import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
+import androidx.recyclerview.widget.RecyclerView
+import one.mixin.android.R
+import one.mixin.android.databinding.ItemWeb3TokenBinding
+import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.extension.dp
+import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.numberFormat8
+import one.mixin.android.extension.setQuoteText
+import one.mixin.android.vo.Fiats
+import java.math.BigDecimal
+
+class Web3TokenAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+    fun isEmpty() = getFilteredTokens().isEmpty()
+
+    var tokens: ArrayList<Web3TokenItem> = ArrayList(0)
+        @SuppressLint("NotifyDataSetChanged")
+        set(value) {
+            if (field != value) {
+                field = value
+                notifyDataSetChanged()
+            }
+        }
+
+    private fun getFilteredTokens() = if (chain.isNullOrBlank()) {
+        tokens
+    } else {
+        tokens.filter { it.chainId == chain }
+    }
+
+    var chain: String? = null
+        @SuppressLint("NotifyDataSetChanged")
+        set(value) {
+            if (field != value) {
+                field = value
+                notifyDataSetChanged()
+            }
+        }
+
+    var address: String? = null
+        @SuppressLint("NotifyDataSetChanged")
+        set(value) {
+            if (field != value) {
+                field = value
+                notifyDataSetChanged()
+            }
+        }
+    private var onClickListener: ((Web3TokenItem) -> Unit)? = null
+
+    fun setOnClickListener(onClickListener: (Web3TokenItem) -> Unit) {
+        this.onClickListener = onClickListener
+    }
+
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): RecyclerView.ViewHolder {
+        return Web3Holder(ItemWeb3TokenBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+    }
+
+    override fun getItemCount(): Int {
+        return getFilteredTokens().size
+    }
+
+    override fun onBindViewHolder(
+        holder: RecyclerView.ViewHolder,
+        position: Int,
+    ) {
+        val filteredTokens = getFilteredTokens()
+        (holder as Web3Holder).bind(filteredTokens[position])
+        holder.itemView.setOnClickListener {
+            onClickListener?.invoke(filteredTokens[position])
+        }
+    }
+}
+
+class Web3Holder(val binding: ItemWeb3TokenBinding) : RecyclerView.ViewHolder(binding.root) {
+    @SuppressLint("SetTextI18n")
+    fun bind(token: Web3TokenItem) {
+        binding.apply {
+            icSpam.isVisible = token.isSpam()
+            if (token.isSpam()) {
+                balance.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    marginStart = 2.dp
+                }
+            } else {
+                balance.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    marginStart = 16.dp
+                }
+            }
+            avatar.bg.loadImage(token.iconUrl, holder = R.drawable.ic_avatar_place_holder)
+            avatar.badge.loadImage(token.chainIcon ?: "", holder = R.drawable.ic_avatar_place_holder)
+
+            balance.text =
+                try {
+                    if (token.balance.numberFormat8().toFloat() == 0f) {
+                        "0.00"
+                    } else {
+                        token.balance.numberFormat8()
+                    }
+                } catch (ignored: NumberFormatException) {
+                    token.balance.numberFormat8()
+                }
+            symbolTv.text = token.symbol
+            balanceAs.text = "≈ ${Fiats.getSymbol()}${token.fiat().numberFormat2()}"
+            val changePercent =
+                if (token.changeUsd.isBlank()) {
+                    BigDecimal.ZERO
+                } else {
+                    BigDecimal(token.changeUsd)
+                }
+            changeTv.setQuoteText("${changePercent.numberFormat2()}%", changePercent >= BigDecimal.ZERO)
+            if (token.priceUsd == "0") {
+                priceTv.setText(R.string.NA)
+                changeTv.visibility = View.GONE
+                updatePriceAsCentered()
+            } else {
+                priceTv.text = "${Fiats.getSymbol()}${token.priceFiat().numberFormat2()}"
+                changeTv.visibility = View.VISIBLE
+                updatePriceAsNormal()
+            }
+        }
+    }
+
+    private fun updatePriceAsCentered() {
+        val layoutParams: RelativeLayout.LayoutParams = binding.priceTv.layoutParams as? RelativeLayout.LayoutParams ?: return
+        layoutParams.removeRule(RelativeLayout.ALIGN_BASELINE)
+        layoutParams.removeRule(RelativeLayout.BELOW)
+        layoutParams.addRule(RelativeLayout.CENTER_VERTICAL)
+        layoutParams.topMargin = 0
+        binding.priceTv.layoutParams = layoutParams
+    }
+
+    private fun updatePriceAsNormal() {
+        val layoutParams: RelativeLayout.LayoutParams = binding.priceTv.layoutParams as? RelativeLayout.LayoutParams ?: return
+        layoutParams.removeRule(RelativeLayout.CENTER_VERTICAL)
+        layoutParams.addRule(RelativeLayout.ALIGN_BASELINE, R.id.balance_as)
+        layoutParams.topMargin = getPriceTopMarginPx()
+        binding.priceTv.layoutParams = layoutParams
+    }
+
+    private fun getPriceTopMarginPx(): Int {
+        val density: Float = binding.root.resources.displayMetrics.density
+        return (PRICE_TOP_MARGIN_DP * density).toInt()
+    }
+
+    private companion object {
+        private const val PRICE_TOP_MARGIN_DP: Int = 2
+    }
+}

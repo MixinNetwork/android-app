@@ -5,7 +5,6 @@ import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatTextView
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.util.markdown.MarkwonUtil.Companion.simpleMarkwon
 import org.commonmark.node.Node
 
@@ -13,21 +12,29 @@ class MentionTextView(context: Context, attrs: AttributeSet?) :
     AppCompatTextView(context, attrs) {
     var mentionRenderContext: MentionRenderContext? = null
 
-    override fun setText(text: CharSequence?, type: BufferType) {
+    override fun setText(
+        text: CharSequence?,
+        type: BufferType,
+    ) {
         if (text.isNullOrBlank()) {
             super.setText(text, type)
             return
         } else {
             val sp = SpannableStringBuilder()
             sp.append(SpannableString(text))
-            mentionRenderContext.notNullWithElse(
-                { super.setText(renderMention(sp), type) },
-                { super.setText(sp, type) }
-            )
+            val ctx = mentionRenderContext
+            if (ctx != null) {
+                super.setText(renderMention(sp), type)
+            } else {
+                super.setText(sp, type)
+            }
         }
     }
 
-    private fun renderMarkdown(sp: SpannableStringBuilder, node: Node) {
+    private fun renderMarkdown(
+        sp: SpannableStringBuilder,
+        node: Node,
+    ) {
         sp.append(simpleMarkwon.render(node))
         if (node.next != null) {
             renderMarkdown(sp, node.next)
@@ -35,7 +42,7 @@ class MentionTextView(context: Context, attrs: AttributeSet?) :
     }
 
     private fun renderMention(
-        text: CharSequence
+        text: CharSequence,
     ): CharSequence {
         val str = SpannableStringBuilder(text)
         val mentionRenderContext = this.mentionRenderContext ?: return text

@@ -6,14 +6,12 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
-import one.mixin.android.Constants.Account.PREF_INCOGNITO_KEYBOARD
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentPrivacyBinding
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.supportsOreo
-import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.viewBinding
 
@@ -28,27 +26,23 @@ class PrivacyFragment : BaseFragment(R.layout.fragment_privacy) {
     private val viewModel by viewModels<SettingViewModel>()
     private val binding by viewBinding(FragmentPrivacyBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             titleView.leftIb.setOnClickListener {
-                activity?.onBackPressed()
+                activity?.onBackPressedDispatcher?.onBackPressed()
             }
             viewModel.countBlockingUsers().observe(
                 viewLifecycleOwner,
-                {
-                    it?.let { users ->
-                        blockingTv.text = "${users.size}"
-                    }
-                }
-            )
-            pinRl.setOnClickListener {
-                if (Session.getAccount()?.hasPin == true) {
-                    navTo(PinSettingFragment.newInstance(), PinSettingFragment.TAG)
-                } else {
-                    navTo(WalletPasswordFragment.newInstance(false), WalletPasswordFragment.TAG)
+            ) {
+                it?.let { users ->
+                    blockingTv.text = "${users.size}"
                 }
             }
+
             blockedRl.setOnClickListener {
                 navTo(SettingBlockedFragment.newInstance(), SettingBlockedFragment.TAG)
             }
@@ -58,32 +52,28 @@ class PrivacyFragment : BaseFragment(R.layout.fragment_privacy) {
             conversationRl.setOnClickListener {
                 navTo(SettingConversationFragment.newInstance(), SettingConversationFragment.TAG)
             }
-            authRl.setOnClickListener {
-                navTo(AuthenticationsFragment.newInstance(), AuthenticationsFragment.TAG)
+
+            contactRl.setOnClickListener {
+                navTo(MobileContactFragment.newInstance(), MobileContactFragment.TAG)
             }
+
             supportsOreo(
                 {
                     incognito.isVisible = true
                     incognitoFollower.isVisible = true
-                    incognito.setContent(R.string.setting_incognito)
+                    incognito.setContent(R.string.Incognito_Keyboard)
                     incognito.isChecked =
-                        defaultSharedPreferences.getBoolean(PREF_INCOGNITO_KEYBOARD, false)
+                        defaultSharedPreferences.getBoolean(Constants.Account.PREF_INCOGNITO_KEYBOARD, false)
                     incognito.setOnCheckedChangeListener { _, isChecked ->
-                        defaultSharedPreferences.putBoolean(PREF_INCOGNITO_KEYBOARD, isChecked)
+                        defaultSharedPreferences.putBoolean(Constants.Account.PREF_INCOGNITO_KEYBOARD, isChecked)
                     }
                 },
                 {
                     incognito.isVisible = false
                     incognitoFollower.isVisible = false
-                }
+                },
             )
 
-            emergencyRl.setOnClickListener {
-                navTo(EmergencyContactFragment.newInstance(), EmergencyContactFragment.TAG)
-            }
-            contactRl.setOnClickListener {
-                navTo(MobileContactFragment.newInstance(), MobileContactFragment.TAG)
-            }
             setLockDesc()
             lockRl.setOnClickListener {
                 navTo(AppAuthSettingFragment.newInstance(), AppAuthSettingFragment.TAG)
@@ -92,13 +82,14 @@ class PrivacyFragment : BaseFragment(R.layout.fragment_privacy) {
     }
 
     fun setLockDesc() {
-        binding.lockDescTv.text = getString(
-            when (defaultSharedPreferences.getInt(Constants.Account.PREF_APP_AUTH, -1)) {
-                0 -> R.string.enable_immediately
-                1 -> R.string.enable_after_1_minute
-                2 -> R.string.enable_after_30_minutes
-                else -> R.string.disabled
-            }
-        )
+        binding.lockDescTv.text =
+            getString(
+                when (defaultSharedPreferences.getInt(Constants.Account.PREF_APP_AUTH, -1)) {
+                    0 -> R.string.Enable_immediately
+                    1 -> R.string.Enable_after_1_minute
+                    2 -> R.string.Enable_after_30_minutes
+                    else -> R.string.Disabled
+                },
+            )
     }
 }

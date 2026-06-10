@@ -8,7 +8,6 @@ import one.mixin.android.db.BaseDao
 
 @Dao
 interface SignedPreKeyDao : BaseDao<SignedPreKey> {
-
     @Transaction
     @Query("SELECT * FROM signed_prekeys WHERE prekey_id = :signedPreKeyId")
     fun getSignedPreKey(signedPreKeyId: Int): SignedPreKey?

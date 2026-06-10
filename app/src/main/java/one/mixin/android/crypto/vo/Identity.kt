@@ -1,7 +1,7 @@
 package one.mixin.android.crypto.vo
 
 import androidx.room.ColumnInfo
-import androidx.room.ColumnInfo.BLOB
+import androidx.room.ColumnInfo.Companion.BLOB
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
@@ -22,7 +22,7 @@ class Identity(
     @ColumnInfo(name = "next_prekey_id")
     val nextPreKeyId: Long?,
     @ColumnInfo(name = "timestamp")
-    val timestamp: Long
+    val timestamp: Long,
 ) {
     @PrimaryKey(autoGenerate = true)
     var _id: Int = 0

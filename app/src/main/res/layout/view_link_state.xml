@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="26dp"
     android:background="@color/colorBlue"
-    android:visibility="gone">
+    android:visibility="gone"
+    app:layout_constraintTop_toBottomOf="@id/search_bar">
 
     <ProgressBar
         android:id="@+id/progressBar"
@@ -28,7 +29,7 @@
         android:layout_gravity="center"
         android:layout_marginStart="3dp"
         android:gravity="center"
-        android:text="@string/state_connecting"
+        android:text="@string/Connecting"
         android:textColor="@color/white"
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"

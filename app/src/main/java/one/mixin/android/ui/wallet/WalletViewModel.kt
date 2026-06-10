@@ -1,48 +1,66 @@
 package one.mixin.android.ui.wallet
 
 import android.content.SharedPreferences
-import androidx.collection.ArraySet
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.LivePagedListBuilder
-import androidx.paging.PagedList
+import androidx.paging.ExperimentalPagingApi
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
+import androidx.paging.map
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
+import one.mixin.android.Constants.MIXIN_BOND_USER_ID
 import one.mixin.android.Constants.PAGE_SIZE
+import one.mixin.android.MixinApplication
+import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
-import one.mixin.android.api.handleMixinResponse
-import one.mixin.android.api.request.PinRequest
+import one.mixin.android.api.request.RouteTickerRequest
+import one.mixin.android.api.request.web3.WalletRequest
+import one.mixin.android.api.response.ExportRequest
+import one.mixin.android.api.response.RouteTickerResponse
+import one.mixin.android.crypto.CryptoWalletHelper
+import one.mixin.android.crypto.PinCipher
+import one.mixin.android.db.web3.vo.WalletItem
+import one.mixin.android.db.web3.vo.Web3Chain
+import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.Web3TransactionItem
+import one.mixin.android.event.WalletOperationType
+import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.putString
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshAssetsJob
-import one.mixin.android.job.RefreshSnapshotsJob
+import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.job.RefreshTopAssetsJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.repository.AccountRepository
-import one.mixin.android.repository.AssetRepository
+import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
-import one.mixin.android.session.Session
-import one.mixin.android.session.encryptPin
-import one.mixin.android.util.ErrorHandler
-import one.mixin.android.vo.Account
-import one.mixin.android.vo.Asset
-import one.mixin.android.vo.AssetItem
-import one.mixin.android.vo.PendingDeposit
-import one.mixin.android.vo.PriceAndChange
+import one.mixin.android.repository.Web3Repository
+import one.mixin.android.tip.TipBody
+import one.mixin.android.ui.home.web3.widget.MarketSort
+import one.mixin.android.ui.oldwallet.AssetRepository
+import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.vo.SnapshotItem
-import one.mixin.android.vo.TopAssetItem
 import one.mixin.android.vo.User
-import one.mixin.android.vo.toPriceAndChange
-import one.mixin.android.vo.toSnapshot
-import one.mixin.android.vo.toTopAssetItem
+import one.mixin.android.vo.UtxoItem
+import one.mixin.android.vo.market.Market
+import one.mixin.android.vo.market.MarketItem
+import one.mixin.android.vo.safe.Output
+import one.mixin.android.vo.safe.SafeSnapshot
+import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.sumsub.ProfileResponse
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -51,285 +69,424 @@ class WalletViewModel
 internal constructor(
     private val userRepository: UserRepository,
     private val accountRepository: AccountRepository,
+    private val web3Repository: Web3Repository,
+    private val tokenRepository: TokenRepository,
     private val assetRepository: AssetRepository,
-    private val jobManager: MixinJobManager
+    private val jobManager: MixinJobManager,
+    private val pinCipher: PinCipher,
 ) : ViewModel() {
 
-    fun insertUser(user: User) = viewModelScope.launch(Dispatchers.IO) {
-        userRepository.upsert(user)
+    private val _walletsFlow = MutableStateFlow<List<WalletItem>>(emptyList())
+    val walletsFlow: StateFlow<List<WalletItem>> = _walletsFlow
+
+    private val _allWalletsFlow = MutableStateFlow<List<WalletItem>>(emptyList())
+    val allWalletsFlow: StateFlow<List<WalletItem>> = _allWalletsFlow
+
+    fun searchWallets(excludeWalletId: String, chainId: String, query: String) {
+        viewModelScope.launch {
+            val wallets = getWalletsExcluding(excludeWalletId, chainId, query)
+            _walletsFlow.value = wallets
+            // Update allWallets only when query is empty (no search)
+            if (query.isEmpty()) {
+                _allWalletsFlow.value = wallets
+            }
+        }
     }
 
-    fun assetItems(): LiveData<List<AssetItem>> = assetRepository.assetItems()
+    fun insertUser(user: User) =
+        viewModelScope.launch(Dispatchers.IO) {
+            userRepository.upsert(user)
+        }
+    suspend fun  web3TokenItemById(walletId: String, assetId: String) = web3Repository.web3TokenItemById(walletId, assetId)
 
-    fun snapshotsFromDb(
-        id: String,
+    fun assetItemsNotHidden(): LiveData<List<TokenItem>> = tokenRepository.assetItemsNotHidden()
+
+    suspend fun assetItemsNotHiddenRaw(): List<TokenItem> = withContext(Dispatchers.IO){
+        return@withContext tokenRepository.assetItemsNotHiddenRaw()
+    }
+
+    fun hasAssetsWithValue() = assetRepository.hasAssetsWithValue()
+
+    @ExperimentalPagingApi
+    fun snapshots(
+        assetId: String,
         type: String? = null,
         otherType: String? = null,
-        initialLoadKey: Int? = 0,
-        orderByAmount: Boolean = false
-    ): LiveData<PagedList<SnapshotItem>> =
-        LivePagedListBuilder(
-            assetRepository.snapshotsFromDb(id, type, otherType, orderByAmount),
-            PagedList.Config.Builder()
-                .setPrefetchDistance(PAGE_SIZE)
-                .setPageSize(PAGE_SIZE)
-                .setEnablePlaceholders(true)
-                .build()
-        )
-            .setInitialLoadKey(initialLoadKey)
-            .build()
+        @Suppress("UNUSED_PARAMETER") initialLoadKey: Int? = 0,
+        orderByAmount: Boolean = false,
+    ): LiveData<PagingData<SnapshotItem>> =
+        tokenRepository.snapshots(assetId, type, otherType, orderByAmount)
+            .cachedIn(viewModelScope)
 
-    fun snapshotsByUserId(
-        opponentId: String,
-        initialLoadKey: Int? = 0
-    ): LiveData<PagedList<SnapshotItem>> =
-        LivePagedListBuilder(
-            assetRepository.snapshotsByUserId(opponentId),
-            PagedList.Config.Builder()
-                .setPrefetchDistance(PAGE_SIZE)
-                .setPageSize(PAGE_SIZE)
-                .setEnablePlaceholders(true)
-                .build()
-        )
-            .setInitialLoadKey(initialLoadKey)
-            .build()
+    fun snapshotsLimit(id: String) = tokenRepository.snapshotsLimit(id)
 
-    suspend fun snapshotLocal(assetId: String, snapshotId: String) = assetRepository.snapshotLocal(assetId, snapshotId)
+    fun findAddressByReceiver(receiver: String, tag: String, chainId: String?) = tokenRepository.findAddressByDestination(receiver, tag, chainId)
 
-    fun assetItem(id: String): LiveData<AssetItem> = assetRepository.assetItem(id)
+    suspend fun snapshotLocal(
+        assetId: String,
+        snapshotId: String,
+    ) = tokenRepository.snapshotLocal(assetId, snapshotId)
 
-    suspend fun simpleAssetItem(id: String) = assetRepository.simpleAssetItem(id)
+    fun assetItem(id: String): LiveData<TokenItem> = tokenRepository.assetItem(id)
 
-    fun updatePin(pin: String, oldPin: String?): Observable<MixinResponse<Account>> {
-        val pinToken = Session.getPinToken()!!
-        val old = encryptPin(pinToken, oldPin)
-        val fresh = encryptPin(pinToken, pin)!!
-        return accountRepository.updatePin(PinRequest(fresh, old)).observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())
-    }
+    suspend fun simpleAssetItem(id: String) = tokenRepository.simpleAssetItem(id)
 
-    suspend fun verifyPin(code: String) = withContext(Dispatchers.IO) {
-        accountRepository.verifyPin(code)
-    }
-
-    fun checkAndRefreshUsers(userIds: List<String>) = viewModelScope.launch {
-        val existUsers = userRepository.findUserExist(userIds)
-        val queryUsers = userIds.filter {
-            !existUsers.contains(it)
+    suspend fun verifyPin(code: String) =
+        withContext(Dispatchers.IO) {
+            accountRepository.verifyPin(code)
         }
-        if (queryUsers.isEmpty()) {
-            return@launch
-        }
-        jobManager.addJobInBackground(RefreshUserJob(queryUsers))
-    }
 
-    suspend fun updateAssetHidden(id: String, hidden: Boolean) = assetRepository.updateHidden(id, hidden)
-
-    fun hiddenAssets(): LiveData<List<AssetItem>> = assetRepository.hiddenAssetItems()
-
-    fun addresses(id: String) = assetRepository.addresses(id)
-
-    fun allSnapshots(type: String? = null, otherType: String? = null, initialLoadKey: Int? = 0, orderByAmount: Boolean = false):
-        LiveData<PagedList<SnapshotItem>> =
-        LivePagedListBuilder(
-            assetRepository.allSnapshots(type, otherType, orderByAmount = orderByAmount),
-            PagedList.Config.Builder()
-                .setPrefetchDistance(PAGE_SIZE * 2)
-                .setPageSize(PAGE_SIZE)
-                .setEnablePlaceholders(true)
-                .build()
-        )
-            .setInitialLoadKey(initialLoadKey)
-            .build()
-
-    suspend fun refreshPendingDeposits(asset: AssetItem) {
-        handleMixinResponse(
-            invokeNetwork = {
-                assetRepository.pendingDeposits(asset.assetId, asset.destination, asset.tag)
-            },
-            successBlock = { list ->
-                assetRepository.clearPendingDepositsByAssetId(asset.assetId)
-                val pendingDeposits = list.data ?: return@handleMixinResponse
-
-                pendingDeposits.chunked(100) { trunk ->
-                    viewModelScope.launch(Dispatchers.IO) {
-                        processPendingDepositTrunk(asset.assetId, trunk)
-                    }
+    fun checkAndRefreshUsers(userIds: List<String>) =
+        viewModelScope.launch {
+            val existUsers = userRepository.findUserExist(userIds)
+            val queryUsers =
+                userIds.filter {
+                    !existUsers.contains(it)
                 }
+            if (queryUsers.isEmpty()) {
+                return@launch
             }
-        )
-    }
-
-    private suspend fun processPendingDepositTrunk(assetId: String, trunk: List<PendingDeposit>) {
-        val hashList = trunk.map { it.transactionHash }
-        val existHashList = assetRepository.findSnapshotByTransactionHashList(assetId, hashList)
-        trunk.filter {
-            it.transactionHash !in existHashList
-        }.map {
-            it.toSnapshot(assetId)
-        }.let {
-            assetRepository.insertPendingDeposit(it)
+            jobManager.addJobInBackground(RefreshUserJob(queryUsers))
         }
-    }
 
-    suspend fun getAsset(assetId: String) = withContext(Dispatchers.IO) {
-        assetRepository.asset(assetId)
-    }
+    suspend fun updateAssetHidden(
+        id: String,
+        hidden: Boolean,
+    ) = tokenRepository.updateHidden(id, hidden)
+
+    fun hiddenAssets(): LiveData<List<TokenItem>> = tokenRepository.hiddenAssetItems()
+
+    fun addresses(id: String) = tokenRepository.addresses(id)
+
+    fun allSnapshots(
+        filterParams: FilterParams,
+    ): Flow<PagingData<SnapshotItem>> =
+        Pager(
+            config = PagingConfig(
+                pageSize = PAGE_SIZE,
+                prefetchDistance = PAGE_SIZE * 2,
+                enablePlaceholders = true,
+            ),
+            pagingSourceFactory = { tokenRepository.snapshotsPagingSource(filterParams) }
+        ).flow.map { pagingData ->
+            pagingData.map { tokenRepository.mapSnapshotItem(it) }
+        }
+
+    fun allWeb3Transaction(
+        filterParams: Web3FilterParams,
+    ): Flow<PagingData<Web3TransactionItem>> =
+        Pager(
+            config = PagingConfig(
+                pageSize = PAGE_SIZE,
+                prefetchDistance = PAGE_SIZE * 2,
+                enablePlaceholders = true,
+            ),
+            pagingSourceFactory = { web3Repository.web3TransactionPagingSource(filterParams) }
+        ).flow.map { pagingData ->
+            pagingData.map { web3Repository.mapWeb3Transaction(it, filterParams.walletId) }
+        }
+
+    suspend fun allPendingDeposit() = tokenRepository.allPendingDeposit()
+
+    suspend fun refreshPendingDeposits(
+        assetId: String,
+    ) = tokenRepository.pendingDeposits(assetId)
+
+    fun getPendingDisplays() = tokenRepository.getPendingDisplays()
+
+    suspend fun clearAllPendingDeposits() = tokenRepository.clearAllPendingDeposits()
+
+    suspend fun clearPendingDepositsByAssetId(assetId: String) = tokenRepository.clearPendingDepositsByAssetId(assetId)
+
+    suspend fun insertPendingDeposit(snapshot: List<SafeSnapshot>) = tokenRepository.insertPendingDeposit(snapshot)
+
+    suspend fun getAsset(assetId: String) =
+        withContext(Dispatchers.IO) {
+            tokenRepository.asset(assetId)
+        }
 
     fun refreshHotAssets() {
         jobManager.addJobInBackground(RefreshTopAssetsJob())
     }
 
     fun refreshAsset(assetId: String? = null) {
-        jobManager.addJobInBackground(RefreshAssetsJob(assetId))
+        jobManager.addJobInBackground(RefreshTokensJob(assetId))
     }
 
-    suspend fun queryAsset(query: String): Pair<List<TopAssetItem>?, ArraySet<AssetItem>?> =
-        withContext(Dispatchers.IO) {
-            val response = try {
-                assetRepository.queryAssets(query)
-            } catch (t: Throwable) {
-                ErrorHandler.handleError(t)
-                return@withContext Pair(null, null)
-            }
-            if (response.isSuccess) {
-                val assetList = response.data as List<Asset>
-                val topAssetList = arrayListOf<TopAssetItem>()
-                assetList.mapTo(topAssetList) { asset ->
-                    var chainIconUrl = assetRepository.getIconUrl(asset.chainId)
-                    if (chainIconUrl == null) {
-                        chainIconUrl = fetchAsset(asset.chainId)
-                    }
-                    asset.toTopAssetItem(chainIconUrl)
-                }
-                val existsSet = ArraySet<AssetItem>()
-                val needUpdatePrice = arrayListOf<PriceAndChange>()
-                assetList.forEach {
-                    val exists = assetRepository.findAssetItemById(it.assetId)
-                    if (exists != null) {
-                        needUpdatePrice.add(it.toPriceAndChange())
-                        existsSet.add(exists)
-                    }
-                }
-                if (needUpdatePrice.isNotEmpty()) {
-                    assetRepository.suspendUpdatePrices(needUpdatePrice)
-                }
-                return@withContext Pair(topAssetList, existsSet)
-            } else {
-                ErrorHandler.handleMixinError(response.errorCode, response.errorDescription)
-            }
-            return@withContext Pair(null, null)
-        }
+    suspend fun queryAsset(walletId: String?, query: String, web3: Boolean = false): List<TokenItem> = tokenRepository.queryAsset(walletId, query, web3)
 
-    private suspend fun fetchAsset(assetId: String) = withContext(Dispatchers.IO) {
-        val r = try {
-            assetRepository.asset(assetId)
-        } catch (t: Throwable) {
-            ErrorHandler.handleError(t)
-            return@withContext null
-        }
-        if (r.isSuccess) {
-            r.data?.let {
-                assetRepository.insert(it)
-                return@withContext it.iconUrl
-            }
-        } else {
-            ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
-        }
-        return@withContext null
-    }
+    suspend fun findAssetItemById(assetId: String) = tokenRepository.findAssetItemById(assetId)
 
-    fun saveAssets(hotAssetList: List<TopAssetItem>) {
-        hotAssetList.forEach {
-            jobManager.addJobInBackground(RefreshAssetsJob(it.assetId))
-        }
-    }
-
-    suspend fun findOrSyncAsset(assetId: String): AssetItem? {
+    suspend fun findOrSyncAsset(
+        assetId: String,
+    ): TokenItem? {
         return withContext(Dispatchers.IO) {
-            assetRepository.findOrSyncAsset(assetId)
+            tokenRepository.findOrSyncAsset(assetId)
         }
     }
 
-    fun upsetAsset(asset: Asset) = viewModelScope.launch(Dispatchers.IO) {
-        assetRepository.insert(asset)
-    }
+    suspend fun findDepositEntry(chainId: String) = tokenRepository.findDepositEntry(chainId)
 
-    fun observeTopAssets() = assetRepository.observeTopAssets()
+    suspend fun findDepositEntryDestinations() = tokenRepository.findDepositEntryDestinations()
+
+    suspend fun findAndCheckDepositEntry(chainId: String, assetId: String) =
+        withContext(Dispatchers.IO) {
+            tokenRepository.findAndCheckDepositEntry(chainId, assetId)
+        }
+
+    suspend fun findAndSyncDepositEntry(chainId: String, assetId: String) =
+        withContext(Dispatchers.IO) {
+            tokenRepository.findAndSyncDepositEntry(chainId, assetId)
+        }
+
+    suspend fun createDepositWithAmount(chainId: String, assetId: String, amount: String) =
+        withContext(Dispatchers.IO) {
+            tokenRepository.createDepositWithAmount(chainId, assetId, amount)
+        }
+
+    suspend fun syncNoExistAsset(assetIds: List<String>) =
+        withContext(Dispatchers.IO) {
+            assetIds.forEach { id ->
+                if (tokenRepository.findAssetItemById(id) == null) {
+                    tokenRepository.findOrSyncAsset(id)
+                }
+            }
+        }
+
+    fun observeTopAssets() = tokenRepository.observeTopAssets()
 
     fun getUser(userId: String) = userRepository.getUserById(userId)
 
     suspend fun errorCount() = accountRepository.errorCount()
 
-    fun refreshSnapshots(
-        assetId: String? = null,
-        offset: String? = null,
-        opponent: String? = null
-    ) {
-        jobManager.addJobInBackground(RefreshSnapshotsJob(assetId, offset, opponent))
-    }
+    suspend fun findAssetsByIds(ids: List<String>) = tokenRepository.findAssetsByIds(ids)
 
-    suspend fun getSnapshots(assetId: String, offset: String?, limit: Int, opponent: String?, destination: String?, tag: String?) =
-        assetRepository.getSnapshots(
-            assetId,
-            offset,
-            limit,
-            opponent,
-            destination,
-            if (tag?.isEmpty() == true) {
-                null
-            } else {
-                tag
-            }
-        )
+    suspend fun allAssetItems() = tokenRepository.allAssetItems()
 
-    suspend fun findAssetsByIds(ids: List<String>) = assetRepository.findAssetsByIds(ids)
-
-    suspend fun fuzzySearchAssets(query: String?): List<AssetItem>? =
+    suspend fun fuzzySearchAssets(query: String?): List<TokenItem>? =
         if (query.isNullOrBlank()) {
             null
         } else {
             val escapedQuery = query.trim().escapeSql()
-            assetRepository.fuzzySearchAssetIgnoreAmount(escapedQuery)
+            tokenRepository.fuzzySearchAssetIgnoreAmount(escapedQuery)
         }
 
     fun updateRecentSearchAssets(
         defaultSharedPreferences: SharedPreferences,
-        assetId: String
+        assetId: String,
     ) = viewModelScope.launch(Dispatchers.IO) {
         val assetsString =
             defaultSharedPreferences.getString(Constants.Account.PREF_RECENT_SEARCH_ASSETS, null)
         if (assetsString != null) {
             val assetsList = assetsString.split("=")
-            if (assetsList.isNullOrEmpty()) {
+            if (assetsList.isEmpty()) {
                 defaultSharedPreferences.putString(Constants.Account.PREF_RECENT_SEARCH_ASSETS, assetId)
                 return@launch
             }
 
-            val arr = assetsList.filter { it != assetId }
-                .toMutableList()
-                .also {
-                    if (it.size >= Constants.RECENT_SEARCH_ASSETS_MAX_COUNT) {
-                        it.dropLast(1)
+            val arr =
+                assetsList.filter { it != assetId }
+                    .toMutableList()
+                    .also {
+                        if (it.size >= Constants.RECENT_SEARCH_ASSETS_MAX_COUNT) {
+                            it.dropLast(1)
+                        }
+                        it.add(0, assetId)
                     }
-                    it.add(0, assetId)
-                }
             defaultSharedPreferences.putString(
                 Constants.Account.PREF_RECENT_SEARCH_ASSETS,
-                arr.joinToString("=")
+                arr.joinToString("="),
             )
         } else {
             defaultSharedPreferences.putString(Constants.Account.PREF_RECENT_SEARCH_ASSETS, assetId)
         }
     }
 
-    suspend fun ticker(assetId: String, offset: String?) = assetRepository.ticker(assetId, offset)
+    suspend fun ticker(
+        assetId: String,
+        offset: String?,
+    ) = tokenRepository.ticker(assetId, offset)
+
+    suspend fun ticker(tickerRequest: RouteTickerRequest): MixinResponse<RouteTickerResponse> =
+        tokenRepository.ticker(tickerRequest)
 
     suspend fun refreshSnapshot(snapshotId: String): SnapshotItem? {
         return withContext(Dispatchers.IO) {
-            assetRepository.refreshAndGetSnapshot(snapshotId)
+            tokenRepository.refreshAndGetSnapshot(snapshotId)
         }
     }
 
     suspend fun findSnapshot(snapshotId: String): SnapshotItem? =
-        assetRepository.findSnapshotById(snapshotId)
+        tokenRepository.findSnapshotById(snapshotId)
+
+    suspend fun profile(): MixinResponse<ProfileResponse> = tokenRepository.profile()
+
+    suspend fun fetchSessionsSuspend(ids: List<String>) = userRepository.fetchSessionsSuspend(ids)
+
+    suspend fun findBondBotUrl() = userRepository.findOrSyncApp(MIXIN_BOND_USER_ID)
+
+    fun utxoItem(asset: String): LiveData<PagingData<UtxoItem>> {
+        return tokenRepository.utxoItem(asset)
+    }
+
+    suspend fun removeUtxo(outputId: String) = tokenRepository.removeUtxo(outputId)
+
+    suspend fun refreshUser(userId: String) = userRepository.refreshUser(userId)
+
+    suspend fun findLatestOutputSequenceByAsset(asset: String) = tokenRepository.findLatestOutputSequenceByAsset(asset)
+
+    suspend fun insertOutputs(outputs: List<Output>) = withContext(SINGLE_DB_THREAD) { tokenRepository.insertOutputs(outputs) }
+
+    suspend fun deleteByKernelAssetIdAndOffset(
+        kernelAssetId: String,
+        offset: Long,
+    ) = tokenRepository.deleteByKernelAssetIdAndOffset(kernelAssetId, offset)
+
+    suspend fun getOutputs(
+        members: String,
+        threshold: Int,
+        offset: Long? = null,
+        limit: Int = 500,
+        state: String? = null,
+        asset: String? = null,
+    ) = tokenRepository.getOutputs(
+        members,
+        threshold,
+        offset,
+        limit,
+        state,
+        asset,
+    )
+
+    suspend fun priceHistory(
+        assetId: String,
+        type: String,
+    ) = tokenRepository.priceHistory(assetId, type)
+
+    fun marketById(assetId: String) = tokenRepository.marketById(assetId)
+
+    fun marketByCoinId(coinId: String) = tokenRepository.marketByCoinId(coinId)
+
+    fun historyPriceById(assetId: String) = tokenRepository.historyPriceById(assetId)
+
+    fun getWeb3Markets(limit: Int, sort: MarketSort):
+        Flow<PagingData<MarketItem>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = 20,
+                prefetchDistance =10,
+                enablePlaceholders = true
+            ),
+            pagingSourceFactory = { tokenRepository.getWeb3Markets(limit, sort) }
+        ).flow.cachedIn(viewModelScope)
+    }
+
+    fun getFavoredWeb3Markets(sort: MarketSort): Flow<PagingData<MarketItem>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = 20,
+                prefetchDistance =10,
+                enablePlaceholders = true
+            ),
+            pagingSourceFactory = { tokenRepository.getFavoredWeb3Markets(sort) }
+        ).flow
+    }
+
+    suspend fun findTokensByCoinId(coinId: String): List<TokenItem> = tokenRepository.findTokensByCoinId(coinId)
+
+    suspend fun findTokenIdsByCoinId(coinId: String) = tokenRepository.findTokenIdsByCoinId(coinId)
+
+    suspend fun findMarketItemByAssetId(assetId: String) = tokenRepository.findMarketItemByAssetId(assetId)
+
+    fun updateMarketFavored(symbol: String, coinId: String, isFavored: Boolean?) = viewModelScope.launch(Dispatchers.IO) { tokenRepository.updateMarketFavored(symbol, coinId, isFavored) }
+
+    suspend fun simpleCoinItem(coinId: String) = tokenRepository.simpleCoinItem(coinId)
+
+    suspend fun simpleCoinItemByAssetId(assetId: String) = tokenRepository.simpleCoinItemByAssetId(assetId)
+
+    fun anyAlertByCoinId(coinId: String) = tokenRepository.anyAlertByCoinId(coinId)
+
+    fun anyAlertByAssetId(assetId: String) = tokenRepository.anyAlertByAssetId(assetId)
+
+    suspend fun refreshMarket(
+        coinId: String, endBlock: () -> Unit, failureBlock: (suspend (MixinResponse<Market>) -> Boolean),
+        exceptionBlock: (suspend (t: Throwable) -> Boolean)
+    ) = tokenRepository.refreshMarket(coinId, endBlock, failureBlock, exceptionBlock)
+
+    suspend fun saltExport(exportRequest: ExportRequest) = accountRepository.saltExport(exportRequest)
+
+    suspend fun getEncryptedTipBody(
+        userId: String,
+        pin: String,
+    ): String = pinCipher.encryptPin(pin, TipBody.forExport(userId))
+
+    suspend fun renameWallet(walletId: String, newName: String) {
+        withContext(Dispatchers.IO) {
+            try {
+                val request = WalletRequest(name = newName.trim(), category = null, addresses = null)
+                val response = web3Repository.updateWallet(walletId, request)
+                if (response.isSuccess && response.data != null) {
+                    // Update local database
+                    web3Repository.updateWalletName(walletId, newName)
+                    RxBus.publish(WalletRefreshedEvent(walletId, WalletOperationType.RENAME))
+                    Timber.d("Successfully renamed wallet $walletId to $newName")
+                } else {
+                    Timber.e("Failed to rename wallet: ${response.errorCode} - ${response.errorDescription}")
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to rename wallet $walletId")
+            }
+        }
+    }
+
+    suspend fun deleteWallet(walletId: String) {
+        try {
+            val response = web3Repository.destroyWallet(walletId)
+            if (response.isSuccess) {
+                web3Repository.deleteTransactionsByWalletId(walletId)
+                web3Repository.deleteAddressesByWalletId(walletId)
+                web3Repository.deleteAssetsByWalletId(walletId)
+                web3Repository.deleteHiddenTokens(walletId)
+                web3Repository.deleteWallet(walletId)
+                web3Repository.deleteOrders(walletId)
+                CryptoWalletHelper.removePrivate(MixinApplication.appContext, walletId)
+                RxBus.publish(WalletRefreshedEvent(walletId, WalletOperationType.DELETE))
+            }
+        } catch (e: Exception) {
+            Timber.e(e)
+        }
+    }
+
+    suspend fun findWalletById(walletId: String) = web3Repository.findWalletById(walletId)
+
+    suspend fun getWalletsExcluding(excludeWalletId: String, chainId: String, query: String) = web3Repository.getWalletsExcluding(excludeWalletId, chainId, query)
+
+    suspend fun getAddresses(walletId: String) = web3Repository.getAddresses(walletId)
+
+    suspend fun checkAddressAndGetDisplayName(destination: String, chainId: String?): Pair<String, Boolean>? {
+        return withContext(Dispatchers.IO) {
+
+            if (chainId != null) {
+                val existsInAddresses = tokenRepository.findDepositEntry(chainId)?.destination == destination
+                if (existsInAddresses) return@withContext Pair(MixinApplication.appContext.getString(R.string.Privacy_Wallet), false)
+            }
+
+            val wallet = web3Repository.getWalletByDestination(destination)
+            if (wallet != null) {
+                return@withContext Pair(wallet.name, true)
+            }
+            return@withContext null
+        }
+    }
+
+    suspend fun getWalletByDestination(destination: String) = web3Repository.getWalletByDestination(destination)
+
+    suspend fun getTokenByWalletAndAssetId(walletId: String, assetId: String): Web3TokenItem? = withContext(Dispatchers.IO) {
+        web3Repository.getTokenByWalletAndAssetId(walletId, assetId)
+    }
+
+    suspend fun findChainById(chainId: String): Web3Chain? {
+        return web3Repository.findChainById(chainId)
+    }
+
 }

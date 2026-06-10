@@ -22,12 +22,14 @@ import one.mixin.android.webrtc.VoiceCallService
 import timber.log.Timber
 
 class CallNotificationBuilder {
-
     companion object {
-        private const val CHANNEL_NODE = "channel_node"
         const val WEBRTC_NOTIFICATION = 313388
+        const val CHANNEL_CALL = "channel_call"
 
-        fun getCallNotification(context: Context, callState: CallStateLiveData): Notification? {
+        fun getCallNotification(
+            context: Context,
+            callState: CallStateLiveData,
+        ): Notification? {
             val callType = callState.callType
             if (callState.isIdle() || callType == CallType.None) {
                 Timber.w("try get a call notification for foreground service in idle state.")
@@ -37,29 +39,40 @@ class CallNotificationBuilder {
             val callIntent = Intent(context, CallActivity::class.java)
             callIntent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
             val user = callState.user
-            val pendingCallIntent = PendingIntent.getActivity(
-                context, 0, callIntent,
-                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-            )
+            val pendingCallIntent =
+                PendingIntent.getActivity(
+                    context,
+                    0,
+                    callIntent,
+                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+                )
 
-            val builder = NotificationCompat.Builder(context, CHANNEL_NODE)
-                .setSmallIcon(R.drawable.ic_msg_default)
-                .setContentIntent(pendingCallIntent)
-                .setOngoing(true)
-                .setContentTitle(user?.fullName)
+            val builder =
+                NotificationCompat.Builder(context, CHANNEL_CALL)
+                    .setSmallIcon(R.drawable.ic_msg_default)
+                    .setOngoing(true)
+                    .setContentTitle(user?.fullName)
+                    .setFullScreenIntent(pendingCallIntent, true)
+                    .setPriority(NotificationCompat.PRIORITY_HIGH)
+                    .setCategory(NotificationCompat.CATEGORY_CALL)
+                    .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
 
             val isGroupCall = callType == CallType.Group
-            val clazz = if (isGroupCall) {
-                GroupCallService::class.java
-            } else {
-                VoiceCallService::class.java
-            }
+            val clazz =
+                if (isGroupCall) {
+                    GroupCallService::class.java
+                } else {
+                    VoiceCallService::class.java
+                }
             when (callState.state) {
                 CallService.CallState.STATE_DIALING -> {
-                    builder.setContentText(context.getString(R.string.call_notification_outgoing))
-                    val action = if (isGroupCall) {
-                        ACTION_KRAKEN_CANCEL
-                    } else ACTION_CALL_CANCEL
+                    builder.setContentText(context.getString(R.string.Calling))
+                    val action =
+                        if (isGroupCall) {
+                            ACTION_KRAKEN_CANCEL
+                        } else {
+                            ACTION_CALL_CANCEL
+                        }
                     builder.addAction(
                         getAction(
                             context,
@@ -67,18 +80,24 @@ class CallNotificationBuilder {
                             action,
                             R.drawable.ic_close_black,
                             R.string
-                                .call_notification_action_cancel
-                        )
+                                .Cancel,
+                        ),
                     )
                 }
                 CallService.CallState.STATE_RINGING -> {
-                    builder.setContentText(context.getString(R.string.call_notification_incoming_voice))
-                    val answerAction = if (isGroupCall) {
-                        ACTION_KRAKEN_ACCEPT_INVITE
-                    } else ACTION_CALL_ANSWER
-                    val declineAction = if (isGroupCall) {
-                        ACTION_KRAKEN_DECLINE
-                    } else ACTION_CALL_DECLINE
+                    builder.setContentText(context.getString(R.string.Incoming_voice_call))
+                    val answerAction =
+                        if (isGroupCall) {
+                            ACTION_KRAKEN_ACCEPT_INVITE
+                        } else {
+                            ACTION_CALL_ANSWER
+                        }
+                    val declineAction =
+                        if (isGroupCall) {
+                            ACTION_KRAKEN_DECLINE
+                        } else {
+                            ACTION_CALL_DECLINE
+                        }
                     builder.addAction(
                         getAction(
                             context,
@@ -86,8 +105,8 @@ class CallNotificationBuilder {
                             answerAction,
                             R.drawable.ic_close_black,
                             R.string
-                                .call_notification_action_answer
-                        )
+                                .ANSWER,
+                        ),
                     )
                     builder.addAction(
                         getAction(
@@ -96,15 +115,18 @@ class CallNotificationBuilder {
                             declineAction,
                             R.drawable.ic_close_black,
                             R.string
-                                .call_notification_action_decline
-                        )
+                                .Decline,
+                        ),
                     )
                 }
                 CallService.CallState.STATE_CONNECTED -> {
-                    builder.setContentText(context.getString(R.string.call_notification_connected))
-                    val action = if (isGroupCall) {
-                        ACTION_KRAKEN_END
-                    } else ACTION_CALL_LOCAL_END
+                    builder.setContentText(context.getString(R.string.Ongoing_voice_call))
+                    val action =
+                        if (isGroupCall) {
+                            ACTION_KRAKEN_END
+                        } else {
+                            ACTION_CALL_LOCAL_END
+                        }
                     builder.addAction(
                         getAction(
                             context,
@@ -112,17 +134,18 @@ class CallNotificationBuilder {
                             action,
                             R.drawable.ic_close_black,
                             R.string
-                                .call_notification_action_hang_up
-                        )
+                                .Hang_up,
+                        ),
                     )
                 }
                 else -> {
-                    builder.setContentText(context.getString(R.string.call_connecting))
-                    val action = if (isGroupCall) {
-                        ACTION_KRAKEN_CANCEL
-                    } else {
-                        if (callState.isOffer) ACTION_CALL_CANCEL else ACTION_CALL_DECLINE
-                    }
+                    builder.setContentText(context.getString(R.string.in_connecting))
+                    val action =
+                        if (isGroupCall) {
+                            if (callState.isOffer) ACTION_KRAKEN_CANCEL else ACTION_KRAKEN_DECLINE
+                        } else {
+                            if (callState.isOffer) ACTION_CALL_CANCEL else ACTION_CALL_DECLINE
+                        }
                     builder.addAction(
                         getAction(
                             context,
@@ -130,8 +153,8 @@ class CallNotificationBuilder {
                             action,
                             R.drawable.ic_close_black,
                             R.string
-                                .call_notification_action_hang_up
-                        )
+                                .Hang_up,
+                        ),
                     )
                 }
             }
@@ -144,15 +167,18 @@ class CallNotificationBuilder {
             action: String,
             iconResId: Int,
             titleResId: Int,
-            putExtra: ((intent: Intent) -> Unit)? = null
+            putExtra: ((intent: Intent) -> Unit)? = null,
         ): NotificationCompat.Action {
             val intent = Intent(context, clazz)
             intent.action = action
             putExtra?.invoke(intent)
-            val pendingIntent = PendingIntent.getService(
-                context, 0, intent,
-                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-            )
+            val pendingIntent =
+                PendingIntent.getService(
+                    context,
+                    0,
+                    intent,
+                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+                )
             return NotificationCompat.Action(iconResId, context.getString(titleResId), pendingIntent)
         }
     }

@@ -7,17 +7,16 @@ import one.mixin.android.job.BlazeMessageService.Companion.startService
 import one.mixin.android.session.Session
 
 abstract class BlazeBaseActivity : BaseActivity() {
-
     override fun onResume() {
         super.onResume()
-        if (Session.checkToken() && MixinApplication.get().onlining.get()) {
+        if (Session.checkToken() && MixinApplication.get().isOnline.get()) {
             startService(this, ACTION_ACTIVITY_RESUME)
         }
     }
 
     override fun onPause() {
         super.onPause()
-        if (Session.checkToken() && MixinApplication.get().onlining.get()) {
+        if (Session.checkToken() && MixinApplication.get().isOnline.get()) {
             startService(this, ACTION_ACTIVITY_PAUSE)
         }
     }

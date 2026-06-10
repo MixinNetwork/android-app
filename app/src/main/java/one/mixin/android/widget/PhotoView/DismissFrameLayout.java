@@ -1,5 +1,7 @@
 package one.mixin.android.widget.PhotoView;
 
+import static one.mixin.android.widget.PhotoView.SwipeGestureDetector.DIRECTION_LEFT_RIGHT;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.AttributeSet;
@@ -7,13 +9,13 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+
 import androidx.annotation.AttrRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StyleRes;
-import com.shizhefei.view.largeimage.LargeImageView;
 
-import static one.mixin.android.widget.PhotoView.SwipeGestureDetector.DIRECTION_LEFT_RIGHT;
+import one.mixin.android.widget.largeimage.LargeImageView;
 
 public class DismissFrameLayout extends FrameLayout {
     private SwipeGestureDetector swipeGestureDetector;
@@ -61,7 +63,7 @@ public class DismissFrameLayout extends FrameLayout {
                     public void onFinish(int direction, float distanceX, float distanceY) {
                         if (dismissListener != null
                                 && direction == SwipeGestureDetector.DIRECTION_TOP_BOTTOM) {
-                            if (Math.abs(distanceY) > initHeight / 10) {
+                            if (distanceY > initHeight / 10f) {
                                 dismissListener.onDismiss();
                             } else {
                                 dismissListener.onCancel();
@@ -101,8 +103,10 @@ public class DismissFrameLayout extends FrameLayout {
                     }
                 }
             } else if (view instanceof LargeImageView) {
-                if (view.onTouchEvent(event)) {
-                    return true;
+                if (((LargeImageView) view).getScale() != 1 || event.getPointerCount() > 1) {
+                    if (view.onTouchEvent(event)) {
+                        return true;
+                    }
                 }
             }
         }

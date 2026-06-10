@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/bg_white"
+    tools:parentTag="android.widget.LinearLayout"
+    android:gravity="center_horizontal"
+    android:orientation="vertical">
+
+    <ViewAnimator
+        android:id="@+id/icon_layout"
+        android:layout_marginTop="60dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/icon"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:src="@drawable/ic_private_key"
+            android:contentDescription="@null" />
+
+        <ImageView
+            android:id="@+id/status_icon"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:contentDescription="@null" />
+
+        <ProgressBar
+            style="@style/AppTheme.WalletBlue"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_gravity="center" />
+    </ViewAnimator>
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginTop="16dp"
+        android:gravity="center"
+        android:textColor="?attr/text_primary"
+        android:textStyle="bold"
+        android:text="@string/web3_account_network"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/sub_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="30dp"
+        android:textColor="?attr/text_assist"
+        android:gravity="center_horizontal"
+        android:text="@string/unlock_web3_account_description"
+        android:maxLines="2"
+        android:lines="2"
+        android:textSize="14sp" />
+
+    <View
+        android:background="?attr/bg_window"
+        android:layout_width="match_parent"
+        android:layout_height="12dp" />
+
+</merge>

@@ -2,13 +2,9 @@ package one.mixin.android.ui.player.internal
 
 import android.graphics.Bitmap
 import android.net.Uri
-import android.support.v4.media.MediaBrowserCompat.MediaItem
 import android.support.v4.media.MediaMetadataCompat
-import com.google.android.exoplayer2.source.ConcatenatingMediaSource
-import com.google.android.exoplayer2.source.MediaSource
-import com.google.android.exoplayer2.source.ProgressiveMediaSource
-import com.google.android.exoplayer2.upstream.DataSource
-import one.mixin.android.extension.isLocalScheme
+import androidx.media3.common.MediaItem
+import androidx.recyclerview.widget.DiffUtil
 import one.mixin.android.extension.toUri
 
 /**
@@ -243,7 +239,10 @@ fun MediaMetadataCompat.copy(status: Long): MediaMetadataCompat =
         .copy(this, status)
         .build()
 
-fun MediaMetadataCompat.Builder.copy(media: MediaMetadataCompat, status: Long): MediaMetadataCompat.Builder {
+fun MediaMetadataCompat.Builder.copy(
+    media: MediaMetadataCompat,
+    status: Long,
+): MediaMetadataCompat.Builder {
     id = media.id!!
     title = media.title
     artist = media.artist
@@ -257,30 +256,13 @@ fun MediaMetadataCompat.Builder.copy(media: MediaMetadataCompat, status: Long): 
     return this
 }
 
-fun MediaMetadataCompat.toMediaSource(
-    dataSourceFactory: DataSource.Factory,
-    cacheDataSourceFactory: DataSource.Factory,
-): MediaSource {
-    val targetDataSourceFactory = if (mediaUri.scheme?.isLocalScheme() == false) {
-        cacheDataSourceFactory
-    } else dataSourceFactory
-    return ProgressiveMediaSource.Factory(targetDataSourceFactory).createMediaSource(
-        com.google.android.exoplayer2.MediaItem.Builder()
-            .setMediaId(id!!)
-            .setUri(mediaUri)
+fun List<MediaMetadataCompat>.toMediaItems(): List<MediaItem> {
+    return map { mediaMetadataCompat ->
+        MediaItem.Builder()
+            .setMediaId(requireNotNull(mediaMetadataCompat.id))
+            .setUri(mediaMetadataCompat.mediaUri)
             .build()
-    )
-}
-
-fun List<MediaMetadataCompat>.toMediaSource(
-    dataSourceFactory: DataSource.Factory,
-    cacheDataSourceFactory: DataSource.Factory,
-): ConcatenatingMediaSource {
-    val concatenatingMediaSource = ConcatenatingMediaSource()
-    forEach {
-        concatenatingMediaSource.addMediaSource(it.toMediaSource(dataSourceFactory, cacheDataSourceFactory))
     }
-    return concatenatingMediaSource
 }
 
 /**
@@ -288,3 +270,28 @@ fun List<MediaMetadataCompat>.toMediaSource(
  * [MediaItem.FLAG_PLAYABLE].
  */
 const val METADATA_KEY_MIXIN_FLAGS = "one.mixin.messenger.player.METADATA_KEY_MIXIN_FLAGS"
+
+internal val diffCallback =
+    object : DiffUtil.ItemCallback<MediaMetadataCompat>() {
+        override fun areItemsTheSame(
+            oldItem: MediaMetadataCompat,
+            newItem: MediaMetadataCompat,
+        ): Boolean =
+            oldItem.id == newItem.id
+
+        override fun areContentsTheSame(
+            oldItem: MediaMetadataCompat,
+            newItem: MediaMetadataCompat,
+        ): Boolean =
+            oldItem.id == newItem.id &&
+                oldItem.title == newItem.title &&
+                oldItem.artist == newItem.artist &&
+                oldItem.album == newItem.album &&
+                oldItem.mediaUri == newItem.mediaUri &&
+                oldItem.downloadStatus == newItem.downloadStatus &&
+                oldItem.flag == newItem.flag &&
+                oldItem.albumArtUri == newItem.albumArtUri &&
+                oldItem.displayTitle == newItem.displayTitle &&
+                oldItem.displaySubtitle == newItem.displaySubtitle &&
+                oldItem.displayIconUri == newItem.displayIconUri
+    }

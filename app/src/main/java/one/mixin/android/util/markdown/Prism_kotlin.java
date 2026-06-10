@@ -1,5 +1,10 @@
 package one.mixin.android.util.markdown;
 
+import static java.util.regex.Pattern.compile;
+import static io.noties.prism4j.Prism4j.grammar;
+import static io.noties.prism4j.Prism4j.pattern;
+import static io.noties.prism4j.Prism4j.token;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -8,11 +13,6 @@ import java.util.List;
 import io.noties.prism4j.GrammarUtils;
 import io.noties.prism4j.Prism4j;
 import io.noties.prism4j.annotations.Extend;
-
-import static java.util.regex.Pattern.compile;
-import static io.noties.prism4j.Prism4j.grammar;
-import static io.noties.prism4j.Prism4j.pattern;
-import static io.noties.prism4j.Prism4j.token;
 
 
 @SuppressWarnings("unused")

@@ -14,11 +14,12 @@ import one.mixin.android.widget.keyboard.KeyboardAwareLinearLayout
 /**
  * Fullscreen Dialog Fragment which will dismiss itself when the keyboard is closed
  */
-abstract class KeyboardEntryDialogFragment(@LayoutRes contentLayoutId: Int) :
+abstract class KeyboardEntryDialogFragment(
+    @LayoutRes contentLayoutId: Int,
+) :
     DialogFragment(contentLayoutId),
-    KeyboardAwareLinearLayout.OnKeyboardShownListener,
-    KeyboardAwareLinearLayout.OnKeyboardHiddenListener {
-
+        KeyboardAwareLinearLayout.OnKeyboardShownListener,
+        KeyboardAwareLinearLayout.OnKeyboardHiddenListener {
     private var hasShown = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,7 +37,11 @@ abstract class KeyboardEntryDialogFragment(@LayoutRes contentLayoutId: Int) :
         return dialog
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
+    ): View {
         hasShown = false
 
         val view = super.onCreateView(inflater, container, savedInstanceState)

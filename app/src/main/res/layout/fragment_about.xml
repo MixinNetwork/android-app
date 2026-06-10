@@ -27,17 +27,18 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:src="@drawable/ic_logo"
+                android:src="?attr/ic_logo"
                 tools:ignore="ContentDescription" />
 
             <TextView
                 android:id="@+id/twitter"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/bottom_button_height"
+                android:foreground="?android:attr/selectableItemBackground"
                 android:gravity="center_vertical"
                 android:paddingStart="@dimen/activity_horizontal_margin"
                 android:paddingEnd="@dimen/activity_horizontal_margin"
-                android:text="@string/about_follow_twitter"
+                android:text="@string/Follow_us_on_twitter"
                 android:textColor="@color/colorBlue"
                 android:textSize="16sp" />
 
@@ -45,10 +46,11 @@
                 android:id="@+id/facebook"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/bottom_button_height"
+                android:foreground="?android:attr/selectableItemBackground"
                 android:gravity="center_vertical"
                 android:paddingStart="@dimen/activity_horizontal_margin"
                 android:paddingEnd="@dimen/activity_horizontal_margin"
-                android:text="@string/about_follow_facebook"
+                android:text="@string/Follow_us_on_facebook"
                 android:textColor="@color/colorBlue"
                 android:textSize="16sp" />
 
@@ -56,10 +58,11 @@
                 android:id="@+id/help_center"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/bottom_button_height"
+                android:foreground="?android:attr/selectableItemBackground"
                 android:gravity="center_vertical"
                 android:paddingStart="@dimen/activity_horizontal_margin"
                 android:paddingEnd="@dimen/activity_horizontal_margin"
-                android:text="@string/about_help_center"
+                android:text="@string/Help_center"
                 android:textColor="@color/colorBlue"
                 android:textSize="16sp" />
 
@@ -67,10 +70,11 @@
                 android:id="@+id/terms"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/bottom_button_height"
+                android:foreground="?android:attr/selectableItemBackground"
                 android:gravity="center_vertical"
                 android:paddingStart="@dimen/activity_horizontal_margin"
                 android:paddingEnd="@dimen/activity_horizontal_margin"
-                android:text="@string/landing_terms_service"
+                android:text="@string/Terms_of_Service"
                 android:textColor="@color/colorBlue"
                 android:textSize="16sp" />
 
@@ -78,10 +82,11 @@
                 android:id="@+id/privacy"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/bottom_button_height"
+                android:foreground="?android:attr/selectableItemBackground"
                 android:gravity="center_vertical"
                 android:paddingStart="@dimen/activity_horizontal_margin"
                 android:paddingEnd="@dimen/activity_horizontal_margin"
-                android:text="@string/landing_privacy_policy"
+                android:text="@string/Privacy_Policy"
                 android:textColor="@color/colorBlue"
                 android:textSize="16sp" />
 
@@ -89,23 +94,38 @@
                 android:id="@+id/checkUpdates"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/bottom_button_height"
+                android:foreground="?android:attr/selectableItemBackground"
                 android:gravity="center_vertical"
                 android:paddingStart="@dimen/activity_horizontal_margin"
                 android:paddingEnd="@dimen/activity_horizontal_margin"
-                android:text="@string/landing_check_updates"
+                android:text="@string/Version_Update"
                 android:textColor="@color/colorBlue"
                 android:textSize="16sp" />
 
             <TextView
-                android:id="@+id/database"
+                android:id="@+id/logAndDebug"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/bottom_button_height"
+                android:foreground="?android:attr/selectableItemBackground"
                 android:gravity="center_vertical"
                 android:paddingStart="@dimen/activity_horizontal_margin"
                 android:paddingEnd="@dimen/activity_horizontal_margin"
-                android:text="@string/database_debug"
+                android:text="@string/LogAndDebug"
                 android:textColor="@color/colorBlue"
                 android:textSize="16sp" />
+
+
+            <TextView
+                android:id="@+id/open_source"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/bottom_button_height"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:gravity="center_vertical"
+                android:paddingStart="@dimen/activity_horizontal_margin"
+                android:paddingEnd="@dimen/activity_horizontal_margin"
+                android:text="@string/open_source"
+                android:textColor="?attr/text_assist"
+                android:textSize="13sp" />
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

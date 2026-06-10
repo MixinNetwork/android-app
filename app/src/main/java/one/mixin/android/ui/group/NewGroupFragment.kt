@@ -1,10 +1,8 @@
 package one.mixin.android.ui.group
 
-import android.Manifest
 import android.app.Dialog
 import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Base64
@@ -14,19 +12,17 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
-import com.tbruyelle.rxpermissions2.RxPermissions
-import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentNewGroupBinding
 import one.mixin.android.databinding.ItemContactNormalBinding
 import one.mixin.android.extension.createImageTemp
+import one.mixin.android.extension.getCapturedImage
 import one.mixin.android.extension.getOtherPath
+import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
-import one.mixin.android.extension.openImage
-import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.toBytes
@@ -69,35 +65,26 @@ class NewGroupFragment : BaseFragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         _binding = FragmentNewGroupBinding.inflate(inflater, container, false)
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
-        val users: List<User> = requireArguments().getParcelableArrayList(ARGS_USERS)!!
+        val users: List<User> = requireArguments().getParcelableArrayListCompat(ARGS_USERS, User::class.java)!!
         binding.titleView.leftIb.setOnClickListener {
             binding.nameDescEt.hideKeyboard()
-            activity?.onBackPressed()
+            activity?.onBackPressedDispatcher?.onBackPressed()
         }
         binding.titleView.rightAnimator.setOnClickListener {
             createGroup()
         }
         enableCreate(false)
-        binding.photoRl.setOnClickListener {
-            RxPermissions(requireActivity())
-                .request(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .autoDispose(stopScope)
-                .subscribe { granted ->
-                    if (granted) {
-                        openImage(imageUri)
-                    } else {
-                        context?.openPermissionSetting()
-                    }
-                }
-        }
         adapter.users = users
         binding.userRv.adapter = adapter
         binding.nameDescEt.addTextChangedListener(mWatcher)
@@ -110,34 +97,39 @@ class NewGroupFragment : BaseFragment() {
         _binding = null
     }
 
-    private fun createGroup() = lifecycleScope.launch {
-        if (dialog == null) {
-            dialog = indeterminateProgressDialog(
-                message = R.string.pb_dialog_message,
-                title = R.string.group_creating
-            ).apply {
-                setCancelable(false)
+    private fun createGroup() =
+        lifecycleScope.launch {
+            if (dialog == null) {
+                dialog =
+                    indeterminateProgressDialog(
+                        message = R.string.Please_wait_a_bit,
+                        title = R.string.Creating,
+                    ).apply {
+                        setCancelable(false)
+                    }
             }
-        }
-        dialog?.show()
+            dialog?.show()
 
-        val groupIcon = if (resultUri == null) {
-            null
-        } else {
-            val bitmap = MediaStore.Images.Media.getBitmap(requireContext().contentResolver, resultUri)
-            Base64.encodeToString(bitmap.toBytes(), Base64.NO_WRAP)
-        }
-        val conversation = groupViewModel.createGroupConversation(
-            binding.nameDescEt.text.toString(),
-            binding.noticeDescEt.text.toString(),
-            groupIcon,
-            adapter.users!!,
-            sender
-        )
-        val liveData = groupViewModel.getConversationStatusById(conversation.conversationId)
-        liveData.observe(
-            viewLifecycleOwner,
-            { c ->
+            val uri = resultUri
+            val groupIcon =
+                if (uri == null) {
+                    null
+                } else {
+                    val bitmap = uri.getCapturedImage(requireContext().contentResolver)
+                    Base64.encodeToString(bitmap.toBytes(), Base64.NO_WRAP)
+                }
+            val conversation =
+                groupViewModel.createGroupConversation(
+                    binding.nameDescEt.text.toString(),
+                    binding.noticeDescEt.text.toString(),
+                    groupIcon,
+                    adapter.users!!,
+                    sender,
+                )
+            val liveData = groupViewModel.getConversationStatusById(conversation.conversationId)
+            liveData.observe(
+                viewLifecycleOwner,
+            ) { c ->
                 if (c != null) {
                     when (c.status) {
                         ConversationStatus.SUCCESS.ordinal -> {
@@ -145,7 +137,10 @@ class NewGroupFragment : BaseFragment() {
                             binding.nameDescEt.hideKeyboard()
                             dialog?.dismiss()
                             activity?.finish()
-                            ConversationActivity.showAndClear(requireContext(), conversation.conversationId)
+                            ConversationActivity.showAndClear(
+                                requireContext(),
+                                conversation.conversationId,
+                            )
                         }
                         ConversationStatus.FAILURE.ordinal -> {
                             liveData.removeObservers(viewLifecycleOwner)
@@ -156,8 +151,7 @@ class NewGroupFragment : BaseFragment() {
                     }
                 }
             }
-        )
-    }
+        }
 
     private fun enableCreate(enable: Boolean) {
         if (enable) {
@@ -172,10 +166,16 @@ class NewGroupFragment : BaseFragment() {
     class NewGroupAdapter : RecyclerView.Adapter<ItemHolder>() {
         var users: List<User>? = null
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemHolder =
+        override fun onCreateViewHolder(
+            parent: ViewGroup,
+            viewType: Int,
+        ): ItemHolder =
             ItemHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_contact_normal, parent, false))
 
-        override fun onBindViewHolder(holder: ItemHolder, position: Int) {
+        override fun onBindViewHolder(
+            holder: ItemHolder,
+            position: Int,
+        ) {
             if (users == null || users!!.isEmpty()) {
                 return
             }
@@ -187,25 +187,38 @@ class NewGroupFragment : BaseFragment() {
 
     class ItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val binding = ItemContactNormalBinding.bind(itemView)
+
         fun bind(user: User) {
             binding.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
-            binding.normal.text = user.fullName
+            binding.normal.setName(user)
+            binding.mixinIdTv.text = user.identityNumber
         }
     }
 
-    private val mWatcher: TextWatcher = object : TextWatcher {
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-        }
+    private val mWatcher: TextWatcher =
+        object : TextWatcher {
+            override fun beforeTextChanged(
+                s: CharSequence?,
+                start: Int,
+                count: Int,
+                after: Int,
+            ) {
+            }
 
-        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-        }
+            override fun onTextChanged(
+                s: CharSequence?,
+                start: Int,
+                before: Int,
+                count: Int,
+            ) {
+            }
 
-        override fun afterTextChanged(s: Editable?) {
-            if (!s.isNullOrEmpty()) {
-                enableCreate(true)
-            } else {
-                enableCreate(false)
+            override fun afterTextChanged(s: Editable?) {
+                if (!s.isNullOrEmpty()) {
+                    enableCreate(true)
+                } else {
+                    enableCreate(false)
+                }
             }
         }
-    }
 }

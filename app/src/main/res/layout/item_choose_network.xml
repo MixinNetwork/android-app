@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/padding8"
+    android:background="@drawable/bg_round_choose_network_yellow"
+    android:padding="@dimen/margin16">
+
+    <one.mixin.android.widget.BadgeCircleImageView
+        android:id="@+id/asset_icon"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:visibility="gone" />
+
+    <ImageView
+        android:id="@+id/icon"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:scaleType="fitCenter"
+        android:padding="4dp"
+        android:src="@drawable/ic_notice"
+        android:contentDescription="@null" />
+
+    <TextView
+        android:id="@+id/content"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/padding8"
+        android:textColor="?attr/text_primary"
+        tools:text="@string/Choose_network_tip" />
+
+</LinearLayout>

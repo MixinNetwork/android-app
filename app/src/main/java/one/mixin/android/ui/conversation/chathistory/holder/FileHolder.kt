@@ -4,12 +4,10 @@ import android.annotation.SuppressLint
 import android.view.View
 import android.widget.SeekBar
 import androidx.constraintlayout.widget.ConstraintLayout
-import com.google.android.exoplayer2.util.MimeTypes
+import androidx.media3.common.MimeTypes
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatFileBinding
-import one.mixin.android.extension.dp
 import one.mixin.android.extension.fileSize
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.ChatHistoryAdapter
@@ -19,26 +17,19 @@ import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageStatus
 
 class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(binding.root) {
-
     @SuppressLint("SetTextI18n")
     fun bind(
         messageItem: ChatHistoryMessageItem,
         isLast: Boolean,
         isFirst: Boolean = false,
-        onItemListener: ChatHistoryAdapter.OnItemListener
+        onItemListener: ChatHistoryAdapter.OnItemListener,
     ) {
         super.bind(messageItem)
         val isMe = messageItem.userId == Session.getAccountId()
         chatLayout(isMe, isLast)
         if (isFirst && !isMe) {
             binding.chatName.visibility = View.VISIBLE
-            binding.chatName.text = messageItem.userFullName
-            if (messageItem.appId != null) {
-                binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-                binding.chatName.compoundDrawablePadding = 3.dp
-            } else {
-                binding.chatName.setCompoundDrawables(null, null, null, null)
-            }
+            binding.chatName.setMessageName(messageItem)
             binding.chatName.setTextColor(getColorById(messageItem.userId))
             binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
         } else {
@@ -47,17 +38,15 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
         binding.fileNameTv.text = messageItem.mediaName
         when (messageItem.mediaStatus) {
             MediaStatus.EXPIRED.name -> {
-                binding.bottomLayout.fileSizeTv.clearBindIdAndSetText(binding.root.context.getString(R.string.chat_expired))
+                binding.bottomLayout.fileSizeTv.clearBindIdAndSetText(binding.root.context.getString(R.string.Expired))
             }
             MediaStatus.PENDING.name -> {
-                messageItem.mediaSize?.notNullWithElse(
-                    { it ->
-                        binding.bottomLayout.fileSizeTv.setBindId(messageItem.messageId, it)
-                    },
-                    {
-                        binding.bottomLayout.fileSizeTv.clearBindIdAndSetText(messageItem.mediaSize.fileSize())
-                    }
-                )
+                val mediaSize = messageItem.mediaSize
+                if (mediaSize != null) {
+                    binding.bottomLayout.fileSizeTv.setBindId(messageItem.messageId, mediaSize)
+                } else {
+                    binding.bottomLayout.fileSizeTv.clearBindIdAndSetText(null)
+                }
             }
             else -> {
                 binding.bottomLayout.fileSizeTv.clearBindIdAndSetText(messageItem.mediaSize?.fileSize())
@@ -69,11 +58,15 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
             MessageStatus.DELIVERED.name,
             false,
             isRepresentative = false,
-            isSecret = false
+            isSecret = false,
         )
         binding.bottomLayout.seekBar.setOnSeekBarChangeListener(
             object : SeekBar.OnSeekBarChangeListener {
-                override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                override fun onProgressChanged(
+                    seekBar: SeekBar?,
+                    progress: Int,
+                    fromUser: Boolean,
+                ) {
                 }
 
                 override fun onStartTrackingTouch(seekBar: SeekBar) {
@@ -86,7 +79,7 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                         MusicPlayer.seekTo(seekBar.progress)
                     }
                 }
-            }
+            },
         )
         messageItem.mediaStatus?.let {
             when (it) {
@@ -115,39 +108,22 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                 MediaStatus.DONE.name, MediaStatus.READ.name -> {
                     binding.fileExpired.visibility = View.GONE
                     binding.fileProgress.visibility = View.VISIBLE
-                    if (MimeTypes.isAudio(messageItem.mediaMimeType)) {
-                        binding.fileProgress.setBindOnly("${messageItem.transcriptId ?: ""}${messageItem.messageId}")
-                        binding.bottomLayout.bindId = "${messageItem.transcriptId ?: ""}${messageItem.messageId}"
-                        if (MusicPlayer.isPlay(messageItem.messageId)) {
-                            binding.fileProgress.setPause()
-                            binding.bottomLayout.showSeekBar()
-                        } else {
-                            binding.fileProgress.setPlay()
-                            binding.bottomLayout.showText()
-                        }
-                        binding.fileProgress.setOnClickListener {
-                            onItemListener.onAudioFileClick(messageItem)
-                        }
-                    } else {
-                        binding.fileProgress.setDone()
-                        binding.fileProgress.setBindId(null)
-                        binding.bottomLayout.bindId = null
-                        binding.fileProgress.setOnClickListener {
-                            handleClick(messageItem, onItemListener)
-                        }
+                    binding.fileProgress.setDone()
+                    binding.fileProgress.setBindId(null)
+                    binding.bottomLayout.bindId = null
+                    binding.fileProgress.setOnClickListener {
+                        handleClick(messageItem, onItemListener)
                     }
                     binding.chatLayout.setOnClickListener {
-                        if (MusicPlayer.isPlay(messageItem.messageId)) {
-                            onItemListener.onAudioFileClick(messageItem)
-                        } else {
-                            handleClick(messageItem, onItemListener)
-                        }
+                        handleClick(messageItem, onItemListener)
                     }
                 }
                 MediaStatus.CANCELED.name -> {
                     binding.fileExpired.visibility = View.GONE
                     binding.fileProgress.visibility = View.VISIBLE
-                    if (isMe && messageItem.mediaUrl != null) {
+                    if (messageItem.transcriptId != null && messageItem.mediaUrl != null) {
+                        binding.fileProgress.enableUpload()
+                    } else if (messageItem.mediaUrl != null && isMe) {
                         binding.fileProgress.enableUpload()
                     } else {
                         binding.fileProgress.enableDownload()
@@ -180,7 +156,7 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
 
     private fun handleClick(
         messageItem: ChatHistoryMessageItem,
-        onItemListener: ChatHistoryAdapter.OnItemListener
+        onItemListener: ChatHistoryAdapter.OnItemListener,
     ) {
         if (messageItem.mediaStatus == MediaStatus.CANCELED.name) {
             if (messageItem.mediaUrl.isNullOrEmpty()) {
@@ -195,20 +171,24 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
         }
     }
 
-    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+    override fun chatLayout(
+        isMe: Boolean,
+        isLast: Boolean,
+        isBlink: Boolean,
+    ) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
             if (isLast) {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.bill_bubble_me_last,
-                    R.drawable.bill_bubble_me_last_night
+                    R.drawable.bill_bubble_me_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.bill_bubble_me,
-                    R.drawable.bill_bubble_me_night
+                    R.drawable.bill_bubble_me_night,
                 )
             }
             (binding.chatMsgLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
@@ -218,13 +198,13 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_other_last,
-                    R.drawable.chat_bubble_other_last_night
+                    R.drawable.chat_bubble_other_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_other,
-                    R.drawable.chat_bubble_other_night
+                    R.drawable.chat_bubble_other_night,
                 )
             }
         }

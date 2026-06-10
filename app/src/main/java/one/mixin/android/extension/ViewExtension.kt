@@ -1,27 +1,34 @@
 package one.mixin.android.extension
 
+import android.animation.Animator
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.app.Activity
 import android.content.Context
-import android.content.Intent
 import android.graphics.Outline
+import android.graphics.Rect
 import android.graphics.drawable.Drawable
-import android.net.Uri
+import android.media.MediaScannerConnection
 import android.os.Bundle
 import android.util.Property
 import android.view.LayoutInflater
+import android.view.TouchDelegate
 import android.view.View
 import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
+import android.view.ViewAnimationUtils
 import android.view.ViewGroup
+import android.view.ViewGroup.MarginLayoutParams
 import android.view.ViewOutlineProvider
+import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
 import android.view.animation.Interpolator
 import android.view.inputmethod.InputMethodManager
 import android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT
 import android.widget.EditText
+import android.widget.HorizontalScrollView
+import android.widget.RadioGroup
 import androidx.annotation.ColorInt
 import androidx.annotation.LayoutRes
 import androidx.appcompat.widget.PopupMenu
@@ -32,27 +39,22 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.ViewPropertyAnimatorListener
 import androidx.core.view.drawToBitmap
 import androidx.core.view.updateLayoutParams
+import androidx.navigation.NavController
 import androidx.navigation.NavOptions
 import androidx.navigation.findNavController
 import com.facebook.rebound.SimpleSpringListener
 import com.facebook.rebound.Spring
 import com.facebook.rebound.SpringConfig
 import com.facebook.rebound.SpringSystem
+import one.mixin.android.util.reportException
 import timber.log.Timber
-import java.io.FileNotFoundException
 import java.io.IOException
 import java.lang.reflect.Field
+import kotlin.math.hypot
+import kotlin.math.max
 
 const val ANIMATION_DURATION_SHORT = 260L
 const val ANIMATION_DURATION_SHORTEST = 120L
-
-const val FLAGS_FULLSCREEN =
-    View.SYSTEM_UI_FLAG_LOW_PROFILE or
-        View.SYSTEM_UI_FLAG_FULLSCREEN or
-        View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
-        View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
-        View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
-        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
 
 fun View.hideKeyboard() {
     val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -70,7 +72,10 @@ fun View.fadeIn(maxAlpha: Float = 1f) {
     this.fadeIn(ANIMATION_DURATION_SHORT, maxAlpha)
 }
 
-fun View.fadeIn(duration: Long, maxAlpha: Float = 1f) {
+fun View.fadeIn(
+    duration: Long,
+    maxAlpha: Float = 1f,
+) {
     this.visibility = VISIBLE
     this.alpha = 0f
     ViewCompat.animate(this).alpha(maxAlpha).setDuration(duration).setListener(
@@ -82,7 +87,7 @@ fun View.fadeIn(duration: Long, maxAlpha: Float = 1f) {
             }
 
             override fun onAnimationCancel(view: View) {}
-        }
+        },
     ).start()
 }
 
@@ -90,7 +95,11 @@ fun View.fadeOut(isGone: Boolean = false) {
     this.fadeOut(ANIMATION_DURATION_SHORT, isGone = isGone)
 }
 
-fun View.fadeOut(duration: Long, delay: Long = 0, isGone: Boolean = false) {
+fun View.fadeOut(
+    duration: Long,
+    delay: Long = 0,
+    isGone: Boolean = false,
+) {
     this.alpha = 1f
     ViewCompat.animate(this).alpha(0f).setStartDelay(delay).setDuration(duration).setListener(
         object : ViewPropertyAnimatorListener {
@@ -105,7 +114,7 @@ fun View.fadeOut(duration: Long, delay: Long = 0, isGone: Boolean = false) {
             }
 
             override fun onAnimationCancel(view: View) {}
-        }
+        },
     )
 }
 
@@ -113,15 +122,25 @@ fun View.translationX(value: Float) {
     this.translationX(value, ANIMATION_DURATION_SHORT)
 }
 
-fun View.translationX(value: Float, duration: Long) {
+fun View.translationX(
+    value: Float,
+    duration: Long,
+) {
     ViewCompat.animate(this).setDuration(duration).translationX(value).start()
 }
 
-fun View.translationY(value: Float, endAction: (() -> Unit)? = null) {
+fun View.translationY(
+    value: Float,
+    endAction: (() -> Unit)? = null,
+) {
     this.translationY(value, ANIMATION_DURATION_SHORT, endAction)
 }
 
-fun View.translationY(value: Float, duration: Long, endAction: (() -> Unit)? = null) {
+fun View.translationY(
+    value: Float,
+    duration: Long,
+    endAction: (() -> Unit)? = null,
+) {
     ViewCompat.animate(this).setDuration(duration).translationY(value)
         .setListener(
             object : ViewPropertyAnimatorListener {
@@ -134,7 +153,7 @@ fun View.translationY(value: Float, duration: Long, endAction: (() -> Unit)? = n
                 }
 
                 override fun onAnimationStart(view: View) {}
-            }
+            },
         )
         .start()
 }
@@ -154,11 +173,18 @@ fun View.shakeAnimator() =
         duration = 450
     }
 
-fun View.animateWidth(form: Int, to: Int) {
+fun View.animateWidth(
+    form: Int,
+    to: Int,
+) {
     this.animateWidth(form, to, ANIMATION_DURATION_SHORT)
 }
 
-fun View.animateWidth(form: Int, to: Int, duration: Long) {
+fun View.animateWidth(
+    form: Int,
+    to: Int,
+    duration: Long,
+) {
     val anim = ValueAnimator.ofInt(form, to)
     anim.addUpdateListener { valueAnimator ->
         layoutParams.width = valueAnimator.animatedValue as Int
@@ -174,38 +200,43 @@ fun View.animateHeight(
     duration: Long = ANIMATION_DURATION_SHORT,
     interpolator: Interpolator = DecelerateInterpolator(),
     action: ((ValueAnimator) -> Unit)? = null,
-    onEndAction: (() -> Unit)? = null
+    onEndAction: (() -> Unit)? = null,
 ) {
-    val anim = ValueAnimator.ofInt(from, to).apply {
-        this.duration = duration
-        this.interpolator = interpolator
-        addUpdateListener { valueAnimator ->
-            updateLayoutParams<ViewGroup.LayoutParams> {
-                this.height = valueAnimator.animatedValue as Int
+    val anim =
+        ValueAnimator.ofInt(from, to).apply {
+            this.duration = duration
+            this.interpolator = interpolator
+            addUpdateListener { valueAnimator ->
+                updateLayoutParams<ViewGroup.LayoutParams> {
+                    this.height = valueAnimator.animatedValue as Int
+                }
+            }
+            doOnEnd {
+                if (to == 0) {
+                    this@animateHeight.visibility = GONE
+                }
+                onEndAction?.invoke()
+            }
+            doOnStart {
+                if (from == 0) {
+                    this@animateHeight.visibility = VISIBLE
+                }
             }
         }
-        doOnEnd {
-            if (to == 0) {
-                this@animateHeight.visibility = GONE
-            }
-            onEndAction?.invoke()
-        }
-        doOnStart {
-            if (from == 0) {
-                this@animateHeight.visibility = VISIBLE
-            }
-        }
-    }
     action?.invoke(anim)
     anim.start()
 }
 
 fun View.round(radius: Float) {
-    this.outlineProvider = object : ViewOutlineProvider() {
-        override fun getOutline(view: View, outline: Outline) {
-            outline.setRoundRect(0, 0, view.width, view.height, radius)
+    this.outlineProvider =
+        object : ViewOutlineProvider() {
+            override fun getOutline(
+                view: View,
+                outline: Outline,
+            ) {
+                outline.setRoundRect(0, 0, view.width, view.height, radius)
+            }
         }
-    }
     this.clipToOutline = true
 }
 
@@ -213,23 +244,78 @@ fun View.round(radius: Int) {
     round(radius.toFloat())
 }
 
-fun View.roundTopOrBottom(radius: Float, top: Boolean, bottom: Boolean) {
-    this.outlineProvider = object : ViewOutlineProvider() {
-        override fun getOutline(view: View, outline: Outline) {
-            val t = if (!top) {
-                -radius.toInt()
-            } else {
-                0
+fun View.clearRound() {
+    this.outlineProvider = null
+    this.clipToOutline = false
+}
+
+fun View.roundTopOrBottom(
+    radius: Float,
+    top: Boolean,
+    bottom: Boolean,
+) {
+    this.outlineProvider =
+        object : ViewOutlineProvider() {
+            override fun getOutline(
+                view: View,
+                outline: Outline,
+            ) {
+                val t =
+                    if (!top) {
+                        -radius.toInt()
+                    } else {
+                        0
+                    }
+                val b =
+                    if (!bottom) {
+                        (height + radius).toInt()
+                    } else {
+                        height
+                    }
+                outline.setRoundRect(0, t, view.width, b, radius)
             }
-            val b = if (!bottom) {
-                (height + radius).toInt()
-            } else {
-                height
-            }
-            outline.setRoundRect(0, t, view.width, b, radius)
         }
-    }
     this.clipToOutline = true
+}
+
+fun View.roundLeftOrRight(
+    radius: Float,
+    left: Boolean,
+    right: Boolean,
+) {
+    this.outlineProvider =
+        object : ViewOutlineProvider() {
+            override fun getOutline(
+                view: View,
+                outline: Outline,
+            ) {
+                val l =
+                    if (!left) {
+                        -radius.toInt()
+                    } else {
+                        0
+                    }
+                val r =
+                    if (!right) {
+                        (width + radius).toInt()
+                    } else {
+                        width
+                    }
+                outline.setRoundRect(l, 0, r, height, radius)
+            }
+        }
+    this.clipToOutline = true
+}
+
+fun View.circularReveal() {
+    val centerX = width / 2
+    val centerY: Int = height / 2
+    val startRadius = 0f
+    val endRadius = hypot(width / 2f, height / 2f)
+
+    val circularReveal: Animator =
+        ViewAnimationUtils.createCircularReveal(this, centerX, centerY, startRadius, endRadius)
+    circularReveal.start()
 }
 
 fun EditText.showCursor() {
@@ -244,7 +330,7 @@ fun EditText.hideCursor() {
 
 fun ViewGroup.inflate(
     @LayoutRes layoutRes: Int,
-    attachToRoot: Boolean = false
+    attachToRoot: Boolean = false,
 ) = LayoutInflater.from(context).inflate(layoutRes, this, attachToRoot)!!
 
 fun View.navigateUp() {
@@ -257,10 +343,21 @@ fun View.navigateUp() {
     }
 }
 
+fun NavController.safeNavigateUp(): Boolean {
+    return try {
+        navigateUp()
+    } catch (e: IllegalArgumentException) {
+        // Workaround with https://issuetracker.google.com/issues/128881182
+        false
+    } catch (e: IllegalStateException) {
+        false
+    }
+}
+
 fun View.navigate(
     resId: Int,
     bundle: Bundle? = null,
-    navOptions: NavOptions? = null
+    navOptions: NavOptions? = null,
 ) {
     try {
         findNavController().navigate(resId, bundle, navOptions)
@@ -272,16 +369,15 @@ fun View.navigate(
 }
 
 @Throws(IOException::class)
-fun View.capture(context: Context): String? {
-    val outFile = context.getPublicPicturePath().createImagePngTemp(false)
-    val b = drawToBitmap()
-    b.save(outFile)
-    return try {
-        context.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))
+fun View.capture(context: Context): Result<String> {
+    return kotlin.runCatching {
+        val outFile = context.getPublicPicturePath().createImagePngTemp(false)
+        val b = drawToBitmap()
+        b.save(outFile)
+        MediaScannerConnection.scanFile(context, arrayOf(outFile.toString()), null, null)
         outFile.absolutePath
-    } catch (e: FileNotFoundException) {
-        e.printStackTrace()
-        null
+    }.onFailure {
+        reportException(it)
     }
 }
 
@@ -289,27 +385,35 @@ private val springSystem = SpringSystem.create()
 private val sprintConfig = SpringConfig.fromOrigamiTensionAndFriction(80.0, 4.0)
 
 fun View.bounce() {
-    val spring = springSystem.createSpring()
-        .setSpringConfig(sprintConfig)
-        .addListener(
-            object : SimpleSpringListener() {
-                override fun onSpringUpdate(spring: Spring) {
-                    val value = spring.currentValue.toFloat()
-                    scaleX = value
-                    scaleY = value
-                }
-            }
-        )
+    val spring =
+        springSystem.createSpring()
+            .setSpringConfig(sprintConfig)
+            .addListener(
+                object : SimpleSpringListener() {
+                    override fun onSpringUpdate(spring: Spring) {
+                        val value = spring.currentValue.toFloat()
+                        scaleX = value
+                        scaleY = value
+                    }
+                },
+            )
     spring.endValue = 1.0
 }
 
-fun View.IntProperty(name: String, getAction: (View) -> Int, setAction: (View, Int) -> Unit): Property<View, Int> {
+fun View.IntProperty(
+    name: String,
+    getAction: (View) -> Int,
+    setAction: (View, Int) -> Unit,
+): Property<View, Int> {
     return object : Property<View, Int>(Int::class.java, name) {
         override fun get(obj: View): Int {
             return getAction(obj)
         }
 
-        override fun set(obj: View, value: Int) {
+        override fun set(
+            obj: View,
+            value: Int,
+        ) {
             return setAction(obj, value)
         }
     }
@@ -325,7 +429,9 @@ fun View.isActivityNotDestroyed(): Boolean {
     return true
 }
 
-fun isDarkColor(@ColorInt color: Int) = ColorUtils.calculateLuminance(color) < 0.5
+fun isDarkColor(
+    @ColorInt color: Int,
+) = ColorUtils.calculateLuminance(color) < 0.5
 
 @ColorInt
 fun Int.withAlpha(alpha: Float): Int {
@@ -345,6 +451,30 @@ fun PopupMenu.showIcon() {
         menuHelper.javaClass.getDeclaredMethod("setForceShowIcon", *argTypes)
             .invoke(menuHelper, true)
     } catch (e: Exception) {
+    }
+}
+
+fun WindowManager.safeAddView(
+    view: View?,
+    params: ViewGroup.LayoutParams,
+) {
+    if (view == null) return
+
+    try {
+        if (view.windowToken != null || view.parent != null) {
+            removeView(view)
+        }
+        addView(view, params)
+    } catch (e: Exception) {
+        Timber.e("add/remove view from windowManager meet ${e.stackTraceToString()}")
+    }
+}
+
+fun WindowManager.safeRemoveView(view: View) {
+    try {
+        removeView(view)
+    } catch (e: Exception) {
+        Timber.e("remove view from windowManager meet ${e.stackTraceToString()}")
     }
 }
 
@@ -378,7 +508,7 @@ var View.backgroundResource: Int
     get() = error("Property does not have a getter")
     set(v) = setBackgroundResource(v)
 
-var ViewGroup.MarginLayoutParams.margin: Int
+var MarginLayoutParams.margin: Int
     @Deprecated("Property does not have a getter")
     get() = error("Property does not have a getter")
     set(v) {
@@ -387,3 +517,33 @@ var ViewGroup.MarginLayoutParams.margin: Int
         topMargin = v
         bottomMargin = v
     }
+
+fun View.expandTouchArea(horizontal: Int = 8.dp, vertical: Int = 8.dp) {
+    val parent = parent as? View ?: return
+    parent.post {
+        val rect = Rect()
+        getHitRect(rect)
+        rect.left -= horizontal * 2
+        rect.right += horizontal
+        rect.top -= vertical * 2
+        rect.bottom += vertical
+        parent.touchDelegate = TouchDelegate(rect, this)
+    }
+}
+
+fun HorizontalScrollView.scrollToCenter(targetView: View) {
+    post {
+        val containerView: View = getChildAt(0) ?: return@post
+        val targetCenterX: Int = targetView.left + (targetView.width / 2)
+        val scrollToX: Int = targetCenterX - (width / 2)
+        val maxScrollX: Int = max(0, containerView.width - width)
+        smoothScrollTo(scrollToX.coerceIn(0, maxScrollX), 0)
+    }
+}
+
+fun HorizontalScrollView.scrollToCenterCheckedRadio(radioGroup: RadioGroup) {
+    val checkedId: Int = radioGroup.checkedRadioButtonId
+    if (checkedId == View.NO_ID) return
+    val checkedView: View = radioGroup.findViewById(checkedId) ?: return
+    scrollToCenter(checkedView)
+}

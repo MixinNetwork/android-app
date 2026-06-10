@@ -1,5 +1,6 @@
 package one.mixin.android.widget
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.text.Layout
 import android.text.StaticLayout
@@ -28,7 +29,11 @@ class DescriptionLayout : ViewGroup {
         requestLayout()
     }
 
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+    @SuppressLint("SetTextI18n")
+    override fun onMeasure(
+        widthMeasureSpec: Int,
+        heightMeasureSpec: Int,
+    ) {
         val childCount = childCount
         if (childCount != 2) {
             throw RuntimeException("CustomLayout child count must == 2")
@@ -46,40 +51,47 @@ class DescriptionLayout : ViewGroup {
         val secondView = getChildAt(1) as TextView
         initTextParams(firstView.text, firstView.measuredWidth, firstView.paint)
 
-        type = when {
-            isExpand -> {
-                val height = firstView.measuredHeight
-                setMeasuredDimension(w + paddingWidth, height + paddingHeight)
-                EXPAND
+        type =
+            when {
+                isExpand -> {
+                    val height = firstView.measuredHeight
+                    setMeasuredDimension(w + paddingWidth, height + paddingHeight)
+                    EXPAND
+                }
+                lineCount <= 3 -> {
+                    val height = firstView.measuredHeight
+                    setMeasuredDimension(w + paddingWidth, height + paddingHeight)
+                    DEFAULT
+                }
+                lineWidth + secondView.measuredWidth <= w - paddingWidth -> {
+                    val height = lineHeight * 3
+                    setMeasuredDimension(w + paddingWidth, height + paddingHeight)
+                    secondView.text = " ${context.getString(R.string.More)}"
+                    TAIL
+                }
+                else -> {
+                    val height = lineHeight * 3
+                    setMeasuredDimension(w + paddingWidth, height + paddingHeight)
+                    secondView.setText(R.string.More)
+                    BOTTOM
+                }
             }
-            lineCount <= 3 -> {
-                val height = firstView.measuredHeight
-                setMeasuredDimension(w + paddingWidth, height + paddingHeight)
-                DEFAULT
-            }
-            lineWidth + secondView.measuredWidth <= w - paddingWidth -> {
-                val height = lineHeight * 3
-                setMeasuredDimension(w + paddingWidth, height + paddingHeight)
-                secondView.setText(R.string.group_info_show_more_omit)
-                TAIL
-            }
-            else -> {
-                val height = lineHeight * 3
-                setMeasuredDimension(w + paddingWidth, height + paddingHeight)
-                secondView.setText(R.string.group_info_show_more)
-                BOTTOM
-            }
-        }
     }
 
-    override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
+    override fun onLayout(
+        changed: Boolean,
+        l: Int,
+        t: Int,
+        r: Int,
+        b: Int,
+    ) {
         val firstView = getChildAt(0) as TextView
         val secondView = getChildAt(1)
         firstView.layout(
             paddingStart,
             paddingTop,
             firstView.measuredWidth + paddingStart,
-            firstView.measuredHeight + paddingTop
+            firstView.measuredHeight + paddingTop,
         )
         when (type) {
             EXPAND, DEFAULT -> {
@@ -89,7 +101,7 @@ class DescriptionLayout : ViewGroup {
                     paddingTop,
                     firstView.measuredWidth + paddingStart,
                     firstView
-                        .measuredHeight + paddingTop
+                        .measuredHeight + paddingTop,
                 )
             }
             TAIL -> {
@@ -100,7 +112,7 @@ class DescriptionLayout : ViewGroup {
                     paddingTop,
                     firstView.measuredWidth + paddingStart,
                     firstView
-                        .measuredHeight + paddingTop
+                        .measuredHeight + paddingTop,
                 )
                 secondView.layout(left, top, left + secondView.measuredWidth, top + lineHeight)
             }
@@ -110,25 +122,31 @@ class DescriptionLayout : ViewGroup {
                     paddingStart,
                     paddingTop,
                     firstView.measuredWidth + paddingStart,
-                    paddingTop + lineHeight * 2
+                    paddingTop + lineHeight * 2,
                 )
                 secondView.layout(paddingStart, top, firstView.measuredWidth + paddingStart, top + lineHeight)
             }
         }
     }
 
-    private fun initTextParams(text: CharSequence, maxWidth: Int, paint: TextPaint) {
+    private fun initTextParams(
+        text: CharSequence,
+        maxWidth: Int,
+        paint: TextPaint,
+    ) {
         val string = text.trim()
-        val staticLayout = StaticLayout.Builder.obtain(string, 0, string.length, paint, maxWidth)
-            .setAlignment(Layout.Alignment.ALIGN_NORMAL).setIncludePad(false)
-            .setLineSpacing(0.0f, 1.0f).build()
+        val staticLayout =
+            StaticLayout.Builder.obtain(string, 0, string.length, paint, maxWidth)
+                .setAlignment(Layout.Alignment.ALIGN_NORMAL).setIncludePad(false)
+                .setLineSpacing(0.0f, 1.0f).build()
 
         lineCount = staticLayout.lineCount
-        val lastLine = if (lineCount > 3) {
-            2
-        } else {
-            lineCount - 1
-        }
+        val lastLine =
+            if (lineCount > 3) {
+                2
+            } else {
+                lineCount - 1
+            }
         lineHeight = staticLayout.getLineBottom(lastLine) - staticLayout.getLineTop(lastLine)
         lineWidth = (staticLayout.getLineRight(lastLine) - staticLayout.getLineLeft(lastLine)).toInt()
     }

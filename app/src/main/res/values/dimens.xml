@@ -1,11 +1,11 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="photo_size">90dp</dimen>
     <dimen name="min_keyboard_size">50dp</dimen>
     <dimen name="min_custom_keyboard_size">110dp</dimen>
-    <dimen name="default_custom_keyboard_size">220dp</dimen>
+    <dimen name="default_custom_keyboard_size">420dp</dimen>
     <dimen name="min_custom_keyboard_top_margin_portrait">170dp</dimen>
     <dimen name="item_contact_height">60dp</dimen>
     <dimen name="item_contact_header_height">30dp</dimen>
@@ -36,4 +36,22 @@
     <dimen name="call_button_size">40dp</dimen>
     <dimen name="setting_divider">16dp</dimen>
     <dimen name="bottom_bottom_margin">100dp</dimen>
+
+    <!--    FABProgressCircle-->
+    <dimen name="progress_arc_stroke_width">2dp</dimen>
+    <dimen name="fab_content_size">24dp</dimen>
+    <dimen name="half_fab_content_size">12dp</dimen>
+    <dimen name="fab_size_normal">56dp</dimen>
+    <dimen name="fab_size_mini">40dp</dimen>
+    <dimen name="fab_translation_z_pressed">6dp</dimen>
+    <dimen name="futuresimple_fab_shadow_offset">3dp</dimen>
+
+    <dimen name="landing_indicator_dot_size">8dp</dimen>
+    <dimen name="landing_indicator_dot_spacing">4dp</dimen>
+
+    <dimen name="cp_dialog_width">200dp</dimen>
+    <dimen name="cp_dialog_height">300dp</dimen>
+    <dimen name="list_header_height">30dp</dimen>
+    <dimen name="list_normal_height">60dp</dimen>
+    <dimen name="margin_start">16dp</dimen>
 </resources>

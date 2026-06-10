@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/bg_white"
@@ -16,9 +17,8 @@
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:background="?attr/bg_white"
-        android:drawableStart="@drawable/ic_search"
         android:drawablePadding="8dp"
-        android:hint="@string/contact_search_hint"
+        android:hint="@string/setting_auth_search_hint"
         android:maxLines="1"
         android:imeOptions="actionSearch"
         android:inputType="text"
@@ -26,7 +26,9 @@
         android:paddingEnd="@dimen/activity_horizontal_margin"
         android:textColor="?attr/text_primary"
         android:textColorHint="?attr/text_assist"
-        android:textSize="14sp"/>
+        android:textSize="14sp"
+        app:drawableStartCompat="@drawable/ic_search"
+        tools:ignore="Autofill" />
 
     <View
         android:id="@+id/divider"

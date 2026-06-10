@@ -9,32 +9,37 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import android.view.ContextThemeWrapper
 import android.view.View
-import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.widget.PopupMenu
-import androidx.core.content.ContextCompat
+import androidx.core.view.children
 import androidx.core.view.isVisible
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
+import androidx.media3.common.MimeTypes
+import androidx.media3.common.util.UnstableApi
+import androidx.paging.DataSource
+import androidx.paging.LivePagedListBuilder
+import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.exoplayer2.util.MimeTypes
-import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.databinding.ActivityChatHistoryBinding
 import one.mixin.android.databinding.ViewTranscriptBinding
 import one.mixin.android.databinding.ViewUrlBottomBinding
+import one.mixin.android.event.BlinkEvent
 import one.mixin.android.extension.alert
-import one.mixin.android.extension.booleanFromAttribute
+import one.mixin.android.extension.callPhone
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.openAsUrlOrWeb
+import one.mixin.android.extension.openEmail
 import one.mixin.android.extension.openMedia
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.screenHeight
@@ -53,14 +58,17 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.common.message.SendMessageHelper
 import one.mixin.android.ui.common.showUserBottom
+import one.mixin.android.ui.conversation.chathistory.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.location.LocationActivity
 import one.mixin.android.ui.conversation.markdown.MarkdownActivity
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.ui.media.pager.transcript.TranscriptMediaPagerActivity
 import one.mixin.android.ui.preview.TextPreviewActivity
+import one.mixin.android.ui.setting.WallpaperManager
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.EncryptCategory
@@ -80,6 +88,7 @@ import one.mixin.android.vo.isVideo
 import one.mixin.android.vo.saveToLocal
 import one.mixin.android.vo.toMessageItem
 import one.mixin.android.vo.toUser
+import one.mixin.android.vo.toVideoClip
 import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.PinAction
 import one.mixin.android.widget.BottomSheet
@@ -90,11 +99,14 @@ import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
 
-@AndroidEntryPoint
+@UnstableApi @AndroidEntryPoint
 class ChatHistoryActivity : BaseActivity() {
     private lateinit var binding: ActivityChatHistoryBinding
+
     override fun getNightThemeId(): Int = R.style.AppTheme_Night_NoActionBar
+
     override fun getDefaultThemeId(): Int = R.style.AppTheme_NoActionBar
+
     private val decoration by lazy {
         MixinHeadersDecoration(chatHistoryAdapter)
     }
@@ -122,110 +134,137 @@ class ChatHistoryActivity : BaseActivity() {
     private val isGroup by lazy {
         intent.getBooleanExtra(IS_GROUP, false)
     }
+    private val count by lazy {
+        intent.getIntExtra(COUNT, 0)
+    }
     private val isTranscript by lazy {
         intent.getIntExtra(CATEGORY, TRANSCRIPT) == TRANSCRIPT
     }
 
     private var firstLoad = true
+
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityChatHistoryBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        if (booleanFromAttribute(R.attr.flag_night)) {
-            binding.container.backgroundImage =
-                ContextCompat.getDrawable(this@ChatHistoryActivity, R.drawable.bg_chat_night)
-        } else {
-            binding.container.backgroundImage =
-                ContextCompat.getDrawable(this@ChatHistoryActivity, R.drawable.bg_chat)
-        }
+        binding.container.backgroundImage = WallpaperManager.getWallpaper(this@ChatHistoryActivity)
         binding.titleView.leftIb.setOnClickListener { finish() }
         binding.titleView.setSubTitle(
             getString(
                 if (isTranscript) {
-                    R.string.common_transcript
+                    R.string.Transcript
                 } else {
-                    R.string.pinned_message
-                }
+                    R.string.Pinned_Messages
+                },
             ),
-            ""
+            "",
         )
         binding.recyclerView.addItemDecoration(decoration)
         binding.recyclerView.itemAnimator = null
-        binding.recyclerView.layoutManager = object : LinearLayoutManager(this) {
-            override fun onLayoutChildren(
-                recycler: RecyclerView.Recycler,
-                state: RecyclerView.State
-            ) {
-                if (!isTranscript && firstLoad && state.itemCount > 0) {
-                    firstLoad = false
-                    scrollToPositionWithOffset(
-                        state.itemCount - 1,
-                        0
-                    )
+        binding.recyclerView.layoutManager =
+            object : LinearLayoutManager(this) {
+                override fun onLayoutChildren(
+                    recycler: RecyclerView.Recycler,
+                    state: RecyclerView.State,
+                ) {
+                    if (!isTranscript && firstLoad && state.itemCount > 0) {
+                        firstLoad = false
+                        scrollToPositionWithOffset(
+                            state.itemCount - 1,
+                            0,
+                        )
+                    }
+                    super.onLayoutChildren(recycler, state)
                 }
-                super.onLayoutChildren(recycler, state)
             }
-        }
         binding.recyclerView.setHasFixedSize(true)
         binding.recyclerView.adapter = chatHistoryAdapter
         if (isTranscript) {
             binding.unpinTv.isVisible = false
-            conversationRepository.findTranscriptMessageItemById(transcriptId)
+            buildLivePagedList(conversationRepository.findTranscriptMessageItemById(transcriptId))
                 .observe(this) { transcripts ->
                     binding.titleView.rightIb.setOnClickListener {
                         showBottomSheet()
                     }
-                    chatHistoryAdapter.transcripts = transcripts
+                    chatHistoryAdapter.submitList(transcripts)
                 }
             binding.titleView.rightAnimator.isVisible = true
             binding.titleView.rightIb.setImageResource(R.drawable.ic_more)
         } else {
             lifecycleScope.launch {
                 if (isGroup) {
-                    val role = withContext(Dispatchers.IO) {
-                        conversationRepository.findParticipantById(
-                            conversationId,
-                            Session.getAccountId()!!
-                        )?.role
-                    }
+                    val role =
+                        withContext(Dispatchers.IO) {
+                            conversationRepository.findParticipantById(
+                                conversationId,
+                                Session.getAccountId()!!,
+                            )?.role
+                        }
                     binding.unpinTv.isVisible = role == ParticipantRole.OWNER.name || role == ParticipantRole.ADMIN.name
                 } else {
                     binding.unpinTv.isVisible = true
                 }
             }
             binding.unpinTv.setOnClickListener {
-                lifecycleScope.launch {
-                    withContext(Dispatchers.IO) {
-                        conversationRepository.getPinMessageMinimals(conversationId)
-                            .chunked(128) { list ->
-                                conversationRepository.deletePinMessageByIds(list.map { it.messageId })
-                                Timber.e((list.map { it.messageId }.toString()))
-                                messenger.sendPinMessage(
-                                    conversationId, requireNotNull(Session.getAccount()).toUser(),
-                                    PinAction.UNPIN, list
-                                )
+                alert(getString(R.string.unpin_all_messages_confirmation))
+                    .setNegativeButton(android.R.string.cancel) { dialog, _ -> dialog.dismiss() }
+                    .setPositiveButton(R.string.OK) { dialog, _ ->
+                        lifecycleScope.launch {
+                            withContext(Dispatchers.IO) {
+                                conversationRepository.getPinMessageMinimals(conversationId)
+                                    .chunked(128) { list ->
+                                        if (list.isEmpty()) return@chunked
+                                        conversationRepository.deletePinMessageByIds(list.map { it.messageId })
+                                        Timber.e((list.map { it.messageId }.toString()))
+                                        messenger.sendPinMessage(
+                                            conversationId,
+                                            requireNotNull(Session.getAccount()).toUser(),
+                                            PinAction.UNPIN,
+                                            list,
+                                        )
+                                    }
                             }
-                    }
-                    finish()
-                }
+                            finish()
+                        }
+                        dialog.dismiss()
+                    }.show()
             }
             binding.titleView.rightAnimator.isVisible = false
-            conversationRepository.getPinMessages(conversationId)
+            binding.titleView.setSubTitle(
+                this@ChatHistoryActivity.resources.getQuantityString(R.plurals.pinned_message_title, count, count),
+                "",
+            )
+            buildLivePagedList(conversationRepository.getPinMessages(conversationId, count))
                 .observe(this) { list ->
-                    binding.titleView.setSubTitle(
-                        getString(
-                            R.string.pinned_message_title, list.size
-                        ),
-                        ""
-                    )
-                    chatHistoryAdapter.transcripts = list
+                    chatHistoryAdapter.submitList(list)
                 }
         }
     }
 
     override fun onStop() {
+        binding.recyclerView.let { rv ->
+            rv.children.forEach {
+                val vh = rv.getChildViewHolder(it)
+                if (vh != null && vh is BaseViewHolder) {
+                    vh.stopListen()
+                }
+            }
+        }
         super.onStop()
         AudioPlayer.pause()
+    }
+
+    private fun buildLivePagedList(dataSource: DataSource.Factory<Int, ChatHistoryMessageItem>): LiveData<PagedList<ChatHistoryMessageItem>> {
+        val pagedListConfig =
+            PagedList.Config.Builder()
+                .setPrefetchDistance(10 * 2)
+                .setPageSize(10)
+                .setEnablePlaceholders(true)
+                .build()
+        return LivePagedListBuilder(
+            dataSource,
+            pagedListConfig,
+        ).build()
     }
 
     private val chatHistoryAdapter by lazy {
@@ -238,25 +277,29 @@ class ChatHistoryActivity : BaseActivity() {
                     this@ChatHistoryActivity,
                     conversationId,
                     supportFragmentManager,
-                    lifecycleScope
+                    lifecycleScope,
                 )
             }
 
-            override fun onPostClick(view: View, messageItem: ChatHistoryMessageItem) {
+            override fun onPostClick(
+                view: View,
+                messageItem: ChatHistoryMessageItem,
+            ) {
                 MarkdownActivity.show(
                     this@ChatHistoryActivity,
                     messageItem.content!!,
-                    conversationId
+                    conversationId,
                 )
             }
 
             override fun onUrlLongClick(url: String) {
                 val builder = BottomSheet.Builder(this@ChatHistoryActivity)
-                val view = View.inflate(
-                    ContextThemeWrapper(this@ChatHistoryActivity, R.style.Custom),
-                    R.layout.view_url_bottom,
-                    null
-                )
+                val view =
+                    View.inflate(
+                        ContextThemeWrapper(this@ChatHistoryActivity, R.style.Custom),
+                        R.layout.view_url_bottom,
+                        null,
+                    )
                 val viewBinding = ViewUrlBottomBinding.bind(view)
                 builder.setCustomView(view)
                 val bottomSheet = builder.create()
@@ -266,14 +309,14 @@ class ChatHistoryActivity : BaseActivity() {
                         this@ChatHistoryActivity,
                         conversationId,
                         supportFragmentManager,
-                        lifecycleScope
+                        lifecycleScope,
                     )
                     bottomSheet.dismiss()
                 }
                 viewBinding.copyTv.setOnClickListener {
                     this@ChatHistoryActivity.getClipboardManager()
                         .setPrimaryClip(ClipData.newPlainText(null, url))
-                    toast(R.string.copy_success)
+                    toast(R.string.copied_to_clipboard)
                     bottomSheet.dismiss()
                 }
                 bottomSheet.show()
@@ -288,32 +331,49 @@ class ChatHistoryActivity : BaseActivity() {
                 }
             }
 
-            override fun onQuoteMessageClick(messageId: String, quoteMessageId: String?) {
+            override fun onEmailClick(email: String) {
+                this@ChatHistoryActivity.openEmail(email)
+            }
+
+            override fun onPhoneClick(phoneNumber: String) {
+                this@ChatHistoryActivity.callPhone(phoneNumber)
+            }
+
+            override fun onQuoteMessageClick(
+                messageId: String,
+                quoteMessageId: String?,
+            ) {
                 quoteMessageId?.let { msgId ->
                     lifecycleScope.launch {
-                        val index = if (isTranscript) {
-                            conversationRepository.findTranscriptMessageIndex(
-                                transcriptId,
-                                msgId
-                            )
-                        } else {
-                            conversationRepository.findPinMessageIndex(
-                                conversationId,
-                                msgId
-                            )
+                        val index =
+                            if (isTranscript) {
+                                conversationRepository.findTranscriptMessageIndex(
+                                    transcriptId,
+                                    msgId,
+                                )
+                            } else {
+                                conversationRepository.findPinMessageIndex(
+                                    conversationId,
+                                    msgId,
+                                )
+                            }
+                        scrollTo(index, this@ChatHistoryActivity.screenHeight() * 3 / 4) {
+                            RxBus.publish(BlinkEvent(quoteMessageId))
                         }
-                        scrollTo(index, this@ChatHistoryActivity.screenHeight() * 3 / 4)
                     }
                 }
             }
 
-            override fun onImageClick(messageItem: ChatHistoryMessageItem, view: View) {
+            override fun onImageClick(
+                messageItem: ChatHistoryMessageItem,
+                view: View,
+            ) {
                 if (isTranscript) {
                     TranscriptMediaPagerActivity.show(
                         this@ChatHistoryActivity,
                         view,
                         transcriptId,
-                        messageItem.messageId
+                        messageItem.messageId,
                     )
                 } else {
                     MediaPagerActivity.show(
@@ -321,7 +381,7 @@ class ChatHistoryActivity : BaseActivity() {
                         view,
                         messageItem.conversationId!!,
                         messageItem.messageId,
-                        messageItem.toMessageItem(messageItem.conversationId),
+                        messageItem.toMessageItem(),
                         MediaPagerActivity.MediaSource.ChatHistory,
                     )
                 }
@@ -333,26 +393,34 @@ class ChatHistoryActivity : BaseActivity() {
                 ) {
                     AudioPlayer.pause()
                 } else {
-                    AudioPlayer.play(messageItem.toMessageItem(this@ChatHistoryActivity.conversationId))
+                    AudioPlayer.play(messageItem.toMessageItem())
                 }
             }
 
             override fun onAudioFileClick(messageItem: ChatHistoryMessageItem) {
             }
 
-            override fun onActionClick(action: String, userId: String?) {
+            override fun onActionClick(
+                action: String,
+                userId: String?,
+                appId: String?
+            ) {
                 if (openInputAction(action) || userId == null) return
 
                 lifecycleScope.launch {
-                    val app = userRepository.findAppById(userId)
+                    val app = userRepository.findAppById(appId ?: userId)
                     action.openAsUrlOrWeb(this@ChatHistoryActivity, conversationId, supportFragmentManager, lifecycleScope, app)
                 }
             }
 
-            override fun onAppCardClick(appCard: AppCardData, userId: String?) {
-                if (openInputAction(appCard.action)) return
+            override fun onAppCardClick(
+                appCard: AppCardData,
+                userId: String?,
+            ) {
+                val action = appCard.action ?: return
+                if (openInputAction(action)) return
 
-                appCard.action.openAsUrlOrWeb(this@ChatHistoryActivity, conversationId, supportFragmentManager, lifecycleScope, null, appCard)
+                action.openAsUrlOrWeb(this@ChatHistoryActivity, conversationId, supportFragmentManager, lifecycleScope, null, appCard)
             }
 
             override fun onTranscriptClick(messageItem: ChatHistoryMessageItem) {
@@ -362,11 +430,14 @@ class ChatHistoryActivity : BaseActivity() {
             override fun onTextDoubleClick(messageItem: ChatHistoryMessageItem) {
                 TextPreviewActivity.show(
                     this@ChatHistoryActivity,
-                    messageItem.toMessageItem(conversationId)
+                    messageItem.toMessageItem(conversationId),
                 )
             }
 
-            override fun onRetryDownload(transcriptId: String?, messageId: String) {
+            override fun onRetryDownload(
+                transcriptId: String?,
+                messageId: String,
+            ) {
                 lifecycleScope.launch {
                     if (transcriptId != null) {
                         conversationRepository.getTranscriptById(transcriptId, messageId)
@@ -374,30 +445,37 @@ class ChatHistoryActivity : BaseActivity() {
                                 jobManager.addJobInBackground(
                                     TranscriptAttachmentDownloadJob(
                                         conversationId,
-                                        transcript
-                                    )
+                                        transcript,
+                                    ),
                                 )
                             }
                     } else {
-                        RxPermissions(this@ChatHistoryActivity)
-                            .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                            .autoDispose(stopScope)
-                            .subscribe(
-                                { granted ->
-                                    if (granted) {
-                                        retryDownload(messageId)
-                                    } else {
-                                        this@ChatHistoryActivity.openPermissionSetting()
-                                    }
-                                },
-                                {
-                                }
-                            )
+                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                            RxPermissions(this@ChatHistoryActivity)
+                                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                                .autoDispose(stopScope)
+                                .subscribe(
+                                    { granted ->
+                                        if (granted) {
+                                            retryDownload(messageId)
+                                        } else {
+                                            this@ChatHistoryActivity.openPermissionSetting()
+                                        }
+                                    },
+                                    {
+                                    },
+                                )
+                        } else {
+                            retryDownload(messageId)
+                        }
                     }
                 }
             }
 
-            override fun onRetryUpload(transcriptId: String?, messageId: String) {
+            override fun onRetryUpload(
+                transcriptId: String?,
+                messageId: String,
+            ) {
                 lifecycleScope.launch {
                     if (transcriptId != null) {
                         conversationRepository.getTranscriptById(transcriptId, messageId)
@@ -405,32 +483,41 @@ class ChatHistoryActivity : BaseActivity() {
                                 jobManager.addJobInBackground(
                                     SendTranscriptAttachmentMessageJob(
                                         transcript,
-                                        encryptCategory
-                                    )
+                                        encryptCategory,
+                                    ),
                                 )
                             }
                     } else {
-                        RxPermissions(this@ChatHistoryActivity)
-                            .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                            .autoDispose(stopScope)
-                            .subscribe(
-                                { granted ->
-                                    if (granted) {
-                                        retryUpload(messageId) {
-                                            toast(R.string.error_retry_upload)
+                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                            RxPermissions(this@ChatHistoryActivity)
+                                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                                .autoDispose(stopScope)
+                                .subscribe(
+                                    { granted ->
+                                        if (granted) {
+                                            retryUpload(messageId) {
+                                                toast(R.string.Retry_upload_failed)
+                                            }
+                                        } else {
+                                            this@ChatHistoryActivity.openPermissionSetting()
                                         }
-                                    } else {
-                                        this@ChatHistoryActivity.openPermissionSetting()
-                                    }
-                                },
-                                {
-                                }
-                            )
+                                    },
+                                    {
+                                    },
+                                )
+                        } else {
+                            retryUpload(messageId) {
+                                toast(R.string.Retry_upload_failed)
+                            }
+                        }
                     }
                 }
             }
 
-            override fun onCancel(transcriptId: String?, messageId: String) {
+            override fun onCancel(
+                transcriptId: String?,
+                messageId: String,
+            ) {
                 lifecycleScope.launch(Dispatchers.IO) {
                     if (transcriptId != null) {
                         conversationRepository.getTranscriptById(transcriptId, messageId)
@@ -439,7 +526,7 @@ class ChatHistoryActivity : BaseActivity() {
                                 conversationRepository.updateTranscriptMediaStatus(
                                     transcript.transcriptId,
                                     transcript.messageId,
-                                    MediaStatus.CANCELED.name
+                                    MediaStatus.CANCELED.name,
                                 )
                             }
                     } else {
@@ -447,7 +534,8 @@ class ChatHistoryActivity : BaseActivity() {
                             lifecycleScope.launch(Dispatchers.IO) {
                                 conversationRepository.updateMediaStatusSuspend(
                                     MediaStatus.CANCELED.name,
-                                    messageId
+                                    messageId,
+                                    conversationId,
                                 )
                             }
                         }
@@ -474,22 +562,7 @@ class ChatHistoryActivity : BaseActivity() {
             }
 
             override fun onFileClick(messageItem: ChatHistoryMessageItem) {
-                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O &&
-                    messageItem.mediaMimeType.equals(
-                            "application/vnd.android.package-archive",
-                            true
-                        )
-                ) {
-                    if (this@ChatHistoryActivity.packageManager.canRequestPackageInstalls()) {
-                        openMedia(messageItem)
-                    } else {
-                        startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES))
-                    }
-                } else if (MimeTypes.isAudio(messageItem.mediaMimeType)) {
-                    showBottomSheet(messageItem)
-                } else {
-                    openMedia(messageItem)
-                }
+                showBottomSheet(messageItem)
             }
 
             override fun onUserClick(userId: String?) {
@@ -511,19 +584,22 @@ class ChatHistoryActivity : BaseActivity() {
                     Activity.RESULT_OK,
                     Intent().apply {
                         putExtra(JUMP_ID, messageId)
-                    }
+                    },
                 )
                 finish()
             }
 
-            override fun onMenu(view: View, messageItem: ChatHistoryMessageItem) {
+            override fun onMenu(
+                view: View,
+                messageItem: ChatHistoryMessageItem,
+            ) {
                 lifecycleScope.launch {
                     val role = withContext(Dispatchers.IO) { conversationRepository.findParticipantById(conversationId, Session.getAccountId()!!) }?.role
                     val isAdmin = role == ParticipantRole.OWNER.name || role == ParticipantRole.ADMIN.name
                     val popMenu = PopupMenu(this@ChatHistoryActivity, view)
                     popMenu.menuInflater.inflate(
                         R.menu.chathistory,
-                        popMenu.menu
+                        popMenu.menu,
                     )
                     popMenu.menu.findItem(R.id.unpin).isVisible = !isTranscript && isAdmin
                     popMenu.menu.findItem(R.id.copy).isVisible = messageItem.isText()
@@ -535,10 +611,10 @@ class ChatHistoryActivity : BaseActivity() {
                             R.id.copy -> {
                                 try {
                                     this@ChatHistoryActivity.getClipboardManager().setPrimaryClip(
-                                        ClipData.newPlainText(null, messageItem.content)
+                                        ClipData.newPlainText(null, messageItem.content),
                                     )
-                                    toast(R.string.copy_success)
-                                } catch (e: ArrayIndexOutOfBoundsException) {
+                                    toast(R.string.copied_to_clipboard)
+                                } catch (_: ArrayIndexOutOfBoundsException) {
                                 }
                             }
                             R.id.forward -> {
@@ -551,7 +627,7 @@ class ChatHistoryActivity : BaseActivity() {
                                                 ForwardActivity.show(
                                                     this@ChatHistoryActivity,
                                                     arrayListOf(forwardMessage),
-                                                    ForwardAction.App.Resultless()
+                                                    ForwardAction.App.Resultless(),
                                                 )
                                             }
                                         }
@@ -563,7 +639,7 @@ class ChatHistoryActivity : BaseActivity() {
                                     messenger.sendUnPinMessage(conversationId, Session.getAccount()!!.toUser(), list)
                                     conversationRepository.deletePinMessageByIds(list)
                                     withContext(Dispatchers.Main) {
-                                        toast(R.string.unpin_success)
+                                        toast(R.string.Message_unpinned)
                                     }
                                 }
                             }
@@ -593,7 +669,7 @@ class ChatHistoryActivity : BaseActivity() {
         position: Int,
         offset: Int = -1,
         delay: Long = 30,
-        action: (() -> Unit)? = null
+        action: (() -> Unit)? = null,
     ) {
         binding.recyclerView.postDelayed(
             {
@@ -602,26 +678,26 @@ class ChatHistoryActivity : BaseActivity() {
                 } else if (offset == -1) {
                     (binding.recyclerView.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
                         position,
-                        0
+                        0,
                     )
                 } else {
                     (binding.recyclerView.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
                         position,
-                        offset
+                        offset,
                     )
                 }
                 binding.recyclerView.postDelayed(
                     {
                         (binding.recyclerView.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
                             position,
-                            offset
+                            offset,
                         )
                         action?.let { it() }
                     },
-                    160
+                    160,
                 )
             },
-            delay
+            delay,
         )
     }
 
@@ -632,44 +708,55 @@ class ChatHistoryActivity : BaseActivity() {
         if (MimeTypes.isAudio(messageItem.mediaMimeType)) {
             items.add(
                 BottomSheetItem(
-                    getString(R.string.save_to_music),
+                    getString(R.string.Save_to_Music),
                     {
                         checkWritePermissionAndSave(messageItem)
                         bottomSheet?.dismiss()
-                    }
-                )
+                    },
+                ),
             )
         } else if (MimeTypes.isVideo(messageItem.mediaMimeType) ||
             messageItem.mediaMimeType?.isImageSupport() == true
         ) {
             items.add(
                 BottomSheetItem(
-                    getString(R.string.save_to_gallery),
+                    getString(R.string.Save_to_Gallery),
                     {
                         checkWritePermissionAndSave(messageItem)
                         bottomSheet?.dismiss()
-                    }
-                )
+                    },
+                ),
             )
         } else {
             items.add(
                 BottomSheetItem(
-                    getString(R.string.save_to_downloads),
+                    getString(R.string.Save_to_Downloads),
                     {
                         checkWritePermissionAndSave(messageItem)
                         bottomSheet?.dismiss()
-                    }
-                )
+                    },
+                ),
+            )
+        }
+        // Android O requires installation permissions
+        if (!(messageItem.mediaMimeType.equals("application/vnd.android.package-archive", true) && Build.VERSION.SDK_INT > Build.VERSION_CODES.O)) {
+            items.add(
+                BottomSheetItem(
+                    getString(R.string.Open),
+                    {
+                        this.openMedia(messageItem)
+                        bottomSheet?.dismiss()
+                    },
+                ),
             )
         }
         items.add(
             BottomSheetItem(
-                getString(R.string.open),
+                getString(R.string.Cancel),
                 {
-                    openMedia(messageItem)
                     bottomSheet?.dismiss()
-                }
-            )
+                },
+            ),
         )
         val view = buildBottomSheetView(this, items)
         builder.setCustomView(view)
@@ -678,32 +765,35 @@ class ChatHistoryActivity : BaseActivity() {
     }
 
     private fun checkWritePermissionAndSave(messageItem: ChatHistoryMessageItem) {
-        RxPermissions(this)
-            .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            .autoDispose(stopScope)
-            .subscribe(
-                { granted ->
-                    if (granted) {
-                        messageItem.saveToLocal(this)
-                    } else {
-                        openPermissionSetting()
-                    }
-                },
-                {
-                }
-            )
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            RxPermissions(this)
+                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .autoDispose(stopScope)
+                .subscribe(
+                    { granted ->
+                        if (granted) {
+                            messageItem.saveToLocal(this)
+                        } else {
+                            openPermissionSetting()
+                        }
+                    },
+                    {
+                    },
+                )
+        } else {
+            messageItem.saveToLocal(this)
+        }
     }
-
-    lateinit var getCombineForwardContract: ActivityResultLauncher<ArrayList<TranscriptMessage>>
 
     @SuppressLint("AutoDispose")
     private fun showBottomSheet() {
         val builder = BottomSheet.Builder(this)
-        val view = View.inflate(
-            androidx.appcompat.view.ContextThemeWrapper(this, R.style.Custom),
-            R.layout.view_transcript,
-            null
-        )
+        val view =
+            View.inflate(
+                androidx.appcompat.view.ContextThemeWrapper(this, R.style.Custom),
+                R.layout.view_transcript,
+                null,
+            )
         val viewBinding = ViewTranscriptBinding.bind(view)
         builder.setCustomView(view)
         val bottomSheet = builder.create()
@@ -711,7 +801,7 @@ class ChatHistoryActivity : BaseActivity() {
             lifecycleScope.launch {
                 if (conversationRepository.hasUploadedAttachmentSuspend(transcriptId) > 0) {
                     alert(getString(R.string.error_transcript_forward))
-                        .setPositiveButton(R.string.ok) { dialog, _ ->
+                        .setPositiveButton(R.string.OK) { dialog, _ ->
                             dialog.dismiss()
                         }.show()
                     bottomSheet.dismiss()
@@ -725,9 +815,9 @@ class ChatHistoryActivity : BaseActivity() {
                             conversationRepository.getTranscriptsById(this@ChatHistoryActivity.transcriptId)
                                 .map {
                                     it.copy(transcriptId)
-                                }
+                                },
                         )
-                    }
+                    },
                 )
                 bottomSheet.dismiss()
             }
@@ -735,56 +825,63 @@ class ChatHistoryActivity : BaseActivity() {
         bottomSheet.show()
     }
 
-    private fun retryUpload(id: String, onError: () -> Unit) {
+    private fun retryUpload(
+        id: String,
+        onError: () -> Unit,
+    ) {
         lifecycleScope.launch(Dispatchers.IO) {
-            conversationRepository.findMessageById(id)?.let {
-                if (it.isVideo() && it.mediaSize != null && it.mediaSize == 0L) {
+            conversationRepository.findMessageById(id)?.let { message ->
+                if (message.isVideo() && message.mediaSize != null && message.mediaSize == 0L) {
                     try {
-                        conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.id)
+                        conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, message.messageId, message.conversationId)
+                        val videoClip = toVideoClip(message.content, message.mediaUrl)
                         jobManager.addJobInBackground(
                             ConvertVideoJob(
-                                it.conversationId,
-                                it.userId,
-                                Uri.parse(it.mediaUrl),
+                                message.conversationId,
+                                message.userId,
+                                Uri.parse(videoClip.uri),
+                                videoClip.startProgress,
+                                videoClip.endProgress,
                                 when {
-                                    it.isSignal() -> EncryptCategory.SIGNAL
-                                    it.isEncrypted() -> EncryptCategory.ENCRYPTED
+                                    message.isSignal() -> EncryptCategory.SIGNAL
+                                    message.isEncrypted() -> EncryptCategory.ENCRYPTED
                                     else -> EncryptCategory.PLAIN
                                 },
-                                it.id,
-                                it.createdAt
-                            )
+                                message.messageId,
+                                message.createdAt,
+                            ),
                         )
                     } catch (e: NullPointerException) {
                         onError.invoke()
                     }
-                } else if (it.isImage() && it.mediaSize != null && it.mediaSize == 0L) { // un-downloaded GIPHY
-                    val category = when {
-                        it.isSignal() -> MessageCategory.SIGNAL_IMAGE
-                        it.isEncrypted() -> MessageCategory.ENCRYPTED_IMAGE
-                        else -> MessageCategory.PLAIN_IMAGE
-                    }.name
+                } else if (message.isImage() && message.mediaSize != null && message.mediaSize == 0L) { // un-downloaded GIPHY
+                    val category =
+                        when {
+                            message.isSignal() -> MessageCategory.SIGNAL_IMAGE
+                            message.isEncrypted() -> MessageCategory.ENCRYPTED_IMAGE
+                            else -> MessageCategory.PLAIN_IMAGE
+                        }.name
                     try {
                         jobManager.addJobInBackground(
                             SendGiphyJob(
-                                it.conversationId,
-                                it.userId,
-                                it.mediaUrl!!,
-                                it.mediaWidth!!,
-                                it.mediaHeight!!,
-                                it.mediaSize,
+                                message.conversationId,
+                                message.userId,
+                                message.mediaUrl!!,
+                                message.mediaWidth!!,
+                                message.mediaHeight!!,
+                                message.mediaSize,
                                 category,
-                                it.id,
-                                it.thumbImage ?: "",
-                                it.createdAt
-                            )
+                                message.messageId,
+                                message.thumbImage ?: "",
+                                message.createdAt,
+                            ),
                         )
                     } catch (e: NullPointerException) {
                         onError.invoke()
                     }
                 } else {
-                    conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.id)
-                    jobManager.addJobInBackground(SendAttachmentMessageJob(it))
+                    conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, message.messageId, message.conversationId)
+                    jobManager.addJobInBackground(SendAttachmentMessageJob(message))
                 }
             }
         }
@@ -805,24 +902,37 @@ class ChatHistoryActivity : BaseActivity() {
         private const val ENCRYPT_CATEGORY = "encryptCategory"
         private const val IS_GROUP = "is_group"
         private const val CATEGORY = "category"
+        private const val COUNT = "count"
         private const val TRANSCRIPT = 0
         private const val CHAT_HISTORY = 1
-        fun show(context: Context, messageId: String, conversationId: String, encryptCategory: EncryptCategory) {
+
+        fun show(
+            context: Context,
+            messageId: String,
+            conversationId: String,
+            encryptCategory: EncryptCategory,
+        ) {
             context.startActivity(
                 Intent(context, ChatHistoryActivity::class.java).apply {
                     putExtra(MESSAGE_ID, messageId)
                     putExtra(CONVERSATION_ID, conversationId)
                     putExtra(ENCRYPT_CATEGORY, encryptCategory.ordinal)
                     putExtra(CATEGORY, TRANSCRIPT)
-                }
+                },
             )
         }
 
-        fun getPinIntent(context: Context, conversationId: String, isGroup: Boolean): Intent {
+        fun getPinIntent(
+            context: Context,
+            conversationId: String,
+            isGroup: Boolean,
+            count: Int,
+        ): Intent {
             return Intent(context, ChatHistoryActivity::class.java).apply {
                 putExtra(CONVERSATION_ID, conversationId)
                 putExtra(CATEGORY, CHAT_HISTORY)
                 putExtra(IS_GROUP, isGroup)
+                putExtra(COUNT, count)
             }
         }
     }

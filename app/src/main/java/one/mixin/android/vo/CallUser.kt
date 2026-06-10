@@ -13,16 +13,29 @@ class CallUser(
     @ColumnInfo(name = "avatar_url")
     val avatarUrl: String?,
     @ColumnInfo(name = "role")
-    val role: String
+    val role: String,
+    @ColumnInfo(name = "is_verified")
+    val isVerified: Boolean?,
+    @ColumnInfo(name = "app_id")
+    var appId: String?,
+    @ColumnInfo(name = "membership")
+    val membership: Membership?,
 ) {
     companion object {
-        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<CallUser>() {
-            override fun areItemsTheSame(oldItem: CallUser, newItem: CallUser) =
-                oldItem.userId == newItem.userId
+        val DIFF_CALLBACK =
+            object : DiffUtil.ItemCallback<CallUser>() {
+                override fun areItemsTheSame(
+                    oldItem: CallUser,
+                    newItem: CallUser,
+                ) =
+                    oldItem.userId == newItem.userId
 
-            override fun areContentsTheSame(oldItem: CallUser, newItem: CallUser) =
-                oldItem == newItem
-        }
+                override fun areContentsTheSame(
+                    oldItem: CallUser,
+                    newItem: CallUser,
+                ) =
+                    oldItem == newItem
+            }
     }
 
     override fun equals(other: Any?): Boolean =

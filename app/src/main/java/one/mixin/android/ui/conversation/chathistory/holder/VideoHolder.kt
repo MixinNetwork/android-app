@@ -7,13 +7,11 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatVideoBinding
-import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.loadImageMark
 import one.mixin.android.extension.loadVideoMark
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.round
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
@@ -27,7 +25,6 @@ import one.mixin.android.vo.isLive
 import one.mixin.android.vo.isSecret
 
 class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(binding.root) {
-
     init {
         val radius = itemView.context.dpToPx(4f).toFloat()
         binding.chatImage.round(radius)
@@ -43,19 +40,13 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
         messageItem: ChatHistoryMessageItem,
         isLast: Boolean,
         isFirst: Boolean,
-        onItemListener: ChatHistoryAdapter.OnItemListener
+        onItemListener: ChatHistoryAdapter.OnItemListener,
     ) {
         super.bind(messageItem)
         val isMe = messageItem.userId == Session.getAccountId()
         if (isFirst && !isMe) {
             binding.chatName.visibility = VISIBLE
-            binding.chatName.text = messageItem.userFullName
-            if (messageItem.appId != null) {
-                binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-                binding.chatName.compoundDrawablePadding = 3.dp
-            } else {
-                binding.chatName.setCompoundDrawables(null, null, null, null)
-            }
+            binding.chatName.setMessageName(messageItem)
             binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
             binding.chatName.setTextColor(getColorById(messageItem.userId))
         } else {
@@ -79,47 +70,41 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
             when (messageItem.mediaStatus) {
                 MediaStatus.DONE.name -> {
                     binding.durationTv.bindId(null)
-                    messageItem.mediaDuration.notNullWithElse(
-                        {
-                            binding.durationTv.visibility = VISIBLE
-                            binding.durationTv.text = it.toLongOrNull()?.formatMillis() ?: ""
-                        },
-                        {
-                            binding.durationTv.visibility = GONE
-                        }
-                    )
+                    val mediaDuration = messageItem.mediaDuration
+                    if (mediaDuration != null) {
+                        binding.durationTv.visibility = VISIBLE
+                        binding.durationTv.text = mediaDuration.toLongOrNull()?.formatMillis() ?: ""
+                    } else {
+                        binding.durationTv.visibility = GONE
+                    }
                 }
                 MediaStatus.PENDING.name -> {
-                    messageItem.mediaSize.notNullWithElse(
-                        {
-                            binding.durationTv.visibility = VISIBLE
-                            if (it == 0L) {
-                                binding.durationTv.bindId(messageItem.messageId)
-                            } else {
-                                binding.durationTv.text = it.fileSize()
-                                binding.durationTv.bindId(null)
-                            }
-                        },
-                        {
+                    val mediaSize = messageItem.mediaSize
+                    if (mediaSize != null) {
+                        binding.durationTv.visibility = VISIBLE
+                        if (mediaSize == 0L) {
+                            binding.durationTv.bindId(messageItem.messageId)
+                        } else {
+                            binding.durationTv.text = mediaSize.fileSize()
                             binding.durationTv.bindId(null)
-                            binding.durationTv.visibility = GONE
                         }
-                    )
+                    } else {
+                        binding.durationTv.bindId(null)
+                        binding.durationTv.visibility = GONE
+                    }
                 }
                 else -> {
-                    messageItem.mediaSize.notNullWithElse(
-                        {
-                            if (it == 0L) {
-                                binding.durationTv.visibility = GONE
-                            } else {
-                                binding.durationTv.visibility = VISIBLE
-                                binding.durationTv.text = it.fileSize()
-                            }
-                        },
-                        {
+                    val mediaSize = messageItem.mediaSize
+                    if (mediaSize != null) {
+                        if (mediaSize == 0L) {
                             binding.durationTv.visibility = GONE
+                        } else {
+                            binding.durationTv.visibility = VISIBLE
+                            binding.durationTv.text = mediaSize.fileSize()
                         }
-                    )
+                    } else {
+                        binding.durationTv.visibility = GONE
+                    }
                     binding.durationTv.bindId(null)
                 }
             }
@@ -158,7 +143,9 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
                         binding.chatWarning.visibility = GONE
                         binding.progress.visibility = VISIBLE
                         binding.play.visibility = GONE
-                        if (isMe) {
+                        if (messageItem.transcriptId != null && messageItem.mediaUrl != null) {
+                            binding.progress.enableUpload()
+                        } else if (messageItem.mediaUrl != null && isMe) {
                             binding.progress.enableUpload()
                         } else {
                             binding.progress.enableDownload()
@@ -185,16 +172,17 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
             false,
             isRepresentative = false,
             isSecret = messageItem.isSecret(),
-            isWhite = true
+            isWhite = true,
         )
 
         dataWidth = messageItem.mediaWidth
         dataHeight = messageItem.mediaHeight
-        dataUrl = if (messageItem.isLive()) {
-            messageItem.thumbUrl
-        } else {
-            messageItem.absolutePath()
-        }
+        dataUrl =
+            if (messageItem.isLive()) {
+                messageItem.thumbUrl
+            } else {
+                messageItem.absolutePath()
+            }
         type = messageItem.type
         dataThumbImage = messageItem.thumbImage
         chatLayout(isMe, isLast)
@@ -221,7 +209,11 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
     private var dataWidth: Int? = null
     private var dataHeight: Int? = null
 
-    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+    override fun chatLayout(
+        isMe: Boolean,
+        isLast: Boolean,
+        isBlink: Boolean,
+    ) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
             (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
@@ -263,12 +255,13 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
             binding.chatImage.layoutParams.height = width * dataHeight!! / dataWidth!!
         }
 
-        val mark = when {
-            isMe && isLast -> R.drawable.chat_mark_image_me
-            isMe -> R.drawable.chat_mark_image
-            !isMe && isLast -> R.drawable.chat_mark_image_other
-            else -> R.drawable.chat_mark_image
-        }
+        val mark =
+            when {
+                isMe && isLast -> R.drawable.chat_mark_image_me
+                isMe -> R.drawable.chat_mark_image
+                !isMe && isLast -> R.drawable.chat_mark_image_other
+                else -> R.drawable.chat_mark_image
+            }
 
         binding.chatImage.setShape(mark)
         if (type == MessageCategory.PLAIN_LIVE.name || type == MessageCategory.SIGNAL_LIVE.name || type == MessageCategory.ENCRYPTED_LIVE.name) {

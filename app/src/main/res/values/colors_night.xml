@@ -4,18 +4,18 @@
     <color name="colorPrimaryDarkNight">#2c3136</color>
     <color name="colorAccentNight">#4191FF</color>
 
-    <color name="textPrimaryNight">#E6FFFFFF</color>
-    <color name="textMinorNight">#AAD8D8D8</color>
-    <color name="textAssistNight">#788691</color>
-    <color name="textRemarksNight">#707883</color>
-
-    <color name="textSubtitleNight">#66FFFFFF</color>
+    <color name="textPrimaryNight">#FFFFFF</color>
+    <color name="textMinorNight">#D3D4D5</color>
+    <color name="textAssistNight">#7F878F</color>
+    <color name="textRemarksNight">#6E7073</color>
+    <color name="textSubtitleNight">#6E7073</color>
 
     <color name="colorIconNight">#EAEAEB</color>
     <color name="colorIconWhiteNight">#22272B</color>
     <color name="colorIconGrayNight">#808691</color>
     <color name="colorIconActionNight">@color/white</color>
     <color name="colorIconBlackNight">#FFFFFF</color>
+    <color name="colorIconGoogleBlackNight">#FFFFFF</color>
 
     <color name="badgerNight">#4191FF</color>
     <color name="badgeMuteNight">#808691</color>
@@ -26,20 +26,40 @@
     <color name="bgWhiteNight">#2c3136</color>
     <color name="bgWindowNight">#23272B</color>
     <color name="bgPostNight">#3B3F44</color>
+    <color name="bgClipNight">#3B3F44</color>
     <color name="bgDarkNight">#121212</color>
     <color name="bgGrayNight">#3B3F44</color>
     <color name="bgBotNight">#4C5053</color>
     <color name="bgBubbleNight">#3B3F44</color>
+    <color name="bgChooseNetworkYellowNight">#2EFFF7AD</color>
+    <color name="bgChooseNetworkNight">#3B3F44</color>
     <color name="bgFlagNight">#3E4148</color>
     <color name="bgTranslucenceNight">#EE2c3136</color>
+    <color name="bgRankNight">#33FFFFFF</color>
+
+    <color name="bgChatNight">#34373B</color>
+    <color name="bgTipInfoNight">#383B40</color>
+    <color name="bgTipInfoBorderNight">#999999</color>
+    <color name="bgTipWarningNight">#3E373B</color>
+    <color name="bgTipWarningBorderNight">#E86B67</color>
+
+    <color name="chainGradientStartNight">#40444A</color>
+    <color name="chainGradientEndNight">#3B3F44</color>
+
+    <color name="marketGradientStartNight">#3B448E</color>
+    <color name="marketGradientEndNight">#4C7DDE</color>
+
+    <color name="iconChainNight">#12FFFFFF</color>
 
     <color name="bgMenuNight">#23272B</color>
     <color name="bgMenuBorderNight">#3E5264</color>
     <color name="bgGrayLightNight">@color/bgGrayNight</color>
-    <color name="bgConfirmationNight">@color/badgerNight</color>
 
     <color name="bgBlockNight">#23272B</color>
     <color name="codeBorderNight">#545859</color>
+
+    <color name="nftBorderNight">#6E7073</color>
+    <color name="bgNftNight">#3B3F44</color>
 
     <color name="dividerNight">#424649</color>
 
@@ -51,4 +71,6 @@
     <color name="musicPlayPauseBgNight">#E6FFFFFF</color>
 
     <color name="highlight_night">#33FFFFFF</color>
+
+    <color name="badgeRedNight">#F67070</color>
 </resources>

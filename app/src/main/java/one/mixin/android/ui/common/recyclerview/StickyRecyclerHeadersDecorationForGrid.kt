@@ -12,15 +12,18 @@ import kotlin.math.max
 
 class StickyRecyclerHeadersDecorationForGrid<VH : RecyclerView.ViewHolder>(
     private val adapter: StickyRecyclerHeadersAdapter<VH>,
-    private val spanCount: Int
+    private val spanCount: Int,
 ) : StickyRecyclerHeadersDecoration(adapter) {
-
     private val tempRect = Rect()
 
     private val orientationProvider = LinearLayoutOrientationProvider()
     private val headerProvider = HeaderViewCache(adapter, orientationProvider)
 
-    override fun onDrawOver(c: Canvas, parent: RecyclerView, state: RecyclerView.State) {
+    override fun onDrawOver(
+        c: Canvas,
+        parent: RecyclerView,
+        state: RecyclerView.State,
+    ) {
         val childCount = parent.childCount
         if (childCount <= 0 || adapter.itemCount <= 0) return
 
@@ -48,7 +51,7 @@ class StickyRecyclerHeadersDecorationForGrid<VH : RecyclerView.ViewHolder>(
         outRect: Rect,
         view: View,
         parent: RecyclerView,
-        state: RecyclerView.State
+        state: RecyclerView.State,
     ) {
         val itemPos = parent.getChildAdapterPosition(view)
         if (itemPos == RecyclerView.NO_POSITION) {
@@ -79,7 +82,11 @@ class StickyRecyclerHeadersDecorationForGrid<VH : RecyclerView.ViewHolder>(
 
     private fun isFirstUnderHeader(pos: Int) = pos == 0 || adapter.getHeaderId(pos) != adapter.getHeaderId(pos - 1)
 
-    private fun drawHeader(c: Canvas, header: View, rect: Rect) {
+    private fun drawHeader(
+        c: Canvas,
+        header: View,
+        rect: Rect,
+    ) {
         c.save()
         c.translate(rect.left.toFloat(), rect.top.toFloat())
         header.draw(c)

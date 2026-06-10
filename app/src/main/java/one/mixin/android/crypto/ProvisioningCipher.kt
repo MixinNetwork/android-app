@@ -11,10 +11,8 @@ import javax.crypto.IllegalBlockSizeException
 import javax.crypto.Mac
 import javax.crypto.NoSuchPaddingException
 import javax.crypto.spec.SecretKeySpec
-import kotlin.jvm.Throws
 
 class ProvisioningCipher(private val theirPublicKey: ECPublicKey) {
-
     @Throws(InvalidKeyException::class)
     fun encrypt(message: ByteArray): ByteArray {
         val ourKeyPair = Curve.generateKeyPair()
@@ -29,7 +27,10 @@ class ProvisioningCipher(private val theirPublicKey: ECPublicKey) {
         return ProvisionEnvelope(ourKeyPair.publicKey.serialize(), body).toByteArray()
     }
 
-    private fun getCiphertext(key: ByteArray, message: ByteArray): ByteArray {
+    private fun getCiphertext(
+        key: ByteArray,
+        message: ByteArray,
+    ): ByteArray {
         try {
             val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
             cipher.init(Cipher.ENCRYPT_MODE, SecretKeySpec(key, "AES"))
@@ -47,7 +48,10 @@ class ProvisioningCipher(private val theirPublicKey: ECPublicKey) {
         }
     }
 
-    private fun getMac(key: ByteArray, message: ByteArray): ByteArray {
+    private fun getMac(
+        key: ByteArray,
+        message: ByteArray,
+    ): ByteArray {
         try {
             val mac = Mac.getInstance("HmacSHA256")
             mac.init(SecretKeySpec(key, "HmacSHA256"))

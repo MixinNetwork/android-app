@@ -14,6 +14,7 @@ import one.mixin.android.crypto.Util
 import one.mixin.android.crypto.attachment.AttachmentCipherOutputStream
 import one.mixin.android.crypto.attachment.AttachmentCipherOutputStreamFactory
 import one.mixin.android.crypto.attachment.PushAttachmentData
+import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.event.ProgressEvent
 import one.mixin.android.extension.getStackTraceString
 import one.mixin.android.extension.toast
@@ -39,12 +40,11 @@ import java.net.SocketTimeoutException
 class SendTranscriptAttachmentMessageJob(
     val transcriptMessage: TranscriptMessage,
     val encryptCategory: EncryptCategory,
-    val parentId: String? = null
+    val parentId: String? = null,
 ) : MixinJob(
-    Params(PRIORITY_SEND_ATTACHMENT_MESSAGE).groupBy("send_transcript_job").requireNetwork().persist(),
-    "${transcriptMessage.transcriptId}${transcriptMessage.messageId}"
-) {
-
+        Params(PRIORITY_SEND_ATTACHMENT_MESSAGE).groupBy("send_transcript_job").requireNetwork().persist(),
+        "${transcriptMessage.transcriptId}${transcriptMessage.messageId}",
+    ) {
     companion object {
         private const val serialVersionUID = 1L
     }
@@ -70,16 +70,17 @@ class SendTranscriptAttachmentMessageJob(
                 sendMessage()
                 return
             }
-            val attachmentExtra = try {
-                GsonHelper.customGson.fromJson(transcriptMessage.content, AttachmentExtra::class.java)
-            } catch (e: Exception) {
-                null
-            } ?: try {
-                val payload = GsonHelper.customGson.fromJson(String(Base64.decode(transcriptMessage.content)), AttachmentMessagePayload::class.java)
-                AttachmentExtra(payload.attachmentId, transcriptMessage.messageId, payload.createdAt)
-            } catch (e: Exception) {
-                null
-            }
+            val attachmentExtra =
+                try {
+                    GsonHelper.customGson.fromJson(transcriptMessage.content, AttachmentExtra::class.java)
+                } catch (e: Exception) {
+                    null
+                } ?: try {
+                    val payload = GsonHelper.customGson.fromJson(String(Base64.decode(transcriptMessage.content)), AttachmentMessagePayload::class.java)
+                    AttachmentExtra(payload.attachmentId, transcriptMessage.messageId, payload.createdAt)
+                } catch (e: Exception) {
+                    null
+                }
             if (attachmentExtra != null && attachmentExtra.createdAt?.within24Hours() == true) {
                 val m = messageDao.findMessageById(transcriptMessage.messageId)
                 if (m != null && transcriptMessage.type == m.category && m.isValidAttachment()) {
@@ -90,7 +91,7 @@ class SendTranscriptAttachmentMessageJob(
                         m.mediaKey,
                         m.mediaDigest,
                         MediaStatus.DONE.name,
-                        attachmentExtra.createdAt!!
+                        attachmentExtra.createdAt!!,
                     )
                     sendMessage()
                     return
@@ -98,47 +99,54 @@ class SendTranscriptAttachmentMessageJob(
             }
         }
         transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.PENDING.name)
-        disposable = conversationApi.requestAttachment().map {
-            val file = File(requireNotNull(Uri.parse(transcriptMessage.absolutePath()).path))
-            if (it.isSuccess && !isCancelled) {
-                val result = it.data!!
-                processAttachment(transcriptMessage, file, result)
-            } else {
-                false
-            }
-        }.subscribe(
-            {
-                if (it) {
-                    sendMessage()
-                    removeJob()
+        disposable =
+            conversationApi.requestAttachment().map {
+                val file = File(requireNotNull(Uri.parse(transcriptMessage.absolutePath()).path))
+                if (it.isSuccess && !isCancelled) {
+                    val result = it.data!!
+                    processAttachment(transcriptMessage, file, result)
                 } else {
+                    false
+                }
+            }.subscribe(
+                {
+                    if (it) {
+                        sendMessage()
+                        removeJob()
+                    } else {
+                        removeJob()
+                        transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.CANCELED.name)
+                    }
+                },
+                {
+                    Timber.e("upload attachment error, ${it.getStackTraceString()}")
+                    reportException(it)
                     removeJob()
                     transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.CANCELED.name)
-                }
-            },
-            {
-                Timber.e("upload attachment error, ${it.getStackTraceString()}")
-                reportException(it)
-                removeJob()
-                transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.CANCELED.name)
-            }
-        )
+                },
+            )
     }
 
-    private fun processAttachment(transcriptMessage: TranscriptMessage, file: File, attachResponse: AttachmentResponse): Boolean {
-        val key = if (transcriptMessage.isPlain()) {
-            null
-        } else {
-            Util.getSecretBytes(64)
-        }
-        val inputStream = try {
-            MixinApplication.appContext.contentResolver.openInputStream(Uri.fromFile(file))
-        } catch (e: FileNotFoundException) {
-            MixinApplication.appScope.launch(Dispatchers.Main) {
-                toast(R.string.error_file_exists)
+    private fun processAttachment(
+        transcriptMessage: TranscriptMessage,
+        file: File,
+        attachResponse: AttachmentResponse,
+    ): Boolean {
+        val key =
+            if (transcriptMessage.isPlain()) {
+                null
+            } else {
+                Util.getSecretBytes(64)
             }
-            return false
-        }
+        val inputStream =
+            try {
+                MixinApplication.appContext.contentResolver.openInputStream(Uri.fromFile(file))
+            } catch (e: FileNotFoundException) {
+                applicationScope.launch(Dispatchers.Main) {
+                    toast(R.string.File_does_not_exist)
+                }
+                return false
+            }
         val attachmentData =
             PushAttachmentData(
                 transcriptMessage.mediaMimeType,
@@ -148,33 +156,35 @@ class SendTranscriptAttachmentMessageJob(
                     AttachmentCipherOutputStreamFactory(key, null)
                 } else {
                     null
-                }
+                },
             ) { total, progress ->
-                val pg = try {
-                    progress.toFloat() / total.toFloat()
-                } catch (e: Exception) {
-                    0f
-                }
+                val pg =
+                    try {
+                        progress.toFloat() / total.toFloat()
+                    } catch (e: Exception) {
+                        0f
+                    }
                 RxBus.publish(ProgressEvent.loadingEvent("${transcriptMessage.transcriptId}${transcriptMessage.messageId}", pg))
             }
-        val digest = try {
-            if (encryptCategory.isSecret()) {
-                uploadAttachment(attachResponse.upload_url!!, attachmentData) // SHA256
-            } else {
-                uploadPlainAttachment(attachResponse.upload_url!!, file.length(), attachmentData)
-                null
-            }
-        } catch (e: Exception) {
-            Timber.e(e)
-            if (e is SocketTimeoutException) {
-                MixinApplication.appScope.launch(Dispatchers.Main) {
-                    toast(R.string.upload_timeout)
+        val digest =
+            try {
+                if (encryptCategory.isSecret()) {
+                    uploadAttachment(attachResponse.upload_url!!, attachmentData) // SHA256
+                } else {
+                    uploadPlainAttachment(attachResponse.upload_url!!, file.length(), attachmentData)
+                    null
                 }
+            } catch (e: Exception) {
+                Timber.e(e)
+                if (e is SocketTimeoutException) {
+                    applicationScope.launch(Dispatchers.Main) {
+                        toast(R.string.Upload_timeout)
+                    }
+                }
+                removeJob()
+                reportException(e)
+                return false
             }
-            removeJob()
-            reportException(e)
-            return false
-        }
         if (isCancelled) {
             removeJob()
             return true
@@ -186,7 +196,7 @@ class SendTranscriptAttachmentMessageJob(
             key,
             digest,
             MediaStatus.DONE.name,
-            attachResponse.created_at
+            attachResponse.created_at,
         )
         return true
     }
@@ -198,12 +208,16 @@ class SendTranscriptAttachmentMessageJob(
                 getTranscripts(parentId ?: transcriptMessage.transcriptId, transcripts)
                 msg.content = GsonHelper.customGson.toJson(transcripts)
                 messageDao.updateMediaStatus(MediaStatus.DONE.name, parentId ?: transcriptMessage.transcriptId)
+                MessageFlow.update(msg.conversationId, msg.messageId)
                 jobManager.addJob(SendMessageJob(msg))
             }
         }
     }
 
-    private fun getTranscripts(transcriptId: String, list: MutableSet<TranscriptMessage>) {
+    private fun getTranscripts(
+        transcriptId: String,
+        list: MutableSet<TranscriptMessage>,
+    ) {
         val transcripts = transcriptMessageDao.getTranscript(transcriptId)
         list.addAll(transcripts)
         transcripts.asSequence().apply {
@@ -218,11 +232,18 @@ class SendTranscriptAttachmentMessageJob(
         }
     }
 
-    private fun uploadPlainAttachment(url: String, size: Long, attachment: PushAttachmentData) {
+    private fun uploadPlainAttachment(
+        url: String,
+        size: Long,
+        attachment: PushAttachmentData,
+    ) {
         Util.uploadAttachment(url, attachment.data, size, attachment.outputStreamFactory, attachment.listener, { isCancelled })
     }
 
-    private fun uploadAttachment(url: String, attachment: PushAttachmentData): ByteArray {
+    private fun uploadAttachment(
+        url: String,
+        attachment: PushAttachmentData,
+    ): ByteArray {
         val dataSize = AttachmentCipherOutputStream.getCiphertextLength(attachment.dataSize)
         return Util.uploadAttachment(url, attachment.data, dataSize, attachment.outputStreamFactory, attachment.listener, { isCancelled })
     }

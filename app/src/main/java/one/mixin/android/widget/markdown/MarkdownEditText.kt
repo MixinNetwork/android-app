@@ -18,23 +18,24 @@ open class MarkdownEditText : AppCompatEditText {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
         context,
         attrs,
-        defStyleAttr
+        defStyleAttr,
     )
 
     init {
-        val editor = MarkwonEditor.builder(simpleMarkwon)
-            .useEditHandler(EmphasisEditHandler())
-            .useEditHandler(StrongEmphasisEditHandler())
-            .useEditHandler(StrikethroughEditHandler())
-            .useEditHandler(CodeEditHandler())
-            .build()
+        val editor =
+            MarkwonEditor.builder(simpleMarkwon)
+                .useEditHandler(EmphasisEditHandler())
+                .useEditHandler(StrongEmphasisEditHandler())
+                .useEditHandler(StrikethroughEditHandler())
+                .useEditHandler(CodeEditHandler())
+                .build()
 
         addTextChangedListener(
             MarkwonEditorTextWatcher.withPreRender(
                 editor,
                 Executors.newCachedThreadPool(),
-                this
-            )
+                this,
+            ),
         )
     }
 }

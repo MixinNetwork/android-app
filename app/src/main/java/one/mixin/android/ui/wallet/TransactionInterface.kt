@@ -1,34 +1,42 @@
 package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
-import android.view.View
+import android.graphics.Color
+import android.os.Bundle
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.style.RelativeSizeSpan
 import androidx.core.view.isVisible
+import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.FragmentNavigator
+import androidx.navigation.fragment.findNavController
 import com.skydoves.balloon.BalloonAnimation
 import com.skydoves.balloon.createBalloon
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentTransactionBinding
-import one.mixin.android.databinding.ViewBadgeCircleImageBinding
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.fullDate
-import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.navigate
 import one.mixin.android.extension.navigateUp
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.priceFormat2
+import one.mixin.android.extension.textColor
 import one.mixin.android.extension.toast
-import one.mixin.android.session.Session
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.extension.viewDestroyed
+import one.mixin.android.ui.home.inscription.InscriptionActivity
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.SnapshotItem
-import one.mixin.android.vo.SnapshotType
-import one.mixin.android.widget.DebugClickListener
+import one.mixin.android.vo.Ticker
+import one.mixin.android.vo.safe.SafeSnapshotType
+import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.widget.linktext.RoundBackgroundColorSpan
 import java.math.BigDecimal
 
 interface TransactionInterface {
@@ -39,20 +47,19 @@ interface TransactionInterface {
         walletViewModel: WalletViewModel,
         assetId: String?,
         snapshotId: String?,
-        assetItem: AssetItem?,
-        snapshotItem: SnapshotItem?
+        tokenItem: TokenItem?,
+        snapshotItem: SnapshotItem?,
     ) {
-        contentBinding.titleView.rightAnimator.visibility = View.GONE
-        if (snapshotItem == null || assetItem == null) {
+        if (snapshotItem == null || tokenItem == null) {
             if (snapshotId != null && assetId != null) {
                 lifecycleScope.launch {
                     val asset = walletViewModel.simpleAssetItem(assetId)
                     val snapshot = walletViewModel.snapshotLocal(assetId, snapshotId)
                     if (asset == null || snapshot == null) {
-                        toast(R.string.error_data)
+                        toast(R.string.Data_error)
                     } else {
-                        contentBinding.avatar.setOnClickListener {
-                            clickAvatar(fragment, asset)
+                        contentBinding.avatarVa.setOnClickListener {
+                            clickAvatar(fragment, asset, snapshot.inscriptionHash)
                         }
                         updateUI(fragment, contentBinding, asset, snapshot)
                         fetchThatTimePrice(
@@ -61,59 +68,76 @@ interface TransactionInterface {
                             walletViewModel,
                             contentBinding,
                             asset.assetId,
-                            snapshot
+                            snapshot,
                         )
-                        refreshNoTransactionHashWithdrawal(
+                        refreshIncompleteSnapshot(
                             fragment,
                             contentBinding,
                             lifecycleScope,
                             walletViewModel,
                             snapshot,
-                            asset
+                            asset,
                         )
                     }
                 }
             } else {
-                toast(R.string.error_data)
+                toast(R.string.Data_error)
             }
         } else {
-            contentBinding.avatar.setOnClickListener {
-                clickAvatar(fragment, assetItem)
+            contentBinding.avatarVa.setOnClickListener {
+                clickAvatar(fragment, tokenItem, snapshotItem.inscriptionHash)
             }
-            contentBinding.transactionIdTitleTv.setOnClickListener(object : DebugClickListener() {
-                override fun onDebugClick() {
-                    contentBinding.traceLl.visibility = View.VISIBLE
-                }
-
-                override fun onSingleClick() {
-                }
-            })
-            updateUI(fragment, contentBinding, assetItem, snapshotItem)
+            updateUI(fragment, contentBinding, tokenItem, snapshotItem)
             fetchThatTimePrice(
                 fragment,
                 lifecycleScope,
                 walletViewModel,
                 contentBinding,
-                assetItem.assetId,
-                snapshotItem
+                tokenItem.assetId,
+                snapshotItem,
             )
-            refreshNoTransactionHashWithdrawal(
+            refreshIncompleteSnapshot(
                 fragment,
                 contentBinding,
                 lifecycleScope,
                 walletViewModel,
                 snapshotItem,
-                assetItem
+                tokenItem,
             )
         }
     }
 
-    private fun clickAvatar(fragment: Fragment, asset: AssetItem) {
+    private fun clickAvatar(
+        fragment: Fragment,
+        asset: TokenItem,
+        inscriptionHash: String?,
+    ) {
         val curActivity = fragment.requireActivity()
-        if (curActivity is WalletActivity) {
-            fragment.view?.navigateUp()
+        if (inscriptionHash != null) {
+            InscriptionActivity.show(curActivity, inscriptionHash)
+        } else if (curActivity is WalletActivity) {
+            if ((fragment.findNavController().previousBackStackEntry?.destination as FragmentNavigator.Destination?)?.label == AllTransactionsFragment.TAG) {
+                fragment.view?.navigate(
+                    R.id.action_transaction_fragment_to_transactions,
+                    Bundle().apply { putParcelable(TransactionsFragment.ARGS_ASSET, asset) },
+                )
+            } else {
+                fragment.view?.navigateUp()
+            }
         } else {
-            WalletActivity.show(curActivity, asset, false)
+            val back = kotlin.runCatching {
+                return@runCatching fragment.parentFragmentManager.let { fm ->
+                    val backStackEntryCount = fm.backStackEntryCount
+                    fm.getBackStackEntryAt(backStackEntryCount - 2).name == AllTransactionsFragment.TAG
+                }
+            }.getOrElse {
+                false
+            }
+            if (back) {
+                fragment.parentFragmentManager.popBackStack()
+            } else {
+                WalletActivity.showWithToken(curActivity, asset, WalletActivity.Destination.Transactions)
+            }
         }
     }
 
@@ -125,57 +149,17 @@ interface TransactionInterface {
         assetId: String,
         snapshot: SnapshotItem,
     ) = lifecycleScope.launch {
-        if (!fragment.isAdded) return@launch
+        if (checkDestroyed(fragment)) return@launch
 
         contentBinding.thatVa.displayedChild = POS_PB
         handleMixinResponse(
             invokeNetwork = { walletViewModel.ticker(assetId, snapshot.createdAt) },
-            switchContext = Dispatchers.IO,
             successBlock = {
+                if (checkDestroyed(fragment)) return@handleMixinResponse
+
                 val ticker = it.data
                 if (ticker != null) {
-                    contentBinding.thatVa.displayedChild = POS_TEXT
-                    contentBinding.thatTv.apply {
-                        text = if (ticker.priceUsd == "0") {
-                            fragment.getString(R.string.wallet_transaction_that_time_no_value)
-                        } else {
-                            val amount =
-                                (BigDecimal(snapshot.amount).abs() * ticker.priceFiat()).numberFormat2()
-                            val pricePerUnit = if (BuildConfig.DEBUG) {
-                                "(${Fiats.getSymbol()}${
-                                ticker.priceFiat().priceFormat2()
-                                }/${snapshot.assetSymbol})"
-                            } else {
-                                ""
-                            }
-                            fragment.getString(
-                                R.string.wallet_transaction_that_time_value,
-                                "${Fiats.getSymbol()}$amount $pricePerUnit"
-                            )
-                        }
-                        fragment.context?.let { c ->
-                            setTextColor(c.colorFromAttribute(R.attr.text_minor))
-                            setOnClickListener {
-                                if (!fragment.isAdded) return@setOnClickListener
-
-                                val balloon = createBalloon(c) {
-                                    setArrowSize(10)
-                                    setHeight(45)
-                                    setCornerRadius(4f)
-                                    setAlpha(0.9f)
-                                    setAutoDismissDuration(3000L)
-                                    setBalloonAnimation(BalloonAnimation.FADE)
-                                    setText(fragment.getString(R.string.wallet_transaction_that_time_value_tip))
-                                    setTextColorResource(R.color.white)
-                                    setPaddingLeft(10)
-                                    setPaddingRight(10)
-                                    setBackgroundColorResource(R.color.colorLightBlue)
-                                    setLifecycleOwner(fragment.viewLifecycleOwner)
-                                }
-                                balloon.show(this)
-                            }
-                        }
-                    }
+                    updateTickerText(contentBinding, ticker, fragment, snapshot)
                 } else {
                     showRetry(
                         fragment,
@@ -183,7 +167,7 @@ interface TransactionInterface {
                         walletViewModel,
                         contentBinding,
                         assetId,
-                        snapshot
+                        snapshot,
                     )
                 }
             },
@@ -194,7 +178,7 @@ interface TransactionInterface {
                     walletViewModel,
                     contentBinding,
                     assetId,
-                    snapshot
+                    snapshot,
                 )
                 return@handleMixinResponse false
             },
@@ -205,11 +189,66 @@ interface TransactionInterface {
                     walletViewModel,
                     contentBinding,
                     assetId,
-                    snapshot
+                    snapshot,
                 )
                 return@handleMixinResponse false
-            }
+            },
         )
+    }
+
+    fun updateTickerText(
+        contentBinding: FragmentTransactionBinding,
+        ticker: Ticker,
+        fragment: Fragment,
+        snapshot: SnapshotItem,
+    ) {
+        if (checkDestroyed(fragment)) return
+
+        contentBinding.thatVa.displayedChild = POS_TEXT
+        contentBinding.thatTv.apply {
+            text =
+                if (ticker.priceUsd == "0") {
+                    fragment.getString(R.string.value_then, fragment.getString(R.string.NA))
+                } else {
+                    val amount =
+                        (BigDecimal(snapshot.amount).abs() * ticker.priceFiat()).numberFormat2()
+                    val pricePerUnit =
+                        if (BuildConfig.DEBUG) {
+                            "(${Fiats.getSymbol()}${
+                                ticker.priceFiat().priceFormat2()
+                            }/${snapshot.assetSymbol})"
+                        } else {
+                            ""
+                        }
+                    fragment.getString(
+                        R.string.value_then,
+                        "${Fiats.getSymbol()}$amount $pricePerUnit",
+                    )
+                }
+            fragment.context?.let { c ->
+                setTextColor(c.colorFromAttribute(R.attr.text_assist))
+                setOnClickListener {
+                    if (checkDestroyed(fragment)) return@setOnClickListener
+
+                    val balloon =
+                        createBalloon(c) {
+                            setArrowSize(10)
+                            setHeight(45)
+                            setCornerRadius(4f)
+                            setAlpha(0.9f)
+                            setAutoDismissDuration(3000L)
+                            setBalloonAnimation(BalloonAnimation.FADE)
+                            setText(fragment.getString(R.string.wallet_transaction_that_time_value_tip))
+                            setTextColorResource(R.color.white)
+                            setPaddingLeft(10)
+                            setPaddingRight(10)
+                            setBackgroundColorResource(R.color.colorLightBlue)
+                            setLifecycleOwner(fragment.viewLifecycleOwner)
+                        }
+                    balloon.showAlignTop(this)
+                }
+            }
+        }
     }
 
     private fun showRetry(
@@ -220,10 +259,12 @@ interface TransactionInterface {
         assetId: String,
         snapshot: SnapshotItem,
     ) {
+        if (checkDestroyed(fragment)) return
+
         contentBinding.apply {
             thatVa.displayedChild = POS_TEXT
             thatTv.apply {
-                text = fragment.getString(R.string.click_retry)
+                text = fragment.getString(R.string.Click_to_retry)
                 setTextColor(fragment.resources.getColor(R.color.colorDarkBlue, null))
                 setOnClickListener {
                     fetchThatTimePrice(
@@ -232,7 +273,7 @@ interface TransactionInterface {
                         walletViewModel,
                         contentBinding,
                         assetId,
-                        snapshot
+                        snapshot,
                     )
                 }
             }
@@ -243,122 +284,202 @@ interface TransactionInterface {
     private fun updateUI(
         fragment: Fragment,
         contentBinding: FragmentTransactionBinding,
-        asset: AssetItem,
-        snapshot: SnapshotItem
+        asset: TokenItem,
+        snapshot: SnapshotItem,
     ) {
-        if (!fragment.isAdded) return
+        if (checkDestroyed(fragment)) return
 
         contentBinding.apply {
             val amountVal = snapshot.amount.toFloatOrNull()
             val isPositive = if (amountVal == null) false else amountVal > 0
-            ViewBadgeCircleImageBinding.bind(contentBinding.avatar).apply {
-                bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-                badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
+            if (snapshot.inscriptionHash.isNullOrEmpty()) {
+                avatarVa.displayedChild = 0
+                contentBinding.avatar.loadToken(asset)
+                avatar
+            } else {
+                avatarVa.displayedChild = 1
+                inscription.render(snapshot)
+            }
+            if (!snapshot.inscriptionHash.isNullOrEmpty()) {
+                inscriptionHashLayout.isVisible = true
+                idLayout.isVisible = true
+                collectionLayout.isVisible = true
+                inscriptionHashTv.text = snapshot.inscriptionHash
+                idTv.text = "#${snapshot.sequence}"
+                collectionTv.text = snapshot.name
             }
 
-            val amountText = if (isPositive) "+${snapshot.amount.numberFormat()}"
-            else snapshot.amount.numberFormat()
-            val amountColor = fragment.resources.getColor(
-                when {
-                    snapshot.type == SnapshotType.pending.name -> {
-                        R.color.wallet_text_gray
+            val amountText =
+                if (snapshot.inscriptionHash.isNullOrEmpty()) {
+                    if (isPositive) {
+                        "+${snapshot.amount.numberFormat()}"
+                    } else {
+                        snapshot.amount.numberFormat()
                     }
-                    isPositive -> {
-                        R.color.wallet_green
+                } else {
+                    if (isPositive) {
+                        "+1"
+                    } else {
+                        "-1"
                     }
-                    else -> {
-                        R.color.wallet_pink
-                    }
-                },
-                null
-            )
+                }
+            val amountColor =
+                fragment.resources.getColor(
+                    when {
+                        snapshot.type == SafeSnapshotType.pending.name -> {
+                            R.color.wallet_text_gray
+                        }
+                        isPositive -> {
+                            R.color.wallet_green
+                        }
+                        else -> {
+                            R.color.wallet_pink
+                        }
+                    },
+                    null,
+                )
             val symbolColor = fragment.requireContext().colorFromAttribute(R.attr.text_primary)
-            valueTv.text = buildAmountSymbol(fragment.requireContext(), amountText, asset.symbol, amountColor, symbolColor)
+            valueTv.text = buildAmountSymbol(fragment.requireContext(), amountText, if (snapshot.inscriptionHash.isNullOrEmpty()) asset.symbol else "", amountColor, symbolColor)
             val amount = (BigDecimal(snapshot.amount).abs() * asset.priceFiat()).numberFormat2()
             val pricePerUnit =
                 "(${Fiats.getSymbol()}${asset.priceFiat().priceFormat2()}/${snapshot.assetSymbol})"
 
-            valueAsTv.text = fragment.getString(
-                R.string.wallet_transaction_current_value,
-                "${Fiats.getSymbol()}$amount $pricePerUnit"
-            )
+            valueAsTv.text =
+                fragment.getString(
+                    R.string.value_now,
+                    "${Fiats.getSymbol()}$amount $pricePerUnit",
+                )
             transactionIdTv.text = snapshot.snapshotId
-            transactionTypeTv.text = getSnapshotType(fragment, snapshot.type)
-            memoTv.text = snapshot.memo
+            transactionHashLayout.isVisible = !snapshot.transactionHash.isNullOrBlank()
+            transactionHashTv.text = snapshot.transactionHash
             dateTv.text = snapshot.createdAt.fullDate()
-            when (snapshot.type) {
-                SnapshotType.deposit.name -> {
-                    senderTitle.text = fragment.getString(R.string.sender)
-                    senderTv.text = snapshot.sender
-                    receiverTitle.text = fragment.getString(R.string.transaction_hash)
-                    receiverTv.text = snapshot.transactionHash
-                }
-                SnapshotType.pending.name -> {
-                    senderTitle.text = fragment.getString(R.string.sender)
-                    senderTv.text = snapshot.sender
-                    receiverTitle.text = fragment.getString(R.string.transaction_hash)
-                    receiverTv.text = snapshot.transactionHash
-                    transactionStatus.isVisible = true
-                    transactionStatusTv.text =
-                        fragment.getString(
-                            R.string.pending_confirmations,
-                            snapshot.confirmations,
-                            snapshot.assetConfirmations
-                        )
-                }
-                SnapshotType.transfer.name -> {
-                    traceTv.text = snapshot.traceId
+            memoLl.isVisible = snapshot.formatMemo != null
+            memoTv.text = snapshot.formatMemo?.utf ?: snapshot.formatMemo?.hex
+            memoLayout.setOnClickListener {
+                val memo = snapshot.formatMemo ?: return@setOnClickListener
+                MemoBottomSheetDialogFragment.newInstance(memo).showNow(fragment.parentFragmentManager, MemoBottomSheetDialogFragment.TAG)
+            }
+            val type = snapshot.simulateType()
+            when (type) {
+                SafeSnapshotType.snapshot -> {
+                    fromTv.text =
+                        if (snapshot.opponentId.isBlank()) {
+                            fromTv.textColor = fromTv.context.colorFromAttribute(R.attr.text_assist)
+                            "N/A"
+                        } else if (!snapshot.opponentFullName.isNullOrBlank()){
+                            fromTv.textColor = fromTv.context.colorFromAttribute(R.attr.text_primary)
+                            snapshot.opponentFullName
+                        } else {
+                            fromTv.textColor = fromTv.context.colorFromAttribute(R.attr.text_primary)
+                            snapshot.opponentId
+                        }
                     if (isPositive) {
-                        senderTv.text = snapshot.opponentFullName
-                        receiverTv.text = Session.getAccount()!!.fullName
+                        fromTitle.text = fragment.getString(R.string.From)
                     } else {
-                        senderTv.text = Session.getAccount()!!.fullName
-                        receiverTv.text = snapshot.opponentFullName
+                        fromTitle.text = fragment.getString(R.string.To)
                     }
                 }
-                else -> {
-                    if (!asset.tag.isNullOrEmpty()) {
-                        receiverTitle.text = fragment.getString(R.string.address)
-                    } else {
-                        receiverTitle.text = fragment.getString(R.string.receiver)
+                SafeSnapshotType.pending -> {
+                    memoLl.isVisible = false
+                    transactionIdLl.isVisible = false
+                    transactionHashLayout.isVisible = false
+                    confirmationLl.isVisible = true
+                    val maxConfirmations = snapshot.assetConfirmations.coerceAtLeast(0)
+                    val currentConfirmations = (snapshot.confirmations ?: 0)
+                        .coerceAtLeast(0)
+                        .coerceAtMost(maxConfirmations)
+                    confirmationTv.text =
+                        fragment.requireContext().resources.getQuantityString(
+                            R.plurals.pending_confirmation,
+                            currentConfirmations,
+                            currentConfirmations,
+                            maxConfirmations,
+                        )
+                    if (snapshot.deposit != null) {
+                        hashLl.isVisible = true
+                        hashTitle.text = fragment.getString(R.string.deposit_hash)
+                        hashTv.text = snapshot.deposit.depositHash
+                        if (snapshot.deposit.sender.isNotBlank()) {
+                            fromTv.text = snapshot.deposit.sender
+                        } else {
+                            fromTv.text = "N/A"
+                        }
                     }
-                    senderTitle.text = fragment.getString(R.string.transaction_hash)
-                    senderTv.text = snapshot.transactionHash
-                    receiverTv.text = snapshot.receiver
+                }
+                SafeSnapshotType.deposit -> {
+                    memoLl.isVisible = false
+                    if (snapshot.deposit != null) {
+                        hashLl.isVisible = true
+                        hashTitle.text = fragment.getString(R.string.deposit_hash)
+                        hashTv.text = snapshot.deposit.depositHash
+                        if (snapshot.deposit.sender.isNotBlank()) {
+                            fromTv.text = snapshot.deposit.sender
+                        } else {
+                            fromTv.text = "N/A"
+                        }
+                    }
+                }
+                SafeSnapshotType.withdrawal -> {
+                    memoLl.isVisible = false
+                    fromTitle.text = fragment.getString(R.string.To)
+                    if (snapshot.withdrawal != null) {
+                        hashLl.isVisible = true
+                        hashTitle.text = fragment.getString(R.string.withdrawal_hash)
+                        if (snapshot.withdrawal.withdrawalHash.isBlank()) {
+                            hashTv.text = fragment.getString(R.string.withdrawal_pending)
+                        } else {
+                            hashTv.text = snapshot.withdrawal.withdrawalHash
+                        }
+                        fromTitle.text = fragment.getString(R.string.To)
+                        if (snapshot.withdrawal.receiver.isNotBlank()) {
+                            val label = snapshot.label
+                            if (!label.isNullOrBlank()) {
+                                val fullText = "${snapshot.withdrawal.receiver} $label"
+                                val spannableString = SpannableString(fullText)
+                                val start = fullText.lastIndexOf(label)
+                                val end = start + label.length
+
+                                val backgroundColor: Int = Color.parseColor("#8DCC99")
+                                val backgroundColorSpan = RoundBackgroundColorSpan(backgroundColor, Color.WHITE)
+                                spannableString.setSpan(RelativeSizeSpan(0.8f), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                                spannableString.setSpan(backgroundColorSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                                fromTv.text = spannableString
+                            } else {
+                                fromTv.text = snapshot.withdrawal.receiver
+                            }
+                        } else {
+                            fromTv.text = "N/A"
+                        }
+                    }
                 }
             }
         }
     }
 
-    private fun refreshNoTransactionHashWithdrawal(
+    private fun refreshIncompleteSnapshot(
         fragment: Fragment,
         contentBinding: FragmentTransactionBinding,
         lifecycleScope: CoroutineScope,
         walletViewModel: WalletViewModel,
         snapshot: SnapshotItem,
-        asset: AssetItem,
+        asset: TokenItem,
     ) {
-        if (snapshot.type == SnapshotType.withdrawal.name && snapshot.transactionHash.isNullOrBlank()) {
+        if (snapshot.isDataIncomplete()) {
             lifecycleScope.launch {
                 walletViewModel.refreshSnapshot(snapshot.snapshotId)?.let {
-                    updateUI(fragment, contentBinding, asset, snapshot)
+                    it.label = snapshot.label // Saving temporary variables
+                    updateUI(fragment, contentBinding, asset, it)
                 }
             }
         }
     }
 
-    fun getSnapshotType(fragment: Fragment, type: String): String {
-        val s = when (type) {
-            SnapshotType.transfer.name -> R.string.transfer
-            SnapshotType.deposit.name, SnapshotType.pending.name -> R.string.wallet_bottom_deposit
-            SnapshotType.withdrawal.name -> R.string.withdrawal
-            SnapshotType.fee.name -> R.string.fee
-            SnapshotType.rebate.name -> R.string.rebate
-            SnapshotType.raw.name -> R.string.filters_raw
-            else -> R.string.not_any
+    private fun checkDestroyed(fragment: Fragment) =
+        if (fragment is DialogFragment) {
+            !fragment.isAdded
+        } else {
+            fragment.viewDestroyed()
         }
-        return fragment.requireContext().getString(s)
-    }
 
     companion object {
         const val POS_PB = 0

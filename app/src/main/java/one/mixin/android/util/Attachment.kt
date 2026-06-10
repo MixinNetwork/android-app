@@ -7,9 +7,12 @@ data class Attachment(
     val uri: Uri,
     val filename: String,
     val mimeType: String,
-    val fileSize: Long
+    val fileSize: Long,
 ) {
     fun toDataMessagePayload(name: String?): DataMessagePayload =
-        if (name.isNullOrEmpty()) DataMessagePayload(uri.toString(), filename, mimeType, fileSize)
-        else DataMessagePayload(uri.toString(), name, mimeType, fileSize)
+        if (name.isNullOrEmpty()) {
+            DataMessagePayload(uri.toString(), filename, mimeType, fileSize)
+        } else {
+            DataMessagePayload(uri.toString(), name, mimeType, fileSize)
+        }
 }

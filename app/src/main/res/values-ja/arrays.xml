@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="backup_dialog_list">
+        <item>しない</item>
+        <item>毎日</item>
+        <item>毎週</item>
+        <item>毎月</item>
+    </string-array>
+</resources>

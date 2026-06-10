@@ -22,7 +22,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="@string/auth_refuse"
+            android:text="@string/Refuse"
             android:minWidth="100dp"
             android:gravity="center"
             android:textColor="@color/black"
@@ -32,7 +32,7 @@
             android:paddingTop="10dp"
             android:paddingBottom="10dp"
             android:layout_marginEnd="16dp"
-            android:foreground="?attr/selectableItemBackground"
+            android:foreground="?android:attr/selectableItemBackground"
             android:background="@drawable/selector_round_bn_gray" />
 
         <TextView
@@ -40,7 +40,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="@string/auth_authorization"
+            android:text="@string/permission_authorize"
             android:minWidth="100dp"
             android:gravity="center"
             android:textColor="@color/white"
@@ -50,7 +50,7 @@
             android:paddingTop="10dp"
             android:paddingBottom="10dp"
             android:background="@drawable/selector_round_bn"
-            android:foreground="?attr/selectableItemBackground"
+            android:foreground="?android:attr/selectableItemBackground"
             android:layout_marginEnd="16dp" />
 
     </LinearLayout>
@@ -64,12 +64,14 @@
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginTop="56dp"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:contentDescription="@null" />
 
     <TextView
         android:id="@+id/name"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
         android:layout_marginStart="24dp"
         android:layout_marginEnd="24dp"
         android:textStyle="bold"
@@ -83,7 +85,7 @@
 
     <TextView
         android:id="@+id/info"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
         android:layout_marginEnd="24dp"

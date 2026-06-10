@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
+import com.uber.autodispose.android.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import one.mixin.android.R
@@ -28,7 +29,10 @@ class WaveformView : View {
 
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 
-    fun setWaveform(waveform: ByteArray, center: Boolean = false) {
+    fun setWaveform(
+        waveform: ByteArray,
+        center: Boolean = false,
+    ) {
         waveformBytes = waveform
         this.center = center
     }
@@ -68,22 +72,24 @@ class WaveformView : View {
 
     override fun onAttachedToWindow() {
         if (disposable == null) {
-            disposable = RxBus.listen(ProgressEvent::class.java)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
-                    if (it.id == mBindId) {
-                        if (it.status == STATUS_PAUSE || it.status == STATUS_PLAY) {
-                            setProgress(it.progress)
-                        }
-                    } else {
-                        if (it.status == STATUS_PAUSE ||
-                            it.status == STATUS_PLAY ||
-                            it.status == STATUS_ERROR
-                        ) {
-                            setProgress(0f)
+            disposable =
+                RxBus.listen(ProgressEvent::class.java)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .autoDispose(this)
+                    .subscribe {
+                        if (it.id == mBindId) {
+                            if (it.status == STATUS_PAUSE || it.status == STATUS_PLAY) {
+                                setProgress(it.progress)
+                            }
+                        } else {
+                            if (it.status == STATUS_PAUSE ||
+                                it.status == STATUS_PLAY ||
+                                it.status == STATUS_ERROR
+                            ) {
+                                setProgress(0f)
+                            }
                         }
                     }
-                }
         }
         super.onAttachedToWindow()
     }
@@ -145,16 +151,18 @@ class WaveformView : View {
                 value = value or (waveformBytes!![byteNum + 1] and ((2 shl nextByteRest - 1) - 1).toByte())
             }
             val offset = (max(1f, 14.0f * value / 31.0f).dp).toFloat()
-            val yTop = if (center) {
-                (y - offset) / 2
-            } else {
-                y - offset
-            }
-            val yBottom = if (center) {
-                (y + offset) / 2
-            } else {
-                y
-            }
+            val yTop =
+                if (center) {
+                    (y - offset) / 2
+                } else {
+                    y - offset
+                }
+            val yBottom =
+                if (center) {
+                    (y + offset) / 2
+                } else {
+                    y
+                }
             for (b in 0 until drawBarCount) {
                 val x = barNum * 3.dp
                 if (x < thumbX && x + 2.dp < thumbX) {
@@ -163,7 +171,7 @@ class WaveformView : View {
                         yTop,
                         (x + 2.dp).toFloat(),
                         yBottom,
-                        paintOuter
+                        paintOuter,
                     )
                 } else {
                     canvas.drawRect(
@@ -171,7 +179,7 @@ class WaveformView : View {
                         yTop,
                         (x + 2.dp).toFloat(),
                         yBottom,
-                        paintInner
+                        paintInner,
                     )
                     if (x < thumbX) {
                         canvas.drawRect(x.toFloat(), yTop, thumbX.toFloat(), yBottom, paintOuter)

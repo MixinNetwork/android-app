@@ -10,14 +10,17 @@ import one.mixin.android.ui.common.BlazeBaseActivity
 
 @AndroidEntryPoint
 class ContactsActivity : BlazeBaseActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_contact)
         replaceFragment(ContactsFragment.newInstance(), R.id.container, ContactsFragment.TAG)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?,
+    ) {
         super.onActivityResult(requestCode, resultCode, data)
         val contactsFragment = supportFragmentManager.findFragmentByTag(ContactsFragment.TAG)
         contactsFragment?.onActivityResult(requestCode, resultCode, data)

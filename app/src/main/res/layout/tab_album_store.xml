@@ -6,7 +6,7 @@
     android:layout_marginStart="8dp"
     android:layout_gravity="center">
 
-    <ImageView
+    <one.mixin.android.widget.lottie.RLottieImageView
         android:id="@+id/store_iv"
         android:layout_width="42dp"
         android:layout_height="42dp"
@@ -14,7 +14,7 @@
         android:src="@drawable/ic_sticker_store"
         android:scaleType="centerInside"
         android:layout_gravity="center"
-        android:contentDescription="@string/sticker_store" />
+        android:contentDescription="@string/Sticker_Store" />
 
     <ImageView
         android:id="@+id/dot_iv"

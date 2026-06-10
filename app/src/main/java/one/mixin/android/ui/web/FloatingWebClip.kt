@@ -26,6 +26,9 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.realSize
+import one.mixin.android.extension.safeAddView
+import one.mixin.android.extension.safeRemoveView
+import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.widget.FloatingAvatarsView
 import kotlin.math.abs
 import kotlin.math.min
@@ -86,25 +89,18 @@ class FloatingWebClip(private var isNightMode: Boolean) {
         appContext.defaultSharedPreferences
     }
     private var isShown = false
-    fun init() {
-        if (windowView == null) {
-            initWindowView()
-        }
-        if (!::windowLayoutParams.isInitialized) {
-            initWindowLayoutParams()
-        }
-    }
 
     fun show() {
         if (!appContext.checkInlinePermissions()) return
 
         if (isNightMode != appContext.isNightMode()) {
+            windowView?.let { windowManager.safeRemoveView(it) }
             recreate(appContext.isNightMode()).show()
         } else {
             if (!isShown) {
-                init()
                 isShown = true
-                windowView?.let { windowManager.addView(it, windowLayoutParams) }
+                init()
+                windowManager.safeAddView(windowView, windowLayoutParams)
             }
             reload()
         }
@@ -114,7 +110,7 @@ class FloatingWebClip(private var isNightMode: Boolean) {
         avatarsView?.addList(
             clips.map {
                 it.app?.iconUrl ?: ""
-            }
+            },
         )
         updateSize(clips.size)
         animateToBoundsMaybe()
@@ -122,113 +118,132 @@ class FloatingWebClip(private var isNightMode: Boolean) {
 
     private fun updateSize(count: Int) {
         if (!isShown) return
-        windowLayoutParams.width = if (count > 3) {
-            (64 + 13.3 + 6.6 * 3).toInt().dp
-        } else {
-            (64 + 13.3 * min((count - 1), 2)).toInt().dp
-        }
+        windowLayoutParams.width =
+            if (count > 3) {
+                (64 + 13.3 + 6.6 * 3).toInt().dp
+            } else {
+                (64 + 13.3 * min((count - 1), 2)).toInt().dp
+            }
         windowLayoutParams.height = 64.dp
         windowView?.let { windowManager.updateViewLayout(it, windowLayoutParams) }
+    }
+
+    private fun init() {
+        val wv = windowView
+        if (wv != null) {
+            windowManager.safeRemoveView(wv)
+        }
+        initWindowView()
+        if (!::windowLayoutParams.isInitialized) {
+            initWindowLayoutParams()
+        }
     }
 
     private fun initWindowView() {
         val realSize = appContext.realSize()
         val realX = realSize.x
         val realY = realSize.y
-        windowView = object : FrameLayout(appContext) {
-            private var startX: Float = 0f
-            private var startY: Float = 0f
-            private var downX = -1f
-            private var downY = -1f
-            override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
-                val x = event.rawX
-                val y = event.rawY
-                if (event.action == MotionEvent.ACTION_DOWN) {
-                    startX = x
-                    startY = y
-                } else if (event.action == MotionEvent.ACTION_MOVE) {
-                    if (abs(startX - x) >= appContext.getPixelsInCM(
-                            0.3f,
-                            true
-                        ) || abs(startY - y) >= appContext.getPixelsInCM(0.3f, true)
-                    ) {
+        windowView =
+            object : FrameLayout(appContext) {
+                private var startX: Float = 0f
+                private var startY: Float = 0f
+                private var downX = -1f
+                private var downY = -1f
+
+                override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
+                    val x = event.rawX
+                    val y = event.rawY
+                    if (event.action == MotionEvent.ACTION_DOWN) {
                         startX = x
                         startY = y
-                        return true
+                    } else if (event.action == MotionEvent.ACTION_MOVE) {
+                        if (abs(startX - x) >=
+                            appContext.getPixelsInCM(
+                                0.3f,
+                                true,
+                            ) || abs(startY - y) >= appContext.getPixelsInCM(0.3f, true)
+                        ) {
+                            startX = x
+                            startY = y
+                            return true
+                        }
                     }
+                    return super.onInterceptTouchEvent(event)
                 }
-                return super.onInterceptTouchEvent(event)
+
+                @SuppressLint("ClickableViewAccessibility")
+                override fun onTouchEvent(event: MotionEvent): Boolean {
+                    val x = event.rawX
+                    val y = event.rawY
+
+                    if (event.action == MotionEvent.ACTION_DOWN) {
+                        downX = event.rawX
+                        downY = event.rawY
+                    } else if (event.action == MotionEvent.ACTION_MOVE) {
+                        val dx = x - startX
+                        val dy = y - startY
+
+                        windowLayoutParams.x = (windowLayoutParams.x + dx).toInt()
+                        windowLayoutParams.y = (windowLayoutParams.y + dy).toInt()
+                        var maxDiff = 100.dp
+                        if (windowLayoutParams.x < -maxDiff) {
+                            windowLayoutParams.x = -maxDiff
+                        } else if (windowLayoutParams.x > realX - windowLayoutParams.width + maxDiff) {
+                            windowLayoutParams.x = realX - windowLayoutParams.width + maxDiff
+                        }
+                        maxDiff = 0
+                        @Suppress("KotlinConstantConditions")
+                        if (windowLayoutParams.y < -maxDiff) {
+                            windowLayoutParams.y = -maxDiff
+                        } else if (windowLayoutParams.y > realY - windowLayoutParams.height - appContext.navigationBarHeight() * 2 + maxDiff) {
+                            windowLayoutParams.y =
+                                realY - windowLayoutParams.height - appContext.navigationBarHeight() * 2 + maxDiff
+                        }
+                        windowView?.let { windowManager.updateViewLayout(it, windowLayoutParams) }
+                        startX = x
+                        startY = y
+                    } else if (event.action == MotionEvent.ACTION_UP) {
+                        if (abs(event.rawX - downX) < 8.dp && abs(event.rawY - downY) < 8.dp) {
+                            expand(appContext)
+                        } else {
+                            animateToBoundsMaybe()
+                        }
+                    }
+                    return true
+                }
             }
 
-            @SuppressLint("ClickableViewAccessibility")
-            override fun onTouchEvent(event: MotionEvent): Boolean {
-                val x = event.rawX
-                val y = event.rawY
+        avatarsView =
+            FloatingAvatarsView(appContext).apply {
+                initParams(2, 40, if (isNightMode) appContext.getColor(R.color.bgWindowNight) else Color.WHITE)
+            }
 
-                if (event.action == MotionEvent.ACTION_DOWN) {
-                    downX = event.rawX
-                    downY = event.rawY
-                } else if (event.action == MotionEvent.ACTION_MOVE) {
-                    val dx = x - startX
-                    val dy = y - startY
-
-                    windowLayoutParams.x = (windowLayoutParams.x + dx).toInt()
-                    windowLayoutParams.y = (windowLayoutParams.y + dy).toInt()
-                    var maxDiff = 100.dp
-                    if (windowLayoutParams.x < -maxDiff) {
-                        windowLayoutParams.x = -maxDiff
-                    } else if (windowLayoutParams.x > realX - windowLayoutParams.width + maxDiff) {
-                        windowLayoutParams.x = realX - windowLayoutParams.width + maxDiff
-                    }
-                    maxDiff = 0
-                    if (windowLayoutParams.y < -maxDiff) {
-                        windowLayoutParams.y = -maxDiff
-                    } else if (windowLayoutParams.y > realY - windowLayoutParams.height - appContext.navigationBarHeight() * 2 + maxDiff) {
-                        windowLayoutParams.y =
-                            realY - windowLayoutParams.height - appContext.navigationBarHeight() * 2 + maxDiff
-                    }
-                    windowView?.let { windowManager.updateViewLayout(it, windowLayoutParams) }
-                    startX = x
-                    startY = y
-                } else if (event.action == MotionEvent.ACTION_UP) {
-                    if (abs(event.rawX - downX) < 8.dp && abs(event.rawY - downY) < 8.dp) {
-                        expand(appContext)
+        avatarsView?.let { avatarsView ->
+            windowView?.addView(
+                FrameLayout(appContext).apply {
+                    if (isNightMode) {
+                        setBackgroundResource(R.drawable.bg_floating_shadow_night)
                     } else {
-                        animateToBoundsMaybe()
+                        setBackgroundResource(R.drawable.bg_floating_shadow)
                     }
-                }
-                return true
-            }
+                    addView(
+                        avatarsView,
+                        FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
+                            gravity = Gravity.CENTER
+                            marginStart = 6.dp
+                            marginEnd = 6.dp
+                        },
+                    )
+                },
+                ViewGroup.LayoutParams(WRAP_CONTENT, WRAP_CONTENT),
+            )
         }
-
-        avatarsView = FloatingAvatarsView(appContext).apply {
-            initParams(2, 40, if (isNightMode) appContext.getColor(R.color.bgWindowNight) else Color.WHITE)
-        }
-
-        windowView?.addView(
-            FrameLayout(appContext).apply {
-                if (isNightMode) {
-                    setBackgroundResource(R.drawable.bg_floating_shadow_night)
-                } else {
-                    setBackgroundResource(R.drawable.bg_floating_shadow)
-                }
-                addView(
-                    avatarsView,
-                    FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
-                        gravity = Gravity.CENTER
-                        marginStart = 6.dp
-                        marginEnd = 6.dp
-                    }
-                )
-            },
-            ViewGroup.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
-        )
     }
 
     fun hide() {
         if (!isShown) return
         isShown = false
-        windowView?.let { windowManager.removeView(it) }
+        windowView?.let { windowManager.safeRemoveView(it) }
         windowView = null
         avatarsView = null
     }
@@ -247,6 +262,7 @@ class FloatingWebClip(private var isNightMode: Boolean) {
         if (Build.VERSION.SDK_INT >= 26) {
             windowLayoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
         } else {
+            @Suppress("DEPRECATION")
             windowLayoutParams.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT
         }
         windowLayoutParams.flags =
@@ -254,24 +270,29 @@ class FloatingWebClip(private var isNightMode: Boolean) {
     }
 
     private var decelerateInterpolator: DecelerateInterpolator? = null
+
     private fun animateToBoundsMaybe() {
         val realSize = appContext.realSize()
         val realX = realSize.x
         val startX = windowLayoutParams.x
-        val endX = if (startX >= realX / 2) {
-            avatarsView?.setRTL(false)
-            realSize.x - windowLayoutParams.width
-        } else {
-            avatarsView?.setRTL(true)
-            0
+        var endY = windowLayoutParams.y
+        val maxY = realSize.y - windowLayoutParams.height - appContext.statusBarHeight()
+        if (endY > maxY) {
+            endY = maxY
         }
+        val endX =
+            if (startX >= realX / 2) {
+                avatarsView?.setRTL(false)
+                realSize.x - windowLayoutParams.width
+            } else {
+                avatarsView?.setRTL(true)
+                0
+            }
         preferences.putInt(FX, endX)
-        preferences.putInt(FY, windowLayoutParams.y)
-        var animators: ArrayList<Animator>? = null
-        if (animators == null) {
-            animators = ArrayList()
-        }
+        preferences.putInt(FY, endY)
+        val animators: ArrayList<Animator> = arrayListOf()
         animators.add(ObjectAnimator.ofInt(this, "x", windowLayoutParams.x, endX))
+        animators.add(ObjectAnimator.ofInt(this, "y", windowLayoutParams.y, endY))
         if (decelerateInterpolator == null) {
             decelerateInterpolator = DecelerateInterpolator()
         }
@@ -292,6 +313,7 @@ class FloatingWebClip(private var isNightMode: Boolean) {
         windowLayoutParams.y
     }
 
+    @Suppress("unused")
     @Keep
     fun setX(value: Int) {
         windowLayoutParams.x = value
@@ -299,6 +321,7 @@ class FloatingWebClip(private var isNightMode: Boolean) {
         windowView?.let { windowManager.updateViewLayout(it, windowLayoutParams) }
     }
 
+    @Suppress("unused")
     @Keep
     fun setY(value: Int) {
         windowLayoutParams.y = value

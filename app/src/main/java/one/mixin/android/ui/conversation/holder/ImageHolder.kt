@@ -5,17 +5,18 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
+import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatImageBinding
-import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadGifMark
 import one.mixin.android.extension.loadImageMark
 import one.mixin.android.extension.loadLongImageMark
 import one.mixin.android.extension.round
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
-import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.holder.base.MediaHolder
+import one.mixin.android.ui.conversation.holder.base.Terminable
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.absolutePath
@@ -23,8 +24,7 @@ import one.mixin.android.vo.isSecret
 import one.mixin.android.widget.gallery.MimeType
 import kotlin.math.min
 
-class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(binding.root) {
-
+class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(binding.root), Terminable {
     init {
         val radius = itemView.context.dpToPx(4f).toFloat()
         binding.chatImage.round(radius)
@@ -39,7 +39,7 @@ class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(b
         hasSelect: Boolean,
         isSelect: Boolean,
         isRepresentative: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener
+        onItemListener: MessageAdapter.OnItemListener,
     ) {
         super.bind(messageItem)
         if (hasSelect && isSelect) {
@@ -65,13 +65,7 @@ class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(b
         val isMe = meId == messageItem.userId
         if (isFirst && !isMe) {
             binding.chatName.visibility = View.VISIBLE
-            binding.chatName.text = messageItem.userFullName
-            if (messageItem.appId != null) {
-                binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-                binding.chatName.compoundDrawablePadding = 3.dp
-            } else {
-                binding.chatName.setCompoundDrawables(null, null, null, null)
-            }
+            binding.chatName.setMessageName(messageItem)
             binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
             binding.chatName.setTextColor(getColorById(messageItem.userId))
         } else {
@@ -180,7 +174,7 @@ class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(b
             messageItem.isPin ?: false,
             isRepresentative = isRepresentative,
             isSecret = messageItem.isSecret(),
-            isWhite = true
+            isWhite = true,
         )
 
         dataWidth = messageItem.mediaWidth
@@ -189,6 +183,7 @@ class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(b
         dataThumbImage = messageItem.thumbImage
         dataSize = messageItem.mediaSize
         isGif = messageItem.mediaMimeType.equals(MimeType.GIF.toString(), true)
+        chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, messageItem.expireAt, R.id.chat_layout)
         chatLayout(isMe, isLast)
     }
 
@@ -199,7 +194,11 @@ class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(b
     private var dataHeight: Int? = null
     private var dataSize: Long? = null
 
-    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+    override fun chatLayout(
+        isMe: Boolean,
+        isLast: Boolean,
+        isBlink: Boolean,
+    ) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
             (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
@@ -237,12 +236,13 @@ class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(b
             binding.chatImage.layoutParams.height =
                 min(width * dataHeight!! / dataWidth!!, mediaHeight)
         }
-        val mark = when {
-            isMe && isLast -> R.drawable.chat_mark_image_me
-            isMe -> R.drawable.chat_mark_image
-            !isMe && isLast -> R.drawable.chat_mark_image_other
-            else -> R.drawable.chat_mark_image
-        }
+        val mark =
+            when {
+                isMe && isLast -> R.drawable.chat_mark_image_me
+                isMe -> R.drawable.chat_mark_image
+                !isMe && isLast -> R.drawable.chat_mark_image_other
+                else -> R.drawable.chat_mark_image
+            }
 
         binding.chatImage.setShape(mark)
         binding.largeImageIv.isVisible = binding.chatImage.layoutParams.height == mediaHeight

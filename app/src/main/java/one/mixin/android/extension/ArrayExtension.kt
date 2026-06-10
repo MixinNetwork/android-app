@@ -1,7 +1,14 @@
 package one.mixin.android.extension
 
-fun isNullOrEmpty(byteArray: ByteArray?): Boolean {
-    return byteArray == null || byteArray.isEmpty()
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
+
+@OptIn(ExperimentalContracts::class)
+fun ByteArray?.isNullOrEmpty(): Boolean {
+    contract {
+        returns(false) implies (this@isNullOrEmpty != null)
+    }
+    return this == null || this.isEmpty()
 }
 
 inline fun <T> Array<T>.forEachReversedWithIndex(f: (Int, T) -> Unit) {

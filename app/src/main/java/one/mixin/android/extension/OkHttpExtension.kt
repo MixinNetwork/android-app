@@ -29,7 +29,7 @@ fun Request.show(): String {
             ", body=" +
             this.body +
             '}'.toString()
-        )
+    )
 }
 
 fun Response.show(): String {
@@ -49,5 +49,5 @@ fun Response.show(): String {
             ", priorResponse=" +
             this.priorResponse +
             '}'.toString()
-        )
+    )
 }

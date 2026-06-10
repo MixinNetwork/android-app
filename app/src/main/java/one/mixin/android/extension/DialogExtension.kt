@@ -16,14 +16,14 @@ fun Fragment.singleChoice(
     title: CharSequence? = null,
     @ArrayRes itemsId: Int,
     checkedItem: Int,
-    onClick: (DialogInterface, Int) -> Unit
+    onClick: (DialogInterface, Int) -> Unit,
 ): Unit = requireActivity().singleChoice(title, itemsId, checkedItem, onClick)
 
 fun Context.singleChoice(
     title: CharSequence? = null,
     @ArrayRes itemsId: Int,
     checkedItem: Int,
-    onClick: (DialogInterface, Int) -> Unit
+    onClick: (DialogInterface, Int) -> Unit,
 ) {
     MaterialAlertDialogBuilder(this, R.style.MixinAlertDialogTheme).apply {
         setTitle(title)
@@ -34,14 +34,40 @@ fun Context.singleChoice(
     }.create().show()
 }
 
+fun Fragment.multiChoice(
+    title: CharSequence? = null,
+    @ArrayRes itemsId: Int,
+    checkedItems: BooleanArray,
+    canceledOnTouchOutside: Boolean = true,
+    onClick: (DialogInterface, Int, Boolean) -> Unit,
+): Unit = requireActivity().multiChoice(title, itemsId, checkedItems, canceledOnTouchOutside, onClick)
+
+fun Context.multiChoice(
+    title: CharSequence? = null,
+    @ArrayRes itemsId: Int,
+    checkedItems: BooleanArray,
+    canceledOnTouchOutside: Boolean = true,
+    onClick: (DialogInterface, Int, Boolean) -> Unit,
+) {
+    MaterialAlertDialogBuilder(this, R.style.MixinAlertDialogTheme).apply {
+        setTitle(title)
+        setMultiChoiceItems(itemsId, checkedItems, onClick)
+        setPositiveButton(android.R.string.cancel) { dialog, _ ->
+            dialog.dismiss()
+        }
+    }.create().apply {
+        setCanceledOnTouchOutside(canceledOnTouchOutside)
+    }.show()
+}
+
 fun Fragment.alert(
     message: String,
-    title: String? = null
+    title: String? = null,
 ) = requireActivity().alert(message, title)
 
 fun Context.alert(
     message: CharSequence,
-    title: CharSequence? = null
+    title: CharSequence? = null,
 ): MaterialAlertDialogBuilder {
     return MaterialAlertDialogBuilder(this, R.style.MixinAlertDialogTheme).apply {
         if (title != null) {
@@ -59,15 +85,27 @@ fun Context.alertDialogBuilder(overrideThemeResId: Int = R.style.MixinAlertDialo
     return MaterialAlertDialogBuilder(this, overrideThemeResId)
 }
 
-fun Fragment.indeterminateProgressDialog(message: String? = null, title: String? = null, init: (ProgressDialog.() -> Unit)? = null): ProgressDialog {
+fun Fragment.indeterminateProgressDialog(
+    message: String? = null,
+    title: String? = null,
+    init: (ProgressDialog.() -> Unit)? = null,
+): ProgressDialog {
     return requireActivity().indeterminateProgressDialog(message, title, init)
 }
 
-fun Fragment.indeterminateProgressDialog(message: Int? = null, title: Int? = null, init: (ProgressDialog.() -> Unit)? = null): ProgressDialog {
+fun Fragment.indeterminateProgressDialog(
+    message: Int? = null,
+    title: Int? = null,
+    init: (ProgressDialog.() -> Unit)? = null,
+): ProgressDialog {
     return requireActivity().indeterminateProgressDialog(message?.let { requireActivity().getString(it) }, title?.let { requireActivity().getString(it) }, init)
 }
 
-fun Activity.indeterminateProgressDialog(message: Int? = null, title: Int? = null, init: (ProgressDialog.() -> Unit)? = null): ProgressDialog {
+fun Activity.indeterminateProgressDialog(
+    message: Int? = null,
+    title: Int? = null,
+    init: (ProgressDialog.() -> Unit)? = null,
+): ProgressDialog {
     return indeterminateProgressDialog(message?.let { getString(it) }, title?.let { getString(it) }, init)
 }
 
@@ -75,7 +113,7 @@ fun Activity.indeterminateProgressDialog(message: Int? = null, title: Int? = nul
 fun Context.indeterminateProgressDialog(
     message: CharSequence? = null,
     title: CharSequence? = null,
-    init: (ProgressDialog.() -> Unit)? = null
+    init: (ProgressDialog.() -> Unit)? = null,
 ) = progressDialog(true, message, title, init)
 
 @Deprecated(message = "Android progress dialogs are deprecated")
@@ -83,7 +121,7 @@ private fun Context.progressDialog(
     indeterminate: Boolean,
     message: CharSequence? = null,
     title: CharSequence? = null,
-    init: (ProgressDialog.() -> Unit)? = null
+    init: (ProgressDialog.() -> Unit)? = null,
 ) = ProgressDialog(this, R.style.MixinAlertDialogTheme).apply {
     isIndeterminate = indeterminate
     if (!indeterminate) setProgressStyle(ProgressDialog.STYLE_HORIZONTAL)

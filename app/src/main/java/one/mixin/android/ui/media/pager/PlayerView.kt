@@ -9,18 +9,19 @@ import android.view.TextureView
 import android.view.View
 import android.widget.FrameLayout
 import androidx.core.view.isVisible
-import com.google.android.exoplayer2.ExoPlayer
-import com.google.android.exoplayer2.PlaybackException
-import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.source.BehindLiveWindowException
-import com.google.android.exoplayer2.video.VideoSize
+import androidx.media3.common.PlaybackException
+import androidx.media3.common.Player
+import androidx.media3.common.VideoSize
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.BehindLiveWindowException
 import one.mixin.android.R
 import one.mixin.android.databinding.LayoutPlayerViewBinding
 import one.mixin.android.util.VideoPlayer
 import one.mixin.android.util.reportExoPlayerException
 import one.mixin.android.widget.AspectRatioFrameLayout
 
-class PlayerView(context: Context, attributeSet: AttributeSet) :
+@UnstableApi class PlayerView(context: Context, attributeSet: AttributeSet) :
     FrameLayout(context, attributeSet) {
     var player: ExoPlayer? = null
         set(value) {
@@ -104,7 +105,10 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
         }
     }
 
-    private fun applyTextureViewRotation(textureView: TextureView, video_textureRotation: Int) {
+    private fun applyTextureViewRotation(
+        textureView: TextureView,
+        video_textureRotation: Int,
+    ) {
         val videoTextureWidth = textureView.width.toFloat()
         val videoTextureHeight = textureView.height.toFloat()
         if (videoTextureWidth == 0f || videoTextureHeight == 0f || video_textureRotation == 0) {
@@ -122,7 +126,7 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
                 videoTextureWidth / rotatedTextureRect.width(),
                 videoTextureHeight / rotatedTextureRect.height(),
                 pivotX,
-                pivotY
+                pivotY,
             )
             textureView.setTransform(transformMatrix)
         }
@@ -130,7 +134,7 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
 
     private fun onContentAspectRatioChanged(
         contentAspectRatio: Float,
-        contentFrame: AspectRatioFrameLayout
+        contentFrame: AspectRatioFrameLayout,
     ) {
         contentFrame.setAspectRatio(contentAspectRatio, videoTextureRotation)
     }
@@ -193,7 +197,7 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
                 playbackState == Player.STATE_IDLE ||
                     playbackState == Player.STATE_ENDED ||
                     !player!!.playWhenReady
-                )
+            )
     }
 
     inner class ComponentListener :
@@ -209,7 +213,7 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
             oldLeft: Int,
             oldTop: Int,
             oldRight: Int,
-            oldBottom: Int
+            oldBottom: Int,
         ) {
             applyTextureViewRotation(v as TextureView, videoTextureRotation)
         }
@@ -243,7 +247,10 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
             onContentAspectRatioChanged(videoAspectRatio, binding.videoAspectRatio)
         }
 
-        override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
+        override fun onPlayerStateChanged(
+            playWhenReady: Boolean,
+            playbackState: Int,
+        ) {
             if (VideoPlayer.player().mId == currentMessageId) {
                 when (playbackState) {
                     Player.STATE_BUFFERING -> {

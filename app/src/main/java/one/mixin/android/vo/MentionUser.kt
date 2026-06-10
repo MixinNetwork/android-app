@@ -9,5 +9,5 @@ data class MentionUser(
     val identityNumber: String,
     @SerializedName(value = "full_name", alternate = ["fullName"])
     @ColumnInfo(name = "full_name")
-    val fullName: String
+    val fullName: String,
 )

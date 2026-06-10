@@ -4,7 +4,6 @@ import one.mixin.android.Constants
 import org.junit.Test
 
 class Migration20Test : BaseMigrationTest() {
-
     @Test
     fun migrate_15_20() {
         create15()
@@ -16,7 +15,7 @@ class Migration20Test : BaseMigrationTest() {
             MixinDatabaseMigrations.MIGRATION_16_17,
             MixinDatabaseMigrations.MIGRATION_17_18,
             MixinDatabaseMigrations.MIGRATION_18_19,
-            MixinDatabaseMigrations.MIGRATION_19_20
+            MixinDatabaseMigrations.MIGRATION_19_20,
         )
     }
 
@@ -30,7 +29,7 @@ class Migration20Test : BaseMigrationTest() {
             MixinDatabaseMigrations.MIGRATION_16_17,
             MixinDatabaseMigrations.MIGRATION_17_18,
             MixinDatabaseMigrations.MIGRATION_18_19,
-            MixinDatabaseMigrations.MIGRATION_19_20
+            MixinDatabaseMigrations.MIGRATION_19_20,
         )
     }
 
@@ -43,7 +42,7 @@ class Migration20Test : BaseMigrationTest() {
             true,
             MixinDatabaseMigrations.MIGRATION_17_18,
             MixinDatabaseMigrations.MIGRATION_18_19,
-            MixinDatabaseMigrations.MIGRATION_19_20
+            MixinDatabaseMigrations.MIGRATION_19_20,
         )
     }
 
@@ -55,7 +54,7 @@ class Migration20Test : BaseMigrationTest() {
             20,
             true,
             MixinDatabaseMigrations.MIGRATION_18_19,
-            MixinDatabaseMigrations.MIGRATION_19_20
+            MixinDatabaseMigrations.MIGRATION_19_20,
         )
     }
 
@@ -66,7 +65,7 @@ class Migration20Test : BaseMigrationTest() {
             Constants.DataBase.DB_NAME,
             20,
             true,
-            MixinDatabaseMigrations.MIGRATION_19_20
+            MixinDatabaseMigrations.MIGRATION_19_20,
         )
     }
 }

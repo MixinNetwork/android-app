@@ -31,41 +31,41 @@ class ToolView constructor(context: Context, attrs: AttributeSet) : RelativeLayo
 
     init {
         closeIv.setOnLongClickListener {
-            showTip(it, R.string.common_close)
+            showTip(it, R.string.Close)
             true
         }
         copyIv.setOnLongClickListener {
-            showTip(it, R.string.common_copy)
+            showTip(it, R.string.Copy)
             true
         }
         deleteIv.setOnLongClickListener {
-            showTip(it, R.string.common_delete)
+            showTip(it, R.string.Delete)
             true
         }
         addStickerIv.setOnLongClickListener {
-            showTip(it, R.string.common_add_sticker)
+            showTip(it, R.string.Add_Sticker)
             true
         }
         forwardIv.setOnLongClickListener {
-            showTip(it, R.string.common_forward)
+            showTip(it, R.string.Forward)
             true
         }
         replyIv.setOnLongClickListener {
-            showTip(it, R.string.common_reply)
+            showTip(it, R.string.Reply)
             true
         }
         shareIv.setOnLongClickListener {
-            showTip(it, R.string.common_share)
+            showTip(it, R.string.Share)
             true
         }
         pinIv.setOnLongClickListener {
             showTip(
                 it,
                 if (it.tag == PinAction.PIN) {
-                    R.string.common_pin
+                    R.string.pin_title
                 } else {
-                    R.string.common_unpin
-                }
+                    R.string.Unpin
+                },
             )
             true
         }
@@ -82,7 +82,10 @@ class ToolView constructor(context: Context, attrs: AttributeSet) : RelativeLayo
         }
     }
 
-    private fun showTip(view: View, @StringRes str: Int) {
+    private fun showTip(
+        view: View,
+        @StringRes str: Int,
+    ) {
         tipView.apply {
             (this as TextView).setText(str)
             setOnClickListener {

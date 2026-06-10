@@ -30,9 +30,12 @@ object Fiats {
             }
 
             val codeRateMapString = defaultSharedPreferences.getString(PREF_FIAT_MAP, null)
-            codeRateMap = if (codeRateMapString == null) {
-                ConcurrentHashMap()
-            } else gson.fromJson(codeRateMapString, type)
+            codeRateMap =
+                if (codeRateMapString == null) {
+                    ConcurrentHashMap()
+                } else {
+                    gson.fromJson(codeRateMapString, type)
+                }
         }
     }
 

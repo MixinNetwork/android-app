@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="72dp"
+    xmlns:tool="http://schemas.android.com/tools"
+    android:background="?attr/bg_white"
+    android:clipChildren="false"
+    android:clipToPadding="false"
+    android:foreground="?android:attr/selectableItemBackground"
+    android:orientation="vertical"
+    android:padding="12dp">
+
+    <androidx.legacy.widget.Space
+        android:id="@+id/center"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:layout_centerInParent="true"/>
+
+    <one.mixin.android.widget.BadgeCircleImageView
+        android:id="@+id/avatar"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_centerVertical="true"/>
+
+    <TextView
+        android:id="@+id/symbol"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/center"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="4dp"
+        android:layout_toEndOf="@id/avatar"
+        android:ellipsize="end"
+        android:maxWidth="200dp"
+        android:maxLines="1"
+        android:minWidth="50dp"
+        android:textColor="?attr/text_primary"/>
+
+    <TextView
+        android:id="@+id/name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/center"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+        android:layout_toEndOf="@id/avatar"
+        android:ellipsize="end"
+        android:maxWidth="200dp"
+        android:maxLines="1"
+        android:minWidth="50dp"
+        android:textColor="?attr/text_assist"
+        android:textSize="12sp"/>
+
+    <TextView
+        android:id="@+id/change_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/center"
+        android:layout_alignParentEnd="true"
+        android:layout_toEndOf="@id/symbol"
+        android:gravity="end"
+        android:maxLines="1"
+        android:textColor="?attr/text_assist"
+        android:textSize="12sp"/>
+
+    <TextView
+        android:id="@+id/price_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/center"
+        android:layout_alignParentEnd="true"
+        android:layout_toEndOf="@id/symbol"
+        android:gravity="end"
+        android:maxLines="1"
+        android:textColor="?attr/text_assist"
+        android:textSize="12sp"/>
+</RelativeLayout>

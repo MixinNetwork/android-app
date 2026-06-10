@@ -34,6 +34,7 @@ import one.mixin.android.widget.SearchView
 import java.util.UUID
 import javax.inject.Inject
 
+@SuppressLint("NotifyDataSetChanged")
 @AndroidEntryPoint
 class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
@@ -41,16 +42,18 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         const val GROUP_VOICE_MAX_COUNT = 256
 
         fun newInstance(
-            conversationId: String
+            conversationId: String,
         ) = GroupUsersBottomSheetDialogFragment().apply {
-            arguments = Bundle().apply {
-                putString(ARGS_CONVERSATION_ID, conversationId)
-            }
+            arguments =
+                Bundle().apply {
+                    putString(ARGS_CONVERSATION_ID, conversationId)
+                }
         }
     }
 
     @Inject
     lateinit var jobManager: MixinJobManager
+
     @Inject
     lateinit var callState: CallStateLiveData
 
@@ -76,7 +79,10 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private val binding by viewBinding(FragmentGroupUsersBottomSheetBinding::inflate)
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         val view = binding.root
         context?.let { c ->
@@ -92,21 +98,23 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
         contentView.apply {
             binding.closeIv.setOnClickListener { dismiss() }
-            binding.searchEt.listener = object : SearchView.OnSearchViewListener {
-                override fun afterTextChanged(s: Editable?) {
-                    filter(s.toString(), users)
-                }
+            binding.searchEt.listener =
+                object : SearchView.OnSearchViewListener {
+                    override fun afterTextChanged(s: Editable?) {
+                        filter(s.toString(), users)
+                    }
 
-                override fun onSearch() {
+                    override fun onSearch() {
+                    }
                 }
-            }
-            binding.searchEt.setHint(getString(R.string.contact_search_hint))
+            binding.searchEt.setHint(getString(R.string.setting_auth_search_hint))
 
-            binding.selectRv.layoutManager = LinearLayoutManager(
-                requireContext(),
-                LinearLayoutManager.HORIZONTAL,
-                false
-            )
+            binding.selectRv.layoutManager =
+                LinearLayoutManager(
+                    requireContext(),
+                    LinearLayoutManager.HORIZONTAL,
+                    false,
+                )
             binding.selectRv.adapter = selectAdapter
             binding.userRv.layoutManager = LinearLayoutManager(requireContext())
             binding.userRv.adapter = groupUserAdapter
@@ -119,15 +127,16 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             binding.actionIv.setOnClickListener {
                 val users = arrayListOf<String>()
                 checkedUsers.mapTo(users) { it.userId }
-                val message = createCallMessage(
-                    UUID.randomUUID().toString(),
-                    conversationId,
-                    "",
-                    MessageCategory.KRAKEN_INVITE.name,
-                    "",
-                    nowInUtc(),
-                    MessageStatus.SENDING.name
-                )
+                val message =
+                    createCallMessage(
+                        UUID.randomUUID().toString(),
+                        conversationId,
+                        "",
+                        MessageCategory.KRAKEN_INVITE.name,
+                        "",
+                        nowInUtc(),
+                        MessageStatus.SENDING.name,
+                    )
                 if (callState.isIdle()) {
                     publish(requireContext(), conversationId, users)
                 } else {
@@ -139,25 +148,29 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
 
         groupUserAdapter.alreadyUserIds = inGroupCallUsers
-        groupUserAdapter.listener = object : GroupUserListener {
-            override fun onItemClick(user: User, checked: Boolean) {
-                if (checked) {
-                    checkedUsers.add(user)
-                } else {
-                    checkedUsers.remove(user)
+        groupUserAdapter.listener =
+            object : GroupUserListener {
+                override fun onItemClick(
+                    user: User,
+                    checked: Boolean,
+                ) {
+                    if (checked) {
+                        checkedUsers.add(user)
+                    } else {
+                        checkedUsers.remove(user)
+                    }
+                    selectAdapter.notifyDataSetChanged()
+                    binding.actionIv.isVisible = checkedUsers.isNotEmpty()
+                    binding.selectRv.layoutManager?.scrollToPosition(checkedUsers.size - 1)
                 }
-                selectAdapter.notifyDataSetChanged()
-                binding.actionIv.isVisible = checkedUsers.isNotEmpty()
-                binding.selectRv.layoutManager?.scrollToPosition(checkedUsers.size - 1)
-            }
 
-            override fun onFull() {
-                alert(getString(R.string.call_group_full, GROUP_VOICE_MAX_COUNT))
-                    .setPositiveButton(R.string.ok) { dialog, _ ->
-                        dialog.dismiss()
-                    }.show()
+                override fun onFull() {
+                    alert(getString(R.string.Group_call_participants_limit_hint, GROUP_VOICE_MAX_COUNT))
+                        .setPositiveButton(R.string.OK) { dialog, _ ->
+                            dialog.dismiss()
+                        }.show()
+                }
             }
-        }
 
         selectAdapter.checkedUsers = checkedUsers
 
@@ -168,12 +181,15 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    private fun filter(keyword: String, users: List<User>?) {
+    private fun filter(
+        keyword: String,
+        users: List<User>?,
+    ) {
         groupUserAdapter.submitList(
             users?.filter {
                 it.fullName!!.containsIgnoreCase(keyword) ||
                     it.identityNumber.containsIgnoreCase(keyword)
-            }?.sortedByDescending { it.fullName.equalsIgnoreCase(keyword) || it.identityNumber.equalsIgnoreCase(keyword) }
+            }?.sortedByDescending { it.fullName.equalsIgnoreCase(keyword) || it.identityNumber.equalsIgnoreCase(keyword) },
         )
     }
 }

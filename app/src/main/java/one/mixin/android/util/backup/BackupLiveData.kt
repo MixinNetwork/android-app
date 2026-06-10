@@ -17,7 +17,10 @@ class BackupLiveData : LiveData<Boolean>() {
     var result: Result? = null
         private set
 
-    fun setResult(ing: Boolean, result: Result?) {
+    fun setResult(
+        ing: Boolean,
+        result: Result?,
+    ) {
         this.result = result
         this.ing = ing
     }

@@ -10,8 +10,8 @@ import androidx.annotation.StringRes
 import one.mixin.android.databinding.ViewSwitchBinding
 
 class SwitchView(context: Context, attrs: AttributeSet) : FrameLayout(context, attrs), Checkable {
-
     private val binding = ViewSwitchBinding.inflate(LayoutInflater.from(context), this, true)
+
     init {
         setOnClickListener {
             toggle()
@@ -34,7 +34,9 @@ class SwitchView(context: Context, attrs: AttributeSet) : FrameLayout(context, a
         binding.switchContent.text = name
     }
 
-    fun setContent(@StringRes name: Int) {
+    fun setContent(
+        @StringRes name: Int,
+    ) {
         binding.switchContent.setText(name)
     }
 

@@ -17,5 +17,5 @@ data class VideoEditedInfo(
     var thumbnail: String? = null,
     var fileName: String,
     var bitrate: Int,
-    var needChange: Boolean = true
+    var needChange: Boolean = true,
 ) : Parcelable

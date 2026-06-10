@@ -17,6 +17,7 @@ import one.mixin.android.Constants.Download.AUTO_DOWNLOAD_WIFI
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentStorageDataBinding
 import one.mixin.android.databinding.ViewStotageDataBinding
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.autoDownloadDocument
@@ -29,7 +30,6 @@ import one.mixin.android.extension.getAutoDownloadWifiValue
 import one.mixin.android.extension.layoutInflater
 import one.mixin.android.extension.putInt
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.util.PropertyHelper
 import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
@@ -44,15 +44,18 @@ class SettingDataStorageFragment : BaseFragment(R.layout.fragment_storage_data) 
 
     private val binding by viewBinding(FragmentStorageDataBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
-            titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
+            titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             storageRl.setOnClickListener {
                 requireActivity().addFragment(
                     this@SettingDataStorageFragment,
                     SettingStorageFragment.newInstance(),
-                    SettingStorageFragment.TAG
+                    SettingStorageFragment.TAG,
                 )
             }
             storageMobile.setOnClickListener {
@@ -66,7 +69,7 @@ class SettingDataStorageFragment : BaseFragment(R.layout.fragment_storage_data) 
                         AUTO_DOWNLOAD_WIFI,
                         getAutoDownloadWifiValue(),
                         R.string
-                            .setting_data_wifi
+                            .setting_data_wifi,
                     )
                 }
             }
@@ -76,7 +79,7 @@ class SettingDataStorageFragment : BaseFragment(R.layout.fragment_storage_data) 
                         AUTO_DOWNLOAD_ROAMING,
                         getAutoDownloadRoamingValue(),
                         R.string
-                            .setting_data_roaming
+                            .When_roaming,
                     )
                 }
             }
@@ -88,21 +91,22 @@ class SettingDataStorageFragment : BaseFragment(R.layout.fragment_storage_data) 
         refresh()
     }
 
-    private fun refresh() = lifecycleScope.launch {
-        binding.apply {
-            storageMobileInfo.text = getInfo(getAutoDownloadMobileValue())
-            storageWifiInfo.text = getInfo(getAutoDownloadWifiValue())
-            storageRoamingInfo.text = getInfo(getAutoDownloadRoamingValue())
+    private fun refresh() =
+        lifecycleScope.launch {
+            binding.apply {
+                storageMobileInfo.text = getInfo(getAutoDownloadMobileValue())
+                storageWifiInfo.text = getInfo(getAutoDownloadWifiValue())
+                storageRoamingInfo.text = getInfo(getAutoDownloadRoamingValue())
+            }
         }
-    }
 
     private suspend fun getInfo(value: Int): String {
         val list = mutableListOf<String>()
-        if (autoDownloadPhoto(value)) list.add(getString(R.string.setting_data_photo))
-        if (autoDownloadVideo(value)) list.add(getString(R.string.setting_data_video))
-        if (autoDownloadDocument(value)) list.add(getString(R.string.setting_data_documents))
+        if (autoDownloadPhoto(value)) list.add(getString(R.string.Photos))
+        if (autoDownloadVideo(value)) list.add(getString(R.string.Videos))
+        if (autoDownloadDocument(value)) list.add(getString(R.string.Documents))
         val divide = getString(R.string.divide)
-        if (list.isEmpty()) return getString(R.string.setting_data_noting)
+        if (list.isEmpty()) return getString(R.string.NO_MEDIA)
         val str = StringBuffer()
         list.forEachIndexed { index, s ->
             if (index != 0) {
@@ -114,48 +118,55 @@ class SettingDataStorageFragment : BaseFragment(R.layout.fragment_storage_data) 
     }
 
     private var menuDialog: AlertDialog? = null
-    private suspend fun showMenu(key: String, value: Int, @StringRes titleId: Int) {
+
+    private suspend fun showMenu(
+        key: String,
+        value: Int,
+        @StringRes titleId: Int,
+    ) {
         menuDialog?.dismiss()
-        val menuBinding = ViewStotageDataBinding.inflate(requireContext().layoutInflater, null, false).apply {
-            this.checkPhoto.apply {
-                setName(R.string.setting_data_photo)
-                isChecked = autoDownloadPhoto(value)
-            }
-            this.checkVideo.apply {
-                setName(R.string.setting_data_video)
-                isChecked = autoDownloadVideo(value)
-            }
-            this.checkDocument.apply {
-                setName(R.string.setting_data_documents)
-                isChecked = autoDownloadDocument(value)
-            }
-        }
-        menuDialog = alertDialogBuilder()
-            .setTitle(titleId)
-            .setView(menuBinding.root)
-            .setNegativeButton(android.R.string.cancel) { dialog, _ ->
-                dialog.dismiss()
-            }
-            .setPositiveButton(android.R.string.ok) { dialog, _ ->
-                var localValue = 0
-                if (menuBinding.checkPhoto.isChecked) {
-                    localValue += (AUTO_DOWNLOAD_PHOTO)
+        val menuBinding =
+            ViewStotageDataBinding.inflate(requireContext().layoutInflater, null, false).apply {
+                this.checkPhoto.apply {
+                    setName(R.string.Photos)
+                    isChecked = autoDownloadPhoto(value)
                 }
-                if (menuBinding.checkVideo.isChecked) {
-                    localValue += (AUTO_DOWNLOAD_VIDEO)
+                this.checkVideo.apply {
+                    setName(R.string.Videos)
+                    isChecked = autoDownloadVideo(value)
                 }
-                if (menuBinding.checkDocument.isChecked) {
-                    localValue += (AUTO_DOWNLOAD_DOCUMENT)
+                this.checkDocument.apply {
+                    setName(R.string.Documents)
+                    isChecked = autoDownloadDocument(value)
                 }
-                lifecycleScope.launch {
-                    PropertyHelper.updateKeyValue(key, localValue.toString())
-                    defaultSharedPreferences.putInt(key, localValue)
-                    refresh()
+            }
+        menuDialog =
+            alertDialogBuilder()
+                .setTitle(titleId)
+                .setView(menuBinding.root)
+                .setNegativeButton(android.R.string.cancel) { dialog, _ ->
                     dialog.dismiss()
                 }
-            }.create().apply {
-                this.window?.setLayout(WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT)
-            }
+                .setPositiveButton(android.R.string.ok) { dialog, _ ->
+                    var localValue = 0
+                    if (menuBinding.checkPhoto.isChecked) {
+                        localValue += (AUTO_DOWNLOAD_PHOTO)
+                    }
+                    if (menuBinding.checkVideo.isChecked) {
+                        localValue += (AUTO_DOWNLOAD_VIDEO)
+                    }
+                    if (menuBinding.checkDocument.isChecked) {
+                        localValue += (AUTO_DOWNLOAD_DOCUMENT)
+                    }
+                    lifecycleScope.launch {
+                        PropertyHelper.updateKeyValue(key, localValue)
+                        defaultSharedPreferences.putInt(key, localValue)
+                        refresh()
+                        dialog.dismiss()
+                    }
+                }.create().apply {
+                    this.window?.setLayout(WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT)
+                }
         menuDialog?.show()
     }
 }

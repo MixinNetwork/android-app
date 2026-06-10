@@ -8,15 +8,17 @@ import java.io.File
 import java.io.IOException
 
 class LottieDecoder : ResourceDecoder<Any, RLottie> {
-
-    override fun handles(source: Any, options: Options): Boolean = true
+    override fun handles(
+        source: Any,
+        options: Options,
+    ): Boolean = true
 
     @Throws(IOException::class)
     override fun decode(
         source: Any,
         width: Int,
         height: Int,
-        options: Options
+        options: Options,
     ): Resource<RLottie> {
         return try {
             SimpleResource(RLottie(source as File, width, height))

@@ -8,11 +8,12 @@ import android.widget.CompoundButton
 import android.widget.FrameLayout
 import androidx.annotation.StringRes
 import one.mixin.android.databinding.ViewCheckBinding
+import one.mixin.android.extension.FileSizeUnit
 import one.mixin.android.extension.fileSize
 
 class CheckView(context: Context, attrs: AttributeSet) : FrameLayout(context, attrs), Checkable {
-
     private val binding = ViewCheckBinding.inflate(LayoutInflater.from(context), this, true)
+
     init {
         setOnClickListener {
             toggle()
@@ -35,12 +36,14 @@ class CheckView(context: Context, attrs: AttributeSet) : FrameLayout(context, at
         binding.nameTv.text = name
     }
 
-    fun setName(@StringRes name: Int) {
+    fun setName(
+        @StringRes name: Int,
+    ) {
         binding.nameTv.setText(name)
     }
 
     fun setSize(size: Long) {
-        binding.storageTv.text = size.fileSize()
+        binding.storageTv.text = size.fileSize(FileSizeUnit.KB)
     }
 
     fun setOnCheckedChangeListener(listener: CompoundButton.OnCheckedChangeListener) {

@@ -1,12 +1,9 @@
 package one.mixin.android.ui.conversation
 
 import android.annotation.SuppressLint
-import android.gesture.GestureOverlayView
 import android.os.Bundle
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.viewpager2.widget.ViewPager2
@@ -33,11 +30,9 @@ import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.giphy.Image
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.viewpager2.TabLayoutMediator
-import kotlin.math.abs
 
 @AndroidEntryPoint
 class StickerAlbumFragment : BaseFragment(R.layout.fragment_sticker_album) {
-
     companion object {
         const val TAG = "StickerAlbumFragment"
 
@@ -49,7 +44,7 @@ class StickerAlbumFragment : BaseFragment(R.layout.fragment_sticker_album) {
     private val albums = mutableListOf<StickerAlbum>()
 
     private val albumAdapter: StickerAlbumAdapter by lazy {
-        StickerAlbumAdapter(this, albums).apply {
+        StickerAlbumAdapter(requireActivity(), albums).apply {
             callback = this@StickerAlbumFragment.callback
         }
     }
@@ -59,33 +54,27 @@ class StickerAlbumFragment : BaseFragment(R.layout.fragment_sticker_album) {
     private val binding by viewBinding(FragmentStickerAlbumBinding::bind)
     private var _storeBinding: TabAlbumStoreBinding? = null
 
+    private var tabLayoutMediator: TabLayoutMediator? = null
+
     private var first = true
 
     @SuppressLint("NotifyDataSetChanged")
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             stickerViewModel.observeSystemAddedAlbums().observe(
-                viewLifecycleOwner
+                viewLifecycleOwner,
             ) { r ->
                 r?.let {
-                    albums.clear()
-                    albums.addAll(r)
-                    albumAdapter.notifyDataSetChanged()
-                    context?.let { c ->
-                        for (i in 1 until albumAdapter.itemCount) {
-                            val tabView = albumAdapter.getTabView(i, c) as FrameLayout
-                            albumTl.getTabAt(i)?.customView = tabView
-                            if (albumTl.selectedTabPosition == i) {
-                                tabView.setBackgroundResource(R.drawable.bg_sticker_tab)
-                            }
-                        }
+                    albumAdapter.setItems(r)
 
-                        val slidingTabStrip = albumTl.getChildAt(0) as ViewGroup
-                        for (i in 1 until slidingTabStrip.childCount) {
-                            val v = slidingTabStrip.getChildAt(i)
-                            v.backgroundResource = 0
-                        }
+                    val slidingTabStrip = albumTl.getChildAt(0) as ViewGroup
+                    for (i in 1 until slidingTabStrip.childCount) {
+                        val v = slidingTabStrip.getChildAt(i)
+                        v.backgroundResource = 0
                     }
 
                     if (first) {
@@ -94,34 +83,42 @@ class StickerAlbumFragment : BaseFragment(R.layout.fragment_sticker_album) {
                     }
                 }
             }
-            albumAdapter.rvCallback = object : DraggableRecyclerView.Callback {
-                override fun onScroll(dis: Float) {
-                    rvCallback?.onScroll(dis)
-                }
+            albumAdapter.rvCallback =
+                object : DraggableRecyclerView.Callback {
+                    override fun onScroll(dis: Float) {
+                        rvCallback?.onScroll(dis)
+                    }
 
-                override fun onRelease(fling: Int) {
-                    rvCallback?.onRelease(fling)
-                }
-            }
-            viewPager.adapter = albumAdapter
-            viewPager.isUserInputEnabled = false
-            touchOverlay.addOnGestureListener(gestureOverlayListener)
-            TabLayoutMediator(
-                albumTl,
-                viewPager
-            ) { tab, pos ->
-                if (pos == TYPE_STORE) {
-                    _storeBinding = TabAlbumStoreBinding.inflate(layoutInflater, null, false).apply {
-                        tab.customView = root
-                        root.setOnClickListener {
-                            dotIv.isVisible = false
-                            defaultSharedPreferences.putBoolean(PREF_NEW_ALBUM, false)
-                            StickerStoreActivity.show(requireContext())
-                        }
-                        dotIv.isVisible = defaultSharedPreferences.getBoolean(PREF_NEW_ALBUM, false)
+                    override fun onRelease(fling: Int) {
+                        rvCallback?.onRelease(fling)
                     }
                 }
-            }.attach()
+            viewPager.adapter = albumAdapter
+            tabLayoutMediator =
+                TabLayoutMediator(
+                    albumTl,
+                    viewPager,
+                ) { tab, pos ->
+                    if (pos == TYPE_STORE) {
+                        _storeBinding =
+                            TabAlbumStoreBinding.inflate(layoutInflater, null, false).apply {
+                                tab.customView = root
+                                tab.view.isEnabled = false
+                                root.setOnClickListener {
+                                    dotIv.isVisible = false
+                                    defaultSharedPreferences.putBoolean(PREF_NEW_ALBUM, false)
+                                    StickerStoreActivity.show(requireContext())
+                                }
+                                dotIv.isVisible = defaultSharedPreferences.getBoolean(PREF_NEW_ALBUM, false)
+                            }
+                    } else {
+                        val tabView = albumAdapter.getTabView(pos, requireContext())
+                        tab.customView = tabView
+                        if (albumTl.selectedTabPosition == pos) {
+                            tabView.setBackgroundResource(R.drawable.bg_sticker_tab)
+                        }
+                    }
+                }.apply { attach() }
             albumTl.tabMode = TabLayout.MODE_SCROLLABLE
             albumTl.addOnTabSelectedListener(
                 object : TabLayout.OnTabSelectedListener {
@@ -136,7 +133,7 @@ class StickerAlbumFragment : BaseFragment(R.layout.fragment_sticker_album) {
                     override fun onTabSelected(tab: TabLayout.Tab) {
                         tab.customView?.setBackgroundResource(R.drawable.bg_sticker_tab)
                     }
-                }
+                },
             )
         }
 
@@ -160,88 +157,34 @@ class StickerAlbumFragment : BaseFragment(R.layout.fragment_sticker_album) {
         binding.viewPager.unregisterOnPageChangeCallback(onPageChangeCallback)
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        tabLayoutMediator?.detach()
+    }
+
     fun setCallback(callback: Callback) {
         this.callback = callback
     }
 
-    private var direction = SwipeDirection.RIGHT
-    private var lastX = 0f
-    private var lastY = 0f
-
-    var changed = false
-
-    private val gestureOverlayListener = object : GestureOverlayView.OnGestureListener {
-        override fun onGestureStarted(overlay: GestureOverlayView?, event: MotionEvent?) {
-            handleOnTouchEvent(event)
-        }
-
-        override fun onGesture(overlay: GestureOverlayView?, event: MotionEvent?) {
-            handleOnTouchEvent(event)
-        }
-
-        override fun onGestureEnded(overlay: GestureOverlayView?, event: MotionEvent?) {
-            handleOnTouchEvent(event)
-        }
-
-        override fun onGestureCancelled(overlay: GestureOverlayView?, event: MotionEvent?) {
-            handleOnTouchEvent(event)
-        }
-
-        private fun handleOnTouchEvent(event: MotionEvent?): Boolean {
-            if (direction == SwipeDirection.NONE)
-                return false
-            when (event?.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    lastX = event.x
-                    lastY = event.y
-                    changed = false
-                    if (!binding.viewPager.isFakeDragging) {
-                        binding.viewPager.beginFakeDrag()
-                    }
-                }
-
-                MotionEvent.ACTION_MOVE -> {
-                    val curX = event.x
-                    val curY = event.y
-                    val deltaX = curX - lastX
-                    val deltaY = curY - lastY
-                    return if (deltaX > 0 && direction == SwipeDirection.RIGHT) {
-                        false
-                    } else {
-                        if (abs(deltaX) > abs(deltaY)) {
-                            binding.viewPager.fakeDragBy(deltaX)
-                            changed = true
-                        }
-                        lastX = curX
-                        lastY = curY
-                        true
-                    }
-                }
-
-                MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_UP -> {
-                    binding.viewPager.endFakeDrag()
+    private val onPageChangeCallback =
+        object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageScrolled(
+                position: Int,
+                positionOffset: Float,
+                positionOffsetPixels: Int,
+            ) {
+                if (position == 0 && positionOffset > 0) {
+                    binding.viewPager.setCurrentItem(TYPE_RECENT, false)
                 }
             }
-            return true
         }
-    }
-
-    enum class SwipeDirection {
-        ALL, LEFT, RIGHT, NONE
-    }
-
-    private val onPageChangeCallback = object : ViewPager2.OnPageChangeCallback() {
-        override fun onPageSelected(position: Int) {
-            direction = if (position == TYPE_RECENT) {
-                SwipeDirection.RIGHT
-            } else {
-                SwipeDirection.ALL
-            }
-        }
-    }
 
     interface Callback {
-        fun onStickerClick(stickerId: String, albumId: String?)
-        fun onGiphyClick(image: Image, previewUrl: String)
+        fun onStickerClick(stickerId: String)
+
+        fun onGiphyClick(
+            image: Image,
+            previewUrl: String,
+        )
     }
 }

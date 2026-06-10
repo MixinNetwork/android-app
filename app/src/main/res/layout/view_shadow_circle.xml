@@ -9,21 +9,24 @@
         android:layout_width="80dp"
         android:layout_height="match_parent"
         android:foreground="@drawable/mixin_ripple"
-        android:padding="24dp" />
+        android:padding="24dp"
+        android:contentDescription="@null" />
 
     <ImageView
         android:id="@+id/second_iv"
         android:layout_width="80dp"
         android:layout_height="match_parent"
         android:foreground="@drawable/mixin_ripple"
-        android:padding="24dp" />
+        android:padding="24dp"
+        android:contentDescription="@null" />
 
     <ImageView
         android:id="@+id/third_iv"
         android:layout_width="80dp"
         android:layout_height="match_parent"
         android:foreground="@drawable/mixin_ripple"
-        android:padding="24dp" />
+        android:padding="24dp"
+        android:contentDescription="@null" />
 
     <ImageView
         android:id="@+id/more"
@@ -31,5 +34,6 @@
         android:layout_height="match_parent"
         android:foreground="@drawable/mixin_ripple"
         android:padding="24dp"
-        android:src="@drawable/ic_bot_others" />
+        android:src="@drawable/ic_bot_others"
+        android:contentDescription="@null" />
 </merge>

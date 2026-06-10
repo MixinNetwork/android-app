@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <style name="AppTheme.Night" parent="AppTheme">
         <item name="color_primary">@color/colorPrimaryDarkNight</item>
         <item name="color_primary_dark">@color/colorPrimaryNight</item>
@@ -19,6 +18,7 @@
         <item name="icon_white">@color/colorIconWhiteNight</item>
         <item name="icon_gray">@color/colorIconGrayNight</item>
         <item name="icon_black">@color/colorIconBlackNight</item>
+        <item name="icon_google_black">@color/colorIconGoogleBlackNight</item>
         <item name="icon_action">@color/colorIconActionNight</item>
 
         <item name="badger">@color/badger</item>
@@ -35,15 +35,34 @@
         <item name="bg_menu">@color/bgMenuNight</item>
         <item name="bg_menu_border">@color/bgMenuBorderNight</item>
         <item name="bg_gray_light">@color/bgGrayLightNight</item>
-        <item name="bg_confirmation">@color/bgConfirmationNight</item>
         <item name="bg_block">@color/bgBlockNight</item>
         <item name="bg_post">@color/bgPostNight</item>
+        <item name="bg_clip">@color/bgClipNight</item>
         <item name="bg_bubble">@color/bgBubbleNight</item>
+        <item name="bg_choose_network">@color/bgChooseNetworkNight</item>
+        <item name="bg_choose_network_yellow">@color/bgChooseNetworkYellowNight</item>
         <item name="bg_bot">@color/bgBotNight</item>
         <item name="bg_divider">@color/dividerNight</item>
         <item name="bg_translucence">@color/bgTranslucenceNight</item>
+        <item name="bg_rank">@color/bgRankNight</item>
         <item name="bg_pin_content">@drawable/chat_bubble_pin_message_night</item>
         <item name="bg_flag">@color/bgFlagNight</item>
+
+        <item name="bg_action_button">@drawable/bg_button_action_night</item>
+        <item name="bg_tip_info">@color/bgTipInfoNight</item>
+        <item name="bg_tip_info_border">@color/bgTipInfoBorderNight</item>
+        <item name="bg_tip_warning">@color/bgTipWarningNight</item>
+        <item name="bg_tip_warning_border">@color/bgTipWarningBorderNight</item>
+
+        <item name="bg_chain_gradient_start">@color/chainGradientStartNight</item>
+        <item name="bg_chain_gradient_end">@color/chainGradientEndNight</item>
+        <item name="bg_market_gradient_start">@color/marketGradientStartNight</item>
+        <item name="bg_market_gradient_end">@color/marketGradientEndNight</item>
+        <item name="icon_chain">@color/iconChainNight</item>
+        <item name="bg_market_card">@drawable/bg_market_card_night</item>
+        <item name="ic_logo">@drawable/ic_logo_mixin_night</item>
+        <item name="market_logo">@drawable/market_logo_dark</item>
+        <item name="badge_red">@color/badgeRedNight</item>
 
         <item name="music_played">@color/musicPlayedNight</item>
         <item name="music_unplayed">@color/musicUnPlayedNight</item>
@@ -52,11 +71,10 @@
         <item name="music_floating_bg">@color/musicFloatingBgNight</item>
         <item name="music_play_pause_bg">@color/musicPlayPauseBgNight</item>
 
-        <item name="icon_emergency">@drawable/ic_emergency_avatar_night</item>
-        <item name="icon_emergency_contact">@drawable/ic_emergency_contact_night</item>
-
         <item name="flag_night">true</item>
         <item name="code_border">@color/codeBorderNight</item>
+        <item name="nft_border">@color/nftBorderNight</item>
+        <item name="bg_nft">@color/bgNftNight</item>
         <item name="map_default">@drawable/ic_map_default_night</item>
 
         <item name="android:colorControlHighlight">@color/highlight_night</item>
@@ -64,6 +82,12 @@
         <item name="popupMenuStyle">@style/AppTheme.PopupMenuStyle</item>
         <item name="android:textAppearanceLargePopupMenu">@style/AppTheme.PopupMenuStyle.MenuTextAppearanceSmall</item>
         <item name="android:textAppearanceSmallPopupMenu">@style/AppTheme.PopupMenuStyle.MenuTextAppearanceLarge</item>
+    </style>
+
+
+    <style name="MaterialCalendarThemeNight" parent="Widget.MaterialComponents.MaterialCalendar">
+        <item name="colorPrimary">@color/colorPrimaryNight</item>
+        <item name="colorAccent">@color/colorAccentNight</item>
     </style>
 
     <style name="AppTheme.Night.NoActionBar" parent="AppTheme.Night">
@@ -82,9 +106,6 @@
 
     <style name="AppTheme.Night.Photo" parent="AppTheme.Night.NoActionBar">
         <item name="android:windowBackground">@android:color/transparent</item>
-        <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowTranslucentStatus">true</item>
-        <item name="android:navigationBarColor">?attr/text_primary</item>
     </style>
 
     <style name="AppTheme.Night.Call" parent="AppTheme.Night.NoActionBar">

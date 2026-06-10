@@ -22,7 +22,11 @@ class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(
         binding.chatTv.round(3.dp)
     }
 
-    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+    override fun chatLayout(
+        isMe: Boolean,
+        isLast: Boolean,
+        isBlink: Boolean,
+    ) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
             (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
@@ -48,13 +52,13 @@ class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_post_me_last,
-                    R.drawable.chat_bubble_post_me_last_night
+                    R.drawable.chat_bubble_post_me_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_post_me,
-                    R.drawable.chat_bubble_post_me_night
+                    R.drawable.chat_bubble_post_me_night,
                 )
             }
         } else {
@@ -63,13 +67,13 @@ class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_post_other_last,
-                    R.drawable.chat_bubble_post_other_last_night
+                    R.drawable.chat_bubble_post_other_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_post_other,
-                    R.drawable.chat_bubble_post_other_night
+                    R.drawable.chat_bubble_post_other_night,
                 )
             }
         }
@@ -80,7 +84,7 @@ class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(
         isLast: Boolean,
         isFirst: Boolean = false,
         onItemListener: ChatHistoryAdapter.OnItemListener,
-        miniMarkwon: Markwon
+        miniMarkwon: Markwon,
     ) {
         super.bind(messageItem)
         if (binding.chatTv.tag != messageItem.content.hashCode()) {
@@ -99,13 +103,7 @@ class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(
         val isMe = meId == messageItem.userId
         if (isFirst && !isMe) {
             binding.chatName.visibility = View.VISIBLE
-            binding.chatName.text = messageItem.userFullName
-            if (messageItem.appId != null) {
-                binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-                binding.chatName.compoundDrawablePadding = 3.dp
-            } else {
-                binding.chatName.setCompoundDrawables(null, null, null, null)
-            }
+            binding.chatName.setMessageName(messageItem)
             binding.chatName.setTextColor(getColorById(messageItem.userId))
             binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
         } else {
@@ -115,13 +113,6 @@ class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(
             onItemListener.onPostClick(itemView, messageItem)
         }
 
-        if (messageItem.appId != null) {
-            binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-            binding.chatName.compoundDrawablePadding = 3.dp
-        } else {
-            binding.chatName.setCompoundDrawables(null, null, null, null)
-        }
-
         binding.chatTime.load(
             isMe,
             messageItem.createdAt,
@@ -129,7 +120,7 @@ class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(
             false,
             isRepresentative = false,
             isSecret = false,
-            isWhite = true
+            isWhite = true,
         )
 
         chatLayout(isMe, isLast)

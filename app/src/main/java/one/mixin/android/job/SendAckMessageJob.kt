@@ -7,17 +7,17 @@ import java.util.UUID
 
 class SendAckMessageJob(
     private val ack: List<BlazeAckMessage>,
-    priority: Int = PRIORITY_ACK_MESSAGE
+    priority: Int = PRIORITY_ACK_MESSAGE,
 ) : MixinJob(Params(priority).groupBy("send_ack_message").requireWebSocketConnected().persist(), UUID.randomUUID().toString()) {
-
     companion object {
         private const val serialVersionUID = 1L
     }
 
-    override fun onRun() = runBlocking {
-        messageService.acknowledgements(ack)
-        return@runBlocking
-    }
+    override fun onRun() =
+        runBlocking {
+            messageService.acknowledgements(ack)
+            return@runBlocking
+        }
 
     override fun cancel() {
     }

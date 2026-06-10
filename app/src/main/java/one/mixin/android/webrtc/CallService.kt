@@ -1,8 +1,13 @@
 package one.mixin.android.webrtc
 
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE
+import androidx.core.app.ServiceCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import com.google.gson.Gson
@@ -11,17 +16,21 @@ import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.MixinApplication
+import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.isServiceRunning
+import one.mixin.android.extension.notificationManager
 import one.mixin.android.extension.supportsOreo
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.repository.ConversationRepository
+import one.mixin.android.session.CurrentUserScopeManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.call.CallNotificationBuilder
+import one.mixin.android.ui.call.CallNotificationBuilder.Companion.CHANNEL_CALL
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.Message
@@ -42,7 +51,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
 abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnectionEvents {
-
     protected val callExecutor: ThreadPoolExecutor = Executors.newFixedThreadPool(1) as ThreadPoolExecutor
     protected val timeoutExecutor: ScheduledExecutorService = Executors.newScheduledThreadPool(1)
     private val observeStatsDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
@@ -54,18 +62,30 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
 
     @Inject
     lateinit var audioSwitch: AudioSwitch
+
     @Inject
     lateinit var jobManager: MixinJobManager
+
     @Inject
-    lateinit var database: MixinDatabase
+    lateinit var currentUserScopeManager: CurrentUserScopeManager
+
     @Inject
     lateinit var accountService: AccountService
+
     @Inject
     lateinit var callState: CallStateLiveData
+
+    @Inject
+    lateinit var callDebugState: CallDebugLiveData
+
     @Inject
     lateinit var conversationRepo: ConversationRepository
+
     @Inject
     lateinit var signalProtocol: SignalProtocol
+
+    protected val database: MixinDatabase
+        get() = currentUserScopeManager.getMixinDatabase()
 
     protected val gson = Gson()
 
@@ -87,9 +107,19 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
                 self = user
             }
         }
+
+        callDebugState.observe(this) { type ->
+            if (::peerConnectionClient.isInitialized) {
+                peerConnectionClient.callDebugState = type
+            }
+        }
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    override fun onStartCommand(
+        intent: Intent?,
+        flags: Int,
+        startId: Int,
+    ): Int {
         super.onStartCommand(intent, flags, startId)
         val action = intent?.action
         if (intent == null || action == null) {
@@ -137,8 +167,9 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         Timber.d("$TAG_CALL disconnect")
         if (isDisconnected.compareAndSet(false, true)) {
             Timber.d("$TAG_CALL real disconnect")
-            stopForeground(true)
+            stopForeground(STOP_FOREGROUND_REMOVE)
             callState.reset()
+            callDebugState.reset()
             audioManager.reset()
             pipCallView.close()
             peerConnectionClient.dispose()
@@ -153,26 +184,35 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
             return
         }
 
-        peerConnectionClient = PeerConnectionClient(MixinApplication.appContext, this)
+        peerConnectionClient = PeerConnectionClient(MixinApplication.appContext)
+        peerConnectionClient.events = this
         callExecutor.execute {
             peerConnectionClient.createPeerConnectionFactory(PeerConnectionFactory.Options())
         }
-        audioManager = CallAudioManager(
-            this, audioSwitch,
-            object : CallAudioManager.Callback {
-                override fun customAudioDeviceAvailable(available: Boolean) {
-                    callState.customAudioDeviceAvailable = available
-                }
-            }
-        )
+        audioManager =
+            CallAudioManager(
+                this,
+                audioSwitch,
+                object : CallAudioManager.Callback {
+                    override fun customAudioDeviceAvailable(available: Boolean) {
+                        callState.customAudioDeviceAvailable = available
+                    }
+                },
+            )
     }
 
     abstract fun needInitWebRtc(action: String): Boolean
+
     abstract fun handleIntent(intent: Intent): Boolean
+
     abstract fun onCallDisconnected()
+
     abstract fun onDestroyed()
+
     abstract fun onTimeout()
+
     abstract fun onTurnServerError()
+
     abstract fun handleLocalEnd()
 
     override fun onIceCandidatesRemoved(candidates: Array<IceCandidate>) {
@@ -229,6 +269,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         peerConnectionClient.enableCommunication()
         callState.disconnected = false
         callState.reconnecting = false
+        pipCallView.updateIcon(!callState.audioEnable)
 
         lifecycleScope.launch(observeStatsDispatcher) {
             peerConnectionClient.observeStats {
@@ -274,31 +315,46 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         if (isDisconnected.get() || isDestroyed.get()) return
 
         supportsOreo {
+            val channel =
+                NotificationChannel(
+                    CHANNEL_CALL,
+                    MixinApplication.get().getString(R.string.Call),
+                    NotificationManager.IMPORTANCE_HIGH,
+                )
+            channel.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+            channel.setSound(null, null)
+            channel.setShowBadge(false)
+            notificationManager.createNotificationChannel(channel)
             CallNotificationBuilder.getCallNotification(this, callState)?.let {
-                startForeground(CallNotificationBuilder.WEBRTC_NOTIFICATION, it)
+                try {
+                    ServiceCompat.startForeground(this, CallNotificationBuilder.WEBRTC_NOTIFICATION, it, FOREGROUND_SERVICE_TYPE_MICROPHONE)
+                } catch (e: Exception) {
+                    Timber.e(e)
+                }
             }
         }
     }
 
-    protected fun getTurnServer(action: (List<PeerConnection.IceServer>) -> Unit) = runBlocking {
-        handleMixinResponse(
-            invokeNetwork = {
-                accountService.getTurn()
-            },
-            successBlock = {
-                val array = it.data as Array<TurnServer>
-                action.invoke(genIceServerList(array))
-            },
-            exceptionBlock = {
-                handleFetchTurnError(it.message)
-                return@handleMixinResponse false
-            },
-            failureBlock = {
-                handleFetchTurnError(it.error?.toString())
-                return@handleMixinResponse true
-            }
-        )
-    }
+    protected fun getTurnServer(action: (List<PeerConnection.IceServer>) -> Unit) =
+        runBlocking {
+            handleMixinResponse(
+                invokeNetwork = {
+                    accountService.getTurn()
+                },
+                successBlock = {
+                    val array = it.data as Array<TurnServer>
+                    action.invoke(genIceServerList(array))
+                },
+                exceptionBlock = {
+                    handleFetchTurnError(it.message)
+                    return@handleMixinResponse false
+                },
+                failureBlock = {
+                    handleFetchTurnError(it.error?.toString())
+                    return@handleMixinResponse true
+                },
+            )
+        }
 
     private fun handleFetchTurnError(message: String?) {
         val error = "$TAG_CALL handleFetchTurnError $message"
@@ -314,7 +370,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
                 PeerConnection.IceServer.builder(it.url)
                     .setUsername(it.username)
                     .setPassword(it.credential)
-                    .createIceServer()
+                    .createIceServer(),
             )
         }
         return iceServer
@@ -328,7 +384,12 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     }
 
     enum class CallState {
-        STATE_IDLE, STATE_DIALING, STATE_RINGING, STATE_ANSWERING, STATE_CONNECTED, STATE_BUSY
+        STATE_IDLE,
+        STATE_DIALING,
+        STATE_RINGING,
+        STATE_ANSWERING,
+        STATE_CONNECTED,
+        STATE_BUSY,
     }
 
     inner class TimeoutRunnable : Runnable {
@@ -362,13 +423,21 @@ const val EXTRA_MUTE = "mute"
 const val EXTRA_SPEAKERPHONE = "speakerphone"
 const val EXTRA_PENDING_CANDIDATES = "pending_candidates"
 
-inline fun <reified T : CallService> muteAudio(ctx: Context, checked: Boolean) = startService<T>(ctx, ACTION_MUTE_AUDIO) {
-    it.putExtra(EXTRA_MUTE, checked)
-}
+inline fun <reified T : CallService> muteAudio(
+    ctx: Context,
+    checked: Boolean,
+) =
+    startService<T>(ctx, ACTION_MUTE_AUDIO) {
+        it.putExtra(EXTRA_MUTE, checked)
+    }
 
-inline fun <reified T : CallService> speakerPhone(ctx: Context, checked: Boolean) = startService<T>(ctx, ACTION_SPEAKERPHONE) {
-    it.putExtra(EXTRA_SPEAKERPHONE, checked)
-}
+inline fun <reified T : CallService> speakerPhone(
+    ctx: Context,
+    checked: Boolean,
+) =
+    startService<T>(ctx, ACTION_SPEAKERPHONE) {
+        it.putExtra(EXTRA_SPEAKERPHONE, checked)
+    }
 
 inline fun <reified T : CallService> disconnect(ctx: Context) {
     startService<T>(ctx, ACTION_CALL_DISCONNECT) {}
@@ -377,12 +446,13 @@ inline fun <reified T : CallService> disconnect(ctx: Context) {
 inline fun <reified T : CallService> startService(
     ctx: Context,
     action: String? = null,
-    putExtra: ((intent: Intent) -> Unit)
+    putExtra: ((intent: Intent) -> Unit),
 ) {
-    val intent = Intent(ctx, T::class.java).apply {
-        this.action = action
-        putExtra.invoke(this)
-    }
+    val intent =
+        Intent(ctx, T::class.java).apply {
+            this.action = action
+            putExtra.invoke(this)
+        }
     ctx.startService(intent)
 }
 

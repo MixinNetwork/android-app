@@ -5,6 +5,7 @@ import android.os.CountDownTimer
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.ViewAnimator
+import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import one.mixin.android.Constants
@@ -13,7 +14,9 @@ import one.mixin.android.databinding.LayoutPinBiometricBinding
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.openExternalUrl
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.ui.setting.SettingActivity
@@ -25,15 +28,18 @@ import one.mixin.android.widget.PinView
 class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimator(context, attributeSet) {
     private val binding: LayoutPinBiometricBinding = LayoutPinBiometricBinding.inflate(LayoutInflater.from(context), this)
     val biometricTv get() = binding.biometricTv
-    val payTv get() = binding.payTv
     val pin get() = binding.pin
     val errorBtn get() = binding.errorBtn
-    val enableBiometricTv get() = binding.enableBiometricTv
+    private val enableBiometricTv get() = binding.enableBiometricTv
 
     var callback: Callback? = null
 
     var keyboardHeight = 0
     private var keyboard: Keyboard? = null
+
+    init {
+        measureAllChildren = false
+    }
 
     override fun onFinishInflate() {
         super.onFinishInflate()
@@ -48,17 +54,20 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
                             callback?.onPinComplete(pin.code())
                         }
                     }
-                }
+                },
             )
         }
     }
 
     fun setKeyboard(keyboard: Keyboard) {
         this.keyboard = keyboard
-        keyboard.setKeyboardKeys(Constants.KEYS)
+        keyboard.initPinKeys(context)
         keyboard.setOnClickKeyboardListener(
             object : Keyboard.OnClickKeyboardListener {
-                override fun onKeyClick(position: Int, value: String) {
+                override fun onKeyClick(
+                    position: Int,
+                    value: String,
+                ) {
                     context?.tickVibrate()
                     if (position == 11) {
                         binding.pin.delete()
@@ -67,7 +76,10 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
                     }
                 }
 
-                override fun onLongClick(position: Int, value: String) {
+                override fun onLongClick(
+                    position: Int,
+                    value: String,
+                ) {
                     context?.clickVibrate()
                     if (position == 11) {
                         binding.pin.clear()
@@ -75,7 +87,7 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
                         binding.pin.append(value)
                     }
                 }
-            }
+            },
         )
     }
 
@@ -83,7 +95,7 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
         content: String,
         animate: Boolean = false,
         tickMillis: Long = 0L,
-        errorAction: ErrorAction? = null
+        errorAction: ErrorAction? = null,
     ) {
         displayedChild = POS_ERROR
         binding.errorInfo.text = content
@@ -110,6 +122,8 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
         binding.errorBtn.updateLayoutParams<MarginLayoutParams> {
             bottomMargin = 0
         }
+        if (keyboard?.isVisible == true) return
+
         keyboard?.isVisible = true
         keyboard?.animateHeight(
             0,
@@ -118,23 +132,47 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
                 if (keyboardHeight == 0) {
                     keyboardHeight = keyboard?.measuredHeight ?: 0
                 }
-            }
+            },
         )
     }
 
-    fun showDone(): Long {
+    fun showDone(
+        returnTo: String? = null,
+        doneAction: () -> Unit,
+    ) {
         displayedChild = POS_DONE
-
-        val open = context.defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
-        val enable = !open && BiometricUtil.isSupport(context)
-        enableBiometricTv.isVisible = enable
-        enableBiometricTv.setOnClickListener {
-            SettingActivity.showPinSetting(context)
+        if (returnTo.isNullOrBlank()) {
+            val open = context.defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
+            val enable = !open && BiometricUtil.isSupport(context)
+            binding.doneBtn.setText(R.string.Done)
+            binding.doneBtn.setOnClickListener {
+                doneAction()
+            }
+            enableBiometricTv.isVisible = enable
+            if (enableBiometricTv.isGone) {
+                binding.doneBtn.updateLayoutParams<MarginLayoutParams> {
+                    bottomMargin = 32.dp
+                }
+            }
+            enableBiometricTv.setOnClickListener {
+                doneAction()
+                SettingActivity.showPinSetting(context)
+            }
+        } else {
+            binding.doneBtn.setText(R.string.Back_To_Merchant)
+            binding.doneBtn.setOnClickListener {
+                doneAction()
+                val context = this@BiometricLayout.context
+                context.openExternalUrl(returnTo)
+            }
+            enableBiometricTv.setText(R.string.Stay_in_Mixin)
+            enableBiometricTv.isVisible = true
+            enableBiometricTv.setCompoundDrawables(null, null, null, null)
+            enableBiometricTv.setOnClickListener {
+                doneAction()
+            }
         }
-
         keyboard?.animateHeight(keyboardHeight, 0)
-
-        return if (enable) 4000L else 3000L
     }
 
     fun showPb() {
@@ -146,20 +184,20 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
     }
 
     fun setErrorButton(
-        errorAction: ErrorAction
+        errorAction: ErrorAction,
     ) {
         binding.apply {
             when (errorAction) {
                 ErrorAction.RetryPin -> {
-                    errorBtn.text = getString(R.string.try_again)
+                    errorBtn.text = getString(R.string.Try_Again)
                     errorBtn.setOnClickListener { showPin(true) }
                 }
                 ErrorAction.Close -> {
-                    errorBtn.text = getString(R.string.group_ok)
+                    errorBtn.text = getString(R.string.OK)
                     errorBtn.setOnClickListener { callback?.onDismiss() }
                 }
                 ErrorAction.Continue -> {
-                    errorBtn.text = getString(R.string.common_continue)
+                    errorBtn.text = getString(R.string.Continue)
                     errorBtn.setOnClickListener { showPin(true) }
                 }
             }
@@ -192,19 +230,19 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
             countDownTimer?.cancel()
             errorBtn.isEnabled = false
             errorBtn.textColor = context.getColor(R.color.wallet_text_gray)
-            countDownTimer = object : CountDownTimer(tickMillis, 1000) {
+            countDownTimer =
+                object : CountDownTimer(tickMillis, 1000) {
+                    override fun onTick(l: Long) {
+                        errorBtn.text =
+                            context.getString(R.string.wallet_transaction_continue_count_down, l / 1000)
+                    }
 
-                override fun onTick(l: Long) {
-                    errorBtn.text =
-                        context.getString(R.string.wallet_transaction_continue_count, l / 1000)
+                    override fun onFinish() {
+                        errorBtn.text = getString(R.string.Continue)
+                        errorBtn.isEnabled = true
+                        errorBtn.textColor = context.getColor(R.color.white)
+                    }
                 }
-
-                override fun onFinish() {
-                    errorBtn.text = getString(R.string.wallet_transaction_continue)
-                    errorBtn.isEnabled = true
-                    errorBtn.textColor = context.getColor(R.color.white)
-                }
-            }
             countDownTimer?.start()
         }
     }
@@ -212,7 +250,9 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
     private fun getString(resId: Int) = context.getString(resId)
 
     enum class ErrorAction {
-        RetryPin, Close, Continue
+        RetryPin,
+        Close,
+        Continue,
     }
 
     interface Callback {

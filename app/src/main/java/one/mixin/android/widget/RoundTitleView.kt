@@ -2,6 +2,7 @@ package one.mixin.android.widget
 
 import android.content.Context
 import android.util.AttributeSet
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.RelativeLayout
@@ -10,15 +11,15 @@ import androidx.core.view.updateLayoutParams
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewRoundTitleBinding
 import one.mixin.android.extension.dpToPx
-import one.mixin.android.extension.loadImage
-import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
+import one.mixin.android.vo.safe.TokenItem
 
 class RoundTitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context, attrs) {
     private val binding = ViewRoundTitleBinding.inflate(LayoutInflater.from(context), this, true)
     val leftIv = binding.leftIv
     val rightIv = binding.rightIv
     val titleTv = binding.titleTv
+
     init {
         val ta = context.obtainStyledAttributes(attrs, R.styleable.RoundTitleView)
         if (ta.hasValue(R.styleable.RoundTitleView_title_text)) {
@@ -62,10 +63,9 @@ class RoundTitleView(context: Context, attrs: AttributeSet) : RelativeLayout(con
         }
     }
 
-    fun showBadgeCircleView(asset: AssetItem) {
+    fun showBadgeCircleView(asset: TokenItem) {
         binding.badgeCircleIv.isVisible = true
-        binding.badgeCircleIv.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-        binding.badgeCircleIv.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
+        binding.badgeCircleIv.loadToken(asset)
         binding.titleLl.updateLayoutParams<LayoutParams> {
             marginStart = 0
         }
@@ -78,7 +78,10 @@ class RoundTitleView(context: Context, attrs: AttributeSet) : RelativeLayout(con
         }
     }
 
-    fun setSubTitle(first: String, second: String? = null) {
+    fun setSubTitle(
+        first: String,
+        second: String? = null,
+    ) {
         binding.titleTv.text = first
         if (second.isNullOrBlank()) {
             binding.subTitleTv.visibility = View.GONE
@@ -90,5 +93,14 @@ class RoundTitleView(context: Context, attrs: AttributeSet) : RelativeLayout(con
 
     fun roundClose() {
         binding.rightIv.setImageResource(R.drawable.ic_close)
+    }
+
+    fun centerTitle() {
+        binding.titleLl.updateLayoutParams<LayoutParams> {
+            marginStart = 0
+            addRule(CENTER_IN_PARENT, TRUE)
+            removeRule(END_OF)
+        }
+        binding.titleTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
     }
 }

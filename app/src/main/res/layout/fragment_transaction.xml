@@ -19,7 +19,8 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/ph"
         app:need_divider="false"
-        app:titleText="@string/wallet_transaction_title" />
+        app:titleText="@string/Transaction"
+        app:rightIcon="@drawable/ic_more" />
 
     <ScrollView
         android:layout_width="match_parent"
@@ -41,24 +42,46 @@
                     android:layout_height="wrap_content"
                     tools:ignore="UselessParent">
 
-                    <one.mixin.android.widget.BadgeCircleImageView
-                        android:id="@+id/avatar"
+                    <ViewAnimator
+                        android:id="@+id/avatar_va"
                         android:layout_width="70dp"
                         android:layout_height="70dp"
                         android:layout_centerHorizontal="true"
                         android:layout_marginTop="16dp"
                         android:layout_marginBottom="16dp"
-                        tools:ignore="ContentDescription" />
+                        android:clipToPadding="false">
+
+                        <one.mixin.android.widget.BadgeCircleImageView
+                            android:id="@+id/avatar"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            tools:ignore="ContentDescription" />
+
+                        <one.mixin.android.widget.InscriptionView
+                            android:id="@+id/inscription"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            app:textGranularity="1"
+                            app:textMinTextSize="4"
+                            app:textMaxTextSize="8"
+                            app:textMarginHorizon="0.5dp"
+                            app:textMarginVertical="0.5dp"
+                            app:textMaxLines="1"
+                            app:iconRound="all"
+                            app:iconRoundSize="8dp"
+                            app:iconSize="40dp" />
+
+                    </ViewAnimator>
 
                     <TextView
                         android:id="@+id/value_tv"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_below="@id/avatar_va"
                         android:layout_centerHorizontal="true"
-                        android:gravity="center_horizontal"
                         android:layout_marginStart="32dp"
                         android:layout_marginEnd="32dp"
-                        android:layout_below="@id/avatar"
+                        android:gravity="center_horizontal"
                         android:textIsSelectable="true"
                         android:textSize="14sp" />
 
@@ -70,28 +93,28 @@
                         android:layout_centerHorizontal="true"
                         android:layout_marginTop="@dimen/margin10"
                         android:layout_marginBottom="6dp"
-                        android:textColor="?attr/text_minor" />
+                        android:textColor="?attr/text_assist" />
 
                     <ViewAnimator
                         android:id="@+id/that_va"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="24dp"
                         android:layout_below="@id/value_as_tv"
-                        android:layout_centerHorizontal="true">
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginBottom="24dp">
 
                         <ProgressBar
                             style="?android:attr/progressBarStyleSmall"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
-                            android:theme="@style/AppTheme.BlueAccent"/>
+                            android:theme="@style/AppTheme.BlueAccent" />
 
                         <TextView
                             android:id="@+id/that_tv"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textColor="?attr/text_minor" />
+                            android:textColor="?attr/text_assist" />
                     </ViewAnimator>
                 </RelativeLayout>
             </FrameLayout>
@@ -106,27 +129,29 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <RelativeLayout
+                <LinearLayout
+                    android:id="@+id/transaction_id_ll"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
 
                     <TextView
                         android:id="@+id/transaction_id_title_tv"
                         style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/transactions_id" />
+                        android:text="@string/Transaction_Id" />
 
                     <TextView
                         android:id="@+id/transaction_id_tv"
                         style="@style/TransactionDescTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_below="@+id/transaction_id_title_tv"
                         android:textIsSelectable="true" />
-                </RelativeLayout>
+                </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/transaction_hash_layout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
@@ -135,10 +160,10 @@
                         style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/transactions_type" />
+                        android:text="@string/transaction_Hash" />
 
                     <TextView
-                        android:id="@+id/transaction_type_tv"
+                        android:id="@+id/transaction_hash_tv"
                         style="@style/TransactionDescTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -146,20 +171,84 @@
                 </LinearLayout>
 
                 <LinearLayout
-                    android:id="@+id/transaction_status"
+                    android:id="@+id/inscription_hash_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        style="@style/TransactionTitleTextStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/Collectible_Hash" />
+
+                    <TextView
+                        android:id="@+id/inscription_hash_tv"
+                        style="@style/TransactionDescTextStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textIsSelectable="true" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/collection_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        style="@style/TransactionTitleTextStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/Collection" />
+
+                    <TextView
+                        android:id="@+id/collection_tv"
+                        style="@style/TransactionDescTextStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textIsSelectable="true" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/id_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        style="@style/TransactionTitleTextStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/ID" />
+
+                    <TextView
+                        android:id="@+id/id_tv"
+                        style="@style/TransactionDescTextStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textIsSelectable="true" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/confirmation_ll"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:visibility="gone"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
                     android:orientation="vertical">
 
                     <TextView
+                        android:id="@+id/confirmation_title"
                         style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/transactions_status" />
+                        android:text="@string/Confirmations" />
 
                     <TextView
-                        android:id="@+id/transaction_status_tv"
+                        android:id="@+id/confirmation_tv"
                         style="@style/TransactionDescTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -167,20 +256,20 @@
                 </LinearLayout>
 
                 <LinearLayout
-                    android:id="@+id/sender_ll"
+                    android:id="@+id/from_ll"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
                     <TextView
-                        android:id="@+id/sender_title"
+                        android:id="@+id/from_title"
                         style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/sender" />
+                        android:text="@string/From" />
 
                     <TextView
-                        android:id="@+id/sender_tv"
+                        android:id="@+id/from_tv"
                         style="@style/TransactionDescTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -188,24 +277,59 @@
                 </LinearLayout>
 
                 <LinearLayout
-                    android:id="@+id/receiver_ll"
+                    android:id="@+id/hash_ll"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/hash_title"
+                        style="@style/TransactionTitleTextStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/deposit_hash" />
+
+                    <TextView
+                        android:id="@+id/hash_tv"
+                        style="@style/TransactionDescTextStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textIsSelectable="true" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/memo_ll"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
                     <TextView
-                        android:id="@+id/receiver_title"
                         style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/receiver" />
+                        android:text="@string/Memo" />
 
-                    <TextView
-                        android:id="@+id/receiver_tv"
-                        style="@style/TransactionDescTextStyle"
+                    <LinearLayout
+                        android:id="@+id/memo_layout"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textIsSelectable="true" />
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/memo_tv"
+                            style="@style/TransactionDescTextStyle"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:textIsSelectable="true" />
+
+                        <ImageView
+                            android:src="@drawable/ic_keyboard_arrow_down"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="20dp" />
+                    </LinearLayout>
                 </LinearLayout>
 
                 <LinearLayout
@@ -217,48 +341,10 @@
                         style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/memo" />
-
-                    <TextView
-                        android:id="@+id/memo_tv"
-                        style="@style/TransactionDescTextStyle"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:textIsSelectable="true" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="@dimen/margin16"
-                    android:orientation="vertical">
-                    <TextView
-                        style="@style/TransactionTitleTextStyle"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/date" />
+                        android:text="@string/Date" />
 
                     <TextView
                         android:id="@+id/date_tv"
-                        style="@style/TransactionDescTextStyle"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:textIsSelectable="true" />
-                </LinearLayout>
-                <LinearLayout
-                    android:id="@+id/trace_ll"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:visibility="gone"
-                    android:orientation="vertical">
-                    <TextView
-                        style="@style/TransactionTitleTextStyle"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/trace" />
-
-                    <TextView
-                        android:id="@+id/trace_tv"
                         style="@style/TransactionDescTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"

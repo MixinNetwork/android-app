@@ -1,7 +1,9 @@
 package one.mixin.android.widget.gallery.filter;
 
 import android.content.Context;
+
 import java.util.Set;
+
 import one.mixin.android.widget.gallery.MimeType;
 import one.mixin.android.widget.gallery.internal.entity.IncapableCause;
 import one.mixin.android.widget.gallery.internal.entity.Item;

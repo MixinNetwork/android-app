@@ -10,10 +10,10 @@ import android.graphics.RectF;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import one.mixin.android.widget.imageeditor.model.EditorElement;
-
 import java.util.Collections;
 import java.util.List;
+
+import one.mixin.android.widget.imageeditor.model.EditorElement;
 
 /**
  * Contains all of the information required for a {@link Renderer} to do its job.

@@ -11,11 +11,17 @@ import androidx.core.database.getShortOrNull
 import androidx.core.database.getStringOrNull
 import one.mixin.android.BuildConfig
 import one.mixin.android.extension.heavyClickVibrate
+import one.mixin.android.util.reportEvent
 import timber.log.Timber
+import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
-fun debugLongClick(view: View, debugAction: () -> Unit, releaseAction: (() -> Unit)? = null) {
+fun debugLongClick(
+    view: View,
+    debugAction: () -> Unit,
+    releaseAction: (() -> Unit)? = null,
+) {
     if (BuildConfig.DEBUG) {
         view.setOnLongClickListener {
             view.context.heavyClickVibrate()
@@ -31,13 +37,36 @@ fun debugLongClick(view: View, debugAction: () -> Unit, releaseAction: (() -> Un
     }
 }
 
-inline fun <T> measureTimeMillis(tag: String, block: () -> T): T {
+@OptIn(ExperimentalContracts::class)
+inline fun <T> measureTimeMillis(
+    tag: String,
+    block: () -> T,
+): T {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
     val start = System.currentTimeMillis()
     val result = block()
-    Timber.d("$tag ${System.currentTimeMillis() - start}")
+    Timber.d("$tag ${System.currentTimeMillis() - start} ms")
+    return result
+}
+
+@OptIn(ExperimentalContracts::class)
+inline fun <T> timeoutEarlyWarning(
+    block: () -> T,
+    timeout: Long = 50L,
+): T {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+    val start = System.currentTimeMillis()
+    val result = block()
+    val time = System.currentTimeMillis() - start
+    if (time >= timeout) {
+        val msg = "It takes $time milliseconds"
+        Timber.e(msg)
+        reportEvent(msg)
+    }
     return result
 }
 
@@ -51,7 +80,7 @@ fun Cursor.getContent(columnIndex: Int): String {
                 ?: getDoubleOrNull(columnIndex)
                 ?: getShortOrNull(columnIndex)
                 ?: getLongOrNull(columnIndex) ?: ""
-            ).toString()
+        ).toString()
     } catch (e: Exception) {
         ""
     }

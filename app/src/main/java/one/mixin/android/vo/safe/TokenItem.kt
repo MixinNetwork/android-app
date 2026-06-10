@@ -1,0 +1,141 @@
+package one.mixin.android.vo.safe
+
+import android.annotation.SuppressLint
+import android.os.Parcelable
+import androidx.recyclerview.widget.DiffUtil
+import kotlinx.parcelize.Parcelize
+import one.mixin.android.api.response.web3.SwapChain
+import one.mixin.android.api.response.web3.SwapToken
+import one.mixin.android.api.response.web3.Swappable
+import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.vo.Fiats
+import one.mixin.android.vo.PriceAndChange
+import one.mixin.android.vo.WithdrawalMemoPossibility
+import java.math.BigDecimal
+
+@SuppressLint("ParcelCreator")
+@Parcelize
+data class TokenItem(
+    val assetId: String,
+    val symbol: String,
+    val name: String,
+    val iconUrl: String,
+    val balance: String,
+    val priceBtc: String,
+    val priceUsd: String,
+    val chainId: String,
+    var changeUsd: String,
+    val changeBtc: String,
+    var hidden: Boolean?,
+    val confirmations: Int,
+    var chainIconUrl: String?,
+    var chainSymbol: String?,
+    var chainName: String?,
+    val assetKey: String?,
+    val dust: String?,
+    val withdrawalMemoPossibility: WithdrawalMemoPossibility?,
+    val collectionHash: String?,
+    val level: Int?,
+    val precision: Int,
+) : Parcelable, Swappable {
+    fun fiat(): BigDecimal {
+        return try {
+            BigDecimal(balance).multiply(priceFiat())
+        } catch (e: NumberFormatException) {
+            BigDecimal.ZERO
+        }
+    }
+
+    fun priceFiat(): BigDecimal =
+        if (priceUsd == "0") {
+            BigDecimal.ZERO
+        } else {
+            BigDecimal(priceUsd).multiply(BigDecimal(Fiats.getRate()))
+        }
+
+    fun btc(): BigDecimal =
+        if (priceBtc == "0") {
+            BigDecimal.ZERO
+        } else {
+            BigDecimal(balance).multiply(BigDecimal(priceBtc))
+        }
+
+    fun hasDust(): Boolean {
+        if (dust.isNullOrBlank()) return false
+
+        val dustVal = dust.toDoubleOrNull() ?: return false
+        return dustVal > 0
+    }
+
+    override fun toSwapToken(): SwapToken {
+        return SwapToken(
+            walletId = null,
+            address = assetKey ?: "",
+            assetId = assetId,
+            decimals = 0,
+            name = name,
+            symbol = symbol,
+            icon = iconUrl,
+            chain =
+            SwapChain(
+                chainId = chainId,
+                name = chainName ?: "",
+                symbol = chainSymbol ?: "",
+                icon = chainIconUrl ?: "",
+                price = null,
+            ),
+            balance = balance,
+            price = priceUsd,
+            collectionHash = collectionHash
+        )
+    }
+
+    override fun getUnique(): String {
+        return assetId
+    }
+
+    companion object {
+        val DIFF_CALLBACK =
+            object : DiffUtil.ItemCallback<TokenItem>() {
+                override fun areItemsTheSame(
+                    oldItem: TokenItem,
+                    newItem: TokenItem,
+                ) =
+                    oldItem.assetId == newItem.assetId
+
+                override fun areContentsTheSame(
+                    oldItem: TokenItem,
+                    newItem: TokenItem,
+                ) =
+                    oldItem == newItem
+            }
+    }
+
+
+}
+
+fun TokenItem.toPriceAndChange(): PriceAndChange {
+    return PriceAndChange(assetId, priceBtc, priceUsd, changeUsd, changeBtc)
+}
+
+fun TokenItem.toWeb3TokenItem(walletId: String): Web3TokenItem {
+    return Web3TokenItem(
+        walletId = walletId,
+        assetId = assetId,
+        chainId = chainId,
+        name = name,
+        assetKey = assetKey ?: "",
+        symbol = symbol,
+        iconUrl = iconUrl,
+        precision = 18,
+        kernelAssetId = "",
+        balance = balance,
+        priceUsd = priceUsd,
+        changeUsd = (changeUsd.toBigDecimalOrNull()?.multiply(BigDecimal.TEN.pow(2))?.toPlainString()) ?: "0",
+        chainIcon = chainIconUrl,
+        chainName = chainName,
+        chainSymbol = chainSymbol,
+        hidden = hidden,
+        level = 0
+    )
+}

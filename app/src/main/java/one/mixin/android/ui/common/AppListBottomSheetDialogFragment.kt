@@ -10,8 +10,10 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants.ARGS_TITLE
 import one.mixin.android.databinding.FragmentAppListBottomSheetBinding
 import one.mixin.android.databinding.ItemAppListBinding
+import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.withArgs
 import one.mixin.android.util.viewBinding
@@ -23,11 +25,10 @@ class AppListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "AppListBottomSheetDialogFragment"
         const val ARGS_APP_LIST = "args_app_list"
-        const val ARGS_TITLE = "args_title"
 
         fun newInstance(
             appList: List<App>,
-            title: String
+            title: String,
         ) = AppListBottomSheetDialogFragment().withArgs {
             putParcelableArrayList(ARGS_APP_LIST, ArrayList(appList))
             putString(ARGS_TITLE, title)
@@ -35,15 +36,16 @@ class AppListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private val appList by lazy {
-        requireArguments().getParcelableArrayList<App>(ARGS_APP_LIST)
+        requireArguments().getParcelableArrayListCompat(ARGS_APP_LIST, App::class.java)
     }
     private val title: String by lazy {
         requireArguments().getString(ARGS_TITLE)!!
     }
 
-    private val adapter = AppListAdapter {
-        openApp(it)
-    }
+    private val adapter =
+        AppListAdapter {
+            openApp(it)
+        }
 
     private fun openApp(userId: String) {
         lifecycleScope.launch {
@@ -57,7 +59,10 @@ class AppListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private val binding by viewBinding(FragmentAppListBottomSheetBinding::inflate)
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
@@ -73,10 +78,16 @@ class AppListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
 class AppListAdapter(private val onClickListener: (String) -> Unit) :
     ListAdapter<App, AppHolder>(App.DIFF_CALLBACK) {
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ) =
         AppHolder(ItemAppListBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
-    override fun onBindViewHolder(holder: AppHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: AppHolder,
+        position: Int,
+    ) {
         getItem(position)?.let { app ->
             holder.bind(app)
             holder.itemView.setOnClickListener {
@@ -88,7 +99,7 @@ class AppListAdapter(private val onClickListener: (String) -> Unit) :
 
 class AppHolder(val binding: ItemAppListBinding) : RecyclerView.ViewHolder(binding.root) {
     fun bind(app: App) {
-        binding.nameTv.text = app.name
+        binding.nameTv.setTextOnly(app.name)
         binding.descTv.text = app.description
         binding.avatar.loadImage(app.iconUrl)
     }

@@ -3,17 +3,67 @@ package one.mixin.android.db
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
-import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.RoomWarnings
+import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
 import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
+import one.mixin.android.vo.App
 import one.mixin.android.vo.CallUser
 import one.mixin.android.vo.ForwardUser
 import one.mixin.android.vo.MentionUser
 import one.mixin.android.vo.User
+import one.mixin.android.vo.UserItem
 
 @Dao
+@SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
 interface UserDao : BaseDao<User> {
+
+    @Transaction
+    fun updateRelationship(
+        user: User,
+        relationship: String,
+    ) {
+        val u = findUser(user.userId)
+        if (u == null) {
+            insert(user)
+        } else {
+            user.relationship = relationship
+            update(user)
+        }
+    }
+
+    @Transaction
+    fun insertUpdateList(
+        users: List<User>,
+        appDao: AppDao,
+    ) {
+        val apps = arrayListOf<App>()
+        for (u in users) {
+            if (u.app != null) {
+                u.appId = u.app!!.appId
+                apps.add(u.app!!)
+            }
+        }
+        appDao.insertList(apps)
+        insertList(users)
+    }
+
+    @Transaction
+    fun insertUpdate(
+        user: User,
+        appDao: AppDao,
+    ) {
+        if (user.app != null) {
+            user.appId = user.app!!.appId
+            appDao.insert(user.app!!)
+        }
+        val u = findUser(user.userId)
+        if (u == null) {
+            insert(user)
+        } else {
+            update(user)
+        }
+    }
 
     @Query("SELECT * FROM users WHERE relationship = 'FRIEND' ORDER BY full_name, identity_number ASC")
     fun findFriends(): LiveData<List<User>>
@@ -27,8 +77,18 @@ interface UserDao : BaseDao<User> {
     @Query("SELECT * FROM users WHERE relationship = 'FRIEND' AND app_id IS NULL ORDER BY full_name, identity_number ASC")
     suspend fun findFriendsNotBot(): List<User>
 
+    @Query("""
+    SELECT * FROM users u 
+    WHERE (u.relationship = 'FRIEND' AND app_id IS NULL) OR user_id IN (SELECT app_id FROM apps WHERE creator_id = :selfId) 
+    ORDER BY full_name, identity_number ASC
+    """)
+    suspend fun findFriendsAndMyBot(selfId: String): List<User>
+
     @Query("SELECT * FROM users WHERE user_id = :id")
     fun findUserById(id: String): LiveData<User>
+
+    @Query("SELECT * FROM users WHERE user_id IN (SELECT DISTINCT opponent_id FROM safe_snapshots)")
+    fun allRecipients(): LiveData<List<UserItem>>
 
     @Query("SELECT * FROM users WHERE user_id = :id")
     fun findSelf(id: String): Flow<User?>
@@ -42,6 +102,9 @@ interface UserDao : BaseDao<User> {
     @Query("SELECT * FROM users WHERE user_id = :id")
     suspend fun suspendFindUserById(id: String): User?
 
+    @Query("SELECT * FROM users WHERE user_id IN (:ids)")
+    suspend fun suspendFindUserByIds(ids: List<String>): List<User>
+
     @Query("SELECT user_id FROM users WHERE user_id IN (:userIds)")
     suspend fun findUserExist(userIds: List<String>): List<String>
 
@@ -52,7 +115,7 @@ interface UserDao : BaseDao<User> {
     fun findUserByConversationId(conversationId: String): LiveData<User>
 
     @Query("SELECT u.* FROM users u, conversations c WHERE c.owner_id = u.user_id AND c.conversation_id = :conversationId")
-    fun findPlainUserByConversationId(conversationId: String): User?
+    fun findOwnerByConversationId(conversationId: String): User?
 
     @Query("SELECT u.user_id, u.app_id, a.capabilities FROM users u, conversations c LEFT JOIN apps a on u.app_id = a.app_id WHERE c.owner_id = u.user_id AND c.conversation_id = :conversationId AND c.category = 'CONTACT'")
     fun findContactByConversationId(conversationId: String): ForwardUser?
@@ -60,18 +123,24 @@ interface UserDao : BaseDao<User> {
     @Query("SELECT u.* FROM users u, conversations c WHERE c.owner_id = u.user_id AND c.conversation_id = :conversationId AND c.category = 'CONTACT'")
     suspend fun suspendFindContactByConversationId(conversationId: String): User?
 
+    @Suppress("unused")
     @Query(
         """
         SELECT * FROM users 
         WHERE user_id != :id 
         AND relationship = 'FRIEND' 
         AND identity_number != '0'
-        AND (full_name LIKE '%' || :username || '%' $ESCAPE_SUFFIX OR identity_number like '%' || :identityNumber || '%' $ESCAPE_SUFFIX)
+        AND (full_name LIKE '%' || :username || '%' $ESCAPE_SUFFIX OR identity_number like '%' || :identityNumber || '%' $ESCAPE_SUFFIX OR phone like '%' || :phone || '%' $ESCAPE_SUFFIX)
         ORDER BY 
             full_name = :username COLLATE NOCASE OR identity_number = :identityNumber COLLATE NOCASE DESC
-        """
+        """,
     )
-    suspend fun fuzzySearchUser(username: String, identityNumber: String, id: String): List<User>
+    suspend fun fuzzySearchUser(
+        username: String,
+        identityNumber: String,
+        phone: String,
+        id: String,
+    ): List<User>
 
     @Query(
         """
@@ -80,40 +149,70 @@ interface UserDao : BaseDao<User> {
         AND p.conversation_id = :conversationId AND p.user_id = u.user_id
         AND (u.full_name LIKE '%' || :username || '%' $ESCAPE_SUFFIX OR u.identity_number like '%' || :identityNumber || '%' $ESCAPE_SUFFIX)
         ORDER BY u.full_name = :username COLLATE NOCASE OR u.identity_number = :identityNumber COLLATE NOCASE DESC
-        """
+        """,
     )
-    suspend fun fuzzySearchGroupUser(conversationId: String, username: String, identityNumber: String, id: String): List<User>
+    suspend fun fuzzySearchGroupUser(
+        conversationId: String,
+        username: String,
+        identityNumber: String,
+        id: String,
+    ): List<User>
 
     @Query(
         """SELECT u.* FROM users u 
-        WHERE (u.user_id in (SELECT DISTINCT m.user_id FROM messages m WHERE conversation_id = :conversationId AND m.created_at > :createdAt)
-        OR u.user_id in (SELECT f.user_id FROM users f WHERE relationship = 'FRIEND'))
+        WHERE (u.user_id IN (SELECT DISTINCT m.user_id FROM messages m WHERE conversation_id = :conversationId AND m.created_at > :createdAt)
+        OR u.user_id IN (SELECT f.user_id FROM users f WHERE relationship = 'FRIEND'))
         AND u.user_id != :id
+        AND u.identity_number != 0
         AND (u.full_name LIKE '%' || :username || '%' $ESCAPE_SUFFIX OR u.identity_number like '%' || :identityNumber || '%' $ESCAPE_SUFFIX)
         ORDER BY CASE u.relationship WHEN 'FRIEND' THEN 1 ELSE 2 END, 
         u.relationship OR u.full_name = :username COLLATE NOCASE OR u.identity_number = :identityNumber COLLATE NOCASE DESC 
-        """
+        """,
     )
-    suspend fun fuzzySearchBotGroupUser(conversationId: String, username: String, identityNumber: String, id: String, createdAt: String): List<User>
+    suspend fun fuzzySearchBotGroupUser(
+        conversationId: String,
+        username: String,
+        identityNumber: String,
+        id: String,
+        createdAt: String,
+    ): List<User>
 
     @Query("SELECT u.* FROM participants p, users u WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id AND u.user_id != :id")
-    suspend fun suspendGetGroupParticipants(conversationId: String, id: String): List<User>
+    suspend fun suspendGetGroupParticipants(
+        conversationId: String,
+        id: String,
+    ): List<User>
 
     @Query("UPDATE users SET relationship = :relationship WHERE user_id = :id")
-    fun updateUserRelationship(id: String, relationship: String)
+    fun updateUserRelationship(
+        id: String,
+        relationship: String,
+    )
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         "SELECT u.user_id, u.identity_number, u.biography, u.full_name, u.relationship FROM participants p, users u " +
-            "WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id"
+            "WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id",
     )
     fun getGroupParticipants(conversationId: String): LiveData<List<User>>
 
     @Query("UPDATE users SET mute_until = :muteUntil WHERE user_id = :id")
-    fun updateMuteUntil(id: String, muteUntil: String)
+    suspend fun updateMuteUntilSuspend(
+        id: String,
+        muteUntil: String,
+    )
+
+    @Query("UPDATE users SET mute_until = :muteUntil WHERE user_id = :id")
+    fun updateMuteUntil(
+        id: String,
+        muteUntil: String,
+    )
 
     @Query("UPDATE users SET phone = :phone WHERE user_id = :id")
-    fun updatePhone(id: String, phone: String)
+    fun updatePhone(
+        id: String,
+        phone: String,
+    )
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("SELECT u.* FROM users u INNER JOIN conversations c ON c.owner_id = u.user_id WHERE c.category = 'CONTACT' AND u.app_id IS NULL")
@@ -125,16 +224,24 @@ interface UserDao : BaseDao<User> {
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """SELECT * FROM users u INNER JOIN participants p ON p.user_id = u.user_id
-        WHERE p.conversation_id = :conversationId AND u.user_id IN (:userIds)"""
+        WHERE p.conversation_id = :conversationId AND u.user_id IN (:userIds)
+        """,
     )
-    suspend fun findMultiCallUsersByIds(conversationId: String, userIds: Set<String>): List<CallUser>
+    suspend fun findMultiCallUsersByIds(
+        conversationId: String,
+        userIds: Set<String>,
+    ): List<CallUser>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """SELECT * FROM users u INNER JOIN participants p ON p.user_id = u.user_id
-        WHERE p.conversation_id = :conversationId AND u.user_id = :userId"""
+        WHERE p.conversation_id = :conversationId AND u.user_id = :userId
+        """,
     )
-    suspend fun findSelfCallUser(conversationId: String, userId: String): CallUser?
+    suspend fun findSelfCallUser(
+        conversationId: String,
+        userId: String,
+    ): CallUser?
 
     @Query("SELECT user_id FROM users WHERE identity_number IN (:identityNumbers)")
     fun findMultiUserIdsByIdentityNumbers(identityNumbers: Set<String>): List<String>
@@ -142,8 +249,7 @@ interface UserDao : BaseDao<User> {
     @Query("SELECT * FROM users WHERE identity_number = :identityNumber LIMIT 1")
     suspend fun suspendFindUserByIdentityNumber(identityNumber: String): User?
 
-    @RewriteQueriesToDropUnusedColumns
-    @Query("SELECT * FROM users WHERE identity_number IN (:numbers)")
+    @Query("SELECT identity_number, full_name FROM users WHERE identity_number IN (:numbers)")
     fun findUserByIdentityNumbers(numbers: Set<String>): List<MentionUser>
 
     @Query("SELECT * FROM users WHERE app_id = :appId")
@@ -151,4 +257,19 @@ interface UserDao : BaseDao<User> {
 
     @Query("SELECT u.user_id, u.app_id, a.capabilities FROM users u LEFT JOIN apps a on a.app_id = u.app_id WHERE u.user_id = :id")
     fun findForwardUserById(id: String): ForwardUser?
+
+    @Query("SELECT u.* FROM users u WHERE u.rowid > :rowId ORDER BY u.rowid ASC LIMIT :limit ")
+    fun getUsersByLimitAndRowId(
+        limit: Int,
+        rowId: Long,
+    ): List<User>
+
+    @Query("SELECT rowid FROM users WHERE user_id = :userId")
+    fun getUserRowId(userId: String): Long?
+
+    @Query("SELECT count(1) FROM users")
+    fun countUsers(): Long
+
+    @Query("SELECT count(1) FROM users WHERE rowid > :rowId")
+    fun countUsers(rowId: Long): Long
 }

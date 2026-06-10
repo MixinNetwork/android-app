@@ -14,15 +14,16 @@ import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
 
 class ContactBottomSheetDialog : MixinBottomSheetDialogFragment() {
-
     companion object {
         const val TAG = "ContactBottomSheetDialog"
 
-        fun newInstance(user: User) = ContactBottomSheetDialog().apply {
-            arguments = Bundle().apply {
-                putParcelable(ARGS_USER, user)
+        fun newInstance(user: User) =
+            ContactBottomSheetDialog().apply {
+                arguments =
+                    Bundle().apply {
+                        putParcelable(ARGS_USER, user)
+                    }
             }
-        }
     }
 
     private val user: User by lazy { requireArguments().getParcelable(ARGS_USER)!! }
@@ -30,7 +31,10 @@ class ContactBottomSheetDialog : MixinBottomSheetDialogFragment() {
     private val binding by viewBinding(FragmentContactBottomSheetBinding::inflate)
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
@@ -49,7 +53,7 @@ class ContactBottomSheetDialog : MixinBottomSheetDialogFragment() {
         }
         val smsUri = Uri.parse("smsto:$mobile")
         val smsIntent = Intent(Intent.ACTION_SENDTO, smsUri)
-        smsIntent.putExtra("sms_body", getString(R.string.contact_less_invite_content))
+        smsIntent.putExtra("sms_body", getString(R.string.contact_invite_content))
         startActivity(smsIntent)
     }
 }

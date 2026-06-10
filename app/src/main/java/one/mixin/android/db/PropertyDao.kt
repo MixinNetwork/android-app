@@ -7,7 +7,6 @@ import one.mixin.android.vo.Property
 
 @Dao
 interface PropertyDao : BaseDao<Property> {
-
     @Query("SELECT * FROM properties WHERE `key` = :key")
     suspend fun findByKey(key: String): Property?
 
@@ -15,7 +14,11 @@ interface PropertyDao : BaseDao<Property> {
     suspend fun findValueByKey(key: String): String?
 
     @Query("UPDATE properties SET value = :value, updated_at = :updatedAt WHERE `key` = :key")
-    suspend fun updateValueByKey(key: String, value: String, updatedAt: String = nowInUtc())
+    suspend fun updateValueByKey(
+        key: String,
+        value: String,
+        updatedAt: String = nowInUtc(),
+    )
 
     @Query("DELETE FROM properties WHERE `key` = :key")
     suspend fun deletePropertyByKey(key: String)

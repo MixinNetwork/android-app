@@ -15,7 +15,7 @@ import java.util.UUID
     tableName = "jobs",
     indices = [
         Index(value = arrayOf("action")),
-    ]
+    ],
 )
 data class Job(
     @PrimaryKey
@@ -27,7 +27,7 @@ data class Job(
     var action: String,
     @SerializedName("created_at")
     @ColumnInfo(name = "created_at")
-    var created_at: String,
+    var createdAt: String,
     @SerializedName("order_id")
     @ColumnInfo(name = "order_id")
     var orderId: Int?,
@@ -48,12 +48,16 @@ data class Job(
     var resendMessageId: String?,
     @SerializedName("run_count")
     @ColumnInfo(name = "run_count")
-    var runCount: Int = 0
+    var runCount: Int = 0,
 )
 
-fun createAckJob(action: String, ackMessage: BlazeAckMessage, conversationId: String? = null) =
+fun createAckJob(
+    action: String,
+    ackMessage: BlazeAckMessage,
+    conversationId: String? = null,
+) =
     Job(
-        UUID.nameUUIDFromBytes("${ackMessage.message_id}${ackMessage.status}$action".toByteArray()).toString(),
+        UUID.nameUUIDFromBytes("${ackMessage.messageId}${ackMessage.status}$action".toByteArray()).toString(),
         action,
         nowInUtc(),
         null,
@@ -62,5 +66,5 @@ fun createAckJob(action: String, ackMessage: BlazeAckMessage, conversationId: St
         GsonHelper.customGson.toJson(ackMessage),
         conversationId,
         null,
-        0
+        0,
     )

@@ -4,7 +4,6 @@ import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatAudioBinding
-import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.textResource
@@ -34,20 +33,14 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
         messageItem: ChatHistoryMessageItem,
         isLast: Boolean,
         isFirst: Boolean = false,
-        onItemListener: ChatHistoryAdapter.OnItemListener
+        onItemListener: ChatHistoryAdapter.OnItemListener,
     ) {
         super.bind(messageItem)
         val isMe = messageItem.userId == Session.getAccountId()
         chatLayout(isMe, isLast)
         if (isFirst && !isMe) {
             binding.chatName.visibility = View.VISIBLE
-            binding.chatName.text = messageItem.userFullName
-            if (messageItem.appId != null) {
-                binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-                binding.chatName.compoundDrawablePadding = 3.dp
-            } else {
-                binding.chatName.setCompoundDrawables(null, null, null, null)
-            }
+            binding.chatName.setMessageName(messageItem)
             binding.chatName.setTextColor(getColorById(messageItem.userId))
             binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
         } else {
@@ -55,17 +48,18 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
         }
 
         if (messageItem.mediaStatus == MediaStatus.EXPIRED.name) {
-            binding.audioDuration.textResource = R.string.chat_expired
+            binding.audioDuration.textResource = R.string.Expired
         } else {
             binding.audioDuration.text = messageItem.mediaDuration?.toLongOrNull()?.formatMillis() ?: "00:00"
         }
 
         messageItem.mediaDuration?.let {
-            val duration = try {
-                it.toLong()
-            } catch (e: Exception) {
-                0L
-            }
+            val duration =
+                try {
+                    it.toLong()
+                } catch (e: Exception) {
+                    0L
+                }
             binding.chatLayout.layoutParams.width =
                 min((minWidth + (duration / 1000f) * dp15).toInt(), maxWidth)
         }
@@ -76,7 +70,7 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
             MessageStatus.DELIVERED.name,
             false,
             isRepresentative = false,
-            isSecret = false
+            isSecret = false,
         )
 
         messageItem.mediaWaveform?.let {
@@ -134,7 +128,9 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
                 MediaStatus.CANCELED.name -> {
                     binding.audioExpired.visibility = View.GONE
                     binding.audioProgress.visibility = View.VISIBLE
-                    if (isMe) {
+                    if (messageItem.transcriptId != null && messageItem.mediaUrl != null) {
+                        binding.audioProgress.enableUpload()
+                    } else if (messageItem.mediaUrl != null && isMe) {
                         binding.audioProgress.enableUpload()
                     } else {
                         binding.audioProgress.enableDownload()
@@ -165,7 +161,7 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
 
     private fun handleClick(
         messageItem: ChatHistoryMessageItem,
-        onItemListener: ChatHistoryAdapter.OnItemListener
+        onItemListener: ChatHistoryAdapter.OnItemListener,
     ) {
         if (messageItem.mediaStatus == MediaStatus.CANCELED.name) {
             if (messageItem.mediaUrl.isNullOrEmpty()) {
@@ -180,20 +176,24 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
         }
     }
 
-    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+    override fun chatLayout(
+        isMe: Boolean,
+        isLast: Boolean,
+        isBlink: Boolean,
+    ) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
             if (isLast) {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.bill_bubble_me_last,
-                    R.drawable.bill_bubble_me_last_night
+                    R.drawable.bill_bubble_me_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.bill_bubble_me,
-                    R.drawable.bill_bubble_me_night
+                    R.drawable.bill_bubble_me_night,
                 )
             }
             (binding.chatMsgLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
@@ -203,13 +203,13 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_other_last,
-                    R.drawable.chat_bubble_other_last_night
+                    R.drawable.chat_bubble_other_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_other,
-                    R.drawable.chat_bubble_other_night
+                    R.drawable.chat_bubble_other_night,
                 )
             }
         }

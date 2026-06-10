@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="62dp"
+    android:background="?attr/bg_white"
+    android:foreground="?android:attr/selectableItemBackground"
+    android:clipToPadding="false"
+    android:textColor="@color/selector_blue_tv"
+    android:text="@string/view_all"
+    android:gravity="center"/>

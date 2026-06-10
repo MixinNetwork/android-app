@@ -1,6 +1,5 @@
 package one.mixin.android.widget.PhotoView;
 
-import android.annotation.TargetApi;
 import android.view.View;
 
 class Compat {
@@ -11,7 +10,6 @@ class Compat {
         postOnAnimationJellyBean(view, runnable);
     }
 
-    @TargetApi(16)
     private static void postOnAnimationJellyBean(View view, Runnable runnable) {
         view.postOnAnimation(runnable);
     }

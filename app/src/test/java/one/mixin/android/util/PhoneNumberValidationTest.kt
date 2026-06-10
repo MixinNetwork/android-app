@@ -39,5 +39,6 @@ class PhoneNumberValidationTest {
     }
 
     private fun isValid(num: String) = isValidNumber(phoneUtil, num, countryCode, countryDialCode).first
+
     private fun isValidWithoutDialCode(num: String) = isValidNumber(phoneUtil, num, countryCode).first
 }

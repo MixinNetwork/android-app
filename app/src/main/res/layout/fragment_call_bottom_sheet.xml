@@ -37,8 +37,8 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
             android:gravity="center"
-            android:text="@string/end_to_end_encryption"
-            android:textColor="?attr/text_minor"
+            android:text="@string/End_to_End_Encryption"
+            android:textColor="?attr/text_assist"
             android:textSize="12sp"
             app:drawableStartCompat="@drawable/ic_call_secret"
             app:layout_constraintEnd_toEndOf="parent"
@@ -79,7 +79,7 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="16dp"
             android:contentDescription="@null"
-            android:text="@string/call_decline"
+            android:text="@string/Decline"
             android:textColor="@color/call_red"
             android:textSize="16sp"
             android:visibility="gone"
@@ -112,7 +112,7 @@
         android:visibility="gone"
         android:layout_above="@id/bottom_layout"
         android:background="?attr/bg_white"
-        android:textColor="?text_minor"
+        android:textColor="?text_assist"
         android:layout_height="wrap_content" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -190,7 +190,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            android:textColor="?attr/text_minor"
+            android:textColor="?attr/text_assist"
             android:layout_height="wrap_content" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
@@ -209,16 +209,16 @@
             android:layout_width="96dp"
             android:layout_height="96dp" />
 
-        <TextView
+        <one.mixin.android.widget.NameTextView
             android:id="@+id/name_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="?attr/text_primary"
-            android:textSize="18sp"
             android:gravity="center_horizontal"
             android:layout_marginTop="16dp"
-            android:lines="1"
-            android:ellipsize="end" />
+            app:lines="1"
+            app:ellipsize="end"
+            app:textSize="18sp"/>
     </LinearLayout>
 
 </RelativeLayout>

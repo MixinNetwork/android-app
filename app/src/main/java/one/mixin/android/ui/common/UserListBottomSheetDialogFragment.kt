@@ -8,8 +8,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.Constants.ARGS_TITLE
 import one.mixin.android.databinding.FragmentUserListBottomSheetBinding
 import one.mixin.android.databinding.ItemUserListBinding
+import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.withArgs
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
@@ -20,11 +22,10 @@ class UserListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "UserListBottomSheetDialogFragment"
         const val ARGS_USER_LIST = "args_user_list"
-        const val ARGS_TITLE = "args_title"
 
         fun newInstance(
             userList: ArrayList<User>,
-            title: String
+            title: String,
         ) = UserListBottomSheetDialogFragment().withArgs {
             putParcelableArrayList(ARGS_USER_LIST, userList)
             putString(ARGS_TITLE, title)
@@ -32,7 +33,7 @@ class UserListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private val userList by lazy {
-        requireArguments().getParcelableArrayList<User>(ARGS_USER_LIST)
+        requireArguments().getParcelableArrayListCompat(ARGS_USER_LIST, User::class.java)
     }
     private val title: String by lazy {
         requireArguments().getString(ARGS_TITLE)!!
@@ -43,7 +44,10 @@ class UserListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private val binding by viewBinding(FragmentUserListBottomSheetBinding::inflate)
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
@@ -59,10 +63,16 @@ class UserListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 }
 
 class UserListAdapter : ListAdapter<User, UserHolder>(User.DIFF_CALLBACK) {
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ) =
         UserHolder(ItemUserListBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
-    override fun onBindViewHolder(holder: UserHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: UserHolder,
+        position: Int,
+    ) {
         getItem(position)?.let {
             holder.bind(it)
         }
@@ -71,7 +81,7 @@ class UserListAdapter : ListAdapter<User, UserHolder>(User.DIFF_CALLBACK) {
 
 class UserHolder(val binding: ItemUserListBinding) : RecyclerView.ViewHolder(binding.root) {
     fun bind(user: User) {
-        binding.nameTv.text = user.fullName
+        binding.nameTv.setName(user)
         binding.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
         binding.numberTv.text = user.identityNumber
     }

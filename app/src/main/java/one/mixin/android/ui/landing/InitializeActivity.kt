@@ -10,33 +10,33 @@ import one.mixin.android.databinding.ActivityLandingBinding
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.landing.UpgradeFragment.Companion.TYPE_DB
-import one.mixin.android.ui.landing.UpgradeFragment.Companion.TYPE_FTS
 import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
 class InitializeActivity : BaseActivity() {
-
     private val binding by viewBinding(ActivityLandingBinding::inflate)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         val setName = intent.getBooleanExtra(SET_NAME, false)
+        val setPin = intent.getBooleanExtra(SET_PIN, false)
         val wrongTime = intent.getBooleanExtra(WRONG_TIME, false)
-        val ftsUpgrade = intent.getBooleanExtra(FTS_UPGRADE, false)
         val oldVersion = intent.getBooleanExtra(OLD_VERSION, false)
         val dbUpgrade = intent.getBooleanExtra(DB_UPGRADE, false)
+        val loadingSource = intent.getStringExtra(LOADING_SOURCE)
         when {
             setName -> replaceFragment(SetupNameFragment.newInstance(), R.id.container)
+            setPin -> replaceFragment(SetupPinFragment.newInstance(), R.id.container)
             wrongTime -> replaceFragment(TimeFragment.newInstance(), R.id.container)
             oldVersion -> replaceFragment(OldVersionFragment.newInstance(), R.id.container)
-            ftsUpgrade -> replaceFragment(UpgradeFragment.newInstance(TYPE_FTS), R.id.container)
             dbUpgrade -> replaceFragment(UpgradeFragment.newInstance(TYPE_DB), R.id.container)
-            else -> replaceFragment(
-                LoadingFragment.newInstance(),
-                R.id.container,
-                LoadingFragment.TAG
-            )
+            else ->
+                replaceFragment(
+                    LoadingFragment.newInstance(loadingSource),
+                    R.id.container,
+                    LoadingFragment.TAG,
+                )
         }
     }
 
@@ -45,25 +45,30 @@ class InitializeActivity : BaseActivity() {
 
     companion object {
         const val SET_NAME = "set_name"
+        const val SET_PIN = "set_pin"
         const val WRONG_TIME = "wrong_time"
-        const val FTS_UPGRADE = "fts_upgrade"
         const val OLD_VERSION = "old_version"
         const val DB_UPGRADE = "db_upgrade"
+        const val LOADING_SOURCE = "loading_source"
+        const val SOURCE_SIGN_UP = "sign_up"
+        const val SOURCE_LOGIN = "login"
 
         private fun getIntent(
             context: Context,
             setName: Boolean = false,
+            setPin: Boolean = false,
             wrongTime: Boolean = false,
-            ftsUpgrade: Boolean = false,
             oldVersion: Boolean = false,
             dbUpgrade: Boolean = false,
+            loadingSource: String? = null,
         ): Intent {
             return Intent(context, InitializeActivity::class.java).apply {
                 this.putExtra(SET_NAME, setName)
+                this.putExtra(SET_PIN, setPin)
                 this.putExtra(WRONG_TIME, wrongTime)
-                this.putExtra(FTS_UPGRADE, ftsUpgrade)
                 this.putExtra(OLD_VERSION, oldVersion)
                 this.putExtra(DB_UPGRADE, dbUpgrade)
+                loadingSource?.let { putExtra(LOADING_SOURCE, it) }
             }
         }
 
@@ -76,7 +81,7 @@ class InitializeActivity : BaseActivity() {
                 getIntent(context, wrongTime = true).apply {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                }
+                },
             )
         }
 
@@ -85,23 +90,35 @@ class InitializeActivity : BaseActivity() {
                 getIntent(context, oldVersion = true).apply {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                }
+                },
             )
         }
 
-        fun showLoading(context: Context, load: Boolean = true) {
+        fun showLoading(
+            context: Context,
+            load: Boolean = true,
+            clear: Boolean = false,
+            source: String? = null,
+        ) {
             if (load) {
                 putIsLoaded(context, false)
             }
-            context.startActivity(getIntent(context))
+            context.startActivity(
+                getIntent(context, loadingSource = source).apply {
+                    if (clear) {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                    }
+                },
+            )
         }
 
         fun showSetupName(context: Context) {
             context.startActivity(getIntent(context, setName = true))
         }
 
-        fun showFts(context: Context) {
-            context.startActivity(getIntent(context, ftsUpgrade = true))
+        fun showSetupPin(context: Context) {
+            context.startActivity(getIntent(context, setPin = true))
         }
 
         fun showDBUpgrade(context: Context) {

@@ -11,12 +11,15 @@ import java.net.URL
 
 class NetworkFetcher private constructor(
     context: Context,
-    private val url: String
+    private val url: String,
 ) {
     private val networkCache: NetworkCache = NetworkCache(context)
 
     companion object {
-        fun fetchSync(context: Context, url: String): ImageResult<File> =
+        fun fetchSync(
+            context: Context,
+            url: String,
+        ): ImageResult<File> =
             NetworkFetcher(context, url).fetchSync()
     }
 
@@ -42,9 +45,10 @@ class NetworkFetcher private constructor(
 
     private fun fetchFromNetworkInternal(): ImageResult<File> {
         Timber.d("Fetching $url")
-        val connection = (URL(url).openConnection() as HttpURLConnection).apply {
-            requestMethod = "GET"
-        }
+        val connection =
+            (URL(url).openConnection() as HttpURLConnection).apply {
+                requestMethod = "GET"
+            }
         try {
             connection.connect()
             if (connection.errorStream != null || connection.responseCode != HttpURLConnection.HTTP_OK) {

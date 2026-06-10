@@ -8,15 +8,13 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
-import com.bumptech.glide.Glide
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemPagerVideoLayoutBinding
-import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.loadVideo
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
+import one.mixin.android.extension.toBitmap
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.session.Session
 import one.mixin.android.ui.media.pager.MediaPagerActivity.Companion.PREFIX
@@ -31,9 +29,10 @@ import one.mixin.android.widget.CircleProgress
 
 class VideoHolder(
     itemView: View,
-    private val mediaPagerAdapterListener: MediaPagerAdapterListener
+    private val mediaPagerAdapterListener: MediaPagerAdapterListener,
 ) : MediaPagerHolder(itemView) {
     val binding = ItemPagerVideoLayoutBinding.bind(itemView)
+
     init {
         itemView.post {
             binding.playerView.playerControlView.bottomLayout.setPadding(12.dp, 24.dp, 12.dp, 12.dp + itemView.context.navigationBarHeight())
@@ -43,7 +42,7 @@ class VideoHolder(
     fun bind(
         messageItem: ChatHistoryMessageItem,
         needPostTransition: Boolean,
-        videoStatusCache: LruCache<String, String>
+        videoStatusCache: LruCache<String, String>,
     ) {
         val context = itemView.context
         val circleProgress = itemView.findViewById<CircleProgress>(R.id.circle_progress)
@@ -76,40 +75,45 @@ class VideoHolder(
             refreshAction = {
                 messageItem.loadVideoOrLive { showPb() }
             }
-            callback = object : PlayerView.Callback {
-                override fun onLongClick() {
-                    mediaPagerAdapterListener.onLongClick(messageItem, itemView)
-                }
+            callback =
+                object : PlayerView.Callback {
+                    override fun onLongClick() {
+                        mediaPagerAdapterListener.onLongClick(messageItem, itemView)
+                    }
 
-                override fun onRenderFirstFrame() {
-                    if (VideoPlayer.player().mId == messageItem.messageId) {
-                        binding.playerView.videoAspectRatio.updateLayoutParams {
-                            width = MATCH_PARENT
-                            height = MATCH_PARENT
+                    override fun onRenderFirstFrame() {
+                        if (VideoPlayer.player().mId == messageItem.messageId) {
+                            binding.playerView.videoAspectRatio.updateLayoutParams {
+                                width = MATCH_PARENT
+                                height = MATCH_PARENT
+                            }
+                            binding.previewIv.isVisible = false
+                            binding.playerView.playerControlView.pipView.isEnabled = true
+                            binding.playerView.playerControlView.pipView.alpha = 1f
+                        } else {
+                            binding.previewIv.isVisible = true
+                            binding.playerView.playerControlView.pipView.isEnabled = false
+                            binding.playerView.playerControlView.pipView.alpha = .5f
                         }
-                        binding.previewIv.isVisible = false
-                        binding.playerView.playerControlView.pipView.isEnabled = true
-                        binding.playerView.playerControlView.pipView.alpha = 1f
-                    } else {
-                        binding.previewIv.isVisible = true
-                        binding.playerView.playerControlView.pipView.isEnabled = false
-                        binding.playerView.playerControlView.pipView.alpha = .5f
                     }
                 }
-            }
         }
         val ratio = messageItem.mediaWidth!!.toFloat() / messageItem.mediaHeight!!.toFloat()
-        setSize(context, ratio, itemView)
+        setSize(context, ratio)
         itemView.tag = "$PREFIX${messageItem.messageId}"
         if (messageItem.isLive()) {
             circleProgress.isVisible = false
-            binding.previewIv.loadImage(messageItem.thumbUrl, messageItem.thumbImage)
+            binding.previewIv.loadImage(data = messageItem.thumbUrl, base64Holder = messageItem.thumbImage)
         } else {
             if (messageItem.mediaUrl != null) {
-                binding.previewIv.loadVideo(messageItem.absolutePath())
+                binding.previewIv.loadImage(data = messageItem.absolutePath(), base64Holder = null)
             } else {
-                val imageData = messageItem.thumbImage?.decodeBase64()
-                Glide.with(itemView).load(imageData).into(binding.previewIv)
+                val imageData =
+                    messageItem.thumbImage?.toBitmap(
+                        messageItem.mediaWidth,
+                        messageItem.mediaHeight,
+                    )
+                binding.previewIv.setImageBitmap(imageData)
             }
             if (messageItem.mediaStatus == MediaStatus.DONE.name || messageItem.mediaStatus == MediaStatus.READ.name) {
                 maybeLoadVideo(videoStatusCache, messageItem)
@@ -140,7 +144,10 @@ class VideoHolder(
         }
     }
 
-    private fun maybeLoadVideo(videoStatusCache: LruCache<String, String>, messageItem: ChatHistoryMessageItem) {
+    private fun maybeLoadVideo(
+        videoStatusCache: LruCache<String, String>,
+        messageItem: ChatHistoryMessageItem,
+    ) {
         val preStatus = videoStatusCache[messageItem.messageId] ?: return
         if (preStatus != MediaStatus.DONE.name && preStatus != MediaStatus.READ.name &&
             (messageItem.mediaStatus == MediaStatus.DONE.name || messageItem.mediaStatus == MediaStatus.READ.name)
@@ -151,7 +158,10 @@ class VideoHolder(
         }
     }
 
-    private fun setSize(context: Context, ratio: Float, view: View) {
+    private fun setSize(
+        context: Context,
+        ratio: Float,
+    ) {
         val w = context.realSize().x
         val h = context.realSize().y
         val deviceRatio = w / h.toFloat()

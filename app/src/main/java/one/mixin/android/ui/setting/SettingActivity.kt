@@ -6,35 +6,55 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.result.contract.ActivityResultContract
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.databinding.ActivityContactBinding
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.replaceFragment
-import one.mixin.android.ui.common.BlazeBaseActivity
+import one.mixin.android.session.Session
+import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
+import one.mixin.android.ui.home.reminder.VerifyMobileReminderBottomSheetDialogFragment
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.App
+import one.mixin.android.widget.theme.ThemeActivity
 
 @AndroidEntryPoint
-class SettingActivity : BlazeBaseActivity() {
+class SettingActivity : ThemeActivity() {
     companion object {
         const val FROM_NOTIFICATION = "notification"
         const val EXTRA_SHOW_PIN_SETTING = "extra_show_pin_setting"
         const val EXTRA_EMERGENCY_CONTACT = "extra_emergency_contact"
+        const val EXTRA_MNEMONIC_PHRASE = "extra_mnemonic_phrase"
+        const val EXTRA_MIGRATE_RESTORE = "extra_migrate_restore"
         const val EXTRA_SHOW_PERMISSION_LIST = "extra_show_permission_list"
+        const val EXTRA_SHOW_COMPOSE = "extra_show_compose"
+        const val EXTRA_SHOW_RECOVERY_KIT = "extra_show_recovery_kit"
         const val EXTRA_APP = "extra_app"
         const val EXTRA_AUTH = "extra_auth"
         const val ARGS_SUCCESS = "args_success"
+        const val EXTRA_SHOW_DEBUG = "extra_show_debug"
+        const val EXTRA_SHOW_PIN_LOGS = "extra_show_pin_logs"
 
-        fun show(context: Context) {
-            context.startActivity(Intent(context, SettingActivity::class.java))
+        fun show(
+            context: Context,
+            compose: Boolean = true,
+        ) {
+            context.startActivity(
+                Intent(context, SettingActivity::class.java).apply {
+                    putExtra(EXTRA_SHOW_COMPOSE, compose)
+                },
+            )
         }
 
         fun showPinSetting(context: Context) {
             context.startActivity(
                 Intent(context, SettingActivity::class.java).apply {
                     putExtra(EXTRA_SHOW_PIN_SETTING, true)
-                }
+                },
             )
         }
 
@@ -42,7 +62,56 @@ class SettingActivity : BlazeBaseActivity() {
             context.startActivity(
                 Intent(context, SettingActivity::class.java).apply {
                     putExtra(EXTRA_EMERGENCY_CONTACT, true)
-                }
+                },
+            )
+        }
+
+        fun showMnemonicPhrase(context: Context) {
+            context.startActivity(
+                Intent(context, SettingActivity::class.java).apply {
+                    putExtra(EXTRA_MNEMONIC_PHRASE, true)
+                },
+            )
+        }
+
+        fun showRecoveryKit(context: Context) {
+            context.startActivity(
+                Intent(context, SettingActivity::class.java).apply {
+                    putExtra(EXTRA_SHOW_RECOVERY_KIT, true)
+                },
+            )
+        }
+
+        fun showMigrateRestore(context: Context) {
+            context.startActivity(
+                Intent(context, SettingActivity::class.java).apply {
+                    putExtra(EXTRA_MIGRATE_RESTORE, true)
+                },
+            )
+        }
+
+        fun showDebug(context: Context) {
+            context.startActivity(
+                Intent(context, SettingActivity::class.java).apply {
+                    putExtra(EXTRA_SHOW_DEBUG, true)
+                },
+            )
+        }
+
+        fun showDebugStack(context: Context) {
+            context.startActivity(
+                Intent(context, SettingActivity::class.java).apply {
+                    putExtra(EXTRA_SHOW_DEBUG, true)
+                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                },
+            )
+        }
+
+        fun showPinLogs(context: Context) {
+            context.startActivity(
+                Intent(context, SettingActivity::class.java).apply {
+                    putExtra(EXTRA_SHOW_PIN_LOGS, true)
+                },
             )
         }
     }
@@ -52,24 +121,78 @@ class SettingActivity : BlazeBaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        if (intent.getBooleanExtra(EXTRA_SHOW_PIN_SETTING, false)) {
-            replaceFragment(PinSettingFragment.newInstance(), R.id.container, PinSettingFragment.TAG)
-        } else if (intent.getBooleanExtra(EXTRA_EMERGENCY_CONTACT, false)) {
-            replaceFragment(EmergencyContactFragment.newInstance(), R.id.container, EmergencyContactFragment.TAG)
-        } else if (intent.getBooleanExtra(EXTRA_SHOW_PERMISSION_LIST, false)) {
-            val app = requireNotNull(intent.getParcelableExtra<App>(EXTRA_APP))
-            val auth = requireNotNull(intent.getParcelableExtra<AuthorizationResponse>(EXTRA_AUTH))
-            replaceFragment(PermissionListFragment.newInstance(app, auth), R.id.container, PermissionListFragment.TAG)
-        } else {
-            val fragment = SettingFragment.newInstance()
-            replaceFragment(fragment, R.id.container, SettingFragment.TAG)
-            if (intent.getBooleanExtra(FROM_NOTIFICATION, false)) {
-                addFragment(fragment, BackUpFragment.newInstance(), BackUpFragment.TAG)
+        when {
+            intent.getBooleanExtra(EXTRA_SHOW_PIN_SETTING, false) -> {
+                replaceFragment(PinSettingFragment.newInstance(), R.id.container, PinSettingFragment.TAG)
+            }
+            intent.getBooleanExtra(EXTRA_MNEMONIC_PHRASE, false) -> {
+                replaceFragment(MnemonicPhraseBackupFragment.newInstance(), R.id.container, MnemonicPhraseBackupFragment.TAG)
+            }
+            intent.getBooleanExtra(EXTRA_EMERGENCY_CONTACT, false) -> {
+                if (!Session.hasPhone()) {
+                    replaceFragment(RecoveryFragment.newInstance(), R.id.container, RecoveryFragment.TAG)
+                    binding.root.post {
+                        VerifyMobileReminderBottomSheetDialogFragment.showSafely(
+                            supportFragmentManager,
+                            enableSnooze = false,
+                            addPhoneSource = AnalyticsTracker.AddPhoneSource.SETTINGS,
+                        )
+                    }
+                } else if (Session.isAnonymous() && !Session.saltExported()) {
+                    if (RecoveryReminderBottomSheetDialogFragment.shouldShowOnRiskAction()) {
+                        replaceFragment(RecoveryFragment.newInstance(), R.id.container, RecoveryFragment.TAG)
+                        binding.root.post {
+                            RecoveryReminderBottomSheetDialogFragment.showForRiskAction(supportFragmentManager) {
+                                replaceFragment(EmergencyContactFragment.newInstance(), R.id.container, EmergencyContactFragment.TAG)
+                            }
+                        }
+                    } else {
+                        replaceFragment(EmergencyContactFragment.newInstance(), R.id.container, EmergencyContactFragment.TAG)
+                    }
+                } else {
+                    replaceFragment(EmergencyContactFragment.newInstance(), R.id.container, EmergencyContactFragment.TAG)
+                }
+            }
+            intent.getBooleanExtra(EXTRA_SHOW_RECOVERY_KIT, false) -> {
+                replaceFragment(RecoveryFragment.newInstance(), R.id.container, RecoveryFragment.TAG)
+            }
+            intent.getBooleanExtra(EXTRA_SHOW_PERMISSION_LIST, false) -> {
+                val app = requireNotNull(intent.getParcelableExtra<App>(EXTRA_APP))
+                val auth = requireNotNull(intent.getParcelableExtra<AuthorizationResponse>(EXTRA_AUTH))
+                replaceFragment(PermissionListFragment.newInstance(app, auth), R.id.container, PermissionListFragment.TAG)
+            }
+            intent.getBooleanExtra(EXTRA_SHOW_COMPOSE, false) -> {
+                replaceFragment(SettingComposeFragment.newInstance(), R.id.container, SettingComposeFragment.TAG)
+            }
+            intent.getBooleanExtra(EXTRA_MIGRATE_RESTORE, false) -> {
+                replaceFragment(MigrateRestoreFragment.newInstance(), R.id.container, MigrateRestoreFragment.TAG)
+            }
+            intent.getBooleanExtra(EXTRA_SHOW_DEBUG, false) -> {
+                val settingFragment = SettingFragment.newInstance()
+                val aboutFragment = AboutFragment.newInstance()
+                defaultSharedPreferences.putBoolean(Constants.Debug.LOG_AND_DEBUG, true)
+                replaceFragment(settingFragment, R.id.container, SettingFragment.TAG)
+                addFragment(settingFragment, aboutFragment, AboutFragment.TAG)
+                addFragment(aboutFragment, LogAndDebugFragment.newInstance(), LogAndDebugFragment.TAG)
+            }
+            intent.getBooleanExtra(EXTRA_SHOW_PIN_LOGS, false) -> {
+                replaceFragment(PinLogsFragment.newInstance(), R.id.container, PinLogsFragment.TAG)
+            }
+            else -> {
+                val fragment = SettingFragment.newInstance()
+                replaceFragment(fragment, R.id.container, SettingFragment.TAG)
+                if (intent.getBooleanExtra(FROM_NOTIFICATION, false)) {
+                    addFragment(fragment, BackUpFragment.newInstance(), BackUpFragment.TAG)
+                }
             }
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?,
+    ) {
         super.onActivityResult(requestCode, resultCode, data)
         val pinSettingFragment =
             supportFragmentManager.findFragmentByTag(PinSettingFragment.TAG) as? PinSettingFragment ?: return
@@ -77,7 +200,10 @@ class SettingActivity : BlazeBaseActivity() {
     }
 
     class PermissionContract : ActivityResultContract<Pair<App, AuthorizationResponse>, Intent?>() {
-        override fun createIntent(context: Context, input: Pair<App, AuthorizationResponse>): Intent {
+        override fun createIntent(
+            context: Context,
+            input: Pair<App, AuthorizationResponse>,
+        ): Intent {
             return Intent(context, SettingActivity::class.java).apply {
                 putExtra(EXTRA_SHOW_PERMISSION_LIST, true)
                 putExtra(EXTRA_APP, input.first)
@@ -85,7 +211,10 @@ class SettingActivity : BlazeBaseActivity() {
             }
         }
 
-        override fun parseResult(resultCode: Int, intent: Intent?): Intent? {
+        override fun parseResult(
+            resultCode: Int,
+            intent: Intent?,
+        ): Intent? {
             if (intent == null || resultCode != Activity.RESULT_OK) return null
             return intent
         }

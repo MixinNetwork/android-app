@@ -1,22 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/layout"
     android:layout_width="match_parent"
-    android:layout_height="70dp"
+    android:layout_height="72dp"
     android:background="?attr/bg_white"
-    android:foreground="?attr/selectableItemBackground">
+    android:foreground="?android:attr/selectableItemBackground">
 
     <FrameLayout
+        android:id="@+id/avatar_fl"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="@dimen/margin16"
         android:layout_marginStart="@dimen/activity_horizontal_margin">
 
         <one.mixin.android.widget.AvatarView
             android:id="@+id/avatar"
-            android:layout_width="40dp"
-            android:layout_height="40dp"/>
+            android:layout_width="48dp"
+            android:layout_height="48dp"/>
 
         <ImageView
             android:id="@+id/check_iv"
@@ -26,37 +29,38 @@
             android:background="@drawable/bg_round_check"
             android:scaleType="center"
             android:src="@drawable/ic_check"
-            android:visibility="gone"/>
+            android:visibility="gone"
+            android:contentDescription="@null" />
     </FrameLayout>
 
-    <TextView
+    <Space
+        android:id="@+id/center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"/>
+
+    <one.mixin.android.widget.NameTextView
         android:id="@+id/normal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_toEndOf="@id/avatar_fl"
+        android:layout_above="@id/center"
+        android:layout_marginBottom="2dp"
+        android:textColor="?attr/text_primary"
+        app:maxWidth="240dp"
+        app:lines="1"
+        app:textSize="16sp"
+        tools:text="name"/>
+
+    <TextView
+        android:id="@+id/mixin_id_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:layout_marginEnd="@dimen/margin16"
+        android:layout_below="@id/center"
+        android:layout_toEndOf="@id/avatar_fl"
         android:ellipsize="end"
         android:singleLine="true"
-        android:textColor="?attr/text_primary"/>
-
-    <ImageView
-        android:id="@+id/bot_iv"
-        android:layout_width="12dp"
-        android:layout_height="12dp"
-        android:layout_gravity="center_vertical"
-        android:layout_marginStart="8dp"
-        android:src="@drawable/ic_bot"
-        android:visibility="gone"
-        tools:ignore="ContentDescription"/>
-
-    <ImageView
-        android:id="@+id/verified_iv"
-        android:layout_width="12dp"
-        android:layout_height="12dp"
-        android:layout_gravity="center_vertical"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:src="@drawable/ic_user_verified"
-        android:visibility="gone"
-        tools:ignore="ContentDescription"/>
-</LinearLayout>
+        android:textColor="?attr/text_assist" />
+</RelativeLayout>

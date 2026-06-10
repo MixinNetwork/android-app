@@ -6,7 +6,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:animateLayoutChanges="true"
-    android:background="?attr/bg_window">
+    android:background="?attr/bg_white">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/bg_window"
+        android:orientation="vertical">
 
     <one.mixin.android.widget.TitleView
         android:id="@+id/title_view"
@@ -18,7 +23,7 @@
         android:id="@+id/unlock_rl"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:foreground="?attr/selectableItemBackground">
+        android:foreground="?android:attr/selectableItemBackground">
 
         <TextView
             android:id="@+id/unlock_title"
@@ -29,7 +34,7 @@
             android:layout_marginTop="@dimen/margin10"
             android:textColor="?attr/text_primary"
             android:textSize="16sp"
-            android:text="@string/unlock_with_fingerprint"/>
+            android:text="@string/Unlock_with_fingerprint"/>
 
         <TextView
             android:id="@+id/unlock_desc"
@@ -39,7 +44,7 @@
             android:layout_below="@id/unlock_title"
             android:layout_marginStart="@dimen/margin16"
             android:layout_marginTop="@dimen/margin10"
-            android:textColor="?attr/text_minor"
+            android:textColor="?attr/text_assist"
             android:text="@string/unlock_with_fingerprint_desc"/>
 
         <androidx.appcompat.widget.SwitchCompat
@@ -65,7 +70,7 @@
 
     <TextView
         android:id="@+id/auto_title"
-        android:text="@string/automatically_lock"
+        android:text="@string/Auto_Lock"
         android:layout_marginStart="@dimen/margin16"
         android:layout_marginTop="@dimen/margin16"
         android:layout_marginBottom="8dp"
@@ -87,7 +92,7 @@
             android:padding="16dp"
             android:textSize="16sp"
             android:textColor="?attr/text_primary"
-            android:text="@string/auto_immediately"/>
+            android:text="@string/Immediately"/>
 
         <RadioButton
             android:id="@+id/auto_after_1_minute"
@@ -96,7 +101,7 @@
             android:padding="16dp"
             android:textSize="16sp"
             android:textColor="?attr/text_primary"
-            android:text="@string/auto_after_1_minute"/>
+            android:text="@string/After_1_minute"/>
 
         <RadioButton
             android:id="@+id/auto_after_30_minutes"
@@ -105,6 +110,7 @@
             android:padding="16dp"
             android:textSize="16sp"
             android:textColor="?attr/text_primary"
-            android:text="@string/auto_after_30_minutes"/>
+            android:text="@string/After_30_minutes"/>
     </RadioGroup>
+</LinearLayout>
 </LinearLayout>

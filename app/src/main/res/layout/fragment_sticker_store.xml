@@ -10,8 +10,8 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:rightIcon="@drawable/ic_settings_black_24dp"
-        app:titleText="@string/sticker_store" />
+        app:rightIcon="@drawable/ic_home_setting"
+        app:titleText="@string/Sticker_Store" />
 
     <one.mixin.android.widget.viewpager2.Banner
         android:id="@+id/banner_pager"

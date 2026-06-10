@@ -5,6 +5,8 @@ import android.os.Parcelable
 import androidx.room.Entity
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
+import one.mixin.android.Constants.DEFAULT_THUMB_IMAGE
+import one.mixin.android.Constants.MAX_THUMB_IMAGE_LENGTH
 import one.mixin.android.util.GsonHelper
 
 @SuppressLint("ParcelCreator")
@@ -41,7 +43,7 @@ data class QuoteMessageItem(
     @SerializedName(value = "media_height", alternate = ["mediaHeight"])
     val mediaHeight: Int?,
     @SerializedName(value = "thumb_image", alternate = ["thumbImage"])
-    val thumbImage: String?,
+    var thumbImage: String?,
     @SerializedName(value = "thumb_url", alternate = ["thumbUrl"])
     val thumbUrl: String?,
     @SerializedName(value = "media_url", alternate = ["mediaUrl"])
@@ -68,7 +70,8 @@ data class QuoteMessageItem(
     val sharedUserIdentityNumber: String? = null,
     @SerializedName(value = "shared_user_avatar_url", alternate = ["sharedUserAvatarUrl"])
     val sharedUserAvatarUrl: String? = null,
-    val mentions: String? = null
+    val mentions: String? = null,
+    val membership: Membership? = null,
 ) : Parcelable {
     constructor(messageItem: MessageItem) : this(
         messageItem.messageId,
@@ -87,7 +90,11 @@ data class QuoteMessageItem(
         messageItem.mediaSize,
         messageItem.mediaWidth,
         messageItem.mediaHeight,
-        messageItem.thumbImage,
+        if ((messageItem.thumbImage?.length ?: 0) > MAX_THUMB_IMAGE_LENGTH) {
+            DEFAULT_THUMB_IMAGE
+        } else {
+            messageItem.thumbImage
+        },
         messageItem.thumbUrl,
         messageItem.mediaUrl,
         messageItem.mediaDuration,
@@ -101,7 +108,8 @@ data class QuoteMessageItem(
         messageItem.sharedUserFullName,
         messageItem.sharedUserIdentityNumber,
         messageItem.sharedUserAvatarUrl,
-        messageItem.mentions
+        messageItem.mentions,
+        messageItem.membership
     )
 }
 

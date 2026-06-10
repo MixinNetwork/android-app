@@ -3,7 +3,7 @@
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:background="?attr/bg_gray_light"
-        android:foreground="?attr/selectableItemBackground"
+        android:foreground="?android:attr/selectableItemBackground"
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         xmlns:app="http://schemas.android.com/apk/res-auto">
@@ -50,6 +50,27 @@
         app:singleLine="true"
         app:tag_gravity="right" />
 
+    <one.mixin.android.widget.lottie.RLottieImageView
+        android:id="@+id/mixin_member_plan_iv"
+        android:src="@drawable/ic_membership_advance"
+        android:layout_marginEnd="@dimen/margin16"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_width="18dp"
+        android:layout_height="18dp"
+        android:visibility="gone"/>
+
+    <TextView
+        android:id="@+id/mixin_member_plan_tv"
+        android:text="@string/Upgrade_Plan"
+        android:layout_marginEnd="@dimen/margin16"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="?attr/text_assist"
+        android:visibility="gone"/>
+
     <TextView
         android:id="@+id/subtitle_tv"
         android:layout_width="wrap_content"
@@ -62,5 +83,5 @@
         android:ellipsize="end"
         android:maxLines="1"
         android:layout_marginEnd="@dimen/activity_horizontal_margin"
-        android:textColor="?attr/text_minor" />
+        android:textColor="?attr/text_assist" />
 </RelativeLayout>

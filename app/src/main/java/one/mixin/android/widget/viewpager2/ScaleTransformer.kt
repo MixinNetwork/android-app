@@ -8,7 +8,10 @@ private const val DEFAULT_CENTER = .5f
 class ScaleTransformer : ViewPager2.PageTransformer {
     private val minScale = .85f
 
-    override fun transformPage(view: View, position: Float) {
+    override fun transformPage(
+        view: View,
+        position: Float,
+    ) {
         val pageWidth: Int = view.width
         val pageHeight: Int = view.height
         view.pivotY = (pageHeight shr 1).toFloat()

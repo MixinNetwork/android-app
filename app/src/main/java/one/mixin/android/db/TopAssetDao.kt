@@ -8,8 +8,8 @@ import one.mixin.android.vo.TopAsset
 import one.mixin.android.vo.TopAssetItem
 
 @Dao
+@SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
 interface TopAssetDao : BaseDao<TopAsset> {
-
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """
@@ -18,14 +18,14 @@ interface TopAssetDao : BaseDao<TopAsset> {
         FROM top_assets ta
         INNER JOIN assets a ON a.asset_id = ta.chain_id AND (SELECT ta.asset_id FROM assets a WHERE a.asset_id = ta.asset_id) IS NULL
         ORDER BY ta.rowid
-    """
+        """,
     )
     fun topAssets(): LiveData<List<TopAssetItem>>
 
     @Query(
         """
         DELETE FROM top_assets WHERE asset_id NOT IN (:ids)
-    """
+        """,
     )
     suspend fun deleteNotInIds(ids: List<String>)
 }

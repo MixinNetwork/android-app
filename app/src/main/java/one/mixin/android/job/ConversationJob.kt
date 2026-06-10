@@ -26,9 +26,9 @@ class ConversationJob(
     private val conversationId: String? = null,
     private val participantRequests: List<ParticipantRequest>? = null,
     private val type: Int,
-    private val recipientId: String? = null
+    private val recipientId: String? = null,
+    private val oldConversationId: String? = null,
 ) : MixinJob(Params(PRIORITY_UI_HIGH).groupBy(GROUP), UUID.randomUUID().toString()) {
-
     companion object {
         const val GROUP = "ConversationJob"
         private const val serialVersionUID = 1L
@@ -55,10 +55,11 @@ class ConversationJob(
                 updateConversationStatusFailure()
                 return
             }
-            createCheckRunJob = MixinApplication.appScope.launch(Dispatchers.IO) {
-                delay(CREATE_TIMEOUT_MILLIS)
-                updateConversationStatusFailure()
-            }
+            createCheckRunJob =
+                applicationScope.launch(Dispatchers.IO) {
+                    delay(CREATE_TIMEOUT_MILLIS)
+                    updateConversationStatusFailure()
+                }
         }
     }
 
@@ -75,45 +76,55 @@ class ConversationJob(
 
     private fun createGroup() {
         try {
-            val response = when (type) {
-                TYPE_CREATE ->
-                    conversationApi.create(request!!).execute().body()
-                TYPE_ADD ->
-                    conversationApi.participants(
-                        conversationId!!,
-                        ParticipantAction.ADD.name,
-                        participantRequests!!
-                    )
-                        .execute().body()
-                TYPE_REMOVE ->
-                    conversationApi.participants(
-                        conversationId!!,
-                        ParticipantAction.REMOVE.name,
-                        participantRequests!!
-                    )
-                        .execute().body()
-                TYPE_UPDATE ->
-                    conversationApi.update(conversationId!!, request!!).execute().body()
-                TYPE_MAKE_ADMIN ->
-                    conversationApi.participants(
-                        conversationId!!,
-                        ParticipantAction.ROLE.name,
-                        participantRequests!!
-                    )
-                        .execute().body()
-                TYPE_EXIT ->
-                    conversationApi.exit(conversationId!!).execute().body()
-                TYPE_MUTE ->
-                    conversationApi.mute(request!!.conversationId, request).execute().body()
-                TYPE_DISMISS_ADMIN ->
-                    conversationApi.participants(
-                        conversationId!!,
-                        ParticipantAction.ROLE.name,
-                        participantRequests!!
-                    )
-                        .execute().body()
-                else -> null
-            }
+            val response =
+                when (type) {
+                    TYPE_CREATE ->
+                        if (oldConversationId != null) {
+                            val r = conversationApi.getConversation(oldConversationId).execute().body()
+                            if (r?.data != null) {
+                                r
+                            } else {
+                                conversationApi.create(request!!).execute().body()
+                            }
+                        } else {
+                            conversationApi.create(request!!).execute().body()
+                        }
+                    TYPE_ADD ->
+                        conversationApi.participants(
+                            conversationId!!,
+                            ParticipantAction.ADD.name,
+                            participantRequests!!,
+                        )
+                            .execute().body()
+                    TYPE_REMOVE ->
+                        conversationApi.participants(
+                            conversationId!!,
+                            ParticipantAction.REMOVE.name,
+                            participantRequests!!,
+                        )
+                            .execute().body()
+                    TYPE_UPDATE ->
+                        conversationApi.update(conversationId!!, request!!).execute().body()
+                    TYPE_MAKE_ADMIN ->
+                        conversationApi.participants(
+                            conversationId!!,
+                            ParticipantAction.ROLE.name,
+                            participantRequests!!,
+                        )
+                            .execute().body()
+                    TYPE_EXIT ->
+                        conversationApi.exit(conversationId!!).execute().body()
+                    TYPE_MUTE ->
+                        conversationApi.mute(request!!.conversationId, request).execute().body()
+                    TYPE_DISMISS_ADMIN ->
+                        conversationApi.participants(
+                            conversationId!!,
+                            ParticipantAction.ROLE.name,
+                            participantRequests!!,
+                        )
+                            .execute().body()
+                    else -> null
+                }
             handleResult(response)
         } catch (e: Exception) {
             if (type == TYPE_CREATE) {
@@ -130,6 +141,10 @@ class ConversationJob(
         if (r != null && r.isSuccess && r.data != null) {
             val cr = r.data!!
             if (type == TYPE_CREATE) {
+                oldConversationId?.let {
+                    conversationDao.deleteConversationByConversationId(it)
+                    participantDao.deleteByConversationId(it)
+                }
                 conversationRepo.insertOrUpdateConversation(cr)
                 val participants = mutableListOf<Participant>()
                 cr.participants.mapTo(participants) {
@@ -137,7 +152,7 @@ class ConversationJob(
                 }
                 participantDao.insertList(participants)
                 cr.participantSessions?.let {
-                    syncParticipantSession(cr.conversationId, it)
+                    jobSenderKey.syncParticipantSession(cr.conversationId, it)
                 }
                 jobManager.addJobInBackground(GenerateAvatarJob(cr.conversationId))
             } else if (type == TYPE_MUTE) {
@@ -157,7 +172,7 @@ class ConversationJob(
                 request?.let {
                     conversationDao.updateConversationStatusById(
                         request.conversationId,
-                        ConversationStatus.FAILURE.ordinal
+                        ConversationStatus.FAILURE.ordinal,
                     )
                 }
             }

@@ -3,13 +3,16 @@ package one.mixin.android.widget.gallery.internal.model;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.Loader;
+
 import java.lang.ref.WeakReference;
+
 import one.mixin.android.widget.gallery.internal.entity.Album;
 import one.mixin.android.widget.gallery.internal.loader.AlbumMediaLoader;
 

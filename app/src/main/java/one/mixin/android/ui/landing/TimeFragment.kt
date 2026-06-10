@@ -14,13 +14,14 @@ import one.mixin.android.extension.shaking
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
 class TimeFragment : BaseFragment(R.layout.fragment_time) {
-
     companion object {
         const val TAG: String = "TimeFragment"
+
         fun newInstance() = TimeFragment()
     }
 
@@ -32,7 +33,10 @@ class TimeFragment : BaseFragment(R.layout.fragment_time) {
         checkTime()
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.continueTv.setOnClickListener {
             checkTime()
@@ -40,33 +44,36 @@ class TimeFragment : BaseFragment(R.layout.fragment_time) {
     }
 
     private var currentJob: Job? = null
+
     private fun checkTime() {
         if (currentJob == null || currentJob?.isActive == false) {
             binding.apply {
                 everybodyPb.visibility = View.VISIBLE
                 continueTv.visibility = View.INVISIBLE
-                currentJob = loadingViewModel.pingServer(
-                    {
-                        if (isAdded) {
-                            everybodyPb.visibility = View.INVISIBLE
-                            continueTv.visibility = View.VISIBLE
-                            defaultSharedPreferences.putBoolean(Constants.Account.PREF_WRONG_TIME, false)
-                            MainActivity.show(requireContext())
-                            activity?.finish()
-                        }
-                    },
-                    { exception ->
-                        if (isAdded) {
-                            everybodyPb.visibility = View.INVISIBLE
-                            continueTv.visibility = View.VISIBLE
-                            if (exception == null) {
-                                info.shaking()
-                            } else {
-                                ErrorHandler.handleError(exception)
+                currentJob =
+                    loadingViewModel.pingServer(
+                        {
+                            if (isAdded) {
+                                everybodyPb.visibility = View.INVISIBLE
+                                continueTv.visibility = View.VISIBLE
+                                defaultSharedPreferences.putBoolean(Constants.Account.PREF_WRONG_TIME, false)
+                                MainActivity.show(requireContext())
+                                activity?.finish()
                             }
-                        }
-                    }
-                )
+                        },
+                        { exception ->
+                            if (isAdded) {
+                                everybodyPb.visibility = View.INVISIBLE
+                                continueTv.visibility = View.VISIBLE
+                                if (exception == null) {
+                                    info.shaking()
+                                } else {
+                                    ErrorHandler.handleError(exception)
+                                    reportException("$TAG pingServer", exception)
+                                }
+                            }
+                        },
+                    )
             }
         }
     }

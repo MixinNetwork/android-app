@@ -7,7 +7,6 @@ import android.widget.RelativeLayout
 import one.mixin.android.databinding.ViewFailLoadBinding
 
 class FailLoadView(context: Context, attrs: AttributeSet?) : RelativeLayout(context, attrs) {
-
     private val binding = ViewFailLoadBinding.inflate(LayoutInflater.from(context), this, true)
     val contactTv get() = binding.contactTv
     val webFailDescription get() = binding.webFailDescription
@@ -24,6 +23,7 @@ class FailLoadView(context: Context, attrs: AttributeSet?) : RelativeLayout(cont
 
     interface FailLoadListener {
         fun onReloadClick()
+
         fun onContactClick()
     }
 }

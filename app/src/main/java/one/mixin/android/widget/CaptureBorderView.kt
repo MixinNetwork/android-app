@@ -10,7 +10,6 @@ import android.view.View
 import one.mixin.android.extension.dpToPx
 
 class CaptureBorderView(context: Context, attrs: AttributeSet) : View(context, attrs) {
-
     private val paint by lazy {
         Paint().apply {
             style = Paint.Style.STROKE
@@ -21,7 +20,10 @@ class CaptureBorderView(context: Context, attrs: AttributeSet) : View(context, a
 
     private val r = Rect()
 
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+    override fun onMeasure(
+        widthMeasureSpec: Int,
+        heightMeasureSpec: Int,
+    ) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         r.set(0, 0, measuredWidth, measuredHeight)
     }

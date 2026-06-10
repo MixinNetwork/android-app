@@ -1,12 +1,9 @@
 package one.mixin.android.crypto.attachment;
 
 
-import one.mixin.android.crypto.Util;
 import org.whispersystems.libsignal.InvalidMacException;
 import org.whispersystems.libsignal.InvalidMessageException;
 
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilterInputStream;
@@ -24,6 +21,10 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.Mac;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+
+import one.mixin.android.crypto.Util;
 
 /**
  * Class for streaming an encrypted push attachment off disk.

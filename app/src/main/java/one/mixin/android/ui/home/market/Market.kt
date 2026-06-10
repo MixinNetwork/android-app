@@ -1,0 +1,180 @@
+package one.mixin.android.ui.home.market
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.Observer
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import one.mixin.android.R
+import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.ui.wallet.WalletViewModel
+import one.mixin.android.util.getMixinErrorStringByCode
+import one.mixin.android.vo.market.HistoryPrice
+import one.mixin.android.vo.market.Price
+import java.io.IOException
+
+sealed class Result<out T> {
+    data object Loading : Result<Nothing>()
+    data class Success<out T>(val data: T) : Result<T>()
+    data class Error(val exception: Throwable) : Result<Nothing>()
+}
+
+@Composable
+fun Market(assetId: String) {
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val viewModel = hiltViewModel<WalletViewModel>()
+    val liveData = viewModel.historyPriceById(assetId)
+    val historyPrices =
+        remember {
+            mutableStateOf<HistoryPrice?>(null)
+        }
+    DisposableEffect(assetId, lifecycleOwner) {
+        val observer =
+            Observer<HistoryPrice?> {
+                historyPrices.value = it
+            }
+        liveData.observe(lifecycleOwner, observer)
+        onDispose { liveData.removeObserver(observer) }
+    }
+    if (historyPrices.value != null) {
+        val data = historyPrices.value!!.data.map {
+            it.price.toFloat()
+        }
+        LineChart(data)
+    }
+}
+
+@Composable
+fun Market(
+    type: String,
+    assetId: String,
+    dataChange: (Float?) -> Unit,
+    onHighlightChange: (String?, Float?) -> Unit,
+    onLoading: (Boolean) -> Unit,
+    interactive: Boolean = true,
+) {
+    val context = LocalContext.current
+    val viewModel = hiltViewModel<WalletViewModel>()
+    var responseState by remember { mutableStateOf<Result<List<Price>>>(Result.Loading) }
+
+    LaunchedEffect(type, assetId) {
+        responseState = Result.Loading
+        responseState = try {
+            onLoading.invoke(true)
+            val data = viewModel.priceHistory(assetId, type)
+            onLoading.invoke(false)
+            if (data.isSuccess) {
+                val list = data.data!!.data
+                if (list.isNotEmpty()) {
+                    val first = data.data!!.data.first().price.toFloat()
+                    val last = data.data!!.data.last().price.toFloat()
+                    val percentageChange = ((last - first) / first) * 100
+                    dataChange.invoke(percentageChange)
+                } else {
+                    dataChange.invoke(null)
+                }
+                Result.Success(data.data!!.data)
+            } else {
+                if (data.errorCode == 404) {
+                    dataChange.invoke(null)
+                    Result.Success(emptyList())
+                } else {
+                    dataChange.invoke(null)
+                    Result.Error(Exception(context.getMixinErrorStringByCode(data.errorCode, data.errorDescription)))
+                }
+            }
+        } catch (e: Exception) {
+            onLoading.invoke(false)
+            dataChange.invoke(null)
+            Result.Error(e)
+        }
+    }
+
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        when (val response = responseState) {
+            is Result.Loading -> {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(40.dp),
+                    color = MixinAppTheme.colors.accent,
+                )
+            }
+
+            is Result.Success -> {
+                if (response.data.isEmpty()) {
+                    MixinAppTheme {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(brush = Brush.verticalGradient(colors = listOf(Color(0xFFD9D9D9), Color(0x33D9D9D9)))),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(text = stringResource(R.string.Price_data_unavailable), color = MixinAppTheme.colors.textRemarks, fontSize = 12.sp)
+                        }
+                    }
+                } else {
+                    val prices = response.data.map { it.price.toFloat() }
+                    val time = response.data.map { it.unix }
+                    val highlightChange: ((Int) -> Unit)? = if (interactive) {
+                        { index ->
+                            if (index < 0 || index >= prices.size) {
+                                onHighlightChange.invoke(null, null)
+                            } else {
+                                val currentPrice = prices[index]
+                                val basePrice = prices.first()
+                                if (basePrice != 0f) {
+                                    val percentageChange = ((currentPrice - basePrice) / basePrice) * 100
+                                    onHighlightChange.invoke(currentPrice.toString(), percentageChange)
+                                } else {
+                                    onHighlightChange.invoke(currentPrice.toString(), null)
+                                }
+                            }
+                        }
+                    } else {
+                        null
+                    }
+                    LineChart(prices, time, type, highlightChange, showMinMaxMarkers = true)
+                }
+            }
+
+            is Result.Error -> {
+                MixinAppTheme {
+                    Box(modifier = Modifier
+                        .wrapContentSize()
+                        .padding(20.dp)) {
+                        Text(
+                            text = if (response.exception is IOException) {
+                                stringResource(R.string.Network_error)
+                            } else {
+                                stringResource(R.string.Unknown)
+                            }, color = MixinAppTheme.colors.textPrimary, fontSize = 12.sp
+                        )
+                    }
+                }
+            }
+        }
+    }
+}

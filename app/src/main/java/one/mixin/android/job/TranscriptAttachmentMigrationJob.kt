@@ -15,39 +15,41 @@ import java.nio.file.Files
 
 class TranscriptAttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).persist()) {
     companion object {
+        private var serialVersionUID: Long = 1L
         private const val GROUP_ID = "transcript_attachment_migration"
     }
 
-    override fun onRun() = runBlocking {
-        if (!hasWritePermission()) return@runBlocking
-        val oldDir = MixinApplication.get().applicationContext.getTranscriptDirPath(true)
-        if (oldDir.exists()) {
-            val newDir = MixinApplication.get().applicationContext.getTranscriptDirPath(false)
-            if (newDir.parentFile?.exists() != true) {
-                newDir.parentFile?.mkdirs()
-            }
-            if (newDir.exists()) {
-                newDir.deleteRecursively()
-            }
-            try {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    Files.move(oldDir.toPath(), newDir.toPath())
-                } else {
-                    oldDir.renameTo(newDir)
+    override fun onRun() =
+        runBlocking {
+            if (!hasWritePermission()) return@runBlocking
+            val oldDir = MixinApplication.get().applicationContext.getTranscriptDirPath(true)
+            if (oldDir.exists()) {
+                val newDir = MixinApplication.get().applicationContext.getTranscriptDirPath(false)
+                if (newDir.parentFile?.exists() != true) {
+                    newDir.parentFile?.mkdirs()
                 }
-            } catch (e: IOException) {
-                Timber.e("Attachment migration ${e.message}")
-                reportException(e)
+                if (newDir.exists()) {
+                    newDir.deleteRecursively()
+                }
+                try {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        Files.move(oldDir.toPath(), newDir.toPath())
+                    } else {
+                        oldDir.renameTo(newDir)
+                    }
+                } catch (e: IOException) {
+                    Timber.e("Attachment migration ${e.message}")
+                    reportException(e)
+                }
+                Timber.d("Transcript attachment migration ${oldDir.absolutePath} ${newDir.absolutePath}")
+            } else {
+                Timber.d("Transcript attachment migration old not exists")
             }
-            Timber.d("Transcript attachment migration ${oldDir.absolutePath} ${newDir.absolutePath}")
-        } else {
-            Timber.d("Transcript attachment migration old not exists")
-        }
 
-        if (propertyDao.findValueByKey(Constants.Account.Migration.PREF_MIGRATION_ATTACHMENT)?.toBoolean() != true) {
-            MixinApplication.appContext.getMediaPath(true)?.deleteRecursively()
+            if (propertyDao.findValueByKey(Constants.Account.Migration.PREF_MIGRATION_ATTACHMENT)?.toBoolean() != true) {
+                MixinApplication.appContext.getMediaPath(true)?.deleteRecursively()
+            }
+            propertyDao.updateValueByKey(Constants.Account.Migration.PREF_MIGRATION_TRANSCRIPT_ATTACHMENT, false.toString())
+            Timber.d("Transcript attachment migration completed!!!")
         }
-        propertyDao.updateValueByKey(Constants.Account.Migration.PREF_MIGRATION_TRANSCRIPT_ATTACHMENT, false.toString())
-        Timber.d("Transcript attachment migration completed!!!")
-    }
 }

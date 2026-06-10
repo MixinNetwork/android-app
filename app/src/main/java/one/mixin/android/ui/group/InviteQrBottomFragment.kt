@@ -3,9 +3,10 @@ package one.mixin.android.ui.group
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.graphics.Bitmap
+import android.os.Build
 import androidx.core.os.bundleOf
+import androidx.core.view.doOnPreDraw
 import androidx.lifecycle.lifecycleScope
-import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.Observable
@@ -21,25 +22,31 @@ import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
+import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
 class InviteQrBottomFragment : MixinBottomSheetDialogFragment() {
-
     companion object {
         const val TAG = "InviteQrBottomFragment"
         private const val ICON_URL = "icon_url"
         private const val NAME = "name"
         private const val URL = "url"
 
-        fun newInstance(name: String?, iconUrl: String?, url: String?) = InviteQrBottomFragment().apply {
-            arguments = bundleOf(
-                ICON_URL to iconUrl,
-                NAME to name,
-                URL to url
-            )
-        }
+        fun newInstance(
+            name: String?,
+            iconUrl: String?,
+            url: String?,
+        ) =
+            InviteQrBottomFragment().apply {
+                arguments =
+                    bundleOf(
+                        ICON_URL to iconUrl,
+                        NAME to name,
+                        URL to url,
+                    )
+            }
     }
 
     private val binding by viewBinding(FragmentInviteQrBottomBinding::inflate)
@@ -57,7 +64,10 @@ class InviteQrBottomFragment : MixinBottomSheetDialogFragment() {
     }
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
@@ -68,16 +78,24 @@ class InviteQrBottomFragment : MixinBottomSheetDialogFragment() {
             avatar.setGroup(iconUrl)
             saveIv.setOnClickListener {
                 RxPermissions(requireActivity())
-                    .request(android.Manifest.permission.CAMERA, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .request(
+                        *mutableListOf(android.Manifest.permission.CAMERA).apply {
+                            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) add(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        }.toTypedArray(),
+                    )
                     .autoDispose(stopScope)
                     .subscribe(
                         { granted ->
                             if (granted) {
                                 lifecycleScope.launch(Dispatchers.IO) {
                                     if (!isAdded) return@launch
-                                    val path = contentLl.capture(requireContext())
+                                    val path = contentLl.capture(requireContext()).getOrNull()
                                     withContext(Dispatchers.Main) {
-                                        toast(getString(R.string.save_to, path))
+                                        if (path.isNullOrBlank()) {
+                                            toast(getString(R.string.Save_failure))
+                                        } else {
+                                            toast(getString(R.string.Save_to, path))
+                                        }
                                     }
                                 }
                             } else {
@@ -85,13 +103,12 @@ class InviteQrBottomFragment : MixinBottomSheetDialogFragment() {
                             }
                         },
                         {
-                            toast(R.string.save_failure)
-                        }
+                            toast(R.string.Save_failure)
+                        },
                     )
             }
-
-            qr.post {
-                Observable.create<Pair<Bitmap, Int>?> { e ->
+            qr.doOnPreDraw {
+                Observable.create<Pair<Bitmap, Int>> { e ->
                     url?.generateQRCode(qr.width)?.let {
                         e.onNext(it)
                     }
@@ -100,14 +117,15 @@ class InviteQrBottomFragment : MixinBottomSheetDialogFragment() {
                     .autoDispose(stopScope)
                     .subscribe(
                         { r ->
-                            avatar.layoutParams = avatar.layoutParams.apply {
-                                width = r.second
-                                height = r.second
-                            }
+                            avatar.layoutParams =
+                                avatar.layoutParams.apply {
+                                    width = r.second
+                                    height = r.second
+                                }
                             qr.setImageBitmap(r.first)
                         },
                         {
-                        }
+                        },
                     )
             }
         }

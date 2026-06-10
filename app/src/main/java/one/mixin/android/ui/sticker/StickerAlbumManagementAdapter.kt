@@ -20,16 +20,25 @@ class StickerAlbumManagementAdapter : RecyclerView.Adapter<AlbumManagementHolder
             notifyDataSetChanged()
         }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ) =
         AlbumManagementHolder(ItemAlbumManagementBinding.inflate(LayoutInflater.from(parent.context), parent, false), albumListener)
 
-    override fun onBindViewHolder(holder: AlbumManagementHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: AlbumManagementHolder,
+        position: Int,
+    ) {
         data?.get(position)?.let { album -> holder.bind(album) }
     }
 
     var albumListener: AlbumListener? = null
 
-    override fun onItemMove(fromPosition: Int, toPosition: Int): Boolean {
+    override fun onItemMove(
+        fromPosition: Int,
+        toPosition: Int,
+    ): Boolean {
         data?.let { list ->
             Collections.swap(list, fromPosition, toPosition)
             notifyItemMoved(fromPosition, toPosition)
@@ -46,11 +55,11 @@ class StickerAlbumManagementAdapter : RecyclerView.Adapter<AlbumManagementHolder
 
 class AlbumManagementHolder(
     val itemBinding: ItemAlbumManagementBinding,
-    private val albumListener: AlbumListener? = null
+    private val albumListener: AlbumListener? = null,
 ) : RecyclerView.ViewHolder(itemBinding.root),
     ItemTouchHelperViewHolder {
     @SuppressLint("ClickableViewAccessibility")
-    fun bind(album: StickerAlbum,) {
+    fun bind(album: StickerAlbum) {
         itemBinding.apply {
             nameTv.text = album.name
             descTv.text = album.description
@@ -74,6 +83,8 @@ class AlbumManagementHolder(
 
 interface AlbumListener {
     fun onDelete(album: StickerAlbum)
+
     fun startDrag(viewHolder: RecyclerView.ViewHolder)
+
     fun endDrag()
 }

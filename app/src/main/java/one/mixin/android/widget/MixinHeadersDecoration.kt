@@ -22,7 +22,7 @@ class MixinHeadersDecoration private constructor(
     private val mOrientationProvider: OrientationProvider,
     private val mDimensionCalculator: DimensionCalculator,
     private val mHeaderProvider: HeaderProvider,
-    private val mHeaderPositionCalculator: HeaderPositionCalculator
+    private val mHeaderPositionCalculator: HeaderPositionCalculator,
 ) : RecyclerView.ItemDecoration() {
     private val mHeaderRects = SparseArray<Rect>()
 
@@ -31,19 +31,19 @@ class MixinHeadersDecoration private constructor(
     constructor(adapter: MixinStickyRecyclerHeadersAdapter<*>) : this(
         adapter,
         LinearLayoutOrientationProvider(),
-        DimensionCalculator()
+        DimensionCalculator(),
     )
 
     private constructor(
         adapter: MixinStickyRecyclerHeadersAdapter<*>,
         orientationProvider: OrientationProvider,
-        dimensionCalculator: DimensionCalculator
+        dimensionCalculator: DimensionCalculator,
     ) : this(
         adapter,
         orientationProvider,
         dimensionCalculator,
         HeaderRenderer(orientationProvider),
-        HeaderViewCache(adapter, orientationProvider)
+        HeaderViewCache(adapter, orientationProvider),
     )
 
     private constructor(
@@ -51,7 +51,7 @@ class MixinHeadersDecoration private constructor(
         orientationProvider: OrientationProvider,
         dimensionCalculator: DimensionCalculator,
         headerRenderer: HeaderRenderer,
-        headerProvider: HeaderProvider
+        headerProvider: HeaderProvider,
     ) : this(
         adapter,
         headerRenderer,
@@ -62,11 +62,16 @@ class MixinHeadersDecoration private constructor(
             adapter,
             headerProvider,
             orientationProvider,
-            dimensionCalculator
-        )
+            dimensionCalculator,
+        ),
     )
 
-    override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
+    override fun getItemOffsets(
+        outRect: Rect,
+        view: View,
+        parent: RecyclerView,
+        state: RecyclerView.State,
+    ) {
         super.getItemOffsets(outRect, view, parent, state)
         val itemPosition = parent.getChildAdapterPosition(view)
         if (itemPosition == RecyclerView.NO_POSITION) {
@@ -83,13 +88,17 @@ class MixinHeadersDecoration private constructor(
             }
         }
         if (!mAdapter.isListLast(itemPosition)) {
-            if (mAdapter.isLast(itemPosition)) {
+            if (mAdapter.isLast(itemPosition) || mAdapter.isButtonGroup(itemPosition)) {
                 outRect.bottom = view.context.dpToPx(6f)
             }
         }
     }
 
-    private fun setItemOffsetsForHeader(itemOffsets: Rect, header: View, orientation: Int) {
+    private fun setItemOffsetsForHeader(
+        itemOffsets: Rect,
+        header: View,
+        orientation: Int,
+    ) {
         mDimensionCalculator.initMargins(mTempRect, header)
         if (orientation == LinearLayoutManager.VERTICAL) {
             itemOffsets.top = header.height + mTempRect.top + mTempRect.bottom
@@ -98,7 +107,11 @@ class MixinHeadersDecoration private constructor(
         }
     }
 
-    override fun onDrawOver(canvas: Canvas, parent: RecyclerView, state: RecyclerView.State) {
+    override fun onDrawOver(
+        canvas: Canvas,
+        parent: RecyclerView,
+        state: RecyclerView.State,
+    ) {
         super.onDrawOver(canvas, parent, state)
 
         val childCount = parent.childCount
@@ -112,11 +125,12 @@ class MixinHeadersDecoration private constructor(
             if (position == RecyclerView.NO_POSITION) {
                 continue
             }
-            val hasStickyHeader = mHeaderPositionCalculator.hasStickyHeader(
-                itemView,
-                mOrientationProvider.getOrientation(parent),
-                position
-            )
+            val hasStickyHeader =
+                mHeaderPositionCalculator.hasStickyHeader(
+                    itemView,
+                    mOrientationProvider.getOrientation(parent),
+                    position,
+                )
             if (hasStickyHeader || mHeaderPositionCalculator.hasNewHeader(position, mOrientationProvider.isReverseLayout(parent))) {
                 val header = mHeaderProvider.getHeader(parent, position)
                 val headerOffset: Rect? = mHeaderRects.get(position)
@@ -127,7 +141,11 @@ class MixinHeadersDecoration private constructor(
         }
     }
 
-    override fun onDraw(canvas: Canvas, parent: RecyclerView, state: RecyclerView.State) {
+    override fun onDraw(
+        canvas: Canvas,
+        parent: RecyclerView,
+        state: RecyclerView.State,
+    ) {
         super.onDraw(canvas, parent, state)
 
         val childCount = parent.childCount
@@ -141,11 +159,12 @@ class MixinHeadersDecoration private constructor(
             if (position == RecyclerView.NO_POSITION) {
                 continue
             }
-            val hasStickyHeader = mHeaderPositionCalculator.hasStickyHeader(
-                itemView,
-                mOrientationProvider.getOrientation(parent),
-                position
-            )
+            val hasStickyHeader =
+                mHeaderPositionCalculator.hasStickyHeader(
+                    itemView,
+                    mOrientationProvider.getOrientation(parent),
+                    position,
+                )
             if (hasStickyHeader || mHeaderPositionCalculator.hasNewHeader(position, mOrientationProvider.isReverseLayout(parent))) {
                 val header = mHeaderProvider.getHeader(parent, position)
                 var headerOffset: Rect? = mHeaderRects.get(position)
@@ -178,27 +197,31 @@ class MixinHeadersDecoration private constructor(
     }
 
     private var attachView: View? = null
+
     private fun getAttachView(parent: ViewGroup): View {
         return if (this.attachView == null) {
             val attachView = mAdapter.onCreateAttach(parent)
             if (attachView.layoutParams == null) {
-                attachView.layoutParams = ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-                )
+                attachView.layoutParams =
+                    ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                    )
             }
             val widthSpec = View.MeasureSpec.makeMeasureSpec(parent.width, View.MeasureSpec.EXACTLY)
             val heightSpec = View.MeasureSpec.makeMeasureSpec(parent.height, View.MeasureSpec.UNSPECIFIED)
-            val childWidth = ViewGroup.getChildMeasureSpec(
-                widthSpec,
-                parent.paddingLeft + parent.paddingRight,
-                attachView.layoutParams.width
-            )
-            val childHeight = ViewGroup.getChildMeasureSpec(
-                heightSpec,
-                parent.paddingTop + parent.paddingBottom,
-                attachView.layoutParams.height
-            )
+            val childWidth =
+                ViewGroup.getChildMeasureSpec(
+                    widthSpec,
+                    parent.paddingLeft + parent.paddingRight,
+                    attachView.layoutParams.width,
+                )
+            val childHeight =
+                ViewGroup.getChildMeasureSpec(
+                    heightSpec,
+                    parent.paddingTop + parent.paddingBottom,
+                    attachView.layoutParams.height,
+                )
             attachView.measure(childWidth, childHeight)
             attachView.layout(0, 0, attachView.measuredWidth, attachView.measuredHeight)
             this.attachView = attachView
@@ -209,7 +232,10 @@ class MixinHeadersDecoration private constructor(
     }
 
     @Suppress("unused")
-    fun findHeaderPositionUnder(x: Int, y: Int): Int {
+    fun findHeaderPositionUnder(
+        x: Int,
+        y: Int,
+    ): Int {
         for (i in 0 until mHeaderRects.size()) {
             val rect = mHeaderRects.get(mHeaderRects.keyAt(i))
             if (rect.contains(x, y)) {
@@ -219,7 +245,10 @@ class MixinHeadersDecoration private constructor(
         return -1
     }
 
-    private fun getHeaderView(parent: RecyclerView, position: Int): View =
+    private fun getHeaderView(
+        parent: RecyclerView,
+        position: Int,
+    ): View =
         mHeaderProvider.getHeader(parent, position)
 
     @Suppress("unused")

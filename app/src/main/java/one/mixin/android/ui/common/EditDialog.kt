@@ -17,7 +17,7 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
 
 inline fun FragmentActivity.editDialog(
-    builder: EditDialog.() -> Unit
+    builder: EditDialog.() -> Unit,
 ): EditDialog {
     val dialog = EditDialog.newInstance()
     dialog.apply(builder)
@@ -27,7 +27,7 @@ inline fun FragmentActivity.editDialog(
 }
 
 inline fun Fragment.editDialog(
-    builder: EditDialog.() -> Unit
+    builder: EditDialog.() -> Unit,
 ): EditDialog {
     val dialog = EditDialog.newInstance()
     dialog.apply(builder)
@@ -50,21 +50,26 @@ class EditDialog : MixinBottomSheetDialogFragment() {
     var editText: String? = null
 
     var editInputType: Int? = null
+
     @IntRange(from = 1, to = MAX_LINE)
     var editMaxLines: Int = 1
     var maxTextCount: Int = -1
     var allowEmpty: Boolean = false
     var defaultEditEnable: Boolean = true
 
-    @StringRes var leftText: Int = R.string.cancel
+    @StringRes var leftText: Int = R.string.Cancel
     var leftAction: (() -> Unit)? = null
-    @StringRes var rightText: Int = R.string.save
+
+    @StringRes var rightText: Int = R.string.Save
     var rightAction: ((editContent: String) -> Unit)? = null
 
     private val binding by viewBinding(FragmentBottomEditBinding::inflate)
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         binding.editEt.setText(editText)
@@ -73,9 +78,12 @@ class EditDialog : MixinBottomSheetDialogFragment() {
         editInputType?.let {
             binding.editEt.inputType = it
         }
-        val maxLines = if (editMaxLines > MAX_LINE) {
-            MAX_LINE.toInt()
-        } else editMaxLines
+        val maxLines =
+            if (editMaxLines > MAX_LINE) {
+                MAX_LINE.toInt()
+            } else {
+                editMaxLines
+            }
         if (maxLines == 1) {
             binding.editEt.isSingleLine = true
         }
@@ -92,16 +100,27 @@ class EditDialog : MixinBottomSheetDialogFragment() {
             object : TextWatcher {
                 override fun afterTextChanged(s: Editable?) {}
 
-                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                    binding.editSave.isEnabled = when {
-                        s.isNullOrBlank() -> allowEmpty
-                        maxTextCount == -1 -> true
-                        else -> s.length <= maxTextCount
-                    }
+                override fun onTextChanged(
+                    s: CharSequence?,
+                    start: Int,
+                    before: Int,
+                    count: Int,
+                ) {
+                    binding.editSave.isEnabled =
+                        when {
+                            s.isNullOrBlank() -> allowEmpty
+                            maxTextCount == -1 -> true
+                            else -> s.length <= maxTextCount
+                        }
                 }
 
-                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            }
+                override fun beforeTextChanged(
+                    s: CharSequence?,
+                    start: Int,
+                    count: Int,
+                    after: Int,
+                ) {}
+            },
         )
         binding.editCancel.setText(leftText)
         binding.editCancel.setOnClickListener {

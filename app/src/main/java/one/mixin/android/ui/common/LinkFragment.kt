@@ -6,65 +6,85 @@ import android.view.View.VISIBLE
 import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.Observer
 import one.mixin.android.R
 import one.mixin.android.db.FloodMessageDao
+import one.mixin.android.db.pending.PendingMessageDao
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.networkConnected
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.ui.setting.diagnosis.DiagnosisActivity
 import one.mixin.android.vo.LinkState
 import javax.inject.Inject
+import javax.inject.Provider
 
 abstract class LinkFragment : BaseFragment(), Observer<Int> {
-
     @Inject
     lateinit var linkState: LinkState
-    @Inject
-    lateinit var floodMessageDao: FloodMessageDao
 
-    private lateinit var floodMessageCount: LiveData<Int>
+    @Inject
+    lateinit var floodMessageDaoProvider: Provider<FloodMessageDao>
+
+    @Inject
+    lateinit var pendingMessageDaoProvider: Provider<PendingMessageDao>
+
+    private lateinit var processedCount: LiveData<Int>
 
     private var barShown = false
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
-        floodMessageCount = floodMessageDao.getFloodMessageCount()
+        processedCount =
+            floodMessageDaoProvider.get().getFloodMessageCount()
+                .combineWith(pendingMessageDaoProvider.get().getPendingMessageCount()) { a, b ->
+                    (a ?: 0) + (b ?: 0)
+                }
         linkState.observe(viewLifecycleOwner) { state ->
             check(state)
         }
     }
 
+    private fun <T, K, R> LiveData<T>.combineWith(
+        liveData: LiveData<K>,
+        block: (T?, K?) -> R,
+    ): LiveData<R> {
+        val result = MediatorLiveData<R>()
+        result.addSource(this) {
+            result.value = block(this.value, liveData.value)
+        }
+        result.addSource(liveData) {
+            result.value = block(this.value, liveData.value)
+        }
+        return result
+    }
+
     @Synchronized
     private fun check(state: Int?) {
         if (LinkState.isOnline(state)) {
-            floodMessageCount.observe(viewLifecycleOwner, this)
+            processedCount.observe(viewLifecycleOwner, this)
             hiddenBar()
         } else {
-            floodMessageCount.removeObserver(this)
+            processedCount.removeObserver(this)
             setConnecting()
             showBar()
         }
     }
 
-    override fun onChanged(t: Int?) {
-        t.notNullWithElse(
-            {
-                if (it > 500) {
-                    setSyncing()
-                    showBar()
-                } else {
-                    hiddenBar()
-                }
-            },
-            {
-                hiddenBar()
-            }
-        )
+    override fun onChanged(value: Int) {
+        if (value > 500) {
+            setSyncing()
+            showBar()
+        } else {
+            hiddenBar()
+        }
     }
 
     abstract fun getContentView(): View
+
     private val _contentView get() = getContentView()
     private val stateLayout: View by lazy {
         _contentView.findViewById(R.id.state_layout)
@@ -95,10 +115,10 @@ abstract class LinkFragment : BaseFragment(), Observer<Int> {
         val networkAvailable = requireContext().networkConnected()
         if (networkAvailable) {
             progressBar.isVisible = true
-            stateTv.setText(R.string.state_connecting)
+            stateTv.setText(R.string.Connecting)
         } else {
             progressBar.isVisible = false
-            stateTv.setText(R.string.state_network_unavailable)
+            stateTv.setText(R.string.Network_unavailable)
         }
         stateLayout.setOnClickListener {
             DiagnosisActivity.show(requireContext())
@@ -108,7 +128,7 @@ abstract class LinkFragment : BaseFragment(), Observer<Int> {
     private fun setSyncing() {
         progressBar.visibility = VISIBLE
         stateLayout.setBackgroundResource(R.color.stateGreen)
-        stateTv.setText(R.string.state_syncing)
+        stateTv.setText(R.string.Syncing_messages)
         stateLayout.setOnClickListener(null)
     }
 }

@@ -13,6 +13,7 @@ import android.view.MotionEvent
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.Keep
 import androidx.core.content.ContextCompat
@@ -27,9 +28,12 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.runOnUiThread
+import one.mixin.android.extension.safeAddView
+import one.mixin.android.extension.safeRemoveView
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.ui.Rect
 import one.mixin.android.ui.call.CallActivity
+import one.mixin.android.util.getLocalString
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.webrtc.TAG_CALL
 import timber.log.Timber
@@ -50,6 +54,7 @@ class PipCallView {
 
         private const val SIZE = 80f
 
+        @SuppressLint("StaticFieldLeak")
         private var INSTANCE: PipCallView? = null
 
         fun get(): PipCallView {
@@ -83,16 +88,24 @@ class PipCallView {
                 getSideCoordinate(true, sideX, px, size, realX, realY),
                 getSideCoordinate(false, sideY, py, size, realX, realY),
                 size,
-                size
+                size,
             )
         }
 
-        private fun getSideCoordinate(isX: Boolean, side: Int, p: Float, sideSize: Float, realX: Int, realY: Int): Float {
-            val total = if (isX) {
-                realX - sideSize
-            } else {
-                realY - sideSize
-            }
+        private fun getSideCoordinate(
+            isX: Boolean,
+            side: Int,
+            p: Float,
+            sideSize: Float,
+            realX: Int,
+            realY: Int,
+        ): Float {
+            val total =
+                if (isX) {
+                    realX - sideSize
+                } else {
+                    realY - sideSize
+                }
             return when (side) {
                 0 -> if (isX) 0f else appContext.statusBarHeight().toFloat()
                 1 -> if (isX) total else total - appContext.navigationBarHeight()
@@ -105,6 +118,7 @@ class PipCallView {
     private lateinit var windowLayoutParams: WindowManager.LayoutParams
 
     private var timeView: TextView? = null
+    private var iconView: ImageView? = null
 
     private val windowManager: WindowManager by lazy {
         appContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager
@@ -112,56 +126,58 @@ class PipCallView {
 
     fun show(
         connectedTime: Long? = null,
-        callState: CallStateLiveData
+        callState: CallStateLiveData,
     ) {
-        windowView?.let { windowManager.removeView(it) }
+        windowView?.let { windowManager.safeRemoveView(it) }
 
         val isLandscape = appContext.isLandscape()
         val realSize = appContext.realSize()
         val realX = if (isLandscape) realSize.y else realSize.x
         val realY = if (isLandscape) realSize.x else realSize.y
-        windowView = object : FrameLayout(appContext) {
-            private var startX: Float = 0f
-            private var startY: Float = 0f
+        windowView =
+            object : FrameLayout(appContext) {
+                private var startX: Float = 0f
+                private var startY: Float = 0f
 
-            override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
-                val x = event.rawX
-                val y = event.rawY
-                if (event.action == MotionEvent.ACTION_DOWN) {
-                    startX = x
-                    startY = y
-                } else if (event.action == MotionEvent.ACTION_MOVE) {
-                    if (abs(startX - x) >= appContext.getPixelsInCM(
-                            0.3f,
-                            true
-                        ) || abs(startY - y) >= appContext.getPixelsInCM(0.3f, true)
-                    ) {
+                override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
+                    val x = event.rawX
+                    val y = event.rawY
+                    if (event.action == MotionEvent.ACTION_DOWN) {
                         startX = x
                         startY = y
-                        return true
+                    } else if (event.action == MotionEvent.ACTION_MOVE) {
+                        if (abs(startX - x) >=
+                            appContext.getPixelsInCM(
+                                0.3f,
+                                true,
+                            ) || abs(startY - y) >= appContext.getPixelsInCM(0.3f, true)
+                        ) {
+                            startX = x
+                            startY = y
+                            return true
+                        }
                     }
+                    return super.onInterceptTouchEvent(event)
                 }
-                return super.onInterceptTouchEvent(event)
-            }
 
-            @SuppressLint("ClickableViewAccessibility")
-            override fun onTouchEvent(event: MotionEvent): Boolean {
-                val x = event.rawX
-                val y = event.rawY
-                if (event.action == MotionEvent.ACTION_MOVE) {
-                    val dx = x - startX
-                    val dy = y - startY
-                    windowLayoutParams.x = (windowLayoutParams.x + dx).toInt()
-                    windowLayoutParams.y = (windowLayoutParams.y + dy).toInt()
-                    windowView?.let { windowManager.updateViewLayout(it, windowLayoutParams) }
-                    startX = x
-                    startY = y
-                } else if (event.action == MotionEvent.ACTION_UP) {
-                    animateToBoundsMaybe()
+                @SuppressLint("ClickableViewAccessibility")
+                override fun onTouchEvent(event: MotionEvent): Boolean {
+                    val x = event.rawX
+                    val y = event.rawY
+                    if (event.action == MotionEvent.ACTION_MOVE) {
+                        val dx = x - startX
+                        val dy = y - startY
+                        windowLayoutParams.x = (windowLayoutParams.x + dx).toInt()
+                        windowLayoutParams.y = (windowLayoutParams.y + dy).toInt()
+                        windowView?.let { windowManager.updateViewLayout(it, windowLayoutParams) }
+                        startX = x
+                        startY = y
+                    } else if (event.action == MotionEvent.ACTION_UP) {
+                        animateToBoundsMaybe()
+                    }
+                    return true
                 }
-                return true
             }
-        }
 
         val size = SIZE.dp
         val view = LayoutInflater.from(appContext).inflate(R.layout.view_pip_call, null)
@@ -169,8 +185,11 @@ class PipCallView {
         view.setOnClickListener {
             CallActivity.show(appContext)
         }
+        val isNightMode = appContext.isNightMode()
+        iconView = view.findViewById(R.id.icon)
+        updateIcon(callState.isConnected() && !callState.audioEnable)
         timeView = view.findViewById(R.id.time_tv)
-        if (appContext.isNightMode()) {
+        if (isNightMode) {
             view.setBackgroundResource(R.drawable.bg_pip_call_dark)
             timeView?.setTextColor(ContextCompat.getColor(appContext, R.color.white))
         } else {
@@ -184,24 +203,26 @@ class PipCallView {
         val px = sp.getFloat(CALL_PX, 0f)
         val py = sp.getFloat(CALL_PY, 0f)
         try {
-            windowLayoutParams = WindowManager.LayoutParams().apply {
-                width = size
-                height = size
-                x = getSideCoordinate(true, sideX, px, size.toFloat(), realX, realY).toInt()
-                y = getSideCoordinate(false, sideY, py, size.toFloat(), realX, realY).toInt()
-                format = PixelFormat.TRANSLUCENT
-                gravity = Gravity.TOP or Gravity.START
-                type = if (Build.VERSION.SDK_INT >= 26) {
-                    WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-                } else {
-                    @Suppress("DEPRECATION")
-                    WindowManager.LayoutParams.TYPE_SYSTEM_ALERT
+            windowLayoutParams =
+                WindowManager.LayoutParams().apply {
+                    width = size
+                    height = size
+                    x = getSideCoordinate(true, sideX, px, size.toFloat(), realX, realY).toInt()
+                    y = getSideCoordinate(false, sideY, py, size.toFloat(), realX, realY).toInt()
+                    format = PixelFormat.TRANSLUCENT
+                    gravity = Gravity.TOP or Gravity.START
+                    type =
+                        if (Build.VERSION.SDK_INT >= 26) {
+                            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+                        } else {
+                            @Suppress("DEPRECATION")
+                            WindowManager.LayoutParams.TYPE_SYSTEM_ALERT
+                        }
+                    flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                        WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED or
+                        WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
                 }
-                flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                    WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED or
-                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
-            }
-            windowView?.let { windowManager.addView(it, windowLayoutParams) }
+            windowManager.safeAddView(windowView, windowLayoutParams)
             shown = true
         } catch (e: Exception) {
             Timber.e(e)
@@ -211,7 +232,7 @@ class PipCallView {
             if (connectedTime != null) {
                 startTimer(connectedTime)
             } else {
-                timeView?.text = appContext.getString(R.string.waiting)
+                timeView?.text = getLocalString(appContext, R.string.Waiting)
             }
         } else {
             close()
@@ -223,14 +244,9 @@ class PipCallView {
     fun close() {
         Timber.d("$TAG_CALL$shown")
         shown = false
-        if (windowView != null) {
-            try {
-                windowManager.removeView(windowView)
-            } catch (e: Exception) {
-                Timber.w("$TAG_CALL remove windowView throw $e")
-            }
-        }
+        windowView?.let { windowManager.safeRemoveView(it) }
         timeView = null
+        iconView = null
         windowView = null
         stopTimer()
     }
@@ -247,13 +263,14 @@ class PipCallView {
 
         timer = Timer(true)
         timerTask?.cancel()
-        timerTask = object : TimerTask() {
-            override fun run() {
-                appContext.runOnUiThread {
-                    setDuration(connectedTime)
+        timerTask =
+            object : TimerTask() {
+                override fun run() {
+                    appContext.runOnUiThread {
+                        setDuration(connectedTime)
+                    }
                 }
             }
-        }
         timer?.schedule(timerTask, 0, 1000)
     }
 
@@ -265,6 +282,16 @@ class PipCallView {
         timer = null
     }
 
+    fun updateIcon(muted: Boolean) {
+        appContext.runOnUiThread {
+            if (muted) {
+                iconView?.setImageResource(R.drawable.ic_pip_call_mute)
+            } else {
+                iconView?.setImageResource(R.drawable.ic_pip_call)
+            }
+        }
+    }
+
     private fun setDuration(connectedTime: Long) {
         val duration = System.currentTimeMillis() - connectedTime
         val text = duration.formatMillis()
@@ -272,6 +299,8 @@ class PipCallView {
     }
 
     private var decelerateInterpolator: DecelerateInterpolator? = null
+
+    @SuppressLint("Recycle")
     private fun animateToBoundsMaybe() {
         val realSize = appContext.realSize()
         val isLandscape = appContext.isLandscape()
@@ -284,16 +313,17 @@ class PipCallView {
         val endY = getSideCoordinate(false, 1, 0f, size, realX, realY).toInt()
         var animatorY: Animator? = null
         val editor = appContext.defaultSharedPreferences.edit()
-        val animatorX = when {
-            windowLayoutParams.x < startX || windowLayoutParams.x <= endX / 2 -> {
-                editor.putInt(CALL_SIDE_X, 0)
-                ObjectAnimator.ofInt(this, "x", windowLayoutParams.x, 0)
+        val animatorX =
+            when {
+                windowLayoutParams.x < startX || windowLayoutParams.x <= endX / 2 -> {
+                    editor.putInt(CALL_SIDE_X, 0)
+                    ObjectAnimator.ofInt(this, "x", windowLayoutParams.x, 0)
+                }
+                else -> {
+                    editor.putInt(CALL_SIDE_X, 1)
+                    ObjectAnimator.ofInt(this, "x", windowLayoutParams.x, endX)
+                }
             }
-            else -> {
-                editor.putInt(CALL_SIDE_X, 1)
-                ObjectAnimator.ofInt(this, "x", windowLayoutParams.x, endX)
-            }
-        }
         when {
             windowLayoutParams.y < startY -> {
                 editor.putFloat(CALL_PY, startY.toFloat() / realY)

@@ -1,0 +1,449 @@
+package one.mixin.android.api.service
+
+import one.mixin.android.BuildConfig
+import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.request.AddressSearchRequest
+import one.mixin.android.api.request.LimitOrderRequest
+import one.mixin.android.api.request.OrderRequest
+import one.mixin.android.api.request.RampWebUrlRequest
+import one.mixin.android.api.request.RouteInstrumentRequest
+import one.mixin.android.api.request.RoutePriceRequest
+import one.mixin.android.api.request.RouteTickerRequest
+import one.mixin.android.api.request.RouteTokenRequest
+import one.mixin.android.api.request.perps.CloseOrderRequest
+import one.mixin.android.api.request.perps.CloseOrderResponse
+import one.mixin.android.api.request.perps.IncreaseOrderRequest
+import one.mixin.android.api.request.perps.OpenOrderRequest
+import one.mixin.android.api.request.perps.OpenOrderResponse
+import one.mixin.android.api.request.perps.PositionTpSlRequest
+import one.mixin.android.api.request.web3.EstimateFeeRequest
+import one.mixin.android.api.request.web3.EstimateFeeResponse
+import one.mixin.android.api.request.web3.GaslessFeeRequest
+import one.mixin.android.api.request.web3.GaslessTxRequest
+import one.mixin.android.api.request.web3.RpcRequest
+import one.mixin.android.api.request.web3.StakeRequest
+import one.mixin.android.api.request.web3.SubmitGaslessTxRequest
+import one.mixin.android.api.request.web3.SwapRequest
+import one.mixin.android.api.request.web3.WalletRequest
+import one.mixin.android.api.request.web3.Web3RawTransactionRequest
+import one.mixin.android.api.response.AddressAssetsView
+import one.mixin.android.api.response.CreateLimitOrderResponse
+import one.mixin.android.api.response.RampWebUrlResponse
+import one.mixin.android.api.response.RouteCreateTokenResponse
+import one.mixin.android.api.response.RouteOrderResponse
+import one.mixin.android.api.response.RouteTickerResponse
+import one.mixin.android.api.response.UserAddressView
+import one.mixin.android.api.response.perps.CandleView
+import one.mixin.android.api.response.perps.MarketLiquidationPriceView
+import one.mixin.android.api.response.perps.PerpsMarket
+import one.mixin.android.api.response.perps.PerpsOrder
+import one.mixin.android.api.response.perps.PerpsPosition
+import one.mixin.android.api.response.web3.GaslessFeeResponse
+import one.mixin.android.api.response.web3.GaslessSponsorTransactionResponse
+import one.mixin.android.api.response.web3.GaslessTxResponse
+import one.mixin.android.api.response.web3.ParsedTx
+import one.mixin.android.api.response.web3.QuoteResult
+import one.mixin.android.api.response.web3.StakeAccount
+import one.mixin.android.api.response.web3.StakeAccountActivation
+import one.mixin.android.api.response.web3.StakeResponse
+import one.mixin.android.api.response.web3.SubmitGaslessTxResponse
+import one.mixin.android.api.response.web3.SwapResponse
+import one.mixin.android.api.response.web3.SwapToken
+import one.mixin.android.api.response.web3.Tx
+import one.mixin.android.api.response.web3.Validator
+import one.mixin.android.api.response.web3.WalletOutput
+import one.mixin.android.db.web3.vo.Web3Address
+import one.mixin.android.db.web3.vo.Web3RawTransaction
+import one.mixin.android.db.web3.vo.Web3Token
+import one.mixin.android.db.web3.vo.Web3Transaction
+import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.ui.wallet.alert.vo.Alert
+import one.mixin.android.ui.wallet.alert.vo.AlertRequest
+import one.mixin.android.ui.wallet.alert.vo.AlertUpdateRequest
+import one.mixin.android.vo.Card
+import one.mixin.android.vo.ChainDapp
+import one.mixin.android.vo.market.GlobalMarket
+import one.mixin.android.vo.market.HistoryPrice
+import one.mixin.android.vo.market.Market
+import one.mixin.android.vo.route.Order
+import one.mixin.android.vo.route.RoutePaymentRequest
+import one.mixin.android.vo.sumsub.ProfileResponse
+import one.mixin.android.vo.sumsub.RouteTokenResponse
+import retrofit2.Call
+import retrofit2.http.Body
+import retrofit2.http.DELETE
+import retrofit2.http.GET
+import retrofit2.http.POST
+import retrofit2.http.Path
+import retrofit2.http.Query
+
+interface RouteService {
+    @POST("orders/{id}/payment")
+    suspend fun order(
+        @Path("id") id: String,
+        @Body request: RoutePaymentRequest,
+    ): MixinResponse<RouteOrderResponse>
+
+    @GET("orders/{id}")
+    suspend fun order(
+        @Path("id") id: String,
+    ): MixinResponse<RouteOrderResponse>
+
+    @GET("orders")
+    suspend fun payments(): MixinResponse<List<RouteOrderResponse>>
+
+    @POST("orders")
+    suspend fun createOrder(
+        @Body orderRequest: OrderRequest,
+    ): MixinResponse<RouteOrderResponse>
+
+    @GET("orders/{id}")
+    suspend fun getOrder(
+        @Path("id") id: String,
+    ): MixinResponse<RouteOrderResponse>
+
+    @POST("orders/{id}/price")
+    suspend fun updateOrderPrice(
+        @Path("id") id: String,
+        @Body request: RoutePriceRequest,
+    ): MixinResponse<RouteOrderResponse>
+
+    @POST("checkout/instruments")
+    suspend fun createInstrument(
+        @Body session: RouteInstrumentRequest,
+    ): MixinResponse<Card>
+
+    @GET("checkout/instruments")
+    suspend fun instruments(): MixinResponse<List<Card>>
+
+    @DELETE("/checkout/instruments/{id}")
+    suspend fun deleteInstruments(
+        @Path("id") id: String,
+    ): MixinResponse<Void>
+
+    @POST("checkout/tokens")
+    suspend fun token(
+        @Body tokenRequest: RouteTokenRequest,
+    ): MixinResponse<RouteCreateTokenResponse>
+
+    @POST("quote")
+    suspend fun ticker(
+        @Body ticker: RouteTickerRequest,
+    ): MixinResponse<RouteTickerResponse>
+
+    @GET("kyc/token")
+    suspend fun sumsubToken(): MixinResponse<RouteTokenResponse>
+
+    @GET("kyc/token")
+    fun callSumsubToken(): Call<MixinResponse<RouteTokenResponse>>
+
+    @GET("profile")
+    suspend fun profile(
+        @Query("version") version: String,
+    ): MixinResponse<ProfileResponse>
+
+    @GET("web3/tokens")
+    suspend fun web3Tokens(
+        @Query("source") source: String = "web3",
+        @Query("version") version: String = BuildConfig.VERSION_NAME,
+        @Query("category") category: String? = null
+    ): MixinResponse<List<SwapToken>>
+
+    @GET("web3/quote")
+    suspend fun web3Quote(
+        @Query("inputMint") inputMint: String,
+        @Query("outputMint") outputMint: String,
+        @Query("amount") amount: String,
+        @Query("source") source: String = "web3",
+    ): MixinResponse<QuoteResult>
+
+    @POST("web3/swap")
+    suspend fun web3Swap(
+        @Body swapRequest: SwapRequest,
+    ): MixinResponse<SwapResponse>
+
+    @GET("web3/transactions/{txhash}")
+    suspend fun getWeb3Tx(
+        @Path("txhash") txhash: String,
+    ): MixinResponse<Tx>
+
+    @POST("web3/transactions")
+    suspend fun postWeb3Tx(
+        @Body rawTx: Web3RawTransactionRequest,
+    ): MixinResponse<Web3RawTransaction>
+
+    @POST("web3/transactions/simulate")
+    suspend fun simulateWeb3Tx(
+        @Body parseTxRequest: Web3RawTransactionRequest,
+    ): MixinResponse<ParsedTx>
+
+    @GET("web3/tokens/{address}")
+    suspend fun getSwapToken(
+        @Path("address") address: String,
+    ): MixinResponse<SwapToken?>
+
+    @GET("web3/tokens/search/{query}")
+    suspend fun searchTokens(
+        @Path("query") query: String,
+        @Query("source") source: String = "web3"
+    ): MixinResponse<List<SwapToken>>
+
+    @POST("web3/stake")
+    suspend fun stakeSol(
+        @Body stakeRequest: StakeRequest,
+    ): MixinResponse<StakeResponse>
+
+    @GET("web3/stake/{account}")
+    suspend fun getStakeAccounts(
+        @Path("account") account: String,
+    ): MixinResponse<List<StakeAccount>>
+
+    @GET("web3/stake/activation")
+    suspend fun getStakeAccountActivations(
+        @Query("accounts") accounts: String,
+    ): MixinResponse<List<StakeAccountActivation>>
+
+    @GET("web3/stake/validators")
+    suspend fun getStakeValidators(
+        @Query("votePubkeys") votePubkeys: String? = null,
+    ): MixinResponse<List<Validator>>
+
+    @GET("web3/stake/validators/search/{query}")
+    suspend fun searchStakeValidators(
+        @Path("query") query: String,
+    ): MixinResponse<List<Validator>>
+
+    @POST("web3/limit_orders")
+    suspend fun createLimitOrder(@Body request: LimitOrderRequest): MixinResponse<CreateLimitOrderResponse>
+
+    @GET("web3/swap/orders")
+    suspend fun getLimitOrders(
+        @Query("category") category: String = "all",
+        @Query("limit") limit: Int? = 50,
+        @Query("offset") offset: String?,
+        @Query("state") state: String?,
+        @Query("walletId") walletId: String? = null,
+    ): MixinResponse<List<Order>>
+
+    @POST("web3/swap/orders")
+    suspend fun getLimitOrders(@Body ids: List<String>): MixinResponse<List<Order>>
+
+    @GET("web3/swap/orders/{id}")
+    suspend fun getSwapOrder(@Path("id") id: String): MixinResponse<Order>
+
+    @GET("web3/limit_orders/{id}")
+    suspend fun getLimitOrder(@Path("id") id: String): MixinResponse<Order>
+
+    @POST("web3/limit_orders/{id}/cancel")
+    suspend fun cancelLimitOrder(@Path("id") id: String): MixinResponse<Order>
+
+    @GET("markets/{id}/price-history")
+    suspend fun priceHistory(
+        @Path("id") assetId: String,
+        @Query("type") type: String,
+    ): MixinResponse<HistoryPrice>
+
+    @GET("markets/{id}")
+    suspend fun market(
+        @Path("id") assetId: String,
+    ): MixinResponse<Market>
+
+    @GET("markets")
+    suspend fun markets(@Query("category") category: String? = null, @Query("limit") limit: Int? = null, @Query("sort") sort: String? = null, @Query("offset") offset: Int? = null): MixinResponse<List<Market>>
+
+    @POST("markets/fetch")
+    suspend fun fetchMarket(@Body ids: List<String>): MixinResponse<List<Market>>
+
+    @GET("markets/search/{query}")
+    suspend fun searchMarket(@Path("query") query: String):MixinResponse<List<Market>>
+
+    @GET("markets/globals")
+    suspend fun globalMarket():MixinResponse<GlobalMarket>
+
+    @POST("markets/{id}/favorite")
+    suspend fun favorite(@Path("id") coinId: String): MixinResponse<Unit>
+
+    @POST("markets/{id}/unfavorite")
+    suspend fun unfavorite(@Path("id") coinId: String): MixinResponse<Unit>
+
+    @POST("prices/alerts")
+    suspend fun addAlert(@Body alert: AlertRequest):MixinResponse<Alert>
+
+    @GET("prices/alerts")
+    suspend fun alerts():MixinResponse<List<Alert>>
+
+    @POST("prices/alerts/{id}")
+    suspend fun updateAlert(@Path("id") alertId: String, @Body request: AlertUpdateRequest): MixinResponse<Alert>
+
+    @POST("web3/estimate-fee")
+    suspend fun estimateFee(
+        @Body request: EstimateFeeRequest,
+    ): MixinResponse<EstimateFeeResponse>
+
+    @POST("web3/gasless/fees")
+    suspend fun gaslessFee(
+        @Body request: GaslessFeeRequest,
+    ): MixinResponse<GaslessFeeResponse>
+
+    @POST("web3/gasless/prepare")
+    suspend fun gaslessTx(
+        @Body request: GaslessTxRequest,
+    ): MixinResponse<GaslessTxResponse>
+
+    @POST("web3/gasless/submit")
+    suspend fun submitGaslessTx(
+        @Body request: SubmitGaslessTxRequest,
+    ): MixinResponse<SubmitGaslessTxResponse>
+
+    @GET("web3/gasless/transactions/{id}")
+    suspend fun gaslessTransaction(
+        @Path("id") id: String,
+    ): MixinResponse<GaslessSponsorTransactionResponse>
+
+    @POST("web3/rpc")
+    suspend fun rpc(
+        @Query("chain_id") chainId: String,
+        @Body request: RpcRequest,
+    ): MixinResponse<String>
+
+    @POST("wallets")
+    suspend fun createWallet(
+        @Body request: WalletRequest
+    ): MixinResponse<Web3Wallet>
+
+    @GET("wallets")
+    suspend fun getWallets(): MixinResponse<List<Web3Wallet>>
+
+    @GET("wallets/{id}")
+    suspend fun getWallet(
+        @Path("id") id: String
+    ): MixinResponse<Web3Wallet>
+
+    @POST("wallets/{id}/delete")
+    suspend fun destroyWallet(
+        @Path("id") id: String
+    ): MixinResponse<Unit>
+
+    @POST("wallets/{id}")
+    suspend fun updateWallet(
+        @Path("id") id: String,
+        @Body request: WalletRequest
+    ): MixinResponse<Web3Wallet>
+
+    @GET("wallets/{id}/assets")
+    suspend fun getWalletAssets(
+        @Path("id") id: String
+    ): MixinResponse<List<Web3Token>>
+
+    @GET("wallets/{id}/addresses")
+    suspend fun getWalletAddresses(
+        @Path("id") walletId: String
+    ): MixinResponse<List<Web3Address>>
+
+    @GET("wallets/outputs")
+    suspend fun getWalletOutputs(
+        @Query("wallet_id") walletId: String? = null,
+        @Query("address") address: String? = null,
+        @Query("asset_id") assetId: String? = null,
+    ): MixinResponse<List<WalletOutput>>
+
+    @GET("transactions")
+    suspend fun getAllTransactions(
+        @Query("address") address: String,
+        @Query("offset") offset: String? = null,
+        @Query("limit") limit: Int = 30
+    ): MixinResponse<List<Web3Transaction>>
+
+    @GET("assets/{id}")
+    suspend fun getAssetByAddress(
+        @Path("id") id: String,
+        @Query("address") address: String,
+    ): MixinResponse<Web3Token>
+
+    @POST("assets/search/address")
+    suspend fun searchAssetsByAddresses(
+        @Body request: AddressSearchRequest
+    ): MixinResponse<List<AddressAssetsView>>
+
+    @GET("web3/dapps")
+    suspend fun dapps(): MixinResponse<List<ChainDapp>>
+
+    @GET("web3/transactions/{hash}")
+    suspend fun transaction(@Path("hash") hash: String, @Query("chain_id") chainId: String): MixinResponse<Web3RawTransaction>
+
+    @POST("ramp/weburl")
+    suspend fun rampWebUrl(
+        @Body request: RampWebUrlRequest
+    ): MixinResponse<RampWebUrlResponse>
+
+    @GET("users/{user_id}/address")
+    suspend fun getUserAddress(
+        @Path("user_id") userId: String,
+        @Query("chain_id") chainId: String
+    ): MixinResponse<UserAddressView>
+
+    // Perps API
+    @GET("perps/markets")
+    suspend fun getPerpsMarkets(): MixinResponse<List<PerpsMarket>>
+
+    @GET("perps/markets/{market_id}")
+    suspend fun getPerpsMarket(
+        @Path("market_id") marketId: String
+    ): MixinResponse<PerpsMarket>
+
+    @GET("perps/markets/candles")
+    suspend fun getPerpsCandles(
+        @Query("market_id") marketId: String,
+        @Query("time_frame") timeFrame: String
+    ): MixinResponse<CandleView>
+
+    @GET("perps/markets/liquidation-price")
+    suspend fun getPerpsLiquidationPrice(
+        @Query("market_id") marketId: String? = null,
+        @Query("amount") amount: String,
+        @Query("side") side: String? = null,
+        @Query("leverage") leverage: Int? = null,
+        @Query("position_id") positionId: String? = null,
+    ): MixinResponse<MarketLiquidationPriceView>
+
+    @GET("perps/orders/accepted-assets")
+    suspend fun getAcceptedAssets(): MixinResponse<List<String>>
+
+    @POST("perps/orders/open")
+    suspend fun openPerpsOrder(
+        @Body request: OpenOrderRequest
+    ): MixinResponse<OpenOrderResponse>
+
+    @POST("perps/orders/close")
+    suspend fun closePerpsOrder(
+        @Body request: CloseOrderRequest
+    ): MixinResponse<CloseOrderResponse>
+
+    @GET("perps/positions")
+    suspend fun getPerpsPositions(
+        @Query("wallet_id") walletId: String
+    ): MixinResponse<List<PerpsPosition>>
+
+    @GET("perps/positions/{id}")
+    suspend fun getPerpsPosition(
+        @Path("id") positionId: String
+    ): MixinResponse<PerpsPosition>
+
+    @POST("perps/positions/tpsl")
+    suspend fun setPerpsPositionTpSl(
+        @Body request: PositionTpSlRequest
+    ): MixinResponse<PerpsPosition>
+
+    @POST("perps/positions/{id}/increase")
+    suspend fun increasePerpsPosition(
+        @Path("id") positionId: String,
+        @Body request: IncreaseOrderRequest,
+    ): MixinResponse<OpenOrderResponse>
+
+    @GET("perps/orders")
+    suspend fun getPerpsOrders(
+        @Query("offset") offset: String? = null,
+        @Query("limit") limit: Int = 100,
+        @Query("wallet_id") walletId: String,
+    ): MixinResponse<List<PerpsOrder>>
+}

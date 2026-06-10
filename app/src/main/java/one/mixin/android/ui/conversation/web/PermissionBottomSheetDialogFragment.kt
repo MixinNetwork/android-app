@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.DialogInterface
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.Constants.ARGS_TITLE
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentPermissionBinding
 import one.mixin.android.extension.realSize
@@ -14,19 +15,24 @@ import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
 class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
-
     companion object {
         const val TAG = "PermissionBottomSheetDialogFragment"
 
         private const val ARGS_PERMISSION = "args_permission"
-        private const val ARGS_TITLE = "args_title"
         private const val ARGS_NAME = "args_name"
         private const val ARGS_NUMBER = "args_number"
 
         private const val PERMISSION_CAMERA = 0
         const val PERMISSION_VIDEO = 1
         const val PERMISSION_AUDIO = 2
-        private fun newInstance(title: String, appName: String? = null, number: String? = null, vararg permissions: Int) =
+        const val PERMISSION_LOCATION = 3
+
+        private fun newInstance(
+            title: String,
+            appName: String? = null,
+            number: String? = null,
+            vararg permissions: Int,
+        ) =
             PermissionBottomSheetDialogFragment().withArgs {
                 putIntArray(ARGS_PERMISSION, permissions)
                 putString(ARGS_TITLE, title)
@@ -34,15 +40,36 @@ class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 putString(ARGS_NUMBER, number)
             }
 
-        fun requestCamera(title: String, appName: String? = null, number: String? = null): PermissionBottomSheetDialogFragment {
+        fun requestCamera(
+            title: String,
+            appName: String? = null,
+            number: String? = null,
+        ): PermissionBottomSheetDialogFragment {
             return newInstance(title, appName, number, PERMISSION_CAMERA)
         }
 
-        fun requestVideo(title: String, appName: String? = null, number: String? = null): PermissionBottomSheetDialogFragment {
+        fun requestVideo(
+            title: String,
+            appName: String? = null,
+            number: String? = null,
+        ): PermissionBottomSheetDialogFragment {
             return newInstance(title, appName, number, PERMISSION_VIDEO)
         }
 
-        fun request(title: String, appName: String? = null, number: String? = null, vararg permissions: Int): PermissionBottomSheetDialogFragment {
+        fun requestLocation(
+            title: String,
+            appName: String? = null,
+            number: String? = null,
+        ): PermissionBottomSheetDialogFragment {
+            return newInstance(title, appName, number, PERMISSION_LOCATION)
+        }
+
+        fun request(
+            title: String,
+            appName: String? = null,
+            number: String? = null,
+            vararg permissions: Int,
+        ): PermissionBottomSheetDialogFragment {
             return newInstance(title, appName, number, *permissions)
         }
     }
@@ -72,7 +99,10 @@ class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private val binding by viewBinding(FragmentPermissionBinding::inflate)
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         dialog as BottomSheet
@@ -105,11 +135,14 @@ class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 PERMISSION_CAMERA -> {
                     content.append(getString(R.string.permission_camera))
                 }
+                PERMISSION_LOCATION -> {
+                    content.append(getString(R.string.permission_location))
+                }
                 else -> {
                     content.append(getString(R.string.permission_video))
                 }
             }
-            if (index != permissions?.size?.minus(1) ?: 0) {
+            if (index != (permissions?.size?.minus(1) ?: 0)) {
                 content.append("\n")
             }
         }
@@ -117,9 +150,11 @@ class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         binding.logo.setImageResource(
             if (permissions?.any { it == PERMISSION_AUDIO } == true) {
                 R.drawable.ic_permission_audio
+            } else if (permissions?.any { it == PERMISSION_LOCATION } == true) {
+                R.drawable.ic_permission_location
             } else {
                 R.drawable.ic_permission_camera
-            }
+            },
         )
     }
 

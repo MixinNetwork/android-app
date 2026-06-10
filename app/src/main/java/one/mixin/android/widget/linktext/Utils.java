@@ -1,5 +1,9 @@
 package one.mixin.android.widget.linktext;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Pattern;
+
 import timber.log.Timber;
 
 class Utils {
@@ -8,14 +12,23 @@ class Utils {
         return regex != null && !regex.isEmpty() && regex.length() > 2;
     }
 
-    static String getRegexByAutoLinkMode(AutoLinkMode anAutoLinkMode, String customRegex) {
+    private static final Map<String, Pattern> petterns = new HashMap<>();
+
+    static Pattern getPatternByAutoLinkMode(AutoLinkMode anAutoLinkMode, String customRegex){
+        Pattern p = petterns.get(anAutoLinkMode.name());
+        if (p == null) {
+            p = Pattern.compile(getRegexByAutoLinkMode(anAutoLinkMode, customRegex));
+            petterns.put(anAutoLinkMode.name(), p);
+        }
+        return p;
+    }
+
+    private static String getRegexByAutoLinkMode(AutoLinkMode anAutoLinkMode, String customRegex) {
         switch (anAutoLinkMode) {
             case MODE_HASHTAG:
                 return RegexParser.HASHTAG_PATTERN;
             case MODE_MENTION:
                 return RegexParser.MENTION_PATTERN;
-            case MODE_URL:
-                return RegexParser.URL_PATTERN;
             case MODE_PHONE:
                 return RegexParser.PHONE_PATTERN;
             case MODE_EMAIL:

@@ -18,27 +18,36 @@ interface CircleService {
     fun getCircles(): Call<MixinResponse<List<Circle>>>
 
     @GET("circles/{id}")
-    fun getCircle(@Path("id") id: String): Call<MixinResponse<Circle>>
+    fun getCircle(
+        @Path("id") id: String,
+    ): Call<MixinResponse<Circle>>
 
     @POST("circles")
-    suspend fun createCircle(@Body body: CircleName): MixinResponse<Circle>
+    suspend fun createCircle(
+        @Body body: CircleName,
+    ): MixinResponse<Circle>
 
     @POST("circles/{id}")
-    suspend fun updateCircle(@Path("id") id: String, @Body body: CircleName): MixinResponse<Circle>
+    suspend fun updateCircle(
+        @Path("id") id: String,
+        @Body body: CircleName,
+    ): MixinResponse<Circle>
 
     @POST("circles/{id}/delete")
-    suspend fun deleteCircle(@Path("id") id: String): MixinResponse<Any>
+    suspend fun deleteCircle(
+        @Path("id") id: String,
+    ): MixinResponse<Any>
 
     @POST("circles/{id}/conversations")
     suspend fun updateCircleConversations(
         @Path("id") id: String,
-        @Body conversationCircleRequests: List<CircleConversationRequest>
+        @Body conversationCircleRequests: List<CircleConversationRequest>,
     ): MixinResponse<List<CircleConversation>>
 
     @GET("circles/{id}/conversations")
     fun getCircleConversations(
         @Path("id") id: String,
         @Query("offset") offset: String? = null,
-        @Query("limit") limit: Int = REFRESH_CIRCLE_CONVERSATION_LIMIT
+        @Query("limit") limit: Int = REFRESH_CIRCLE_CONVERSATION_LIMIT,
     ): Call<MixinResponse<List<CircleConversation>>>
 }

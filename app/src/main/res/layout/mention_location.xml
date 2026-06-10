@@ -28,11 +28,10 @@
             app:uiMapToolbar="false" />
 
         <ViewStub
-            android:id="@+id/mapbox_stub"
+            android:id="@+id/osm_stub"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:inflatedId="@+id/mapbox_stub"
-            android:layout="@layout/view_mapbox"/>
+            android:layout="@layout/view_open_street_map" />
 
         <ImageView
             android:id="@+id/ic_marker"
@@ -41,7 +40,8 @@
             android:layout_gravity="center"
             android:layout_marginBottom="20dp"
             android:src="@drawable/ic_map_pin"
-            android:visibility="gone" />
+            android:visibility="gone"
+            android:contentDescription="@null" />
 
         <ImageView
             android:id="@+id/my_location"
@@ -51,7 +51,8 @@
             android:layout_margin="6dp"
             android:foreground="@drawable/mixin_ripple"
             android:src="@drawable/ic_my_location"
-            android:visibility="visible" />
+            android:visibility="visible"
+            android:contentDescription="@null" />
 
     </FrameLayout>
 
@@ -96,7 +97,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:gravity="center"
-                android:textColor="?attr/text_minor"
+                android:textColor="?attr/text_assist"
                 android:textSize="14sp" />
         </FrameLayout>
 

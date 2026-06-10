@@ -29,6 +29,7 @@ data class AttachmentMessagePayload(
     var caption: String? = null,
     @SerializedName("created_at")
     var createdAt: String? = null,
+    val shareable: Boolean? = null,
 )
 
 fun AttachmentMessagePayload.invalidData(): Boolean {

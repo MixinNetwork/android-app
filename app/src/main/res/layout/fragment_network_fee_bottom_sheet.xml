@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<one.mixin.android.widget.BottomSheetLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:background="@drawable/bg_upper_round"
+    android:paddingBottom="16dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/title_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:maxWidth="240dp"
+            android:singleLine="true"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginBottom="3dp"
+            android:text="@string/network_fee"
+            android:textColor="?attr/text_primary"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/sub_title_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxWidth="240dp"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:layout_below="@id/title_tv"
+            android:layout_marginStart="20dp"
+            android:textColor="?attr/text_assist"
+            android:textSize="12sp"
+            android:text="@string/choose_network_fee"
+            tools:ignore="SmallSp"/>
+
+        <ImageView
+            android:id="@+id/right_iv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="@dimen/margin16"
+            android:src="@drawable/ic_close_black"
+            android:background="@drawable/mixin_ripple"
+            tools:ignore="ContentDescription"/>
+    </RelativeLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/fee_rv"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/bg_white"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="28dp"
+        tools:itemCount="2"
+        tools:listitem="@layout/item_network_fee"
+        app:layoutManager="LinearLayoutManager" />
+</one.mixin.android.widget.BottomSheetLinearLayout>

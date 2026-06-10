@@ -10,9 +10,29 @@ data class SearchMessageItem(
     val conversationId: String,
     val conversationCategory: String?,
     val conversationName: String?,
-    val messageCount: Int,
+    var messageCount: Int,
     val userId: String,
+    val appId: String?,
     val userFullName: String?,
     val userAvatarUrl: String?,
-    val conversationAvatarUrl: String?
-) : Parcelable
+    val userIdentityNumber: String?,
+    val conversationAvatarUrl: String?,
+    val isVerified: Boolean?,
+    val membership: Membership?
+) : Parcelable {
+    fun isMembership(): Boolean {
+        return conversationCategory == ConversationCategory.CONTACT.name && membership?.isMembership() == true
+    }
+
+    fun isProsperity(): Boolean {
+        return conversationCategory == ConversationCategory.CONTACT.name && membership?.isProsperity() == true
+    }
+
+    fun isBot(): Boolean {
+        return conversationCategory == ConversationCategory.CONTACT.name && userIdentityNumber.isBotIdentityNumber()
+    }
+
+    fun isVerified(): Boolean {
+        return conversationCategory == ConversationCategory.CONTACT.name && isVerified == true
+    }
+}

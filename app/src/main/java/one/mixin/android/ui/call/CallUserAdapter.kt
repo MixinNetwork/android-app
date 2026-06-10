@@ -1,10 +1,13 @@
 package one.mixin.android.ui.call
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.uber.autodispose.android.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import one.mixin.android.R
@@ -21,26 +24,32 @@ class CallUserAdapter(private val self: CallUser, private val callClicker: (Stri
     ListAdapter<CallUser, RecyclerView.ViewHolder>(CallUser.DIFF_CALLBACK) {
     var guestsNotConnected: List<String>? = null
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ) =
         if (viewType == 1) {
             CallUserHolder(
                 ItemCallUserBinding.inflate(
                     LayoutInflater.from(parent.context),
                     parent,
-                    false
-                )
+                    false,
+                ),
             )
         } else {
             AddUserHolder(
                 ItemCallAddBinding.inflate(
                     LayoutInflater.from(parent.context),
                     parent,
-                    false
-                )
+                    false,
+                ),
             )
         }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: RecyclerView.ViewHolder,
+        position: Int,
+    ) {
         if (getItemViewType(position) == 1) {
             getItem(position - 1)?.let {
                 (holder as CallUserHolder).bind(it, self, guestsNotConnected, callClicker)
@@ -62,9 +71,10 @@ class CallUserAdapter(private val self: CallUser, private val callClicker: (Stri
         return super.getItemCount() + 1
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     override fun onCurrentListChanged(
         previousList: MutableList<CallUser>,
-        currentList: MutableList<CallUser>
+        currentList: MutableList<CallUser>,
     ) {
         if (previousList != currentList) {
             notifyDataSetChanged()
@@ -74,7 +84,7 @@ class CallUserAdapter(private val self: CallUser, private val callClicker: (Stri
     override fun onViewAttachedToWindow(holder: RecyclerView.ViewHolder) {
         if (holder is CallUserHolder) {
             getItem(holder.layoutPosition - 1)?.let {
-                holder.listen(it.userId)
+                holder.listen(holder.itemView, it.userId)
             }
         }
     }
@@ -95,7 +105,6 @@ class AddUserHolder(val binding: ItemCallAddBinding) : RecyclerView.ViewHolder(b
 }
 
 class CallUserHolder(val binding: ItemCallUserBinding) : RecyclerView.ViewHolder(binding.root) {
-
     init {
         binding.loading.round(64.dp)
     }
@@ -104,11 +113,11 @@ class CallUserHolder(val binding: ItemCallUserBinding) : RecyclerView.ViewHolder
         user: CallUser,
         self: CallUser,
         guestsNotConnected: List<String>?,
-        callClicker: (String?) -> Unit
+        callClicker: (String?) -> Unit,
     ) {
         itemView.apply {
             binding.avatarView.setInfo(user.fullName, user.avatarUrl, user.userId)
-            binding.nameTv.text = user.fullName
+            binding.nameTv.setName(user)
             binding.loading.setAutoRepeat(true)
             binding.loading.setAnimation(R.raw.anim_call_loading, 64.dp, 64.dp)
             binding.loading.playAnimation()
@@ -127,30 +136,37 @@ class CallUserHolder(val binding: ItemCallUserBinding) : RecyclerView.ViewHolder
     private var blinkDisposable: Disposable? = null
     private var disposable: Disposable? = null
 
-    fun listen(userId: String) {
+    fun listen(
+        view: View,
+        userId: String,
+    ) {
         if (blinkDisposable == null) {
-            blinkDisposable = RxBus.listen(VoiceEvent::class.java)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
-                    if (it.userId == userId) {
-                        binding.blinkRing.updateAudioLevel(it.audioLevel)
-                        if (it.audioLevel != 0f) {
-                            binding.ring.isVisible = false
+            blinkDisposable =
+                RxBus.listen(VoiceEvent::class.java)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .autoDispose(view)
+                    .subscribe {
+                        if (it.userId == userId) {
+                            binding.blinkRing.updateAudioLevel(it.audioLevel)
+                            if (it.audioLevel != 0f) {
+                                binding.ring.isVisible = false
+                            }
                         }
                     }
-                }
         }
         if (disposable == null) {
-            disposable = RxBus.listen(FrameKeyEvent::class.java)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
-                    if (it.userId == userId) {
-                        binding.ring.isVisible = !it.hasKey
-                        if (!it.hasKey) {
-                            binding.blinkRing.isVisible = false
+            disposable =
+                RxBus.listen(FrameKeyEvent::class.java)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .autoDispose(view)
+                    .subscribe {
+                        if (it.userId == userId) {
+                            binding.ring.isVisible = !it.hasKey
+                            if (!it.hasKey) {
+                                binding.blinkRing.isVisible = false
+                            }
                         }
                     }
-                }
         }
     }
 

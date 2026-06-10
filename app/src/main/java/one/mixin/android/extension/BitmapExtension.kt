@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package one.mixin.android.extension
 
 import android.content.Context
@@ -26,6 +28,8 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.util.EnumMap
 import java.util.EnumSet
+import androidx.core.graphics.scale
+import androidx.core.graphics.createBitmap
 
 fun Bitmap.toBytes(): ByteArray {
     ByteArrayOutputStream().use { stream ->
@@ -41,7 +45,10 @@ fun Bitmap.toPNGBytes(): ByteArray {
     }
 }
 
-fun Bitmap.saveGroupAvatar(ctx: Context, name: String) {
+fun Bitmap.saveGroupAvatar(
+    ctx: Context,
+    name: String,
+) {
     try {
         ByteArrayOutputStream().use { bos ->
             compress(Bitmap.CompressFormat.PNG, 100, bos)
@@ -50,7 +57,7 @@ fun Bitmap.saveGroupAvatar(ctx: Context, name: String) {
                 fos.flush()
             }
         }
-    } catch (ignored: Exception) {
+    } catch (_: Exception) {
     }
 }
 
@@ -66,10 +73,17 @@ fun Bitmap.save(file: File) {
 }
 
 fun Bitmap.decodeQR(): String? {
-    val width = width
-    val height = height
+    // Check if the bitmap is hardware accelerated and convert it to a software bitmap if needed
+    val bitmap = if (config == Bitmap.Config.HARDWARE) {
+        copy(Bitmap.Config.ARGB_8888, false)
+    } else {
+        this
+    }
+    
+    val width = bitmap.width
+    val height = bitmap.height
     val pixels = IntArray(width * height)
-    getPixels(pixels, 0, width, 0, 0, width, height)
+    bitmap.getPixels(pixels, 0, width, 0, 0, width, height)
     return decodeLuminanceSource(RGBLuminanceSource(width, height, pixels))
 }
 
@@ -83,7 +97,7 @@ private fun decodeLuminanceSource(source: LuminanceSource): String? {
     val results = ArrayList<Result>(1)
     var readException: ReaderException? = null
     try {
-        val hintsPure = EnumMap<DecodeHintType, Any>(hints)
+        val hintsPure = EnumMap(hints)
         hintsPure[DecodeHintType.PURE_BARCODE] = true
         val theResult = reader.decode(binaryBitmap, hintsPure)
         if (theResult != null) {
@@ -113,24 +127,20 @@ private fun decodeLuminanceSource(source: LuminanceSource): String? {
     return results[0].text
 }
 
-fun Bitmap.maxSizeScale(maxWidth: Int, maxHeight: Int): Bitmap {
-    if (maxHeight > 0 && maxWidth > 0) {
-        val width = this.width
-        val height = this.height
-        val ratioBitmap = width.toFloat() / height.toFloat()
-        val ratioMax = maxWidth.toFloat() / maxHeight.toFloat()
+fun Bitmap.scaleUp(minSize: Int): Bitmap {
+    if (minSize <= 0 || (width >= minSize && height >= minSize)) return this
 
-        var finalWidth = maxWidth
-        var finalHeight = maxHeight
-        if (ratioMax > ratioBitmap) {
-            finalWidth = (maxHeight.toFloat() * ratioBitmap).toInt()
-        } else {
-            finalHeight = (maxWidth.toFloat() / ratioBitmap).toInt()
-        }
-        return Bitmap.createScaledBitmap(this, finalWidth, finalHeight, true)
-    } else {
-        return this
-    }
+    val small = if (width > height) height else width
+    val ratio = small / minSize.toFloat()
+    return this.scale((width / ratio).toInt(), (height / ratio).toInt())
+}
+
+fun Bitmap.scaleDown(maxSize: Int): Bitmap {
+    if (maxSize <= 0 || (width <= maxSize && height <= maxSize)) return this
+
+    val large = if (width > height) width else height
+    val ratio = large / maxSize.toFloat()
+    return this.scale((width / ratio).toInt(), (height / ratio).toInt())
 }
 
 fun Bitmap.base64Encode(format: Bitmap.CompressFormat = Bitmap.CompressFormat.JPEG): String? {
@@ -164,13 +174,14 @@ fun decodeBitmapFromBase64(base64Data: String): Bitmap {
     return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
 }
 
+@Suppress("DEPRECATION")
 fun Bitmap.blurBitmap(
-    @IntRange(from = 0, to = 25) radius: Int
+    @IntRange(from = 0, to = 25) radius: Int,
 ): Bitmap {
     val input = Allocation.createFromBitmap(rs, this)
     val output = Allocation.createTyped(rs, input.type)
     val script = ScriptIntrinsicBlur.create(rs, Element.U8_4(rs))
-    val result = Bitmap.createBitmap(width, height, config)
+    val result = createBitmap(width, height, config ?: Bitmap.Config.ARGB_8888)
     script.setRadius(radius.toFloat())
     script.setInput(input)
     script.forEach(output)
@@ -178,7 +189,10 @@ fun Bitmap.blurBitmap(
     return result
 }
 
+@Suppress("DEPRECATION")
 private lateinit var rs: RenderScript
+
+@Suppress("DEPRECATION")
 fun initRenderScript(context: Context) {
     if (!::rs.isInitialized) {
         rs = RenderScript.create(context.applicationContext)

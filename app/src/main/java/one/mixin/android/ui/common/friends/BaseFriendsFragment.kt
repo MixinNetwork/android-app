@@ -16,7 +16,6 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.vo.User
 
 abstract class BaseFriendsFragment<VH : BaseFriendsViewHolder> : BaseFragment() {
-
     protected lateinit var adapter: AbsFriendsAdapter<VH>
 
     private var users: List<User> = listOf()
@@ -35,18 +34,25 @@ abstract class BaseFriendsFragment<VH : BaseFriendsViewHolder> : BaseFragment() 
     private var _binding: FragmentFriendsBinding? = null
     protected val binding get() = requireNotNull(_binding)
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
+    ): View {
         _binding = FragmentFriendsBinding.inflate(layoutInflater, container, false)
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
-            titleView.titleTv.text = getString(getTitleResId())
+            titleView.titleTv.setTextOnly(getTitleResId())
             titleView.leftIb.setOnClickListener {
                 binding.searchEt.hideKeyboard()
-                activity?.onBackPressed()
+                activity?.onBackPressedDispatcher?.onBackPressed()
             }
             friendsRv.adapter = adapter
             lifecycleScope.launch {
@@ -55,16 +61,26 @@ abstract class BaseFriendsFragment<VH : BaseFriendsViewHolder> : BaseFragment() 
 
             searchEt.addTextChangedListener(
                 object : TextWatcher {
-                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                    override fun beforeTextChanged(
+                        s: CharSequence?,
+                        start: Int,
+                        count: Int,
+                        after: Int,
+                    ) {}
 
-                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+                    override fun onTextChanged(
+                        s: CharSequence?,
+                        start: Int,
+                        before: Int,
+                        count: Int,
+                    ) {}
 
                     override fun afterTextChanged(s: Editable) {
                         keyWord = s.toString()
                         adapter.filter = keyWord
                         userCallback.filter = keyWord
                     }
-                }
+                },
             )
         }
     }
@@ -78,7 +94,7 @@ abstract class BaseFriendsFragment<VH : BaseFriendsViewHolder> : BaseFragment() 
                 }.sortedByDescending { it.fullName.equalsIgnoreCase(keyWord) || it.identityNumber.equalsIgnoreCase(keyWord) }
             } else {
                 users
-            }
+            },
         )
     }
 
@@ -88,5 +104,6 @@ abstract class BaseFriendsFragment<VH : BaseFriendsViewHolder> : BaseFragment() 
     }
 
     abstract fun getTitleResId(): Int
+
     abstract suspend fun getFriends(): List<User>
 }

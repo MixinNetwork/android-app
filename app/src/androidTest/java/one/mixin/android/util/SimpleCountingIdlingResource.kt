@@ -4,7 +4,6 @@ import androidx.test.espresso.IdlingResource
 import java.util.concurrent.atomic.AtomicInteger
 
 class SimpleCountingIdlingResource(private val resourceName: String) : IdlingResource {
-
     private val counter = AtomicInteger(0)
 
     // written from main thread, read from any thread.

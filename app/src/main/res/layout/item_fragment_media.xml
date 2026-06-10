@@ -2,7 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="60dp"
-    android:background="?attr/selectableItemBackground"
+    android:background="?android:attr/selectableItemBackground"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <one.mixin.android.widget.CircleImageView
@@ -55,6 +55,6 @@
         android:ellipsize="end"
         android:fontFamily="@font/roboto_light"
         android:maxLines="1"
-        android:textColor="?attr/text_minor"
+        android:textColor="?attr/text_assist"
         android:textSize="13sp" />
 </RelativeLayout>

@@ -1,11 +1,16 @@
 package one.mixin.android.util.okhttp;
 
 import androidx.annotation.NonNull;
-import okhttp3.MediaType;
-import okhttp3.ResponseBody;
-import okio.*;
 
 import java.io.IOException;
+
+import okhttp3.MediaType;
+import okhttp3.ResponseBody;
+import okio.Buffer;
+import okio.BufferedSource;
+import okio.ForwardingSource;
+import okio.Okio;
+import okio.Source;
 
 public class ProgressResponseBody extends ResponseBody {
 

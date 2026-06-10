@@ -1,7 +1,6 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
-import one.mixin.android.db.insertUpdate
 import one.mixin.android.session.Session
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
@@ -11,9 +10,8 @@ class RefreshConversationJob(val conversationId: String, private val skipRefresh
     MixinJob(
         Params(PRIORITY_UI_HIGH).groupBy("refresh_conversation")
             .requireNetwork().persist(),
-        conversationId
+        conversationId,
     ) {
-
     override fun cancel() {
     }
 
@@ -47,7 +45,7 @@ class RefreshConversationJob(val conversationId: String, private val skipRefresh
 
                 participantDao.replaceAll(data.conversationId, participants)
                 data.participantSessions?.let {
-                    syncParticipantSession(conversationId, it)
+                    jobSenderKey.syncParticipantSession(conversationId, it)
                 }
 
                 if (conversationUserIds.isNotEmpty()) {

@@ -23,8 +23,8 @@ import one.mixin.android.RxBus
 import one.mixin.android.event.DragReleaseEvent
 import one.mixin.android.extension.ANIMATION_DURATION_SHORTEST
 import one.mixin.android.extension.appCompatActionBarHeight
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.hideKeyboard
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.showKeyboard
@@ -42,7 +42,7 @@ class KeyboardLayout : LinearLayout {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
         context,
         attrs,
-        defStyleAttr
+        defStyleAttr,
     ) {
         val ta = context.obtainStyledAttributes(attrs, R.styleable.KeyboardLayout)
         inputAreaId = ta.getResourceIdOrThrow(R.styleable.KeyboardLayout_input_aera_id)
@@ -55,18 +55,24 @@ class KeyboardLayout : LinearLayout {
     private var systemTop = 0
 
     private enum class STATUS {
-        EXPANDED, OPENED, KEYBOARD_OPENED, CLOSED
+        EXPANDED,
+        OPENED,
+        KEYBOARD_OPENED,
+        CLOSED,
     }
 
     private var status = STATUS.CLOSED
 
-    var keyboardHeight: Int = PreferenceManager.getDefaultSharedPreferences(context)
-        .getInt("keyboard_height_portrait", defaultCustomKeyboardSize)
+    var keyboardHeight: Int =
+        PreferenceManager.getDefaultSharedPreferences(context)
+            .getInt("keyboard_height_portrait", defaultCustomKeyboardSize)
         private set(value) {
             if (field != value && value > 0) {
                 field = value
-                PreferenceManager.getDefaultSharedPreferences(context)
-                    .putInt("keyboard_height_portrait", value)
+                if (value >= 100.dp) {
+                    PreferenceManager.getDefaultSharedPreferences(context)
+                        .putInt("keyboard_height_portrait", value)
+                }
             }
         }
 
@@ -121,7 +127,7 @@ class KeyboardLayout : LinearLayout {
             {
                 inputTarget.requestFocus()
             },
-            20
+            20,
         )
     }
 
@@ -142,7 +148,7 @@ class KeyboardLayout : LinearLayout {
             } else {
                 max(
                     insets.getInsets(WindowInsetsCompat.Type.ime()).bottom - systemBottom,
-                    0
+                    0,
                 ).let { value ->
                     if (lastKeyboardHeight == value) return@let
                     lastKeyboardHeight = value
@@ -150,6 +156,10 @@ class KeyboardLayout : LinearLayout {
                         inputAreaHeight = value
                     }
                     if (value > 0) {
+                        // If the callback saved keyboard height is very small, and the height obtained at this time is greater than it, reset the new value
+                        if (100.dp in (keyboardHeight + 1) until lastKeyboardHeight) {
+                            keyboardHeight = lastKeyboardHeight
+                        }
                         onKeyboardShownListener?.onKeyboardShown(value)
                     } else {
                         onKeyboardHiddenListener?.onKeyboardHidden()
@@ -163,13 +173,14 @@ class KeyboardLayout : LinearLayout {
             object : WindowInsetsAnimationCompat.Callback(DISPATCH_MODE_STOP) {
                 override fun onProgress(
                     insets: WindowInsetsCompat,
-                    runningAnimations: MutableList<WindowInsetsAnimationCompat>
+                    runningAnimations: MutableList<WindowInsetsAnimationCompat>,
                 ): WindowInsetsCompat {
                     if (status == STATUS.CLOSED || status == STATUS.KEYBOARD_OPENED) {
-                        _inputArea.layoutParams.height = max(
-                            0,
-                            insets.getInsets(WindowInsetsCompat.Type.ime()).bottom - systemBottom
-                        )
+                        _inputArea.layoutParams.height =
+                            max(
+                                0,
+                                insets.getInsets(WindowInsetsCompat.Type.ime()).bottom - systemBottom,
+                            )
                         requestLayout()
                     } else if (status == STATUS.EXPANDED) {
                         val percent =
@@ -182,6 +193,7 @@ class KeyboardLayout : LinearLayout {
                 }
 
                 private var gap = 0
+
                 override fun onPrepare(animation: WindowInsetsAnimationCompat) {
                     super.onPrepare(animation)
                     if (status == STATUS.EXPANDED) {
@@ -191,12 +203,12 @@ class KeyboardLayout : LinearLayout {
 
                 override fun onStart(
                     animation: WindowInsetsAnimationCompat,
-                    bounds: WindowInsetsAnimationCompat.BoundsCompat
+                    bounds: WindowInsetsAnimationCompat.BoundsCompat,
                 ): WindowInsetsAnimationCompat.BoundsCompat {
                     keyboardHeight = ViewCompat.getRootWindowInsets(this@KeyboardLayout)?.getInsets(WindowInsetsCompat.Type.ime())?.bottom ?: 0
                     return super.onStart(animation, bounds)
                 }
-            }
+            },
         )
     }
 
@@ -207,40 +219,40 @@ class KeyboardLayout : LinearLayout {
         }
 
     override fun onDraw(canvas: Canvas) {
-        backgroundImage.notNullWithElse(
-            { backgroundImage ->
-                val actionBarHeight = context.appCompatActionBarHeight()
-                val scaleX = measuredWidth.toFloat() / backgroundImage.intrinsicWidth.toFloat()
-                val scaleY = (measuredHeight).toFloat() / backgroundImage.intrinsicHeight.toFloat()
-                val scale = if (scaleX < scaleY) scaleY else scaleX
-                val width = ceil((backgroundImage.intrinsicWidth * scale).toDouble()).toInt()
-                val height =
-                    ceil((backgroundImage.intrinsicHeight * scale).toDouble()).toInt()
-                val x = (measuredWidth - width) / 2
-                val y = (measuredHeight - height) / 2
-                canvas.save()
-                canvas.clipRect(
-                    0,
-                    actionBarHeight,
-                    measuredWidth,
-                    measuredHeight
-                )
-                backgroundImage.setBounds(x, y, x + width, y + height)
-                backgroundImage.draw(canvas)
-                canvas.restore()
-            },
-            {
-                super.onDraw(canvas)
-            }
-        )
+        val bg = this.backgroundImage
+        if (bg != null) {
+            val actionBarHeight = context.appCompatActionBarHeight()
+            val scaleX = measuredWidth.toFloat() / bg.intrinsicWidth.toFloat()
+            val scaleY = (measuredHeight).toFloat() / bg.intrinsicHeight.toFloat()
+            val scale = if (scaleX < scaleY) scaleY else scaleX
+            val width = ceil((bg.intrinsicWidth * scale).toDouble()).toInt()
+            val height =
+                ceil((bg.intrinsicHeight * scale).toDouble()).toInt()
+            val x = (measuredWidth - width) / 2
+            val y = (measuredHeight - height) / 2
+            canvas.save()
+            canvas.clipRect(
+                0,
+                actionBarHeight,
+                measuredWidth,
+                measuredHeight,
+            )
+            bg.setBounds(x, y, x + width, y + height)
+            bg.draw(canvas)
+            canvas.restore()
+        } else {
+            super.onDraw(canvas)
+        }
     }
 
     private var onKeyboardHiddenListener: OnKeyboardHiddenListener? = null
+
     fun setOnKeyBoardHiddenListener(onKeyboardHiddenListener: OnKeyboardHiddenListener?) {
         this.onKeyboardHiddenListener = onKeyboardHiddenListener
     }
 
     private var onKeyboardShownListener: OnKeyboardShownListener? = null
+
     fun setOnKeyboardShownListener(onKeyboardShownListener: OnKeyboardShownListener?) {
         this.onKeyboardShownListener = onKeyboardShownListener
     }
@@ -256,49 +268,53 @@ class KeyboardLayout : LinearLayout {
         _inputArea.layoutParams = params
     }
 
-    fun releaseDrag(fling: Int, resetCallback: () -> Unit) {
+    fun releaseDrag(
+        fling: Int,
+        resetCallback: () -> Unit,
+    ) {
         if (status == STATUS.KEYBOARD_OPENED) return
         val curH = _inputArea.height
         val max = (context.screenHeight() * 2) / 3
         val maxMid = keyboardHeight + (max - keyboardHeight) / 2
         val minMid = keyboardHeight / 2
-        val targetH = if (curH > keyboardHeight) {
-            if (fling == FLING_UP) {
-                max
-            } else if (fling == FLING_DOWN) {
-                keyboardHeight - systemBottom
-            } else {
-                if (curH <= maxMid) {
+        val targetH =
+            if (curH > keyboardHeight) {
+                if (fling == FLING_UP) {
+                    max
+                } else if (fling == FLING_DOWN) {
                     keyboardHeight - systemBottom
                 } else {
-                    max
+                    if (curH <= maxMid) {
+                        keyboardHeight - systemBottom
+                    } else {
+                        max
+                    }
                 }
-            }
-        } else if (curH < keyboardHeight) {
-            if (fling == FLING_UP) {
-                keyboardHeight
-            } else if (fling == FLING_DOWN) {
-                0
-            } else {
-                if (curH > minMid) {
-                    keyboardHeight - systemBottom
-                } else {
-                    0
-                }
-            }
-        } else {
-            when (fling) {
-                FLING_UP -> {
-                    max
-                }
-                FLING_DOWN -> {
-                    0
-                }
-                else -> {
+            } else if (curH < keyboardHeight) {
+                if (fling == FLING_UP) {
                     keyboardHeight
+                } else if (fling == FLING_DOWN) {
+                    0
+                } else {
+                    if (curH > minMid) {
+                        keyboardHeight - systemBottom
+                    } else {
+                        0
+                    }
+                }
+            } else {
+                when (fling) {
+                    FLING_UP -> {
+                        max
+                    }
+                    FLING_DOWN -> {
+                        0
+                    }
+                    else -> {
+                        keyboardHeight
+                    }
                 }
             }
-        }
         when (targetH) {
             0 -> {
                 status = STATUS.CLOSED
@@ -326,6 +342,7 @@ class KeyboardLayout : LinearLayout {
     }
 
     private var lastKeyboardHeight = 0
+
     private fun calculateInsertBottom(imeInserts: Insets) {
         max(imeInserts.bottom - systemBottom, 0).let { value ->
             if (lastKeyboardHeight == value) return@let
@@ -348,6 +365,7 @@ class KeyboardLayout : LinearLayout {
     }
 
     private var inMultiWindowMode = false
+
     fun onMultiWindowModeChanged(inMultiWindowMode: Boolean) {
         this.inMultiWindowMode = inMultiWindowMode
     }

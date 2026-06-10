@@ -16,34 +16,43 @@ import one.mixin.android.util.AudioPlayer
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 
-class AudioAdapter(private val onClickListener: (messageItem: MessageItem) -> Unit) :
+class AudioAdapter(private val onClickListener: (messageItem: MessageItem) -> Unit, private val onLongClickListener: (messageId: String) -> Unit) :
     SharedMediaHeaderAdapter<AudioHolder>(
         object : DiffUtil.ItemCallback<MessageItem>() {
-            override fun areItemsTheSame(oldItem: MessageItem, newItem: MessageItem): Boolean {
+            override fun areItemsTheSame(
+                oldItem: MessageItem,
+                newItem: MessageItem,
+            ): Boolean {
                 return oldItem.messageId == newItem.messageId
             }
 
             override fun areContentsTheSame(
                 oldItem: MessageItem,
-                newItem: MessageItem
+                newItem: MessageItem,
             ): Boolean {
                 return oldItem.mediaStatus == newItem.mediaStatus &&
                     oldItem.status == newItem.status
             }
-        }
+        },
     ) {
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ) =
         AudioHolder(
             LayoutInflater.from(parent.context).inflate(
                 R.layout.item_audio,
                 parent,
-                false
-            )
+                false,
+            ),
         )
 
-    override fun onBindViewHolder(holder: AudioHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: AudioHolder,
+        position: Int,
+    ) {
         getItem(position)?.let {
-            holder.bind(it, onClickListener)
+            holder.bind(it, onClickListener, onLongClickListener)
         }
     }
 
@@ -52,8 +61,13 @@ class AudioAdapter(private val onClickListener: (messageItem: MessageItem) -> Un
 
 class AudioHolder(itemView: View) : NormalHolder(itemView) {
     private val binding = ItemAudioBinding.bind(itemView)
+
     @SuppressLint("SetTextI18n")
-    fun bind(item: MessageItem, onClickListener: (messageItem: MessageItem) -> Unit) {
+    fun bind(
+        item: MessageItem,
+        onClickListener: (messageItem: MessageItem) -> Unit,
+        onLongClickListener: (messageId: String) -> Unit,
+    ) {
         val isMe = item.userId == Session.getAccountId()
         binding.avatar.setInfo(item.userFullName, item.userAvatarUrl, item.userIdentityNumber)
         binding.cover.round(itemView.context.dpToPx(25f))
@@ -113,6 +127,10 @@ class AudioHolder(itemView: View) : NormalHolder(itemView) {
         }
         itemView.setOnClickListener {
             onClickListener(item)
+        }
+        itemView.setOnLongClickListener {
+            onLongClickListener(item.messageId)
+            true
         }
     }
 }

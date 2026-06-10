@@ -1,9 +1,10 @@
 package one.mixin.android.vo
 
-import android.view.View
-import androidx.core.view.isVisible
+import android.os.Parcelable
 import androidx.recyclerview.widget.DiffUtil
+import kotlinx.parcelize.Parcelize
 
+@Parcelize
 data class ConversationMinimal(
     val conversationId: String,
     val avatarUrl: String?,
@@ -15,16 +16,30 @@ data class ConversationMinimal(
     val ownerIdentityNumber: String,
     val ownerVerified: Boolean?,
     val appId: String?,
-) : IConversationCategory {
+    val content: String?,
+    val contentType: String?,
+    val messageStatus: String?,
+    val membership: Membership?
+) : IConversationCategory, ICategory, Parcelable {
     companion object {
-        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<ConversationMinimal>() {
-            override fun areItemsTheSame(oldItem: ConversationMinimal, newItem: ConversationMinimal) =
-                oldItem.conversationId == newItem.conversationId
+        val DIFF_CALLBACK =
+            object : DiffUtil.ItemCallback<ConversationMinimal>() {
+                override fun areItemsTheSame(
+                    oldItem: ConversationMinimal,
+                    newItem: ConversationMinimal,
+                ) =
+                    oldItem.conversationId == newItem.conversationId
 
-            override fun areContentsTheSame(oldItem: ConversationMinimal, newItem: ConversationMinimal) =
-                oldItem == newItem
-        }
+                override fun areContentsTheSame(
+                    oldItem: ConversationMinimal,
+                    newItem: ConversationMinimal,
+                ) =
+                    oldItem == newItem
+            }
     }
+
+    override val type: String?
+        get() = contentType
 
     override val conversationCategory: String?
         get() = category
@@ -46,23 +61,18 @@ data class ConversationMinimal(
     }
 
     fun isBot(): Boolean {
-        return category == ConversationCategory.CONTACT.name && appId != null
+        return category == ConversationCategory.CONTACT.name && ownerIdentityNumber.isBotIdentityNumber()
     }
-}
 
-fun ConversationMinimal.showVerifiedOrBot(verifiedView: View, botView: View) {
-    when {
-        ownerVerified == true -> {
-            verifiedView.isVisible = true
-            botView.isVisible = false
-        }
-        isBot() -> {
-            verifiedView.isVisible = false
-            botView.isVisible = true
-        }
-        else -> {
-            verifiedView.isVisible = false
-            botView.isVisible = false
-        }
+    fun isVerified(): Boolean {
+        return category == ConversationCategory.CONTACT.name && ownerVerified == true
+    }
+
+    fun isMembership(): Boolean {
+        return membership?.isMembership() == true
+    }
+
+    fun isProsperity(): Boolean {
+        return membership?.isProsperity() == true
     }
 }

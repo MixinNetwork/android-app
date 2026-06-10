@@ -17,24 +17,25 @@
             android:layout_margin="8dp"
             android:background="@drawable/mixin_ripple"
             android:padding="8dp"
-            android:src="@drawable/ic_close_black"/>
+            android:src="@drawable/ic_close_black"
+            android:contentDescription="@string/Close" />
 
         <one.mixin.android.widget.SearchView
             android:id="@+id/search_et"
             android:layout_width="match_parent"
-            android:layout_height="?actionBarSize"
+            android:layout_height="?android:attr/actionBarSize"
             android:layout_marginEnd="@dimen/margin20"
             android:layout_toEndOf="@id/close_iv"
             android:background="@null"
             android:drawablePadding="8dp"
             android:gravity="center_vertical"
-            android:hint="@string/search"
+            android:hint="@string/Search"
             android:imeOptions="actionDone"
             android:inputType="text"
             android:maxLines="1"
             app:circle_clear_icon="true"
             android:textColor="?attr/text_primary"
-            android:textColorHint="?attr/text_minor"
+            android:textColorHint="?attr/text_assist"
             android:textSize="14sp"/>
     </RelativeLayout>
 
@@ -63,6 +64,6 @@
             android:visibility="gone"
             android:textColor="?attr/text_primary"
             android:textSize="16sp"
-            android:text="@string/wallet_transfer_no_available_assets"/>
+            android:text="@string/No_Available_Assets"/>
     </FrameLayout>
 </one.mixin.android.widget.BottomSheetLinearLayout>

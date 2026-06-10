@@ -26,7 +26,7 @@ fun Throwable.isNeedSwitch(): Boolean {
             this is SocketException ||
             this is SSLPeerUnverifiedException ||
             this is SSLHandshakeException
-        )
+    )
 }
 
 class HostSelectionInterceptor private constructor() : Interceptor {
@@ -55,12 +55,14 @@ class HostSelectionInterceptor private constructor() : Interceptor {
             return chain.proceed(request)
         }
         this.host?.let {
-            val newUrl = request.url.newBuilder()
-                .host(it.toUrl().toURI().host)
-                .build()
-            request = request.newBuilder()
-                .url(newUrl)
-                .build()
+            val newUrl =
+                request.url.newBuilder()
+                    .host(it.toUrl().toURI().host)
+                    .build()
+            request =
+                request.newBuilder()
+                    .url(newUrl)
+                    .build()
         }
         return chain.proceed(request)
     }

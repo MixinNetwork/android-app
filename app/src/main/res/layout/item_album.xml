@@ -31,14 +31,14 @@
             android:paddingEnd="12dp"
             android:layout_marginEnd="20dp"
             android:textColor="@color/white"
-            android:text="@string/sticker_store_add"
+            android:text="@string/Add"
             android:background="@drawable/bg_round_blue_btn_solid"/>
     </RelativeLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/sticker_rv"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="72dp"
         android:layout_marginStart="20dp"
         android:layout_marginEnd="20dp"
         android:layout_marginBottom="10dp"/>

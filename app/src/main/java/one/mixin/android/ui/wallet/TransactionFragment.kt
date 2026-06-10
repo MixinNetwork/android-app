@@ -1,18 +1,28 @@
 package one.mixin.android.ui.wallet
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
+import androidx.appcompat.view.ContextThemeWrapper
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentTransactionBinding
+import one.mixin.android.databinding.ViewWalletWeb3TransactionBottomBinding
+import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.openUrl
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.SnapshotItem
+import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
 class TransactionFragment : BaseFragment(R.layout.fragment_transaction), TransactionInterface {
@@ -24,9 +34,9 @@ class TransactionFragment : BaseFragment(R.layout.fragment_transaction), Transac
 
         fun newInstance(
             snapshotItem: SnapshotItem? = null,
-            asset: AssetItem? = null,
+            asset: TokenItem? = null,
             assetId: String? = null,
-            snapshotId: String? = null
+            snapshotId: String? = null,
         ) = TransactionFragment().withArgs {
             putParcelable(ARGS_SNAPSHOT, snapshotItem)
             putParcelable(ARGS_ASSET, asset)
@@ -38,15 +48,62 @@ class TransactionFragment : BaseFragment(R.layout.fragment_transaction), Transac
     private val walletViewModel by viewModels<WalletViewModel>()
     private val binding by viewBinding(FragmentTransactionBinding::bind)
 
-    private val snapshot: SnapshotItem? by lazy { requireArguments().getParcelable(ARGS_SNAPSHOT) }
-    private val asset: AssetItem? by lazy { requireArguments().getParcelable(ARGS_ASSET) }
+    private val snapshot: SnapshotItem? by lazy { requireArguments().getParcelableCompat(ARGS_SNAPSHOT, SnapshotItem::class.java) }
+    private val asset: TokenItem? by lazy { requireArguments().getParcelableCompat(ARGS_ASSET, TokenItem::class.java) }
     private val assetId: String? by lazy { requireArguments().getString(ARGS_ASSET_ID) }
     private val snapshotId: String? by lazy { requireArguments().getString(ARGS_SNAPSHOT_ID) }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
-        binding.titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
+        binding.titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+        binding.titleView.setSubTitle(getString(R.string.Transaction), getString(R.string.Privacy_Wallet), R.drawable.ic_wallet_privacy)
+        binding.titleView.rightAnimator.visibility = View.VISIBLE
+        binding.titleView.rightIb.setOnClickListener {
+            showBottom()
+        }
+        binding.titleView.rightExtraIb.visibility = View.VISIBLE
+        binding.titleView.rightExtraIb.setImageResource(R.drawable.ic_support)
+        binding.titleView.rightExtraIb.setOnClickListener {
+            lifecycleScope.launch {
+                val userTeamMixin = walletViewModel.refreshUser(Constants.TEAM_MIXIN_USER_ID)
+                if (userTeamMixin == null) {
+                    toast(R.string.Data_error)
+                } else {
+                    ConversationActivity.show(requireContext(), recipientId = Constants.TEAM_MIXIN_USER_ID)
+                }
+            }
+        }
         binding.root.isClickable = true
         initView(this, binding, lifecycleScope, walletViewModel, assetId, snapshotId, asset, snapshot)
+    }
+
+    @SuppressLint("InflateParams")
+    private fun showBottom() {
+        val builder = BottomSheet.Builder(requireActivity())
+        val bottomBinding = ViewWalletWeb3TransactionBottomBinding.bind(
+            View.inflate(
+                ContextThemeWrapper(
+                    requireActivity(),
+                    R.style.Custom
+                ), R.layout.view_wallet_web3_transaction_bottom, null
+            )
+        )
+        builder.setCustomView(bottomBinding.root)
+        val bottomSheet = builder.create()
+        bottomBinding.apply {
+            explorer.setOnClickListener {
+                val url =
+                    "https://mixin.space/tx/${snapshot?.transactionHash}"
+                context?.openUrl(url)
+                bottomSheet.dismiss()
+            }
+
+            cancel.setOnClickListener { bottomSheet.dismiss() }
+        }
+
+        bottomSheet.show()
     }
 }

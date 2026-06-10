@@ -4,55 +4,76 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
+import android.os.Build
 import android.provider.MediaStore
 import android.text.method.LinkMovementMethod
-import android.util.Base64
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.core.content.edit
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import com.yalantis.ucrop.UCrop
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants.Colors.LINK_COLOR
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.databinding.FragmentProfileBottomSheetDialogBinding
+import one.mixin.android.event.BadgeEvent
 import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.REQUEST_GALLERY
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alert
+import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.dayTime
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.getCapturedImage
 import one.mixin.android.extension.getOtherPath
+import one.mixin.android.extension.getSafeAreaInsetsBottom
 import one.mixin.android.extension.inTransaction
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.openCamera
-import one.mixin.android.extension.openGallery
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toBytes
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.AvatarActivity
+import one.mixin.android.ui.common.EditDialog
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment
+import one.mixin.android.ui.common.ReceiveQrActivity
 import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.common.info.MixinScrollableBottomSheetDialogFragment
 import one.mixin.android.ui.common.info.createMenuLayout
 import one.mixin.android.ui.common.info.menuList
-import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
-import one.mixin.android.ui.setting.WalletPasswordFragment
+import one.mixin.android.ui.home.ExploreFragment.Companion.PREF_BOT_CLICKED_IDS
+import one.mixin.android.ui.home.bot.INTERNAL_REFERRAL_ID
+import one.mixin.android.ui.setting.member.MixinMemberInvoicesFragment
+import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
+import one.mixin.android.ui.tip.TipActivity
+import one.mixin.android.ui.tip.TipType
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.App
+import one.mixin.android.vo.Plan
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.linktext.AutoLinkMode
+import timber.log.Timber
 
 @AndroidEntryPoint
 class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment() {
@@ -65,7 +86,9 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
 
         const val MAX_PHOTO_SIZE = 512
 
+        @SuppressLint("StaticFieldLeak")
         private var instant: ProfileBottomSheetDialogFragment? = null
+
         fun newInstance(): ProfileBottomSheetDialogFragment {
             try {
                 instant?.dismiss()
@@ -76,6 +99,31 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                 instant = this
             }
         }
+    }
+
+    private lateinit var pickMedia: ActivityResultLauncher<PickVisualMediaRequest>
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        pickMedia =
+            registerForActivityResult(ActivityResultContracts.PickVisualMedia(), requireActivity().activityResultRegistry) { uri ->
+                if (uri != null) {
+                    val options = UCrop.Options()
+                    options.setToolbarColor(ContextCompat.getColor(requireContext(), R.color.black))
+                    options.setToolbarWidgetColor(Color.WHITE)
+                    options.setHideBottomControls(true)
+                    UCrop.of(uri, imageUri)
+                        .withOptions(options)
+                        .withAspectRatio(1f, 1f)
+                        .withMaxResultSize(
+                            MAX_PHOTO_SIZE,
+                            MAX_PHOTO_SIZE,
+                        )
+                        .start(requireContext(), this)
+                } else {
+                    Timber.e("PhotoPicker, No media selected")
+                }
+            }
     }
 
     override fun onDetach() {
@@ -95,16 +143,22 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
         FragmentProfileBottomSheetDialogBinding.bind(contentView)
     }
 
-    override fun getPeekHeight(contentView: View, behavior: BottomSheetBehavior<*>): Int {
+    override fun getPeekHeight(
+        contentView: View,
+        behavior: BottomSheetBehavior<*>,
+    ): Int {
         contentView.measure(
             View.MeasureSpec.makeMeasureSpec(contentView.width, View.MeasureSpec.EXACTLY),
-            ViewGroup.LayoutParams.WRAP_CONTENT
+            ViewGroup.LayoutParams.WRAP_CONTENT,
         )
         behavior.skipCollapsed = true
         return contentView.measuredHeight
     }
 
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         binding.title.rightIv.setOnClickListener { dismiss() }
         val account = Session.getAccount()
@@ -115,12 +169,30 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
         binding.apply {
             detailTv.movementMethod = LinkMovementMethod()
             detailTv.addAutoLinkMode(AutoLinkMode.MODE_URL)
-            detailTv.setUrlModeColor(BaseViewHolder.LINK_COLOR)
+            detailTv.setUrlModeColor(LINK_COLOR)
             detailTv.setAutoLinkOnClickListener { _, url ->
                 url.openAsUrlOrWeb(requireContext(), null, parentFragmentManager, lifecycleScope)
                 dismiss()
             }
-            createdTv.text = getString(R.string.profile_join_in, account.createdAt.dayTime())
+
+            createdTv.text = getString(R.string.Joined_in, account.createdAt.dayTime())
+
+            bottomViewModel.loadFavoriteApps(account.userId)
+            bottomViewModel.observerFavoriteApps(account.userId)
+                .observe(this@ProfileBottomSheetDialogFragment) { apps ->
+                    initMenu(account, apps)
+                }
+        }
+
+        bottomViewModel.observeSelf().observe(this@ProfileBottomSheetDialogFragment) {
+            Session.getAccount()?.let { refreshInfo(it) }
+        }
+
+        bottomViewModel.refreshAccount()
+    }
+
+    private fun refreshInfo(account: Account) {
+        binding.apply {
             avatar.setOnClickListener {
                 if (!isAdded) return@setOnClickListener
 
@@ -131,102 +203,128 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                 AvatarActivity.show(requireActivity(), avatar, binding.avatar)
                 dismiss()
             }
-            refreshInfo(account)
-        }
 
-        lifecycleScope.launch {
-            try {
-                bottomViewModel.loadFavoriteApps((account.userId)) {
-                    initMenu(account, it)
+            name.setName(account)
+            name.setOnIconClickListener {
+                account.membership?.plan?.let { plan ->
+                    MixinMemberUpgradeBottomSheetDialogFragment.newInstance(plan).showNow(parentFragmentManager, MixinMemberUpgradeBottomSheetDialogFragment.TAG)
                 }
-            } catch (e: Exception) {
-                ErrorHandler.handleError(e)
             }
-        }
-    }
-
-    private fun refreshInfo(account: Account) {
-        binding.apply {
-            name.text = account.fullName
             avatar.setInfo(account.fullName, account.avatarUrl, account.userId)
             idTv.text = getString(R.string.contact_mixin_id, account.identityNumber)
-            detailTv.text = account.biography
+            detailTv.originalText = account.biography ?: ""
         }
     }
 
-    private fun initMenu(account: Account, favoriteApps: List<App>?) {
-        val list = menuList {
-            menuGroup {
-                menu {
-                    title = getString(R.string.contact_my_share_apps)
-                    action = {
-                        activity?.addFragment(
-                            this@ProfileBottomSheetDialogFragment,
-                            MySharedAppsFragment.newInstance(),
-                            MySharedAppsFragment.TAG
-                        )
-                        dismiss()
+    private fun initMenu(
+        account: Account,
+        favoriteApps: List<App>?,
+    ) {
+        val list =
+            menuList {
+                menuGroup {
+                    menu {
+                        title = getString(R.string.Mixin_One)
+                        action = {
+                            lifecycleScope.launch {
+                                if (Session.getAccount()?.membership != null && Session.getAccount()?.membership?.plan != Plan.None) {
+                                    navTo(MixinMemberInvoicesFragment.newInstance(), MixinMemberInvoicesFragment.TAG)
+                                } else {
+                                    MixinMemberUpgradeBottomSheetDialogFragment.newInstance().showNow(
+                                        parentFragmentManager, MixinMemberUpgradeBottomSheetDialogFragment.TAG
+                                    )
+                                }
+                            }
+                            dismiss()
+                        }
+                        isMembership = Session.getAccount()?.membership?.isMembership() ?: false
                     }
-                    apps = favoriteApps
-                }
-            }
-            menuGroup {
-                menu {
-                    title = getString(R.string.contact_my_qr_title)
-                    action = {
-                        QrBottomSheetDialogFragment.newInstance(
-                            account.userId,
-                            QrBottomSheetDialogFragment.TYPE_MY_QR
-                        ).showNow(parentFragmentManager, QrBottomSheetDialogFragment.TAG)
+                    menu {
+                        title = getString(R.string.Referral)
+                        action = {
+                            lifecycleScope.launch {
+                                bottomViewModel.findAndSync(INTERNAL_REFERRAL_ID)?.let { app ->
+                                    setClickedBotId()
+                                    WebActivity.show(requireActivity(), url = app.homeUri, app = app, conversationId = null)
+                                }
+                            }
+                        }
                     }
                 }
-                menu {
-                    title = getString(R.string.contact_receive_money)
-                    action = {
-                        QrBottomSheetDialogFragment.newInstance(
-                            account.userId,
-                            QrBottomSheetDialogFragment.TYPE_RECEIVE_QR
-                        ).showNow(parentFragmentManager, QrBottomSheetDialogFragment.TAG)
+                menuGroup {
+                    menu {
+                        title = getString(R.string.My_favorite_bots)
+                        action = {
+                            activity?.addFragment(
+                                this@ProfileBottomSheetDialogFragment,
+                                MySharedAppsFragment.newInstance(),
+                                MySharedAppsFragment.TAG,
+                            )
+                            dismiss()
+                        }
+                        apps = favoriteApps
+                    }
+                }
+                menuGroup {
+                    menu {
+                        title = getString(R.string.My_QR_Code)
+                        action = {
+                            QrBottomSheetDialogFragment.newInstance(
+                                account.userId,
+                                QrBottomSheetDialogFragment.TYPE_MY_QR,
+                            ).showNow(parentFragmentManager, QrBottomSheetDialogFragment.TAG)
+                        }
+                    }
+                    menu {
+                        title = getString(R.string.Receive_Money)
+                        action = {
+                            ReceiveQrActivity.show(requireContext(), account.userId)
+                        }
+                    }
+                }
+                menuGroup {
+                    menu {
+                        title = getString(R.string.Edit_Name)
+                        action = { editName() }
+                    }
+                    menu {
+                        title = getString(R.string.Edit_Biography)
+                        action = { editBiography() }
+                    }
+                }
+                menuGroup {
+                    menu {
+                        title = getString(R.string.Change_Profile_Photo_with_Camera)
+                        action = { changePhoto(true) }
+                    }
+                    menu {
+                        title = getString(R.string.Change_Profile_Photo_with_Library)
+                        action = { changePhoto(false) }
+                    }
+                }
+                menuGroup {
+                    menu {
+                        title = getString(R.string.Change_Phone_Number)
+                        subtitle = account.phone
+                        action = { changeNumber() }
                     }
                 }
             }
-            menuGroup {
-                menu {
-                    title = getString(R.string.edit_name)
-                    action = { editName() }
-                }
-                menu {
-                    title = getString(R.string.edit_biography)
-                    action = { editBiography() }
-                }
-            }
-            menuGroup {
-                menu {
-                    title = getString(R.string.change_profile_photo_with_camera)
-                    action = { changePhoto(true) }
-                }
-                menu {
-                    title = getString(R.string.change_profile_photo_with_Library)
-                    action = { changePhoto(false) }
-                }
-            }
-            menuGroup {
-                menu {
-                    title = getString(R.string.profile_phone)
-                    subtitle = account.phone
-                    action = { changeNumber() }
-                }
-            }
-        }
 
         menuListLayout?.removeAllViews()
         list.createMenuLayout(requireContext()).let { layout ->
             menuListLayout = layout
             binding.scrollContent.addView(layout, binding.scrollContent.childCount - 1)
+            val safeBottomHeight = layout.getSafeAreaInsetsBottom()
+            binding.scrollContent.setPadding(0,0,0,safeBottomHeight)
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?,
+    ) {
         if ((requestCode == REQUEST_GALLERY || requestCode == REQUEST_CAMERA) && resultCode == Activity.RESULT_OK) {
             var selectedImageUri: Uri?
             if (data == null || data.action != null && data.action == MediaStore.ACTION_IMAGE_CAPTURE) {
@@ -239,7 +337,6 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
             }
             val options = UCrop.Options()
             options.setToolbarColor(ContextCompat.getColor(requireContext(), R.color.black))
-            options.setStatusBarColor(ContextCompat.getColor(requireContext(), R.color.black))
             options.setToolbarWidgetColor(Color.WHITE)
             options.setHideBottomControls(true)
             UCrop.of(selectedImageUri, imageUri)
@@ -247,18 +344,17 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                 .withAspectRatio(1f, 1f)
                 .withMaxResultSize(
                     MAX_PHOTO_SIZE,
-                    MAX_PHOTO_SIZE
+                    MAX_PHOTO_SIZE,
                 )
                 .start(requireContext(), this)
         }
         if (resultCode == Activity.RESULT_OK && requestCode == UCrop.REQUEST_CROP) {
             if (data != null && context != null) {
                 val resultUri = UCrop.getOutput(data)
-                val bitmap =
-                    MediaStore.Images.Media.getBitmap(requireContext().contentResolver, resultUri)
+                val bitmap = resultUri?.getCapturedImage(requireContext().contentResolver)
                 update(
-                    Base64.encodeToString(bitmap.toBytes(), Base64.NO_WRAP),
-                    TYPE_PHOTO
+                    bitmap?.toBytes()?.base64RawURLEncode() ?: "",
+                    TYPE_PHOTO,
                 )
             }
         } else if (resultCode == UCrop.RESULT_ERROR) {
@@ -270,26 +366,30 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
     }
 
     private fun changePhoto(byCamera: Boolean) {
-        RxPermissions(requireActivity())
-            .request(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            .autoDispose(stopScope)
-            .subscribe { granted ->
-                if (granted) {
-                    if (byCamera) {
+        if (!byCamera) {
+            pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+        } else {
+            RxPermissions(requireActivity())
+                .request(
+                    *mutableListOf(Manifest.permission.CAMERA).apply {
+                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    }.toTypedArray(),
+                )
+                .autoDispose(stopScope)
+                .subscribe { granted ->
+                    if (granted) {
                         openCamera(imageUri)
                     } else {
-                        openGallery(true)
+                        context?.openPermissionSetting()
                     }
-                } else {
-                    context?.openPermissionSetting()
                 }
-            }
+        }
     }
 
     private fun changeNumber() {
-        alert(getString(R.string.profile_modify_number))
-            .setNegativeButton(android.R.string.no) { dialog, _ -> dialog.dismiss() }
-            .setPositiveButton(R.string.profile_phone) { dialog, _ ->
+        alert(getString(if (Session.hasPhone()) R.string.profile_modify_number else R.string.profile_add_number))
+            .setNegativeButton(android.R.string.cancel) { dialog, _ -> dialog.dismiss() }
+            .setPositiveButton(if (Session.hasPhone()) R.string.Change_Phone_Number else R.string.Add_Mobile_Number) { dialog, _ ->
                 dialog.dismiss()
                 if (Session.getAccount()?.hasPin == true) {
                     activity?.supportFragmentManager?.inTransaction {
@@ -297,29 +397,16 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                             R.anim.slide_in_bottom,
                             R.anim.slide_out_bottom,
                             R.anim.slide_in_bottom,
-                            R.anim.slide_out_bottom
+                            R.anim.slide_out_bottom,
                         )
                             .add(
                                 R.id.container,
-                                VerifyFragment.newInstance(VerifyFragment.FROM_PHONE)
+                                VerifyFragment.newInstance(VerifyFragment.FROM_PHONE),
                             )
                             .addToBackStack(null)
                     }
                 } else {
-                    activity?.supportFragmentManager?.inTransaction {
-                        setCustomAnimations(
-                            R.anim.slide_in_bottom,
-                            R.anim.slide_out_bottom,
-                            R.anim.slide_in_bottom,
-                            R.anim.slide_out_bottom
-                        )
-                            .add(
-                                R.id.container,
-                                WalletPasswordFragment.newInstance(),
-                                WalletPasswordFragment.TAG
-                            )
-                            .addToBackStack(null)
-                    }
+                    TipActivity.show(requireActivity(), TipType.Create, true)
                 }
                 dismiss()
             }.show()
@@ -331,7 +418,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
             return
         }
         editDialog {
-            titleText = this@ProfileBottomSheetDialogFragment.getString(R.string.edit_name)
+            titleText = this@ProfileBottomSheetDialogFragment.getString(R.string.Edit_Name)
             editText = Session.getAccount()?.fullName
             maxTextCount = 40
             allowEmpty = false
@@ -347,9 +434,10 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
             return
         }
         editDialog {
-            titleText = this@ProfileBottomSheetDialogFragment.getString(R.string.edit_biography)
+            titleText = this@ProfileBottomSheetDialogFragment.getString(R.string.Edit_Biography)
             editText = Session.getAccount()?.biography
             maxTextCount = 140
+            editMaxLines = EditDialog.MAX_LINE.toInt()
             allowEmpty = true
             rightAction = {
                 update(it, TYPE_BIOGRAPHY)
@@ -357,14 +445,18 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
         }
     }
 
-    private fun update(content: String, type: Int) {
+    private fun update(
+        content: String,
+        type: Int,
+    ) {
         if (!isAdded) return
 
-        val accountUpdateRequest = when (type) {
-            TYPE_PHOTO -> AccountUpdateRequest(null, content)
-            TYPE_BIOGRAPHY -> AccountUpdateRequest(biography = content)
-            else -> AccountUpdateRequest(content, null)
-        }
+        val accountUpdateRequest =
+            when (type) {
+                TYPE_PHOTO -> AccountUpdateRequest(null, content)
+                TYPE_BIOGRAPHY -> AccountUpdateRequest(biography = content)
+                else -> AccountUpdateRequest(content, null)
+            }
         bottomViewModel.update(accountUpdateRequest)
             .autoDispose(stopScope).subscribe(
                 { r: MixinResponse<Account> ->
@@ -381,7 +473,21 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                 },
                 { t: Throwable ->
                     ErrorHandler.handleError(t)
-                }
+                },
             )
+    }
+
+    private fun setClickedBotId() {
+        val sp = requireContext().defaultSharedPreferences
+        val old = getClickedBotIds().toMutableSet()
+        if (old.add(INTERNAL_REFERRAL_ID)) {
+            sp.edit { putString(PREF_BOT_CLICKED_IDS, old.joinToString(",")) }
+            RxBus.publish(BadgeEvent(PREF_BOT_CLICKED_IDS))
+        }
+    }
+
+    private fun getClickedBotIds(): Set<String> {
+        return requireContext().defaultSharedPreferences.getString(PREF_BOT_CLICKED_IDS, "")
+            ?.split(",")?.filter { it.isNotBlank() }?.toSet() ?: emptySet()
     }
 }

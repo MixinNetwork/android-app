@@ -40,7 +40,7 @@ fun ICategory.isRecall() = type == MessageCategory.MESSAGE_RECALL.name
 fun ICategory.isPin() = type == MessageCategory.MESSAGE_PIN.name
 
 fun ICategory.isFtsMessage() =
-    type?.endsWith("_TEXT") == true || type?.endsWith("_DATA") == true || type?.endsWith("_POST") == true || type?.endsWith("_TRANSCRIPT") == true
+    type?.endsWith("_TEXT") == true || type?.endsWith("_DATA") == true || type?.endsWith("_POST") == true || type?.endsWith("_TRANSCRIPT") == true || type?.endsWith("_CONTACT") == true || type == MessageCategory.APP_CARD.name
 
 fun ICategory.isText() =
     type == MessageCategory.SIGNAL_TEXT.name || type == MessageCategory.PLAIN_TEXT.name || type == MessageCategory.ENCRYPTED_TEXT.name
@@ -128,7 +128,11 @@ fun ICategory.canRecall(): Boolean {
         type == MessageCategory.ENCRYPTED_TRANSCRIPT.name
 }
 
-fun ICategory.absolutePath(context: Context, conversationId: String, mediaUrl: String?): String? {
+fun ICategory.absolutePath(
+    context: Context,
+    conversationId: String,
+    mediaUrl: String?,
+): String? {
     if (mediaUrl == null) return null
     if (isLive()) {
         return mediaUrl
@@ -136,9 +140,15 @@ fun ICategory.absolutePath(context: Context, conversationId: String, mediaUrl: S
     if (mediaUrl.isFileUri()) {
         return mediaUrl.toUri().toString()
     }
+    if (conversationId.isBlank()) {
+        return File(context.getTranscriptDirPath(), mediaUrl).toUri().toString()
+    }
     return generatePath(context, false, this, conversationId, mediaUrl)?.run {
-        if (this.exists()) return@run this
-        else return@run generatePath(context, true, this@absolutePath, conversationId, mediaUrl)
+        if (this.exists()) {
+            return@run this
+        } else {
+            return@run generatePath(context, true, this@absolutePath, conversationId, mediaUrl)
+        }
     }?.toUri().toString()
 }
 
@@ -147,22 +157,29 @@ private fun generatePath(
     legacy: Boolean,
     iCategory: ICategory,
     conversationId: String,
-    mediaUrl: String
+    mediaUrl: String,
 ): File? {
     return when {
-        iCategory.isImage() -> File(
-            context.getImagePath(legacy).generateConversationPath(conversationId), mediaUrl
-        )
-        iCategory.isVideo() -> File(
-            context.getVideoPath(legacy).generateConversationPath(conversationId), mediaUrl
-        )
-        iCategory.isAudio() -> File(
-            context.getAudioPath(legacy).generateConversationPath(conversationId), mediaUrl
-        )
-        iCategory.isData() -> File(
-            context.getDocumentPath(legacy).generateConversationPath(conversationId),
-            mediaUrl
-        )
+        iCategory.isImage() ->
+            File(
+                context.getImagePath(legacy).generateConversationPath(conversationId),
+                mediaUrl,
+            )
+        iCategory.isVideo() ->
+            File(
+                context.getVideoPath(legacy).generateConversationPath(conversationId),
+                mediaUrl,
+            )
+        iCategory.isAudio() ->
+            File(
+                context.getAudioPath(legacy).generateConversationPath(conversationId),
+                mediaUrl,
+            )
+        iCategory.isData() ->
+            File(
+                context.getDocumentPath(legacy).generateConversationPath(conversationId),
+                mediaUrl,
+            )
         iCategory.isTranscript() -> File(context.getTranscriptDirPath(legacy), mediaUrl)
         else -> null
     }

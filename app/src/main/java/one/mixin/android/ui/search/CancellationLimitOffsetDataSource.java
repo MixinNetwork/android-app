@@ -42,7 +42,7 @@ public abstract class CancellationLimitOffsetDataSource<T> extends PositionalDat
         mInTransaction = inTransaction;
         mCountQuery = countQuery;
         mCancellationSignal = cancellationSignal;
-        mLimitOffsetQuery = "SELECT * FROM ( " + mSourceQuery.getSql() + " ) LIMIT ? OFFSET ?";
+        mLimitOffsetQuery = mSourceQuery.getSql() + " LIMIT ? OFFSET ?";
         mObserver = new InvalidationTracker.Observer(tables) {
             @Override
             public void onInvalidated(@NonNull Set<String> tables) {

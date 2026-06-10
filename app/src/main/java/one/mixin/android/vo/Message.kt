@@ -4,12 +4,15 @@ import android.content.Context
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
-import androidx.room.ForeignKey.CASCADE
+import androidx.room.ForeignKey.Companion.CASCADE
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
 import one.mixin.android.MixinApplication
+import one.mixin.android.session.Session
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.serialization.ByteArrayBase64Serializer
 import java.io.Serializable
 
 @Entity(
@@ -18,7 +21,7 @@ import java.io.Serializable
         Index(value = arrayOf("conversation_id", "created_at")),
         Index(value = arrayOf("conversation_id", "category")),
         Index(value = arrayOf("conversation_id", "quote_message_id")),
-        Index(value = arrayOf("conversation_id", "status", "user_id", "created_at"))
+        Index(value = arrayOf("conversation_id", "status", "user_id", "created_at")),
     ],
     foreignKeys = [
         (
@@ -26,144 +29,147 @@ import java.io.Serializable
                 entity = Conversation::class,
                 onDelete = CASCADE,
                 parentColumns = arrayOf("conversation_id"),
-                childColumns = arrayOf("conversation_id")
+                childColumns = arrayOf("conversation_id"),
             )
-            )
-    ]
+        ),
+    ],
 )
+@kotlinx.serialization.Serializable
 class Message(
     @PrimaryKey
-    @SerializedName("id")
+    @SerializedName("message_id")
+    @SerialName("message_id")
     @ColumnInfo(name = "id")
-    var id: String,
-
+    var messageId: String,
     @SerializedName("conversation_id")
+    @SerialName("conversation_id")
     @ColumnInfo(name = "conversation_id")
     val conversationId: String,
-
     @SerializedName("user_id")
+    @SerialName("user_id")
     @ColumnInfo(name = "user_id")
     var userId: String,
-
     @SerializedName("category")
+    @SerialName("category")
     @ColumnInfo(name = "category")
     var category: String,
-
     @SerializedName("content")
+    @SerialName("content")
     @ColumnInfo(name = "content")
     var content: String?,
-
     @SerializedName("media_url")
+    @SerialName("media_url")
     @ColumnInfo(name = "media_url")
     val mediaUrl: String?,
-
     @SerializedName("media_mime_type")
+    @SerialName("media_mime_type")
     @ColumnInfo(name = "media_mime_type")
     val mediaMimeType: String?,
-
     @SerializedName("media_size")
+    @SerialName("media_size")
     @ColumnInfo(name = "media_size")
     val mediaSize: Long?,
-
     @SerializedName("media_duration")
+    @SerialName("media_duration")
     @ColumnInfo(name = "media_duration")
     val mediaDuration: String?,
-
     @SerializedName("media_width")
+    @SerialName("media_width")
     @ColumnInfo(name = "media_width")
     val mediaWidth: Int?,
-
     @SerializedName("media_height")
+    @SerialName("media_height")
     @ColumnInfo(name = "media_height")
     val mediaHeight: Int?,
-
     @SerializedName("media_hash")
+    @SerialName("media_hash")
     @ColumnInfo(name = "media_hash")
     val mediaHash: String?,
-
     @SerializedName("thumb_image")
+    @SerialName("thumb_image")
     @ColumnInfo(name = "thumb_image")
     val thumbImage: String?,
-
     @SerializedName("thumb_url")
+    @SerialName("thumb_url")
     @ColumnInfo(name = "thumb_url")
     val thumbUrl: String?,
-
+    @SerializedName("media_key")
+    @SerialName("media_key")
     @ColumnInfo(name = "media_key", typeAffinity = ColumnInfo.BLOB)
+    @kotlinx.serialization.Serializable(with = ByteArrayBase64Serializer::class)
     val mediaKey: ByteArray? = null,
-
+    @SerializedName("media_digest")
+    @SerialName("media_digest")
     @ColumnInfo(name = "media_digest", typeAffinity = ColumnInfo.BLOB)
+    @kotlinx.serialization.Serializable(with = ByteArrayBase64Serializer::class)
     val mediaDigest: ByteArray? = null,
-
+    @SerializedName("media_status")
+    @SerialName("media_status")
     @ColumnInfo(name = "media_status")
     var mediaStatus: String? = null,
-
     @SerializedName("status")
+    @SerialName("status")
     @ColumnInfo(name = "status")
-    val status: String,
-
+    var status: String,
     @SerializedName("created_at")
+    @SerialName("created_at")
     @ColumnInfo(name = "created_at")
     val createdAt: String,
-
     @SerializedName("action")
+    @SerialName("action")
     @ColumnInfo(name = "action")
     val action: String? = null,
-
     @SerializedName("participant_id")
+    @SerialName("participant_id")
     @ColumnInfo(name = "participant_id")
     val participantId: String? = null,
-
     @SerializedName("snapshot_id")
+    @SerialName("snapshot_id")
     @ColumnInfo(name = "snapshot_id")
     val snapshotId: String? = null,
-
     @SerializedName("hyperlink")
+    @SerialName("hyperlink")
     @ColumnInfo(name = "hyperlink")
     var hyperlink: String? = null,
-
     @SerializedName("name")
+    @SerialName("name")
     @ColumnInfo(name = "name")
     val name: String? = null,
-
-    @Deprecated(
-        "Deprecated at database version 15",
-        ReplaceWith("@{link sticker_id}", "one.mixin.android.vo.Message.sticker_id"),
-        DeprecationLevel.ERROR
-    )
     @SerializedName("album_id")
+    @SerialName("album_id")
     @ColumnInfo(name = "album_id")
     val albumId: String? = null,
-
     @SerializedName("sticker_id")
+    @SerialName("sticker_id")
     @ColumnInfo(name = "sticker_id")
     val stickerId: String? = null,
-
     @SerializedName("shared_user_id")
+    @SerialName("shared_user_id")
     @ColumnInfo(name = "shared_user_id")
     val sharedUserId: String? = null,
-
+    @SerializedName("media_waveform")
     @ColumnInfo(name = "media_waveform", typeAffinity = ColumnInfo.BLOB)
+    @SerialName("media_waveform")
+    @kotlinx.serialization.Serializable(with = ByteArrayBase64Serializer::class)
     val mediaWaveform: ByteArray? = null,
-
     @Deprecated(
         "Replace with mediaMimeType",
-        ReplaceWith("@{link mediaMimeType}", "one.mixin.android.vo.Message.mediaMimeType"),
-        DeprecationLevel.ERROR
+        ReplaceWith("mediaMimeType"),
+        DeprecationLevel.WARNING,
     )
     @SerializedName("media_mine_type")
     @ColumnInfo(name = "media_mine_type")
-    val mediaMineType: String? = null,
-
+    val mediaMineType: String? = mediaMimeType,
     @SerializedName("quote_message_id")
+    @SerialName("quote_message_id")
     @ColumnInfo(name = "quote_message_id")
     val quoteMessageId: String? = null,
-
     @SerializedName("quote_content")
+    @SerialName("quote_content")
     @ColumnInfo(name = "quote_content")
     val quoteContent: String? = null,
-
     @SerializedName("caption")
+    @SerialName("caption")
     @ColumnInfo(name = "caption")
     var caption: String? = null,
 ) : Serializable, ICategory {
@@ -221,6 +227,8 @@ enum class MessageCategory {
     SYSTEM_CIRCLE,
     SYSTEM_SESSION,
     SYSTEM_ACCOUNT_SNAPSHOT,
+    SYSTEM_SAFE_SNAPSHOT,
+    SYSTEM_SAFE_INSCRIPTION,
     APP_BUTTON_GROUP,
     APP_CARD,
     WEBRTC_AUDIO_OFFER,
@@ -251,7 +259,7 @@ enum class MessageCategory {
     ENCRYPTED_LIVE,
     ENCRYPTED_POST,
     ENCRYPTED_LOCATION,
-    ENCRYPTED_TRANSCRIPT
+    ENCRYPTED_TRANSCRIPT,
 }
 
 fun String.isIllegalMessageCategory(): Boolean {
@@ -278,7 +286,8 @@ fun createMessage(
     action: String? = null,
     participantId: String? = null,
     snapshotId: String? = null,
-    quoteMessageId: String? = null
+    quoteMessageId: String? = null,
+    expireIn: Long? = null,
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setAction(action)
@@ -295,7 +304,7 @@ fun createPostMessage(
     content: String,
     thumbImage: String,
     createdAt: String,
-    status: String
+    status: String,
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setThumbImage(thumbImage)
@@ -307,7 +316,7 @@ fun createAppCardMessage(
     userId: String,
     content: String,
     createdAt: String,
-    status: String
+    status: String,
 ) = MessageBuilder(messageId, conversationId, userId, MessageCategory.APP_CARD.name, status, createdAt)
     .setContent(content)
     .build()
@@ -318,7 +327,7 @@ fun createAppButtonGroupMessage(
     userId: String,
     content: String,
     createdAt: String,
-    status: String
+    status: String,
 ) = MessageBuilder(messageId, conversationId, userId, MessageCategory.APP_BUTTON_GROUP.name, status, createdAt)
     .setContent(content)
     .build()
@@ -332,11 +341,12 @@ fun createCallMessage(
     createdAt: String,
     status: String,
     quoteMessageId: String? = null,
-    mediaDuration: String? = null
+    mediaDuration: String? = null,
 ): Message {
-    val builder = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
-        .setContent(content)
-        .setQuoteMessageId(quoteMessageId)
+    val builder =
+        MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
+            .setContent(content)
+            .setQuoteMessageId(quoteMessageId)
     if (mediaDuration != null) {
         builder.setMediaDuration(mediaDuration)
     }
@@ -355,7 +365,7 @@ fun createReplyTextMessage(
     quoteContent: String? = null,
     action: String? = null,
     participantId: String? = null,
-    snapshotId: String? = null
+    snapshotId: String? = null,
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setAction(action)
@@ -381,7 +391,7 @@ fun createAttachmentMessage(
     mediaStatus: MediaStatus,
     status: String,
     quoteMessageId: String? = null,
-    quoteContent: String? = null
+    quoteContent: String? = null,
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setName(name)
@@ -415,7 +425,7 @@ fun createVideoMessage(
     mediaStatus: MediaStatus,
     status: String,
     quoteMessageId: String? = null,
-    quoteContent: String? = null
+    quoteContent: String? = null,
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setName(name)
@@ -452,6 +462,7 @@ fun createMediaMessage(
     status: String,
     quoteMessageId: String? = null,
     quoteContent: String? = null,
+    caption: String? = null
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setMediaUrl(mediaUrl)
@@ -465,6 +476,7 @@ fun createMediaMessage(
     .setMediaStatus(mediaStatus.name)
     .setQuoteMessageId(quoteMessageId)
     .setQuoteContent(quoteContent)
+    .setCaption(caption)
     .build()
 
 fun createStickerMessage(
@@ -473,16 +485,12 @@ fun createStickerMessage(
     userId: String,
     category: String,
     content: String?,
-    albumId: String?,
     stickerId: String,
-    stickerName: String?,
     status: String,
-    createdAt: String
+    createdAt: String,
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setStickerId(stickerId)
-    .setAlbumId(albumId)
-    .setName(stickerName)
     .build()
 
 fun createLiveMessage(
@@ -496,7 +504,7 @@ fun createLiveMessage(
     url: String,
     thumbUrl: String,
     status: String,
-    createdAt: String
+    createdAt: String,
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setMediaWidth(width)
@@ -512,7 +520,7 @@ fun createLocationMessage(
     category: String,
     content: String?,
     status: String,
-    createdAt: String
+    createdAt: String,
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .build()
@@ -528,7 +536,7 @@ fun createContactMessage(
     createdAt: String,
     name: String? = null,
     quoteMessageId: String? = null,
-    quoteContent: String? = null
+    quoteContent: String? = null,
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setName(name)
@@ -553,7 +561,7 @@ fun createAudioMessage(
     mediaStatus: MediaStatus,
     status: String,
     quoteMessageId: String? = null,
-    quoteContent: String? = null
+    quoteContent: String? = null,
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setMediaUrl(mediaUrl)
     .setContent(content)
@@ -589,7 +597,7 @@ fun createPinMessage(
     quoteMessageId: String,
     pinMessages: PinMessageMinimal?,
     createdAt: String,
-    status: String
+    status: String,
 ) = MessageBuilder(messageId, conversationId, userId, MessageCategory.MESSAGE_PIN.name, status, createdAt)
     .setContent(GsonHelper.customGson.toJson(pinMessages))
     .setQuoteMessageId(quoteMessageId)
@@ -598,3 +606,5 @@ fun createPinMessage(
 fun Message.absolutePath(context: Context = MixinApplication.appContext): String? {
     return absolutePath(context, conversationId, mediaUrl)
 }
+
+fun Message.isMine() = userId == Session.getAccountId()

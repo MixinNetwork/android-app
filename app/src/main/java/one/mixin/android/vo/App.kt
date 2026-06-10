@@ -9,7 +9,9 @@ import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
-import kotlin.contracts.contract
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import one.mixin.android.db.converter.ListConverter
 
 interface BotInterface {
     fun getBotId(): String
@@ -17,71 +19,84 @@ interface BotInterface {
 
 @SuppressLint("ParcelCreator")
 @Parcelize
-@TypeConverters(ArrayConverters::class)
+@TypeConverters(ListConverter::class)
 @Entity(tableName = "apps")
+@Serializable
 data class App(
     @PrimaryKey
     @SerializedName("app_id")
+    @SerialName("app_id")
     @ColumnInfo(name = "app_id")
     val appId: String,
     @SerializedName("app_number")
+    @SerialName("app_number")
     @ColumnInfo(name = "app_number")
     val appNumber: String,
     @SerializedName("home_uri")
+    @SerialName("home_uri")
     @ColumnInfo(name = "home_uri")
     val homeUri: String,
     @SerializedName("redirect_uri")
+    @SerialName("redirect_uri")
     @ColumnInfo(name = "redirect_uri")
     val redirectUri: String,
     @SerializedName("name")
+    @SerialName("name")
     @ColumnInfo(name = "name")
     val name: String,
     @SerializedName("icon_url")
+    @SerialName("icon_url")
     @ColumnInfo(name = "icon_url")
     val iconUrl: String,
     @SerializedName("category")
+    @SerialName("category")
     @ColumnInfo(name = "category")
     val category: String?,
     @SerializedName("description")
+    @SerialName("description")
     @ColumnInfo(name = "description")
     val description: String,
     @SerializedName("app_secret")
+    @SerialName("app_secret")
     @ColumnInfo(name = "app_secret")
     val appSecret: String,
     @SerializedName("capabilities")
+    @SerialName("capabilities")
     @ColumnInfo(name = "capabilities")
-    val capabilities: ArrayList<String>?,
+    val capabilities: List<String>?,
     @SerializedName("creator_id")
+    @SerialName("creator_id")
     @ColumnInfo(name = "creator_id")
     val creatorId: String,
     @SerializedName("resource_patterns")
+    @SerialName("resource_patterns")
     @ColumnInfo(name = "resource_patterns")
-    val resourcePatterns: ArrayList<String>?,
+    val resourcePatterns: List<String>?,
     @SerializedName("updated_at")
+    @SerialName("updated_at")
     @ColumnInfo(name = "updated_at")
-    val updatedAt: String?
+    val updatedAt: String?,
 ) : Parcelable, BotInterface {
-
     companion object {
-        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<App>() {
-            override fun areItemsTheSame(p0: App, p1: App): Boolean {
-                return p0.appId == p1.appId
-            }
+        val DIFF_CALLBACK =
+            object : DiffUtil.ItemCallback<App>() {
+                override fun areItemsTheSame(
+                    p0: App,
+                    p1: App,
+                ): Boolean {
+                    return p0.appId == p1.appId
+                }
 
-            override fun areContentsTheSame(p0: App, p1: App): Boolean {
-                return p0 == p1
+                override fun areContentsTheSame(
+                    p0: App,
+                    p1: App,
+                ): Boolean {
+                    return p0 == p1
+                }
             }
-        }
     }
 
     override fun getBotId() = appId
 }
 
 enum class AppCap { GROUP, CONTACT, IMMERSIVE, ENCRYPTED }
-
-fun App?.matchResourcePattern(url: String): Boolean {
-    contract {
-        returns(true) implies (this@matchResourcePattern != null)
-    }
-    return this?.resourcePatterns?.find { "$url/".startsWith(it, ignoreCase = true) } != null
-}

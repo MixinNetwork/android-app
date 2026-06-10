@@ -2,8 +2,9 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="@dimen/item_contact_height"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="?attr/bg_white"
-    android:foreground="?attr/selectableItemBackground">
+    android:foreground="?android:attr/selectableItemBackground">
 
     <TextView
         android:id="@+id/index"
@@ -13,18 +14,17 @@
         android:layout_marginStart="@dimen/activity_horizontal_margin"
         android:background="@drawable/bg_circle_contact"
         android:gravity="center"
-        android:textColor="?attr/text_minor"
+        android:textColor="?attr/text_assist"
         android:textSize="22sp"/>
 
-    <TextView
+    <one.mixin.android.widget.NameTextView
         android:id="@+id/contact_friend"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:layout_marginStart="@dimen/activity_horizontal_margin"
         android:layout_marginEnd="@dimen/activity_horizontal_margin"
-        android:ellipsize="end"
-        android:maxLines="1"
-        android:singleLine="true"
-        android:textColor="?attr/text_primary"/>
+        android:textColor="?attr/text_primary"
+        app:ellipsize="end"
+        app:lines="1"/>
 </LinearLayout>

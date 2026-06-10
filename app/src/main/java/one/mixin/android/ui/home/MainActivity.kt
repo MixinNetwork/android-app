@@ -1,7 +1,9 @@
 package one.mixin.android.ui.home
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.ActivityManager
 import android.app.Dialog
 import android.app.NotificationManager
 import android.content.Context
@@ -10,27 +12,29 @@ import android.content.IntentSender
 import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
-import android.view.KeyEvent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.getSystemService
-import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.Observer
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import androidx.room.util.DBUtil
+import androidx.room.util.readVersion
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-import com.google.android.gms.common.ConnectionResult
-import com.google.android.gms.common.GoogleApiAvailability
-import com.google.android.gms.safetynet.SafetyNet
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
+import com.google.android.play.core.appupdate.AppUpdateOptions
 import com.google.android.play.core.install.InstallStateUpdatedListener
 import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import com.microsoft.appcenter.AppCenter
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.Maybe
@@ -40,43 +44,53 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
+import one.mixin.android.Constants.APP_VERSION
+import one.mixin.android.Constants.Account
 import one.mixin.android.Constants.Account.PREF_BACKUP
 import one.mixin.android.Constants.Account.PREF_BATTERY_OPTIMIZE
 import one.mixin.android.Constants.Account.PREF_CHECK_STORAGE
 import one.mixin.android.Constants.Account.PREF_DEVICE_SDK
-import one.mixin.android.Constants.Account.PREF_FTS4_REDUCE
+import one.mixin.android.Constants.Account.PREF_LOGIN_OR_SIGN_UP
+import one.mixin.android.Constants.Account.PREF_LOGIN_VERIFY
 import one.mixin.android.Constants.Account.PREF_SYNC_CIRCLE
-import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
-import one.mixin.android.Constants.CIRCLE.CIRCLE_NAME
 import one.mixin.android.Constants.DEVICE_ID
 import one.mixin.android.Constants.DataBase.CURRENT_VERSION
-import one.mixin.android.Constants.DataBase.DB_NAME
 import one.mixin.android.Constants.DataBase.MINI_VERSION
 import one.mixin.android.Constants.INTERVAL_24_HOURS
-import one.mixin.android.Constants.SAFETY_NET_INTERVAL_KEY
+import one.mixin.android.Constants.INTERVAL_7_DAYS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.RxBus
+import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
-import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.PrivacyPreference.getIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
 import one.mixin.android.databinding.ActivityMainBinding
 import one.mixin.android.db.ConversationDao
+import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.UserDao
-import one.mixin.android.extension.alert
+import one.mixin.android.db.property.PropertyHelper
+import one.mixin.android.event.BadgeEvent
+import one.mixin.android.event.TipEvent
 import one.mixin.android.extension.alertDialogBuilder
+import one.mixin.android.extension.areBubblesAllowedCompat
 import one.mixin.android.extension.checkStorageNotLow
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.enqueueUniqueOneTimeNetworkWorkRequest
-import one.mixin.android.extension.getDeviceId
+import one.mixin.android.extension.getStringDeviceId
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.isExternalTransferUrl
+import one.mixin.android.extension.isLightningUrl
+import one.mixin.android.extension.isPlayStoreInstalled
+import one.mixin.android.extension.openExternalUrl
+import one.mixin.android.extension.openMarket
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putLong
@@ -85,65 +99,104 @@ import one.mixin.android.extension.remove
 import one.mixin.android.extension.toast
 import one.mixin.android.job.AttachmentMigrationJob
 import one.mixin.android.job.BackupJob
+import one.mixin.android.job.CleanCacheJob
+import one.mixin.android.job.CleanupQuoteContentJob
+import one.mixin.android.job.CleanupThumbJob
+import one.mixin.android.job.InscriptionCollectionMigrationJob
+import one.mixin.android.job.InscriptionMigrationJob
+import one.mixin.android.job.MigratedFts4Job
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.ReduceFts4Job
 import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.job.RefreshCircleJob
+import one.mixin.android.job.RefreshContactJob
+import one.mixin.android.job.RefreshDappJob
+import one.mixin.android.job.RefreshExternalSchemeJob
 import one.mixin.android.job.RefreshFiatsJob
 import one.mixin.android.job.RefreshOneTimePreKeysJob
+import one.mixin.android.job.RefreshSafeAccountsJob
 import one.mixin.android.job.RefreshStickerAlbumJob
 import one.mixin.android.job.RefreshUserJob
+import one.mixin.android.job.RefreshWeb3Job
+import one.mixin.android.job.RestoreTransactionJob
+import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.job.TranscriptAttachmentMigrationJob
-import one.mixin.android.job.TranscriptAttachmentUpdateJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.repository.Web3Repository
 import one.mixin.android.session.Session
+import one.mixin.android.tip.Tip
+import one.mixin.android.tip.wc.WCErrorEvent
+import one.mixin.android.tip.wc.WCEvent
+import one.mixin.android.tip.wc.WalletConnect
+import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.common.BlazeBaseActivity
-import one.mixin.android.ui.common.EditDialog
+import one.mixin.android.ui.common.LoginVerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.NavigationController
 import one.mixin.android.ui.common.PinCodeFragment.Companion.FROM_EMERGENCY
 import one.mixin.android.ui.common.PinCodeFragment.Companion.FROM_LOGIN
 import one.mixin.android.ui.common.PinCodeFragment.Companion.PREF_LOGIN_FROM
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyFragment
-import one.mixin.android.ui.common.editDialog
+import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
 import one.mixin.android.ui.conversation.ConversationActivity
-import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.circle.ConversationCircleEditFragment
+import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
+import one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.MarketFragment
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.landing.RestoreActivity
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_SHOW_SCAN
-import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.ui.search.SearchMessageFragment
 import one.mixin.android.ui.search.SearchSingleFragment
+import one.mixin.android.ui.tip.CheckRegisterBottomSheetDialogFragment
+import one.mixin.android.ui.tip.TipActivity
+import one.mixin.android.ui.tip.TipBundle
+import one.mixin.android.ui.tip.TipType
+import one.mixin.android.ui.tip.TryConnecting
+import one.mixin.android.ui.tip.wc.WalletConnectActivity
+import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.ASSET_PREFERENCE
+import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_TRANSFER
+import one.mixin.android.ui.wallet.WalletActivity
+import one.mixin.android.ui.wallet.WalletActivity.Companion.BUY
+import one.mixin.android.ui.wallet.WalletFragment
+import one.mixin.android.ui.wallet.WalletMissingBtcAddressFragment
+import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.util.ErrorHandler.Companion.errorHandler
-import one.mixin.android.util.PropertyHelper
+import one.mixin.android.util.ErrorHandler.Companion.SERVER
+import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.RomUtil
 import one.mixin.android.util.RootUtil
+import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.database.databaseFile
 import one.mixin.android.util.reportException
+import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
+import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.isGroupConversation
-import one.mixin.android.widget.MaterialSearchView
-import one.mixin.android.worker.RefreshContactWorker
-import one.mixin.android.worker.RefreshFcmWorker
+import one.mixin.android.web3.js.Web3Signer
+import one.mixin.android.websocket.ReconnectWorker
+import one.mixin.android.worker.SessionWorker
+import timber.log.Timber
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import javax.inject.Provider
 
 @AndroidEntryPoint
-class MainActivity : BlazeBaseActivity() {
-
-    lateinit var navigationController: NavigationController
+class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callback {
+    private lateinit var navigationController: NavigationController
 
     @Inject
     lateinit var jobManager: MixinJobManager
@@ -155,26 +208,55 @@ class MainActivity : BlazeBaseActivity() {
     lateinit var userService: UserService
 
     @Inject
-    lateinit var conversationDao: ConversationDao
+    lateinit var conversationDaoProvider: Provider<ConversationDao>
 
     @Inject
-    lateinit var userDao: UserDao
+    lateinit var userDaoProvider: Provider<UserDao>
 
     @Inject
-    lateinit var userRepo: UserRepository
+    lateinit var userRepoProvider: Provider<UserRepository>
 
     @Inject
-    lateinit var accountRepo: AccountRepository
+    lateinit var accountRepoProvider: Provider<AccountRepository>
 
     @Inject
-    lateinit var participantDao: ParticipantDao
+    lateinit var web3RepositoryProvider: Provider<Web3Repository>
+
+    private var lastBottomNavItemId: Int = R.id.nav_chat
+    private var isRestoringBottomNavSelection: Boolean = false
+
+    @Inject
+    lateinit var participantDaoProvider: Provider<ParticipantDao>
+
+    @Inject
+    lateinit var tip: Tip
+
+    private val conversationDao: ConversationDao
+        get() = conversationDaoProvider.get()
+
+    private val userDao: UserDao
+        get() = userDaoProvider.get()
+
+    private val userRepo: UserRepository
+        get() = userRepoProvider.get()
+
+    private val accountRepo: AccountRepository
+        get() = accountRepoProvider.get()
+
+    private val web3Repository: Web3Repository
+        get() = web3RepositoryProvider.get()
+
+    private val participantDao: ParticipantDao
+        get() = participantDaoProvider.get()
 
     private val appUpdateManager by lazy { AppUpdateManagerFactory.create(this) }
-    private val updatedListener = InstallStateUpdatedListener { state ->
-        if (state.installStatus() == InstallStatus.DOWNLOADED) {
-            popupSnackbarForCompleteUpdate()
+    private val updatedListener =
+        InstallStateUpdatedListener { state ->
+            if (isFinishing) return@InstallStateUpdatedListener
+            if (state.installStatus() == InstallStatus.DOWNLOADED) {
+                popupSnackbarForCompleteUpdate()
+            }
         }
-    }
 
     override fun getDefaultThemeId(): Int {
         return R.style.AppTheme_NoActionBar
@@ -187,13 +269,27 @@ class MainActivity : BlazeBaseActivity() {
     private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        navigationController = NavigationController(this)
+        val restoreState = if (Session.checkToken()) savedInstanceState else null
+        super.onCreate(restoreState)
+        navigationController = NavigationController()
 
-        if (!Session.checkToken()) run {
-            startActivity(Intent(this, LandingActivity::class.java))
+        var deviceId = defaultSharedPreferences.getString(DEVICE_ID, null)
+        if (deviceId == null) {
+            deviceId = this.getStringDeviceId()
+            defaultSharedPreferences.putString(DEVICE_ID, deviceId)
+        } else if (deviceId != this.getStringDeviceId()) {
+            defaultSharedPreferences.remove(DEVICE_ID)
+            MixinApplication.get().closeAndClear(true)
             finish()
             return
+        }
+
+        if (!Session.checkToken()) {
+            run {
+                startActivity(Intent(this, LandingActivity::class.java))
+                finish()
+                return
+            }
         }
 
         if (Session.getAccount()?.fullName.isNullOrBlank()) {
@@ -202,30 +298,29 @@ class MainActivity : BlazeBaseActivity() {
             return
         }
 
-        if (defaultSharedPreferences.getBoolean(Constants.Account.PREF_RESTORE, false)) {
+        if (Session.getAccount()?.hasPin == false) {
+            InitializeActivity.showSetupPin(this)
+            finish()
+            return
+        }
+
+        if (defaultSharedPreferences.getBoolean(Account.PREF_RESTORE, false)) {
             RestoreActivity.show(this)
             finish()
             return
         }
 
-        if (defaultSharedPreferences.getBoolean(Constants.Account.PREF_WRONG_TIME, false)) {
+        if (defaultSharedPreferences.getBoolean(Account.PREF_WRONG_TIME, false)) {
             InitializeActivity.showWongTime(this)
             finish()
             return
         }
 
-        MixinApplication.get().onlining.set(true)
-
-        val deviceId = defaultSharedPreferences.getString(DEVICE_ID, null)
-        if (deviceId == null) {
-            defaultSharedPreferences.putString(DEVICE_ID, this.getDeviceId())
-        } else if (deviceId != this.getDeviceId()) {
-            defaultSharedPreferences.remove(DEVICE_ID)
-            MixinApplication.get().closeAndClear()
-            finish()
-            return
+        Session.getAccount()?.let {
+            MixinDatabase.migrateRelatedDatabaseFilesIfNeeded(this, it)
         }
 
+        MixinApplication.get().isOnline.set(true)
         if (checkNeedGo2MigrationPage()) {
             InitializeActivity.showDBUpgrade(this)
             finish()
@@ -245,30 +340,120 @@ class MainActivity : BlazeBaseActivity() {
             finish()
             return
         }
-
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        if (savedInstanceState == null) {
-            navigationController.navigateToMessage()
-        }
+        initFragmentsFromSavedState(restoreState)
 
         val account = Session.getAccount()
         account?.let {
             FirebaseCrashlytics.getInstance().setUserId(it.userId)
-            AppCenter.setUserId(it.userId)
         }
 
-        initView()
+        lifecycleScope.launch(Dispatchers.IO) {
+            initWalletConnect()
+        }
+
+        initBottomNav()
         handlerCode(intent)
 
+        updateSessionWhenOpen()
+
         checkAsync()
+
+        RxBus.listen(TipEvent::class.java)
+            .autoDispose(destroyScope)
+            .subscribe { e ->
+                handleTipEvent(e, deviceId)
+            }
+        RxBus.listen(BadgeEvent::class.java)
+            .autoDispose(destroyScope)
+            .subscribe { e ->
+                lifecycleScope.launch {
+                    when (e.badge) {
+                        Account.PREF_NAV_MORE_BADGE_DISMISSED -> updateNavMoreBadge()
+                    }
+                }
+            }
+        RxBus.listen(WCEvent::class.java)
+            .autoDispose(destroyScope)
+            .subscribe { e ->
+                lifecycleScope.launch {
+                    WalletConnectActivity.show(this@MainActivity, e)
+                }
+            }
+        RxBus.listen(WCErrorEvent::class.java)
+            .autoDispose(destroyScope)
+            .subscribe {
+                if (ProcessLifecycleOwner.get().lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+                    WalletConnectActivity.show(this, it.error)
+                }
+            }
+
+        if (Session.getAccount()?.hasPin != true) {
+            TipActivity.show(this, TipType.Create, shouldWatch = true)
+        } else if (Session.getTipPub().isNullOrBlank()) {
+            TipActivity.show(this, TipType.Upgrade, shouldWatch = true)
+        } else {
+            lifecycleScope.launch {
+                if (Session.hasSafe()) {
+                    jobManager.addJobInBackground(RefreshAccountJob(checkTip = true))
+                    val isLoginVerified: Boolean = defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false)
+                    val shouldGoWallet: Boolean = defaultSharedPreferences.getBoolean(PREF_LOGIN_OR_SIGN_UP, false)
+                    val shouldBlockNavigation: Boolean = shouldShowWalletMissingBtcAddress()
+                    Timber.e("isLoginVerified: $isLoginVerified, shouldGoWallet: $shouldGoWallet, shouldBlockNavigation: $shouldBlockNavigation")
+                    if (isLoginVerified) {
+                        AnalyticsTracker.trackLoginPinVerify("pin_verify")
+                        LoginVerifyBottomSheetDialogFragment.newInstance().apply {
+                            onDismissCallback = { success ->
+                                if (success) {
+                                    defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, false)
+                                }
+                            }
+                        }.showNow(supportFragmentManager, LoginVerifyBottomSheetDialogFragment.TAG)
+                    }
+                    if (shouldGoWallet && !shouldBlockNavigation) {
+                        binding.bottomNav.selectedItemId = R.id.nav_wallet
+                        switchToDestination(NavigationController.Wallet)
+                        lastBottomNavItemId = R.id.nav_wallet
+                        defaultSharedPreferences.putBoolean(PREF_LOGIN_OR_SIGN_UP, false)
+                    }
+                } else {
+                    CheckRegisterBottomSheetDialogFragment.newInstance()
+                        .showNow(supportFragmentManager, CheckRegisterBottomSheetDialogFragment.TAG)
+                }
+            }
+        }
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            delay(10_000)
+            if (MixinApplication.get().isAppAuthShown()) {
+                return@launch
+            }
+            checkUpdate()
+        }
+
+        jobManager.addJobInBackground(SyncOutputJob())
+        jobManager.addJobInBackground(RefreshDappJob())
+        jobManager.addJobInBackground(RestoreTransactionJob())
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            RxPermissions(this)
+                .request(Manifest.permission.POST_NOTIFICATIONS)
+                .autoDispose(stopScope)
+                .subscribe(
+                    { _ -> 
+                        AnalyticsTracker.setNotificationAuthStatus(this)
+                    },
+                    {},
+                )
+        }
     }
 
     override fun onStart() {
         super.onStart()
         val notificationManager = getSystemService<NotificationManager>() ?: return
-        if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && notificationManager.areBubblesAllowed()).not()) {
+        if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && notificationManager.areBubblesAllowedCompat()).not()) {
             notificationManager.cancelAll()
         }
     }
@@ -278,130 +463,239 @@ class MainActivity : BlazeBaseActivity() {
         appUpdateManager.unregisterListener(updatedListener)
     }
 
-    private fun checkAsync() = lifecycleScope.launch(Dispatchers.IO) {
-        checkRoot()
-        checkUpdate()
-        checkStorage()
-        refreshStickerAlbum()
-        sendSafetyNetRequest()
-        checkBatteryOptimization()
+    private fun updateSessionWhenOpen() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            updateSessionIfNeeded()
+            val periodicWorkRequest = PeriodicWorkRequestBuilder<SessionWorker>(
+                6, TimeUnit.HOURS
+            ).setConstraints(
+                Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    .build()
+            ).build()
+            WorkManager.getInstance(this@MainActivity).enqueueUniquePeriodicWork(
+                "SessionWorker",
+                ExistingPeriodicWorkPolicy.UPDATE,
+                periodicWorkRequest
+            )
+            val request = PeriodicWorkRequestBuilder<ReconnectWorker>(15, TimeUnit.MINUTES)
+                .build()
+            WorkManager.getInstance(this@MainActivity).enqueueUniquePeriodicWork(
+                "Reconnect", ExistingPeriodicWorkPolicy.KEEP, request
+            )
+        }
+    }
 
-        if (!defaultSharedPreferences.getBoolean(PREF_SYNC_CIRCLE, false)) {
-            jobManager.addJobInBackground(RefreshCircleJob())
-            defaultSharedPreferences.putBoolean(PREF_SYNC_CIRCLE, true)
+    private fun checkAsync() =
+        lifecycleScope.launch(Dispatchers.IO) {
+            checkRoot()
+            checkStorage()
+            checkVersion()
+            refreshStickerAlbum()
+            refreshExternalSchemes()
+            cleanCache()
+            checkBatteryOptimization()
+
+            if (!defaultSharedPreferences.getBoolean(PREF_SYNC_CIRCLE, false)) {
+                jobManager.addJobInBackground(RefreshCircleJob())
+                defaultSharedPreferences.putBoolean(PREF_SYNC_CIRCLE, true)
+            }
+
+            jobManager.addJobInBackground(RefreshOneTimePreKeysJob())
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && PropertyHelper.findValueByKey(PREF_BACKUP, false)) {
+                jobManager.addJobInBackground(BackupJob())
+            }
+
+            if (defaultSharedPreferences.getInt(PREF_LOGIN_FROM, FROM_LOGIN) == FROM_EMERGENCY) {
+                defaultSharedPreferences.putInt(PREF_LOGIN_FROM, FROM_LOGIN)
+                delayShowModifyMobile()
+            }
+
+            if (Fiats.isRateEmpty()) {
+                jobManager.addJobInBackground(RefreshFiatsJob())
+            }
+
+            val sdk = PropertyHelper.findValueByKey(PREF_DEVICE_SDK, -1)
+            if (sdk == -1) {
+                PropertyHelper.updateKeyValue(PREF_DEVICE_SDK, Build.VERSION.SDK_INT)
+            } else if (sdk < Build.VERSION_CODES.Q && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                PropertyHelper.migration()
+            }
+
+            PropertyHelper.checkAttachmentMigrated {
+                jobManager.addJobInBackground(AttachmentMigrationJob())
+            }
+
+            PropertyHelper.checkTranscriptAttachmentMigrated {
+                jobManager.addJobInBackground(TranscriptAttachmentMigrationJob())
+            }
+
+            PropertyHelper.checkTranscriptAttachmentMigrated {
+                jobManager.addJobInBackground(TranscriptAttachmentMigrationJob())
+            }
+
+            PropertyHelper.checkBackupMigrated {
+                jobManager.addJobInBackground(BackupJob(force = true, delete = true))
+            }
+            PropertyHelper.checkFtsMigrated {
+                jobManager.addJobInBackground(MigratedFts4Job())
+            }
+
+            PropertyHelper.checkCleanupThumb {
+                jobManager.addJobInBackground(CleanupThumbJob())
+            }
+
+            PropertyHelper.checkCleanupQuoteContent {
+                jobManager.addJobInBackground(CleanupQuoteContentJob(-1L))
+            }
+
+            PropertyHelper.checkInscriptionMigrated {
+                jobManager.addJobInBackground(InscriptionMigrationJob())
+            }
+
+            PropertyHelper.checkInscriptionCollectionMigrated {
+                jobManager.addJobInBackground(InscriptionCollectionMigrationJob())
+            }
+
+            jobManager.addJobInBackground(RefreshContactJob())
+            jobManager.addJobInBackground(RefreshSafeAccountsJob())
+
+            val isLoginVerified: Boolean = defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false)
+            val hasClassicWallet: Boolean = web3Repository.hasClassicWallet()
+            // Only show login verify when it has not been verified and there is no classic wallet.
+            Timber.e("isLoginVerified: $isLoginVerified, hasClassicWallet: $hasClassicWallet")
+            if (!isLoginVerified && !hasClassicWallet && Session.getAccount()?.hasSafe == true) {
+                lifecycleScope.launch {
+                    withContext(Dispatchers.Main) {
+                        try {
+                            if (!isFinishing && !supportFragmentManager.isStateSaved && !supportFragmentManager.isDestroyed) {
+                                LoginVerifyBottomSheetDialogFragment.newInstance().apply {
+                                    onDismissCallback = { success ->
+                                        if (success) {
+                                            defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, false)
+                                        }
+                                        jobManager.addJobInBackground(RefreshWeb3Job())
+                                    }
+                                }.show(supportFragmentManager, LoginVerifyBottomSheetDialogFragment.TAG)
+                            }
+                        } catch (e: Exception) {
+                            Timber.w(e)
+                        }
+                    }
+                }
+            } else {
+              jobManager.addJobInBackground(RefreshWeb3Job())
+            }
         }
 
-        jobManager.addJobInBackground(RefreshOneTimePreKeysJob())
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && PropertyHelper.findValueByKey(PREF_BACKUP)?.toBooleanStrictOrNull() == true) {
-            jobManager.addJobInBackground(BackupJob())
+    private suspend fun updateSessionIfNeeded() {
+        try {
+            val account = Session.getAccount()
+            if (account == null) {
+                Timber.w("Session update failed: No active account")
+                return
+            }
+
+            val response = accountRepo.updateSession(SessionRequest())
+            if (response.isSuccess) {
+                Timber.e("Session updated successfully")
+            } else if (response.errorCode >= SERVER) {
+                delay(1000)
+                updateSessionIfNeeded()
+            } else {
+                Timber.e("Session update failed with error code: ${response.errorCode}")
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Error updating session")
         }
+    }
 
-        jobManager.addJobInBackground(RefreshAccountJob())
-
-        if (defaultSharedPreferences.getInt(PREF_LOGIN_FROM, FROM_LOGIN) == FROM_EMERGENCY) {
-            defaultSharedPreferences.putInt(PREF_LOGIN_FROM, FROM_LOGIN)
-            delayShowModifyMobile()
+    private fun handleTipEvent(
+        e: TipEvent,
+        deviceId: String,
+    ) {
+        val nodeCounter = e.nodeCounter
+        if (nodeCounter == 1) {
+            val tipType = if (Session.getAccount()?.hasPin == true) TipType.Upgrade else TipType.Create
+            TipActivity.show(this, TipBundle(tipType, deviceId, TryConnecting, tipEvent = e))
+        } else if (nodeCounter > 1) {
+            TipActivity.show(this, TipBundle(TipType.Change, deviceId, TryConnecting, tipEvent = e))
+        } else {
+            reportException(IllegalStateException("Receive TipEvent nodeCounter < 1"))
         }
-
-        if (Fiats.isRateEmpty()) {
-            jobManager.addJobInBackground(RefreshFiatsJob())
-        }
-
-        if (PropertyHelper.checkFts4Upgrade()) {
-            InitializeActivity.showFts(this@MainActivity)
-            finish()
-            return@launch
-        }
-
-        val sdk = PropertyHelper.findValueByKey(PREF_DEVICE_SDK)?.toIntOrNull()
-        if (sdk == null) {
-            PropertyHelper.updateKeyValue(PREF_DEVICE_SDK, Build.VERSION.SDK_INT.toString())
-        } else if (sdk < Build.VERSION_CODES.Q && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            PropertyHelper.migration()
-        }
-
-        PropertyHelper.checkAttachmentMigrated() {
-            jobManager.addJobInBackground(AttachmentMigrationJob())
-        }
-
-        PropertyHelper.checkTranscriptAttachmentMigrated() {
-            jobManager.addJobInBackground(TranscriptAttachmentMigrationJob())
-        }
-
-        PropertyHelper.checkTranscriptAttachmentUpdated() {
-            jobManager.addJobInBackground(TranscriptAttachmentUpdateJob())
-        }
-
-        PropertyHelper.checkBackupMigrated() {
-            jobManager.addJobInBackground(BackupJob(force = true, delete = true))
-        }
-
-        val ftsReduce = PropertyHelper.findValueByKey(PREF_FTS4_REDUCE)?.toBooleanStrictOrNull()
-        if (ftsReduce != false) {
-            jobManager.addJobInBackground(ReduceFts4Job())
-        }
-
-        WorkManager.getInstance(this@MainActivity)
-            .enqueueUniqueOneTimeNetworkWorkRequest<RefreshContactWorker>("RefreshContactWorker")
-        WorkManager.getInstance(this@MainActivity)
-            .enqueueUniqueOneTimeNetworkWorkRequest<RefreshFcmWorker>("RefreshFcmWorker")
-        WorkManager.getInstance(this@MainActivity).pruneWork()
     }
 
     @SuppressLint("RestrictedApi")
     private fun checkNeedGo2MigrationPage(): Boolean {
-        val currentVersion = try {
-            DBUtil.readVersion(getDatabasePath(DB_NAME))
-        } catch (e: Exception) {
-            0
-        }
-        if (currentVersion > MINI_VERSION && CURRENT_VERSION != currentVersion) {
-            return true
-        }
-        return false
+        val dbFile =
+            Session.getAccount()?.identityNumber?.let { identityNumber ->
+                val scopedDbFile = databaseFile(this, identityNumber)
+                if (scopedDbFile.exists()) {
+                    scopedDbFile
+                } else {
+                    null
+                }
+            } ?: return false
+        val currentVersion =
+            try {
+                readVersion(dbFile)
+            } catch (_: Exception) {
+                0
+            }
+        return currentVersion > MINI_VERSION && CURRENT_VERSION != currentVersion
     }
 
     @SuppressLint("BatteryLife")
     private fun checkBatteryOptimization() {
         val batteryOptimize = defaultSharedPreferences.getLong(PREF_BATTERY_OPTIMIZE, 0)
         val cur = System.currentTimeMillis()
-        if (cur - batteryOptimize > Constants.INTERVAL_48_HOURS * 30) {
-            getSystemService<PowerManager>()?.let { pm ->
-                if (!pm.isIgnoringBatteryOptimizations(packageName)) {
-                    BatteryOptimizationDialogActivity.show(this)
+        if (cur - batteryOptimize > INTERVAL_24_HOURS) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && !RomUtil.isEmui) {
+                getSystemService<ActivityManager>()?.let { am ->
+                    if (am.isBackgroundRestricted) {
+                        BatteryOptimizationDialogActivity.show(this)
+                    }
+                }
+            } else {
+                getSystemService<PowerManager>()?.let { pm ->
+                    if (!pm.isIgnoringBatteryOptimizations(packageName)) {
+                        BatteryOptimizationDialogActivity.show(this)
+                    }
                 }
             }
             defaultSharedPreferences.putLong(PREF_BATTERY_OPTIMIZE, cur)
         }
     }
 
-    private fun delayShowModifyMobile() = lifecycleScope.launch {
-        delay(2000)
-        MaterialAlertDialogBuilder(this@MainActivity, R.style.MixinAlertDialogTheme)
-            .setTitle(getString(R.string.setting_emergency_change_mobile))
-            .setPositiveButton(R.string.change) { dialog, _ ->
-                supportFragmentManager.inTransaction {
-                    setCustomAnimations(
-                        R.anim.slide_in_bottom,
-                        R.anim.slide_out_bottom,
-                        R.anim.slide_in_bottom,
-                        R.anim.slide_out_bottom
-                    )
-                        .add(R.id.root_view, VerifyFragment.newInstance(VerifyFragment.FROM_PHONE))
-                        .addToBackStack(null)
+    private fun delayShowModifyMobile() =
+        lifecycleScope.launch {
+            delay(2000)
+            MaterialAlertDialogBuilder(this@MainActivity, R.style.MixinAlertDialogTheme)
+                .setTitle(getString(R.string.setting_emergency_change_mobile))
+                .setPositiveButton(R.string.Change) { dialog, _ ->
+                    supportFragmentManager.inTransaction {
+                        setCustomAnimations(
+                            R.anim.slide_in_bottom,
+                            R.anim.slide_out_bottom,
+                            R.anim.slide_in_bottom,
+                            R.anim.slide_out_bottom,
+                        )
+                            .add(R.id.root_view, VerifyFragment.newInstance(VerifyFragment.FROM_PHONE))
+                            .addToBackStack(null)
+                        dialog.dismiss()
+                    }
+                }
+                .setNegativeButton(R.string.Later) { dialog, _ ->
                     dialog.dismiss()
                 }
-            }
-            .setNegativeButton(R.string.later) { dialog, _ ->
-                dialog.dismiss()
-            }
-            .show()
-    }
+                .show()
+        }
 
     private fun checkRoot() {
-        if (RootUtil.isDeviceRooted && defaultSharedPreferences.getBoolean(
-                Constants.Account.PREF_BIOMETRICS,
-                false
+        if (RootUtil.isDeviceRooted &&
+            defaultSharedPreferences.getBoolean(
+                Account.PREF_BIOMETRICS,
+                false,
             )
         ) {
             BiometricUtil.deleteKey(this)
@@ -413,57 +707,31 @@ class MainActivity : BlazeBaseActivity() {
             jobManager.addJobInBackground(RefreshStickerAlbumJob())
         }
 
-    private fun sendSafetyNetRequest() {
-        if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(applicationContext, 13000000) != ConnectionResult.SUCCESS) {
-            return
+    private fun refreshExternalSchemes() =
+        runIntervalTask(RefreshExternalSchemeJob.PREF_REFRESH_EXTERNAL_SCHEMES, INTERVAL_24_HOURS) {
+            jobManager.addJobInBackground(RefreshExternalSchemeJob())
         }
-        runIntervalTask(SAFETY_NET_INTERVAL_KEY, INTERVAL_24_HOURS) {
-            accountRepo.deviceCheck().subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .autoDispose(stopScope)
-                .subscribe(
-                    { resp ->
-                        resp.data?.let {
-                            val nonce = Base64.decode(it.nonce)
-                            validateSafetyNet(nonce)
-                        }
-                    },
-                    {
-                    }
-                )
-        }
-    }
 
-    private fun validateSafetyNet(nonce: ByteArray) {
-        val client = SafetyNet.getClient(this)
-        val task = client.attest(nonce, BuildConfig.SafetyNet_API_KEY)
-        task.addOnSuccessListener { safetyResp ->
-            accountRepo.updateSession(SessionRequest(deviceCheckToken = safetyResp.jwsResult))
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .autoDispose(stopScope)
-                .subscribe({}, {})
+    private fun cleanCache() =
+        runIntervalTask(CleanCacheJob.PREF_CLEAN_CACHE_SCHEMES, INTERVAL_7_DAYS) {
+            jobManager.addJobInBackground(CleanCacheJob())
         }
-        task.addOnFailureListener { e ->
-            reportException(e)
-        }
-    }
 
     private fun checkUpdate() {
         appUpdateManager.registerListener(updatedListener)
-        val appUpdateInfoTask = appUpdateManager.appUpdateInfo
-        appUpdateInfoTask.addOnSuccessListener { appUpdateInfo ->
+        appUpdateManager.appUpdateInfo.addOnSuccessListener { appUpdateInfo ->
             if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE &&
+                (appUpdateInfo.clientVersionStalenessDays() ?: -1) >= 1 &&
                 appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)
             ) {
                 try {
                     appUpdateManager.startUpdateFlowForResult(
                         appUpdateInfo,
-                        AppUpdateType.FLEXIBLE,
                         this,
-                        0x01
+                        AppUpdateOptions.defaultOptions(AppUpdateType.FLEXIBLE),
+                        0x01,
                     )
-                } catch (ignored: IntentSender.SendIntentException) {
+                } catch (_: IntentSender.SendIntentException) {
                 }
             } else if (appUpdateInfo.installStatus() == InstallStatus.DOWNLOADED) {
                 popupSnackbarForCompleteUpdate()
@@ -479,30 +747,63 @@ class MainActivity : BlazeBaseActivity() {
             defaultSharedPreferences.putLong(PREF_CHECK_STORAGE, System.currentTimeMillis())
             checkStorageNotLow(
                 {
-                    alertDialogBuilder()
-                        .setTitle(R.string.storage_low_title)
-                        .setMessage(R.string.storage_low_message)
-                        .setCancelable(false)
-                        .setNegativeButton(getString(R.string.know)) { dialog, _ ->
-                            dialog.dismiss()
-                        }
-                        .show()
+                    lifecycleScope.launch {
+                        alertDialogBuilder()
+                            .setTitle(R.string.storage_low_title)
+                            .setMessage(R.string.storage_low_message)
+                            .setCancelable(false)
+                            .setNegativeButton(getString(R.string.I_know)) { dialog, _ ->
+                                dialog.dismiss()
+                            }
+                            .show()
+                    }
                 },
                 {
-                }
+                },
             )
         }
     }
 
+    private fun checkVersion(){
+        val saveVersion = defaultSharedPreferences.getInt(APP_VERSION, -1)
+        if (saveVersion != BuildConfig.VERSION_CODE) {
+            if (saveVersion != -1) {
+                Timber.e("Old Version: $saveVersion")
+            }
+            Timber.e("Current Version: Mixin${BuildConfig.VERSION_NAME}(${BuildConfig.VERSION_CODE})")
+            defaultSharedPreferences.putInt(APP_VERSION, BuildConfig.VERSION_CODE)
+        }
+    }
+
     private fun popupSnackbarForCompleteUpdate() {
+        if (isFinishing) return
         Snackbar.make(
-            binding.rootView,
+            binding.container,
             getString(R.string.update_downloaded),
-            Snackbar.LENGTH_INDEFINITE
+            Snackbar.LENGTH_INDEFINITE,
         ).apply {
-            setAction(getString(R.string.restart)) { appUpdateManager.completeUpdate() }
+            setAction(getString(R.string.RESTART)) { appUpdateManager.completeUpdate() }
             setActionTextColor(getColor(R.color.colorAccent))
             show()
+        }
+    }
+
+    private suspend fun initWalletConnect() {
+        if (!WalletConnect.isEnabled()) return
+        try {
+            WalletConnectV2
+            val classicWalletId = web3Repository.getClassicWalletId()
+            Web3Signer.init(
+                { classicWalletId },
+                { walletId ->
+                    runBlocking(Dispatchers.IO) { web3Repository.getAddresses(walletId) }
+                }, { walletId ->
+                    runBlocking(Dispatchers.IO) { web3Repository.findWalletById(walletId) }
+                }
+            )
+        } catch (e: Exception) {
+            Timber.e("Failed to initialize WalletConnect: ${e.message}")
+            reportException(e)
         }
     }
 
@@ -520,12 +821,12 @@ class MainActivity : BlazeBaseActivity() {
         getScanResult.launch(Pair(ARGS_SHOW_SCAN, scan))
     }
 
-    private val getScanResult = registerForActivityResult(CaptureActivity.CaptureContract()) { data ->
-        if (data != null) {
-            intent = data
-            handlerCode(intent)
+    private val getScanResult =
+        registerForActivityResult(CaptureActivity.CaptureContract()) { data ->
+            if (data != null) {
+                handlerCode(data)
+            }
         }
-    }
 
     private var bottomSheet: DialogFragment? = null
     private var alertDialog: Dialog? = null
@@ -535,25 +836,60 @@ class MainActivity : BlazeBaseActivity() {
             val scan = intent.getStringExtra(SCAN)!!
             bottomSheet?.dismiss()
             showScanBottom(scan)
-        } else if (intent.hasExtra(URL)) {
-            val url = intent.getStringExtra(URL)!!
+            clearCodeAfterConsume(intent, SCAN)
+        } else if (intent.hasExtra(URL) || (intent.action == Intent.ACTION_VIEW && intent.categories?.contains(Intent.CATEGORY_BROWSABLE) == true)) {
+            val url = intent.getStringExtra(URL) ?: intent.data?.toString() ?: return
             bottomSheet?.dismiss()
-            bottomSheet = LinkBottomSheetDialogFragment.newInstance(url)
+            bottomSheet = LinkBottomSheetDialogFragment.newInstance(url, LinkBottomSheetDialogFragment.FROM_SCAN)
             bottomSheet?.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
+            clearCodeAfterConsume(intent, URL)
         } else if (intent.hasExtra(WALLET)) {
-            navigationController.pushWallet()
+            binding.bottomNav.selectedItemId = R.id.nav_wallet
+            if (intent.getBooleanExtra(BUY, false)) {
+                WalletActivity.showBuy(this, false, null, null)
+                clearCodeAfterConsume(intent, BUY)
+            }
+            clearCodeAfterConsume(intent, WALLET)
         } else if (intent.hasExtra(TRANSFER)) {
-            val userId = intent.getStringExtra(TRANSFER)
+            val userId = intent.getStringExtra(TRANSFER) ?: return
             if (Session.getAccount()?.hasPin == true) {
-                TransferFragment.newInstance(userId, supportSwitchAsset = true)
-                    .showNow(supportFragmentManager, TransferFragment.TAG)
+                if (
+                    RecoveryReminderBottomSheetDialogFragment.showForRiskAction(supportFragmentManager) {
+                        lifecycleScope.launch {
+                            val user = userRepo.refreshUser(userId) ?: return@launch
+                            val bottom = TokenListBottomSheetDialogFragment.newInstance(TYPE_FROM_TRANSFER)
+                                .apply {
+                                    asyncOnAsset = { selectedAsset ->
+                                        this@MainActivity.defaultSharedPreferences.putString(ASSET_PREFERENCE, selectedAsset.assetId)
+                                        WalletActivity.navigateToWalletActivity(this@MainActivity, buildTransferBiometricItem(user, selectedAsset, "", null, null, null))
+                                    }
+                                }
+                            bottom.show(supportFragmentManager, TokenListBottomSheetDialogFragment.TAG)
+                        }
+                    }
+                ) {
+                    clearCodeAfterConsume(intent, TRANSFER)
+                    return
+                }
+                lifecycleScope.launch {
+                    val user = userRepo.refreshUser(userId) ?: return@launch
+                    val bottom = TokenListBottomSheetDialogFragment.newInstance(TYPE_FROM_TRANSFER)
+                        .apply {
+                            asyncOnAsset = { selectedAsset ->
+                                this@MainActivity.defaultSharedPreferences.putString(ASSET_PREFERENCE, selectedAsset.assetId)
+                                WalletActivity.navigateToWalletActivity(this@MainActivity, buildTransferBiometricItem(user, selectedAsset, "", null, null,null))
+                            }
+                        }
+                    bottom.show(supportFragmentManager, TokenListBottomSheetDialogFragment.TAG)
+                }
             } else {
                 toast(R.string.transfer_without_pin)
             }
+            clearCodeAfterConsume(intent, TRANSFER)
         } else if (intent.extras != null && intent.extras!!.getString("conversation_id", null) != null) {
-            alertDialog?.dismiss()
-            alertDialog = alert(getString(R.string.group_wait)).show()
+            showDialog()
             val conversationId = intent.extras!!.getString("conversation_id")!!
+            clearCodeAfterConsume(intent, "conversation_id")
             Maybe.just(conversationId).map {
                 val innerIntent: Intent?
                 var conversation = conversationDao.findConversationById(conversationId)
@@ -571,25 +907,26 @@ class MainActivity : BlazeBaseActivity() {
                             }
                             var c = conversationDao.findConversationById(data.conversationId)
                             if (c == null) {
-                                c = Conversation(
-                                    data.conversationId,
-                                    ownerId,
-                                    data.category,
-                                    data.name,
-                                    data.iconUrl,
-                                    data.announcement,
-                                    data.codeUrl,
-                                    "",
-                                    data.createdAt,
-                                    null,
-                                    null,
-                                    null,
-                                    0,
-                                    ConversationStatus.SUCCESS.ordinal,
-                                    null
-                                )
+                                c =
+                                    Conversation(
+                                        data.conversationId,
+                                        ownerId,
+                                        data.category,
+                                        data.name,
+                                        data.iconUrl,
+                                        data.announcement,
+                                        data.codeUrl,
+                                        "",
+                                        data.createdAt,
+                                        null,
+                                        null,
+                                        null,
+                                        0,
+                                        ConversationStatus.SUCCESS.ordinal,
+                                        null,
+                                    )
                                 conversation = c
-                                conversationDao.insert(c)
+                                conversationDao.upsert(c)
                             } else {
                                 conversationDao.updateConversation(
                                     data.conversationId,
@@ -599,7 +936,8 @@ class MainActivity : BlazeBaseActivity() {
                                     data.announcement,
                                     data.muteUntil,
                                     data.createdAt,
-                                    ConversationStatus.SUCCESS.ordinal
+                                    data.expireIn,
+                                    ConversationStatus.SUCCESS.ordinal,
                                 )
                             }
 
@@ -629,23 +967,21 @@ class MainActivity : BlazeBaseActivity() {
                 if (conversation?.isGroupConversation() == true) {
                     innerIntent = ConversationActivity.putIntent(this, conversationId)
                 } else {
-                    var user = userDao.findPlainUserByConversationId(conversationId)
+                    var user = userDao.findOwnerByConversationId(conversationId)
                     if (user == null) {
                         val response =
-                            userService.getUsers(arrayListOf(conversation!!.ownerId!!)).execute()
+                            userService.getUserById(conversation!!.ownerId!!).execute()
                                 .body()
                         if (response != null && response.isSuccess) {
-                            response.data?.let { data ->
-                                for (u in data) {
-                                    runBlocking { userRepo.upsert(u) }
-                                }
+                            response.data?.let { u ->
+                                runBlocking { userRepo.upsert(u) }
+                                user = u
                             }
-                            user = response.data?.get(0)
                         }
                     }
                     innerIntent = ConversationActivity.putIntent(this, conversationId, user?.userId)
                 }
-                runOnUiThread { alertDialog?.dismiss() }
+                runOnUiThread { dismissDialog() }
                 innerIntent
             }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .autoDispose(stopScope).subscribe(
@@ -655,212 +991,338 @@ class MainActivity : BlazeBaseActivity() {
                         }
                     },
                     {
-                        alertDialog?.dismiss()
+                        dismissDialog()
                         ErrorHandler.handleError(it)
-                    }
+                    },
                 )
+        } else if (intent.hasExtra(WALLET_CONNECT)) {
+            val wcUrl = requireNotNull(intent.getStringExtra(WALLET_CONNECT))
+            WalletConnect.connect(wcUrl)
         }
+    }
+
+    private fun <T> requireMixinData(
+        response: MixinResponse<T>,
+        action: String,
+    ): T {
+        if (!response.isSuccess) {
+            throw IllegalStateException("$action failed: ${response.errorDescription}")
+        }
+        return requireNotNull(response.data) { "$action returned empty data" }
+    }
+
+    private fun requireMixinSuccess(
+        response: MixinResponse<*>,
+        action: String,
+    ) {
+        if (!response.isSuccess) {
+            throw IllegalStateException("$action failed: ${response.errorDescription}")
+        }
+    }
+
+    private fun showDialog() {
+        alertDialog?.dismiss()
+        alertDialog =
+            indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                show()
+            }
+    }
+
+    private fun dismissDialog() {
+        alertDialog?.dismiss()
+        alertDialog = null
+    }
+
+    private fun clearCodeAfterConsume(
+        intent: Intent,
+        code: String,
+    ) {
+        intent.removeExtra(code)
     }
 
     private fun showScanBottom(scan: String) {
-        bottomSheet = QrScanBottomSheetDialogFragment.newInstance(scan)
-        bottomSheet?.showNow(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
+        if (scan.isLightningUrl() || scan.isExternalTransferUrl()) {
+            LinkBottomSheetDialogFragment.newInstance(scan).show(
+                supportFragmentManager,
+                LinkBottomSheetDialogFragment.TAG
+            )
+        } else {
+            bottomSheet = QrScanBottomSheetDialogFragment.newInstance(scan)
+            bottomSheet?.showNow(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
+        }
     }
 
-    private fun initView() {
-        binding.searchBar.setOnLeftClickListener {
-            openSearch()
-        }
-        binding.searchBar.setOnGroupClickListener {
-            navigationController.pushContacts()
-        }
-        binding.searchBar.setOnAddClickListener {
-            addCircle()
-        }
-        binding.searchBar.setOnConfirmClickListener {
-            val circlesFragment =
-                supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as CirclesFragment
-            circlesFragment.cancelSort()
-            binding.searchBar.actionVa.showPrevious()
-        }
+    private fun initBottomNav() {
+        binding.apply {
+            bottomNav.setOnApplyWindowInsetsListener(null)
+            bottomNav.setPadding(0,0,0,0)
+            bottomNav.itemIconTintList = null
+            bottomNav.menu.findItem(lastBottomNavItemId).isChecked = true
 
-        binding.searchBar.setOnBackClickListener {
-            binding.searchBar.closeSearch()
-        }
-
-        binding.searchBar.mOnQueryTextListener = object : MaterialSearchView.OnQueryTextListener {
-            override fun onQueryTextChange(newText: String): Boolean {
-                (supportFragmentManager.findFragmentByTag(SearchFragment.TAG) as? SearchFragment)?.setQueryText(
-                    newText
-                )
-                return true
+            bottomNav.setOnItemSelectedListener {
+                if (isRestoringBottomNavSelection) {
+                    isRestoringBottomNavSelection = false
+                    return@setOnItemSelectedListener true
+                }
+                handleNavigationItemSelected(it.itemId)
+                return@setOnItemSelectedListener it.itemId in listOf(R.id.nav_chat, R.id.nav_wallet, R.id.nav_more, R.id.nav_market)
             }
         }
 
-        binding.searchBar.setSearchViewListener(
-            object : MaterialSearchView.SearchViewListener {
-                override fun onSearchViewClosed() {
-                    navigationController.hideSearch()
-                }
-
-                override fun onSearchViewOpened() {
-                    navigationController.showSearch()
-                }
+        lifecycleScope.launch {
+            binding.bottomNav.getOrCreateBadge(R.id.nav_wallet).apply {
+                isVisible = false
+                backgroundColor = this@MainActivity.colorFromAttribute(R.attr.badge_red)
             }
+            updateNavMoreBadge()
+        }
+    }
+
+    private fun updateNavMoreBadge() {
+        val dismissed = defaultSharedPreferences.getBoolean(Account.PREF_NAV_MORE_BADGE_DISMISSED, false)
+        binding.bottomNav.getOrCreateBadge(R.id.nav_more).apply {
+            isVisible = !dismissed
+            backgroundColor = this@MainActivity.colorFromAttribute(R.attr.badge_red)
+        }
+    }
+
+    private fun switchToDestination(destination: NavigationController.Destination) {
+        val fm = supportFragmentManager
+        var fragment = fm.findFragmentByTag(destination.tag)
+        if (fragment == null) {
+            fragment = when (destination) {
+                is NavigationController.ConversationList -> ConversationListFragment.newInstance()
+                is NavigationController.Wallet -> {
+                    val initialWalletDestination = loadInitialWalletDestination()
+                    WalletFragment.newInstance(initialWalletDestination)
+                }
+                is NavigationController.Explore -> ExploreFragment()
+                is NavigationController.Market -> MarketFragment()
+            }
+        } else if (fragment is WalletFragment) {
+            // Ensure wallet fragment refreshes its content when switching back
+            fragment.update()
+        }
+
+        navigationController.navigate(fm, destination, fragment)
+    }
+
+    private fun loadInitialWalletDestination(): WalletDestination {
+        val walletPref = defaultSharedPreferences.getString(
+            Account.PREF_USED_WALLET, null
         )
-        binding.searchBar.hideAction = {
-            (supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as? CirclesFragment)?.cancelSort()
-        }
-        binding.searchBar.logo.text = defaultSharedPreferences.getString(CIRCLE_NAME, "Mixin")
-        binding.rootView.setOnKeyListener { _, keyCode, _ ->
-            if (keyCode == KeyEvent.KEYCODE_BACK && binding.searchBar.isOpen) {
-                binding.searchBar.closeSearch()
-                true
-            } else {
-                false
+
+        return walletPref?.let { pref ->
+            try {
+                GsonHelper.customGson.fromJson(pref, WalletDestination::class.java)
+            } catch (_: Exception) {
+                WalletDestination.Privacy
+            }
+        } ?: WalletDestination.Privacy
+    }
+
+    private fun handleNavigationItemSelected(itemId: Int) {
+        when (itemId) {
+            R.id.nav_chat -> {
+                AnalyticsTracker.trackHomeTabSwitch(AnalyticsTracker.HomeTabMethod.CHATS)
+                switchToDestination(NavigationController.ConversationList)
+                lastBottomNavItemId = itemId
+            }
+
+            R.id.nav_wallet -> {
+                AnalyticsTracker.trackHomeTabSwitch(AnalyticsTracker.HomeTabMethod.WALLETS)
+                Timber.e("nav_wallet: ${Session.getAccount()?.hasPin}")
+                if (Session.getAccount()?.hasPin == true) {
+                    lifecycleScope.launch {
+                        val shouldBlockNavigation: Boolean = shouldShowWalletMissingBtcAddress()
+                        if (shouldBlockNavigation) {
+                            showWalletMissingBtcAddressFragment()
+                            isRestoringBottomNavSelection = true
+                            binding.bottomNav.selectedItemId = lastBottomNavItemId
+                            return@launch
+                        }
+                        switchToDestination(NavigationController.Wallet)
+                        lastBottomNavItemId = itemId
+                    }
+                } else {
+                    val id = requireNotNull(defaultSharedPreferences.getString(DEVICE_ID, null)) { "required deviceId can not be null" }
+                    TipActivity.show(this, TipBundle(TipType.Create, id, TryConnecting))
+                }
+                findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.hideCircles()
+            }
+
+            R.id.nav_market -> {
+                AnalyticsTracker.trackMoreTabSwitch(AnalyticsTracker.MoreTabMethod.MARKETS)
+                switchToDestination(NavigationController.Market)
+                lastBottomNavItemId = itemId
+                findFragmentByTagTyped<MarketFragment>(NavigationController.Market.tag)?.updateUI()
+
+                findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.hideCircles()
+            }
+
+            R.id.nav_more -> {
+                AnalyticsTracker.trackHomeTabSwitch(AnalyticsTracker.HomeTabMethod.MORE)
+                AnalyticsTracker.trackMoreTabSwitch(AnalyticsTracker.MoreTabMethod.BOTS)
+                if (!defaultSharedPreferences.getBoolean(Account.PREF_NAV_MORE_BADGE_DISMISSED, false)) {
+                    defaultSharedPreferences.putBoolean(Account.PREF_NAV_MORE_BADGE_DISMISSED, true)
+                    RxBus.publish(BadgeEvent(Account.PREF_NAV_MORE_BADGE_DISMISSED))
+                }
+                switchToDestination(NavigationController.Explore)
+                lastBottomNavItemId = itemId
+                findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.hideCircles()
+            }
+
+            else -> {
+                findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.hideCircles()
             }
         }
-        supportFragmentManager.beginTransaction().add(R.id.container_circle, circlesFragment, CirclesFragment.TAG).commit()
-        observeOtherCircleUnread(defaultSharedPreferences.getString(CIRCLE_ID, null))
+        findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.hideContainer()
     }
 
-    fun openSearch() {
-        binding.searchBar.openSearch()
+    private suspend fun shouldShowWalletMissingBtcAddress(): Boolean {
+        return withContext(Dispatchers.IO) {
+            if (!defaultSharedPreferences.getBoolean(Account.PREF_WEB3_ADDRESSES_SYNCED, false)) return@withContext false
+            val wallets = web3Repository.getAllWallets().filter { walletItem ->
+                walletItem.category == WalletCategory.CLASSIC.value || (walletItem.category == WalletCategory.IMPORTED_MNEMONIC.value && walletItem.hasLocalPrivateKey)
+            }
+            if (wallets.isEmpty()) return@withContext false
+            val shouldShowBtcAddress: Boolean = wallets.any { walletItem ->
+                web3Repository.getAddressesByChainId(walletItem.id, Constants.ChainId.BITCOIN_CHAIN_ID) == null
+            }
+            return@withContext shouldShowBtcAddress
+        }
     }
 
-    fun openWallet() {
-        navigationController.pushWallet()
+    private fun showWalletMissingBtcAddressFragment() {
+        val fragment = supportFragmentManager.findFragmentByTag(WalletMissingBtcAddressFragment.TAG)
+        if (fragment != null) return
+        val newFragment = WalletMissingBtcAddressFragment
+            .newInstance()
+        supportFragmentManager
+            .beginTransaction()
+            .setReorderingAllowed(true)
+            .add(R.id.internal_container, newFragment, WalletMissingBtcAddressFragment.TAG)
+            .addToBackStack(WalletMissingBtcAddressFragment.TAG)
+            .commitAllowingStateLoss()
     }
 
-    fun openCircle() {
-        binding.searchBar.showContainer()
+    override fun onWalletMissingBtcAddressPinSuccess() {
+        Timber.e("onWalletMissingBtcAddressPinSuccess")
+        supportFragmentManager.popBackStack(WalletMissingBtcAddressFragment.TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+        val fragment = supportFragmentManager.findFragmentByTag(WalletMissingBtcAddressFragment.TAG)
+        if (fragment != null) {
+            supportFragmentManager
+                .beginTransaction()
+                .remove(fragment)
+                .commitAllowingStateLoss()
+        }
+        binding.bottomNav.selectedItemId = R.id.nav_wallet
+        switchToDestination(NavigationController.Wallet)
+        lastBottomNavItemId = R.id.nav_wallet
     }
 
-    private val circlesFragment by lazy {
-        CirclesFragment.newInstance()
+    private fun <T : Fragment> findFragmentByTagTyped(tag: String): T? =
+        supportFragmentManager.findFragmentByTag(tag) as? T
+
+    fun showUpdate(releaseUrl: String?) {
+        if (isPlayStoreInstalled()) {
+            appUpdateManager
+                .appUpdateInfo
+                .addOnSuccessListener { appUpdateInfo ->
+                    if (appUpdateInfo.updateAvailability()
+                        == UpdateAvailability.UPDATE_AVAILABLE
+                    ) {
+                        appUpdateManager.startUpdateFlowForResult(
+                            appUpdateInfo,
+                            activityResultLauncher,
+                            AppUpdateOptions.newBuilder(AppUpdateType.IMMEDIATE).build()
+                        )
+                    } else {
+                        openMarket()
+                        Timber.e("No availability Update")
+                    }
+                }
+                .addOnFailureListener { e ->
+                    openMarket()
+                    Timber.e(e)
+                }
+                .addOnCanceledListener {
+                    Timber.e("Update cancel")
+                }
+        } else {
+            releaseUrl?.let { url ->
+                openExternalUrl(url)
+            }
+        }
     }
 
-    fun closeSearch() {
-        binding.searchBar.closeSearch()
-    }
-
-    fun dragSearch(progress: Float) {
-        binding.searchBar.dragSearch(progress)
-    }
-
-    fun showSearchLoading() {
-        binding.searchBar.showLoading()
+    private val activityResultLauncher = registerForActivityResult(
+        ActivityResultContracts.StartIntentSenderForResult()
+    ) { result ->
+        if (result.resultCode != RESULT_OK) {
+            // Handle the case where the update was not successful
+            openMarket()
+        } else {
+            defaultSharedPreferences.putLong(
+                ReminderBottomSheetDialogFragment.PREF_NEW_VERSION,
+                System.currentTimeMillis(),
+            )
+        }
     }
 
     fun hideSearchLoading() {
-        binding.searchBar.hideLoading()
+        findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.hideSearchLoading()
     }
 
-    fun selectCircle(name: String?, circleId: String?) {
-        setCircleName(name)
-        defaultSharedPreferences.putString(CIRCLE_NAME, name)
-        defaultSharedPreferences.putString(CIRCLE_ID, circleId)
-        binding.searchBar.hideContainer()
-        (supportFragmentManager.findFragmentByTag(ConversationListFragment.TAG) as? ConversationListFragment)?.circleId = circleId
-        observeOtherCircleUnread(circleId)
+    fun closeSearch() {
+        findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.closeSearch()
     }
 
-    fun setCircleName(name: String?) {
-        binding.searchBar.logo.text = name ?: "Mixin"
+    fun showSearchLoading() {
+        findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.showSearchLoading()
     }
 
-    fun openCircleEdit(circleId: String) {
-        conversationDao
-        lifecycleScope.launch {
-            userRepo.findCircleItemByCircleIdSuspend(circleId)?.let { circleItem ->
-                val circlesFragment =
-                    supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as CirclesFragment?
-                circlesFragment?.edit(circleItem)
-            }
-        }
+    fun selectCircle(
+        name: String?,
+        circleId: String?,
+    ) {
+        findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.selectCircle(name, circleId)
     }
 
     fun sortAction() {
-        binding.searchBar.actionVa.showNext()
+        findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.sortAction()
     }
 
-    private var dotObserver = Observer<Boolean> {
-        binding.searchBar.dot.isVisible = it
-    }
-    private var dotLiveData: LiveData<Boolean>? = null
-
-    private fun observeOtherCircleUnread(circleId: String?) = lifecycleScope.launch {
-        dotLiveData?.removeObserver(dotObserver)
-        if (circleId == null) {
-            binding.searchBar.dot.isVisible = false
-            return@launch
-        }
-        dotLiveData = userRepo.hasUnreadMessage(circleId = circleId)
-        dotLiveData?.observe(this@MainActivity, dotObserver)
-    }
-
-    private fun addCircle() {
-        editDialog {
-            titleText = this@MainActivity.getString(R.string.circle_add_title)
-            maxTextCount = 64
-            defaultEditEnable = false
-            editMaxLines = EditDialog.MAX_LINE.toInt()
-            allowEmpty = false
-            rightText = android.R.string.ok
-            rightAction = {
-                createCircle(it)
-            }
-        }
-    }
-
-    private fun createCircle(name: String) {
-        lifecycleScope.launch(errorHandler) {
-            val dialog = indeterminateProgressDialog(message = R.string.pb_dialog_message).apply {
-                setCancelable(false)
-            }
-            handleMixinResponse(
-                switchContext = Dispatchers.IO,
-                invokeNetwork = {
-                    userRepo.createCircle(name)
-                },
-                successBlock = { response ->
-                    response.data?.let { circle ->
-                        userRepo.insertCircle(circle)
-                        openCircleEdit(circle.circleId)
-                    }
-                },
-                exceptionBlock = {
-                    dialog.dismiss()
-                    return@handleMixinResponse false
-                },
-                failureBlock = {
-                    dialog.dismiss()
-                    return@handleMixinResponse false
-                }
-            )
-            dialog.dismiss()
-        }
-    }
-
+    @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         val searchMessageFragment =
             supportFragmentManager.findFragmentByTag(SearchMessageFragment.TAG)
         val searchSingleFragment =
             supportFragmentManager.findFragmentByTag(SearchSingleFragment.TAG)
         val circlesFragment =
-            supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as BaseFragment
+            supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as BaseFragment?
         val conversationCircleEditFragment =
             supportFragmentManager.findFragmentByTag(ConversationCircleEditFragment.TAG)
+        val walletFragment = findFragmentByTagTyped<WalletFragment>(NavigationController.Wallet.tag)
+        val conversationListFragment = findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)
+
         when {
-            searchMessageFragment != null -> super.onBackPressed()
-            searchSingleFragment != null -> super.onBackPressed()
-            conversationCircleEditFragment != null -> super.onBackPressed()
-            binding.searchBar.isOpen -> binding.searchBar.closeSearch()
-            binding.searchBar.containerDisplay -> {
-                if (!circlesFragment.onBackPressed()) {
-                    binding.searchBar.hideContainer()
+            searchMessageFragment != null -> onBackPressedDispatcher.onBackPressed()
+            searchSingleFragment != null -> onBackPressedDispatcher.onBackPressed()
+            conversationCircleEditFragment != null -> onBackPressedDispatcher.onBackPressed()
+            walletFragment != null && walletFragment.isVisible && walletFragment.onBackPressed() -> {
+                // do nothing
+            }
+            conversationListFragment != null && conversationListFragment.isAdded && conversationListFragment.isOpen() -> {
+                conversationListFragment.closeSearch()
+            }
+            conversationListFragment != null && conversationListFragment.isAdded && conversationListFragment.containerDisplay() -> {
+                if (circlesFragment == null) {
+                    super.onBackPressed()
+                } else if (!circlesFragment.onBackPressed()) {
+                    conversationListFragment.hideContainer()
                 } else {
-                    binding.searchBar.actionVa.showPrevious()
+                    conversationListFragment.showPrevious()
                 }
             }
             else -> {
@@ -868,10 +1330,23 @@ class MainActivity : BlazeBaseActivity() {
                 if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q && isTaskRoot) {
                     finishAfterTransition()
                 } else {
-                    super.onBackPressed()
+                    onBackPressedDispatcher.onBackPressed()
                 }
             }
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt(KEY_LAST_BOTTOM_NAV, lastBottomNavItemId)
+    }
+
+    private fun initFragmentsFromSavedState(savedInstanceState: Bundle?) {
+        if (savedInstanceState != null) {
+            lastBottomNavItemId = savedInstanceState.getInt(KEY_LAST_BOTTOM_NAV, R.id.nav_chat)
+            return
+        }
+        navigationController.navigate(supportFragmentManager, NavigationController.ConversationList, ConversationListFragment.newInstance())
     }
 
     companion object {
@@ -879,11 +1354,18 @@ class MainActivity : BlazeBaseActivity() {
         const val SCAN = "scan"
         const val TRANSFER = "transfer"
         private const val WALLET = "wallet"
+        const val WALLET_CONNECT = "wallet_connect"
+        private const val KEY_LAST_BOTTOM_NAV = "last_bottom_nav_item_id"
 
-        fun showWallet(context: Context) {
+        fun showWallet(
+            context: Context,
+            buy: Boolean = false,
+        ) {
             Intent(context, MainActivity::class.java).apply {
                 putExtra(WALLET, true)
-                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                putExtra(BUY, buy)
+                addCategory(Intent.CATEGORY_LAUNCHER)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
             }.run {
                 context.startActivity(this)
             }
@@ -891,7 +1373,7 @@ class MainActivity : BlazeBaseActivity() {
 
         fun showFromShortcut(
             activity: Activity,
-            intent: Intent
+            intent: Intent,
         ) {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
             activity.startActivity(intent)
@@ -934,7 +1416,7 @@ class MainActivity : BlazeBaseActivity() {
 fun runIntervalTask(
     spKey: String,
     interval: Long,
-    task: () -> Unit
+    task: () -> Unit,
 ) {
     val defaultSharedPreferences = MixinApplication.appContext.defaultSharedPreferences
     val cur = System.currentTimeMillis()

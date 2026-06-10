@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_upper_round"
+    android:orientation="vertical">
+
+    <ImageView
+        android:layout_marginTop="70dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_transfer_waiting"
+        android:layout_gravity="center_horizontal" />
+
+    <TextView
+        android:id="@+id/title_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="24dp"
+        android:text="@string/Waiting_transaction"
+        android:textColor="?attr/text_primary"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/warning_tv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginTop="@dimen/margin16"
+        android:gravity="center_horizontal"
+        android:textColor="?attr/text_primary"
+        android:text="@string/Waiting_transaction_description" />
+
+    <Button
+        style="@style/AppTheme.MaterialButton"
+        android:id="@+id/continue_tv"
+        android:layout_width="116dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center_horizontal|bottom"
+        android:layout_marginTop="42dp"
+        android:layout_marginBottom="32dp"
+        android:text="@string/Got_it"
+        android:textColor="@color/white"
+        android:textSize="14sp" />
+
+</LinearLayout>

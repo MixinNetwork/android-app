@@ -15,6 +15,8 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.session.Session
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.CallStateLiveData
+import one.mixin.android.vo.ExpiredMessage
+import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageHistory
 import one.mixin.android.vo.MessageStatus
@@ -47,7 +49,7 @@ import java.util.concurrent.Executors
 
 class DecryptCallMessage(
     private val callState: CallStateLiveData,
-    private val lifecycleScope: CoroutineScope
+    private val lifecycleScope: CoroutineScope,
 ) : Injector() {
     companion object {
         const val LIST_PENDING_CALL_DELAY = 2000L
@@ -64,6 +66,7 @@ class DecryptCallMessage(
     private val listPendingCandidateMap = ArrayMap<String, ArrayList<IceCandidate>>()
 
     fun onRun(data: BlazeMessageData) {
+        ensureSessionInjection()
         try {
             syncConversation(data)
             when {
@@ -93,16 +96,17 @@ class DecryptCallMessage(
             val isExpired = isExpired(data)
             if (isExpired) {
                 if (data.category == MessageCategory.KRAKEN_INVITE.name) {
-                    val message = createCallMessage(
-                        data.messageId,
-                        data.conversationId,
-                        data.userId,
-                        MessageCategory.KRAKEN_INVITE.name,
-                        null,
-                        data.createdAt,
-                        data.status
-                    )
-                    database.insertAndNotifyConversation(message)
+                    val message =
+                        createCallMessage(
+                            data.messageId,
+                            data.conversationId,
+                            data.userId,
+                            MessageCategory.KRAKEN_INVITE.name,
+                            null,
+                            data.createdAt,
+                            data.status,
+                        )
+                    insertCallMessage(message)
                 } else if (data.category == MessageCategory.KRAKEN_PUBLISH.name || data.category == MessageCategory.KRAKEN_END.name) {
                     // ignore KRAKEN_PUBLISH, KRAKEN_END from listPending 1 hour away
                     if (!isIgnored(data)) {
@@ -111,36 +115,38 @@ class DecryptCallMessage(
                 }
                 // ignore KRAKEN_CANCEL, KRAKEN_DECLINE from listPending
             } else if (data.category == MessageCategory.KRAKEN_INVITE.name && !listPendingOfferHandled) {
-                listPendingJobMap[data.messageId] = Pair(
-                    lifecycleScope.launch(listPendingDispatcher) {
-                        delay(LIST_PENDING_CALL_DELAY)
-                        listPendingOfferHandled = true
-                        listPendingJobMap.forEach { entry ->
-                            val pair = entry.value
-                            val job = pair.first
-                            if (entry.key != data.messageId && !job.isCancelled) {
-                                job.cancel()
+                listPendingJobMap[data.messageId] =
+                    Pair(
+                        lifecycleScope.launch(listPendingDispatcher) {
+                            delay(LIST_PENDING_CALL_DELAY)
+                            listPendingOfferHandled = true
+                            listPendingJobMap.forEach { entry ->
+                                val pair = entry.value
+                                val job = pair.first
+                                if (entry.key != data.messageId && !job.isCancelled) {
+                                    job.cancel()
 
-                                val curData = pair.second
-                                val savedMessage = createCallMessage(
-                                    UUID.randomUUID().toString(),
-                                    curData.conversationId,
-                                    curData.userId,
-                                    MessageCategory.KRAKEN_INVITE.name,
-                                    null,
-                                    nowInUtc(),
-                                    MessageStatus.SENDING.name,
-                                    null
-                                )
-                                database.insertAndNotifyConversation(savedMessage)
-                                listPendingCandidateMap.remove(curData.messageId, listPendingCandidateMap[curData.messageId])
+                                    val curData = pair.second
+                                    val savedMessage =
+                                        createCallMessage(
+                                            UUID.randomUUID().toString(),
+                                            curData.conversationId,
+                                            curData.userId,
+                                            MessageCategory.KRAKEN_INVITE.name,
+                                            null,
+                                            nowInUtc(),
+                                            MessageStatus.SENDING.name,
+                                            null,
+                                        )
+                                    insertCallMessage(savedMessage)
+                                    listPendingCandidateMap.remove(curData.messageId, listPendingCandidateMap[curData.messageId])
+                                }
                             }
-                        }
-                        processKrakenCall(data)
-                        listPendingJobMap.clear()
-                    },
-                    data
-                )
+                            processKrakenCall(data)
+                            listPendingJobMap.clear()
+                        },
+                        data,
+                    )
             }
         } else {
             processKrakenCall(data)
@@ -176,58 +182,62 @@ class DecryptCallMessage(
         if (data.source == LIST_PENDING_MESSAGES && data.category == MessageCategory.WEBRTC_AUDIO_OFFER.name) {
             val isExpired = isExpired(data)
             if (!isExpired && !listPendingOfferHandled) {
-                listPendingJobMap[data.messageId] = Pair(
-                    lifecycleScope.launch(listPendingDispatcher) {
-                        delay(LIST_PENDING_CALL_DELAY)
-                        listPendingOfferHandled = true
-                        listPendingJobMap.forEach { entry ->
-                            val pair = entry.value
-                            val job = pair.first
-                            val curData = pair.second
-                            if (entry.key != data.messageId && !job.isCancelled) {
-                                job.cancel()
-                                val m = createCallMessage(
-                                    UUID.randomUUID().toString(),
-                                    curData.conversationId,
-                                    Session.getAccountId()!!,
-                                    MessageCategory.WEBRTC_AUDIO_BUSY.name,
-                                    null,
-                                    nowInUtc(),
-                                    MessageStatus.SENDING.name,
-                                    curData.messageId
-                                )
-                                jobManager.addJobInBackground(SendMessageJob(m, recipientId = curData.userId))
+                listPendingJobMap[data.messageId] =
+                    Pair(
+                        lifecycleScope.launch(listPendingDispatcher) {
+                            delay(LIST_PENDING_CALL_DELAY)
+                            listPendingOfferHandled = true
+                            listPendingJobMap.forEach { entry ->
+                                val pair = entry.value
+                                val job = pair.first
+                                val curData = pair.second
+                                if (entry.key != data.messageId && !job.isCancelled) {
+                                    job.cancel()
+                                    val m =
+                                        createCallMessage(
+                                            UUID.randomUUID().toString(),
+                                            curData.conversationId,
+                                            Session.getAccountId()!!,
+                                            MessageCategory.WEBRTC_AUDIO_BUSY.name,
+                                            null,
+                                            nowInUtc(),
+                                            MessageStatus.SENDING.name,
+                                            curData.messageId,
+                                        )
+                                    jobManager.addJobInBackground(SendMessageJob(m, recipientId = curData.userId))
 
-                                val savedMessage = createCallMessage(
-                                    curData.messageId,
-                                    m.conversationId,
-                                    curData.userId,
-                                    m.category,
-                                    m.content,
-                                    m.createdAt,
-                                    curData.status,
-                                    m.quoteMessageId
-                                )
-                                database.insertAndNotifyConversation(savedMessage)
-                                listPendingCandidateMap.remove(curData.messageId, listPendingCandidateMap[curData.messageId])
+                                    val savedMessage =
+                                        createCallMessage(
+                                            curData.messageId,
+                                            m.conversationId,
+                                            curData.userId,
+                                            m.category,
+                                            m.content,
+                                            m.createdAt,
+                                            curData.status,
+                                            m.quoteMessageId,
+                                        )
+                                    insertCallMessage(savedMessage)
+                                    listPendingCandidateMap.remove(curData.messageId, listPendingCandidateMap[curData.messageId])
+                                }
                             }
-                        }
-                        processCall(data)
-                        listPendingJobMap.clear()
-                    },
-                    data
-                )
+                            processCall(data)
+                            listPendingJobMap.clear()
+                        },
+                        data,
+                    )
             } else if (isExpired) {
-                val message = createCallMessage(
-                    data.messageId,
-                    data.conversationId,
-                    data.userId,
-                    MessageCategory.WEBRTC_AUDIO_CANCEL.name,
-                    null,
-                    data.createdAt,
-                    data.status
-                )
-                database.insertAndNotifyConversation(message)
+                val message =
+                    createCallMessage(
+                        data.messageId,
+                        data.conversationId,
+                        data.userId,
+                        MessageCategory.WEBRTC_AUDIO_CANCEL.name,
+                        null,
+                        data.createdAt,
+                        data.status,
+                    )
+                insertCallMessage(message)
             }
         } else {
             processCall(data)
@@ -286,16 +296,17 @@ class DecryptCallMessage(
                 }
                 listPendingJobMap.remove(data.quoteMessageId)
 
-                val message = createCallMessage(
-                    data.quoteMessageId!!,
-                    data.conversationId,
-                    data.userId,
-                    MessageCategory.WEBRTC_AUDIO_CANCEL.name,
-                    null,
-                    data.createdAt,
-                    data.status
-                )
-                database.insertAndNotifyConversation(message)
+                val message =
+                    createCallMessage(
+                        data.quoteMessageId!!,
+                        data.conversationId,
+                        data.userId,
+                        MessageCategory.WEBRTC_AUDIO_CANCEL.name,
+                        null,
+                        data.createdAt,
+                        data.status,
+                    )
+                insertCallMessage(message)
             }
         } else {
             when (data.category) {
@@ -378,7 +389,10 @@ class DecryptCallMessage(
         messageHistoryDao.insert(MessageHistory(data.messageId))
     }
 
-    private fun updateRemoteMessageStatus(messageId: String, status: MessageStatus = MessageStatus.DELIVERED) {
+    private fun updateRemoteMessageStatus(
+        messageId: String,
+        status: MessageStatus = MessageStatus.DELIVERED,
+    ) {
         jobDao.insertNoReplace(createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(messageId, status.name)))
     }
 
@@ -387,7 +401,7 @@ class DecryptCallMessage(
         category: String? = null,
         duration: String? = null,
         userId: String = data.userId,
-        status: String? = null
+        status: String? = null,
     ) {
         val accountId = Session.getAccountId() ?: return
         val mId = data.quoteMessageId
@@ -399,16 +413,27 @@ class DecryptCallMessage(
             messageStatus = status
         }
         val realCategory = category ?: data.category
-        val message = createCallMessage(
-            mId,
-            data.conversationId,
-            userId,
-            realCategory,
-            null,
-            data.createdAt,
-            messageStatus,
-            mediaDuration = duration
-        )
+        val message =
+            createCallMessage(
+                mId,
+                data.conversationId,
+                userId,
+                realCategory,
+                null,
+                data.createdAt,
+                messageStatus,
+                mediaDuration = duration,
+            )
+        insertCallMessage(message)
+    }
+
+    private fun insertCallMessage(message: Message) {
         database.insertAndNotifyConversation(message)
+        database.conversationDao().findConversationById(message.conversationId)?.let {
+            val expiredIn = it.expireIn ?: return@let
+            if (it.expireIn > 0) {
+                database.expiredMessageDao().insert(ExpiredMessage(message.messageId, expiredIn, null))
+            }
+        }
     }
 }

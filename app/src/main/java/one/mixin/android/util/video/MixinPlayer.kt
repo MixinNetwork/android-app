@@ -2,49 +2,49 @@ package one.mixin.android.util.video
 
 import android.annotation.SuppressLint
 import android.view.TextureView
-import com.google.android.exoplayer2.C
-import com.google.android.exoplayer2.ExoPlaybackException
-import com.google.android.exoplayer2.ExoPlayer
-import com.google.android.exoplayer2.MediaItem
-import com.google.android.exoplayer2.PlaybackException
-import com.google.android.exoplayer2.PlaybackParameters
-import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.Player.STATE_BUFFERING
-import com.google.android.exoplayer2.Player.STATE_READY
-import com.google.android.exoplayer2.Timeline
-import com.google.android.exoplayer2.audio.AudioAttributes
-import com.google.android.exoplayer2.source.BehindLiveWindowException
-import com.google.android.exoplayer2.source.MediaSource
-import com.google.android.exoplayer2.source.ProgressiveMediaSource
-import com.google.android.exoplayer2.source.TrackGroupArray
-import com.google.android.exoplayer2.source.hls.HlsMediaSource
-import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection
-import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
-import com.google.android.exoplayer2.trackselection.TrackSelectionArray
-import com.google.android.exoplayer2.upstream.DataSource
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
-import com.google.android.exoplayer2.util.Util
-import com.google.android.exoplayer2.video.VideoSize
+import androidx.media3.common.AudioAttributes
+import androidx.media3.common.C
+import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
+import androidx.media3.common.PlaybackParameters
+import androidx.media3.common.Player
+import androidx.media3.common.Player.STATE_BUFFERING
+import androidx.media3.common.Player.STATE_READY
+import androidx.media3.common.Timeline
+import androidx.media3.common.Tracks
+import androidx.media3.common.VideoSize
+import androidx.media3.datasource.DataSource
+import androidx.media3.datasource.DefaultDataSource
+import androidx.media3.exoplayer.ExoPlaybackException
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.hls.HlsMediaSource
+import androidx.media3.exoplayer.source.BehindLiveWindowException
+import androidx.media3.exoplayer.source.MediaSource
+import androidx.media3.exoplayer.source.ProgressiveMediaSource
+import androidx.media3.exoplayer.source.TrackGroupArray
+import androidx.media3.exoplayer.trackselection.AdaptiveTrackSelection
+import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
+import androidx.media3.exoplayer.trackselection.TrackSelectionArray
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import one.mixin.android.util.reportExoPlayerException
 import kotlin.math.max
 import kotlin.math.min
 
+@SuppressLint("UnsafeOptInUsageError")
 @Suppress("unused")
 class MixinPlayer(val isAudio: Boolean = false) : Player.Listener {
-
     val player: ExoPlayer by lazy {
-        val trackSelector = if (isAudio) {
-            DefaultTrackSelector(MixinApplication.appContext)
-        } else {
-            DefaultTrackSelector(MixinApplication.appContext, AdaptiveTrackSelection.Factory())
-        }
+        val trackSelector =
+            if (isAudio) {
+                DefaultTrackSelector(MixinApplication.appContext)
+            } else {
+                DefaultTrackSelector(MixinApplication.appContext, AdaptiveTrackSelection.Factory())
+            }
         ExoPlayer.Builder(MixinApplication.appContext)
             .setTrackSelector(trackSelector)
             .build().apply {
@@ -62,9 +62,10 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.Listener {
     }
 
     fun setAudioStreamType(streamType: Int) {
-        val audioAttributes = AudioAttributes.Builder()
-            .setContentType(streamType)
-            .build()
+        val audioAttributes =
+            AudioAttributes.Builder()
+                .setContentType(streamType)
+                .build()
         this.player.setAudioAttributes(audioAttributes, false)
         player.volume = 1f
     }
@@ -83,8 +84,9 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.Listener {
         var position = player.currentPosition
         val currentTimeline = player.currentTimeline
         if (!currentTimeline.isEmpty) {
-            position -= currentTimeline.getPeriod(player.currentPeriodIndex, period)
-                .positionInWindowMs
+            position -=
+                currentTimeline.getPeriod(player.currentPeriodIndex, period)
+                    .positionInWindowMs
         }
         return position
     }
@@ -110,10 +112,13 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.Listener {
     }
 
     fun seekTo(timeMillis: Int) {
-        val seekPos = (
-            if (player.duration == C.TIME_UNSET)
-                0
-            else min(max(0, timeMillis), duration())
+        val seekPos =
+            (
+                if (player.duration == C.TIME_UNSET) {
+                    0
+                } else {
+                    min(max(0, timeMillis), duration())
+                }
             ).toLong()
         seekTo(seekPos)
     }
@@ -128,37 +133,47 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.Listener {
 
     private var url: String? = null
 
-    fun loadVideo(url: String, force: Boolean = false) {
+    fun loadVideo(
+        url: String,
+        force: Boolean = false,
+    ) {
         if (!force && this.url == url && (player.playbackState == STATE_READY || player.playbackState == STATE_BUFFERING)) {
             return
         }
         this.url = url
-        mediaSource = ProgressiveMediaSource.Factory(buildDataSourceFactory())
-            .createMediaSource(url.toMediaItem()).apply {
-                player.setMediaSource(this)
-                player.prepare()
-            }
+        mediaSource =
+            ProgressiveMediaSource.Factory(buildDataSourceFactory())
+                .createMediaSource(url.toMediaItem()).apply {
+                    player.setMediaSource(this)
+                    player.prepare()
+                }
     }
 
-    fun loadVideo(url: String, id: String, force: Boolean = false) {
+    fun loadVideo(
+        url: String,
+        id: String,
+        force: Boolean = false,
+    ) {
         if (!force && this.url == url && (player.playbackState == STATE_READY || player.playbackState == STATE_BUFFERING)) {
             return
         }
         this.mId = id
         this.url = url
-        mediaSource = ProgressiveMediaSource.Factory(buildDataSourceFactory())
-            .createMediaSource(url.toMediaItem()).apply {
-                player.setMediaSource(this)
-                player.prepare()
-            }
+        mediaSource =
+            ProgressiveMediaSource.Factory(buildDataSourceFactory())
+                .createMediaSource(url.toMediaItem()).apply {
+                    player.setMediaSource(this)
+                    player.prepare()
+                }
     }
 
     fun loadAudio(url: String) {
-        mediaSource = ProgressiveMediaSource.Factory(DefaultDataSourceFactory(MixinApplication.appContext, BuildConfig.APPLICATION_ID))
-            .createMediaSource(url.toMediaItem()).apply {
-                player.setMediaSource(this)
-                player.prepare()
-            }
+        mediaSource =
+            ProgressiveMediaSource.Factory(DefaultDataSource.Factory(MixinApplication.appContext))
+                .createMediaSource(url.toMediaItem()).apply {
+                    player.setMediaSource(this)
+                    player.prepare()
+                }
     }
 
     private fun String.toMediaItem(): MediaItem =
@@ -168,13 +183,17 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.Listener {
 
     var mId: String? = null
 
-    fun loadHlsVideo(url: String, id: String, force: Boolean = false) {
+    fun loadHlsVideo(
+        url: String,
+        id: String,
+        force: Boolean = false,
+    ) {
         if (!force && this.url == url && (player.playbackState == STATE_READY || player.playbackState == STATE_BUFFERING)) {
             return
         }
         this.mId = id
         this.url = url
-        MixinApplication.appScope.launch(Dispatchers.IO) {
+        MixinApplication.get().applicationScope.launch(Dispatchers.IO) {
             var contentType = "application/x-mpegURL"
             try {
                 val client = OkHttpClient.Builder().build()
@@ -186,36 +205,36 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.Listener {
             } catch (e: Exception) {
             }
             withContext(Dispatchers.Main) {
-                mediaSource = if (contentType.contains("application/x-mpegURL", true) ||
-                    contentType.contains("application/vnd.apple.mpegurl", true) ||
-                    contentType.contains("binary/octet-stream", ignoreCase = true)
-                ) {
-                    HlsMediaSource.Factory(buildDataSourceFactory()).createMediaSource(url.toMediaItem())
-                } else {
-                    ProgressiveMediaSource.Factory(buildDataSourceFactory()).createMediaSource(url.toMediaItem())
-                }.apply {
-                    player.setMediaSource(this)
-                    player.prepare()
-                }
+                mediaSource =
+                    if (contentType.contains("application/x-mpegURL", true) ||
+                        contentType.contains("application/vnd.apple.mpegurl", true) ||
+                        contentType.contains("binary/octet-stream", ignoreCase = true)
+                    ) {
+                        HlsMediaSource.Factory(buildDataSourceFactory()).createMediaSource(url.toMediaItem())
+                    } else {
+                        ProgressiveMediaSource.Factory(buildDataSourceFactory()).createMediaSource(url.toMediaItem())
+                    }.apply {
+                        player.setMediaSource(this)
+                        player.prepare()
+                    }
             }
         }
     }
 
     private fun buildDataSourceFactory(): DataSource.Factory {
-        return DefaultDataSourceFactory(
+        return DefaultDataSource.Factory(
             MixinApplication.appContext,
-            Util.getUserAgent(MixinApplication.appContext, "Mixin")
         )
     }
 
-    override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+    override fun onTimelineChanged(
+        timeline: Timeline,
+        reason: Int,
+    ) {
     }
 
-    override fun onTracksChanged(trackGroups: TrackGroupArray, trackSelections: TrackSelectionArray) {
-        onVideoPlayerListener?.onTracksChanged(trackGroups, trackSelections)
-        mId?.let {
-            onMediaPlayerListener?.onTracksChanged(it, trackGroups, trackSelections)
-        }
+    override fun onTracksChanged(tracks: Tracks) {
+        onVideoPlayerListener?.onTracksInfoChanged(tracks)
     }
 
     override fun onLoadingChanged(isLoading: Boolean) {
@@ -225,7 +244,10 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.Listener {
         }
     }
 
-    override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
+    override fun onPlayerStateChanged(
+        playWhenReady: Boolean,
+        playbackState: Int,
+    ) {
         onVideoPlayerListener?.onPlayerStateChanged(playWhenReady, playbackState)
         mId?.let {
             onMediaPlayerListener?.onPlayerStateChanged(it, playWhenReady, playbackState)
@@ -273,9 +295,6 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.Listener {
         }
     }
 
-    override fun onSeekProcessed() {
-    }
-
     override fun onVideoSizeChanged(videoSize: VideoSize) {
         val width = videoSize.width
         val height = videoSize.height
@@ -308,11 +327,19 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.Listener {
     }
 
     interface OnVideoPlayerListener {
-        fun onVideoSizeChanged(width: Int, height: Int, unappliedRotationDegrees: Int, pixelWidthHeightRatio: Float)
+        fun onVideoSizeChanged(
+            width: Int,
+            height: Int,
+            unappliedRotationDegrees: Int,
+            pixelWidthHeightRatio: Float,
+        )
 
         fun onRenderedFirstFrame()
 
-        fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int)
+        fun onPlayerStateChanged(
+            playWhenReady: Boolean,
+            playbackState: Int,
+        )
 
         fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters)
 
@@ -320,26 +347,31 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.Listener {
 
         fun onLoadingChanged(isLoading: Boolean)
 
-        fun onTracksChanged(trackGroups: TrackGroupArray, trackSelections: TrackSelectionArray)
+        fun onTracksInfoChanged(tracksInfo: Tracks)
 
-        fun onTimelineChanged(timeline: Timeline, manifest: Any)
+        fun onTimelineChanged(
+            timeline: Timeline,
+            manifest: Any,
+        )
 
         fun onPlayerError(error: ExoPlaybackException)
     }
 
     open class VideoPlayerListenerWrapper : OnVideoPlayerListener {
-
         override fun onVideoSizeChanged(
             width: Int,
             height: Int,
             unappliedRotationDegrees: Int,
-            pixelWidthHeightRatio: Float
+            pixelWidthHeightRatio: Float,
         ) {
         }
 
         override fun onRenderedFirstFrame() {}
 
-        override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {}
+        override fun onPlayerStateChanged(
+            playWhenReady: Boolean,
+            playbackState: Int,
+        ) {}
 
         override fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters) {}
 
@@ -347,64 +379,113 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.Listener {
 
         override fun onLoadingChanged(isLoading: Boolean) {}
 
-        override fun onTracksChanged(trackGroups: TrackGroupArray, trackSelections: TrackSelectionArray) {}
+        override fun onTracksInfoChanged(tracksInfo: Tracks) {}
 
-        override fun onTimelineChanged(timeline: Timeline, manifest: Any) {}
+        override fun onTimelineChanged(
+            timeline: Timeline,
+            manifest: Any,
+        ) {}
 
         override fun onPlayerError(error: ExoPlaybackException) {}
     }
 
     interface OnMediaPlayerListener {
-        fun onVideoSizeChanged(mid: String, width: Int, height: Int, unappliedRotationDegrees: Int, pixelWidthHeightRatio: Float)
+        fun onVideoSizeChanged(
+            mid: String,
+            width: Int,
+            height: Int,
+            unappliedRotationDegrees: Int,
+            pixelWidthHeightRatio: Float,
+        )
 
         fun onRenderedFirstFrame(mid: String)
 
-        fun onPlayerStateChanged(mid: String, playWhenReady: Boolean, playbackState: Int)
+        fun onPlayerStateChanged(
+            mid: String,
+            playWhenReady: Boolean,
+            playbackState: Int,
+        )
 
-        fun onPlaybackParametersChanged(mid: String, playbackParameters: PlaybackParameters)
+        fun onPlaybackParametersChanged(
+            mid: String,
+            playbackParameters: PlaybackParameters,
+        )
 
         fun onPositionDiscontinuity(mid: String)
 
-        fun onLoadingChanged(mid: String, isLoading: Boolean)
+        fun onLoadingChanged(
+            mid: String,
+            isLoading: Boolean,
+        )
 
-        fun onTracksChanged(mid: String, trackGroups: TrackGroupArray, trackSelections: TrackSelectionArray)
+        fun onTracksChanged(
+            mid: String,
+            trackGroups: TrackGroupArray,
+            trackSelections: TrackSelectionArray,
+        )
 
-        fun onTimelineChanged(mid: String, timeline: Timeline, manifest: Any)
+        fun onTimelineChanged(
+            mid: String,
+            timeline: Timeline,
+            manifest: Any,
+        )
 
-        fun onPlayerError(mid: String, error: ExoPlaybackException)
+        fun onPlayerError(
+            mid: String,
+            error: ExoPlaybackException,
+        )
     }
 
     open class MediaPlayerListenerWrapper : OnMediaPlayerListener {
-
         override fun onVideoSizeChanged(
             mid: String,
             width: Int,
             height: Int,
             unappliedRotationDegrees: Int,
-            pixelWidthHeightRatio: Float
+            pixelWidthHeightRatio: Float,
         ) {
         }
 
         override fun onRenderedFirstFrame(mid: String) {}
 
-        override fun onPlayerStateChanged(mid: String, playWhenReady: Boolean, playbackState: Int) {}
+        override fun onPlayerStateChanged(
+            mid: String,
+            playWhenReady: Boolean,
+            playbackState: Int,
+        ) {}
 
-        override fun onPlaybackParametersChanged(mid: String, playbackParameters: PlaybackParameters) {}
+        override fun onPlaybackParametersChanged(
+            mid: String,
+            playbackParameters: PlaybackParameters,
+        ) {}
 
         override fun onPositionDiscontinuity(mid: String) {}
 
-        override fun onLoadingChanged(mid: String, isLoading: Boolean) {}
+        override fun onLoadingChanged(
+            mid: String,
+            isLoading: Boolean,
+        ) {}
 
-        override fun onTracksChanged(mid: String, trackGroups: TrackGroupArray, trackSelections: TrackSelectionArray) {}
+        override fun onTracksChanged(
+            mid: String,
+            trackGroups: TrackGroupArray,
+            trackSelections: TrackSelectionArray,
+        ) {}
 
-        override fun onTimelineChanged(mid: String, timeline: Timeline, manifest: Any) {}
+        override fun onTimelineChanged(
+            mid: String,
+            timeline: Timeline,
+            manifest: Any,
+        ) {}
 
-        override fun onPlayerError(mid: String, error: ExoPlaybackException) {}
+        override fun onPlayerError(
+            mid: String,
+            error: ExoPlaybackException,
+        ) {}
     }
 
     companion object {
         @SuppressLint("StaticFieldLeak")
-
         private fun isBehindLiveWindow(e: ExoPlaybackException): Boolean {
             if (e.type != ExoPlaybackException.TYPE_SOURCE) {
                 return false

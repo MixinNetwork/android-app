@@ -1,5 +1,7 @@
 package one.mixin.android.widget.imageeditor.renderers;
 
+import static java.util.Collections.emptyList;
+
 import android.animation.ValueAnimator;
 import android.graphics.Color;
 import android.graphics.Matrix;
@@ -17,8 +19,6 @@ import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static java.util.Collections.emptyList;
 
 import one.mixin.android.widget.imageeditor.Bounds;
 import one.mixin.android.widget.imageeditor.ColorableRenderer;

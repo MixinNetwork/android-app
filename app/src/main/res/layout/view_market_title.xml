@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_market_gradient"
+    tools:parentTag="android.widget.RelativeLayout"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:id="@+id/rank_order"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_marginStart="20dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:background="?android:attr/selectableItemBackground">
+
+        <TextView
+            android:id="@+id/rank_title"
+            android:text="@string/Market_Cap"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:textColor="?attr/text_assist" />
+
+        <ImageView
+            android:id="@+id/rank_icon"
+            android:src="@drawable/ic_perps_sort_default"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/rank_title"
+            android:layout_alignTop="@id/rank_title"
+            android:layout_alignBottom="@id/rank_title"
+            android:layout_marginStart="4dp" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/percentage_order"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="20dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:background="?android:attr/selectableItemBackground">
+
+        <TextView
+            android:id="@+id/percentage"
+            android:text="@string/Market_Cap"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:textColor="?attr/text_assist" />
+
+        <ImageView
+            android:id="@+id/percentage_icon"
+            android:src="@drawable/ic_perps_sort_default"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/percentage"
+            android:layout_alignTop="@id/percentage"
+            android:layout_alignBottom="@id/percentage"
+            android:layout_marginStart="4dp" />
+    </RelativeLayout>
+
+    <View
+        android:id="@+id/price_percentage_divider"
+        android:layout_width="1dp"
+        android:layout_height="12dp"
+        android:layout_centerVertical="true"
+        android:layout_toStartOf="@id/percentage_order"
+        android:layout_marginEnd="10dp"
+        android:background="?attr/bg_window" />
+
+    <RelativeLayout
+        android:id="@+id/price_order"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_toStartOf="@id/price_percentage_divider"
+        android:layout_marginEnd="10dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:background="?android:attr/selectableItemBackground">
+
+        <TextView
+            android:id="@+id/price"
+            android:text="@string/Price"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:textColor="?attr/text_assist" />
+
+        <ImageView
+            android:id="@+id/price_icon"
+            android:src="@drawable/ic_perps_sort_default"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/price"
+            android:layout_alignTop="@id/price"
+            android:layout_alignBottom="@id/price"
+            android:layout_marginStart="4dp" />
+    </RelativeLayout>
+
+</merge>

@@ -25,52 +25,61 @@ class AudioFragment : BaseFragment(R.layout.layout_recycler_view) {
     companion object {
         const val TAG = "AudioFragment"
 
-        fun newInstance(conversationId: String) = AudioFragment().withArgs {
-            putString(Constants.ARGS_CONVERSATION_ID, conversationId)
-        }
+        fun newInstance(conversationId: String) =
+            AudioFragment().withArgs {
+                putString(Constants.ARGS_CONVERSATION_ID, conversationId)
+            }
     }
 
     private val viewModel by viewModels<SharedMediaViewModel>()
     private val binding by viewBinding(LayoutRecyclerViewBinding::bind)
+    var onLongClickListener: ((String) -> Unit)? = null
 
     private val conversationId: String by lazy {
         requireArguments().getString(Constants.ARGS_CONVERSATION_ID)!!
     }
 
-    private val adapter = AudioAdapter(
-        fun(messageItem: MessageItem) {
-            when {
-                messageItem.mediaStatus == MediaStatus.CANCELED.name -> {
-                    if (Session.getAccountId() == messageItem.userId) {
-                        viewModel.retryUpload(messageItem.messageId) {
-                            toast(R.string.error_retry_upload)
+    private val adapter =
+        AudioAdapter(
+            fun(messageItem: MessageItem) {
+                when {
+                    messageItem.mediaStatus == MediaStatus.CANCELED.name -> {
+                        if (Session.getAccountId() == messageItem.userId) {
+                            viewModel.retryUpload(messageItem.messageId) {
+                                toast(R.string.Retry_upload_failed)
+                            }
+                        } else {
+                            viewModel.retryDownload(messageItem.messageId)
                         }
-                    } else {
-                        viewModel.retryDownload(messageItem.messageId)
                     }
-                }
-                messageItem.mediaStatus == MediaStatus.PENDING.name -> {
-                    viewModel.cancel(messageItem.messageId)
-                }
-                mediaDownloaded(messageItem.mediaStatus) ->
-                    if (AudioPlayer.isPlay(messageItem.messageId)) {
-                        AudioPlayer.pause()
-                    } else {
-                        AudioPlayer.play(messageItem, continuePlayOnlyToday = true)
+                    messageItem.mediaStatus == MediaStatus.PENDING.name -> {
+                        viewModel.cancel(messageItem.messageId, messageItem.conversationId)
                     }
-            }
-        }
-    )
+                    mediaDownloaded(messageItem.mediaStatus) ->
+                        if (AudioPlayer.isPlay(messageItem.messageId)) {
+                            AudioPlayer.pause()
+                        } else {
+                            AudioPlayer.play(messageItem, continuePlayOnlyToday = true)
+                        }
+                }
+            },
+            fun(messageId: String) {
+                onLongClickListener?.invoke(messageId)
+            },
+        )
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerView.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         binding.recyclerView.adapter = adapter
         binding.emptyIv.setImageResource(R.drawable.ic_empty_audio)
-        binding.emptyTv.setText(R.string.no_audio)
+        binding.emptyTv.setText(R.string.NO_AUDIO)
         viewModel.getAudioMessages(conversationId).observe(
-            viewLifecycleOwner
+            viewLifecycleOwner,
         ) {
             if (it.size <= 0) {
                 (view as ViewAnimator).displayedChild = 1

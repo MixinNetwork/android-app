@@ -6,5 +6,5 @@ class SignedPreKey(
     keyId: Int,
     pubKey: String,
     @SerializedName("signature")
-    val signature: String
+    val signature: String,
 ) : OneTimePreKey(keyId, pubKey)

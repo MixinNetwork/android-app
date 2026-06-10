@@ -1,19 +1,38 @@
 package one.mixin.android
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.content.MutableContextWrapper
+import android.os.Build
+import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
 import android.webkit.CookieManager
 import android.webkit.WebStorage
+import androidx.annotation.RequiresApi
 import androidx.camera.camera2.Camera2Config
 import androidx.camera.core.CameraXConfig
 import androidx.hilt.work.HiltWorkerFactory
+import androidx.media3.common.util.UnstableApi
 import androidx.work.Configuration
-import com.microsoft.appcenter.AppCenter
-import com.microsoft.appcenter.analytics.Analytics
-import com.microsoft.appcenter.crashes.Crashes
+import coil3.ImageLoader
+import coil3.PlatformContext
+import coil3.SingletonImageLoader
+import coil3.annotation.ExperimentalCoilApi
+import coil3.gif.AnimatedImageDecoder
+import coil3.gif.GifDecoder
+import coil3.network.cachecontrol.CacheControlCacheStrategy
+import coil3.network.okhttp.OkHttpNetworkFetcherFactory
+import coil3.svg.SvgDecoder
+import coil3.util.DebugLogger
+import coil3.video.VideoFrameDecoder
+import com.bugsnag.android.Bugsnag
+import com.bugsnag.android.Configuration as BugsnagConfiguration
+import com.appsflyer.AppsFlyerConversionListener
+import com.appsflyer.AppsFlyerLib
+import com.google.android.gms.net.CronetProviderInstaller
+import com.google.firebase.analytics.FirebaseAnalytics
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
@@ -21,38 +40,53 @@ import dagger.hilt.components.SingletonComponent
 import io.reactivex.plugins.RxJavaPlugins
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import one.mixin.android.Constants.Account.PREF_APP_AUTH
+import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.MixinSignalProtocolLogger
 import one.mixin.android.crypto.PrivacyPreference.clearPrivacyPreferences
 import one.mixin.android.crypto.db.SignalDatabase
+import one.mixin.android.crypto.removeValueFromEncryptedPreferences
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.di.AppModule.API_UA
+import one.mixin.android.di.ApplicationScope
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.getStackTraceInfo
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.notificationManager
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
+import one.mixin.android.extension.remove
 import one.mixin.android.job.BlazeMessageService
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.session.resolveCurrentUserScopeManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.PipVideoView
 import one.mixin.android.ui.auth.AppAuthActivity
 import one.mixin.android.ui.call.CallActivity
+import one.mixin.android.ui.conversation.location.useOpenStreetMap
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.ui.player.FloatingPlayer
 import one.mixin.android.ui.player.MusicActivity
-import one.mixin.android.ui.player.isMusicServiceRunning
+import one.mixin.android.ui.player.MusicService
+import one.mixin.android.ui.transfer.TransferActivity
 import one.mixin.android.ui.web.FloatingWebClip
 import one.mixin.android.ui.web.WebActivity
+import one.mixin.android.util.BiometricUtil
+import one.mixin.android.ui.web.clips
 import one.mixin.android.ui.web.refresh
 import one.mixin.android.ui.web.releaseAll
+import one.mixin.android.util.CursorWindowFixer
 import one.mixin.android.util.MemoryCallback
 import one.mixin.android.util.debug.FileLogTree
 import one.mixin.android.util.initNativeLibs
-import one.mixin.android.util.language.Lingver
+import one.mixin.android.util.mlkit.entityInitialize
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.webrtc.GroupCallService
@@ -61,15 +95,16 @@ import one.mixin.android.webrtc.disconnect
 import org.whispersystems.libsignal.logging.SignalProtocolLoggerProvider
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
+import javax.inject.Inject
+import kotlin.system.exitProcess
+import kotlin.time.ExperimentalTime
 
 open class MixinApplication :
     Application(),
     Application.ActivityLifecycleCallbacks,
     Configuration.Provider,
-    CameraXConfig.Provider {
-
+    CameraXConfig.Provider,
+    SingletonImageLoader.Factory {
     @EntryPoint
     @InstallIn(SingletonComponent::class)
     interface MixinJobManagerEntryPoint {
@@ -107,56 +142,142 @@ open class MixinApplication :
         var conversationId: String? = null
 
         fun get(): MixinApplication = appContext as MixinApplication
-
-        val appScope: CoroutineScope
-            get() {
-                return get().appScope
-            }
     }
 
     private var activityReferences: Int = 0
     private var isActivityChangingConfigurations = false
 
+    @EntryPoint
+    @InstallIn(SingletonComponent::class)
+    interface ApplicationScopeEntryPoint {
+        @one.mixin.android.di.ApplicationScope
+        fun getApplicationScope(): CoroutineScope
+    }
+
+    private fun getAppScope(): CoroutineScope {
+        return try {
+            EntryPointAccessors.fromApplication(this, ApplicationScopeEntryPoint::class.java).getApplicationScope()
+        } catch (e: Exception) {
+            CoroutineScope(Dispatchers.Main + SupervisorJob())
+        }
+    }
+
+    lateinit var applicationScope: CoroutineScope
+
     override fun onCreate() {
         super.onCreate()
+        applicationScope = getAppScope()
         init()
         registerActivityLifecycleCallbacks(this)
         SignalProtocolLoggerProvider.setProvider(MixinSignalProtocolLogger())
         appContext = applicationContext
-        Lingver.init(this)
         RxJavaPlugins.setErrorHandler {}
-        AppCenter.start(
-            this,
-            BuildConfig.APPCENTER_API_KEY,
-            Analytics::class.java,
-            Crashes::class.java
-        )
+        if (useOpenStreetMap()) {
+            org.osmdroid.config.Configuration.getInstance().load(
+                this,
+                this.getSharedPreferences("osm_prefs", MODE_PRIVATE)
+            )
+        }
 
         initNativeLibs(applicationContext)
 
         registerComponentCallbacks(MemoryCallback())
+        Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
+            Timber.e("${thread.name}-${throwable.getStackTraceInfo()}")
+            exitProcess(2)
+        }
+
+        applicationScope.launch {
+            entityInitialize()
+        }
+        initBugsnag()
+        initAppsFlyer()
     }
 
-    private fun init() {
+    private fun initBugsnag() {
+        val config = BugsnagConfiguration.load(this)
+        config.enabledErrorTypes.anrs = true
+        config.enabledErrorTypes.ndkCrashes = true
+        config.enabledErrorTypes.unhandledExceptions = true
         if (BuildConfig.DEBUG) {
-            Timber.plant(Timber.DebugTree())
+            config.releaseStage = "development"
+        } else {
+            config.releaseStage = "production"
+        }
+        Bugsnag.start(this, config)
+    }
+
+    private fun initAppsFlyer() {
+        if (BuildConfig.APPSFLYER_DEV_KEY.isBlank()) {
+            return
+        }
+        AppsFlyerLib.getInstance().init(BuildConfig.APPSFLYER_DEV_KEY, object : AppsFlyerConversionListener {
+            override fun onConversionDataSuccess(conversionData: Map<String, Any>) {
+                Timber.d("AppsFlyer Conversion Data: $conversionData")
+            }
+
+            override fun onConversionDataFail(error: String) {
+                Timber.e("AppsFlyer Conversion Data Error: $error")
+            }
+
+            override fun onAppOpenAttribution(attributionData: Map<String, String>) {
+                Timber.d("AppsFlyer Attribution Data: $attributionData")
+            }
+
+            override fun onAttributionFailure(error: String) {
+                Timber.e("AppsFlyer Attribution Failure: $error")
+            }
+        }, this)
+        AppsFlyerLib.getInstance().start(this)
+        val firebaseAnalytics = FirebaseAnalytics.getInstance(this)
+        val appInstanceIdTask = firebaseAnalytics.appInstanceId
+        val sessionIdTask = firebaseAnalytics.sessionId
+        com.google.android.gms.tasks.Tasks.whenAllComplete(appInstanceIdTask, sessionIdTask)
+            .addOnCompleteListener {
+                val additionalData = mutableMapOf<String, Any>()
+                if (appInstanceIdTask.isSuccessful) {
+                    additionalData["app_instance_id"] = appInstanceIdTask.result
+                }
+                if (sessionIdTask.isSuccessful && sessionIdTask.result != null) {
+                    additionalData["ga_session_id"] = sessionIdTask.result
+                }
+                if (additionalData.isNotEmpty()) {
+                    AppsFlyerLib.getInstance().setAdditionalData(additionalData)
+                }
+            }
+    }
+
+    override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
+        super.onConfigurationChanged(newConfig)
+        val activity = topActivity
+        if (activity != null) {
+            refreshFloating(activity, true)
+        }
+    }
+
+    @SuppressLint("DiscouragedPrivateApi")
+    private fun init() {
+        CronetProviderInstaller.installProvider(this)
+        CursorWindowFixer.fix(this)
+        if (BuildConfig.DEBUG) {
+            Timber.plant(Timber.DebugTree(), FileLogTree())
         } else {
             Timber.plant(FileLogTree())
         }
     }
 
-    override fun getWorkManagerConfiguration(): Configuration {
-        return Configuration.Builder()
-            .setWorkerFactory(getWorkerFactory())
-            .build()
-    }
+    override val workManagerConfiguration: Configuration
+        get() =
+            Configuration.Builder()
+                .setWorkerFactory(getWorkerFactory())
+                .build()
 
     override fun getCameraXConfig() = Camera2Config.defaultConfig()
 
-    var onlining = AtomicBoolean(false)
+    var isOnline = AtomicBoolean(false)
 
     fun gotoTimeWrong(serverTime: Long) {
-        if (onlining.compareAndSet(true, false)) {
+        if (isOnline.compareAndSet(true, false)) {
             val ise =
                 IllegalStateException("Time error: Server-Time $serverTime - Local-Time ${System.currentTimeMillis()}")
             reportException(ise)
@@ -174,7 +295,7 @@ open class MixinApplication :
     }
 
     fun gotoOldVersionAlert() {
-        if (onlining.compareAndSet(true, false)) {
+        if (isOnline.compareAndSet(true, false)) {
             BlazeMessageService.stopService(this)
             val callState = getCallState()
             if (callState.isGroupCall()) {
@@ -187,31 +308,30 @@ open class MixinApplication :
         }
     }
 
-    fun closeAndClear() {
-        if (onlining.compareAndSet(true, false)) {
-            val sessionId = Session.getSessionId()
-            BlazeMessageService.stopService(this)
-            val callState = getCallState()
-            if (callState.isGroupCall()) {
-                disconnect<GroupCallService>(this)
-            } else if (callState.isVoiceCall()) {
-                disconnect<VoiceCallService>(this)
-            }
-            notificationManager.cancelAll()
-            Session.clearAccount()
-            CookieManager.getInstance().removeAllCookies(null)
-            CookieManager.getInstance().flush()
-            WebStorage.getInstance().deleteAllData()
-            releaseAll()
-            PipVideoView.release()
-            get().appScope.launch {
-                clearData(sessionId)
 
+    fun closeAndClear(force: Boolean = false) {
+        val activity = currentActivity
+        if (activity is TransferActivity) {
+            activity.shouldLogout = true
+            return
+        }
+
+        if (force || isOnline.compareAndSet(true, false)) {
+            val sessionId = Session.getSessionId()
+            val identityNumber = Session.getAccount()?.identityNumber
+            stopRealtimeServices()
+            clearLocalAuthState()
+            clearWebState()
+            releaseRuntimeState()
+            applicationScope.launch {
+                clearData(sessionId, identityNumber)
+                resolveCurrentUserScopeManager(this@MixinApplication).exit("closeAndClear")
                 withContext(Dispatchers.Main) {
-                    val entryPoint = EntryPointAccessors.fromApplication(
-                        this@MixinApplication,
-                        AppEntryPoint::class.java
-                    )
+                    val entryPoint =
+                        EntryPointAccessors.fromApplication(
+                            this@MixinApplication,
+                            AppEntryPoint::class.java,
+                        )
                     entryPoint.inject(this@MixinApplication)
                     LandingActivity.show(this@MixinApplication)
                 }
@@ -219,77 +339,107 @@ open class MixinApplication :
         }
     }
 
-    private fun clearData(sessionId: String?) {
+    private fun stopRealtimeServices() {
+        BlazeMessageService.stopService(this)
+        val callState = getCallState()
+        if (callState.isGroupCall()) {
+            disconnect<GroupCallService>(this)
+        } else if (callState.isVoiceCall()) {
+            disconnect<VoiceCallService>(this)
+        }
+        notificationManager.cancelAll()
+    }
+
+    private fun clearLocalAuthState() {
+        CryptoWalletHelper.clear(this)
+        // Clear biometric key material and prefs so a later relogin cannot reuse the old fingerprint state.
+        BiometricUtil.deleteKey(this)
+        defaultSharedPreferences.remove(PREF_APP_AUTH)
+        // Remove the in-memory and persisted account session, including session id and account profile.
+        Session.clearAccount()
+        // Remove locally cached mnemonic from encrypted storage during logout.
+        removeValueFromEncryptedPreferences(this, Constants.Tip.MNEMONIC)
+    }
+
+    private fun clearWebState() {
+        // Clear all WebView cookies so embedded login/auth pages do not keep the old session.
+        CookieManager.getInstance().removeAllCookies(null)
+        CookieManager.getInstance().flush()
+        // Clear WebView local storage/cache for web-based auth and app pages.
+        WebStorage.getInstance().deleteAllData()
+    }
+
+    @UnstableApi
+    private fun releaseRuntimeState() {
+        releaseAll()
+        PipVideoView.release()
+    }
+
+    fun reject() {
+        resolveCurrentUserScopeManager(this).ensureScopeFromSession()
+        val entryPoint =
+            EntryPointAccessors.fromApplication(
+                this@MixinApplication,
+                AppEntryPoint::class.java,
+            )
+        entryPoint.inject(this@MixinApplication)
+    }
+
+    private fun clearData(
+        sessionId: String?,
+        identityNumber: String?,
+    ) {
         val jobManager = getJobManager()
         jobManager.cancelAllJob()
         jobManager.clear()
         clearPrivacyPreferences(this)
-        MixinDatabase.getDatabase(this).participantSessionDao().clearKey(sessionId)
+        identityNumber?.let { scopedIdentity ->
+            MixinDatabase.getDatabase(this, scopedIdentity).participantSessionDao().clearKey(sessionId)
+        }
         SignalDatabase.getDatabase(this).clearAllTables()
+        removeValueFromEncryptedPreferences(this, Constants.Tip.MNEMONIC)
     }
 
     var activityInForeground = true
     var currentActivity: Activity? = null
+    var topActivity: Activity? = null
     val contextWrapper by lazy {
         MutableContextWrapper(this@MixinApplication)
     }
-    override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+
+    override fun onActivityCreated(
+        activity: Activity,
+        savedInstanceState: Bundle?,
+    ) {
     }
 
     override fun onActivityStarted(activity: Activity) {
-        contextWrapper.baseContext = activity
         if (activity !is AppAuthActivity) {
             activityReferences += 1
         } else {
+            // Workaround when other Activities in this task were finished
+            // async and the AppAuthActivity became the task's root.
+            if (activity.isTaskRoot) {
+                activity.finish()
+                return
+            }
             appAuthShown = true
         }
-        if (activityReferences == 1 && !isActivityChangingConfigurations) {
-            val appAuth = defaultSharedPreferences.getInt(Constants.Account.PREF_APP_AUTH, -1)
-            if (appAuth != -1) {
-                if (appAuth == 0) {
-                    AppAuthActivity.show(this)
-                } else {
-                    val enterBackground = defaultSharedPreferences.getLong(Constants.Account.PREF_APP_ENTER_BACKGROUND, 0)
-                    val now = System.currentTimeMillis()
-                    val offset = if (appAuth == 1) {
-                        Constants.INTERVAL_1_MIN
-                    } else {
-                        Constants.INTERVAL_30_MINS
-                    }
-                    if (now - enterBackground > offset) {
-                        AppAuthActivity.show(this)
-                    }
-                }
-            }
+        if (activityReferences == 1 && activity !is AppAuthActivity && !isActivityChangingConfigurations) {
+            checkAndShowAppAuth(activity)
         }
     }
 
     override fun onActivityResumed(activity: Activity) {
+        contextWrapper.baseContext = activity
+        topActivity = activity
         activityInForeground = true
-        if (activity is MediaPagerActivity || activity is CallActivity || activity is MusicActivity || activity is WebActivity || activity is AppAuthActivity) {
-            FloatingWebClip.getInstance(activity.isNightMode()).hide()
-            FloatingPlayer.getInstance(activity.isNightMode()).hide()
-        } else if (activity !is LandingActivity && activity !is InitializeActivity) {
-            if (activity !is WebActivity) {
-                currentActivity = activity
-                appScope.launch(Dispatchers.Main) {
-                    refresh()
-                }
-            }
-            if (activity !is MusicActivity) {
-                currentActivity = activity
-                appScope.launch(Dispatchers.Main) {
-                    if (isMusicServiceRunning(activity)) {
-                        FloatingPlayer.getInstance(activity.isNightMode()).show()
-                    }
-                }
-            }
-        }
+        refreshFloating(activity, false)
     }
 
     override fun onActivityPaused(activity: Activity) {
         activityInForeground = false
-        get().appScope.launch {
+        applicationScope.launch {
             delay(200)
             if (!activityInForeground) {
                 FloatingWebClip.getInstance(activity.isNightMode()).hide()
@@ -300,8 +450,13 @@ open class MixinApplication :
 
     private var appAuthShown = false
 
+    fun isAppAuthShown(): Boolean = appAuthShown
+
     override fun onActivityStopped(activity: Activity) {
         isActivityChangingConfigurations = activity.isChangingConfigurations
+        if (contextWrapper.baseContext == activity) {
+            contextWrapper.baseContext = this@MixinApplication
+        }
         if (activity !is AppAuthActivity) {
             activityReferences -= 1
         } else {
@@ -312,17 +467,97 @@ open class MixinApplication :
         }
     }
 
-    override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {
+    override fun onActivitySaveInstanceState(
+        activity: Activity,
+        outState: Bundle,
+    ) {
     }
 
     override fun onActivityDestroyed(activity: Activity) {
         if (activity == currentActivity) currentActivity = null
+        if (activity == topActivity) topActivity = null
     }
 
-    private val appScope by lazy {
-        object : CoroutineScope {
-            override val coroutineContext: CoroutineContext
-                get() = EmptyCoroutineContext
+    private fun refreshFloating(
+        activity: Activity,
+        recreate: Boolean,
+    ) {
+        if (activity is MediaPagerActivity || activity is CallActivity || activity is MusicActivity || activity is WebActivity || activity is AppAuthActivity) {
+            FloatingWebClip.getInstance(activity.isNightMode()).hide()
+            FloatingPlayer.getInstance(activity.isNightMode()).hide()
+        } else if (activity !is LandingActivity && activity !is InitializeActivity) {
+            currentActivity = activity
+            applicationScope.launch(Dispatchers.Main) {
+                if (recreate && clips.isNotEmpty()) {
+                    FloatingWebClip.recreate(activity.isNightMode()).show()
+                } else {
+                    refresh()
+                }
+
+                if (MusicService.isRunning(activity)) {
+                    FloatingPlayer.getInstance(activity.isNightMode()).show()
+                }
+            }
         }
     }
+
+    fun checkAndShowAppAuth(activity: Activity): Boolean {
+        val appAuth = defaultSharedPreferences.getInt(PREF_APP_AUTH, -1)
+        if (appAuth != -1) {
+            if (appAuth == 0) {
+                appAuthShown = true
+                AppAuthActivity.show(activity)
+                return true
+            } else {
+                val enterBackground =
+                    defaultSharedPreferences.getLong(Constants.Account.PREF_APP_ENTER_BACKGROUND, 0)
+                val now = System.currentTimeMillis()
+                val offset =
+                    if (appAuth == 1) {
+                        Constants.INTERVAL_1_MIN
+                    } else {
+                        Constants.INTERVAL_30_MINS
+                    }
+                if (now - enterBackground > offset) {
+                    appAuthShown = true
+                    AppAuthActivity.show(activity)
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
+    @OptIn(ExperimentalTime::class)
+    @ExperimentalCoilApi
+    @RequiresApi(Build.VERSION_CODES.P)
+    override fun newImageLoader(context: PlatformContext): ImageLoader {
+        return ImageLoader.Builder(this)
+            .components {
+                add(OkHttpNetworkFetcherFactory(callFactory = {
+                    OkHttpClient.Builder().addInterceptor { chain ->
+                        val original = chain.request()
+                        val requestBuilder =
+                            original.newBuilder()
+                                .header("User-Agent", API_UA)
+                                .method(original.method, original.body)
+                        val request = requestBuilder.build()
+                        chain.proceed(request)
+                    }.build()
+                }, cacheStrategy = { CacheControlCacheStrategy() }))
+                if (SDK_INT >= Build.VERSION_CODES.P) {
+                    add(AnimatedImageDecoder.Factory())
+                } else {
+                    add(GifDecoder.Factory())
+                }
+                add(SvgDecoder.Factory())
+                add(VideoFrameDecoder.Factory())
+            }.apply {
+                if (BuildConfig.DEBUG) {
+                    logger(DebugLogger())
+                }
+            }
+            .build()
+    }
+
 }

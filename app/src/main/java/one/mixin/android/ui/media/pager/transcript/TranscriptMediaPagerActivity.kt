@@ -15,6 +15,7 @@ import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.ColorDrawable
+import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -22,23 +23,24 @@ import android.provider.Settings
 import android.view.MotionEvent
 import android.view.TextureView
 import android.view.View
-import android.view.View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
-import android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
 import android.widget.ImageView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
-import androidx.core.net.toUri
+import androidx.core.net.toFile
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 import androidx.viewpager2.widget.ViewPager2
-import com.google.android.exoplayer2.Player
-import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityMediaPagerBinding
 import one.mixin.android.databinding.ItemPagerVideoLayoutBinding
@@ -74,6 +76,7 @@ import one.mixin.android.util.AnimationProperties
 import one.mixin.android.util.SensorOrientationChangeNotifier
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.VideoPlayer
+import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.absolutePath
@@ -92,7 +95,7 @@ import java.io.FileInputStream
 import javax.inject.Inject
 import kotlin.math.min
 
-@AndroidEntryPoint
+@UnstableApi @AndroidEntryPoint
 class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener, SensorOrientationChangeNotifier.Listener {
     private lateinit var colorDrawable: ColorDrawable
 
@@ -117,31 +120,25 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
     @Inject
     lateinit var conversationRepository: ConversationRepository
     private lateinit var binding: ActivityMediaPagerBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        skipSystemUi = true
         postponeEnterTransition()
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        window.sharedElementEnterTransition.duration = SHARED_ELEMENT_TRANSITION_DURATION
-        window.sharedElementExitTransition.duration = SHARED_ELEMENT_TRANSITION_DURATION
         binding = ActivityMediaPagerBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        window.decorView.systemUiVisibility =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
-                    SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-            } else {
-                View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
-                    SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-            }
+        window.sharedElementEnterTransition.duration = SHARED_ELEMENT_TRANSITION_DURATION
+        window.sharedElementExitTransition.duration = SHARED_ELEMENT_TRANSITION_DURATION
         supportsPie {
             val lp = window.attributes
             lp.layoutInDisplayCutoutMode =
                 WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
             window.attributes = lp
         }
-        SystemUIManager.setSystemUiColor(window, Color.BLACK)
-        SystemUIManager.lightUI(window, false)
-
+        binding.root.doOnPreDraw {
+            SystemUIManager.lightUI(window, false)
+        }
         colorDrawable = ColorDrawable(Color.BLACK)
         binding.viewPager.backgroundDrawable = colorDrawable
         binding.viewPager.adapter = adapter
@@ -174,10 +171,16 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
     override fun onStop() {
         super.onStop()
         binding.lockTv.removeCallbacks(hideLockRunnable)
+        if (!pipVideoView.shown) {
+            VideoPlayer.player().pause()
+        }
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        if (!pipVideoView.shown) {
+            VideoPlayer.destroy()
+        }
         processor.close()
         SensorOrientationChangeNotifier.reset()
         binding.viewPager.unregisterOnPageChangeCallback(onPageChangeCallback)
@@ -189,7 +192,10 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
         return super.dispatchTouchEvent(ev)
     }
 
-    override fun onOrientationChange(oldOrientation: Int, newOrientation: Int) {
+    override fun onOrientationChange(
+        oldOrientation: Int,
+        newOrientation: Int,
+    ) {
         if (!isAutoRotate()) return
 
         showLock()
@@ -205,11 +211,17 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
             return
         }
 
-        requestedOrientation = when (orientation) {
-            270 -> ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-            180 -> ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT
-            90 -> ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE
-            else -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        requestedOrientation =
+            when (orientation) {
+                270 -> ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                180 -> ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT
+                90 -> ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE
+                else -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            }
+        if (requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT || requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT) {
+            SystemUIManager.showSystemUI(window)
+        } else {
+            SystemUIManager.hideSystemUI(window)
         }
         findViewPagerChildByTag {
             ItemPagerVideoLayoutBinding.bind(it).playerView.switchFullscreen(orientation == 90 || orientation == 270)
@@ -218,20 +230,24 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
     }
 
     @SuppressLint("RestrictedApi")
-    private fun loadData() = lifecycleScope.launchWhenCreated {
-        val initialIndex = conversationRepository.indexTranscriptMediaMessages(transcriptId, messageId)
-        adapter.list = conversationRepository.getTranscriptMediaMessage(transcriptId)
-        adapter.initialPos = initialIndex
-        binding.viewPager.setCurrentItem(initialIndex, false)
+    private fun loadData() =
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.CREATED) {
+                val initialIndex =
+                    conversationRepository.indexTranscriptMediaMessages(transcriptId, messageId)
+                adapter.list = conversationRepository.getTranscriptMediaMessage(transcriptId)
+                adapter.initialPos = initialIndex
+                binding.viewPager.setCurrentItem(initialIndex, false)
 
-        val messageItem = adapter.getItem(initialIndex)
-        if (messageItem.isVideo() || messageItem.isLive()) {
-            checkPip()
-            messageItem.loadVideoOrLive {
-                VideoPlayer.player().start()
+                val messageItem = adapter.getItem(initialIndex)
+                if (messageItem.isVideo() || messageItem.isLive()) {
+                    checkPip()
+                    messageItem.loadVideoOrLive {
+                        VideoPlayer.player().start()
+                    }
+                }
             }
         }
-    }
 
     private fun checkPip() {
         if (pipVideoView.shown) {
@@ -241,31 +257,36 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
 
     private fun showVideoBottom(messageItem: ChatHistoryMessageItem) {
         val builder = BottomSheet.Builder(this)
-        val view = View.inflate(
-            ContextThemeWrapper(this, R.style.Custom),
-            R.layout.view_drag_video_bottom,
-            null
-        )
+        val view =
+            View.inflate(
+                ContextThemeWrapper(this, R.style.Custom),
+                R.layout.view_drag_video_bottom,
+                null,
+            )
         val binding = ViewDragVideoBottomBinding.bind(view)
         builder.setCustomView(view)
         val bottomSheet = builder.create()
         binding.showInChat.isVisible = false
         binding.saveVideo.setOnClickListener {
-            RxPermissions(this)
-                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .autoDispose(stopScope)
-                .subscribe(
-                    { granted ->
-                        if (granted) {
-                            messageItem.saveToLocal(this@TranscriptMediaPagerActivity)
-                        } else {
-                            openPermissionSetting()
-                        }
-                    },
-                    {
-                        toast(R.string.save_failure)
-                    }
-                )
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                RxPermissions(this)
+                    .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .autoDispose(stopScope)
+                    .subscribe(
+                        { granted ->
+                            if (granted) {
+                                messageItem.saveToLocal(this@TranscriptMediaPagerActivity)
+                            } else {
+                                openPermissionSetting()
+                            }
+                        },
+                        {
+                            toast(R.string.Save_failure)
+                        },
+                    )
+            } else {
+                messageItem.saveToLocal(this@TranscriptMediaPagerActivity)
+            }
             bottomSheet.dismiss()
         }
         binding.share.setOnClickListener {
@@ -278,63 +299,41 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
         bottomSheet.show()
     }
 
-    private fun showImageBottom(item: ChatHistoryMessageItem, pagerItemView: View) {
+    private fun showImageBottom(
+        item: ChatHistoryMessageItem,
+        pagerItemView: View,
+    ) {
         val builder = BottomSheet.Builder(this)
-        val view = View.inflate(
-            ContextThemeWrapper(this, R.style.Custom),
-            R.layout.view_drag_image_bottom,
-            null
-        )
+        val view =
+            View.inflate(
+                ContextThemeWrapper(this, R.style.Custom),
+                R.layout.view_drag_image_bottom,
+                null,
+            )
         val binding = ViewDragImageBottomBinding.bind(view)
         builder.setCustomView(view)
         val bottomSheet = builder.create()
         binding.showInChat.isVisible = false
         binding.save.setOnClickListener {
-            RxPermissions(this)
-                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .autoDispose(stopScope)
-                .subscribe(
-                    { granted ->
-                        if (granted) {
-                            async {
-                                val path = item.mediaUrl?.toUri()?.getFilePath()
-                                if (path == null) {
-                                    toast(R.string.save_failure)
-                                    return@async
-                                }
-                                val file = File(path)
-                                val outFile = when {
-                                    item.mediaMimeType.equals(
-                                        MimeType.GIF.toString(),
-                                        true
-                                    ) -> this@TranscriptMediaPagerActivity.getPublicPicturePath().createGifTemp(
-                                        false
-                                    )
-                                    item.mediaMimeType.equals(MimeType.PNG.toString()) ->
-                                        this@TranscriptMediaPagerActivity.getPublicPicturePath().createPngTemp(
-                                            false
-                                        )
-                                    else -> this@TranscriptMediaPagerActivity.getPublicPicturePath().createImageTemp(
-                                        noMedia = false
-                                    )
-                                }
-                                outFile.copyFromInputStream(FileInputStream(file))
-                                sendBroadcast(
-                                    Intent(
-                                        Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
-                                        Uri.fromFile(outFile)
-                                    )
-                                )
-                                runOnUiThread { toast(getString(R.string.save_to, outFile.absolutePath)) }
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                RxPermissions(this)
+                    .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .autoDispose(stopScope)
+                    .subscribe(
+                        { granted ->
+                            if (granted) {
+                                save(item)
+                            } else {
+                                openPermissionSetting()
                             }
-                        } else {
-                            openPermissionSetting()
-                        }
-                    },
-                    {
-                        toast(R.string.save_failure)
-                    }
-                )
+                        },
+                        {
+                            toast(R.string.Save_failure)
+                        },
+                    )
+            } else {
+                save(item)
+            }
             bottomSheet.dismiss()
         }
         binding.shareImage.setOnClickListener {
@@ -351,22 +350,76 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
         bottomSheet.show()
     }
 
+    private fun save(item: ChatHistoryMessageItem) {
+        async {
+            val path = item.absolutePath()
+            if (path == null) {
+                toast(R.string.Save_failure)
+                return@async
+            }
+            val file = Uri.parse(path).toFile()
+            if (!file.exists()) {
+                toast(R.string.File_does_not_exist)
+                return@async
+            }
+            val outFile =
+                when {
+                    item.mediaMimeType.equals(
+                        MimeType.GIF.toString(),
+                        true,
+                    ) ->
+                        this@TranscriptMediaPagerActivity.getPublicPicturePath()
+                            .createGifTemp(
+                                false,
+                            )
+
+                    item.mediaMimeType.equals(MimeType.PNG.toString()) ->
+                        this@TranscriptMediaPagerActivity.getPublicPicturePath()
+                            .createPngTemp(
+                                false,
+                            )
+
+                    else ->
+                        this@TranscriptMediaPagerActivity.getPublicPicturePath()
+                            .createImageTemp(
+                                noMedia = false,
+                            )
+                }
+            outFile.copyFromInputStream(FileInputStream(file))
+            MediaScannerConnection.scanFile(
+                this@TranscriptMediaPagerActivity,
+                arrayOf(outFile.toString()),
+                null,
+                null,
+            )
+            runOnUiThread {
+                toast(
+                    getString(
+                        R.string.Save_to,
+                        outFile.absolutePath,
+                    ),
+                )
+            }
+        }
+    }
+
     @Suppress("DEPRECATION")
     private fun decodeQRCode(viewGroup: ViewGroup) {
         val imageView = viewGroup.getChildAt(0)
-        val bitmap = if (imageView is ImageView) {
-            val bitmapDrawable = imageView.drawable as? BitmapDrawable
-            if (bitmapDrawable == null) {
-                toast(R.string.can_not_recognize)
-                return
+        val bitmap =
+            if (imageView is ImageView) {
+                val bitmapDrawable = imageView.drawable as? BitmapDrawable
+                if (bitmapDrawable == null) {
+                    toast(R.string.can_not_recognize_qr_code)
+                    return
+                } else {
+                    bitmapDrawable.bitmap
+                }
             } else {
-                bitmapDrawable.bitmap
+                imageView.isDrawingCacheEnabled = true
+                imageView.buildDrawingCache()
+                imageView.drawingCache
             }
-        } else {
-            imageView.isDrawingCacheEnabled = true
-            imageView.buildDrawingCache()
-            imageView.drawingCache
-        }
         if (bitmap != null) {
             processor.detect(
                 lifecycleScope,
@@ -374,54 +427,64 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
                 onSuccess = { result ->
                     result.openAsUrlOrQrScan(this, supportFragmentManager, lifecycleScope)
                 },
-                onFailure = { toast(R.string.can_not_recognize) },
+                onFailure = { toast(R.string.can_not_recognize_qr_code) },
                 onComplete = {
                     if (imageView !is ImageView) {
                         imageView.isDrawingCacheEnabled = false
                     }
-                }
+                },
             )
         } else {
-            toast(R.string.can_not_recognize)
+            toast(R.string.can_not_recognize_qr_code)
             if (imageView !is ImageView) {
                 imageView.isDrawingCacheEnabled = false
             }
         }
     }
 
-    private fun shareMedia(isVideo: Boolean, url: String) {
+    private fun shareMedia(
+        isVideo: Boolean,
+        url: String,
+    ) {
         var uri: Uri
-        val sendIntent = Intent().apply {
-            action = Intent.ACTION_SEND
-            uri = Uri.parse(url)
-            if (ContentResolver.SCHEME_FILE == uri.scheme) {
-                val path = uri.getFilePath(this@TranscriptMediaPagerActivity)
-                if (path == null) {
-                    toast(R.string.error_file_exists)
-                    return
+        val sendIntent =
+            Intent().apply {
+                action = Intent.ACTION_SEND
+                uri = Uri.parse(url)
+                if (ContentResolver.SCHEME_FILE == uri.scheme) {
+                    @Suppress("DEPRECATION")
+                    val path = uri.getFilePath(this@TranscriptMediaPagerActivity)
+                    if (path == null) {
+                        toast(R.string.File_does_not_exist)
+                        return
+                    }
+                    uri = getUriForFile(File(path))
+                    putExtra(Intent.EXTRA_STREAM, uri)
+                } else {
+                    putExtra(Intent.EXTRA_STREAM, uri)
                 }
-                uri = getUriForFile(File(path))
-                putExtra(Intent.EXTRA_STREAM, uri)
-            } else {
-                putExtra(Intent.EXTRA_STREAM, uri)
+                type = if (isVideo) "video/*" else "image/*"
             }
-            type = if (isVideo) "video/*" else "image/*"
-        }
-        val name = getString(if (isVideo) R.string.common_video else R.string.common_pic)
+        val name = getString(if (isVideo) R.string.Video else R.string.Photo)
         val chooser = Intent.createChooser(sendIntent, getString(R.string.share_to, name))
         val resInfoList = packageManager.queryIntentActivities(chooser, PackageManager.MATCH_DEFAULT_ONLY)
         resInfoList.forEach {
             val packageName = it.activityInfo.packageName
             grantUriPermission(
-                packageName, uri,
-                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                packageName,
+                uri,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
             )
         }
         startActivity(chooser)
     }
 
     private var pipAnimationInProgress = false
-    private fun switchToPip(messageItem: ChatHistoryMessageItem, view: View) {
+
+    private fun switchToPip(
+        messageItem: ChatHistoryMessageItem,
+        view: View,
+    ) {
         if (!checkPipPermission() || pipAnimationInProgress) {
             return
         }
@@ -444,21 +507,16 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
             val animatorSet = AnimatorSet()
             val position = IntArray(2)
             videoAspectRatioLayout.getLocationOnScreen(position)
-            window.decorView.systemUiVisibility =
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
-                } else {
-                    SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-                }
-            val changedTextureView = pipVideoView.show(
-                videoAspectRatioLayout.aspectRatio,
-                videoAspectRatioLayout.videoRotation,
-                "", //
-                messageItem.messageId,
-                messageItem.isVideo(),
-                MediaPagerActivity.MediaSource.ChatHistory, //
-                messageItem.absolutePath()
-            )
+            val changedTextureView =
+                pipVideoView.show(
+                    videoAspectRatioLayout.aspectRatio,
+                    videoAspectRatioLayout.videoRotation,
+                    "", //
+                    messageItem.messageId,
+                    messageItem.isVideo(),
+                    MediaPagerActivity.MediaSource.ChatHistory, //
+                    messageItem.absolutePath(),
+                )
 
             val videoTexture = view.findViewById<TextureView>(R.id.video_texture)
             animatorSet.playTogether(
@@ -469,31 +527,28 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
                     videoAspectRatioLayout,
                     View.TRANSLATION_X,
                     rect.x - videoAspectRatioLayout.x -
-                        this.realSize().x * (1f - scale) / 2
+                        this.realSize().x * (1f - scale) / 2,
                 ),
                 ObjectAnimator.ofFloat(
                     videoAspectRatioLayout,
                     View.TRANSLATION_Y,
                     rect.y - videoAspectRatioLayout.y +
-                        this.statusBarHeight() - (videoAspectRatioLayout.height - rect.height) / 2
-                )
+                        this.statusBarHeight() - (videoAspectRatioLayout.height - rect.height) / 2,
+                ),
             )
             animatorSet.interpolator = DecelerateInterpolator()
             animatorSet.duration = 250
             animatorSet.addListener(
                 object : AnimatorListenerAdapter() {
-                    override fun onAnimationStart(animation: Animator?) {
+                    override fun onAnimationStart(animation: Animator) {
                         windowView.findViewById<View>(R.id.pip_iv).fadeOut()
                         windowView.findViewById<View>(R.id.close_iv).fadeOut()
                         if (windowView.findViewById<View>(R.id.live_tv).isEnabled) {
                             windowView.findViewById<View>(R.id.live_tv).fadeOut()
                         }
-                        if (!SystemUIManager.hasCutOut(window)) {
-                            SystemUIManager.clearStyle(window)
-                        }
                     }
 
-                    override fun onAnimationEnd(animation: Animator?) {
+                    override fun onAnimationEnd(animation: Animator) {
                         pipAnimationInProgress = false
                         if (messageItem.isVideo() && VideoPlayer.player().player.playbackState == Player.STATE_IDLE) {
                             VideoPlayer.player()
@@ -505,7 +560,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
                         }
                         dismiss()
                     }
-                }
+                },
             )
             animatorSet.start()
         }
@@ -517,22 +572,23 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
         checkInlinePermissions {
             if (permissionAlert != null && permissionAlert!!.isShowing) return@checkInlinePermissions
 
-            permissionAlert = AlertDialog.Builder(this)
-                .setTitle(R.string.app_name)
-                .setMessage(R.string.call_pip_permission)
-                .setPositiveButton(R.string.live_setting) { dialog, _ ->
-                    try {
-                        startActivity(
-                            Intent(
-                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                Uri.parse("package:$packageName")
+            permissionAlert =
+                AlertDialog.Builder(this)
+                    .setTitle(R.string.app_name)
+                    .setMessage(R.string.call_pip_permission)
+                    .setPositiveButton(R.string.Settings) { dialog, _ ->
+                        try {
+                            startActivity(
+                                Intent(
+                                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                    Uri.parse("package:$packageName"),
+                                ),
                             )
-                        )
-                    } catch (e: Exception) {
-                        Timber.e(e)
-                    }
-                    dialog.dismiss()
-                }.show()
+                        } catch (e: Exception) {
+                            Timber.e(e)
+                        }
+                        dialog.dismiss()
+                    }.show()
         }
 
     private fun dismiss() {
@@ -564,7 +620,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
 
     private inline fun findViewPagerChildByTag(
         pos: Int = binding.viewPager.currentItem,
-        crossinline action: (v: ViewGroup) -> Unit
+        crossinline action: (v: ViewGroup) -> Unit,
     ) {
         if (isFinishing) return
         val id = getMessageItemByPosition(pos)?.messageId ?: return
@@ -604,42 +660,45 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
         }
     }
 
-    private val hideLockRunnable = Runnable {
-        binding.lockTv.isVisible = false
-    }
-
-    private val onLockClickListener = View.OnClickListener {
-        isLocked = !isLocked
-        if (isLocked) {
-            binding.lockTv.text = getString(R.string.click_unlock)
-            binding.lockTv.textColor = getColor(R.color.colorAccent)
-        } else {
-            binding.lockTv.text = getString(R.string.click_lock)
-            binding.lockTv.textColor = getColor(R.color.white)
+    private val hideLockRunnable =
+        Runnable {
+            binding.lockTv.isVisible = false
         }
-        binding.lockTv.removeCallbacks(hideLockRunnable)
-        binding.lockTv.postDelayed(hideLockRunnable, 3000)
-        checkOrientation()
-    }
 
-    private val onPageChangeCallback = object : ViewPager2.OnPageChangeCallback() {
-        override fun onPageSelected(position: Int) {
+    private val onLockClickListener =
+        View.OnClickListener {
+            isLocked = !isLocked
+            if (isLocked) {
+                binding.lockTv.text = getString(R.string.Click_to_unlock)
+                binding.lockTv.textColor = getColor(R.color.colorAccent)
+            } else {
+                binding.lockTv.text = getString(R.string.Click_to_lock)
+                binding.lockTv.textColor = getColor(R.color.white)
+            }
             binding.lockTv.removeCallbacks(hideLockRunnable)
-            binding.lockTv.post(hideLockRunnable)
-
-            if (downloadMedia(position)) return
-
-            val messageItem = getMessageItemByPosition(position) ?: return
-            if (VideoPlayer.player().mId != messageItem.messageId && !pipVideoView.shown) {
-                VideoPlayer.player().stop()
-                VideoPlayer.player().pause()
-            }
-            if (messageItem.isVideo() || messageItem.isLive()) {
-                checkPip()
-            }
-            loadVideoMessage(messageItem)
+            binding.lockTv.postDelayed(hideLockRunnable, 3000)
+            checkOrientation()
         }
-    }
+
+    private val onPageChangeCallback =
+        object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                binding.lockTv.removeCallbacks(hideLockRunnable)
+                binding.lockTv.post(hideLockRunnable)
+
+                if (downloadMedia(position)) return
+
+                val messageItem = getMessageItemByPosition(position) ?: return
+                if (VideoPlayer.player().mId != messageItem.messageId && !pipVideoView.shown) {
+                    VideoPlayer.player().stop()
+                    VideoPlayer.player().pause()
+                }
+                if (messageItem.isVideo() || messageItem.isLive()) {
+                    checkPip()
+                }
+                loadVideoMessage(messageItem)
+            }
+        }
 
     private var inDismissState = false
     private var controllerVisibleBeforeDismiss = false
@@ -690,62 +749,60 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
     }
 
     override fun finish() {
-        window.decorView.systemUiVisibility =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
-            } else {
-                SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-            }
-        if (!pipVideoView.shown) {
-            VideoPlayer.destroy()
-        }
         super.finish()
         overridePendingTransition(0, R.anim.scale_out)
     }
 
-    private val mediaPagerAdapterListener = object : MediaPagerAdapterListener {
-        override fun onClick(messageItem: ChatHistoryMessageItem) {
-            finishAfterTransition()
-        }
-
-        override fun onLongClick(messageItem: ChatHistoryMessageItem, view: View) {
-            if (messageItem.isImage()) {
-                showImageBottom(messageItem, view)
-            } else if (messageItem.isVideo()) {
-                showVideoBottom(messageItem)
+    private val mediaPagerAdapterListener =
+        object : MediaPagerAdapterListener {
+            override fun onClick(messageItem: ChatHistoryMessageItem) {
+                finishAfterTransition()
             }
-        }
 
-        override fun onCircleProgressClick(messageItem: ChatHistoryMessageItem) {
-            when (messageItem.mediaStatus) {
-                MediaStatus.CANCELED.name -> {
-                    if (Session.getAccountId() == messageItem.userId) {
-                    } else {
+            override fun onLongClick(
+                messageItem: ChatHistoryMessageItem,
+                view: View,
+            ) {
+                if (messageItem.isImage()) {
+                    showImageBottom(messageItem, view)
+                } else if (messageItem.isVideo()) {
+                    showVideoBottom(messageItem)
+                }
+            }
+
+            override fun onCircleProgressClick(messageItem: ChatHistoryMessageItem) {
+                when (messageItem.mediaStatus) {
+                    MediaStatus.CANCELED.name -> {
+                        if (Session.getAccountId() == messageItem.userId) {
+                        } else {
+                        }
+                    }
+                    MediaStatus.PENDING.name -> {
                     }
                 }
-                MediaStatus.PENDING.name -> {
-                }
+            }
+
+            override fun onReadyPostTransition(view: View) {
+                setStartPostTransition(view)
+            }
+
+            override fun switchToPin(
+                messageItem: ChatHistoryMessageItem,
+                view: View,
+            ) {
+                switchToPip(messageItem, view)
+            }
+
+            override fun finishAfterTransition() {
+                this@TranscriptMediaPagerActivity.finishAfterTransition()
+            }
+
+            override fun switchFullscreen() {
+                val isLandscape = this@TranscriptMediaPagerActivity.isLandscape()
+                val orientation = if (isLandscape) 0 else 270
+                this@TranscriptMediaPagerActivity.changeOrientation(orientation)
             }
         }
-
-        override fun onReadyPostTransition(view: View) {
-            setStartPostTransition(view)
-        }
-
-        override fun switchToPin(messageItem: ChatHistoryMessageItem, view: View) {
-            switchToPip(messageItem, view)
-        }
-
-        override fun finishAfterTransition() {
-            this@TranscriptMediaPagerActivity.finishAfterTransition()
-        }
-
-        override fun switchFullscreen() {
-            val isLandscape = this@TranscriptMediaPagerActivity.isLandscape()
-            val orientation = if (isLandscape) 0 else 270
-            this@TranscriptMediaPagerActivity.changeOrientation(orientation)
-        }
-    }
 
     private val messageId by lazy {
         intent.getStringExtra(MESSAGE_ID) as String
@@ -771,17 +828,18 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
             transcriptId: String,
             messageId: String,
         ) {
-            val intent = Intent(activity, TranscriptMediaPagerActivity::class.java).apply {
-                putExtra(TRANSCRIPT_ID, transcriptId)
-                putExtra(MESSAGE_ID, messageId)
-            }
+            val intent =
+                Intent(activity, TranscriptMediaPagerActivity::class.java).apply {
+                    putExtra(TRANSCRIPT_ID, transcriptId)
+                    putExtra(MESSAGE_ID, messageId)
+                }
             activity.startActivity(
                 intent,
                 ActivityOptions.makeSceneTransitionAnimation(
                     activity,
                     imageView,
-                    "transition"
-                ).toBundle()
+                    "transition",
+                ).toBundle(),
             )
         }
     }

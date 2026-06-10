@@ -6,6 +6,7 @@ import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineScope
 import one.mixin.android.Constants.SLEEP_MILLIS
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.service.CircleService
@@ -15,27 +16,33 @@ import one.mixin.android.crypto.EncryptedProtocol
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.db.RatchetSenderKeyDao
 import one.mixin.android.db.AppDao
-import one.mixin.android.db.AssetDao
 import one.mixin.android.db.CircleConversationDao
 import one.mixin.android.db.CircleDao
 import one.mixin.android.db.ConversationDao
+import one.mixin.android.db.ConversationExtDao
+import one.mixin.android.db.ExpiredMessageDao
 import one.mixin.android.db.HyperlinkDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageHistoryDao
 import one.mixin.android.db.MessageMentionDao
-import one.mixin.android.db.MessagesFts4Dao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.PinMessageDao
+import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.db.ResendSessionMessageDao
+import one.mixin.android.db.SafeSnapshotDao
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.StickerDao
+import one.mixin.android.db.TokenDao
 import one.mixin.android.db.TraceDao
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.UserDao
-import one.mixin.android.db.insertUpdate
+import one.mixin.android.db.pending.PendingMessageDao
+import one.mixin.android.di.ApplicationScope
+import one.mixin.android.fts.FtsDatabase
+import one.mixin.android.session.CurrentUserScopeManager
 import one.mixin.android.session.Session
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.ConversationCategory
@@ -54,62 +61,116 @@ import javax.inject.Inject
 open class Injector {
     @Inject
     lateinit var jobManager: MixinJobManager
+
+    @Inject
+    lateinit var ftsDatabase: FtsDatabase
+
     @Inject
     lateinit var messageDao: MessageDao
+
+    @Inject
+    lateinit var pendingMessagesDao: PendingMessageDao
+
     @Inject
     lateinit var messageHistoryDao: MessageHistoryDao
+
     @Inject
     lateinit var userDao: UserDao
+
     @Inject
     lateinit var appDao: AppDao
+
     @Inject
     lateinit var jobDao: JobDao
+
     @Inject
     lateinit var conversationDao: ConversationDao
+
+    @Inject
+    lateinit var conversationExtDao: ConversationExtDao
+
     @Inject
     lateinit var participantDao: ParticipantDao
+
     @Inject
     lateinit var participantSessionDao: ParticipantSessionDao
+
     @Inject
     lateinit var snapshotDao: SnapshotDao
+
     @Inject
-    lateinit var assetDao: AssetDao
+    lateinit var safeSnapshotDao: SafeSnapshotDao
+
+    @Inject
+    lateinit var tokenDao: TokenDao
+
     @Inject
     lateinit var circleDao: CircleDao
+
     @Inject
     lateinit var circleConversationDao: CircleConversationDao
+
     @Inject
     lateinit var traceDao: TraceDao
+
     @Inject
     lateinit var circleService: CircleService
+
     @Inject
     lateinit var chatWebSocket: ChatWebSocket
+
     @Inject
     lateinit var stickerDao: StickerDao
+
     @Inject
     lateinit var messageMentionDao: MessageMentionDao
+
     @Inject
     lateinit var signalProtocol: SignalProtocol
+
     @Inject
     lateinit var encryptedProtocol: EncryptedProtocol
+
     @Inject
     lateinit var ratchetSenderKeyDao: RatchetSenderKeyDao
+
     @Inject
     lateinit var resendMessageDao: ResendSessionMessageDao
+
     @Inject
     lateinit var hyperlinkDao: HyperlinkDao
+
     @Inject
     lateinit var userApi: UserService
+
     @Inject
     lateinit var conversationService: ConversationService
+
     @Inject
     lateinit var transcriptMessageDao: TranscriptMessageDao
-    @Inject
-    lateinit var messagesFts4Dao: MessagesFts4Dao
+
     @Inject
     lateinit var pinMessageDao: PinMessageDao
+
+    @Inject
+    lateinit var remoteMessageStatusDao: RemoteMessageStatusDao
+
+    @Inject
+    lateinit var expiredMessageDao: ExpiredMessageDao
+
     @Inject
     lateinit var database: MixinDatabase
+
+    @Inject
+    lateinit var currentUserScopeManager: CurrentUserScopeManager
+
+    @ApplicationScope
+    @Transient
+    @Inject
+    lateinit var applicationScope: CoroutineScope
+
+    @Volatile
+    private var injectedScopeVersion: Long = Long.MIN_VALUE
 
     @InstallIn(SingletonComponent::class)
     @EntryPoint
@@ -117,9 +178,36 @@ open class Injector {
         fun inject(injector: Injector)
     }
 
-    init {
+    private fun injectSelf() {
         val entryPoint = EntryPointAccessors.fromApplication(MixinApplication.get().applicationContext, InjectorEntryPoint::class.java)
         entryPoint.inject(this)
+        injectedScopeVersion = currentUserScopeManager.getScopeVersion()
+    }
+
+    protected fun ensureSessionInjection() {
+        val scopeVersion = currentUserScopeManager.getScopeVersion()
+        if (scopeVersion == injectedScopeVersion) {
+            return
+        }
+        synchronized(this) {
+            val latestScopeVersion = currentUserScopeManager.getScopeVersion()
+            if (latestScopeVersion == injectedScopeVersion) {
+                return
+            }
+            injectSelf()
+        }
+    }
+
+    init {
+        // Defer session-scoped injection until ensureSessionInjection() is called
+        // This avoids crashes when Session.getAccount() is null at construction time
+        try {
+            if (Session.getAccount() != null) {
+                injectSelf()
+            }
+        } catch (e: Exception) {
+            // Injection will happen later via ensureSessionInjection()
+        }
     }
 
     protected tailrec fun signalKeysChannel(blazeMessage: BlazeMessage): JsonElement? {
@@ -138,9 +226,13 @@ open class Injector {
         return bm.data
     }
 
-    protected fun syncUser(userId: String, conversationId: String? = null): User? {
+    protected fun syncUser(
+        userId: String,
+        conversationId: String? = null,
+        forceSync: Boolean = true,
+    ): User? {
         var user = userDao.findUser(userId)
-        if (user == null) {
+        if (user == null && forceSync) {
             try {
                 val call = userApi.getUserById(userId).execute()
                 val response = call.body()
@@ -167,7 +259,7 @@ open class Injector {
         var status = conversation?.status ?: ConversationStatus.START.ordinal
         if (conversation == null) {
             conversation = createConversation(data.conversationId, null, data.userId, ConversationStatus.START.ordinal)
-            conversationDao.insert(conversation)
+            conversationDao.upsert(conversation)
             status = refreshConversation(data.conversationId)
         }
         if (status == ConversationStatus.START.ordinal) {
@@ -175,7 +267,7 @@ open class Injector {
         }
     }
 
-    protected fun isExistMessage(messageId: String): Boolean =
+    protected open fun isExistMessage(messageId: String): Boolean =
         messageDao.findMessageIdById(messageId) != null || messageHistoryDao.findMessageHistoryById(messageId) != null
 
     private fun refreshConversation(conversationId: String): Int {
@@ -184,11 +276,12 @@ open class Injector {
             val response = call.body()
             if (response != null && response.isSuccess) {
                 response.data?.let { conversationData ->
-                    val status = if (conversationData.participants.find { Session.getAccountId() == it.userId } != null) {
-                        ConversationStatus.SUCCESS.ordinal
-                    } else {
-                        ConversationStatus.QUIT.ordinal
-                    }
+                    val status =
+                        if (conversationData.participants.find { Session.getAccountId() == it.userId } != null) {
+                            ConversationStatus.SUCCESS.ordinal
+                        } else {
+                            ConversationStatus.QUIT.ordinal
+                        }
                     var ownerId: String = conversationData.creatorId
                     if (conversationData.category == ConversationCategory.CONTACT.name) {
                         ownerId = conversationData.participants.find { it.userId != Session.getAccountId() }!!.userId
@@ -203,7 +296,8 @@ open class Injector {
                         conversationData.announcement,
                         conversationData.muteUntil,
                         conversationData.createdAt,
-                        status
+                        conversationData.expireIn,
+                        status,
                     )
                     val remote = mutableListOf<Participant>()
                     val conversationUserIds = mutableListOf<String>()
@@ -217,9 +311,10 @@ open class Injector {
                         jobManager.addJobInBackground(RefreshUserJob(conversationUserIds, conversationId))
                     }
 
-                    val sessionParticipants = conversationData.participantSessions?.map {
-                        ParticipantSession(conversationId, it.userId, it.sessionId, publicKey = it.publicKey)
-                    }
+                    val sessionParticipants =
+                        conversationData.participantSessions?.map {
+                            ParticipantSession(conversationId, it.userId, it.sessionId, publicKey = it.publicKey)
+                        }
                     sessionParticipants?.let {
                         participantSessionDao.replaceAll(conversationId, it)
                     }
@@ -241,7 +336,7 @@ open class Injector {
                     return status
                 }
             }
-        } catch (e: IOException) {
+        } catch (_: IOException) {
         }
         return ConversationStatus.START.ordinal
     }

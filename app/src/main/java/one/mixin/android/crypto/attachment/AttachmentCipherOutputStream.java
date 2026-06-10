@@ -1,9 +1,6 @@
 package one.mixin.android.crypto.attachment;
 
 
-import one.mixin.android.crypto.Util;
-
-import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.security.InvalidAlgorithmParameterException;
@@ -16,6 +13,9 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.Mac;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+
+import one.mixin.android.crypto.Util;
 
 public class AttachmentCipherOutputStream extends DigestingOutputStream {
 

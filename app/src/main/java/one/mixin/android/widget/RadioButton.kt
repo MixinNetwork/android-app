@@ -10,7 +10,6 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ViewRadioBinding
 
 class RadioButton(context: Context, attrs: AttributeSet) : FrameLayout(context, attrs), Checkable {
-
     private var checked: Boolean = false
     private val binding = ViewRadioBinding.inflate(LayoutInflater.from(context), this, true)
 
@@ -36,7 +35,9 @@ class RadioButton(context: Context, attrs: AttributeSet) : FrameLayout(context, 
         binding.title.text = text
     }
 
-    fun setText(@StringRes resId: Int) {
+    fun setText(
+        @StringRes resId: Int,
+    ) {
         binding.title.setText(resId)
     }
 
@@ -63,7 +64,10 @@ class RadioButton(context: Context, attrs: AttributeSet) : FrameLayout(context, 
     private var listener: OnCheckedChangeListener? = null
 
     interface OnCheckedChangeListener {
-        fun onCheckedChanged(id: Int, checked: Boolean)
+        fun onCheckedChanged(
+            id: Int,
+            checked: Boolean,
+        )
     }
 
     fun setOnCheckedChangeListener(listener: OnCheckedChangeListener?) {

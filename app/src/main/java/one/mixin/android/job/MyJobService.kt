@@ -7,7 +7,6 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class MyJobService : FrameworkJobSchedulerService() {
-
     @Inject
     lateinit var jobManager: MixinJobManager
 

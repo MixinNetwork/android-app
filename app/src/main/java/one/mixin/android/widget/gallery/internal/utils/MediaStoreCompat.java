@@ -7,15 +7,18 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
-import androidx.fragment.app.Fragment;
+
 import androidx.core.content.FileProvider;
 import androidx.core.os.EnvironmentCompat;
+import androidx.fragment.app.Fragment;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+
 import one.mixin.android.widget.gallery.internal.entity.CaptureStrategy;
 
 public class MediaStoreCompat {
@@ -38,7 +41,7 @@ public class MediaStoreCompat {
 
     public static boolean hasCameraFeature(Context context) {
         PackageManager pm = context.getApplicationContext().getPackageManager();
-        return pm.hasSystemFeature(PackageManager.FEATURE_CAMERA);
+        return pm.hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY);
     }
 
     public void setCaptureStrategy(CaptureStrategy strategy) {

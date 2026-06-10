@@ -12,7 +12,6 @@ import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
 class DiagnosisActivity : BaseActivity() {
-
     private val binding by viewBinding(ActivityContactBinding::inflate)
 
     override fun onCreate(savedInstanceState: Bundle?) {

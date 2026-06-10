@@ -38,19 +38,19 @@
         app:layout_constraintBottom_toBottomOf="@id/chat_layout"
         tools:ignore="ContentDescription" />
 
-    <TextView
+    <one.mixin.android.widget.NameTextView
         android:id="@+id/chat_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"
         android:layout_marginEnd="12dp"
         android:layout_marginBottom="1.5dp"
-        android:ellipsize="end"
         android:gravity="start|center_vertical"
-        android:lines="1"
-        android:minWidth="30dp"
         android:textColor="#19BEF1"
-        android:textSize="14sp"
+        app:minWidth="30dp"
+        app:ellipsize="end"
+        app:lines="1"
+        app:textSize="14sp"
         app:layout_constraintBottom_toTopOf="@id/chat_layout"
         app:layout_constraintStart_toStartOf="@id/chat_layout" />
 
@@ -71,7 +71,8 @@
         <FrameLayout
             android:id="@+id/chat_content_layout"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            tools:ignore="UselessParent">
 
             <one.mixin.android.widget.InterceptLinearLayout
                 android:id="@+id/location_layout"
@@ -106,7 +107,7 @@
                         android:layout_width="260dp"
                         android:layout_height="180dp"
                         android:inflatedId="@+id/mapbox_stub"
-                        android:layout="@layout/view_mapbox_min"/>
+                        android:layout="@layout/view_open_street_map_min"/>
                 </FrameLayout>
 
                 <RelativeLayout
@@ -139,7 +140,7 @@
                         android:layout_toStartOf="@id/chat_time"
                         android:maxWidth="240dp"
                         android:singleLine="true"
-                        android:textColor="?attr/text_minor"
+                        android:textColor="?attr/text_assist"
                         android:textSize="12sp"
                         android:visibility="invisible" />
 
@@ -151,10 +152,7 @@
                         android:layout_alignParentBottom="true"
                         android:layout_gravity="bottom|end" />
                 </RelativeLayout>
-
             </one.mixin.android.widget.InterceptLinearLayout>
-
-
         </FrameLayout>
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

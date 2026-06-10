@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/bg_white"
+    tools:parentTag="android.widget.ViewAnimator"
+    android:gravity="center_horizontal"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clipToPadding="false"
+        android:clipChildren="false"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/cancel_button"
+            style="@style/AppTheme.MaterialGrayButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal|bottom"
+            android:layout_marginEnd="35dp"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:paddingStart="35dp"
+            android:paddingEnd="35dp"
+            android:text="@string/Cancel"
+            android:textAllCaps="false"
+            android:textFontWeight="400"
+            android:textSize="16sp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"/>
+
+        <TextView
+            style="@style/AppTheme.MaterialButton"
+            android:id="@+id/confirm_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="35dp"
+            android:paddingEnd="35dp"
+            android:layout_gravity="center_horizontal|bottom"
+            android:text="@string/Confirm"
+            android:textAllCaps="false"
+            android:gravity="center"
+            android:textSize="16sp"
+            android:textFontWeight="400"
+            android:includeFontPadding="false"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"/>
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/done_btn"
+        style="@style/AppTheme.MaterialButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:paddingStart="35dp"
+        android:paddingEnd="35dp"
+        android:enabled="true"
+        android:text="@string/Done"
+        android:textFontWeight="400"
+        android:includeFontPadding="false"
+        android:textSize="16sp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"/>
+
+    <LinearLayout
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clipToPadding="false"
+        android:clipChildren="false"
+        android:orientation="horizontal">
+
+        <TextView
+            style="@style/AppTheme.MaterialGrayButton"
+            android:id="@+id/retry_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="35dp"
+            android:paddingEnd="35dp"
+            android:layout_gravity="center_horizontal|bottom"
+            android:text="@string/Cancel"
+            android:layout_marginEnd="35dp"
+            android:textSize="16sp"
+            android:gravity="center"
+            android:textAllCaps="false"
+            android:textFontWeight="400"
+            android:includeFontPadding="false"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"/>
+
+        <TextView
+            style="@style/AppTheme.MaterialButton"
+            android:id="@+id/retry"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="35dp"
+            android:paddingEnd="35dp"
+            android:layout_gravity="center_horizontal|bottom"
+            android:text="@string/Retry"
+            android:textAllCaps="false"
+            android:textFontWeight="400"
+            android:includeFontPadding="false"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:textSize="16sp" />
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="20dp" />
+</merge>

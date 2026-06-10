@@ -11,58 +11,51 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <androidx.core.widget.NestedScrollView
-        android:id="@+id/scroll_view"
+    <LinearLayout
+        android:id="@+id/scroll_content"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/title"
-        android:scrollbars="none">
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
-        <LinearLayout
-            android:id="@+id/scroll_content"
+        <one.mixin.android.widget.AvatarView
+            android:id="@+id/avatar"
+            android:layout_width="@dimen/bottom_avatar_size"
+            android:layout_height="@dimen/bottom_avatar_size"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="16dp"
+            android:transitionName="@string/avatar_transition_name"
+            tools:ignore="ContentDescription" />
+
+        <TextView
+            android:id="@+id/name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:gravity="center_horizontal"
+            android:maxWidth="280dp"
+            android:textColor="?attr/text_primary"
+            android:textSize="@dimen/bottom_name_text_size" />
+
+        <one.mixin.android.widget.linktext.AutoLinkTextView
+            android:id="@+id/detail_tv"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_gravity="center"
+            android:layout_marginStart="32dp"
+            android:layout_marginEnd="32dp"
+            android:layout_marginBottom="10dp"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:maxHeight="300dp"
+            android:maxLength="1024"
+            android:scrollbars="vertical"
+            android:textColor="?attr/text_primary"
+            android:textIsSelectable="true" />
 
-            <one.mixin.android.widget.AvatarView
-                android:id="@+id/avatar"
-                android:layout_width="@dimen/bottom_avatar_size"
-                android:layout_height="@dimen/bottom_avatar_size"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="16dp"
-                android:transitionName="@string/avatar_transition_name"
-                tools:ignore="ContentDescription" />
-
-            <TextView
-                android:id="@+id/name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:gravity="center_horizontal"
-                android:maxWidth="280dp"
-                android:textColor="?attr/text_primary"
-                android:textSize="@dimen/bottom_name_text_size" />
-
-            <one.mixin.android.widget.linktext.AutoLinkTextView
-                android:id="@+id/detail_tv"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginStart="32dp"
-                android:layout_marginEnd="32dp"
-                android:layout_marginBottom="10dp"
-                android:gravity="center"
-                android:maxHeight="300dp"
-                android:maxLength="1024"
-                android:scrollbars="vertical"
-                android:textColor="?attr/text_primary"
-                android:textIsSelectable="true" />
-
-            <Space
-                android:layout_width="match_parent"
-                android:layout_height="32dp"/>
-        </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="32dp" />
+    </LinearLayout>
 </androidx.appcompat.widget.LinearLayoutCompat>

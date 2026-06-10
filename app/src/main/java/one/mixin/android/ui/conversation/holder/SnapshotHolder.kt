@@ -3,29 +3,29 @@ package one.mixin.android.ui.conversation.holder
 import android.graphics.Color
 import android.view.Gravity
 import android.widget.FrameLayout
+import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatSnapshotBinding
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.realSize
-import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.vo.MessageItem
 
 class SnapshotHolder constructor(val binding: ItemChatSnapshotBinding) : BaseViewHolder(binding.root) {
-
     init {
         binding.chatLayout.layoutParams.width = (itemView.context.realSize().x * 0.6).toInt()
     }
 
-    private var onItemListener: ConversationAdapter.OnItemListener? = null
+    private var onItemListener: MessageAdapter.OnItemListener? = null
 
     fun bind(
         messageItem: MessageItem,
         isLast: Boolean,
         hasSelect: Boolean,
         isSelect: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener
+        onItemListener: MessageAdapter.OnItemListener,
     ) {
         super.bind(messageItem)
         this.onItemListener = onItemListener
@@ -34,11 +34,12 @@ class SnapshotHolder constructor(val binding: ItemChatSnapshotBinding) : BaseVie
         binding.billIv.loadImage(messageItem.assetIcon, R.drawable.ic_avatar_place_holder)
         val amount = messageItem.snapshotAmount
         if (!amount.isNullOrBlank()) {
-            binding.billTv.text = if (amount.startsWith('-')) {
-                "-${amount.substring(1).numberFormat8()}"
-            } else {
-                amount.numberFormat8()
-            }
+            binding.billTv.text =
+                if (amount.startsWith('-')) {
+                    "-${amount.substring(1).numberFormat8()}"
+                } else {
+                    amount.numberFormat8()
+                }
         }
         binding.billSymbolTv.text = messageItem.assetSymbol
         itemView.setOnLongClickListener {
@@ -79,20 +80,24 @@ class SnapshotHolder constructor(val binding: ItemChatSnapshotBinding) : BaseVie
         }
     }
 
-    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+    override fun chatLayout(
+        isMe: Boolean,
+        isLast: Boolean,
+        isBlink: Boolean,
+    ) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
             if (isLast) {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.bill_bubble_me_last,
-                    R.drawable.bill_bubble_me_last_night
+                    R.drawable.bill_bubble_me_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.bill_bubble_me,
-                    R.drawable.bill_bubble_me_night
+                    R.drawable.bill_bubble_me_night,
                 )
             }
             (binding.chatLayout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.END
@@ -102,13 +107,13 @@ class SnapshotHolder constructor(val binding: ItemChatSnapshotBinding) : BaseVie
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_other_last,
-                    R.drawable.chat_bubble_other_last_night
+                    R.drawable.chat_bubble_other_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_other,
-                    R.drawable.chat_bubble_other_night
+                    R.drawable.chat_bubble_other_night,
                 )
             }
         }

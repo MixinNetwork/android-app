@@ -116,9 +116,10 @@ class ControlledRunner<T> {
             // Create a new coroutine, but don't start it until it's decided that this block should
             // execute. In the code below, calling await() on newTask will cause this coroutine to
             // start.
-            val newTask = async(start = LAZY) {
-                block()
-            }
+            val newTask =
+                async(start = LAZY) {
+                    block()
+                }
 
             // When newTask completes, ensure that it resets activeTask to null (if it was the
             // current activeTask).
@@ -191,9 +192,10 @@ class ControlledRunner<T> {
             // Create a new coroutine, but don't start it until it's decided that this block should
             // execute. In the code below, calling await() on newTask will cause this coroutine to
             // start.
-            val newTask = async(start = LAZY) {
-                block()
-            }
+            val newTask =
+                async(start = LAZY) {
+                    block()
+                }
 
             newTask.invokeOnCompletion {
                 activeTask.compareAndSet(newTask, null)

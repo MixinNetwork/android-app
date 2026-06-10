@@ -15,5 +15,5 @@ data class PaymentCodeResponse(
     @SerializedName("trace_id")
     val traceId: String,
     @SerializedName("created_at")
-    val createdAt: String
+    val createdAt: String,
 )

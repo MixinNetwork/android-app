@@ -40,6 +40,7 @@
             android:textColor="?attr/text_primary"
             android:textSize="16sp"
             android:layout_toEndOf="@id/bill_iv"
+            android:fontFamily="@font/mixin_font"
             android:layout_above="@id/center" />
 
         <TextView

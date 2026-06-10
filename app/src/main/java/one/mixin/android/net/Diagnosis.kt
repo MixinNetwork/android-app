@@ -25,39 +25,43 @@ import java.net.SocketException
 import java.net.UnknownHostException
 import java.util.Enumeration
 
-fun diagnosis(context: Context, diagnosisCallback: (String) -> Unit) {
+fun diagnosis(
+    context: Context,
+    diagnosisCallback: (String) -> Unit,
+) {
     val result = StringBuilder()
 
-    result.append("${context.getString(R.string.app_version)}: ${BuildConfig.VERSION_NAME}(${BuildConfig.VERSION_CODE})").appendLine()
-        .append("${context.getString(R.string.manufacturer)}: ${Build.MANUFACTURER}").appendLine()
-        .append("${context.getString(R.string.model)}: ${Build.MODEL}").appendLine()
-        .append("${context.getString(R.string.system_version)}: ${Build.VERSION.RELEASE}").appendLine()
-        .append("${context.getString(R.string.time)}: ${Instant.now().toString().timeFormat()}").appendLine()
+    result.append("${context.getString(R.string.App_version)}: ${BuildConfig.VERSION_NAME}(${BuildConfig.VERSION_CODE})").appendLine()
+        .append("${context.getString(R.string.Manufacturer)}: ${Build.MANUFACTURER}").appendLine()
+        .append("${context.getString(R.string.Model)}: ${Build.MODEL}").appendLine()
+        .append("${context.getString(R.string.System_version)}: ${Build.VERSION.RELEASE}").appendLine()
+        .append("${context.getString(R.string.Time)}: ${Instant.now().toString().timeFormat()}").appendLine()
         .appendLine()
     diagnosisCallback(result.toString())
     result.clear()
 
     result.append("${context.getString(R.string.is_network_available)}: ${context.networkConnected()}").appendLine()
-    result.append("${context.getString(R.string.network_type)}: ${context.networkType()}").appendLine()
+    result.append("${context.getString(R.string.Network_Type)}: ${context.networkType()}").appendLine()
         .appendLine()
     diagnosisCallback(result.toString())
     result.clear()
 
     getExportIp(result, context)
     val ipAddress = getIpAddress()
-    result.append("${context.getString(R.string.local_ip)}: $ipAddress").appendLine()
-        .append("${context.getString(R.string.network_operator)}: ${context.getNetworkOperatorName()}").appendLine()
+    result.append("${context.getString(R.string.Local_IP)}: $ipAddress").appendLine()
+        .append("${context.getString(R.string.Network_Operator)}: ${context.getNetworkOperatorName()}").appendLine()
         .appendLine()
     diagnosisCallback(result.toString())
     result.clear()
 
     val hosts = arrayOf(CURRENT_URL.toUri().host, (if (CURRENT_URL == URL) Mixin_URL.toUri() else URL.toUri()).host)
-    val dnsList = arrayListOf(
-        CustomDns("8.8.8.8"),
-        CustomDns("1.1.1.1"),
-        CustomDns("2001:4860:4860::8888"),
-        Dns.SYSTEM
-    )
+    val dnsList =
+        arrayListOf(
+            CustomDns("8.8.8.8"),
+            CustomDns("1.1.1.1"),
+            CustomDns("2001:4860:4860::8888"),
+            Dns.SYSTEM,
+        )
     val prefix = context.getString(R.string.parse_dns_result)
     hosts.forEach host@{ host ->
         requireNotNull(host)
@@ -65,11 +69,12 @@ fun diagnosis(context: Context, diagnosisCallback: (String) -> Unit) {
         dnsList.forEach { dns ->
             val dnsHost = if (dns is CustomDns) "dns ${dns.dnsHostname}" else "System DNS"
             result.append("Use $dnsHost").appendLine()
-            val addresses = try {
-                dns.lookup(host)
-            } catch (e: UnknownHostException) {
-                null
-            }
+            val addresses =
+                try {
+                    dns.lookup(host)
+                } catch (e: UnknownHostException) {
+                    null
+                }
             if (addresses.isNullOrEmpty()) {
                 result.append("Nslookup for $host use dns $dns failed").appendLine()
                 return@forEach
@@ -79,15 +84,24 @@ fun diagnosis(context: Context, diagnosisCallback: (String) -> Unit) {
                 val pingResult = ping(ipAddr)
                 Timber.i("Ping $ipAddr result: $pingResult")
                 result.append("$prefix Ping: [$ipAddr] [${if (pingResult.isNullOrEmpty()) "FAILURE" else "SUCCESS"}]").appendLine()
+
+                pingResult?.let { r ->
+                    val statistics = r.substringIgnoreError(r.lastIndexOf("---"))
+                    result.append(statistics).appendLine()
+                }
             }
         }
         diagnosisCallback(result.appendLine().toString())
         result.clear()
     }
-    diagnosisCallback(context.getString(R.string.diagnosis_complete))
+    diagnosisCallback(context.getString(R.string.Diagnosis_Complete))
 }
 
-fun ping(domain: String, count: Int = 1, timeout: Int = 10): String? {
+fun ping(
+    domain: String,
+    count: Int = 2,
+    timeout: Int = 5,
+): String? {
     val command = "/system/bin/ping -c $count -w $timeout $domain"
     var process: Process? = null
     try {
@@ -112,21 +126,25 @@ fun ping(domain: String, count: Int = 1, timeout: Int = 10): String? {
 private const val EXPORT_IP_PRIMARY = "https://nstool.netease.com/"
 private const val EXPORT_IP_SECONDARY = "http://api.ipify.org/"
 
-private fun getExportIp(result: StringBuilder, context: Context) {
+private fun getExportIp(
+    result: StringBuilder,
+    context: Context,
+) {
     val client = OkHttpClient()
     var ipRequest = Request.Builder().url(EXPORT_IP_PRIMARY).build()
     try {
-        var data = client.newCall(ipRequest).execute().body?.string()
-            ?: throw IOException("EXPORT_IP_PRIMARY no data")
-        val url = data.substring(data.indexOf("src=") + 4, data.lastIndexOf("frameborder")).replace("'".toRegex(), "").replace(" ".toRegex(), "")
+        var data =
+            client.newCall(ipRequest).execute().body?.string()
+                ?: throw IOException("EXPORT_IP_PRIMARY no data")
+        val url = data.substringIgnoreError(data.indexOf("src=") + 4, data.lastIndexOf("frameborder")).replace("'".toRegex(), "").replace(" ".toRegex(), "")
         ipRequest = Request.Builder().url(url).build()
         data = client.newCall(ipRequest).execute().body?.string()
             ?: throw IOException("EXPORT_IP_PRIMARY no data")
-        val dataIp = data.substring(data.indexOf("您的IP地址信息") + 10)
-        val dataAddress = dataIp.substring(0, dataIp.indexOf("<br>"))
+        val dataIp = data.substringIgnoreError(data.indexOf("您的IP地址信息") + 10)
+        val dataAddress = dataIp.substringIgnoreError(0, dataIp.indexOf("<br>"))
         val ips = dataAddress.split(" ").toTypedArray()
         result.append("${context.getString(R.string.export_ip)}: ${ips[0]}").appendLine()
-            .append("${context.getString(R.string.operator)}: ${ips[1]}").appendLine()
+            .append("${context.getString(R.string.Operator)}: ${ips[1]}").appendLine()
     } catch (e: Exception) {
         Timber.i("Get export ip from $EXPORT_IP_PRIMARY meet ${e.localizedMessage}")
         try {
@@ -157,4 +175,23 @@ private fun getIpAddress(): String? {
         ex.printStackTrace()
     }
     return null
+}
+
+private fun String.substringIgnoreError(startIndex: Int): String {
+    return try {
+        substring(startIndex)
+    } catch (ignored: IndexOutOfBoundsException) {
+        ""
+    }
+}
+
+private fun String.substringIgnoreError(
+    startIndex: Int,
+    endIndex: Int,
+): String {
+    return try {
+        substring(startIndex, endIndex)
+    } catch (ignored: IndexOutOfBoundsException) {
+        ""
+    }
 }

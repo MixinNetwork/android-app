@@ -10,6 +10,7 @@ import one.mixin.android.databinding.ViewWebControlBinding
 import one.mixin.android.extension.dp
 
 class WebControlView(context: Context, attrs: AttributeSet) : LinearLayout(context, attrs) {
+    private var isMoreHidden = false
 
     var mode = false
         set(value) {
@@ -34,25 +35,33 @@ class WebControlView(context: Context, attrs: AttributeSet) : LinearLayout(conte
         if (dark) {
             setBackgroundResource(R.drawable.bg_view_web_control_black)
             binding.moreIv.setImageResource(R.drawable.ic_more_horiz_white_24dp)
-            binding.closeIv.setImageResource(R.drawable.ic_close_white_24dp)
+            if (!isMoreHidden) {
+                binding.closeIv.setImageResource(R.drawable.ic_close_white_24dp)
+            }
             binding.divide.setBackgroundColor(context.getColor(R.color.bgWhiteNight))
         } else {
             setBackgroundResource(R.drawable.bg_view_web_control_white)
             binding.moreIv.setImageResource(R.drawable.ic_more_horiz_black_24dp)
-            binding.closeIv.setImageResource(R.drawable.ic_close_dark_24dp)
+            if (!isMoreHidden) {
+                binding.closeIv.setImageResource(R.drawable.ic_close_dark_24dp)
+            }
             binding.divide.setBackgroundColor(context.getColor(R.color.bgWhite))
         }
     }
 
     fun hideMore() {
+        isMoreHidden = true
         binding.divide.isVisible = false
         binding.moreFl.isVisible = false
         layoutParams = layoutParams.apply { width = 36.dp }
+        background = null
+        binding.closeIv.setImageResource(R.drawable.ic_circle_close)
         weightSum = 1f
     }
 
     interface Callback {
         fun onMoreClick()
+
         fun onCloseClick()
     }
 }

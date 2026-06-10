@@ -32,12 +32,18 @@ class TransactionsAdapter :
     override fun onCreateHeaderViewHolder(parent: ViewGroup) =
         SnapshotHeaderViewHolder(parent.inflate(R.layout.item_transaction_header, false))
 
-    override fun onBindHeaderViewHolder(vh: SnapshotHeaderViewHolder, pos: Int) {
+    override fun onBindHeaderViewHolder(
+        vh: SnapshotHeaderViewHolder,
+        pos: Int,
+    ) {
         val time = getItem(getPos(pos))?.createdAt ?: return
         vh.bind(time)
     }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: RecyclerView.ViewHolder,
+        position: Int,
+    ) {
         if (holder is SnapshotHolder) {
             val pos = getPos(position)
             getItem(pos)?.let {
@@ -47,18 +53,21 @@ class TransactionsAdapter :
                     {
                         holder.itemView.context?.getClipboardManager()
                             ?.setPrimaryClip(ClipData.newPlainText(null, it.snapshotId))
-                    }
+                    },
                 )
             }
         }
     }
 
-    override fun getNormalViewHolder(context: Context, parent: ViewGroup) =
+    override fun getNormalViewHolder(
+        context: Context,
+        parent: ViewGroup,
+    ) =
         SnapshotHolder(
             LayoutInflater.from(context).inflate(
                 R.layout.item_wallet_transactions,
                 parent,
-                false
-            )
+                false,
+            ),
         )
 }

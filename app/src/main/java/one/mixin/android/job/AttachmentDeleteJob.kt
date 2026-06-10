@@ -5,7 +5,6 @@ import one.mixin.android.extension.getFilePath
 import java.io.File
 
 class AttachmentDeleteJob(private vararg val mediaUrls: String) : BaseJob(Params(PRIORITY_BACKGROUND).addTags(GROUP).groupBy("attachment_delete").persist()) {
-
     private val TAG = AttachmentDeleteJob::class.java.simpleName
 
     companion object {

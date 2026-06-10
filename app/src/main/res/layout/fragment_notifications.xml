@@ -4,25 +4,26 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/bg_window">
+    android:background="?attr/bg_white">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="?attr/bg_window"
         android:orientation="vertical">
 
         <one.mixin.android.widget.TitleView
             android:id="@+id/title_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:titleText="@string/setting_notification_confirmation" />
+            app:titleText="@string/Notification_and_Confirmation" />
 
         <RelativeLayout
             android:id="@+id/transfer_rl"
             android:layout_width="match_parent"
             android:layout_height="@dimen/item_contact_height"
             android:background="?attr/bg_white"
-            android:foreground="?attr/selectableItemBackground">
+            android:foreground="?android:attr/selectableItemBackground">
 
             <TextView
                 style="@style/NormalTextStyle"
@@ -30,7 +31,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/setting_notification_transfer" />
+                android:text="@string/Transfer_Notifications" />
 
             <TextView
                 android:id="@+id/transfer_tv"
@@ -39,7 +40,8 @@
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
                 android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:textColor="?attr/text_minor" />
+                android:textColor="?attr/text_assist"
+                tools:ignore="RelativeOverlap" />
         </RelativeLayout>
 
         <TextView
@@ -50,8 +52,8 @@
             android:layout_marginTop="8dp"
             android:layout_marginEnd="@dimen/activity_horizontal_margin"
             android:layout_marginBottom="@dimen/activity_vertical_margin"
-            android:text="@string/setting_notification_transfer_desc"
-            android:textColor="?attr/text_minor"
+            android:text="@string/setting_notification_transfer_summary"
+            android:textColor="?attr/text_assist"
             android:textSize="12sp" />
 
         <RelativeLayout
@@ -59,7 +61,7 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/item_contact_height"
             android:background="?attr/bg_white"
-            android:foreground="?attr/selectableItemBackground">
+            android:foreground="?android:attr/selectableItemBackground">
 
             <TextView
                 style="@style/NormalTextStyle"
@@ -67,7 +69,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/wallet_transaction_tip_title" />
+                android:text="@string/Large_Amount_Confirmation" />
 
             <TextView
                 android:id="@+id/large_amount_tv"
@@ -76,7 +78,8 @@
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
                 android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:textColor="?attr/text_minor" />
+                android:textColor="?attr/text_assist"
+                tools:ignore="RelativeOverlap" />
         </RelativeLayout>
 
         <TextView
@@ -88,7 +91,7 @@
             android:layout_marginEnd="@dimen/activity_horizontal_margin"
             android:layout_marginBottom="@dimen/activity_vertical_margin"
             android:text="@string/setting_transfer_large_summary"
-            android:textColor="?attr/text_minor"
+            android:textColor="?attr/text_assist"
             android:textSize="12sp" />
 
         <RelativeLayout
@@ -96,7 +99,7 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/item_contact_height"
             android:background="?attr/bg_white"
-            android:foreground="?attr/selectableItemBackground">
+            android:foreground="?android:attr/selectableItemBackground">
 
             <TextView
                 style="@style/NormalTextStyle"
@@ -104,7 +107,8 @@
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/transfer_duplicate_title" />
+                android:text="@string/Duplicate_Transfer_Confirmation"
+                tools:ignore="RelativeOverlap" />
 
             <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/duplicate_transfer_sc"
@@ -125,7 +129,7 @@
             android:layout_marginEnd="@dimen/activity_horizontal_margin"
             android:layout_marginBottom="@dimen/activity_vertical_margin"
             android:text="@string/setting_duplicate_transfer_desc"
-            android:textColor="?attr/text_minor"
+            android:textColor="?attr/text_assist"
             android:textSize="12sp" />
 
         <RelativeLayout
@@ -133,7 +137,7 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/item_contact_height"
             android:background="?attr/bg_white"
-            android:foreground="?attr/selectableItemBackground">
+            android:foreground="?android:attr/selectableItemBackground">
 
             <TextView
                 style="@style/NormalTextStyle"
@@ -141,7 +145,8 @@
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/transfer_stranger_title" />
+                android:text="@string/Stranger_Transfer_Confirmation"
+                tools:ignore="RelativeOverlap" />
 
             <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/stranger_transfer_sc"
@@ -162,7 +167,7 @@
             android:layout_marginEnd="@dimen/activity_horizontal_margin"
             android:layout_marginBottom="@dimen/activity_vertical_margin"
             android:text="@string/setting_stranger_transfer_desc"
-            android:textColor="?attr/text_minor"
+            android:textColor="?attr/text_assist"
             android:textSize="12sp" />
 
 
@@ -171,7 +176,7 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/item_contact_height"
             android:background="?attr/bg_white"
-            android:foreground="?attr/selectableItemBackground">
+            android:foreground="?android:attr/selectableItemBackground">
 
             <TextView
                 style="@style/NormalTextStyle"
@@ -179,7 +184,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/setting_notification_system" />
+                android:text="@string/System_options" />
         </RelativeLayout>
 
         <RelativeLayout
@@ -187,7 +192,7 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/item_contact_height"
             android:background="?attr/bg_white"
-            android:foreground="?attr/selectableItemBackground"
+            android:foreground="?android:attr/selectableItemBackground"
             android:visibility="gone">
 
             <TextView
@@ -196,7 +201,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/setting_notification_reset" />
+                android:text="@string/Reset_notifications" />
         </RelativeLayout>
     </LinearLayout>
 </ScrollView>

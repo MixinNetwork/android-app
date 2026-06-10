@@ -12,25 +12,45 @@ import one.mixin.android.vo.ParticipantSessionKey
 import one.mixin.android.vo.ParticipantSessionSent
 
 @Dao
+@SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
 interface ParticipantSessionDao : BaseDao<ParticipantSession> {
-
     @Query("SELECT * FROM participant_session WHERE conversation_id = :conversationId AND user_id = :userId AND session_id = :sessionId")
-    fun getParticipantSession(conversationId: String, userId: String, sessionId: String): ParticipantSession?
+    fun getParticipantSession(
+        conversationId: String,
+        userId: String,
+        sessionId: String,
+    ): ParticipantSession?
 
     @Query("SELECT * FROM participant_session WHERE conversation_id = :conversationId")
     fun getParticipantSessionsByConversationId(conversationId: String): List<ParticipantSession>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("SELECT * FROM participant_session WHERE conversation_id = :conversationId AND user_id != :userId LIMIT 1")
-    fun getParticipantSessionKeyWithoutSelf(conversationId: String, userId: String): ParticipantSessionKey?
+    fun getParticipantSessionKeyWithoutSelf(
+        conversationId: String,
+        userId: String,
+    ): ParticipantSessionKey?
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("SELECT * FROM participant_session WHERE conversation_id = :conversationId AND user_id = :userId LIMIT 1")
-    fun getParticipantSessionKeyByUserId(conversationId: String, userId: String): ParticipantSessionKey?
+    fun getParticipantSessionKeyByUserId(
+        conversationId: String,
+        userId: String,
+    ): ParticipantSessionKey?
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query("SELECT public_key FROM participant_session WHERE conversation_id = :conversationId AND user_id = :userId AND public_key IS NOT NULL ORDER BY created_at DESC  LIMIT 1")
+    suspend fun findBotPublicKey(
+        conversationId: String,
+        userId: String,
+    ): String?
+
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("SELECT * FROM participant_session WHERE conversation_id = :conversationId AND user_id = :userId AND session_id = :sessionId LIMIT 1")
-    fun getParticipantSessionKeyBySessionId(conversationId: String, userId: String, sessionId: String): ParticipantSessionKey?
+    fun getParticipantSessionKeyBySessionId(
+        conversationId: String,
+        userId: String,
+        sessionId: String,
+    ): ParticipantSessionKey?
 
     @Insert(entity = ParticipantSession::class, onConflict = OnConflictStrategy.REPLACE)
     fun insertParticipantSessionSent(obj: ParticipantSessionSent)
@@ -42,13 +62,19 @@ interface ParticipantSessionDao : BaseDao<ParticipantSession> {
     fun emptyStatusByConversationId(conversationId: String)
 
     @Transaction
-    fun replaceAll(conversationId: String, list: List<ParticipantSession>) {
+    fun replaceAll(
+        conversationId: String,
+        list: List<ParticipantSession>,
+    ) {
         deleteByConversationId(conversationId)
         insertList(list)
     }
 
     @Query("DELETE FROM participant_session WHERE conversation_id = :conversationId AND user_id = :userId")
-    fun deleteByUserId(conversationId: String, userId: String)
+    fun deleteByUserId(
+        conversationId: String,
+        userId: String,
+    )
 
     @Query("DELETE FROM participant_session WHERE conversation_id = :conversationId")
     fun deleteByConversationId(conversationId: String)
@@ -57,14 +83,21 @@ interface ParticipantSessionDao : BaseDao<ParticipantSession> {
     fun deleteByStatus(conversationId: String)
 
     @Query("DELETE FROM participant_session WHERE user_id = :userId AND session_id = :sessionId")
-    fun deleteByUserIdAndSessionId(userId: String, sessionId: String)
+    fun deleteByUserIdAndSessionId(
+        userId: String,
+        sessionId: String,
+    )
 
     @Transaction
     @Query(
         """SELECT p.* FROM participant_session p LEFT JOIN users u ON p.user_id = u.user_id 
-        WHERE p.conversation_id = :conversationId AND p.session_id != :sessionId AND u.app_id IS NULL AND p.sent_to_server IS NULL """
+        WHERE p.conversation_id = :conversationId AND p.session_id != :sessionId AND u.app_id IS NULL AND p.sent_to_server IS NULL 
+        """,
     )
-    fun getNotSendSessionParticipants(conversationId: String, sessionId: String): List<ParticipantSession>
+    fun getNotSendSessionParticipants(
+        conversationId: String,
+        sessionId: String,
+    ): List<ParticipantSession>
 
     @Query("UPDATE participant_session SET sent_to_server = NULL")
     fun clearParticipantSession()

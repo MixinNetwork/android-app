@@ -1,5 +1,6 @@
 package one.mixin.android.ui.conversation.location
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -15,18 +16,23 @@ import one.mixin.android.websocket.LocationPayload
 
 class LocationSearchAdapter(val callback: (LocationPayload) -> Unit) : RecyclerView.Adapter<VenueHolder>() {
     var venues: List<Venue>? = null
+        @SuppressLint("NotifyDataSetChanged")
         set(value) {
             field = value
             notifyDataSetChanged()
         }
 
     var keyword: String? = null
+        @SuppressLint("NotifyDataSetChanged")
         set(value) {
             field = value
             notifyDataSetChanged()
         }
 
-    fun setMark(latitude: Double? = null, longitude: Double? = null) {
+    fun setMark(
+        latitude: Double? = null,
+        longitude: Double? = null,
+    ) {
         if (latitude == null || longitude == null) {
             currentVenues = null
             return
@@ -35,31 +41,37 @@ class LocationSearchAdapter(val callback: (LocationPayload) -> Unit) : RecyclerV
     }
 
     private var currentVenues: Venue? = null
+        @SuppressLint("NotifyDataSetChanged")
         set(value) {
             field = value
             notifyDataSetChanged()
         }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VenueHolder {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): VenueHolder {
         return LayoutInflater.from(parent.context).inflate(R.layout.item_location, parent, false).run {
             VenueHolder(this)
         }
     }
 
-    override fun getItemCount(): Int = venues.notNullWithElse(
-        {
-            it.size + if (currentVenues == null) {
+    override fun getItemCount(): Int =
+        venues.notNullWithElse(
+            {
+                it.size +
+                    if (currentVenues == null) {
+                        0
+                    } else {
+                        1
+                    }
+            },
+            if (currentVenues == null) {
                 0
             } else {
                 1
-            }
-        },
-        if (currentVenues == null) {
-            0
-        } else {
-            1
-        }
-    )
+            },
+        )
 
     override fun getItemViewType(position: Int): Int {
         if (currentVenues == null) {
@@ -85,11 +97,14 @@ class LocationSearchAdapter(val callback: (LocationPayload) -> Unit) : RecyclerV
         }
     }
 
-    override fun onBindViewHolder(holder: VenueHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: VenueHolder,
+        position: Int,
+    ) {
         val venue = getItem(position)
         val binding = ItemLocationBinding.bind(holder.itemView)
         if (getItemViewType(position) == 1) {
-            binding.title.setText(R.string.location_send_current_location)
+            binding.title.setText(R.string.Send_your_Current_Location)
             binding.subTitle.text = venue?.name
             binding.locationIcon.setBackgroundResource(R.drawable.ic_current_location)
             binding.locationIcon.setImageDrawable(null)
@@ -102,8 +117,8 @@ class LocationSearchAdapter(val callback: (LocationPayload) -> Unit) : RecyclerV
                         venue.location.lng,
                         venue.name,
                         venue.location.address,
-                        venue.getVenueType()
-                    )
+                        venue.getVenueType(),
+                    ),
                 )
             }
             return
@@ -123,8 +138,8 @@ class LocationSearchAdapter(val callback: (LocationPayload) -> Unit) : RecyclerV
                     venue.location.lng,
                     venue.name,
                     venue.location.address ?: venue.location.formattedAddress?.get(0),
-                    venue.getVenueType()
-                )
+                    venue.getVenueType(),
+                ),
             )
         }
     }

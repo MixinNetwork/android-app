@@ -2,66 +2,52 @@ package one.mixin.android.ui.wallet.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.ListAdapter
 import one.mixin.android.databinding.ItemWalletSearchBinding
-import one.mixin.android.vo.AssetItem
-import one.mixin.android.vo.TopAssetItem
+import one.mixin.android.vo.safe.TokenItem
 
-class SearchAdapter : RecyclerView.Adapter<ItemViewHolder>() {
-    companion object {
-        const val TYPE_LOCAL = 0
-        const val TYPE_REMOTE = 1
-    }
-
-    var localAssets: List<AssetItem>? = null
-        set(value) {
-            if (value == field) return
-
-            field = value
-            notifyDataSetChanged()
-        }
-
-    var remoteAssets: List<TopAssetItem>? = null
-        set(value) {
-            if (value == field) return
-
-            field = value
-            notifyDataSetChanged()
-        }
-
+class SearchAdapter(private val currentAssetId: String? = null) : ListAdapter<TokenItem, AssetHolder>(TokenItem.DIFF_CALLBACK) {
     var callback: WalletSearchCallback? = null
-
-    fun clear() {
-        localAssets = null
-        remoteAssets = null
-        notifyDataSetChanged()
-    }
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
-        return if (viewType == TYPE_LOCAL) {
-            AssetHolder(ItemWalletSearchBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+    
+    private var allTokens: List<TokenItem> = emptyList()
+    
+    var chain: String? = null
+        set(value) {
+            if (field != value) {
+                field = value
+                super.submitList(getFilteredTokens())
+            }
+        }
+    
+    fun getFilteredTokens(): List<TokenItem> {
+        return if (chain.isNullOrBlank()) {
+            allTokens
         } else {
-            TopAssetHolder(ItemWalletSearchBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+            allTokens.filter { it.chainId == chain }
         }
     }
-
-    override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
-        if (holder is AssetHolder) {
-            localAssets?.get(position)?.let { holder.bind(it, callback) }
-        } else {
-            holder as TopAssetHolder
-            remoteAssets?.get(position - (localAssets?.size ?: 0))?.let { holder.bind(it, callback) }
-        }
+    
+    override fun submitList(list: List<TokenItem>?) {
+        allTokens = list ?: emptyList()
+        super.submitList(getFilteredTokens())
+    }
+    
+    override fun submitList(list: List<TokenItem>?, commitCallback: Runnable?) {
+        allTokens = list ?: emptyList()
+        super.submitList(getFilteredTokens(), commitCallback)
     }
 
-    override fun getItemViewType(position: Int): Int {
-        return when {
-            localAssets.isNullOrEmpty() -> TYPE_REMOTE
-            remoteAssets.isNullOrEmpty() -> TYPE_LOCAL
-            position < localAssets!!.size -> TYPE_LOCAL
-            else -> TYPE_REMOTE
-        }
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): AssetHolder {
+        return AssetHolder(ItemWalletSearchBinding.inflate(LayoutInflater.from(parent.context), parent, false))
     }
 
-    override fun getItemCount(): Int = (localAssets?.size ?: 0) + (remoteAssets?.size ?: 0)
+    override fun onBindViewHolder(
+        holder: AssetHolder,
+        position: Int,
+    ) {
+        getItem(position)?.let { holder.bind(it, callback, currentAssetId) }
+    }
 }

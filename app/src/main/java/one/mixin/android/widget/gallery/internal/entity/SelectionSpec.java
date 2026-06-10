@@ -2,8 +2,10 @@ package one.mixin.android.widget.gallery.internal.entity;
 
 import android.content.pm.ActivityInfo;
 import android.provider.MediaStore;
+
 import java.util.List;
 import java.util.Set;
+
 import one.mixin.android.widget.gallery.MimeType;
 import one.mixin.android.widget.gallery.engine.ImageEngine;
 import one.mixin.android.widget.gallery.engine.impl.GlideEngine;

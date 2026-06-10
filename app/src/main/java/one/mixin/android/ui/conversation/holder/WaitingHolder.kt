@@ -6,19 +6,21 @@ import androidx.core.view.isVisible
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatWaitingBinding
-import one.mixin.android.extension.dp
-import one.mixin.android.extension.highlightLinkText
-import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.extension.highlightStarTag
+import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSignal
 
 class WaitingHolder constructor(
     val binding: ItemChatWaitingBinding,
-    private val onItemListener: ConversationAdapter.OnItemListener
+    private val onItemListener: MessageAdapter.OnItemListener,
 ) : BaseViewHolder(binding.root) {
-
-    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+    override fun chatLayout(
+        isMe: Boolean,
+        isLast: Boolean,
+        isBlink: Boolean,
+    ) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
             (binding.chatLayout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.END
@@ -26,13 +28,13 @@ class WaitingHolder constructor(
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_me_last,
-                    R.drawable.chat_bubble_me_last_night
+                    R.drawable.chat_bubble_me_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_me,
-                    R.drawable.chat_bubble_me_night
+                    R.drawable.chat_bubble_me_night,
                 )
             }
         } else {
@@ -41,13 +43,13 @@ class WaitingHolder constructor(
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_other_last,
-                    R.drawable.chat_bubble_other_last_night
+                    R.drawable.chat_bubble_other_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_other,
-                    R.drawable.chat_bubble_other_night
+                    R.drawable.chat_bubble_other_night,
                 )
             }
         }
@@ -57,40 +59,33 @@ class WaitingHolder constructor(
         messageItem: MessageItem,
         isLast: Boolean,
         isFirst: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener
+        onItemListener: MessageAdapter.OnItemListener,
     ) {
         val isMe = meId == messageItem.userId
         if (messageItem.isSignal()) {
-            val learn: String = MixinApplication.get().getString(R.string.chat_learn)
+            val learn: String = MixinApplication.get().getString(R.string.Learn_More)
             val info =
                 MixinApplication.get().getString(
                     R.string.chat_waiting,
                     if (isMe) {
-                        MixinApplication.get().getString(R.string.chat_waiting_desktop)
+                        MixinApplication.get().getString(R.string.desktop)
                     } else {
                         messageItem.userFullName
                     },
-                    learn
+                    "**$learn**",
                 )
-            val learnUrl = MixinApplication.get().getString(R.string.chat_waiting_url)
-            binding.chatTv.highlightLinkText(
+            val learnUrl = MixinApplication.get().getString(R.string.secret_url)
+            binding.chatTv.highlightStarTag(
                 info,
-                arrayOf(learn),
                 arrayOf(learnUrl),
-                onItemListener = onItemListener
+                onItemListener = onItemListener,
             )
         } else {
             binding.chatTv.setText(R.string.chat_decryption_failed)
         }
         if (isFirst) {
             binding.chatName.isVisible = !isMe
-            binding.chatName.text = messageItem.userFullName
-            if (messageItem.appId != null) {
-                binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-                binding.chatName.compoundDrawablePadding = 3.dp
-            } else {
-                binding.chatName.setCompoundDrawables(null, null, null, null)
-            }
+            binding.chatName.setMessageName(messageItem)
             binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
             binding.chatName.setTextColor(getColorById(messageItem.userId))
         } else {

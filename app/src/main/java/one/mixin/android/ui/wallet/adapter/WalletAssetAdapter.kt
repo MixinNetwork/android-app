@@ -12,45 +12,50 @@ import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemWalletAssetBinding
 import one.mixin.android.extension.getClipboardManager
-import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
-import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.priceFormat
-import one.mixin.android.extension.textColorResource
+import one.mixin.android.extension.setQuoteText
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.common.recyclerview.HeaderListUpdateCallback
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.util.debug.debugLongClick
-import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Fiats
+import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
 
-class WalletAssetAdapter(private val slideShow: Boolean) : HeaderAdapter<AssetItem>() {
-
-    fun setAssetList(newAssets: List<AssetItem>) {
+class WalletAssetAdapter(private val slideShow: Boolean) : HeaderAdapter<TokenItem>() {
+    fun setAssetList(newAssets: List<TokenItem>) {
         if (data == null) {
             data = newAssets
             notifyItemRangeInserted(0, newAssets.size)
         } else {
-            val diffResult = DiffUtil.calculateDiff(
-                object : DiffUtil.Callback() {
-                    override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-                        val old = data!![oldItemPosition]
-                        val new = newAssets[newItemPosition]
-                        return old.assetId == new.assetId
-                    }
+            val diffResult =
+                DiffUtil.calculateDiff(
+                    object : DiffUtil.Callback() {
+                        override fun areItemsTheSame(
+                            oldItemPosition: Int,
+                            newItemPosition: Int,
+                        ): Boolean {
+                            val old = data!![oldItemPosition]
+                            val new = newAssets[newItemPosition]
+                            return old.assetId == new.assetId
+                        }
 
-                    override fun getOldListSize() = data!!.size
+                        override fun getOldListSize() = data!!.size
 
-                    override fun getNewListSize() = newAssets.size
+                        override fun getNewListSize() = newAssets.size
 
-                    override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-                        val old = data!![oldItemPosition]
-                        val new = newAssets[newItemPosition]
-                        return old == new
-                    }
-                }
-            )
+                        override fun areContentsTheSame(
+                            oldItemPosition: Int,
+                            newItemPosition: Int,
+                        ): Boolean {
+                            val old = data!![oldItemPosition]
+                            val new = newAssets[newItemPosition]
+                            return old == new
+                        }
+                    },
+                )
             data = newAssets
             if (headerView != null) {
                 diffResult.dispatchUpdatesTo(HeaderListUpdateCallback(this))
@@ -60,7 +65,7 @@ class WalletAssetAdapter(private val slideShow: Boolean) : HeaderAdapter<AssetIt
         }
     }
 
-    fun removeItem(pos: Int): AssetItem? {
+    fun removeItem(pos: Int): TokenItem? {
         val list = data?.toMutableList()
         val addr = list?.removeAt(getPosition(pos))
         data = list
@@ -68,7 +73,10 @@ class WalletAssetAdapter(private val slideShow: Boolean) : HeaderAdapter<AssetIt
         return addr
     }
 
-    fun restoreItem(item: AssetItem, pos: Int) {
+    fun restoreItem(
+        item: TokenItem,
+        pos: Int,
+    ) {
         val list = data?.toMutableList()
         list?.add(getPosition(pos), item)
         data = list
@@ -78,49 +86,57 @@ class WalletAssetAdapter(private val slideShow: Boolean) : HeaderAdapter<AssetIt
     fun getPosition(pos: Int) = getPos(pos)
 
     @SuppressLint("SetTextI18n")
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: RecyclerView.ViewHolder,
+        position: Int,
+    ) {
         if (holder is NormalHolder) {
             val binding = ItemWalletAssetBinding.bind(holder.itemView)
             val asset = data!![getPos(position)]
-            binding.balance.text = try {
-                if (asset.balance.numberFormat8().toFloat() == 0f) {
-                    "0.00"
-                } else {
-                    asset.balance.numberFormat8()
+            binding.balance.text =
+                try {
+                    if (asset.balance.numberFormat().toFloat() == 0f) {
+                        "0.00"
+                    } else {
+                        asset.balance.numberFormat()
+                    }
+                } catch (ignored: NumberFormatException) {
+                    asset.balance.numberFormat()
                 }
-            } catch (ignored: NumberFormatException) {
-                asset.balance.numberFormat8()
-            }
             binding.symbolTv.text = asset.symbol
             binding.balanceAs.text = "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
             if (asset.priceUsd == "0") {
-                binding.priceTv.setText(R.string.asset_none)
+                binding.naTv.visibility = VISIBLE
+                binding.priceTv.visibility = GONE
                 binding.changeTv.visibility = GONE
             } else {
+                binding.naTv.visibility = GONE
+                binding.priceTv.visibility = VISIBLE
                 binding.changeTv.visibility = VISIBLE
                 binding.priceTv.text = "${Fiats.getSymbol()}${asset.priceFiat().priceFormat()}"
                 if (asset.changeUsd.isNotEmpty()) {
                     val changeUsd = BigDecimal(asset.changeUsd)
-                    val isPositive = changeUsd > BigDecimal.ZERO
-                    binding.changeTv.text = "${(changeUsd * BigDecimal(100)).numberFormat2()}%"
-                    binding.changeTv.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
+                    val isRising = changeUsd >= BigDecimal.ZERO
+                    binding.changeTv.setQuoteText("${(changeUsd * BigDecimal(100)).numberFormat2()}%", isRising)
                 }
             }
-            binding.backLeftTv.setText(if (slideShow) R.string.shown else R.string.hidden)
-            binding.backRightTv.setText(if (slideShow) R.string.shown else R.string.hidden)
-            binding.avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-            binding.avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
+            binding.backLeftTv.setText(if (slideShow) R.string.Shown else R.string.Hidden)
+            binding.backRightTv.setText(if (slideShow) R.string.Shown else R.string.Hidden)
+            binding.avatar.loadToken(asset)
             holder.itemView.setOnClickListener { onItemListener?.onNormalItemClick(asset) }
             debugLongClick(
                 holder.itemView,
                 {
                     holder.itemView.context?.getClipboardManager()
                         ?.setPrimaryClip(ClipData.newPlainText(null, asset.assetId))
-                }
+                },
             )
         }
     }
 
-    override fun getNormalViewHolder(context: Context, parent: ViewGroup): NormalHolder =
+    override fun getNormalViewHolder(
+        context: Context,
+        parent: ViewGroup,
+    ): NormalHolder =
         NormalHolder(LayoutInflater.from(context).inflate(R.layout.item_wallet_asset, parent, false))
 }

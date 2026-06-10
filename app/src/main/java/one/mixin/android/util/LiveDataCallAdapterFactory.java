@@ -16,16 +16,15 @@
 
 package one.mixin.android.util;
 
-import androidx.lifecycle.LiveData;
 import androidx.annotation.NonNull;
+import androidx.lifecycle.LiveData;
+import one.mixin.android.api.MixinResponse;
+import retrofit2.CallAdapter;
+import retrofit2.Retrofit;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-
-import one.mixin.android.api.MixinResponse;
-import retrofit2.CallAdapter;
-import retrofit2.Retrofit;
 
 public class LiveDataCallAdapterFactory extends CallAdapter.Factory {
 

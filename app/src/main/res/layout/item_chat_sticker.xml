@@ -23,7 +23,7 @@
         app:layout_constraintBottom_toBottomOf="@id/chat_layout"
         tools:ignore="ContentDescription" />
 
-     <ImageView
+    <ImageView
         android:id="@+id/chat_jump"
         android:padding="4dp"
         android:layout_width="wrap_content"
@@ -38,23 +38,23 @@
         app:layout_constraintBottom_toBottomOf="@id/chat_layout"
         tools:ignore="ContentDescription" />
 
-    <TextView
+    <one.mixin.android.widget.NameTextView
         android:id="@+id/chat_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="5dp"
-        android:maxWidth="280dp"
-        android:minWidth="30dp"
-        android:ellipsize="end"
         android:gravity="start|top"
-        android:lines="1"
         android:paddingBottom="4dp"
         android:textColor="#19BEF1"
-        android:textSize="14sp"
         android:visibility="gone"
-        tools:text="Jake Wharton"
+        app:maxWidth="280dp"
+        app:minWidth="30dp"
+        app:ellipsize="end"
+        app:lines="1"
+        app:textSize="14sp"
         app:layout_constraintBottom_toTopOf="@id/chat_layout"
-        app:layout_constraintStart_toStartOf="@id/chat_layout" />
+        app:layout_constraintStart_toStartOf="@id/chat_layout"
+        tools:text="Jake Wharton" />
 
     <LinearLayout
         android:id="@+id/chat_layout"
@@ -65,29 +65,23 @@
         android:layout_marginStart="11.5dp"
         android:orientation="vertical"
         android:layout_marginTop="1.5dp"
+        android:gravity="end"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/chat_name"
         app:layout_constraintVertical_bias="0"
         app:layout_goneMarginBottom="0dp">
 
-        <LinearLayout
+        <one.mixin.android.widget.lottie.RLottieImageView
+            android:id="@+id/chat_sticker"
+            android:layout_width="128dp"
+            android:layout_height="128dp"
+            tools:ignore="ContentDescription" />
+
+        <one.mixin.android.widget.bubble.TimeBubble
+            android:id="@+id/chat_time"
             android:layout_width="wrap_content"
-            android:orientation="vertical"
-            android:gravity="end"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content" />
 
-            <one.mixin.android.widget.RLottieImageView
-                android:id="@+id/chat_sticker"
-                android:layout_width="128dp"
-                android:layout_height="128dp"
-                tools:ignore="ContentDescription"/>
-
-            <one.mixin.android.widget.bubble.TimeBubble
-                android:id="@+id/chat_time"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
-        </LinearLayout>
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

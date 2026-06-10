@@ -10,12 +10,13 @@ import android.widget.FrameLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
-import com.google.android.exoplayer2.C
-import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.Timeline
-import com.google.android.exoplayer2.ui.TimeBar
-import com.google.android.exoplayer2.util.Assertions
-import com.google.android.exoplayer2.util.Util
+import androidx.media3.common.C
+import androidx.media3.common.Player
+import androidx.media3.common.Timeline
+import androidx.media3.common.util.Assertions
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.common.util.Util
+import androidx.media3.ui.TimeBar
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewPlayerControlBinding
 import one.mixin.android.extension.dp
@@ -27,9 +28,8 @@ import java.util.Formatter
 import java.util.Locale
 import kotlin.math.min
 
-class PlayerControlView(context: Context, attributeSet: AttributeSet) :
+@UnstableApi class PlayerControlView(context: Context, attributeSet: AttributeSet) :
     FrameLayout(context, attributeSet) {
-
     private val componentListener = ComponentListener()
     private val formatBuilder = StringBuilder()
     private val formatter = Formatter(formatBuilder, Locale.getDefault())
@@ -49,12 +49,14 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
 
     private val statusBarHeight = context.statusBarHeight()
 
-    private val updateProgressAction = Runnable {
-        updateProgress()
-    }
-    private val hideAction = Runnable {
-        hide()
-    }
+    private val updateProgressAction =
+        Runnable {
+            updateProgress()
+        }
+    private val hideAction =
+        Runnable {
+            hide()
+        }
 
     private var useBottomLayout = false
     var inRefreshState = false
@@ -107,7 +109,7 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
                         12.dp + systemInserts.left,
                         12.dp,
                         12.dp + systemInserts.right,
-                        24.dp
+                        24.dp,
                     )
                 } else {
                     binding.topFl.setPadding(0, 24.dp + systemInserts.top, 0, 0)
@@ -115,7 +117,7 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
                         12.dp,
                         24.dp,
                         12.dp,
-                        24.dp + systemInserts.bottom
+                        24.dp + systemInserts.bottom,
                     )
                 }
                 WindowInsetsCompat.CONSUMED
@@ -217,12 +219,19 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
         }
     }
 
-    private fun seekTo(player: Player, windowIndex: Int, positionMs: Long): Boolean {
+    private fun seekTo(
+        player: Player,
+        windowIndex: Int,
+        positionMs: Long,
+    ): Boolean {
         player.seekTo(windowIndex, positionMs)
         return true
     }
 
-    private fun seekToTimeBarPosition(player: Player, positionMsParams: Long) {
+    private fun seekToTimeBarPosition(
+        player: Player,
+        positionMsParams: Long,
+    ) {
         var positionMs = positionMsParams
         var windowIndex: Int
         val timeline = player.currentTimeline
@@ -288,6 +297,9 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
             }
             Player.STATE_ENDED -> {
                 playView.status = STATUS_IDLE
+            }
+            Player.STATE_BUFFERING -> {
+                // Do nothing
             }
         }
     }
@@ -377,14 +389,14 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
             0,
             adGroupTimesMs,
             adGroupCount,
-            extraAdGroupCount
+            extraAdGroupCount,
         )
         System.arraycopy(
             extraPlayedAdGroups,
             0,
             playedAdGroups,
             adGroupCount,
-            extraAdGroupCount
+            extraAdGroupCount,
         )
         timeBar.setAdGroupTimesMs(adGroupTimesMs, playedAdGroups, totalAdGroupCount)
         updateProgress()
@@ -424,11 +436,12 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
                 if (playbackSpeed > 0) (mediaTimeDelayMs / playbackSpeed).toLong() else MAX_UPDATE_INTERVAL_MS
 
             // Constrain the delay to avoid too frequent / infrequent updates.
-            delayMs = Util.constrainValue(
-                delayMs,
-                timeBarMinUpdateIntervalMs.toLong(),
-                MAX_UPDATE_INTERVAL_MS
-            )
+            delayMs =
+                Util.constrainValue(
+                    delayMs,
+                    timeBarMinUpdateIntervalMs.toLong(),
+                    MAX_UPDATE_INTERVAL_MS,
+                )
             postDelayed(updateProgressAction, delayMs)
         } else if (playbackState != Player.STATE_ENDED && playbackState != Player.STATE_IDLE) {
             postDelayed(updateProgressAction, MAX_UPDATE_INTERVAL_MS)
@@ -439,23 +452,36 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
         Player.Listener,
         TimeBar.OnScrubListener,
         OnClickListener {
-        override fun onScrubMove(timeBar: TimeBar, position: Long) {
+        override fun onScrubMove(
+            timeBar: TimeBar,
+            position: Long,
+        ) {
             positionView.text = Util.getStringForTime(formatBuilder, formatter, position)
         }
 
-        override fun onScrubStart(timeBar: TimeBar, position: Long) {
+        override fun onScrubStart(
+            timeBar: TimeBar,
+            position: Long,
+        ) {
             scrubbing = true
             positionView.text = Util.getStringForTime(formatBuilder, formatter, position)
         }
 
-        override fun onScrubStop(timeBar: TimeBar, position: Long, canceled: Boolean) {
+        override fun onScrubStop(
+            timeBar: TimeBar,
+            position: Long,
+            canceled: Boolean,
+        ) {
             scrubbing = false
             if (!canceled) {
                 player?.let { seekToTimeBarPosition(it, position) }
             }
         }
 
-        override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
+        override fun onPlayerStateChanged(
+            playWhenReady: Boolean,
+            playbackState: Int,
+        ) {
             updatePlayView()
             updateProgress()
         }
@@ -464,12 +490,17 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
             updateProgress()
         }
 
-        override fun onPositionDiscontinuity(@Player.DiscontinuityReason reason: Int) {
+        override fun onPositionDiscontinuity(
+            @Player.DiscontinuityReason reason: Int,
+        ) {
             updateNavigation()
             updateTimeline()
         }
 
-        override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+        override fun onTimelineChanged(
+            timeline: Timeline,
+            reason: Int,
+        ) {
             updateNavigation()
             updateTimeline()
         }
@@ -497,13 +528,14 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
     }
 
     interface VisibilityListener {
-
         fun onVisibilityChange(visibility: Int)
     }
 
     interface ProgressUpdateListener {
-
-        fun onProgressUpdate(position: Long, bufferedPosition: Long)
+        fun onProgressUpdate(
+            position: Long,
+            bufferedPosition: Long,
+        )
     }
 
     companion object {
@@ -514,7 +546,10 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
 
         const val DEFAULT_SHOW_TIMEOUT_MS = 5000
 
-        fun canShowMultiWindowTimeBar(timeline: Timeline, window: Timeline.Window): Boolean {
+        fun canShowMultiWindowTimeBar(
+            timeline: Timeline,
+            window: Timeline.Window,
+        ): Boolean {
             if (timeline.windowCount > MAX_WINDOWS_FOR_MULTI_WINDOW_TIME_BAR) {
                 return false
             }

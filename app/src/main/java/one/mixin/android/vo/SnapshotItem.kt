@@ -8,6 +8,13 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.SerialName
+import one.mixin.android.extension.hexString
+import one.mixin.android.extension.isByteArrayValidUtf8
+import one.mixin.android.extension.isValidHex
+import one.mixin.android.vo.safe.SafeDeposit
+import one.mixin.android.vo.safe.SafeSnapshotType
+import one.mixin.android.vo.safe.SafeWithdrawal
 
 @SuppressLint("ParcelCreator")
 @Parcelize
@@ -31,19 +38,13 @@ data class SnapshotItem(
     val createdAt: String,
     @SerializedName("opponent_id")
     @ColumnInfo(name = "opponent_id")
-    val opponentId: String?,
+    val opponentId: String,
     @SerializedName("opponent_ful_name")
     @ColumnInfo(name = "opponent_ful_name")
     val opponentFullName: String?,
     @SerializedName("transaction_hash")
     @ColumnInfo(name = "transaction_hash")
     val transactionHash: String?,
-    @SerializedName("sender")
-    @ColumnInfo(name = "sender")
-    val sender: String?,
-    @SerializedName("receiver")
-    @ColumnInfo(name = "receiver")
-    val receiver: String?,
     @SerializedName("memo")
     @ColumnInfo(name = "memo")
     val memo: String?,
@@ -62,33 +63,118 @@ data class SnapshotItem(
     @SerializedName("trace_id")
     @ColumnInfo(name = "trace_id")
     val traceId: String?,
+    @SerializedName("opening_balance")
+    @ColumnInfo(name = "opening_balance")
+    val openingBalance: String?,
+    @SerializedName("closing_balance")
+    @ColumnInfo(name = "closing_balance")
+    val closingBalance: String?,
+    @SerializedName("deposit")
+    @SerialName("deposit")
+    @ColumnInfo(name = "deposit")
+    val deposit: SafeDeposit?,
+    @SerializedName("withdrawal")
+    @SerialName("withdrawal")
+    @ColumnInfo(name = "withdrawal")
+    val withdrawal: SafeWithdrawal?,
+    @SerializedName("label")
+    @ColumnInfo(name = "label")
+    var label: String?,
+    @SerializedName("inscription_hash")
+    @ColumnInfo(name = "inscription_hash")
+    val inscriptionHash: String?,
+    @SerializedName("label")
+    @ColumnInfo(name = "collection_hash")
+    val collectionHash: String?,
+    @SerializedName("name")
+    @ColumnInfo(name = "name")
+    val name: String?,
+    @SerializedName("sequence")
+    @ColumnInfo(name = "sequence")
+    val sequence: Long?,
+    @SerializedName("content_type")
+    @ColumnInfo(name = "content_type")
+    val contentType: String?,
+    @SerializedName("content_url")
+    @ColumnInfo(name = "content_url")
+    val contentUrl: String?,
+    @SerializedName("icon_url")
+    @ColumnInfo(name = "icon_url")
+    val iconUrl: String?,
 ) : Parcelable {
-    companion object {
-        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<SnapshotItem>() {
-            override fun areItemsTheSame(oldItem: SnapshotItem, newItem: SnapshotItem) =
-                oldItem.snapshotId == newItem.snapshotId
-
-            override fun areContentsTheSame(oldItem: SnapshotItem, newItem: SnapshotItem) =
-                oldItem == newItem
+    val formatMemo: FormatMemo?
+        get() {
+            return if (memo.isNullOrBlank()) {
+                null
+            } else {
+                FormatMemo(memo)
+            }
         }
 
-        fun fromSnapshot(snapshot: Snapshot, avatarUrl: String? = null, symbol: String? = null) = SnapshotItem(
-            snapshotId = snapshot.snapshotId,
-            type = snapshot.type,
-            assetId = snapshot.assetId,
-            amount = snapshot.amount,
-            createdAt = snapshot.createdAt,
-            opponentId = snapshot.opponentId,
-            opponentFullName = null,
-            transactionHash = snapshot.transactionHash,
-            sender = snapshot.sender,
-            receiver = snapshot.receiver,
-            memo = snapshot.memo,
-            assetSymbol = symbol,
-            confirmations = snapshot.confirmations,
-            avatarUrl = avatarUrl,
-            assetConfirmations = 0,
-            traceId = snapshot.traceId
-        )
+    companion object {
+        val DIFF_CALLBACK =
+            object : DiffUtil.ItemCallback<SnapshotItem>() {
+                override fun areItemsTheSame(
+                    oldItem: SnapshotItem,
+                    newItem: SnapshotItem,
+                ) =
+                    oldItem.snapshotId == newItem.snapshotId
+
+                override fun areContentsTheSame(
+                    oldItem: SnapshotItem,
+                    newItem: SnapshotItem,
+                ) =
+                    oldItem == newItem
+            }
+    }
+
+    fun simulateType(): SafeSnapshotType =
+        if (type == SafeSnapshotType.pending.name) {
+            SafeSnapshotType.pending
+        } else if (deposit != null) {
+            SafeSnapshotType.deposit
+        } else if (withdrawal != null) {
+            SafeSnapshotType.withdrawal
+        } else {
+            SafeSnapshotType.snapshot
+        }
+
+    fun isDataIncomplete(): Boolean {
+        val simulateType = simulateType()
+        return when (simulateType) {
+            SafeSnapshotType.withdrawal -> {
+                withdrawal?.receiver.isNullOrBlank() || withdrawal?.withdrawalHash.isNullOrBlank()
+            }
+
+            SafeSnapshotType.deposit -> {
+                deposit?.depositHash.isNullOrBlank()
+            }
+
+            SafeSnapshotType.snapshot -> {
+                withdrawal?.withdrawalHash?.isBlank() == true || deposit?.depositHash?.isBlank() == true
+            }
+
+            else -> false
+        }
+    }
+
+    fun isPendingWithdrawal() = withdrawal != null && withdrawal.withdrawalHash.isNullOrBlank()
+}
+
+@Parcelize
+class FormatMemo(var utf: String?, var hex: String?) : Parcelable {
+    constructor(input: String) : this(null, null) {
+        if (input.isValidHex()) {
+            val byteArray = input.chunked(2) { it.toString().toInt(16).toByte() }.toByteArray()
+            if (byteArray.isByteArrayValidUtf8()) {
+                utf = String(byteArray)
+                hex = input
+            } else {
+                hex = input
+            }
+        } else {
+            utf = input
+            hex = input.toByteArray().hexString()
+        }
     }
 }

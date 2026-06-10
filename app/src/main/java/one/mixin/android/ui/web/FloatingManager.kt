@@ -3,11 +3,12 @@ package one.mixin.android.ui.web
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.view.View
 import android.webkit.WebViewClient
-import androidx.annotation.ColorInt
+import androidx.annotation.MainThread
+import androidx.core.graphics.scale
+import androidx.core.graphics.toColorInt
 import androidx.core.view.drawToBitmap
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
@@ -16,63 +17,110 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.initRenderScript
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
+import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_THREAD
 import one.mixin.android.vo.App
 import one.mixin.android.widget.MixinWebView
+import timber.log.Timber
 
 private const val PREF_FLOATING = "floating"
 private var screenshot: Bitmap? = null
 
 fun getScreenshot() = screenshot
 
-fun refreshScreenshot(context: Context) {
-    MixinApplication.get().currentActivity?.let { activity ->
-        val rootView: View = activity.window.decorView.findViewById(android.R.id.content)
-        if (!rootView.isLaidOut) return@let
+fun refreshScreenshot(context: Context, cover: Int? = null) {
+    runCatching { 
+        MixinApplication.get().currentActivity?.let { activity ->
+            val decorView = activity.window.decorView
+            val rootView: View = decorView.findViewById(android.R.id.content)
+            if (!rootView.isLaidOut || !decorView.isLaidOut) return@let
 
-        val screenBitmap = rootView.drawToBitmap()
-        val resultBitmap = Bitmap.createScaledBitmap(
-            screenBitmap,
-            screenBitmap.width / 3,
-            screenBitmap.height / 3,
-            false
-        )
-
-        val cv = Canvas(resultBitmap)
-        cv.drawBitmap(resultBitmap, 0f, 0f, Paint())
-        cv.drawRect(
-            0f,
-            0f,
-            screenBitmap.width.toFloat(),
-            screenBitmap.height.toFloat(),
-            Paint().apply {
-                color = if (context.isNightMode()) {
-                    Color.parseColor("#CC1C1C1C")
+            val contentBitmap = rootView.drawToBitmap()
+            val statusBarHeight = context.statusBarHeight()
+            val navigationBarHeight = context.navigationBarHeight()
+            val screenBitmap =
+                if (statusBarHeight > 0 || navigationBarHeight > 0) {
+                    Bitmap.createBitmap(
+                        contentBitmap.width,
+                        contentBitmap.height + statusBarHeight + navigationBarHeight,
+                        Bitmap.Config.ARGB_8888
+                    ).apply {
+                        val canvas = Canvas(this)
+                        val bgWhite = context.colorFromAttribute(R.attr.bg_white)
+                        canvas.drawRect(
+                            0f,
+                            0f,
+                            contentBitmap.width.toFloat(),
+                            statusBarHeight.toFloat(),
+                            Paint(Paint.FILTER_BITMAP_FLAG).apply {
+                                color = bgWhite
+                            }
+                        )
+                        canvas.drawBitmap(contentBitmap, 0f, statusBarHeight.toFloat(), null)
+                        canvas.drawRect(
+                            0f,
+                            (statusBarHeight + contentBitmap.height).toFloat(),
+                            contentBitmap.width.toFloat(),
+                            (statusBarHeight + contentBitmap.height + navigationBarHeight).toFloat(),
+                            Paint(Paint.FILTER_BITMAP_FLAG).apply {
+                                color = bgWhite
+                            }
+                        )
+                    }
                 } else {
-                    Color.parseColor("#E6F6F7FA")
+                    contentBitmap
                 }
+            
+            // Convert hardware bitmap to software bitmap if needed
+            val softwareBitmap = if (screenBitmap.config == Bitmap.Config.HARDWARE) {
+                screenBitmap.copy(Bitmap.Config.ARGB_8888, false)
+            } else {
+                screenBitmap
             }
-        )
-        screenshot = resultBitmap
+            
+            val resultBitmap =
+                softwareBitmap.scale(softwareBitmap.width / 3, softwareBitmap.height / 3, false)
+
+            val cv = Canvas(resultBitmap)
+            cv.drawBitmap(resultBitmap, 0f, 0f, Paint())
+            cv.drawRect(
+                0f,
+                0f,
+                resultBitmap.width.toFloat(),
+                resultBitmap.height.toFloat(),
+                Paint().apply {
+                    color = cover ?: if (context.isNightMode()) {
+                        "#CC1C1C1C".toColorInt()
+                    } else {
+                        "#E6F6F7FA".toColorInt()
+                    }
+                },
+            )
+            screenshot = resultBitmap
+        }
+    }.onFailure {
+        Timber.e(it)
     }
     initRenderScript(context)
 }
 
 fun expand(context: Context) {
-    refreshScreenshot(context)
+    runCatching { refreshScreenshot(context) }.onFailure { Timber.e(it) }
     WebActivity.show(context)
     FloatingWebClip.getInstance().hide()
 }
 
 fun collapse() {
-    if (clips.size > 0) {
+    if (clips.isNotEmpty()) {
         FloatingWebClip.getInstance().show()
     }
 }
@@ -82,7 +130,6 @@ var clips = mutableListOf<WebClip>()
 data class WebClip(
     var url: String,
     var app: App?,
-    @ColorInt
     val titleColor: Int,
     val name: String?,
     val thumb: Bitmap?,
@@ -90,10 +137,13 @@ data class WebClip(
     val conversationId: String?,
     val shareable: Boolean?,
     @Transient val webView: MixinWebView?,
-    @Transient val isFinished: Boolean = false
+    @Transient val isFinished: Boolean = false,
 )
 
-fun updateClip(index: Int, webClip: WebClip) {
+fun updateClip(
+    index: Int,
+    webClip: WebClip,
+) {
     if (index < clips.size) {
         if (clips[index].webView != webClip.webView) {
             clips[index].webView?.destroy()
@@ -121,7 +171,7 @@ fun holdClip(webClip: WebClip) {
 }
 
 private fun initClips() {
-    MixinApplication.appScope.launch(SINGLE_THREAD) {
+    MixinApplication.get().applicationScope.launch(SINGLE_THREAD) {
         val content = MixinApplication.appContext.defaultSharedPreferences.getString(PREF_FLOATING, null) ?: return@launch
         val type = object : TypeToken<List<WebClip>>() {}.type
         val list = GsonHelper.customGson.fromJson<List<WebClip>>(content, type)
@@ -162,17 +212,20 @@ fun releaseClip(index: Int) {
 }
 
 var saveJob: Job? = null
+
 fun saveClips() {
     saveJob?.cancel()
-    saveJob = MixinApplication.appScope.launch(SINGLE_THREAD) {
-        val localClips = mutableListOf<WebClip>().apply {
-            addAll(clips)
+    saveJob =
+        MixinApplication.get().applicationScope.launch(SINGLE_THREAD) {
+            val localClips =
+                mutableListOf<WebClip>().apply {
+                    addAll(clips)
+                }
+            MixinApplication.appContext.defaultSharedPreferences.putString(
+                PREF_FLOATING,
+                GsonHelper.customGson.toJson(localClips),
+            )
         }
-        MixinApplication.appContext.defaultSharedPreferences.putString(
-            PREF_FLOATING,
-            GsonHelper.customGson.toJson(localClips)
-        )
-    }
 }
 
 fun replaceApp(app: App) {
@@ -201,4 +254,11 @@ fun releaseAll() {
     saveJob = null
     MixinApplication.appContext.defaultSharedPreferences.remove(PREF_FLOATING)
     FloatingWebClip.getInstance().hide()
+}
+
+@MainThread
+fun reloadWebViewInClips() {
+    clips.forEach { clip ->
+        clip.webView?.reload()
+    }
 }

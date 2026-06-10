@@ -26,7 +26,8 @@ data class BlazeMessageParam(
     var track_id: String? = null,
     var recipient_ids: List<String>? = null,
     val offset: String? = null,
-    val silent: Boolean? = null
+    val silent: Boolean? = null,
+    val expire_in: Long? = null,
 ) : Serializable {
     companion object {
         private const val serialVersionUID: Long = 6L
@@ -36,7 +37,7 @@ data class BlazeMessageParam(
 data class KrakenParam(
     var jsep: String? = null,
     var candidate: String? = null,
-    var track_id: String? = null
+    var track_id: String? = null,
 ) : Serializable {
     companion object {
         private const val serialVersionUID: Long = 6L
@@ -48,10 +49,18 @@ data class BlazeMessageParamSession(
     val session_id: String? = null,
 )
 
-fun createAckParam(message_id: String, status: String) =
+fun createAckParam(
+    message_id: String,
+    status: String,
+) =
     BlazeMessageParam(message_id = message_id, status = status)
 
-fun createPlainJsonParam(conversationId: String, userId: String, encoded: String, sessionId: String? = null) =
+fun createPlainJsonParam(
+    conversationId: String,
+    userId: String,
+    encoded: String,
+    sessionId: String? = null,
+) =
     BlazeMessageParam(
         conversationId,
         userId,
@@ -59,7 +68,7 @@ fun createPlainJsonParam(conversationId: String, userId: String, encoded: String
         MessageCategory.PLAIN_JSON.name,
         encoded,
         MessageStatus.SENDING.name,
-        session_id = sessionId
+        session_id = sessionId,
     )
 
 fun createConsumeSignalKeysParam(recipients: ArrayList<BlazeMessageParamSession>?) =
@@ -68,5 +77,9 @@ fun createConsumeSignalKeysParam(recipients: ArrayList<BlazeMessageParamSession>
 fun createSyncSignalKeysParam(keys: SignalKeyRequest?) =
     BlazeMessageParam(keys = keys)
 
-fun createSignalKeyMessageParam(conversationId: String, messages: ArrayList<BlazeSignalKeyMessage>, conversation_checksum: String) =
+fun createSignalKeyMessageParam(
+    conversationId: String,
+    messages: ArrayList<BlazeSignalKeyMessage>,
+    conversation_checksum: String,
+) =
     BlazeMessageParam(conversationId, messages = messages, conversation_checksum = conversation_checksum)

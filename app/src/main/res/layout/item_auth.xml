@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="80dp"
     android:background="?attr/bg_white"
-    android:foreground="?attr/selectableItemBackground">
+    android:foreground="?android:attr/selectableItemBackground">
 
     <Space
         android:id="@+id/center"
@@ -43,7 +43,7 @@
         android:layout_marginTop="2dp"
         android:layout_toEndOf="@id/avatar"
         android:ellipsize="end"
-        android:textColor="?attr/text_minor"
+        android:textColor="?attr/text_assist"
         android:textSize="12sp"
         tools:ignore="RelativeOverlap"/>
 </RelativeLayout>

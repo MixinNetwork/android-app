@@ -28,4 +28,20 @@
         app:border_color="?attr/bg_gray_light"
         app:border_width="1dp" />
 
+    <one.mixin.android.widget.CircleImageView
+        android:id="@+id/avatar_4"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/ic_avatar_place_holder"
+        app:border_color="?attr/bg_gray_light"
+        app:border_width="1dp" />
+
+    <one.mixin.android.widget.CircleImageView
+        android:id="@+id/avatar_5"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/ic_avatar_place_holder"
+        app:border_color="?attr/bg_gray_light"
+        app:border_width="1dp" />
+
 </merge>

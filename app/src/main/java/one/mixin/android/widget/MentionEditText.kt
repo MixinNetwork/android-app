@@ -18,32 +18,36 @@ class MentionEditText : ContentEditText {
     constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(
         context,
         attrs,
-        defStyleAttr
+        defStyleAttr,
     )
 
     val mentionSet = ArraySet<String>()
+
     init {
         addTextChangedListener { renderMention() }
     }
 
     fun renderMention() {
+        val text = this.text
         if (text.isNullOrBlank()) return
         val matcher = mentionNumberPattern.matcher(text)
-        val spansToRemove: Array<Any> = text?.getSpans(
-            0, text?.length ?: 0,
-            Any::class.java
-        ) as Array<Any>
+        val spansToRemove: Array<Any> =
+            text.getSpans(
+                0,
+                text.length,
+                Any::class.java,
+            ) as Array<Any>
         for (span in spansToRemove) {
-            if (span is CharacterStyle) text?.removeSpan(span)
+            if (span is CharacterStyle) text.removeSpan(span)
         }
         while (matcher.find()) {
             if (mentionSet.contains(matcher.group().substring(1))) {
                 matcher.start()
-                text?.setSpan(
+                text.setSpan(
                     ForegroundColorSpan(MENTION_COLOR),
                     matcher.start(),
                     matcher.end(),
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
                 )
             }
         }

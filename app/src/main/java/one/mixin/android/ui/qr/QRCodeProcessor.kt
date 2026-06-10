@@ -14,18 +14,19 @@ import one.mixin.android.extension.closeSilently
 import one.mixin.android.extension.decodeQR
 
 class QRCodeProcessor {
-    private val scanner: BarcodeScanner = BarcodeScanning.getClient(
-        BarcodeScannerOptions.Builder()
-            .setBarcodeFormats(FORMAT_QR_CODE)
-            .build()
-    )
+    private val scanner: BarcodeScanner =
+        BarcodeScanning.getClient(
+            BarcodeScannerOptions.Builder()
+                .setBarcodeFormats(FORMAT_QR_CODE)
+                .build(),
+        )
 
     fun detect(
         coroutineScope: CoroutineScope,
         bitmap: Bitmap,
         onSuccess: (String) -> Unit,
         onFailure: (Exception?) -> Unit,
-        onComplete: (() -> Unit)? = null
+        onComplete: (() -> Unit)? = null,
     ) = coroutineScope.launch {
         try {
             var url: String? = null
@@ -55,11 +56,12 @@ class QRCodeProcessor {
         bitmap: Bitmap,
         onSuccess: (String) -> Unit,
         onFailure: (Exception?) -> Unit,
-        onComplete: (() -> Unit)? = null
+        onComplete: (() -> Unit)? = null,
     ) = coroutineScope.launch {
-        val url = withContext(Dispatchers.IO) {
-            bitmap.decodeQR()
-        }
+        val url =
+            withContext(Dispatchers.IO) {
+                bitmap.decodeQR()
+            }
         onComplete?.invoke()
         if (url != null) {
             onSuccess(url)

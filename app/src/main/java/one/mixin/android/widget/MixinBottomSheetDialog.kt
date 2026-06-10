@@ -19,7 +19,12 @@ import one.mixin.android.extension.isTablet
 import one.mixin.android.extension.isWideScreen
 import kotlin.math.abs
 
-class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(context, theme) {
+class MixinBottomSheetDialog(
+    context: Context,
+    theme: Int,
+    val transparentStatusBar: Boolean = false,
+    private val applyBottomInsetToSheet: Boolean = true,
+) : BottomSheetDialog(context, theme) {
     companion object {
         const val BACK_DRAWABLE_ALPHA = 51
     }
@@ -40,13 +45,23 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
         backDrawable.alpha = 0
         sheetContainer = window!!.findViewById(com.google.android.material.R.id.design_bottom_sheet)
         sheetContainer.updateLayoutParams<ViewGroup.LayoutParams> {
-            width = when {
-                context.isWideScreen() -> (context.displayMetrics.widthPixels * 0.5).toInt()
-                context.isTablet() -> (context.displayMetrics.widthPixels * 0.8).toInt()
-                else -> width
-            }
+            width =
+                when {
+                    context.isWideScreen() -> (context.displayMetrics.widthPixels * 0.5).toInt()
+                    context.isTablet() -> (context.displayMetrics.widthPixels * 0.8).toInt()
+                    else -> width
+                }
         }
+        behavior.isGestureInsetBottomIgnored = true
         behavior.addBottomSheetCallback(bottomSheetBehaviorCallback)
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        applyBottomSheetContainerInsets(
+            transparentStatusBar = transparentStatusBar,
+            applyBottomInsetToSheet = applyBottomInsetToSheet,
+        )
     }
 
     override fun show() {
@@ -58,20 +73,21 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
 
         sheetContainer.measure(
             View.MeasureSpec.makeMeasureSpec(context.displayMetrics.widthPixels, View.MeasureSpec.AT_MOST),
-            View.MeasureSpec.makeMeasureSpec(context.displayMetrics.heightPixels, View.MeasureSpec.AT_MOST)
+            View.MeasureSpec.makeMeasureSpec(context.displayMetrics.heightPixels, View.MeasureSpec.AT_MOST),
         )
         if (isShown) return
         backDrawable.alpha = 0
         sheetContainer.translationY = sheetContainer.measuredHeight.toFloat()
-        startAnimationRunnable = object : Runnable {
-            override fun run() {
-                if (startAnimationRunnable != this || isDismissed) {
-                    return
+        startAnimationRunnable =
+            object : Runnable {
+                override fun run() {
+                    if (startAnimationRunnable != this || isDismissed) {
+                        return
+                    }
+                    startAnimationRunnable = null
+                    startOpenAnimation()
                 }
-                startAnimationRunnable = null
-                startOpenAnimation()
             }
-        }
         sheetContainer.post(startAnimationRunnable)
     }
 
@@ -85,14 +101,14 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
         val animatorSet = AnimatorSet()
         animatorSet.playTogether(
             ObjectAnimator.ofFloat(sheetContainer, "translationY", 0f),
-            ObjectAnimator.ofInt(backDrawable, "alpha", BACK_DRAWABLE_ALPHA)
+            ObjectAnimator.ofInt(backDrawable, "alpha", BACK_DRAWABLE_ALPHA),
         )
         animatorSet.duration = 200
         animatorSet.startDelay = 20
         animatorSet.interpolator = DecelerateInterpolator()
         animatorSet.addListener(
             object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator?) {
+                override fun onAnimationEnd(animation: Animator) {
                     if (curSheetAnimation != null && curSheetAnimation == animation) {
                         curSheetAnimation = null
                         container.setLayerType(View.LAYER_TYPE_NONE, null)
@@ -100,12 +116,12 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
                     }
                 }
 
-                override fun onAnimationCancel(animation: Animator?) {
+                override fun onAnimationCancel(animation: Animator) {
                     if (curSheetAnimation != null && curSheetAnimation == animation) {
                         curSheetAnimation = null
                     }
                 }
-            }
+            },
         )
         animatorSet.start()
         curSheetAnimation = animatorSet
@@ -127,7 +143,7 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
         val animatorSet = AnimatorSet()
         animatorSet.playTogether(
             ObjectAnimator.ofFloat(sheetContainer, "translationY", sheetContainer.measuredHeight.toFloat()),
-            ObjectAnimator.ofInt(backDrawable, "alpha", 0)
+            ObjectAnimator.ofInt(backDrawable, "alpha", 0),
         )
         animatorSet.duration = 180
         animatorSet.interpolator = AccelerateInterpolator()
@@ -147,7 +163,7 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
                         curSheetAnimation = null
                     }
                 }
-            }
+            },
         )
         animatorSet.start()
         curSheetAnimation = animatorSet
@@ -165,18 +181,25 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
         curSheetAnimation = null
     }
 
-    private val bottomSheetBehaviorCallback = object : BottomSheetBehavior.BottomSheetCallback() {
-
-        override fun onStateChanged(bottomSheet: View, newState: Int) {
-        }
-
-        override fun onSlide(bottomSheet: View, slideOffset: Float) {
-            val alpha = if (slideOffset in 0.0..1.0) {
-                BACK_DRAWABLE_ALPHA
-            } else {
-                (BACK_DRAWABLE_ALPHA - abs(slideOffset) * BACK_DRAWABLE_ALPHA).toInt()
+    private val bottomSheetBehaviorCallback =
+        object : BottomSheetBehavior.BottomSheetCallback() {
+            override fun onStateChanged(
+                bottomSheet: View,
+                newState: Int,
+            ) {
             }
-            backDrawable.alpha = alpha
+
+            override fun onSlide(
+                bottomSheet: View,
+                slideOffset: Float,
+            ) {
+                val alpha =
+                    if (slideOffset in 0.0..1.0) {
+                        BACK_DRAWABLE_ALPHA
+                    } else {
+                        (BACK_DRAWABLE_ALPHA - abs(slideOffset) * BACK_DRAWABLE_ALPHA).toInt()
+                    }
+                backDrawable.alpha = alpha
+            }
         }
-    }
 }

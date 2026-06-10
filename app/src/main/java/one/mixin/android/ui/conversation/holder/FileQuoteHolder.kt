@@ -7,25 +7,28 @@ import android.text.style.BackgroundColorSpan
 import android.view.View
 import android.widget.SeekBar
 import androidx.constraintlayout.widget.ConstraintLayout
-import com.google.android.exoplayer2.util.MimeTypes
+import androidx.media3.common.MimeTypes
+import one.mixin.android.Constants.Colors.HIGHLIGHTED
+import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatFileQuoteBinding
-import one.mixin.android.extension.dp
 import one.mixin.android.extension.fileSize
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.textResource
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
-import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.holder.base.MediaHolder
-import one.mixin.android.util.GsonHelper
+import one.mixin.android.ui.conversation.holder.base.Terminable
 import one.mixin.android.util.MusicPlayer
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.isSecret
 
-class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : MediaHolder(binding.root) {
-    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : MediaHolder(binding.root), Terminable {
+    override fun chatLayout(
+        isMe: Boolean,
+        isLast: Boolean,
+        isBlink: Boolean,
+    ) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
             (binding.chatMsgLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
@@ -33,13 +36,13 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_reply_me_last,
-                    R.drawable.chat_bubble_reply_me_last_night
+                    R.drawable.chat_bubble_reply_me_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_reply_me,
-                    R.drawable.chat_bubble_reply_me_night
+                    R.drawable.chat_bubble_reply_me_night,
                 )
             }
         } else {
@@ -48,13 +51,13 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_reply_other_last,
-                    R.drawable.chat_bubble_reply_other_last_night
+                    R.drawable.chat_bubble_reply_other_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_reply_other,
-                    R.drawable.chat_bubble_reply_other_night
+                    R.drawable.chat_bubble_reply_other_night,
                 )
             }
         }
@@ -68,7 +71,7 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
         hasSelect: Boolean,
         isSelect: Boolean,
         isRepresentative: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener
+        onItemListener: MessageAdapter.OnItemListener,
     ) {
         super.bind(messageItem)
         if (hasSelect && isSelect) {
@@ -80,13 +83,7 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
         chatLayout(isMe, isLast)
         if (isFirst && !isMe) {
             binding.chatName.visibility = View.VISIBLE
-            binding.chatName.text = messageItem.userFullName
-            if (messageItem.appId != null) {
-                binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-                binding.chatName.compoundDrawablePadding = 3.dp
-            } else {
-                binding.chatName.setCompoundDrawables(null, null, null, null)
-            }
+            binding.chatName.setMessageName(messageItem)
             binding.chatName.setTextColor(getColorById(messageItem.userId))
             binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
         } else {
@@ -102,37 +99,38 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
             isSecret = messageItem.isSecret(),
         )
 
-        keyword.notNullWithElse(
-            { k ->
-                messageItem.mediaName?.let { str ->
-                    val start = str.indexOf(k, 0, true)
-                    if (start >= 0) {
-                        val sp = SpannableString(str)
-                        sp.setSpan(
-                            BackgroundColorSpan(HIGHLIGHTED),
-                            start,
-                            start + k.length,
-                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                        )
-                        binding.fileNameTv.text = sp
-                    } else {
-                        binding.fileNameTv.text = messageItem.mediaName
-                    }
+        if (keyword != null) {
+            messageItem.mediaName?.let { str ->
+                val start = str.indexOf(keyword, 0, true)
+                if (start >= 0) {
+                    val sp = SpannableString(str)
+                    sp.setSpan(
+                        BackgroundColorSpan(HIGHLIGHTED),
+                        start,
+                        start + keyword.length,
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+                    )
+                    binding.fileNameTv.text = sp
+                } else {
+                    binding.fileNameTv.text = messageItem.mediaName
                 }
-            },
-            {
-                binding.fileNameTv.text = messageItem.mediaName
             }
-        )
+        } else {
+            binding.fileNameTv.text = messageItem.mediaName
+        }
         if (messageItem.mediaStatus == MediaStatus.EXPIRED.name) {
-            binding.bottomLayout.fileSizeTv.textResource = R.string.chat_expired
+            binding.bottomLayout.fileSizeTv.textResource = R.string.Expired
         } else {
             binding.bottomLayout.fileSizeTv.text = "${messageItem.mediaSize?.fileSize()}"
         }
 
         binding.bottomLayout.seekBar.setOnSeekBarChangeListener(
             object : SeekBar.OnSeekBarChangeListener {
-                override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                override fun onProgressChanged(
+                    seekBar: SeekBar?,
+                    progress: Int,
+                    fromUser: Boolean,
+                ) {
                 }
 
                 override fun onStartTrackingTouch(seekBar: SeekBar) {
@@ -145,7 +143,7 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
                         MusicPlayer.seekTo(seekBar.progress)
                     }
                 }
-            }
+            },
         )
         messageItem.mediaStatus?.let {
             when (it) {
@@ -244,8 +242,7 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
                 true
             }
         }
-        val quoteMessage = GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java)
-        binding.chatQuote.bind(quoteMessage)
+        binding.chatQuote.bind(fromJsonQuoteMessage(messageItem.quoteContent))
         binding.chatQuote.setOnClickListener {
             if (!hasSelect) {
                 onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)
@@ -253,6 +250,7 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
         }
+        chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, messageItem.expireAt, R.id.chat_msg_layout)
     }
 
     private fun handleClick(
@@ -260,7 +258,7 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
         isSelect: Boolean,
         isMe: Boolean,
         messageItem: MessageItem,
-        onItemListener: ConversationAdapter.OnItemListener
+        onItemListener: MessageAdapter.OnItemListener,
     ) {
         if (hasSelect) {
             onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)

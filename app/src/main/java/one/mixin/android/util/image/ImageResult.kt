@@ -1,7 +1,6 @@
 package one.mixin.android.util.image
 
 class ImageResult<V>(val value: V? = null, val exception: Throwable? = null) {
-
     override fun equals(other: Any?): Boolean {
         if (other == null) return false
 

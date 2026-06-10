@@ -14,12 +14,13 @@ class RoundedBackgroundSpan(private val theme: MarkwonTheme) : ReplacementSpan()
     private val roundRadius by lazy { 4.dp.toFloat() }
 
     private var size = 0
+
     override fun getSize(
         paint: Paint,
         text: CharSequence,
         start: Int,
         end: Int,
-        fm: FontMetricsInt?
+        fm: FontMetricsInt?,
     ): Int {
         size =
             paint.measureText(text.subSequence(start, end).toString()).toInt() + padding + padding
@@ -35,7 +36,7 @@ class RoundedBackgroundSpan(private val theme: MarkwonTheme) : ReplacementSpan()
         top: Int,
         y: Int,
         bottom: Int,
-        paint: Paint
+        paint: Paint,
     ) {
         canvas.drawText(text, start, end, x + padding, y.toFloat(), paint)
         val rect =

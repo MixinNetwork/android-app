@@ -22,7 +22,6 @@ import java.util.UUID
 import java.util.regex.Pattern
 
 class ImportChatUtil {
-
     companion object {
         private val exportUri = ArraySet<String>()
 
@@ -44,17 +43,22 @@ class ImportChatUtil {
         private var instance: ImportChatUtil? = null
     }
 
-    fun generateTranscriptMessage(context: Context, importUri: String, documents: List<String>): String? {
+    fun generateTranscriptMessage(
+        context: Context,
+        importUri: String,
+        documents: List<String>,
+    ): String? {
         var inputStream: InputStream? = null
         try {
             val documentsMap: ArrayMap<String, Uri> = arrayMapOf()
             documents.forEach {
                 val uri = Uri.parse(it)
-                val name = try {
-                    fixFileName(uri.getFileName())
-                } catch (e: Exception) {
-                    null
-                } ?: return@forEach
+                val name =
+                    try {
+                        fixFileName(uri.getFileName())
+                    } catch (e: Exception) {
+                        null
+                    } ?: return@forEach
                 documentsMap[name] = uri
             }
             inputStream = requireNotNull(context.contentResolver.openInputStream(Uri.parse(importUri)))
@@ -79,7 +83,11 @@ class ImportChatUtil {
     }
 
     // Todo
-    private fun generateTranscriptMessage(s: String, documentsMap: ArrayMap<String, Uri>): TranscriptMessage? {
+    @Suppress("UNUSED_PARAMETER")
+    private fun generateTranscriptMessage(
+        s: String,
+        documentsMap: ArrayMap<String, Uri>,
+    ): TranscriptMessage? {
         val dateEnd = s.indexOf(" - ")
         val nameEnd = s.indexOf(": ")
         return if (dateEnd > 0 && nameEnd > 0) {
@@ -112,7 +120,10 @@ class ImportChatUtil {
         return exportingChatUri?.notNullWithElse({ Pair(it, documentsUrisArray) }, null)
     }
 
-    fun copyFileToCache(uri: Uri, context: Context = MixinApplication.appContext) {
+    fun copyFileToCache(
+        uri: Uri,
+        context: Context = MixinApplication.appContext,
+    ) {
         val name = fixFileName(uri.getFileName())
         val backupFile = File("${context.getOtherPath().absolutePath}${File.separator}$name")
         Timber.d(backupFile.absolutePath)

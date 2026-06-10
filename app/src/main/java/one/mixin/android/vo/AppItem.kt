@@ -1,7 +1,6 @@
 package one.mixin.android.vo
 
 import androidx.room.TypeConverters
-import java.util.ArrayList
 
 @TypeConverters(ArrayConverters::class)
 class AppItem(
@@ -19,10 +18,22 @@ class AppItem(
     val resourcePatterns: ArrayList<String>?,
     val updatedAt: String? = null,
     val userId: String? = null,
-    val avatarUrl: String? = null
+    val avatarUrl: String? = null,
 )
 
-fun AppItem.toApp() = App(
-    appId, appNumber, homeUri, redirectUri, name, iconUrl, category, description,
-    appSecret, capabilities, creatorId, resourcePatterns, updatedAt
-)
+fun AppItem.toApp() =
+    App(
+        appId,
+        appNumber,
+        homeUri,
+        redirectUri,
+        name,
+        iconUrl,
+        category,
+        description,
+        appSecret,
+        capabilities,
+        creatorId,
+        resourcePatterns,
+        updatedAt,
+    )

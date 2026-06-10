@@ -8,7 +8,10 @@ import java.io.File
 object AlbumArtCache {
     const val DEFAULT_ALBUM_ART = "android.resource://one.mixin.messenger/drawable/ic_music_place_holder"
 
-    fun getAlbumArtUri(id: String, url: String?, artData: ByteArray?): String {
+    fun getAlbumArtUri(
+        id: String,
+        artData: ByteArray?,
+    ): String {
         val cachedFile = getCachedFile(id)
         return if (cachedFile != null) {
             cachedFile.absolutePath
@@ -31,7 +34,9 @@ object AlbumArtCache {
         val file = File(parentDir(), filenameForId(id))
         return if (file.exists()) {
             file
-        } else null
+        } else {
+            null
+        }
     }
 
     private fun parentDir(): File {

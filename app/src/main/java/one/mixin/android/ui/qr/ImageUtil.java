@@ -16,14 +16,22 @@
 
 package one.mixin.android.ui.qr;
 
-import android.graphics.*;
-import android.util.Log;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.BitmapRegionDecoder;
+import android.graphics.ImageFormat;
+import android.graphics.Rect;
+import android.graphics.YuvImage;
 import android.util.Size;
+
 import androidx.annotation.Nullable;
 import androidx.camera.core.ImageProxy;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+
+import timber.log.Timber;
 
 /**
  * Utility class for image related operations.
@@ -43,7 +51,7 @@ final class ImageUtil {
         } else if (image.getFormat() == ImageFormat.YUV_420_888) {
             data = yuvImageToJpegByteArray(image);
         } else {
-            Log.w(TAG, "Unrecognized image format: " + image.getFormat());
+            Timber.tag(TAG).w("Unrecognized image format: %s", image.getFormat());
         }
         return data;
     }

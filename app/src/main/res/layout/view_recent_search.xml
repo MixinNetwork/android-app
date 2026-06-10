@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:padding="6dp"
+    android:layout_height="wrap_content"
+    tools:parentTag="android.widget.RelativeLayout">
+
+    <one.mixin.android.widget.CircleImageView
+        android:id="@+id/icon"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_centerVertical="true"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:id="@+id/title_tv"
+        android:layout_toEndOf="@id/icon"
+        android:maxWidth="120dp"
+        android:textColor="?attr/text_primary"
+        android:layout_marginStart="8dp"
+        android:ellipsize="end"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/icon"
+        android:textSize="14sp"
+        />
+
+    <TextView
+        android:id="@+id/subtitle_tv"
+        android:textColor="?attr/text_assist"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="13sp"
+        android:layout_alignBottom="@id/icon"
+        android:layout_alignStart="@id/title_tv"
+        tools:ignore="RelativeOverlap" />
+</merge>

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/bg_white"
@@ -60,9 +61,11 @@
                     android:inputType="text"
                     android:paddingStart="@dimen/activity_horizontal_margin"
                     android:paddingEnd="8dp"
+                    android:maxLength="64"
                     android:textColor="?attr/text_primary"
                     android:textColorHint="?attr/text_assist"
-                    android:textSize="16sp" />
+                    android:textSize="16sp"
+                    tools:ignore="Autofill" />
 
             </RelativeLayout>
 
@@ -83,12 +86,13 @@
                     android:layout_marginEnd="@dimen/activity_horizontal_margin"
                     android:layout_toStartOf="@id/addr_iv"
                     android:background="@null"
-                    android:hint="@string/withdrawal_address"
+                    android:hint="@string/Address"
                     android:paddingStart="@dimen/activity_horizontal_margin"
                     android:paddingEnd="8dp"
                     android:textColor="?attr/text_primary"
                     android:textColorHint="?attr/text_assist"
-                    android:textSize="16sp" />
+                    android:textSize="16sp"
+                    tools:ignore="Autofill,TextFields" />
 
                 <ImageView
                     android:id="@+id/addr_iv"
@@ -118,12 +122,13 @@
                     android:layout_marginEnd="@dimen/activity_horizontal_margin"
                     android:layout_toStartOf="@id/tag_iv"
                     android:background="@null"
-                    android:hint="@string/withdrawal_addr_memo_hint"
+                    android:hint="@string/withdrawal_memo"
                     android:paddingStart="@dimen/activity_horizontal_margin"
                     android:paddingEnd="8dp"
                     android:textColor="?attr/text_primary"
                     android:textColorHint="?attr/text_assist"
-                    android:textSize="16sp" />
+                    android:textSize="16sp"
+                    tools:ignore="Autofill,TextFields" />
 
                 <ImageView
                     android:id="@+id/tag_iv"
@@ -168,8 +173,8 @@
                 android:layout_marginTop="@dimen/margin16"
                 android:layout_marginBottom="20dp"
                 android:enabled="false"
-                android:text="@string/save"
-                android:textColor="?attr/text_minor"
+                android:text="@string/Save"
+                android:textColor="?attr/text_assist"
                 android:textSize="14sp" />
         </LinearLayout>
     </ScrollView>

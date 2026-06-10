@@ -1,5 +1,6 @@
 package one.mixin.android.ui.conversation
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -34,11 +35,10 @@ import one.mixin.android.vo.Sticker
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.DIRECTION_NONE
 import one.mixin.android.widget.DraggableRecyclerView.Companion.DIRECTION_TOP_2_BOTTOM
-import one.mixin.android.widget.RLottieImageView
+import one.mixin.android.widget.lottie.RLottieImageView
 
 @AndroidEntryPoint
 class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
-
     companion object {
         const val TAG = "StickerFragment"
         const val ARGS_ALBUM_ID = "args_album_id"
@@ -46,7 +46,10 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
         const val PADDING = 10
         var COLUMN = 3
 
-        fun newInstance(id: String? = null, type: Int): StickerFragment {
+        fun newInstance(
+            id: String? = null,
+            type: Int,
+        ): StickerFragment {
             val f = StickerFragment()
             val b = Bundle()
             b.putString(ARGS_ALBUM_ID, id)
@@ -81,23 +84,27 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
     private var callback: StickerAlbumAdapter.Callback? = null
     private var personalAlbumId: String? = null
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
-        COLUMN = if (requireContext().isWideScreen()) {
-            5
-        } else {
-            3
-        }
+        COLUMN =
+            if (requireContext().isWideScreen()) {
+                5
+            } else {
+                3
+            }
         if (type == TYPE_NORMAL && albumId != null) {
             stickerViewModel.observeStickers(albumId!!).observe(
-                viewLifecycleOwner
+                viewLifecycleOwner,
             ) { list ->
                 list?.let { updateStickers(it) }
             }
         } else {
             if (type == TYPE_RECENT) {
                 stickerViewModel.recentStickers().observe(
-                    viewLifecycleOwner
+                    viewLifecycleOwner,
                 ) { r ->
                     r?.let { updateStickers(r) }
                 }
@@ -109,14 +116,14 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
                     if (personalAlbumId == null) { // not add any personal sticker yet
                         stickerViewModel.observePersonalStickers()
                             .observe(
-                                viewLifecycleOwner
+                                viewLifecycleOwner,
                             ) { list ->
                                 list?.let { updateStickers(it) }
                             }
                     } else {
                         stickerViewModel.observeStickers(personalAlbumId!!)
                             .observe(
-                                viewLifecycleOwner
+                                viewLifecycleOwner,
                             ) { list ->
                                 list?.let { updateStickers(it) }
                             }
@@ -132,37 +139,31 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
             stickerRv.adapter = stickerAdapter
             stickerAdapter.setOnStickerListener(
                 object : StickerListener {
-                    override fun onItemClick(pos: Int, sticker: Sticker) {
-                        if ((parentFragment as StickerAlbumFragment).changed) return
-
+                    override fun onItemClick(
+                        pos: Int,
+                        sticker: Sticker,
+                    ) {
                         if (type != TYPE_RECENT) {
                             stickerViewModel.updateStickerUsedAt(sticker.stickerId)
                         }
-                        if (sticker.albumId == personalAlbumId) {
-                            // check if this sticker belong to a system album
-                            lifecycleScope.launch {
-                                val systemAlbumId = stickerViewModel.findStickerSystemAlbumId(sticker.stickerId)
-                                callback?.onStickerClick(sticker.stickerId, systemAlbumId)
-                            }
-                        } else {
-                            callback?.onStickerClick(sticker.stickerId, sticker.albumId)
-                        }
+                        callback?.onStickerClick(sticker.stickerId)
                     }
 
                     override fun onAddClick() {
                         StickerActivity.show(requireContext(), personalAlbumId)
                     }
-                }
+                },
             )
-            stickerRv.callback = object : DraggableRecyclerView.Callback {
-                override fun onScroll(dis: Float) {
-                    rvCallback?.onScroll(dis)
-                }
+            stickerRv.callback =
+                object : DraggableRecyclerView.Callback {
+                    override fun onScroll(dis: Float) {
+                        rvCallback?.onScroll(dis)
+                    }
 
-                override fun onRelease(fling: Int) {
-                    rvCallback?.onRelease(fling)
+                    override fun onRelease(fling: Int) {
+                        rvCallback?.onRelease(fling)
+                    }
                 }
-            }
 
             RxBus.listen(DragReleaseEvent::class.java)
                 .autoDispose(stopScope)
@@ -172,6 +173,7 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     @Synchronized
     private fun updateStickers(list: List<Sticker>) {
         if (viewDestroyed()) return
@@ -192,12 +194,14 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
         private var listener: StickerListener? = null
         var size: Int = 0
 
-        override fun onBindViewHolder(holder: StickerViewHolder, position: Int) {
+        override fun onBindViewHolder(
+            holder: StickerViewHolder,
+            position: Int,
+        ) {
             val params = holder.itemView.layoutParams
             params.width = size
             params.height = size
             holder.itemView.layoutParams = params
-            val ctx = holder.itemView.context
             val item = (holder.itemView as ViewGroup).getChildAt(0) as RLottieImageView
             if (position == 0 && needAdd) {
                 item.updateLayoutParams<ViewGroup.LayoutParams> {
@@ -221,7 +225,10 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
 
         override fun getItemCount(): Int = if (needAdd) stickers.size + 1 else stickers.size
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): StickerViewHolder {
+        override fun onCreateViewHolder(
+            parent: ViewGroup,
+            viewType: Int,
+        ): StickerViewHolder {
             val view =
                 LayoutInflater.from(parent.context).inflate(R.layout.item_sticker, parent, false)
             return StickerViewHolder(view)
@@ -235,7 +242,11 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
     private class StickerViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
     interface StickerListener {
-        fun onItemClick(pos: Int, sticker: Sticker)
+        fun onItemClick(
+            pos: Int,
+            sticker: Sticker,
+        )
+
         fun onAddClick()
     }
 }

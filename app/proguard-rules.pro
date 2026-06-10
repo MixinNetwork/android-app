@@ -16,6 +16,9 @@
 -dontwarn android.net.Network
 -keep class org.webrtc.** { *; }
 
+-keep class org.jni_zero.** { *; }
+-dontwarn org.jni_zero.**
+
 # androidx paging
 -keep class androidx.paging.PagedListAdapter.** { *; }
 -keep class androidx.paging.AsyncPagedListDiffer.** { *; }
@@ -36,7 +39,81 @@
     volatile <fields>;
 }
 
+# OkHttp platform used only on JVM and when Conscrypt and other security providers are available.
+-dontwarn okhttp3.internal.platform.**
+-dontwarn org.conscrypt.**
+-dontwarn org.bouncycastle.**
+-dontwarn org.openjsse.**
+
+-dontwarn org.webrtc.**
+
+-dontwarn sun.net.spi.nameservice.**
+
+-keep class com.birbit.android.jobqueue.** { *; }
+
 -keepclassmembers enum * {
     public static **[] values();
     public static ** valueOf(java.lang.String);
 }
+
+# Keep generic signature of RxJava2 (R8 full mode strips signatures from non-kept items).
+-keep,allowobfuscation,allowshrinking class io.reactivex.Single
+-keep,allowobfuscation,allowshrinking class io.reactivex.Flowable
+-keep,allowobfuscation,allowshrinking class io.reactivex.Observable
+-keep,allowobfuscation,allowshrinking class io.reactivex.Completable
+
+
+# https://r8.googlesource.com/r8/+/refs/heads/master/compatibility-faq.md#r8-full-mode
+
+-keepclassmembers,allowobfuscation class * {
+ @com.google.gson.annotations.SerializedName <fields>;
+}
+
+-keepattributes Signature
+-keep class com.google.gson.reflect.TypeToken { *; }
+-keep class * extends com.google.gson.reflect.TypeToken
+
+-keep class kotlin.coroutines.Continuation
+
+# web3j
+-keep class org.web3j.protocol.** { *; }
+-keep class org.web3j.abi.** { *; }
+-keep class org.web3j.crypto.** { *; }
+-dontwarn org.web3j.crypto.**
+-dontwarn jnr.unixsocket.**
+-dontwarn org.web3j.protocol.ipc.**
+-dontwarn org.java_websocket.**
+-dontwarn org.web3j.protocol.websocket.**
+
+-dontwarn com.fasterxml.jackson.databind.**
+-keep class com.fasterxml.jackson.core.** { *; }
+-keep interface com.fasterxml.jackson.core.* { *; }
+-keep class com.fasterxml.jackson.databind.** { *; }
+-keep interface com.fasterxml.jackson.databind.* { *; }
+-keep class com.fasterxml.jackson.annotation.** { *; }
+-keep interface com.fasterxml.jackson.annotation.** { *; }
+#-dontwarn java.lang.SafeVarargs
+-dontwarn org.slf4j.**
+
+-keep public class com.reown.android.** { *; }
+-keep public class com.reown.walletkit.** { *; }
+
+-dontwarn com.sun.jna.**
+-keep class com.sun.jna.** { *; }
+-keepclassmembers class com.sun.jna.Native { *; }
+
+-dontwarn uniffi.**
+-keep class uniffi.** { *; }
+
+-dontwarn groovy.lang.GroovyShell
+
+-dontwarn com.yalantis.ucrop**
+-keep class com.yalantis.ucrop** { *; }
+-keep interface com.yalantis.ucrop** { *; }
+
+-keep class com.appsflyer.** { *; }
+-dontwarn com.appsflyer.**
+-keepclassmembers class com.appsflyer.** {
+    *;
+}
+-keep class kotlin.jvm.internal.** { *; }

@@ -1,16 +1,4 @@
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="23dp"
-    android:height="28dp"
-    android:viewportWidth="23"
-    android:viewportHeight="28">
-  <path
-      android:pathData="M11.5054,1C6.0336,1 1.5,5.4194 1.5,10.8716V11.0556C1.5,17.5502 9.8479,27 11.5054,27C13.1892,27 21.5,17.4633 21.5,10.9683V10.7837C21.5,5.3325 16.977,1 11.5054,1Z"
-      android:strokeWidth="2"
-      android:fillColor="#00000000"
-      android:strokeColor="?attr/icon_default" />
-  <path
-      android:pathData="M11.5004,15C9.2908,15 7.5,13.2091 7.5,11C7.5,8.7908 9.2908,7 11.5004,7C13.7095,7 15.5,8.7908 15.5,11C15.5,13.2091 13.7095,15 11.5004,15Z"
-      android:strokeWidth="2"
-      android:fillColor="#00000000"
-      android:strokeColor="?attr/icon_default" />
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="23dp" android:height="28dp" android:viewportWidth="23" android:viewportHeight="28">
+    <path android:pathData="M11.505 1C6.034 1 1.5 5.42 1.5 10.872v0.184C1.5 17.55 9.848 27 11.505 27c1.684 0 9.995-9.537 9.995-16.032v-0.184C21.5 5.332 16.977 1 11.505 1z" android:strokeWidth="2" android:strokeColor="?attr/icon_default"/>
+    <path android:pathData="M11.5 15c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z" android:strokeWidth="2" android:strokeColor="?attr/icon_default"/>
 </vector>

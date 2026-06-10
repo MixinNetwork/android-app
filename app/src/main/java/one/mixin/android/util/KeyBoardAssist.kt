@@ -8,7 +8,6 @@ import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.statusBarHeight
 
 class KeyBoardAssist constructor(content: ViewGroup, private val isFull: Boolean = false) {
-
     private val mChildOfContent: View = content.getChildAt(0)
     private var usableHeightPrevious: Int = 0
     private val layoutParams: ViewGroup.LayoutParams
@@ -28,15 +27,17 @@ class KeyBoardAssist constructor(content: ViewGroup, private val isFull: Boolean
                 if (heightDifference > usableHeightSansKeyboard / 4) {
                     layoutParams.height = usableHeightSansKeyboard - heightDifference
                 } else {
-                    layoutParams.height = usableHeightSansKeyboard - if (isFull) {
-                        0
-                    } else {
-                        mChildOfContent.context.statusBarHeight() + if (mChildOfContent.context.hasNavigationBar()) {
-                            mChildOfContent.context.navigationBarHeight()
-                        } else {
+                    layoutParams.height = usableHeightSansKeyboard -
+                        if (isFull) {
                             0
+                        } else {
+                            mChildOfContent.context.statusBarHeight() +
+                                if (mChildOfContent.context.hasNavigationBar()) {
+                                    mChildOfContent.context.navigationBarHeight()
+                                } else {
+                                    0
+                                }
                         }
-                    }
                 }
                 mChildOfContent.requestLayout()
             }
@@ -52,7 +53,10 @@ class KeyBoardAssist constructor(content: ViewGroup, private val isFull: Boolean
     }
 
     companion object {
-        fun assistContent(contentView: ViewGroup, isFull: Boolean): KeyBoardAssist {
+        fun assistContent(
+            contentView: ViewGroup,
+            isFull: Boolean,
+        ): KeyBoardAssist {
             return KeyBoardAssist(contentView, isFull)
         }
     }

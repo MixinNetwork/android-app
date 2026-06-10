@@ -18,16 +18,16 @@ import one.mixin.android.R
 import one.mixin.android.extension.dp
 
 class CameraOpView : View, GestureDetector.OnGestureListener {
-
     private enum class Mode {
         NONE,
         EXPAND,
-        PROGRESS
+        PROGRESS,
     }
 
     private var ringColor = Color.WHITE
     private var circleColor = context.getColor(R.color.colorDarkBlue)
     private var ringStrokeWidth = 5.dp.toFloat()
+
     @Suppress("unused")
     private var progressStrokeWidth = 5f.dp.toFloat()
     private var circleWidth = -10f // initial value less than 0 for delay
@@ -85,22 +85,27 @@ class CameraOpView : View, GestureDetector.OnGestureListener {
         mHandler.removeCallbacks(task)
     }
 
-    private val ringPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        style = Paint.Style.STROKE
-        color = ringColor
-        strokeWidth = ringStrokeWidth
-    }
+    private val ringPaint =
+        Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style = Paint.Style.STROKE
+            color = ringColor
+            strokeWidth = ringStrokeWidth
+        }
 
-    private val circlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        style = Paint.Style.FILL
-        color = circleColor
-    }
+    private val circlePaint =
+        Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style = Paint.Style.FILL
+            color = circleColor
+        }
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 
-    fun animateValue(form: Float, to: Float) {
+    fun animateValue(
+        form: Float,
+        to: Float,
+    ) {
         val anim = ValueAnimator.ofFloat(form, to)
         anim.addUpdateListener { valueAnimator ->
             radius = valueAnimator.animatedValue as Float * rawRadius
@@ -110,7 +115,13 @@ class CameraOpView : View, GestureDetector.OnGestureListener {
         anim.start()
     }
 
-    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+    override fun onLayout(
+        changed: Boolean,
+        left: Int,
+        top: Int,
+        right: Int,
+        bottom: Int,
+    ) {
         if (progressRect == null) {
             val size = width / 1.5f - ringStrokeWidth
             rawRadius = size / 2
@@ -164,31 +175,41 @@ class CameraOpView : View, GestureDetector.OnGestureListener {
         return super.onTouchEvent(event)
     }
 
-    override fun onShowPress(e: MotionEvent?) {
+    override fun onShowPress(e: MotionEvent) {
     }
 
-    override fun onSingleTapUp(e: MotionEvent?): Boolean {
+    override fun onSingleTapUp(e: MotionEvent): Boolean {
         animateValue(expand, 1f)
         clean()
         callback?.onClick()
         return true
     }
 
-    override fun onDown(e: MotionEvent?): Boolean {
+    override fun onDown(e: MotionEvent): Boolean {
         animateValue(1f, expand)
         mode = Mode.EXPAND
         return true
     }
 
-    override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
+    override fun onFling(
+        e1: MotionEvent?,
+        e2: MotionEvent,
+        velocityX: Float,
+        velocityY: Float,
+    ): Boolean {
         return false
     }
 
-    override fun onScroll(e1: MotionEvent?, e2: MotionEvent?, distanceX: Float, distanceY: Float): Boolean {
+    override fun onScroll(
+        e1: MotionEvent?,
+        e2: MotionEvent,
+        distanceX: Float,
+        distanceY: Float,
+    ): Boolean {
         return false
     }
 
-    override fun onLongPress(e: MotionEvent?) {
+    override fun onLongPress(e: MotionEvent) {
         mode = Mode.PROGRESS
         callback?.readyForProgress()
     }
@@ -217,7 +238,9 @@ class CameraOpView : View, GestureDetector.OnGestureListener {
 
     interface CameraOpCallback {
         fun onClick()
+
         fun readyForProgress()
+
         fun onProgressStop(time: Float)
     }
 }

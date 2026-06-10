@@ -6,7 +6,6 @@ import android.view.MotionEvent
 import androidx.viewpager.widget.ViewPager
 
 class FixMultiViewPager : ViewPager {
-
     constructor(context: Context) : super(context)
 
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs)

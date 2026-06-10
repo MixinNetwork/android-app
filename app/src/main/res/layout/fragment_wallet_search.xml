@@ -10,7 +10,7 @@
     <RelativeLayout
         android:id="@+id/search_view"
         android:layout_width="match_parent"
-        android:layout_height="?actionBarSize"
+        android:layout_height="?android:attr/actionBarSize"
         android:background="?attr/bg_white"
         android:clickable="true"
         android:focusable="true">
@@ -38,12 +38,12 @@
             android:background="@null"
             android:drawablePadding="6dp"
             android:gravity="center_vertical"
-            android:hint="@string/wallet_search_hint"
+            android:hint="@string/search_placeholder_asset"
             android:imeOptions="actionSearch|flagNoExtractUi"
             android:inputType="text"
             android:maxLines="1"
             android:textColor="?attr/text_primary"
-            android:textColorHint="?attr/text_minor"
+            android:textColorHint="?attr/text_assist"
             android:textSize="14sp" />
     </RelativeLayout>
 
@@ -83,21 +83,23 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="80dp"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            tools:ignore="UseCompoundDrawables">
 
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:src="@drawable/ic_search_empty"/>
+                android:src="@drawable/ic_search_empty"
+                android:contentDescription="@null" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="@dimen/margin16"
-                android:text="@string/no_result"
-                android:textColor="?attr/text_minor" />
+                android:text="@string/NO_RESULTS"
+                android:textColor="?attr/text_assist" />
         </LinearLayout>
     </ViewAnimator>
 </androidx.appcompat.widget.LinearLayoutCompat>

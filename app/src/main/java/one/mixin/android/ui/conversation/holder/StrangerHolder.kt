@@ -2,20 +2,22 @@ package one.mixin.android.ui.conversation.holder
 
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatStrangerBinding
-import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 
 class StrangerHolder constructor(val binding: ItemChatStrangerBinding) : BaseViewHolder(binding.root) {
-
-    fun bind(onItemListener: ConversationAdapter.OnItemListener, isBot: Boolean) {
+    fun bind(
+        onItemListener: MessageAdapter.OnItemListener,
+        isBot: Boolean,
+    ) {
         if (isBot) {
-            binding.strangerInfo.setText(R.string.bot_interact_info)
-            binding.strangerBlockBn.setText(R.string.bot_interact_open)
-            binding.strangerAddBn.setText(R.string.bot_interact_hi)
+            binding.strangerInfo.setText(R.string.chat_bot_reception_title)
+            binding.strangerBlockBn.setText(R.string.Open_Home_page)
+            binding.strangerAddBn.setText(R.string.Say_Hi)
         } else {
-            binding.strangerInfo.setText(R.string.stranger_from)
-            binding.strangerBlockBn.setText(R.string.setting_block)
-            binding.strangerAddBn.setText(R.string.contact_add_contact_title)
+            binding.strangerInfo.setText(R.string.stranger_hint)
+            binding.strangerBlockBn.setText(R.string.Block)
+            binding.strangerAddBn.setText(R.string.Add_Contact)
         }
         binding.strangerBlockBn.setOnClickListener {
             if (isBot) {

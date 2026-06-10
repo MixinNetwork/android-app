@@ -11,5 +11,5 @@ class ConversationCircleManagerItem(
     @ColumnInfo(name = "name")
     val name: String,
     @ColumnInfo(name = "count")
-    val count: Int
+    val count: Int,
 ) : Parcelable

@@ -1,0 +1,659 @@
+package one.mixin.android.ui.home.web3
+
+import android.content.Context
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import one.mixin.android.Constants
+import one.mixin.android.MixinApplication
+import one.mixin.android.R
+import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.request.AccountUpdateRequest
+import one.mixin.android.api.request.web3.EstimateFeeRequest
+import one.mixin.android.api.request.web3.EstimateFeeResponse
+import one.mixin.android.api.request.web3.GaslessFeeRequest
+import one.mixin.android.api.request.web3.GaslessTxRequest
+import one.mixin.android.api.request.web3.SubmitGaslessTxRequest
+import one.mixin.android.api.request.web3.Web3RawTransactionRequest
+import one.mixin.android.api.response.PaymentStatus
+import one.mixin.android.api.response.web3.GaslessFeeResponse
+import one.mixin.android.api.response.web3.GaslessSponsorTransactionResponse
+import one.mixin.android.api.response.web3.GaslessTxResponse
+import one.mixin.android.api.response.web3.StakeAccount
+import one.mixin.android.api.response.web3.SubmitGaslessTxResponse
+import one.mixin.android.api.response.web3.WalletOutput
+import one.mixin.android.crypto.CryptoWalletHelper
+import one.mixin.android.db.web3.vo.Web3Address
+import one.mixin.android.db.web3.vo.Web3RawTransaction
+import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.buildTransaction
+import one.mixin.android.db.web3.vo.getChainFromName
+import one.mixin.android.db.web3.vo.isOwner
+import one.mixin.android.db.web3.vo.isTransferFeeFree
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.SyncOutputJob
+import one.mixin.android.repository.AccountRepository
+import one.mixin.android.repository.TokenRepository
+import one.mixin.android.repository.UserRepository
+import one.mixin.android.repository.Web3Repository
+import one.mixin.android.tip.Tip
+import one.mixin.android.tip.wc.SortOrder
+import one.mixin.android.tip.wc.WalletConnect
+import one.mixin.android.tip.wc.WalletConnectV2
+import one.mixin.android.tip.wc.internal.Chain
+import one.mixin.android.tip.wc.internal.buildTipGas
+import one.mixin.android.tip.wc.internal.estimateFeeInBtc
+import one.mixin.android.ui.common.biometric.NftBiometricItem
+import one.mixin.android.ui.common.biometric.maxUtxoCount
+import one.mixin.android.ui.home.inscription.component.OwnerState
+import one.mixin.android.ui.oldwallet.AssetRepository
+import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.mlkit.firstUrl
+import one.mixin.android.vo.Account
+import one.mixin.android.vo.Dapp
+import one.mixin.android.vo.User
+import one.mixin.android.vo.assetIdToAsset
+import one.mixin.android.vo.safe.Output
+import one.mixin.android.vo.safe.SafeCollectible
+import one.mixin.android.vo.safe.SafeCollection
+import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.toMixAddress
+import one.mixin.android.web3.Rpc
+import one.mixin.android.web3.js.JsSignMessage
+import org.sol4kt.VersionedTransactionCompat
+import timber.log.Timber
+import java.math.BigDecimal
+import java.math.RoundingMode
+import java.util.UUID
+import javax.inject.Inject
+
+@HiltViewModel
+class Web3ViewModel @Inject constructor(
+    private val accountRepository: AccountRepository,
+    private val userRepository: UserRepository,
+    private val assetRepository: AssetRepository,
+    private val tokenRepository: TokenRepository,
+    private val jobManager: MixinJobManager,
+    private val web3Repository: Web3Repository,
+    private val rpc: Rpc,
+    private val tip: Tip,
+) : ViewModel() {
+    var scrollOffset: Int = 0
+
+    suspend fun findMarketItemByAssetId(assetId: String) = tokenRepository.findMarketItemByAssetId(assetId)
+
+    fun web3TokensExcludeHidden(walletId: String) = web3Repository.web3TokensExcludeHidden(walletId)
+
+    suspend fun web3TokensExcludeHiddenRaw(walletId: String) = withContext(Dispatchers.IO) {
+        return@withContext web3Repository.web3TokensExcludeHiddenRaw(walletId)
+    }
+
+    fun hiddenAssetItems(walletId: String) = web3Repository.hiddenAssetItems(walletId)
+
+    suspend fun updateTokenHidden(tokenId: String, walletId: String, hidden: Boolean) =
+        web3Repository.updateTokenHidden(tokenId, walletId, hidden)
+
+    suspend fun web3TokenItemById(walletId: String, assetId: String) = withContext(Dispatchers.IO) {
+        web3Repository.web3TokenItemById(walletId, assetId)
+    }
+
+    fun observeWeb3Token(walletId: String, assetId: String): Flow<Web3TokenItem?> =
+        web3Repository.observeWeb3TokenItemById(walletId, assetId)
+
+    fun getTokenPriceUsdFlow(assetId: String): Flow<String?> = flow {
+        val item = tokenRepository.findAssetItemById(assetId)?.priceUsd
+        emit(item)
+    }.catch { e ->
+        emit(null)
+    }.flowOn(Dispatchers.IO)
+
+    fun web3Transactions(walletId: String, assetId: String) = web3Repository.web3Transactions(walletId, assetId)
+
+    fun web3TokenExtraFlow(walletId: String, assetId: String) =
+        tokenRepository.web3TokenExtraFlow(walletId, assetId)
+
+    suspend fun findOrSyncAsset(
+        assetId: String,
+    ): TokenItem? {
+        return withContext(Dispatchers.IO) {
+            tokenRepository.findOrSyncAsset(assetId)
+        }
+    }
+
+    suspend fun estimateBtcFeeRate(rawTransactionHex: String? = null, currentRate: String?): EstimateFeeResponse? {
+        val cleanedRawHex: String? = rawTransactionHex
+            ?.removePrefix("0x")
+            ?.trim()
+            ?.takeIf { it.isNotEmpty() }
+        val response = withContext(Dispatchers.IO) {
+            runCatching {
+                web3Repository.estimateFee(
+                    EstimateFeeRequest(
+                        chainId = Constants.ChainId.BITCOIN_CHAIN_ID,
+                        rawTransaction = cleanedRawHex,
+                        data = null,
+                        rate = currentRate,
+                    )
+                )
+            }.getOrNull()
+        }
+        if (response?.isSuccess != true || response.data == null) return null
+        return response.data!!
+    }
+
+    fun disconnect(
+        version: WalletConnect.Version,
+        topic: String,
+    ) {
+        when (version) {
+            WalletConnect.Version.V2 -> {
+                WalletConnectV2.disconnect(topic)
+            }
+
+            WalletConnect.Version.TIP -> {}
+        }
+    }
+
+    fun dapps(chainId: String): List<Dapp> {
+        val gson = GsonHelper.customGson
+        val dapps = MixinApplication.get().defaultSharedPreferences.getString("dapp_$chainId", null)
+        return if (dapps == null) {
+            emptyList()
+        } else {
+            gson.fromJson(dapps, Array<Dapp>::class.java).toList()
+        }
+    }
+
+    suspend inline fun fuzzySearchUrl(query: String?): String? {
+        return if (query.isNullOrEmpty()) {
+            null
+        } else {
+            firstUrl(query)
+        }
+    }
+
+    suspend fun fetchSessionsSuspend(ids: List<String>) = userRepository.fetchSessionsSuspend(ids)
+
+    suspend fun findBotPublicKey(
+        conversationId: String,
+        botId: String,
+    ) = userRepository.findBotPublicKey(conversationId, botId)
+
+    suspend fun findAndSyncDepositEntry(token: Web3TokenItem) =
+        withContext(Dispatchers.IO) {
+            tokenRepository.findAndCheckDepositEntry(token.chainId, token.assetId).first
+        }
+
+    suspend fun getFees(
+        id: String,
+        destination: String,
+    ) = tokenRepository.getFees(id, destination)
+
+    suspend fun findTokenItems(ids: List<String>): List<TokenItem> =
+        tokenRepository.findTokenItems(ids)
+
+    suspend fun findWeb3TokenItems(walletId: String): List<Web3TokenItem> =
+        tokenRepository.findWeb3TokenItems(walletId)
+
+    suspend fun findTokensExtra(assetId: String) =
+        withContext(Dispatchers.IO) {
+            tokenRepository.findTokensExtra(assetId)
+        }
+
+    suspend fun syncAsset(assetId: String) =
+        withContext(Dispatchers.IO) {
+            tokenRepository.syncAsset(assetId)
+        }
+
+    suspend fun findAssetItemById(assetId: String) = tokenRepository.findAssetItemById(assetId)
+
+    suspend fun getWeb3Priv(
+        context: Context,
+        pin: String,
+        chainId: String,
+    ): ByteArray {
+        val result = tip.getOrRecoverTipPriv(context, pin)
+        val spendKey = tip.getSpendPrivFromEncryptedSalt(
+            tip.getMnemonicFromEncryptedPreferences(context),
+            tip.getEncryptedSalt(context),
+            pin,
+            result.getOrThrow(),
+        )
+        val privateKey = CryptoWalletHelper.getWeb3PrivateKey(context, spendKey, chainId)
+        return requireNotNull(privateKey) { "Failed to get private key" }
+    }
+
+    suspend fun gaslessFee(request: GaslessFeeRequest): MixinResponse<GaslessFeeResponse> =
+        withContext(Dispatchers.IO) {
+            web3Repository.gaslessFee(request)
+        }
+
+    suspend fun estimateFee(request: EstimateFeeRequest): MixinResponse<EstimateFeeResponse> =
+        withContext(Dispatchers.IO) {
+            web3Repository.estimateFee(request)
+        }
+
+    suspend fun gaslessPrepare(request: GaslessTxRequest): MixinResponse<GaslessTxResponse> =
+        withContext(Dispatchers.IO) {
+            web3Repository.gaslessTx(request)
+        }
+
+    suspend fun submitGaslessTx(request: SubmitGaslessTxRequest): MixinResponse<SubmitGaslessTxResponse> =
+        withContext(Dispatchers.IO) {
+            web3Repository.submitGaslessTx(request)
+        }
+
+    suspend fun gaslessTransaction(id: String): MixinResponse<GaslessSponsorTransactionResponse> =
+        withContext(Dispatchers.IO) {
+            web3Repository.gaslessTransaction(id)
+        }
+
+    suspend fun postRawTx(
+        rawTx: String,
+        web3ChainId: String,
+        account: String,
+        to: String?,
+        assetId: String? = null,
+        feeType: String? = null,
+        rate: BigDecimal? = null,
+    ) = withContext(Dispatchers.IO) {
+        tokenRepository.postRawTx(Web3RawTransactionRequest(web3ChainId, rawTx, account, to, feeType), assetId, rate)
+    }
+
+    suspend fun insertGaslessPendingTransaction(
+        sponsorTxId: String,
+        chainId: String,
+        account: String,
+        assetId: String,
+        amount: String,
+        fee: String,
+        to: String,
+        nonce: String,
+        createdAt: String,
+        updatedAt: String,
+    ) = withContext(Dispatchers.IO) {
+        tokenRepository.insertGaslessPendingTransaction(sponsorTxId, chainId, account, assetId, amount, fee, to, nonce, createdAt, updatedAt)
+    }
+
+    suspend fun insertSignedPendingTransaction(
+        hash: String,
+        chainId: String,
+        account: String,
+        assetId: String,
+        amount: String,
+        fee: String,
+        to: String,
+        raw: String,
+        createdAt: String,
+        updatedAt: String,
+    ) = withContext(Dispatchers.IO) {
+        tokenRepository.insertSignedPendingTransaction(hash, chainId, account, assetId, amount, fee, to, raw, createdAt, updatedAt)
+    }
+
+    suspend fun ticker(assetId: String, offset: String?) = tokenRepository.ticker(assetId, offset)
+
+    fun collectibles(sortOrder: SortOrder): LiveData<List<SafeCollectible>> =
+        tokenRepository.collectibles(sortOrder)
+
+    fun collectiblesByHash(collectionHash: String): LiveData<List<SafeCollectible>> =
+        tokenRepository.collectiblesByHash(collectionHash)
+
+    fun collections(sortOrder: SortOrder): LiveData<List<SafeCollection>> =
+        tokenRepository.collections(sortOrder)
+
+    fun collectionByHash(hash: String): LiveData<SafeCollection?> =
+        tokenRepository.collectionByHash(hash)
+
+    fun inscriptionByHash(hash: String) = tokenRepository.inscriptionByHash(hash)
+
+    suspend fun buildNftTransaction(
+        inscriptionHash: String,
+        receiver: User,
+        release: Boolean = false,
+    ): NftBiometricItem? =
+        withContext(Dispatchers.IO) {
+            val output =
+                tokenRepository.findUnspentOutputByHash(inscriptionHash) ?: return@withContext null
+            val inscriptionItem =
+                tokenRepository.findInscriptionByHash(inscriptionHash) ?: return@withContext null
+            val inscriptionCollection =
+                tokenRepository.findInscriptionCollectionByHash(inscriptionHash)
+                    ?: return@withContext null
+            val asset =
+                tokenRepository.findTokenItemByAsset(output.asset) ?: return@withContext null
+            val releaseAmount =
+                if (release) {
+                    BigDecimal(output.amount).divide(BigDecimal(2), 8, RoundingMode.HALF_UP)
+                        .stripTrailingZeros().toPlainString()
+                } else {
+                    null
+                }
+            return@withContext NftBiometricItem(
+                asset = asset,
+                traceId = UUID.randomUUID().toString(),
+                amount = output.amount,
+                memo = null,
+                state = PaymentStatus.pending.name,
+                receivers = listOf(receiver),
+                reference = null,
+                inscriptionItem = inscriptionItem,
+                inscriptionCollection = inscriptionCollection,
+                releaseAmount = releaseAmount,
+            )
+        }
+
+    fun inscriptionStateByHash(inscriptionHash: String) =
+        tokenRepository.inscriptionStateByHash(inscriptionHash)
+
+    suspend fun outputsByAddress(address: String, assetId: String) = web3Repository.outputsByAddress(address, assetId)
+
+    suspend fun outputsByAddressForSigning(address: String, assetId: String) = web3Repository.outputsByAddressForSigning(address, assetId)
+
+    fun observeOutputsByAddress(address: String, assetId: String): Flow<List<WalletOutput>> {
+        return web3Repository.observeOutputsByAddress(address, assetId)
+    }
+
+    suspend fun deleteOutputsByAddress(address: String, assetId: String): Unit {
+        web3Repository.deleteOutputsByAddress(address, assetId)
+    }
+
+    suspend fun deleteBitcoinUnspentChangeOutputs(walletId: String, fromAddress: String, rawTransactionHex: String): Int {
+        return withContext(Dispatchers.IO) {
+            val deletedCount: Int = web3Repository.deleteBitcoinUnspentChangeOutputs(fromAddress, rawTransactionHex)
+            if (deletedCount > 0) {
+                web3Repository.refreshBitcoinTokenAmount(walletId, fromAddress)
+            }
+            deletedCount
+        }
+    }
+
+    suspend fun hasBitcoinSignedOutputsByTransactionHash(transactionHash: String): Boolean {
+        return withContext(Dispatchers.IO) {
+            web3Repository.hasBitcoinSignedOutputsByTransactionHash(transactionHash)
+        }
+    }
+
+    suspend fun markOutputsToSigned(walletId: String, fromAddress: String, signedHex: String, outputIds: List<String>) {
+        if (outputIds.isEmpty()) return
+        withContext(Dispatchers.IO) {
+            web3Repository.walletOutputDao.updateOutputsToSigned(outputIds)
+            web3Repository.insertBitcoinChangeOutputs(fromAddress, signedHex)
+            web3Repository.refreshBitcoinTokenAmount(walletId, fromAddress)
+        }
+    }
+
+    data class FeeEstimateResult(
+        val fee: BigDecimal?,
+        val rate: BigDecimal?,
+        val minFee: String?,
+    )
+
+    suspend fun calcFee(
+        token: Web3TokenItem,
+        transaction: JsSignMessage,
+        fromAddress: String,
+    ): FeeEstimateResult {
+        if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+            val localUtxos = withContext(Dispatchers.IO) { outputsByAddress(fromAddress, token.assetId) }
+            val jsMsg = token.buildTransaction(rpc, fromAddress, fromAddress, "0.00000001", localUtxos)
+            val virtualSize: Int? = jsMsg.virtualSize
+            val response = withContext(Dispatchers.IO) {
+                runCatching {
+                    web3Repository.estimateFee(
+                        EstimateFeeRequest(
+                            chainId = token.chainId,
+                            rawTransaction = jsMsg.data,
+                            data = null,
+                            from = null,
+                            to = null,
+                            value = null,
+                        )
+                    )
+                }.getOrNull()
+            }
+            if (response?.isSuccess != true || response.data == null) return FeeEstimateResult(null, null, null)
+            val feeRate: String? = response.data!!.feeRate
+            val minFee: String? = response.data!!.minFee
+            if (feeRate.isNullOrBlank() || virtualSize == null || virtualSize <= 0) return FeeEstimateResult(null, null, minFee)
+            val estimatedFee: BigDecimal = estimateFeeInBtc(feeRate, virtualSize)
+            val minFeeValue: BigDecimal? = minFee?.toBigDecimalOrNull()
+            val finalFee: BigDecimal = if (minFeeValue == null) estimatedFee else estimatedFee.max(minFeeValue)
+            return FeeEstimateResult(finalFee, feeRate.toBigDecimalOrNull(), minFee)
+        }
+        val chain = token.getChainFromName()
+        if (chain == Chain.Solana) {
+            val tx = VersionedTransactionCompat.from(transaction.data ?: "")
+            val fee = tx.calcFee(fromAddress)
+            return FeeEstimateResult(fee, null, null)
+        } else {
+            val r = withContext(Dispatchers.IO) {
+                runCatching {
+                    web3Repository.estimateFee(
+                        EstimateFeeRequest(
+                            token.chainId,
+                            null,
+                            transaction.data ?: transaction.wcEthereumTransaction?.data,
+                            fromAddress,
+                            transaction.wcEthereumTransaction?.to,
+                            transaction.wcEthereumTransaction?.value,
+                        )
+                    )
+                }.getOrNull()
+            }
+            if (r?.isSuccess != true) return FeeEstimateResult(null, null, null)
+            return withContext(Dispatchers.IO) {
+                val tipGas = buildTipGas(chain.chainId, r.data!!)
+                FeeEstimateResult(tipGas.displayValue(transaction.wcEthereumTransaction?.maxFeePerGas) ?: BigDecimal.ZERO, null, null)
+            }
+        }
+    }
+
+    suspend fun getWeb3Tx(txhash: String) = assetRepository.getWeb3Tx(txhash)
+
+    suspend fun isBlockhashValid(blockhash: String): Boolean =
+        withContext(Dispatchers.IO) {
+            return@withContext rpc.isBlockhashValid(blockhash) ?: false
+        }
+
+    fun update(request: AccountUpdateRequest): Observable<MixinResponse<Account>> =
+        accountRepository.update(request).subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+
+    fun insertUser(user: User) =
+        viewModelScope.launch(Dispatchers.IO) {
+            userRepository.upsert(user)
+        }
+
+    suspend fun getOwner(hash: String): OwnerState {
+        try {
+            val item = withContext(Dispatchers.IO) { tokenRepository.getInscriptionItem(hash) }
+                ?: return OwnerState()
+            if (item.owner != null) {
+                val mixinAddress = item.owner.toMixAddress() ?: return OwnerState()
+                return if (mixinAddress.uuidMembers.isNotEmpty()) {
+                    val users = userRepository.findOrRefreshUsers(mixinAddress.uuidMembers)
+                    val title = if (mixinAddress.uuidMembers.size > 1) {
+                        "(${mixinAddress.threshold}/${mixinAddress.uuidMembers.size})"
+                    } else {
+                        null
+                    }
+                    OwnerState(title = title, users = users)
+                } else {
+                    OwnerState(owner = item.owner)
+                }
+            }
+        } catch (e: Exception) {
+            Timber.e(e)
+        }
+        return OwnerState()
+    }
+
+    suspend fun getStakeAccounts(account: String): List<StakeAccount>? {
+        return handleMixinResponse(
+            invokeNetwork = { assetRepository.getStakeAccounts(account) },
+            successBlock = {
+                it.data
+            }
+        )
+    }
+
+    suspend fun checkUtxoSufficiency(
+        assetId: String,
+        amount: String,
+    ): String? {
+        val desiredAmount = BigDecimal(amount)
+        val candidateOutputs = tokenRepository.findOutputs(maxUtxoCount, assetIdToAsset(assetId))
+        if (candidateOutputs.isEmpty()) {
+            return null
+        }
+
+        val selectedOutputs = mutableListOf<Output>()
+        var totalSelectedAmount = BigDecimal.ZERO
+        candidateOutputs.forEach { output ->
+            val outputAmount = BigDecimal(output.amount)
+            selectedOutputs.add(output)
+            totalSelectedAmount += outputAmount
+            if (totalSelectedAmount >= desiredAmount) {
+                return null
+            }
+        }
+
+        if (selectedOutputs.size >= maxUtxoCount) {
+            return totalSelectedAmount.toPlainString()
+        }
+
+        if (totalSelectedAmount < desiredAmount) {
+            // Refresh when balance is insufficient
+            jobManager.addJobInBackground(SyncOutputJob())
+            return null
+        }
+
+        throw Exception("Impossible")
+    }
+
+
+    suspend fun firstUnspentTransaction() =
+        withContext(Dispatchers.IO) {
+            tokenRepository.firstUnspentTransaction()
+        }
+
+    suspend fun findLatestTrace(
+        opponentId: String?,
+        destination: String?,
+        tag: String?,
+        amount: String,
+        assetId: String,
+    ) = withContext(Dispatchers.IO) {
+        tokenRepository.findLatestTrace(opponentId, destination, tag, amount, assetId)
+    }
+
+    suspend fun getAddressesByChainId(walletId: String, chainId: String): Web3Address? {
+        return web3Repository.getAddressesByChainId(walletId, chainId)
+    }
+
+    suspend fun getWalletName(walletId: String): String? = web3Repository.findWalletById(walletId)?.name
+
+    suspend fun findWalletById(walletId: String) = web3Repository.findWalletById(walletId)
+
+    suspend fun getAddresses(walletId: String) = web3Repository.getAddresses(walletId)
+
+    suspend fun getAddressesGroupedByDestination(walletId: String) = web3Repository.getAddressesGroupedByDestination(walletId)
+
+    fun marketById(assetId: String) = tokenRepository.marketById(assetId)
+
+    suspend fun getPendingRawTransactions(walletId: String) = tokenRepository.getPendingRawTransactions(walletId)
+
+    suspend fun getRawTransactionByHashAndChain(walletId: String, hash: String, chainId: String) = tokenRepository.getRawTransactionByHashAndChain(walletId, hash, chainId)
+
+    suspend fun getPendingTransactions(walletId: String) = tokenRepository.getPendingTransactions(walletId)
+
+    fun getPendingTransactionCount(walletId: String): LiveData<Int> = tokenRepository.getPendingTransactionCount(walletId)
+
+    suspend fun transaction(hash: String, chainId: String) = tokenRepository.transaction(hash, chainId)
+
+    suspend fun replaceGaslessPendingTransactionHash(
+        walletId: String,
+        sponsorTxId: String,
+        broadcastTxHash: String,
+        chainId: String,
+        updatedAt: String,
+    ) = withContext(Dispatchers.IO) {
+        tokenRepository.replaceGaslessPendingTransactionHash(walletId, sponsorTxId, broadcastTxHash, chainId, updatedAt)
+    }
+
+    suspend fun updateGaslessPendingTransactionStatus(
+        walletId: String,
+        hash: String,
+        chainId: String,
+        status: String,
+        updatedAt: String,
+    ) = withContext(Dispatchers.IO) {
+        tokenRepository.updateGaslessPendingTransactionStatus(walletId, hash, chainId, status, updatedAt)
+    }
+
+    suspend fun insertRawTransactionAndUpdateTransactionStatus(
+        raw: Web3RawTransaction,
+        hash: String,
+        chainId: String,
+        status: String,
+        btcRawTransactionHexToDeleteOutputs: String?,
+    ) {
+        withContext(Dispatchers.IO) {
+            tokenRepository.insertRawTransactionAndUpdateTransactionStatus(
+                raw = raw,
+                hash = hash,
+                status = status,
+                chainId = chainId,
+                btcRawTransactionHexToDeleteOutputs = btcRawTransactionHexToDeleteOutputs,
+            )
+        }
+    }
+
+    suspend fun anyAddressExists(destinations: List<String>) = web3Repository.anyAddressExists(destinations)
+    suspend fun isAddressMatch(walletId: String?, address: String): Boolean {
+        if (walletId == null) return false
+        return withContext(Dispatchers.IO) {
+            web3Repository.isAddressMatch(walletId, address)
+        }
+    }
+
+    // index 0 is address, index 1 is privacy wallet, 2 is safe wallet, 3 is common wallet, 4 is fee free wallet
+    suspend fun checkAddressAndGetDisplayName(destination: String, tag: String?, chainId: String): Triple<String?, Int, Boolean?>? {
+        return withContext(Dispatchers.IO) {
+
+            if (tag.isNullOrBlank()) {
+                val existsInAddresses = tokenRepository.findDepositEntry(chainId)?.destination == destination
+                if (existsInAddresses) return@withContext Triple(MixinApplication.appContext.getString(R.string.Privacy_Wallet), 1, null)
+            }
+
+            val safeWallet = web3Repository.getWalletByAddress(destination, chainId)
+            if (safeWallet != null) {
+                val isOwner: Boolean = safeWallet.isOwner()
+                return@withContext Triple(safeWallet.name, 2, isOwner)
+            }
+
+            val wallet = web3Repository.getWalletByDestination(destination)
+            if (wallet != null) {
+                return@withContext Triple(wallet.name, if (wallet.isTransferFeeFree()) 4 else 3, null)
+            }
+
+            tokenRepository.findAddressByDestination(destination, tag ?: "", chainId)?.let { label ->
+                return@withContext Triple(label, 0, null)
+            }
+            return@withContext null
+        }
+    }
+}

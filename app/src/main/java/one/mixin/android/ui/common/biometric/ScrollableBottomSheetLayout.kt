@@ -9,14 +9,17 @@ import androidx.core.view.isGone
 import one.mixin.android.extension.statusBarHeight
 
 class ScrollableBottomSheetLayout(context: Context, attributeSet: AttributeSet) : ViewGroup(context, attributeSet) {
-
     private val statusBarHeight = context.statusBarHeight()
 
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val parentHeightSpec = MeasureSpec.makeMeasureSpec(
-            MeasureSpec.getSize(heightMeasureSpec) - statusBarHeight,
-            MeasureSpec.getMode(heightMeasureSpec)
-        )
+    override fun onMeasure(
+        widthMeasureSpec: Int,
+        heightMeasureSpec: Int,
+    ) {
+        val parentHeightSpec =
+            MeasureSpec.makeMeasureSpec(
+                MeasureSpec.getSize(heightMeasureSpec) - statusBarHeight,
+                MeasureSpec.getMode(heightMeasureSpec),
+            )
         super.onMeasure(widthMeasureSpec, parentHeightSpec)
         var heightSpec = 0
         children.forEach { c ->
@@ -29,14 +32,20 @@ class ScrollableBottomSheetLayout(context: Context, attributeSet: AttributeSet) 
             measureChild(
                 scrollView,
                 widthMeasureSpec,
-                MeasureSpec.makeMeasureSpec(scrollView.measuredHeight - diffHeight, MeasureSpec.EXACTLY)
+                MeasureSpec.makeMeasureSpec(scrollView.measuredHeight - diffHeight, MeasureSpec.EXACTLY),
             )
         } else {
             setMeasuredDimension(widthMeasureSpec, MeasureSpec.makeMeasureSpec(heightSpec, MeasureSpec.EXACTLY))
         }
     }
 
-    override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
+    override fun onLayout(
+        changed: Boolean,
+        l: Int,
+        t: Int,
+        r: Int,
+        b: Int,
+    ) {
         var bottom = 0
         var top = 0
         forEachReversedChild { c ->

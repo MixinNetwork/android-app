@@ -22,7 +22,10 @@ class PinEmergencyBottomSheetDialog : BiometricBottomSheetDialogFragment() {
     private val binding by viewBinding(FragmentPinBottomSheetBinding::inflate)
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
@@ -30,11 +33,14 @@ class PinEmergencyBottomSheetDialog : BiometricBottomSheetDialogFragment() {
 
         binding.apply {
             title.setText(R.string.setting_emergency_pin_tip)
-            biometricLayout.biometricTv.setText(R.string.verify_by_biometric)
+            biometricLayout.biometricTv.setText(R.string.Verify_by_Biometric)
         }
     }
 
-    override fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String): Boolean {
+    override fun doWhenInvokeNetworkSuccess(
+        response: MixinResponse<*>,
+        pin: String,
+    ): Boolean {
         pinEmergencyCallback?.onSuccess(pin)
         return true
     }
@@ -44,14 +50,11 @@ class PinEmergencyBottomSheetDialog : BiometricBottomSheetDialogFragment() {
     }
 
     override fun getBiometricInfo() =
-        BiometricInfo(getString(R.string.verify_by_biometric), "", "", getString(R.string.verify_by_PIN))
+        BiometricInfo(getString(R.string.Verify_by_Biometric), "", "")
 
     var pinEmergencyCallback: PinEmergencyCallback? = null
 
     abstract class PinEmergencyCallback : Callback() {
         abstract fun onSuccess(pinCode: String)
-
-        override fun onSuccess() {
-        }
     }
 }

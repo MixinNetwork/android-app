@@ -21,7 +21,7 @@ class MentionRenderCache private constructor(maxSize: Int) : LruCache<Int, Map<S
                     .forEach { data ->
                         mentionMap[data.identityNumber] = data.fullName
                     }
-                if (mentionMap.isEmpty) {
+                if (mentionMap.isEmpty()) {
                     null
                 } else {
                     put(content.hashCode(), mentionMap)

@@ -9,7 +9,7 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/player_playlist"
+        app:titleText="@string/Playlist"
         app:left_icon="@drawable/ic_arrow_down_info"
         app:right_icon="@drawable/ic_player_stop" />
 
@@ -20,6 +20,14 @@
         android:layout_above="@id/bottom_ll"
         android:layout_below="@id/title_view"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
+
+    <ProgressBar
+        android:id="@+id/pb"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_centerInParent="true"
+        android:theme="@style/AppTheme.BlueProgress" />
 
     <LinearLayout
         android:id="@+id/bottom_ll"

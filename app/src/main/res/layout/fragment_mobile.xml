@@ -9,65 +9,69 @@
     android:focusable="true"
     android:orientation="vertical">
 
-    <ImageView
-        android:id="@+id/back_iv"
-        android:layout_width="wrap_content"
+    <one.mixin.android.widget.TitleView
+        android:id="@+id/title_view"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/margin12"
-        android:background="@drawable/mixin_ripple"
-        android:contentDescription="@string/landing_back_content_desc"
-        android:padding="@dimen/margin12"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.023"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_arrow_back" />
+        app:rightIcon="@drawable/ic_support" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/back_iv"
+        android:layout_below="@id/title_view"
         android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/mobile_title_tv"
-            android:layout_width="0dp"
+        <TextSwitcher
+            android:id="@+id/title_switcher"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="12dp"
-            android:layout_marginEnd="16dp"
-            android:gravity="center_horizontal"
-            android:text="@string/landing_enter_mobile_number"
-            android:textColor="?attr/text_primary"
-            android:textSize="18sp"
+            android:measureAllChildren="false"
+            android:inAnimation="@anim/slide_in_bottom_slow"
+            android:outAnimation="@anim/slide_out_top_slow"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintStart_toStartOf="parent">
+
+            <TextView
+                android:id="@+id/mobile_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/Enter_your_phone_number"
+                android:textColor="?attr/text_primary"
+                android:textSize="18sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="?attr/text_primary"
+                android:textSize="18sp" />
+        </TextSwitcher>
 
         <ImageView
             android:id="@+id/country_icon_iv"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_centerVertical="true"
             android:layout_marginStart="16dp"
-            android:paddingStart="8dp"
-            android:paddingTop="8dp"
-            android:paddingEnd="0dp"
-            android:paddingBottom="8dp"
+            android:paddingStart="12dp"
+            android:paddingTop="12dp"
+            android:paddingEnd="4dp"
+            android:paddingBottom="12dp"
             android:scaleType="centerInside"
-            android:src="@drawable/flag_cn"
             app:layout_constraintBottom_toBottomOf="@+id/mobile_et"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@+id/mobile_et"
             tools:ignore="ContentDescription" />
 
-        <TextView
-            android:id="@+id/country_code_tv"
+        <androidx.appcompat.widget.AppCompatEditText
+            android:id="@+id/country_code_et"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"
+            android:minWidth="48dp"
+            android:minHeight="@dimen/btn_min_height"
+            android:gravity="center"
+            android:inputType="number"
+            android:textSize="16sp"
             android:textColor="?attr/text_primary"
             app:layout_constraintBottom_toBottomOf="@+id/mobile_et"
             app:layout_constraintStart_toEndOf="@+id/country_icon_iv"
@@ -81,50 +85,130 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="36dp"
             android:layout_marginEnd="16dp"
-            android:hint="@string/landing_enter_mobile_hint"
+            android:hint="@string/Phone_Number"
             android:inputType="number"
             android:minHeight="@dimen/btn_min_height"
             android:textColor="?attr/text_primary"
-            android:textColorHint="?attr/text_minor"
+            android:textColorHint="?attr/text_assist"
             android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toEndOf="@+id/country_code_tv"
-            app:layout_constraintTop_toBottomOf="@+id/mobile_title_tv" />
+            app:layout_constraintStart_toEndOf="@+id/country_code_et"
+            app:layout_constraintTop_toBottomOf="@+id/title_switcher" />
 
         <TextView
-            android:id="@+id/enter_tip"
-            android:layout_width="wrap_content"
+            android:id="@+id/introduction_tv"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
+            android:layout_marginStart="32dp"
             android:layout_marginTop="20dp"
-            android:layout_marginEnd="16dp"
-            android:text="@string/landing_enter_mobile_tip"
+            android:layout_marginEnd="32dp"
+            android:text="@string/landing_introduction"
             android:textColor="@color/colorGray"
             android:textSize="12sp"
+            android:gravity="start"
             app:layout_constraintHorizontal_bias="0.206"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/mobile_et" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <com.github.jorgecastilloprz.FABProgressCircle
-        android:id="@+id/mobile_fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/keyboard"
-        android:layout_alignParentEnd="true"
-        android:visibility="invisible"
-        app:arcColor="@android:color/holo_blue_dark"
-        app:layout_constraintBottom_toTopOf="@+id/keyboard"
-        app:layout_constraintEnd_toEndOf="parent">
+        <ViewAnimator
+            style="@style/AppTheme.MaterialButton"
+            android:id="@+id/continue_bn"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginBottom="16dp"
+            android:text="@string/Continue"
+            android:layout_marginStart="36dp"
+            android:layout_marginEnd="36dp"
+            android:layout_marginTop="44dp"
+            android:textSize="14sp"
+            android:enabled="false"
+            app:layout_constraintTop_toBottomOf="@id/introduction_tv"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" >
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:layout_width="wrap_content"
+            <TextView
+                android:id="@+id/continue_tv"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="@string/Continue"
+                android:textColor="@color/white"
+                android:textSize="14sp" />
+
+            <ProgressBar
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:theme="@style/AppTheme.WhiteAccent" />
+        </ViewAnimator>
+
+        <LinearLayout
+            android:id="@+id/or_ll"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            android:src="@drawable/ic_arrow_forward_white_24dp"
-            app:backgroundTint="@color/colorBlue" />
-    </com.github.jorgecastilloprz.FABProgressCircle>
+            android:layout_marginTop="20dp"
+            android:layout_marginStart="36dp"
+            android:layout_marginEnd="36dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            app:layout_constraintTop_toBottomOf="@id/continue_bn">
+
+            <View
+                android:layout_weight="1"
+                android:background="@color/border_primary"
+                android:layout_width="0dp"
+                android:layout_height="1dp" />
+
+            <TextView
+                android:text="@string/or"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="?attr/text_remarks"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp" />
+
+            <View
+                android:layout_weight="1"
+                android:background="@color/border_primary"
+                android:layout_width="0dp"
+                android:layout_height="1dp" />
+
+        </LinearLayout>
+
+        <Button
+            style="@style/AppTheme.MaterialOutlineButton"
+            android:id="@+id/mnemonic_phrase"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginBottom="16dp"
+            android:text="@string/Sign_in_with_Mnemonic_Phrase"
+            android:layout_marginStart="36dp"
+            android:layout_marginEnd="36dp"
+            android:layout_marginTop="20dp"
+            android:textSize="14sp"
+            app:layout_constraintTop_toBottomOf="@id/or_ll"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <Button
+            style="@style/AppTheme.MaterialWindowButton"
+            android:id="@+id/no_account"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginBottom="20dp"
+            android:text="@string/sign_in_no_account"
+            android:layout_marginStart="36dp"
+            android:layout_marginEnd="36dp"
+            android:textSize="14sp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <one.mixin.android.widget.Keyboard
         android:id="@+id/keyboard"

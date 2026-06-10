@@ -6,19 +6,26 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.ClientErrorException
+import one.mixin.android.api.DataErrorException
 import one.mixin.android.api.NetworkException
 import one.mixin.android.api.ServerErrorException
 import one.mixin.android.extension.runOnUiThread
 import one.mixin.android.extension.toast
+import one.mixin.android.tip.exception.TipNodeException
+import one.mixin.android.tip.getTipExceptionMsg
+import one.mixin.android.ui.common.biometric.UtxoException
+import one.mixin.android.ui.common.biometric.getUtxoExceptionMsg
+import org.chromium.net.CronetException
 import retrofit2.HttpException
 import java.io.IOException
+import java.net.ConnectException
+import java.net.SocketException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
+import java.util.concurrent.ExecutionException
 
 open class ErrorHandler {
-
     companion object {
-
         fun handleError(throwable: Throwable) {
             val ctx = MixinApplication.appContext
             ctx.runOnUiThread {
@@ -26,54 +33,139 @@ open class ErrorHandler {
                     is HttpException -> {
                         handleErrorCode(throwable.code(), ctx)
                     }
-                    is IOException -> when (throwable) {
-                        is SocketTimeoutException -> toast(R.string.error_connection_timeout)
-                        is UnknownHostException -> toast(R.string.error_no_connection)
-                        is ServerErrorException -> toast(getString(R.string.error_server_5xx, throwable.code))
-                        is ClientErrorException -> {
-                            handleErrorCode(throwable.code, ctx)
-                        }
-                        is NetworkException -> toast(R.string.error_no_connection)
-                        else -> toast(getString(R.string.error_unknown_with_message, throwable.message))
+                    is UtxoException -> {
+                        toast(R.string.no_available_utxo)
                     }
+                    is IOException ->
+                        when (throwable) {
+                            is SocketTimeoutException -> toast(R.string.error_connection_timeout)
+                            is SocketException -> ctx.getString(R.string.error_connection_error)
+                            is UnknownHostException -> toast(R.string.No_network_connection)
+                            is ServerErrorException -> toast(getString(R.string.error_server_5xx_code, throwable.code))
+                            is ClientErrorException -> {
+                                handleErrorCode(throwable.code, ctx)
+                            }
+                            is NetworkException -> toast(R.string.No_network_connection)
+                            is DataErrorException -> toast(R.string.Data_error)
+                            is ConnectException -> {
+                                toast(R.string.Network_error)
+                            }
+                            is CronetException -> {
+                                handleCronetException(throwable)
+                            }
+                            else -> toast(getString(R.string.Network_error))
+                        }
                     is CancellationException -> {
                         // ignore kotlin coroutine job cancellation exception
                     }
-                    else -> toast(getString(R.string.error_unknown_with_message, throwable.message))
+                    is TipNodeException -> {
+                        toast(throwable.getTipExceptionMsg(ctx))
+                    }
+                    is ExecutionException -> {
+                        if (throwable.cause is CronetException) {
+                            handleCronetException(throwable.cause as CronetException)
+                        } else {
+                            toast(R.string.error_connection_error)
+                        }
+                    }
+                    else -> toast(getString(R.string.error_unknown_with_message, throwable.msg()))
                 }
             }
         }
 
-        fun handleMixinError(code: Int, message: String, extraMgs: String? = null) {
+        fun getErrorMessage(throwable: Throwable): String {
+            val ctx = MixinApplication.appContext
+            return when (throwable) {
+                is IOException ->
+                    when (throwable) {
+                        is SocketTimeoutException -> ctx.getString(R.string.error_connection_timeout)
+                        is SocketException -> ctx.getString(R.string.error_connection_error)
+                        is UnknownHostException -> ctx.getString(R.string.No_network_connection)
+                        is NetworkException -> ctx.getString(R.string.No_network_connection)
+                        is DataErrorException -> ctx.getString(R.string.Data_error)
+                        is CronetException -> {
+                            val extra =
+                                if (throwable is org.chromium.net.NetworkException) {
+                                    val e = throwable
+                                    "${e.errorCode}, ${e.cronetInternalErrorCode}"
+                                } else {
+                                    ""
+                                }
+                            "${ctx.getString(R.string.error_connection_error)} $extra"
+                        }
+
+                        is ServerErrorException -> ctx.getString(R.string.error_server_5xx_code, throwable.code)
+
+                        else -> ctx.getString(R.string.Network_error)
+                    }
+
+                is UtxoException -> {
+                    throwable.getUtxoExceptionMsg(ctx)
+                }
+
+                is TipNodeException -> {
+                    throwable.getTipExceptionMsg(ctx)
+                }
+
+                is ExecutionException -> {
+                    if (throwable.cause is CronetException) {
+                        val extra =
+                            if (throwable.cause is org.chromium.net.NetworkException) {
+                                val e = throwable.cause as org.chromium.net.NetworkException
+                                "${e.errorCode}, ${e.cronetInternalErrorCode}"
+                            } else {
+                                ""
+                            }
+                        "${ctx.getString(R.string.error_connection_error)} $extra"
+                    } else {
+                        ctx.getString(R.string.error_connection_error)
+                    }
+                }
+
+                else -> ctx.getString(R.string.error_unknown_with_message, throwable.msg())
+            }
+        }
+
+        fun handleMixinError(
+            code: Int,
+            message: String,
+            extraMgs: String? = null,
+        ) {
             val ctx = MixinApplication.appContext
             ctx.runOnUiThread {
-                val extra = if (!extraMgs.isNullOrBlank()) {
-                    "$extraMgs\n"
-                } else ""
+                val extra =
+                    if (!extraMgs.isNullOrBlank()) {
+                        "$extraMgs\n"
+                    } else {
+                        ""
+                    }
                 toast("$extra${getMixinErrorStringByCode(code, message)}")
             }
         }
 
-        private fun handleErrorCode(code: Int, ctx: Context) {
+        private fun handleErrorCode(
+            code: Int,
+            ctx: Context,
+        ) {
             ctx.runOnUiThread {
                 when (code) {
                     BAD_REQUEST -> {
                     }
                     AUTHENTICATION -> {
-                        toast(getString(R.string.error_authentication, AUTHENTICATION))
+                        toast(getString(R.string.error_authentication))
                         reportException(IllegalStateException("Force logout error code."))
                     }
                     FORBIDDEN -> {
-                        toast(R.string.error_forbidden)
+                        toast(R.string.Access_denied)
                     }
                     NOT_FOUND -> {
-                        toast(getString(R.string.error_not_found, NOT_FOUND))
+                        toast(getString(R.string.error_not_found))
                     }
                     TOO_MANY_REQUEST -> {
-                        toast(getString(R.string.error_too_many_request, TOO_MANY_REQUEST))
+                        toast(getString(R.string.error_too_many_request))
                     }
                     SERVER, INSUFFICIENT_POOL -> {
-                        toast(getString(R.string.error_server_5xx, code))
+                        toast(getString(R.string.error_server_5xx_code, code))
                     }
                     TIME_INACCURATE -> { }
                     else -> {
@@ -83,9 +175,21 @@ open class ErrorHandler {
             }
         }
 
-        val errorHandler = CoroutineExceptionHandler { _, error ->
-            handleError(error)
+        private fun handleCronetException(e: CronetException) {
+            val ctx = MixinApplication.appContext
+            val extra =
+                if (e is org.chromium.net.NetworkException) {
+                    "${e.errorCode}, ${e.cronetInternalErrorCode}"
+                } else {
+                    ""
+                }
+            toast("${ctx.getString(R.string.error_connection_error)} $extra")
         }
+
+        val errorHandler =
+            CoroutineExceptionHandler { _, error ->
+                handleError(error)
+            }
 
         private const val BAD_REQUEST = 400
         const val AUTHENTICATION = 401
@@ -101,6 +205,34 @@ open class ErrorHandler {
         const val RECAPTCHA_IS_INVALID = 10004
         const val NEED_CAPTCHA = 10005
         const val OLD_VERSION = 10006
+        const val ADDRESS_GENERATING = 10104
+        const val INVALID_UTXO = 10106
+        const val USER_NOT_FOUND = 10404
+
+        const val EXPIRED_CARD = 10601
+        const val EXPIRED_PRICE = 10602
+        const val CAPTURE_FAILED = 10603
+        const val UNSUPPORTED_CARD = 10604
+        const val USE_CARD_SAME_TIME = 10605
+        const val NOT_APPROVED_MANY_TIMES = 10606
+        const val TOO_MANY_CARD = 10607
+        const val CARD_HOLDER_NAME = 10608
+        const val EXPIRED_SESSION = 10609
+        const val INCONSISTENT_COUNTRY = 10610
+        const val INVALID_SWAP = 10611
+        const val INVALID_QUOTE_AMOUNT = 10614
+        const val NO_AVAILABLE_QUOTE = 10615
+        const val SIMULATE_TRANSACTION_FAILED = 10631
+        const val MAX_WALLET_REACHED = 10632
+        const val PERPS_ORDER_VALUE_TOO_SMALL = 10650
+        const val PERPS_MARKET_ALREADY_HAS_ACTIVE_POSITION = 10651
+
+        const val UNSUPPORTED_WATCH_ADDRESS = 10633
+        const val INVALID_REFERRAL_CODE = 10730
+        const val ALREADY_BONDED_REFERRAL_CODE = 10731
+        const val CANNOT_APPLY_YOUR_OWN_REFERRAL_CODE = 10732
+        const val INVITER_PLAN_EXPIRED = 10737
+
         const val PHONE_INVALID_FORMAT = 20110
         const val INSUFFICIENT_IDENTITY_NUMBER = 20111
         const val INVALID_INVITATION_CODE = 20112
@@ -112,16 +244,21 @@ open class ErrorHandler {
         const val INVALID_PIN_FORMAT = 20118
         const val PIN_INCORRECT = 20119
         const val TOO_SMALL = 20120
+        const val EXPIRED_AUTHORIZATION_CODE = 20121
         const val USED_PHONE = 20122
+        const val TRANSFER_TO_DELETED_ACCOUNT = 20160
         const val INSUFFICIENT_TRANSACTION_FEE = 20124
+        const val TRANSFER_IS_ALREADY_PAID = 20125
         const val TOO_MANY_STICKERS = 20126
         const val WITHDRAWAL_AMOUNT_SMALL = 20127
+        const val TOO_MANY_FRIENDS = 20128
         const val INVALID_CODE_TOO_FREQUENT = 20129
         const val INVALID_EMERGENCY_CONTACT = 20130
         const val WITHDRAWAL_MEMO_FORMAT_INCORRECT = 20131
         const val FAVORITE_LIMIT = 20132
         const val CIRCLE_LIMIT = 20133
         const val WITHDRAWAL_FEE_TOO_SMALL = 20135
+        const val WITHDRAWAL_SUSPEND = 20137
         const val CONVERSATION_CHECKSUM_INVALID_ERROR = 20140
         const val BLOCKCHAIN_ERROR = 30100
         const val INVALID_ADDRESS = 30102
@@ -129,117 +266,174 @@ open class ErrorHandler {
     }
 }
 
-fun Context.getMixinErrorStringByCode(code: Int, message: String): String {
+fun Context.getMixinErrorStringByCode(
+    code: Int,
+    message: String,
+): String {
     return when (code) {
         ErrorHandler.TRANSACTION -> "${ErrorHandler.TRANSACTION} TRANSACTION"
         ErrorHandler.BAD_DATA -> {
-            getString(R.string.error_bad_data, ErrorHandler.BAD_DATA)
+            getString(R.string.error_bad_data)
         }
         ErrorHandler.PHONE_SMS_DELIVERY -> {
-            getString(R.string.error_phone_sms_delivery, ErrorHandler.PHONE_SMS_DELIVERY)
+            getString(R.string.error_phone_sms_delivery)
         }
         ErrorHandler.RECAPTCHA_IS_INVALID -> {
-            getString(
-                R.string.error_recaptcha_is_invalid,
-                ErrorHandler.RECAPTCHA_IS_INVALID
-            )
+            getString(R.string.error_recaptcha_is_invalid)
         }
         ErrorHandler.OLD_VERSION -> {
             val versionName = packageManager.getPackageInfo(packageName, 0).versionName
-            getString(R.string.error_old_version, ErrorHandler.OLD_VERSION, versionName)
+            getString(R.string.error_old_version, versionName)
+        }
+        ErrorHandler.USER_NOT_FOUND -> {
+            getString(R.string.error_opponent_not_registered_to_safe)
+        }
+        ErrorHandler.EXPIRED_CARD -> {
+            getString(R.string.error_expired_card)
+        }
+        ErrorHandler.EXPIRED_PRICE -> {
+            getString(R.string.error_expired_price)
+        }
+        ErrorHandler.CAPTURE_FAILED -> {
+            getString(R.string.error_payment_capture)
+        }
+        ErrorHandler.UNSUPPORTED_CARD -> {
+            getString(R.string.error_not_support_card)
+        }
+        ErrorHandler.USE_CARD_SAME_TIME -> {
+            getString(R.string.error_use_card_same_time)
+        }
+        ErrorHandler.NOT_APPROVED_MANY_TIMES -> {
+            getString(R.string.error_not_approved_many_times)
+        }
+        ErrorHandler.TOO_MANY_CARD -> {
+            getString(R.string.error_too_many_card_added)
+        }
+        ErrorHandler.CARD_HOLDER_NAME -> {
+            getString(R.string.error_card_holder_name_not_same)
+        }
+        ErrorHandler.EXPIRED_SESSION -> {
+            getString(R.string.error_expired_session)
+        }
+        ErrorHandler.INCONSISTENT_COUNTRY -> {
+            getString(R.string.error_inconsistent_country)
+        }
+        ErrorHandler.INVALID_SWAP -> {
+            getString(R.string.error_invalid_swap)
+        }
+        ErrorHandler.INVALID_QUOTE_AMOUNT -> {
+            getString(R.string.error_invalid_quote_amount)
+        }
+        ErrorHandler.NO_AVAILABLE_QUOTE -> {
+            getString(R.string.error_no_available_quote)
+        }
+        ErrorHandler.MAX_WALLET_REACHED -> {
+            getString(R.string.error_too_many_wallets)
+        }
+        ErrorHandler.PERPS_ORDER_VALUE_TOO_SMALL -> {
+            getString(R.string.error_perps_order_value_too_small)
+        }
+        ErrorHandler.PERPS_MARKET_ALREADY_HAS_ACTIVE_POSITION -> {
+            getString(R.string.error_already_had_open_position)
+        }
+        ErrorHandler.UNSUPPORTED_WATCH_ADDRESS -> {
+            getString(R.string.error_watch_address_not_supported)
+        }
+        ErrorHandler.INVALID_REFERRAL_CODE -> {
+            getString(R.string.error_invalid_referral_code)
+        }
+        ErrorHandler.ALREADY_BONDED_REFERRAL_CODE -> {
+            getString(R.string.error_already_bonded_referral_code)
+        }
+        ErrorHandler.CANNOT_APPLY_YOUR_OWN_REFERRAL_CODE -> {
+            getString(R.string.error_cannot_apply_your_own_referral_code)
+        }
+        ErrorHandler.INVITER_PLAN_EXPIRED -> {
+            getString(R.string.error_inviter_plan_expired)
         }
         ErrorHandler.PHONE_INVALID_FORMAT -> {
-            getString(
-                R.string.error_phone_invalid_format,
-                ErrorHandler.PHONE_INVALID_FORMAT
-            )
+            getString(R.string.error_phone_invalid_format)
         }
         ErrorHandler.INSUFFICIENT_IDENTITY_NUMBER -> "${ErrorHandler.INSUFFICIENT_IDENTITY_NUMBER} INSUFFICIENT_IDENTITY_NUMBER"
         ErrorHandler.INVALID_INVITATION_CODE -> "${ErrorHandler.INVALID_INVITATION_CODE} INVALID_INVITATION_CODE"
         ErrorHandler.PHONE_VERIFICATION_CODE_INVALID -> {
-            getString(
-                R.string.error_phone_verification_code_invalid,
-                ErrorHandler.PHONE_VERIFICATION_CODE_INVALID
-            )
+            getString(R.string.error_phone_verification_code_invalid)
         }
         ErrorHandler.PHONE_VERIFICATION_CODE_EXPIRED -> {
-            getString(
-                R.string.error_phone_verification_code_expired,
-                ErrorHandler.PHONE_VERIFICATION_CODE_EXPIRED
-            )
+            getString(R.string.error_phone_verification_code_expired)
         }
-        ErrorHandler.INVALID_QR_CODE -> "${ErrorHandler.INVALID_QR_CODE} INVALID_QR_CODE"
+        ErrorHandler.INVALID_QR_CODE -> "${ErrorHandler.INVALID_QR_CODE} ${getString(R.string.Invalid_QR_Code)}"
         ErrorHandler.NOT_FOUND -> {
-            getString(R.string.error_not_found, ErrorHandler.NOT_FOUND)
+            getString(R.string.error_not_found)
         }
         ErrorHandler.GROUP_CHAT_FULL -> {
-            getString(R.string.error_full_group, ErrorHandler.GROUP_CHAT_FULL)
+            getString(R.string.error_full_group)
         }
         ErrorHandler.INSUFFICIENT_BALANCE -> {
-            getString(
-                R.string.error_insufficient_balance,
-                ErrorHandler.INSUFFICIENT_BALANCE
-            )
+            getString(R.string.error_insufficient_balance)
         }
         ErrorHandler.INVALID_PIN_FORMAT -> {
-            getString(R.string.error_invalid_pin_format, ErrorHandler.INVALID_PIN_FORMAT)
+            getString(R.string.error_invalid_pin_format)
         }
         ErrorHandler.PIN_INCORRECT -> {
-            getString(R.string.error_pin_incorrect, ErrorHandler.PIN_INCORRECT)
+            getString(R.string.error_pin_incorrect)
         }
         ErrorHandler.TOO_SMALL -> {
-            getString(R.string.error_too_small, ErrorHandler.TOO_SMALL)
+            getString(R.string.error_too_small_transfer_amount)
+        }
+        ErrorHandler.EXPIRED_AUTHORIZATION_CODE -> {
+            getString(R.string.error_expired_authorization_code)
         }
         ErrorHandler.TOO_MANY_REQUEST -> {
-            getString(R.string.error_too_many_request, ErrorHandler.TOO_MANY_REQUEST)
+            getString(R.string.error_too_many_request)
         }
         ErrorHandler.USED_PHONE -> {
-            getString(R.string.error_used_phone, ErrorHandler.USED_PHONE)
+            getString(R.string.error_used_phone)
+        }
+        ErrorHandler.TRANSFER_TO_DELETED_ACCOUNT -> {
+            getString(R.string.error_transfer_to_deleted_account)
+        }
+        ErrorHandler.TRANSFER_IS_ALREADY_PAID -> {
+            getString(R.string.error_transfer_is_already_paid)
         }
         ErrorHandler.TOO_MANY_STICKERS -> {
-            getString(R.string.error_too_many_stickers, ErrorHandler.TOO_MANY_STICKERS)
+            getString(R.string.error_too_many_stickers)
         }
         ErrorHandler.BLOCKCHAIN_ERROR -> {
-            getString(R.string.error_blockchain, ErrorHandler.BLOCKCHAIN_ERROR)
+            getString(R.string.error_blockchain)
         }
         ErrorHandler.INVALID_ADDRESS -> {
-            getString(R.string.error_invalid_address_plain, ErrorHandler.INVALID_ADDRESS)
+            getString(R.string.error_invalid_address_plain)
         }
         ErrorHandler.WITHDRAWAL_AMOUNT_SMALL -> {
-            getString(
-                R.string.error_too_small_withdraw_amount,
-                ErrorHandler.WITHDRAWAL_AMOUNT_SMALL
-            )
+            getString(R.string.error_too_small_withdraw_amount)
+        }
+        ErrorHandler.INVALID_UTXO -> {
+            getString(R.string.error_invalid_utxo)
+        }
+        ErrorHandler.TOO_MANY_FRIENDS -> {
+            getString(R.string.error_too_many_friends)
         }
         ErrorHandler.INVALID_CODE_TOO_FREQUENT -> {
-            getString(
-                R.string.error_invalid_code_too_frequent,
-                ErrorHandler.INVALID_CODE_TOO_FREQUENT
-            )
+            getString(R.string.error_invalid_code_too_frequent)
         }
         ErrorHandler.INVALID_EMERGENCY_CONTACT -> {
-            getString(
-                R.string.error_invalid_emergency_contact,
-                ErrorHandler.INVALID_EMERGENCY_CONTACT
-            )
+            getString(R.string.error_invalid_emergency_contact)
         }
         ErrorHandler.WITHDRAWAL_MEMO_FORMAT_INCORRECT -> {
-            getString(
-                R.string.error_withdrawal_memo_format_incorrect,
-                ErrorHandler.WITHDRAWAL_MEMO_FORMAT_INCORRECT
-            )
+            getString(R.string.error_withdrawal_memo_format_incorrect)
+        }
+        ErrorHandler.WITHDRAWAL_SUSPEND -> {
+            getString(R.string.error_withdrawal_suspend)
         }
         ErrorHandler.FAVORITE_LIMIT, ErrorHandler.CIRCLE_LIMIT -> {
-            getString(
-                R.string.error_favorite_limit,
-                ErrorHandler.FAVORITE_LIMIT
-            )
+            getString(R.string.error_number_reached_limit)
         }
         ErrorHandler.FORBIDDEN -> {
-            getString(R.string.error_forbidden)
+            getString(R.string.Access_denied)
         }
         ErrorHandler.SERVER, ErrorHandler.INSUFFICIENT_POOL -> {
-            getString(R.string.error_server_5xx, code)
+            getString(R.string.error_server_5xx_code, code)
         }
         ErrorHandler.TIME_INACCURATE -> "${ErrorHandler.TIME_INACCURATE} TIME_INACCURATE"
 

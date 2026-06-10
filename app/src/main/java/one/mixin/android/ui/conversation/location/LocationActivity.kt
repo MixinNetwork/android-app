@@ -8,6 +8,7 @@ import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.location.LocationListener
 import android.location.LocationManager
 import android.net.Uri
@@ -30,47 +31,42 @@ import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
-import com.mapbox.mapboxsdk.Mapbox
-import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
-import com.mapbox.mapboxsdk.location.LocationComponentOptions
-import com.mapbox.mapboxsdk.location.modes.RenderMode
-import com.mapbox.mapboxsdk.maps.MapView
-import com.mapbox.mapboxsdk.maps.MapboxMap
-import com.mapbox.mapboxsdk.maps.Style
-import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.service.FoursquareService
 import one.mixin.android.databinding.ActivityLocationBinding
 import one.mixin.android.extension.REQUEST_LOCATION
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.getParcelableExtraCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.notEmptyWithElse
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.util.calculationByDistance
 import one.mixin.android.util.distanceFormat
+import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.getImageUrl
+import org.osmdroid.events.MapListener
+import org.osmdroid.events.ScrollEvent
+import org.osmdroid.events.ZoomEvent
+import org.osmdroid.util.GeoPoint
 import timber.log.Timber
 import javax.inject.Inject
 import kotlin.math.max
 import kotlin.math.min
 
 @AndroidEntryPoint
-class LocationActivity : BaseActivity(), OnMapReadyCallback, com.mapbox.mapboxsdk.maps.OnMapReadyCallback {
-
+class LocationActivity : BaseActivity(), OnMapReadyCallback {
     @Inject
     lateinit var foursquareService: FoursquareService
 
@@ -81,8 +77,9 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback, com.mapbox.mapboxsd
                 location?.let { location ->
                     calculationByDistance(LatLng(value.latitude, value.longitude), LatLng(location.latitude, location.longitude)).distanceFormat()
                 }?.let {
-                    if (binding.locationSubTitle.text == null)
-                        binding.locationSubTitle.text = getString(R.string.location_distance, it.first, getString(it.second))
+                    if (binding.locationSubTitle.text == null) {
+                        binding.locationSubTitle.text = getString(R.string.location_distance_away, it.first, getString(it.second))
+                    }
                 }
             }
             field = value
@@ -92,7 +89,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback, com.mapbox.mapboxsd
     private var onResumeCalled = false
 
     private val location: LocationPayload? by lazy {
-        intent.getParcelableExtra(LOCATION)
+        intent.getParcelableExtraCompat(LOCATION, LocationPayload::class.java)
     }
 
     private val locationAdapter by lazy {
@@ -104,7 +101,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback, com.mapbox.mapboxsd
             },
             {
                 setResult(it)
-            }
+            },
         )
     }
 
@@ -114,30 +111,31 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback, com.mapbox.mapboxsd
         }
     }
 
-    private val mLocationListener: LocationListener = object : LocationListener {
-        override fun onLocationChanged(location: android.location.Location) {
-            currentPosition = MixinLatLng(location.latitude, location.longitude)
-            selfPosition = MixinLatLng(location.latitude, location.longitude)
-            if (this@LocationActivity.location == null) {
-                currentPosition?.let { currentPosition ->
-                    mixinMapView.moveCamera(currentPosition)
-                    isInit = false
+    private val mLocationListener: LocationListener =
+        object : LocationListener {
+            override fun onLocationChanged(location: android.location.Location) {
+                currentPosition = MixinLatLng(location.latitude, location.longitude)
+                selfPosition = MixinLatLng(location.latitude, location.longitude)
+                if (this@LocationActivity.location == null) {
+                    currentPosition?.let { currentPosition ->
+                        mixinMapView.moveCamera(currentPosition)
+                        isInit = false
+                    }
+                    locationAdapter.accurate = resources.getQuantityString(R.plurals.location_accurate, location.accuracy.toInt(), location.accuracy.toInt())
                 }
-                locationAdapter.accurate = getString(R.string.location_accurate, location.accuracy.toInt())
             }
+
+            override fun onProviderEnabled(provider: String) {}
+
+            override fun onProviderDisabled(provider: String) {}
         }
 
-        override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {}
-
-        override fun onProviderEnabled(provider: String) {}
-
-        override fun onProviderDisabled(provider: String) {}
-    }
-
     private lateinit var mixinMapView: MixinMapView
-    private val useMapbox = useMapbox()
+    private var osmMapView: org.osmdroid.views.MapView? = null
+    private val useOsm = useOpenStreetMap()
 
     private lateinit var binding: ActivityLocationBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLocationBinding.inflate(layoutInflater)
@@ -146,11 +144,9 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback, com.mapbox.mapboxsd
             if (location != null) {
                 mentionLocation.motion.loadLayoutDescription(R.xml.scene_location_none)
             }
-            var mapBoxView: MapView? = null
-            if (useMapbox) {
-                Mapbox.getInstance(this@LocationActivity, BuildConfig.MAPBOX_PUBLIC_TOKEN)
-                val stub = mentionLocation.mapboxStub
-                mapBoxView = stub.inflate() as MapView
+            if (useOsm) {
+                val stub = mentionLocation.osmStub
+                osmMapView = stub.inflate() as org.osmdroid.views.MapView
             } else {
                 try {
                     MapsInitializer.initialize(MixinApplication.appContext)
@@ -158,11 +154,15 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback, com.mapbox.mapboxsd
                     Timber.e(e)
                 }
             }
-            mixinMapView = MixinMapView(this@LocationActivity, mentionLocation.googleMapView, mapBoxView).apply {
+            mixinMapView = MixinMapView(
+                this@LocationActivity,
+                mentionLocation.googleMapView,
+                osmMapView
+            ).apply {
                 onCreate(savedInstanceState)
             }
-            if (useMapbox) {
-                mapBoxView?.getMapAsync(this@LocationActivity)
+            if (useOsm) {
+                initOsmMap(osmMapView)
             } else {
                 mentionLocation.googleMapView.getMapAsync(this@LocationActivity)
             }
@@ -201,60 +201,60 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback, com.mapbox.mapboxsd
         binding.searchEt.addTextChangedListener(textWatcher)
         binding.searchEt.setOnEditorActionListener(
             object : TextView.OnEditorActionListener {
-                override fun onEditorAction(v: TextView?, actionId: Int, event: KeyEvent?): Boolean {
+                override fun onEditorAction(
+                    v: TextView?,
+                    actionId: Int,
+                    event: KeyEvent?,
+                ): Boolean {
                     if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                         binding.searchEt.hideKeyboard()
                         return true
                     }
                     return false
                 }
-            }
+            },
         )
 
-        location.notNullWithElse(
-            { location ->
-                binding.locationTitle.text = location.name ?: getString(R.string.location_unnamed)
-                location.address?.let { address ->
-                    binding.locationSubTitle.text = address
+        val currentLocation = location
+        if (currentLocation != null) {
+            binding.locationTitle.text = currentLocation.name ?: getString(R.string.Unnamed_location)
+            currentLocation.address?.let { address ->
+                binding.locationSubTitle.text = address
+            }
+            val image = currentLocation.getImageUrl()
+            if (image != null) {
+                binding.locationIcon.loadImage(data = image)
+            } else {
+                binding.locationIcon.setBackgroundResource(R.drawable.ic_current_location)
+            }
+            binding.icLocationShared.setOnClickListener {
+                try {
+                    startActivity(
+                        Intent(Intent.ACTION_VIEW, Uri.parse("geo:${currentLocation.latitude},${currentLocation.longitude}?q=${currentLocation.latitude},${currentLocation.longitude}")),
+                    )
+                } catch (e: ActivityNotFoundException) {
+                    toast(R.string.error_open_location)
                 }
-                location.getImageUrl().notNullWithElse(
-                    {
-                        binding.locationIcon.loadImage(it)
-                    },
-                    {
-                        binding.locationIcon.setBackgroundResource(R.drawable.ic_current_location)
-                    }
-                )
-                binding.icLocationShared.setOnClickListener {
+            }
+            binding.locationGoIv.setOnClickListener {
+                selfPosition?.let { selfPosition ->
                     try {
                         startActivity(
-                            Intent(Intent.ACTION_VIEW, Uri.parse("geo:${location.latitude},${location.longitude}?q=${location.latitude},${location.longitude}"))
+                            Intent(
+                                Intent.ACTION_VIEW,
+                                Uri.parse(
+                                    "http://maps.google.com/maps?saddr=${selfPosition.latitude},${selfPosition.longitude}&daddr=${currentLocation.latitude},${currentLocation.longitude}",
+                                ),
+                            ),
                         )
                     } catch (e: ActivityNotFoundException) {
                         toast(R.string.error_open_location)
                     }
                 }
-                binding.locationGoIv.setOnClickListener {
-                    selfPosition?.let { selfPosition ->
-                        try {
-                            startActivity(
-                                Intent(
-                                    Intent.ACTION_VIEW,
-                                    Uri.parse(
-                                        "http://maps.google.com/maps?saddr=${selfPosition.latitude},${selfPosition.longitude}&daddr=${location.latitude},${location.longitude}"
-                                    )
-                                )
-                            )
-                        } catch (e: ActivityNotFoundException) {
-                            toast(R.string.error_open_location)
-                        }
-                    }
-                }
-            },
-            {
-                binding.mentionLocation.locationRecycler.adapter = locationAdapter
             }
-        )
+        } else {
+            binding.mentionLocation.locationRecycler.adapter = locationAdapter
+        }
     }
 
     override fun onBackPressed() {
@@ -350,7 +350,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback, com.mapbox.mapboxsd
                             mixinMapView.moveCamera(currentPosition)
                             isInit = false
                         }
-                        locationAdapter.accurate = getString(R.string.location_accurate, l.accuracy.toInt())
+                        locationAdapter.accurate = resources.getQuantityString(R.plurals.location_accurate, l.accuracy.toInt(), l.accuracy.toInt())
                     }
                 }
             }
@@ -368,40 +368,20 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback, com.mapbox.mapboxsd
         afterInit()
     }
 
-    @SuppressLint("MissingPermission")
-    override fun onMapReady(mapboxMap: MapboxMap) {
-        mixinMapView.mapboxMap = mapboxMap
-        val onStyleLoaded = Style.OnStyleLoaded { loadedStyle ->
-            val locationComponentOptions = LocationComponentOptions.builder(this)
-                .build()
-
-            val locationComponentActivationOptions = LocationComponentActivationOptions
-                .builder(this, loadedStyle)
-                .locationComponentOptions(locationComponentOptions)
-                .build()
-
-            val locationComponent = mapboxMap.locationComponent
-            locationComponent.activateLocationComponent(locationComponentActivationOptions)
-            locationComponent.renderMode = RenderMode.COMPASS
-            locationComponent.isLocationComponentEnabled = true
-        }
-        mapboxMap.setStyle(mixinMapView.getMapboxStyle(), onStyleLoaded)
-        initMapboxMap(mapboxMap)
-        afterInit()
-    }
-
     private fun setResult(location: LocationPayload) {
         setResult(Activity.RESULT_OK, Intent().putExtra(LOCATION_NAME, location))
         finish()
     }
 
     private fun afterInit() {
-        if (location != null) {
-            val mixinLatLng = MixinLatLng(location!!.latitude, location!!.longitude)
+        val l = location
+        val sp = selfPosition
+        if (l != null) {
+            val mixinLatLng = MixinLatLng(l.latitude, l.longitude)
             mixinMapView.addMarker(mixinLatLng)
             mixinMapView.moveCamera(mixinLatLng)
-        } else if (selfPosition != null) {
-            mixinMapView.moveCamera(selfPosition!!)
+        } else if (sp != null) {
+            mixinMapView.moveCamera(sp)
         }
         mapsInitialized = true
         if (onResumeCalled) {
@@ -463,72 +443,76 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback, com.mapbox.mapboxsd
         googleMap.setOnCameraMoveCanceledListener {}
     }
 
-    private fun initMapboxMap(mapboxMap: MapboxMap) {
-        with(mapboxMap) {
-            uiSettings.isCompassEnabled = false
-            uiSettings.isRotateGesturesEnabled = false
-        }
-        mapboxMap.addOnCameraMoveStartedListener { reason ->
-            if (reason == MapboxMap.OnCameraMoveStartedListener.REASON_API_GESTURE) {
-                val cameraPosition = mapboxMap.cameraPosition
-                com.mapbox.mapboxsdk.camera.CameraUpdateFactory.newLatLngZoom(cameraPosition.target, cameraPosition.zoom)
-                if (!binding.mentionLocation.icMarker.isVisible && !isInit) {
-                    binding.mentionLocation.icMarker.isVisible = true
-                    locationSearchAdapter.setMark()
-                }
-            }
-            markerAnimatorSet?.cancel()
-            markerAnimatorSet = AnimatorSet()
-            markerAnimatorSet?.playTogether(ObjectAnimator.ofFloat(binding.mentionLocation.icMarker, View.TRANSLATION_Y, -8.dp.toFloat()))
-            markerAnimatorSet?.duration = 200
-            markerAnimatorSet?.start()
-        }
+    private fun initOsmMap(mapView: org.osmdroid.views.MapView?) {
+        mapView?.apply {
+            setMultiTouchControls(true)
+            overlayManager.tilesOverlay.loadingBackgroundColor = Color.TRANSPARENT
+            overlayManager.tilesOverlay.loadingLineColor = Color.TRANSPARENT
+            
+            addMapListener(object : MapListener {
+                override fun onScroll(event: ScrollEvent?): Boolean {
+                    if (!binding.mentionLocation.icMarker.isVisible && !isInit) {
+                        binding.mentionLocation.icMarker.isVisible = true
+                        locationSearchAdapter.setMark()
+                    }
+                    
+                    markerAnimatorSet?.cancel()
+                    markerAnimatorSet = AnimatorSet()
+                    markerAnimatorSet?.playTogether(
+                        ObjectAnimator.ofFloat(binding.mentionLocation.icMarker, View.TRANSLATION_Y, -8.dp.toFloat())
+                    )
+                    markerAnimatorSet?.duration = 200
+                    markerAnimatorSet?.start()
 
-        mapboxMap.addOnCameraIdleListener {
-            markerAnimatorSet?.cancel()
-            markerAnimatorSet = AnimatorSet()
-            markerAnimatorSet?.playTogether(ObjectAnimator.ofFloat(binding.mentionLocation.icMarker, View.TRANSLATION_Y, 0f))
-            markerAnimatorSet?.duration = 200
-            markerAnimatorSet?.start()
-            mapboxMap.cameraPosition.target.let { lastLang ->
-                if (location == null) {
-                    val mixinLatLng = MixinLatLng(lastLang.latitude, lastLang.longitude)
-                    currentPosition = mixinLatLng
-                    search(mixinLatLng)
+                    val center = projection.fromPixels(width/2, height/2) as GeoPoint
+                    currentPosition = MixinLatLng(center.latitude, center.longitude)
+                    if (location == null) {
+                        search(currentPosition!!)
+                    }
+
+                    markerAnimatorSet?.cancel()
+                    markerAnimatorSet = AnimatorSet()
+                    markerAnimatorSet?.playTogether(
+                        ObjectAnimator.ofFloat(binding.mentionLocation.icMarker, View.TRANSLATION_Y, 0f)
+                    )
+                    markerAnimatorSet?.duration = 200
+                    markerAnimatorSet?.start()
+                    
+                    return true
                 }
-            }
+
+                override fun onZoom(event: ZoomEvent?): Boolean {
+                    return false
+                }
+            })
         }
-        @Suppress("DEPRECATION")
-        mapboxMap.setOnMarkerClickListener { marker ->
-            locationSearchAdapter.setMark(marker.position.latitude, marker.position.longitude)
-            binding.mentionLocation.icMarker.isVisible = true
-            mixinMapView.moveCamera(MixinLatLng(marker.position.latitude, marker.position.longitude))
-            false
-        }
-        mapboxMap.addOnCameraMoveCancelListener {}
+        afterInit()
     }
 
     private var lastSearchJob: Job? = null
+
     fun search(latLng: MixinLatLng) {
         binding.mentionLocation.locationPb.isVisible = locationAdapter.venues == null
         if (lastSearchJob != null && lastSearchJob?.isActive == true) {
             lastSearchJob?.cancel()
         }
-        lastSearchJob = lifecycleScope.launch(errorHandler) {
-            val result = foursquareService.searchVenues("${latLng.latitude},${latLng.longitude}")
+        lastSearchJob =
+            lifecycleScope.launch(errorHandler) {
+                val result = foursquareService.searchVenues("${latLng.latitude},${latLng.longitude}")
 
-            result.response?.venues.let { list ->
-                list.let { data ->
-                    locationAdapter.venues = data
-                    binding.mentionLocation.locationPb.isVisible = data == null
+                result.response?.venues.let { list ->
+                    list.let { data ->
+                        locationAdapter.venues = data
+                        binding.mentionLocation.locationPb.isVisible = data == null
+                    }
                 }
             }
-        }
     }
 
-    private val errorHandler = CoroutineExceptionHandler { _, error ->
-        Timber.e(error)
-    }
+    private val errorHandler =
+        CoroutineExceptionHandler { _, error ->
+            Timber.e(error)
+        }
 
     private fun checkLocationEnable(locationManager: LocationManager): Boolean {
         var gpsEnable = false
@@ -538,16 +522,17 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback, com.mapbox.mapboxsd
             Timber.w(e)
         }
         if (!gpsEnable) {
-            locationAlert = AlertDialog.Builder(this)
-                .setMessage(R.string.location_enable_title)
-                .setPositiveButton(R.string.live_setting) { dialog, _ ->
-                    try {
-                        startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
-                    } catch (e: Exception) {
-                        Timber.e(e)
-                    }
-                    dialog.dismiss()
-                }.show()
+            locationAlert =
+                AlertDialog.Builder(this)
+                    .setMessage(R.string.location_enable_title)
+                    .setPositiveButton(R.string.Settings) { dialog, _ ->
+                        try {
+                            startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+                        } catch (e: Exception) {
+                            Timber.e(e)
+                        }
+                        dialog.dismiss()
+                    }.show()
             return false
         }
         return true
@@ -556,103 +541,123 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback, com.mapbox.mapboxsd
     private var locationAlert: AlertDialog? = null
 
     private var lastSearchQueryJob: Job? = null
+
     fun search(query: String) {
         binding.mentionLocation.locationPb.isVisible = locationSearchAdapter.venues == null
         val currentPosition = this.currentPosition ?: return
         if (lastSearchQueryJob != null && lastSearchQueryJob?.isActive == true) {
             lastSearchQueryJob?.cancel()
         }
-        lastSearchQueryJob = lifecycleScope.launch(errorHandler) {
-            val result = foursquareService.searchVenues("${currentPosition.latitude},${currentPosition.longitude}", query)
-            result.response?.venues.let { data ->
-                locationSearchAdapter.venues = data
-                binding.mentionLocation.apply {
-                    locationEmpty.isVisible = data.isNullOrEmpty()
-                    locationEmptyTv.text = getString(R.string.location_empty, query)
-                    locationPb.isVisible = data == null
-                }
-                mixinMapView.clear()
-                var south: Double? = null
-                var west: Double? = null
-                var north: Double? = null
-                var east: Double? = null
-                data?.forEachIndexed { index, item ->
-                    south = if (south == null) {
-                        item.location.lat
-                    } else {
-                        min(south!!, item.location.lat)
+        lastSearchQueryJob =
+            lifecycleScope.launch(errorHandler) {
+                val result = foursquareService.searchVenues("${currentPosition.latitude},${currentPosition.longitude}", query)
+                result.response?.venues.let { data ->
+                    locationSearchAdapter.venues = data
+                    binding.mentionLocation.apply {
+                        locationEmpty.isVisible = data.isNullOrEmpty()
+                        locationEmptyTv.text = getString(R.string.location_empty, query)
+                        locationPb.isVisible = data == null
                     }
-                    west = if (west == null) {
-                        item.location.lng
-                    } else {
-                        min(west!!, item.location.lng)
-                    }
-                    north = if (north == null) {
-                        item.location.lat
-                    } else {
-                        max(north!!, item.location.lat)
-                    }
-                    east = if (east == null) {
-                        item.location.lng
-                    } else {
-                        max(east!!, item.location.lng)
-                    }
-                    mixinMapView.addMarker(index, item)
+                    mixinMapView.clear()
+                    var south: Double? = null
+                    var west: Double? = null
+                    var north: Double? = null
+                    var east: Double? = null
+                    data?.forEachIndexed { index, item ->
+                        south =
+                            if (south == null) {
+                                item.location.lat
+                            } else {
+                                min(south!!, item.location.lat)
+                            }
+                        west =
+                            if (west == null) {
+                                item.location.lng
+                            } else {
+                                min(west!!, item.location.lng)
+                            }
+                        north =
+                            if (north == null) {
+                                item.location.lat
+                            } else {
+                                max(north!!, item.location.lat)
+                            }
+                        east =
+                            if (east == null) {
+                                item.location.lng
+                            } else {
+                                max(east!!, item.location.lng)
+                            }
+                        mixinMapView.addMarker(index, item)
 
-                    if (south != null && west != null && north != null && east != null) {
-                        val bound = MixinLatLngBounds(MixinLatLng(south!!, west!!), MixinLatLng(north!!, east!!))
-                        mixinMapView.moveBounds(bound)
+                        if (south != null && west != null && north != null && east != null) {
+                            val bound = MixinLatLngBounds(MixinLatLng(south!!, west!!), MixinLatLng(north!!, east!!))
+                            mixinMapView.moveBounds(bound)
+                        }
                     }
                 }
             }
-        }
     }
 
     private var markerAnimatorSet: AnimatorSet? = null
 
-    private val textWatcher = object : TextWatcher {
-        override fun afterTextChanged(s: Editable?) {
-            s.notEmptyWithElse(
-                { charSequence ->
-                    binding.mentionLocation.locationRecycler.adapter = locationSearchAdapter
-                    val content = charSequence.toString()
-                    locationSearchAdapter.keyword = content
-                    search(content)
-                },
-                {
-                    binding.mentionLocation.locationRecycler.adapter = locationAdapter
-                    if (lastSearchQueryJob?.isActive == true) {
-                        lastSearchQueryJob?.cancel()
-                    }
-                    locationSearchAdapter.keyword = null
-                    locationSearchAdapter.venues = null
-                    locationSearchAdapter.setMark()
-                    mixinMapView.clear()
-                }
-            )
+    private val textWatcher =
+        object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                s.notEmptyWithElse(
+                    { charSequence ->
+                        binding.mentionLocation.locationRecycler.adapter = locationSearchAdapter
+                        val content = charSequence.toString()
+                        locationSearchAdapter.keyword = content
+                        search(content)
+                    },
+                    {
+                        binding.mentionLocation.locationRecycler.adapter = locationAdapter
+                        if (lastSearchQueryJob?.isActive == true) {
+                            lastSearchQueryJob?.cancel()
+                        }
+                        locationSearchAdapter.keyword = null
+                        locationSearchAdapter.venues = null
+                        locationSearchAdapter.setMark()
+                        mixinMapView.clear()
+                    },
+                )
+            }
+
+            override fun beforeTextChanged(
+                s: CharSequence?,
+                start: Int,
+                count: Int,
+                after: Int,
+            ) {}
+
+            override fun onTextChanged(
+                s: CharSequence?,
+                start: Int,
+                before: Int,
+                count: Int,
+            ) {}
         }
 
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-
-        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-    }
-
     companion object {
-
         private const val LOCATION_NAME = "location_name"
         private const val LOCATION = "location"
 
         fun getResult(intent: Intent): LocationPayload? {
-            return intent.getParcelableExtra(LOCATION_NAME)
+            return intent.getParcelableExtraCompat(LOCATION_NAME, LocationPayload::class.java)
         }
 
         fun show(fragment: Fragment) {
             Intent(fragment.requireContext(), LocationActivity::class.java).run {
+                @Suppress("DEPRECATION")
                 fragment.startActivityForResult(this, REQUEST_LOCATION)
             }
         }
 
-        fun show(context: Context, location: LocationPayload) {
+        fun show(
+            context: Context,
+            location: LocationPayload,
+        ) {
             Intent(context, LocationActivity::class.java).run {
                 putExtra(LOCATION, location)
                 context.startActivity(this)

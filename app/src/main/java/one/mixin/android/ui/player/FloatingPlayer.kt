@@ -1,3 +1,5 @@
+@file:UnstableApi
+
 package one.mixin.android.ui.player
 
 import android.animation.Animator
@@ -16,6 +18,7 @@ import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
 import androidx.annotation.Keep
+import androidx.media3.common.util.UnstableApi
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.checkInlinePermissions
@@ -26,9 +29,11 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.realSize
+import one.mixin.android.extension.safeAddView
+import one.mixin.android.extension.safeRemoveView
 import one.mixin.android.util.MusicPlayer
-import one.mixin.android.widget.RLottieDrawable
-import one.mixin.android.widget.RLottieImageView
+import one.mixin.android.widget.lottie.RLottieDrawable
+import one.mixin.android.widget.lottie.RLottieImageView
 import kotlin.math.abs
 
 class FloatingPlayer(private var isNightMode: Boolean) {
@@ -92,14 +97,6 @@ class FloatingPlayer(private var isNightMode: Boolean) {
         appContext.defaultSharedPreferences
     }
     private var isShown = false
-    fun init() {
-        if (windowView == null) {
-            initWindowView()
-        }
-        if (!::windowLayoutParams.isInitialized) {
-            initWindowLayoutParams()
-        }
-    }
 
     fun show(conversationId: String? = null) {
         if (!appContext.checkInlinePermissions()) return
@@ -109,12 +106,13 @@ class FloatingPlayer(private var isNightMode: Boolean) {
         }
 
         if (isNightMode != appContext.isNightMode()) {
+            windowView?.let { windowManager.safeRemoveView(it) }
             recreate(appContext.isNightMode()).show(this.conversationId)
         } else {
             if (!isShown) {
                 init()
                 isShown = true
-                windowView?.let { windowManager.addView(it, windowLayoutParams) }
+                windowManager.safeAddView(windowView, windowLayoutParams)
             }
             reload()
         }
@@ -124,80 +122,96 @@ class FloatingPlayer(private var isNightMode: Boolean) {
         animateToBoundsMaybe()
     }
 
+    private fun init() {
+        val wv = windowView
+        if (wv != null) {
+            windowManager.safeRemoveView(wv)
+        }
+        initWindowView()
+        if (!::windowLayoutParams.isInitialized) {
+            initWindowLayoutParams()
+        }
+    }
+
     private fun initWindowView() {
         val realSize = appContext.realSize()
         val realX = realSize.x
         val realY = realSize.y
-        windowView = object : FrameLayout(appContext) {
-            private var startX: Float = 0f
-            private var startY: Float = 0f
-            private var downX = -1f
-            private var downY = -1f
-            override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
-                val x = event.rawX
-                val y = event.rawY
-                if (event.action == MotionEvent.ACTION_DOWN) {
-                    startX = x
-                    startY = y
-                } else if (event.action == MotionEvent.ACTION_MOVE) {
-                    if (abs(startX - x) >= appContext.getPixelsInCM(
-                            0.3f,
-                            true
-                        ) || abs(startY - y) >= appContext.getPixelsInCM(0.3f, true)
-                    ) {
+        windowView =
+            object : FrameLayout(appContext) {
+                private var startX: Float = 0f
+                private var startY: Float = 0f
+                private var downX = -1f
+                private var downY = -1f
+
+                override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
+                    val x = event.rawX
+                    val y = event.rawY
+                    if (event.action == MotionEvent.ACTION_DOWN) {
                         startX = x
                         startY = y
-                        return true
+                    } else if (event.action == MotionEvent.ACTION_MOVE) {
+                        if (abs(startX - x) >=
+                            appContext.getPixelsInCM(
+                                0.3f,
+                                true,
+                            ) || abs(startY - y) >= appContext.getPixelsInCM(0.3f, true)
+                        ) {
+                            startX = x
+                            startY = y
+                            return true
+                        }
                     }
+                    return super.onInterceptTouchEvent(event)
                 }
-                return super.onInterceptTouchEvent(event)
-            }
 
-            @SuppressLint("ClickableViewAccessibility")
-            override fun onTouchEvent(event: MotionEvent): Boolean {
-                val x = event.rawX
-                val y = event.rawY
+                @SuppressLint("ClickableViewAccessibility")
+                override fun onTouchEvent(event: MotionEvent): Boolean {
+                    val x = event.rawX
+                    val y = event.rawY
 
-                if (event.action == MotionEvent.ACTION_DOWN) {
-                    downX = event.rawX
-                    downY = event.rawY
-                } else if (event.action == MotionEvent.ACTION_MOVE) {
-                    val dx = x - startX
-                    val dy = y - startY
+                    if (event.action == MotionEvent.ACTION_DOWN) {
+                        downX = event.rawX
+                        downY = event.rawY
+                    } else if (event.action == MotionEvent.ACTION_MOVE) {
+                        val dx = x - startX
+                        val dy = y - startY
 
-                    windowLayoutParams.x = (windowLayoutParams.x + dx).toInt()
-                    windowLayoutParams.y = (windowLayoutParams.y + dy).toInt()
-                    var maxDiff = 100.dp
-                    if (windowLayoutParams.x < -maxDiff) {
-                        windowLayoutParams.x = -maxDiff
-                    } else if (windowLayoutParams.x > realX - windowLayoutParams.width + maxDiff) {
-                        windowLayoutParams.x = realX - windowLayoutParams.width + maxDiff
+                        windowLayoutParams.x = (windowLayoutParams.x + dx).toInt()
+                        windowLayoutParams.y = (windowLayoutParams.y + dy).toInt()
+                        var maxDiff = 100.dp
+                        if (windowLayoutParams.x < -maxDiff) {
+                            windowLayoutParams.x = -maxDiff
+                        } else if (windowLayoutParams.x > realX - windowLayoutParams.width + maxDiff) {
+                            windowLayoutParams.x = realX - windowLayoutParams.width + maxDiff
+                        }
+                        maxDiff = 0
+                        @Suppress("KotlinConstantConditions")
+                        if (windowLayoutParams.y < -maxDiff) {
+                            windowLayoutParams.y = -maxDiff
+                        } else if (windowLayoutParams.y > realY - windowLayoutParams.height - appContext.navigationBarHeight() * 2 + maxDiff) {
+                            windowLayoutParams.y =
+                                realY - windowLayoutParams.height - appContext.navigationBarHeight() * 2 + maxDiff
+                        }
+                        windowView?.let { windowManager.updateViewLayout(it, windowLayoutParams) }
+                        startX = x
+                        startY = y
+                    } else if (event.action == MotionEvent.ACTION_UP) {
+                        if (abs(event.rawX - downX) < 8.dp && abs(event.rawY - downY) < 8.dp) {
+                            conversationId?.let { MusicActivity.show(appContext, it) }
+                        } else {
+                            animateToBoundsMaybe()
+                        }
                     }
-                    maxDiff = 0
-                    if (windowLayoutParams.y < -maxDiff) {
-                        windowLayoutParams.y = -maxDiff
-                    } else if (windowLayoutParams.y > realY - windowLayoutParams.height - appContext.navigationBarHeight() * 2 + maxDiff) {
-                        windowLayoutParams.y =
-                            realY - windowLayoutParams.height - appContext.navigationBarHeight() * 2 + maxDiff
-                    }
-                    windowView?.let { windowManager.updateViewLayout(it, windowLayoutParams) }
-                    startX = x
-                    startY = y
-                } else if (event.action == MotionEvent.ACTION_UP) {
-                    if (abs(event.rawX - downX) < 8.dp && abs(event.rawY - downY) < 8.dp) {
-                        conversationId?.let { MusicActivity.show(appContext, it) }
-                    } else {
-                        animateToBoundsMaybe()
-                    }
+                    return true
                 }
-                return true
             }
-        }
 
         musicView = RLottieImageView(appContext)
-        musicBgView = View(appContext).apply {
-            setBackgroundResource(R.drawable.bg_music)
-        }
+        musicBgView =
+            View(appContext).apply {
+                setBackgroundResource(R.drawable.bg_music)
+            }
 
         windowView?.addView(
             FrameLayout(appContext).apply {
@@ -209,35 +223,36 @@ class FloatingPlayer(private var isNightMode: Boolean) {
                 addView(musicBgView, FrameLayout.LayoutParams(48.dp, 48.dp).apply { gravity = Gravity.CENTER })
                 addView(musicView, FrameLayout.LayoutParams(30.dp, 30.dp).apply { gravity = Gravity.CENTER })
             },
-            ViewGroup.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
+            ViewGroup.LayoutParams(WRAP_CONTENT, WRAP_CONTENT),
         )
 
         musicView?.setAutoRepeat(true)
-        rLottieDrawable = if (isNightMode) {
-            RLottieDrawable(
-                R.raw.anim_music_night,
-                "music_night",
-                30.dp,
-                30.dp
-            )
-        } else {
-            RLottieDrawable(
-                R.raw.anim_music,
-                "music",
-                30.dp,
-                30.dp
-            )
-        }
+        rLottieDrawable =
+            if (isNightMode) {
+                RLottieDrawable(
+                    R.raw.anim_music_night,
+                    "music_night",
+                    30.dp,
+                    30.dp,
+                )
+            } else {
+                RLottieDrawable(
+                    R.raw.anim_music,
+                    "music",
+                    30.dp,
+                    30.dp,
+                )
+            }
         musicView?.setAnimation(rLottieDrawable)
         if (MusicPlayer.get().exoPlayer.isPlaying) {
             musicView?.playAnimation()
         }
     }
 
-    fun hide() {
-        if (!isShown) return
+    fun hide(force: Boolean = false) {
+        if (!isShown && !force) return
         isShown = false
-        windowView?.let { windowManager.removeView(it) }
+        windowView?.let { windowManager.safeRemoveView(it) }
         windowView = null
         musicView = null
         musicBgView = null
@@ -262,6 +277,7 @@ class FloatingPlayer(private var isNightMode: Boolean) {
         if (Build.VERSION.SDK_INT >= 26) {
             windowLayoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
         } else {
+            @Suppress("DEPRECATION")
             windowLayoutParams.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT
         }
         windowLayoutParams.flags =
@@ -269,21 +285,20 @@ class FloatingPlayer(private var isNightMode: Boolean) {
     }
 
     private var decelerateInterpolator: DecelerateInterpolator? = null
+
     private fun animateToBoundsMaybe() {
         val realSize = appContext.realSize()
         val realX = realSize.x
         val startX = windowLayoutParams.x
-        val endX = if (startX >= realX / 2) {
-            realSize.x - windowLayoutParams.width
-        } else {
-            0
-        }
+        val endX =
+            if (startX >= realX / 2) {
+                realSize.x - windowLayoutParams.width
+            } else {
+                0
+            }
         preferences.putInt(FX, endX)
         preferences.putInt(FY, windowLayoutParams.y)
-        var animators: ArrayList<Animator>? = null
-        if (animators == null) {
-            animators = ArrayList()
-        }
+        val animators: ArrayList<Animator> = arrayListOf()
         animators.add(ObjectAnimator.ofInt(this, "x", windowLayoutParams.x, endX))
         if (decelerateInterpolator == null) {
             decelerateInterpolator = DecelerateInterpolator()
@@ -305,6 +320,7 @@ class FloatingPlayer(private var isNightMode: Boolean) {
         windowLayoutParams.y
     }
 
+    @Suppress("unused")
     @Keep
     fun setX(value: Int) {
         windowLayoutParams.x = value
@@ -312,6 +328,7 @@ class FloatingPlayer(private var isNightMode: Boolean) {
         windowView?.let { windowManager.updateViewLayout(it, windowLayoutParams) }
     }
 
+    @Suppress("unused")
     @Keep
     fun setY(value: Int) {
         windowLayoutParams.y = value

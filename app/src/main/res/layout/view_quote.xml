@@ -21,6 +21,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:src="@drawable/image_holder"
+        android:scaleType="centerCrop"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toEndOf="parent"
@@ -46,7 +47,7 @@
         app:layout_constraintWidth_max="40dp"
         tools:ignore="ContentDescription" />
 
-    <TextView
+    <one.mixin.android.widget.NameTextView
         android:id="@+id/reply_name_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -56,6 +57,7 @@
         android:singleLine="true"
         android:textColor="?attr/text_primary"
         android:textSize="14sp"
+        android:drawablePadding="1.5dp"
         app:layout_constraintEnd_toStartOf="@id/reply_iv"
         app:layout_constraintHorizontal_bias="0"
         app:layout_constraintStart_toEndOf="@id/start_view"
@@ -74,7 +76,7 @@
         android:ellipsize="end"
         android:fontFamily="@font/roboto_light"
         android:singleLine="true"
-        android:textColor="?attr/text_minor"
+        android:textColor="?attr/text_assist"
         android:textSize="12sp"
         android:textStyle="italic"
         app:layout_constrainedWidth="true"

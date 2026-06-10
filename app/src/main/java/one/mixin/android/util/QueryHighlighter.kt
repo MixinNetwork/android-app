@@ -12,7 +12,7 @@ import java.util.regex.Pattern
 class QueryHighlighter(
     private var highlightStyle: CharacterStyle = StyleSpan(Typeface.BOLD),
     private var queryNormalizer: QueryNormalizer = QueryNormalizer.FOR_SEARCH,
-    private var mode: Mode = Mode.CHARACTERS
+    private var mode: Mode = Mode.CHARACTERS,
 ) {
     enum class Mode { CHARACTERS, WORDS }
 
@@ -22,45 +22,61 @@ class QueryHighlighter(
         companion object {
             val NONE: QueryNormalizer = QueryNormalizer()
 
-            val CASE: QueryNormalizer = QueryNormalizer { source ->
-                if (TextUtils.isEmpty(source)) {
-                    source
-                } else source.toString().uppercase()
-            }
+            val CASE: QueryNormalizer =
+                QueryNormalizer { source ->
+                    if (TextUtils.isEmpty(source)) {
+                        source
+                    } else {
+                        source.toString().uppercase()
+                    }
+                }
 
             private val PATTERN_DIACRITICS = Pattern.compile("\\p{InCombiningDiacriticalMarks}")
 
             private val PATTERN_NON_LETTER_DIGIT_TO_SPACES = Pattern.compile("[^\\p{L}\\p{Nd}]")
-            val FOR_SEARCH: QueryNormalizer = QueryNormalizer { searchTerm ->
-                var result = Normalizer.normalize(searchTerm, Normalizer.Form.NFD)
-                result = PATTERN_DIACRITICS.matcher(result).replaceAll("")
-                result = PATTERN_NON_LETTER_DIGIT_TO_SPACES.matcher(result).replaceAll(" ")
-                result.lowercase()
-            }
+            val FOR_SEARCH: QueryNormalizer =
+                QueryNormalizer { searchTerm ->
+                    var result = Normalizer.normalize(searchTerm, Normalizer.Form.NFD)
+                    result = PATTERN_DIACRITICS.matcher(result).replaceAll("")
+                    result = PATTERN_NON_LETTER_DIGIT_TO_SPACES.matcher(result).replaceAll(" ")
+                    result.lowercase()
+                }
         }
     }
 
-    private fun apply(text: CharSequence?, wordPrefix: CharSequence?): CharSequence? {
+    private fun apply(
+        text: CharSequence?,
+        wordPrefix: CharSequence?,
+    ): CharSequence? {
         if (text == null || wordPrefix == null) {
             return text
         }
         val normalizedText = queryNormalizer(text)
         val normalizeWordPrefix = queryNormalizer(wordPrefix)
         val index = indexOfQuery(normalizedText, normalizeWordPrefix)
-        return if (index != -1) {
+        return if (index != -1 && normalizeWordPrefix.isNotEmpty()) {
             SpannableString(text).apply {
-                setSpan(highlightStyle, index, index + normalizeWordPrefix.length, 0)
+                if (index < text.length && index + normalizeWordPrefix.length < text.length) {
+                    setSpan(highlightStyle, index, index + normalizeWordPrefix.length, 0)
+                }
             }
         } else {
             text
         }
     }
 
-    fun apply(view: TextView, text: CharSequence?, query: CharSequence?) {
+    fun apply(
+        view: TextView,
+        text: CharSequence?,
+        query: CharSequence?,
+    ) {
         view.text = apply(text, query)
     }
 
-    private fun indexOfQuery(text: CharSequence?, query: CharSequence?): Int {
+    private fun indexOfQuery(
+        text: CharSequence?,
+        query: CharSequence?,
+    ): Int {
         if (query == null || text == null) {
             return -1
         }

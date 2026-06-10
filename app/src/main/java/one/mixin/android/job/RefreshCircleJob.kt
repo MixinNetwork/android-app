@@ -1,18 +1,17 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
-import one.mixin.android.db.insertUpdate
 import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleConversation
 
 class RefreshCircleJob(
-    val circleId: String? = null
+    val circleId: String? = null,
 ) : BaseJob(
-    Params(PRIORITY_UI_HIGH)
-        .groupBy("refresh_circles").requireNetwork().persist()
-) {
-
+        Params(PRIORITY_UI_HIGH)
+            .groupBy("refresh_circles").requireNetwork().persist(),
+    ) {
     companion object {
+        private var serialVersionUID: Long = 1L
         const val REFRESH_CIRCLE_CONVERSATION_LIMIT = 500
     }
 
@@ -29,8 +28,8 @@ class RefreshCircleJob(
                             jobManager.addJobInBackground(
                                 RefreshConversationJob(
                                     circleConversation.conversationId,
-                                    skipRefreshCircle = true
-                                )
+                                    skipRefreshCircle = true,
+                                ),
                             )
                         }
                         circleDao.insertUpdate(c)
@@ -52,12 +51,17 @@ class RefreshCircleJob(
         }
     }
 
-    private fun handleCircle(c: Circle, offset: String? = null, conversationHandler: ((CircleConversation) -> Unit)? = null) {
-        val ccResponse = circleService.getCircleConversations(
-            c.circleId,
-            offset,
-            REFRESH_CIRCLE_CONVERSATION_LIMIT
-        ).execute().body()
+    private fun handleCircle(
+        c: Circle,
+        offset: String? = null,
+        conversationHandler: ((CircleConversation) -> Unit)? = null,
+    ) {
+        val ccResponse =
+            circleService.getCircleConversations(
+                c.circleId,
+                offset,
+                REFRESH_CIRCLE_CONVERSATION_LIMIT,
+            ).execute().body()
         if (ccResponse?.isSuccess == true) {
             ccResponse.data?.let { ccList ->
                 ccList.forEach { cc ->

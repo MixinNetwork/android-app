@@ -1,9 +1,9 @@
 package one.mixin.android.webrtc
 
 import android.content.Context
+import android.util.Log
 import androidx.collection.arrayMapOf
 import kotlinx.coroutines.delay
-import one.mixin.android.BuildConfig
 import one.mixin.android.RxBus
 import one.mixin.android.event.FrameKeyEvent
 import one.mixin.android.event.VoiceEvent
@@ -26,15 +26,37 @@ import org.webrtc.RtpTransceiver
 import org.webrtc.SdpObserver
 import org.webrtc.SessionDescription
 import org.webrtc.StatsReport
+import org.webrtc.audio.AudioDeviceModule
+import org.webrtc.audio.JavaAudioDeviceModule
+import org.webrtc.audio.JavaAudioDeviceModule.AudioRecordErrorCallback
+import org.webrtc.audio.JavaAudioDeviceModule.AudioTrackErrorCallback
+import org.webrtc.audio.JavaAudioDeviceModule.AudioTrackStateCallback
 import timber.log.Timber
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
-class PeerConnectionClient(context: Context, private val events: PeerConnectionEvents) {
+
+class PeerConnectionClient(private var context: Context) {
     private var factory: PeerConnectionFactory? = null
     private var isError = false
 
+    var events: PeerConnectionEvents? = null
+
+    var callDebugState = CallDebugLiveData.Type.None
+        set(value) {
+            if (value == field) return
+
+            field = value
+            if (value.logEnable()) {
+                Logging.enableLogToDebugOutput(Logging.Severity.LS_INFO)
+            } else {
+                Logging.enableLogToDebugOutput(Logging.Severity.LS_NONE)
+            }
+        }
+
     init {
         PeerConnectionFactory.initialize(
-            PeerConnectionFactory.InitializationOptions.builder(context).createInitializationOptions()
+            PeerConnectionFactory.InitializationOptions.builder(context).createInitializationOptions(),
         )
     }
 
@@ -57,36 +79,41 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
             if (!callPipShown.invoke()) {
                 requireNotNull(peerConnection).getStats { report ->
                     val map = report.statsMap
-                    map.entries.forEach { (k, v) ->
-                        if (k.startsWith("RTCMediaStreamTrack_receive")) {
-                            val trackIdentifier = v.members["trackIdentifier"]
-                            val audioLevel = v.members["audioLevel"] as? Double?
-                            var userId = receiverIdUserIdMap[trackIdentifier]
-                            // Timber.d("$TAG_CALL userId: $userId, trackIdentifier: $trackIdentifier, audioLevel: $audioLevel")
-                            if (userId != null) {
-                                RxBus.publish(VoiceEvent(userId, audioLevel ?: 0.0))
-                            } else {
-                                userId = receiverIdUserIdNoKeyMap[trackIdentifier]
+                    map.entries.forEach { (_, v) ->
+                        when (v.type) {
+                            "inbound-rtp" -> {
+                                val trackIdentifier = v.members["trackIdentifier"]
+                                val audioLevel = v.members["audioLevel"] as? Double?
+                                var userId = receiverIdUserIdMap[trackIdentifier]
+                                if (callDebugState.reportEnable()) {
+                                    Timber.d("$TAG_CALL userId: $userId, trackIdentifier: $trackIdentifier, audioLevel: $audioLevel")
+                                }
                                 if (userId != null) {
-                                    RxBus.publish(FrameKeyEvent(userId, false))
+                                    RxBus.publish(VoiceEvent(userId, audioLevel ?: 0.0))
+                                } else {
+                                    userId = receiverIdUserIdNoKeyMap[trackIdentifier]
+                                    if (userId != null) {
+                                        RxBus.publish(FrameKeyEvent(userId, false))
+                                    }
                                 }
                             }
-                        } else if (k.startsWith("RTCAudioSource")) {
-                            if (audioTrack?.enabled() == true) {
-                                val audioLevel = v.members["audioLevel"] as? Double?
-                                RxBus.publish(
-                                    VoiceEvent(
-                                        requireNotNull(Session.getAccountId()),
-                                        audioLevel ?: 0.0
+                            "media-source" -> {
+                                if (audioTrack?.enabled() == true) {
+                                    val audioLevel = v.members["audioLevel"] as? Double?
+                                    RxBus.publish(
+                                        VoiceEvent(
+                                            requireNotNull(Session.getAccountId()),
+                                            audioLevel ?: 0.0,
+                                        ),
                                     )
-                                )
-                            } else {
-                                RxBus.publish(
-                                    VoiceEvent(
-                                        requireNotNull(Session.getAccountId()),
-                                        0.0
+                                } else {
+                                    RxBus.publish(
+                                        VoiceEvent(
+                                            requireNotNull(Session.getAccountId()),
+                                            0.0,
+                                        ),
                                     )
-                                )
+                                }
                             }
                         }
                     }
@@ -101,14 +128,14 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
             reportError("PeerConnectionFactory has already been constructed")
             return
         }
-        createPeerConnectionFactoryInternal(options)
+        createPeerConnectionFactoryInternal(this.context, options)
     }
 
     fun createOffer(
         iceServerList: List<PeerConnection.IceServer>? = null,
         setLocalSuccess: ((sdp: SessionDescription) -> Unit),
         frameKey: ByteArray? = null,
-        doWhenSetFailure: (() -> Unit)? = null
+        doWhenSetFailure: (() -> Unit)? = null,
     ) {
         val sdpConstraint = createMediaConstraint()
         if (iceServerList != null) {
@@ -121,60 +148,64 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         if (peerConnection == null || connectionState == PeerConnection.PeerConnectionState.CLOSED) {
             peerConnection = createPeerConnectionInternal(frameKey)
         }
-        val offerSdpObserver = object : SdpObserverWrapper() {
-            override fun onCreateSuccess(sdp: SessionDescription) {
-                peerConnection?.setLocalDescription(
-                    object : SdpObserverWrapper() {
-                        override fun onSetFailure(error: String?) {
-                            if (doWhenSetFailure != null) {
-                                Timber.d("$TAG_CALL createOffer setLocalSdp onSetFailure error: $error")
-                                doWhenSetFailure.invoke()
-                            } else {
-                                reportError("createOffer setLocalSdp onSetFailure error: $error")
+        val offerSdpObserver =
+            object : SdpObserverWrapper() {
+                override fun onCreateSuccess(sdp: SessionDescription) {
+                    peerConnection?.setLocalDescription(
+                        object : SdpObserverWrapper() {
+                            override fun onSetFailure(error: String?) {
+                                if (doWhenSetFailure != null) {
+                                    Timber.d("$TAG_CALL createOffer setLocalSdp onSetFailure error: $error")
+                                    doWhenSetFailure.invoke()
+                                } else {
+                                    reportError("createOffer setLocalSdp onSetFailure error: $error")
+                                }
                             }
-                        }
-                        override fun onSetSuccess() {
-                            Timber.d("$TAG_CALL createOffer setLocalSdp onSetSuccess")
-                            setLocalSuccess(sdp)
-                        }
-                        override fun onCreateSuccess(sdp: SessionDescription) {
-                            Timber.d("$TAG_CALL createOffer setLocalSdp onCreateSuccess")
-                        }
-                        override fun onCreateFailure(error: String?) {
-                            if (doWhenSetFailure != null) {
-                                Timber.d("$TAG_CALL createOffer setLocalSdp onCreateFailure error: $error")
-                                doWhenSetFailure.invoke()
-                            } else {
-                                reportError("createOffer setLocalSdp onCreateFailure error: $error")
-                            }
-                        }
-                    },
-                    sdp
-                )
-            }
 
-            override fun onCreateFailure(error: String?) {
-                if (doWhenSetFailure != null) {
-                    Timber.d("$TAG_CALL createOffer onCreateFailure error: $error")
-                    doWhenSetFailure.invoke()
-                } else {
-                    reportError("createOffer onCreateFailure error: $error")
+                            override fun onSetSuccess() {
+                                Timber.d("$TAG_CALL createOffer setLocalSdp onSetSuccess")
+                                setLocalSuccess(sdp)
+                            }
+
+                            override fun onCreateSuccess(sdp: SessionDescription) {
+                                Timber.d("$TAG_CALL createOffer setLocalSdp onCreateSuccess")
+                            }
+
+                            override fun onCreateFailure(error: String?) {
+                                if (doWhenSetFailure != null) {
+                                    Timber.d("$TAG_CALL createOffer setLocalSdp onCreateFailure error: $error")
+                                    doWhenSetFailure.invoke()
+                                } else {
+                                    reportError("createOffer setLocalSdp onCreateFailure error: $error")
+                                }
+                            }
+                        },
+                        sdp,
+                    )
+                }
+
+                override fun onCreateFailure(error: String?) {
+                    if (doWhenSetFailure != null) {
+                        Timber.d("$TAG_CALL createOffer onCreateFailure error: $error")
+                        doWhenSetFailure.invoke()
+                    } else {
+                        reportError("createOffer onCreateFailure error: $error")
+                    }
+                }
+
+                override fun onSetFailure(error: String?) {
+                    if (doWhenSetFailure != null) {
+                        Timber.d("$TAG_CALL createOffer onSetFailure error: $error")
+                        doWhenSetFailure.invoke()
+                    } else {
+                        reportError("createOffer onSetFailure error: $error")
+                    }
+                }
+
+                override fun onSetSuccess() {
+                    Timber.d("$TAG_CALL createOffer onSetSuccess")
                 }
             }
-
-            override fun onSetFailure(error: String?) {
-                if (doWhenSetFailure != null) {
-                    Timber.d("$TAG_CALL createOffer onSetFailure error: $error")
-                    doWhenSetFailure.invoke()
-                } else {
-                    reportError("createOffer onSetFailure error: $error")
-                }
-            }
-
-            override fun onSetSuccess() {
-                Timber.d("$TAG_CALL createOffer onSetSuccess")
-            }
-        }
         peerConnection?.createOffer(offerSdpObserver, sdpConstraint)
     }
 
@@ -182,7 +213,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         iceServerList: List<PeerConnection.IceServer>? = null,
         remoteSdp: SessionDescription,
         setLocalSuccess: (sdp: SessionDescription) -> Unit,
-        doWhenSetFailure: (() -> Unit)? = null
+        doWhenSetFailure: (() -> Unit)? = null,
     ) {
         val sdpConstraint = createMediaConstraint()
         if (iceServerList != null) {
@@ -224,62 +255,66 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
                     remoteCandidateCache.clear()
                 }
             },
-            remoteSdp
+            remoteSdp,
         )
-        val answerSdpObserver = object : SdpObserverWrapper() {
-            override fun onCreateSuccess(sdp: SessionDescription) {
-                peerConnection?.setLocalDescription(
-                    object : SdpObserverWrapper() {
-                        override fun onSetFailure(error: String?) {
-                            if (doWhenSetFailure != null) {
+        val answerSdpObserver =
+            object : SdpObserverWrapper() {
+                override fun onCreateSuccess(sdp: SessionDescription) {
+                    peerConnection?.setLocalDescription(
+                        object : SdpObserverWrapper() {
+                            override fun onSetFailure(error: String?) {
+                                if (doWhenSetFailure != null) {
+                                    Timber.d("$TAG_CALL createAnswer setLocalSdp onSetSuccess")
+                                    doWhenSetFailure.invoke()
+                                } else {
+                                    reportError("createAnswer setLocalSdp onSetFailure error: $error")
+                                }
+                            }
+
+                            override fun onSetSuccess() {
                                 Timber.d("$TAG_CALL createAnswer setLocalSdp onSetSuccess")
-                                doWhenSetFailure.invoke()
-                            } else {
-                                reportError("createAnswer setLocalSdp onSetFailure error: $error")
+                                setLocalSuccess(sdp)
                             }
-                        }
-                        override fun onSetSuccess() {
-                            Timber.d("$TAG_CALL createAnswer setLocalSdp onSetSuccess")
-                            setLocalSuccess(sdp)
-                        }
-                        override fun onCreateSuccess(sdp: SessionDescription) {
-                            Timber.d("$TAG_CALL createAnswer setLocalSdp onCreateSuccess")
-                        }
-                        override fun onCreateFailure(error: String?) {
-                            if (doWhenSetFailure != null) {
-                                Timber.d("$TAG_CALL createAnswer setLocalSdp onCreateFailure error: $error")
-                                doWhenSetFailure.invoke()
-                            } else {
-                                reportError("createAnswer setLocalSdp onCreateFailure error: $error")
-                            }
-                        }
-                    },
-                    sdp
-                )
-            }
 
-            override fun onCreateFailure(error: String?) {
-                if (doWhenSetFailure != null) {
-                    Timber.d("$TAG_CALL createAnswer setLocalSdp onCreateFailure error: $error")
-                    doWhenSetFailure.invoke()
-                } else {
-                    reportError("createAnswer setLocalSdp onCreateFailure error: $error")
+                            override fun onCreateSuccess(sdp: SessionDescription) {
+                                Timber.d("$TAG_CALL createAnswer setLocalSdp onCreateSuccess")
+                            }
+
+                            override fun onCreateFailure(error: String?) {
+                                if (doWhenSetFailure != null) {
+                                    Timber.d("$TAG_CALL createAnswer setLocalSdp onCreateFailure error: $error")
+                                    doWhenSetFailure.invoke()
+                                } else {
+                                    reportError("createAnswer setLocalSdp onCreateFailure error: $error")
+                                }
+                            }
+                        },
+                        sdp,
+                    )
+                }
+
+                override fun onCreateFailure(error: String?) {
+                    if (doWhenSetFailure != null) {
+                        Timber.d("$TAG_CALL createAnswer setLocalSdp onCreateFailure error: $error")
+                        doWhenSetFailure.invoke()
+                    } else {
+                        reportError("createAnswer setLocalSdp onCreateFailure error: $error")
+                    }
+                }
+
+                override fun onSetFailure(error: String?) {
+                    if (doWhenSetFailure != null) {
+                        Timber.d("$TAG_CALL createAnswer setLocalSdp onSetFailure error: $error")
+                        doWhenSetFailure.invoke()
+                    } else {
+                        reportError("createAnswer setLocalSdp onSetFailure error: $error")
+                    }
+                }
+
+                override fun onSetSuccess() {
+                    Timber.d("$TAG_CALL createAnswer setLocalSdp onSetSuccess")
                 }
             }
-
-            override fun onSetFailure(error: String?) {
-                if (doWhenSetFailure != null) {
-                    Timber.d("$TAG_CALL createAnswer setLocalSdp onSetFailure error: $error")
-                    doWhenSetFailure.invoke()
-                } else {
-                    reportError("createAnswer setLocalSdp onSetFailure error: $error")
-                }
-            }
-
-            override fun onSetSuccess() {
-                Timber.d("$TAG_CALL createAnswer setLocalSdp onSetSuccess")
-            }
-        }
         peerConnection?.createAnswer(answerSdpObserver, sdpConstraint)
     }
 
@@ -294,7 +329,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
 
     fun setAnswerSdp(
         sdp: SessionDescription,
-        doWhenSetFailure: (() -> Unit)? = null
+        doWhenSetFailure: (() -> Unit)? = null,
     ) {
         peerConnection?.setRemoteDescription(
             object : SdpObserverWrapper() {
@@ -328,7 +363,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
                     remoteCandidateCache.clear()
                 }
             },
-            sdp
+            sdp,
         )
     }
 
@@ -359,11 +394,12 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         isError = false
         rtpSender = null
         rtpReceivers.clear()
-        events.onPeerConnectionClosed()
+        events?.onPeerConnectionClosed()
     }
 
     fun release() {
         dispose()
+        events = null
         factory?.dispose()
         factory = null
     }
@@ -380,8 +416,14 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
             val remoteSdp = "{ remoteDescription: { description: ${pc.remoteDescription?.description}, type: ${pc.remoteDescription?.type} }"
             msgBuilder.append(localSdp).appendLine().append(remoteSdp).appendLine()
 
+            val latch = CountDownLatch(1)
             pc.getStats { report ->
                 msgBuilder.append("{ stats: $report }").appendLine()
+                latch.countDown()
+            }
+            try {
+                latch.await(5, TimeUnit.SECONDS)
+            } catch (ignored: Exception) {
             }
         }
         return msgBuilder.toString()
@@ -390,7 +432,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
     private fun reportError(error: String) {
         val msg = getPCMessage(error)
         if (!isError) {
-            events.onPeerConnectionError(msg)
+            events?.onPeerConnectionError(msg)
             isError = true
         }
     }
@@ -400,20 +442,21 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
             reportError("PeerConnectionFactory is not created")
             return null
         }
-        val rtcConfig = PeerConnection.RTCConfiguration(iceServers).apply {
-            tcpCandidatePolicy = PeerConnection.TcpCandidatePolicy.ENABLED
-            iceTransportsType = PeerConnection.IceTransportsType.RELAY
-            bundlePolicy = PeerConnection.BundlePolicy.MAXBUNDLE
-            rtcpMuxPolicy = PeerConnection.RtcpMuxPolicy.REQUIRE
-            sdpSemantics = PeerConnection.SdpSemantics.UNIFIED_PLAN
-            continualGatheringPolicy = PeerConnection.ContinualGatheringPolicy.GATHER_ONCE
-        }
+        val rtcConfig =
+            PeerConnection.RTCConfiguration(iceServers).apply {
+                tcpCandidatePolicy = PeerConnection.TcpCandidatePolicy.ENABLED
+                iceTransportsType = PeerConnection.IceTransportsType.RELAY
+                bundlePolicy = PeerConnection.BundlePolicy.MAXBUNDLE
+                rtcpMuxPolicy = PeerConnection.RtcpMuxPolicy.REQUIRE
+                sdpSemantics = PeerConnection.SdpSemantics.UNIFIED_PLAN
+                continualGatheringPolicy = PeerConnection.ContinualGatheringPolicy.GATHER_ONCE
+            }
         val peerConnection = factory!!.createPeerConnection(rtcConfig, pcObserver)
         if (peerConnection == null) {
             reportError("PeerConnection is not created")
             return null
         }
-        if (BuildConfig.DEBUG) {
+        if (callDebugState.logEnable()) {
             Logging.enableLogToDebugOutput(Logging.Severity.LS_INFO)
         }
         peerConnection.setAudioPlayout(false)
@@ -430,7 +473,11 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         }
     }
 
-    fun setReceiverFrameKey(userId: String, sessionId: String, frameKey: ByteArray? = null) {
+    fun setReceiverFrameKey(
+        userId: String,
+        sessionId: String,
+        frameKey: ByteArray? = null,
+    ) {
         val key = "$userId~$sessionId"
         if (rtpReceivers.containsKey(key) && frameKey != null) {
             val receiver = rtpReceivers[key] ?: return
@@ -444,10 +491,14 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         }
     }
 
-    private fun createPeerConnectionFactoryInternal(options: PeerConnectionFactory.Options) {
-        factory = PeerConnectionFactory.builder()
-            .setOptions(options)
-            .createPeerConnectionFactory()
+    private fun createPeerConnectionFactoryInternal(context: Context, options: PeerConnectionFactory.Options) {
+        val adm = createJavaAudioDevice(context)
+        factory =
+            PeerConnectionFactory.builder()
+                .setOptions(options)
+                .setAudioDeviceModule(adm)
+                .createPeerConnectionFactory()
+        adm.release()
     }
 
     private fun createAudioTrack(): AudioTrack {
@@ -457,25 +508,26 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         return audioTrack!!
     }
 
-    private fun createMediaConstraint() = MediaConstraints().apply {
-        mandatory.add(offerReceiveAudioConstraint)
-        mandatory.add(offerReceiveVideoConstraint)
-    }
-
-    private val iceObserver = object : AddIceObserver {
-        override fun onAddSuccess() {
-            Timber.d("$TAG_CALL iceObserver onAddSuccess")
+    private fun createMediaConstraint() =
+        MediaConstraints().apply {
+            mandatory.add(offerReceiveAudioConstraint)
+            mandatory.add(offerReceiveVideoConstraint)
         }
 
-        override fun onAddFailure(error: String?) {
-            Timber.d("$TAG_CALL iceObserver onAddFailure error: $error")
+    private val iceObserver =
+        object : AddIceObserver {
+            override fun onAddSuccess() {
+                Timber.d("$TAG_CALL iceObserver onAddSuccess")
+            }
+
+            override fun onAddFailure(error: String?) {
+                Timber.d("$TAG_CALL iceObserver onAddFailure error: $error")
+            }
         }
-    }
 
     private inner class PCObserver : PeerConnection.Observer {
-
         override fun onIceCandidate(candidate: IceCandidate) {
-            events.onIceCandidate(candidate)
+            events?.onIceCandidate(candidate)
         }
 
         override fun onDataChannel(dataChannel: DataChannel?) {
@@ -487,20 +539,20 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         override fun onIceConnectionChange(newState: PeerConnection.IceConnectionState) {
             Timber.d("$TAG_CALL onIceConnectionChange: $newState")
             if (newState == PeerConnection.IceConnectionState.DISCONNECTED) {
-                events.onIceDisconnected()
+                events?.onIceDisconnected()
             } else if (newState == PeerConnection.IceConnectionState.FAILED) {
-                events.onIceFailed()
+                events?.onIceFailed()
             }
         }
 
         override fun onConnectionChange(newState: PeerConnection.PeerConnectionState?) {
             Timber.d("$TAG_CALL onConnectionChange: $newState")
             if (newState == PeerConnection.PeerConnectionState.CONNECTED) {
-                events.onConnected()
+                events?.onConnected()
             } else if (newState == PeerConnection.PeerConnectionState.DISCONNECTED) {
-                events.onDisconnected()
+                events?.onDisconnected()
             } else if (newState == PeerConnection.PeerConnectionState.CLOSED) {
-                events.onClosed()
+                events?.onClosed()
             }
         }
 
@@ -514,7 +566,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
 
         override fun onIceCandidatesRemoved(candidates: Array<IceCandidate>) {
             Timber.d("$TAG_CALL onIceCandidatesRemoved")
-            events.onIceCandidatesRemoved(candidates)
+            events?.onIceCandidatesRemoved(candidates)
         }
 
         override fun onAddStream(stream: MediaStream) {
@@ -531,7 +583,10 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
             Timber.d("$TAG_CALL onTrack=%s", transceiver.toString())
         }
 
-        override fun onAddTrack(receiver: RtpReceiver, mediaStreams: Array<out MediaStream>) {
+        override fun onAddTrack(
+            receiver: RtpReceiver,
+            mediaStreams: Array<out MediaStream>,
+        ) {
             var hasAllMediaStreamKey = true
             for (m in mediaStreams) {
                 Timber.d("$TAG_CALL mediaStream: $m")
@@ -542,7 +597,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
                 if (userSession[0] == Session.getAccountId()) {
                     continue
                 }
-                val frameKey = events.getSenderPublicKey(userSession[0], userSession[1])
+                val frameKey = events?.getSenderPublicKey(userSession[0], userSession[1])
                 Timber.d("$TAG_CALL getSenderPublicKey userId: ${userSession[0]}, sessionId: ${userSession[1]}, frameKey: $frameKey")
                 rtpReceivers[m.id] = receiver
                 if (frameKey != null) {
@@ -551,6 +606,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
                 } else {
                     receiverIdUserIdNoKeyMap[receiver.id()] = userSession[0]
                     hasAllMediaStreamKey = false
+                    events?.requestResendKey(userSession[0], userSession[1])
                 }
             }
             Timber.d("$TAG_CALL onAddTrack id: ${receiver.id()}, hasAllMediaStreamKey: $hasAllMediaStreamKey")
@@ -576,7 +632,6 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
      * Peer connection events.
      */
     interface PeerConnectionEvents {
-
         /**
          * Callback fired once local Ice candidate is generated.
          */
@@ -630,12 +685,75 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
          */
         fun onPeerConnectionError(errorMsg: String)
 
-        fun getSenderPublicKey(userId: String, sessionId: String): ByteArray?
+        fun getSenderPublicKey(
+            userId: String,
+            sessionId: String,
+        ): ByteArray?
+
+        fun requestResendKey(
+            userId: String,
+            sessionId: String,
+        )
     }
 
     companion object {
         const val TAG = "PeerConnectionClient"
 
         private const val AUDIO_TRACK_ID = "ARDAMSa0"
+    }
+
+    private fun createJavaAudioDevice(context: Context): AudioDeviceModule {
+        // Set audio record error callbacks.
+        val audioRecordErrorCallback: AudioRecordErrorCallback = object : AudioRecordErrorCallback {
+            override fun onWebRtcAudioRecordInitError(errorMessage: String) {
+                Log.e(TAG, "onWebRtcAudioRecordInitError: $errorMessage")
+                reportError(errorMessage)
+            }
+
+            override fun onWebRtcAudioRecordStartError(
+                errorCode: JavaAudioDeviceModule.AudioRecordStartErrorCode, errorMessage: String,
+            ) {
+                Log.e(TAG, "onWebRtcAudioRecordStartError: $errorCode. $errorMessage")
+                reportError(errorMessage)
+            }
+
+            override fun onWebRtcAudioRecordError(errorMessage: String) {
+                Log.e(TAG, "onWebRtcAudioRecordError: $errorMessage")
+                reportError(errorMessage)
+            }
+        }
+        val audioTrackErrorCallback: AudioTrackErrorCallback = object : AudioTrackErrorCallback {
+            override fun onWebRtcAudioTrackInitError(errorMessage: String) {
+                Log.e(TAG, "onWebRtcAudioTrackInitError: $errorMessage")
+                reportError(errorMessage)
+            }
+
+            override fun onWebRtcAudioTrackStartError(
+                errorCode: JavaAudioDeviceModule.AudioTrackStartErrorCode, errorMessage: String,
+            ) {
+                Log.e(TAG, "onWebRtcAudioTrackStartError: $errorCode. $errorMessage")
+                reportError(errorMessage)
+            }
+
+            override fun onWebRtcAudioTrackError(errorMessage: String) {
+                Log.e(TAG, "onWebRtcAudioTrackError: $errorMessage")
+                reportError(errorMessage)
+            }
+        }
+        // Set audio track state callbacks.
+        val audioTrackStateCallback: AudioTrackStateCallback = object : AudioTrackStateCallback {
+            override fun onWebRtcAudioTrackStart() {
+                Log.i(TAG, "Audio playout starts")
+            }
+
+            override fun onWebRtcAudioTrackStop() {
+                Log.i(TAG, "Audio playout stops")
+            }
+        }
+        return JavaAudioDeviceModule.builder(context)
+            .setAudioRecordErrorCallback(audioRecordErrorCallback)
+            .setAudioTrackErrorCallback(audioTrackErrorCallback)
+            .setAudioTrackStateCallback(audioTrackStateCallback)
+            .createAudioDeviceModule()
     }
 }

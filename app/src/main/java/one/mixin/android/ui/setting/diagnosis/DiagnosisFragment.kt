@@ -22,6 +22,7 @@ import one.mixin.android.util.viewBinding
 class DiagnosisFragment : BaseFragment() {
     companion object {
         const val TAG = "DiagnosisFragment"
+
         fun newInstance(): DiagnosisFragment {
             return DiagnosisFragment()
         }
@@ -30,20 +31,23 @@ class DiagnosisFragment : BaseFragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View =
         layoutInflater.inflate(R.layout.fragment_diagnosis, container, false)
 
     private val binding by viewBinding(FragmentDiagnosisBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
-        binding.titleView.titleTv.setText(R.string.setting_diagnosis)
-        binding.titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
+        binding.titleView.titleTv.setTextOnly(R.string.Net_Diagnosis)
+        binding.titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
         binding.titleView.rightIb.setOnClickListener {
             context?.getClipboardManager()
                 ?.setPrimaryClip(ClipData.newPlainText(null, binding.resultTv.text))
-            toast(R.string.copy_success)
+            toast(R.string.copied_to_clipboard)
         }
         binding.titleView.rightAnimator.displayedChild = 2
 
@@ -52,7 +56,7 @@ class DiagnosisFragment : BaseFragment() {
                 lifecycleScope.launch inner@{
                     if (viewDestroyed()) return@inner
                     binding.resultTv.append(it)
-                    if (it == getString(R.string.diagnosis_complete)) {
+                    if (it == getString(R.string.Diagnosis_Complete)) {
                         binding.titleView.rightAnimator.displayedChild = 0
                     }
                 }

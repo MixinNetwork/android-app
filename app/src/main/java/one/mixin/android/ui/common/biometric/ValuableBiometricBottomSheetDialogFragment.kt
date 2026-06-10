@@ -11,24 +11,25 @@ abstract class ValuableBiometricBottomSheetDialogFragment<T : AssetBiometricItem
     }
 
     private val assetBalance by lazy {
-        contentView.findViewById<AssetBalanceLayout>(R.id.asset_balance)
+        contentView.findViewById<AssetBalanceLayout?>(R.id.asset_balance)
     }
 
     override fun onResume() {
         super.onResume()
-        assetBalance.parent.requestLayout()
+        assetBalance?.parent?.requestLayout()
     }
 
     protected fun setBiometricItem() {
         val t = getBiometricItem()
-        assetBalance.setInfo(t)
+        assetBalance?.setInfo(t)
         checkState(t)
     }
 
     protected fun getDescription(): String {
         val t = getBiometricItem()
-        val pre = "${t.amount} ${t.asset.symbol}"
-        val post = "≈ ${Fiats.getSymbol()}${(BigDecimal(t.amount) * t.asset.priceFiat()).numberFormat2()}"
+        val asset = t.asset ?: return ""
+        val pre = "${t.amount} ${asset.symbol}"
+        val post = "≈ ${Fiats.getSymbol()}${(BigDecimal(t.amount) * asset.priceFiat()).numberFormat2()}"
         return "$pre ($post)"
     }
 

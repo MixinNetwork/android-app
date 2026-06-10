@@ -8,6 +8,7 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import androidx.annotation.DrawableRes
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.collection.ArrayMap
 
 class PorterShapeImageView : PorterImageView {
@@ -31,21 +32,29 @@ class PorterShapeImageView : PorterImageView {
         maskMatrix = Matrix()
     }
 
-    fun setShape(@DrawableRes shape: Int) {
-        val drawable = map[shape].let {
-            if (it == null) {
-                val d = context.getDrawable(shape)
-                map[shape] = d
-                return@let d
-            } else {
-                it
+    fun setShape(
+        @DrawableRes shape: Int,
+    ) {
+        val drawable =
+            map[shape].let {
+                if (it == null) {
+                    val d = AppCompatResources.getDrawable(context, shape)
+                    map[shape] = d
+                    return@let d
+                } else {
+                    it
+                }
             }
-        }
         this.shape = drawable
         super.createMaskCanvas()
     }
 
-    override fun paintMaskCanvas(maskCanvas: Canvas, maskPaint: Paint, width: Int, height: Int) {
+    override fun paintMaskCanvas(
+        maskCanvas: Canvas,
+        maskPaint: Paint,
+        width: Int,
+        height: Int,
+    ) {
         if (shape != null) {
             if (shape is BitmapDrawable) {
                 configureBitmapBounds(width, height)
@@ -64,7 +73,10 @@ class PorterShapeImageView : PorterImageView {
         }
     }
 
-    private fun configureBitmapBounds(viewWidth: Int, viewHeight: Int) {
+    private fun configureBitmapBounds(
+        viewWidth: Int,
+        viewHeight: Int,
+    ) {
         drawMatrix = null
         val drawableWidth = shape!!.intrinsicWidth
         val drawableHeight = shape!!.intrinsicHeight
@@ -74,7 +86,7 @@ class PorterShapeImageView : PorterImageView {
             shape!!.setBounds(0, 0, drawableWidth, drawableHeight)
             val widthRatio = viewWidth.toFloat() / drawableWidth.toFloat()
             val heightRatio = viewHeight.toFloat() / drawableHeight.toFloat()
-            val scale = Math.min(widthRatio, heightRatio)
+            val scale = widthRatio.coerceAtMost(heightRatio)
             val dx = ((viewWidth - drawableWidth * scale) * 0.5f + 0.5f).toInt().toFloat()
             val dy = ((viewHeight - drawableHeight * scale) * 0.5f + 0.5f).toInt().toFloat()
 

@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:clipChildren="false"
     android:clipToPadding="false"
-    android:foreground="?selectableItemBackground"
+    android:foreground="@drawable/mixin_ripple"
     android:orientation="vertical">
 
     <one.mixin.android.widget.AvatarView

@@ -20,7 +20,7 @@ import one.mixin.android.R
 
 inline fun SpannableStringBuilder.font(
     typeface: Typeface? = null,
-    builderAction: SpannableStringBuilder.() -> Unit
+    builderAction: SpannableStringBuilder.() -> Unit,
 ) = inSpans(CustomTypefaceSpan.create(typeface ?: Typeface.DEFAULT), builderAction = builderAction)
 
 internal fun buildAmountSymbol(
@@ -30,9 +30,9 @@ internal fun buildAmountSymbol(
     @ColorInt amountColor: Int,
     @ColorInt symbolColor: Int,
 ) = buildSpannedString {
-    scale(3f) {
+    scale(2.43f) { // 34/14
         font(
-            ResourcesCompat.getFont(context, R.font.mixin_font)
+            ResourcesCompat.getFont(context, R.font.mixin_font),
         ) {
             color(amountColor) {
                 append(amount)
@@ -45,7 +45,10 @@ internal fun buildAmountSymbol(
     }
 }
 
-internal fun buildBulletLines(context: Context, vararg lines: SpannableStringBuilder): CharSequence {
+internal fun buildBulletLines(
+    context: Context,
+    vararg lines: SpannableStringBuilder,
+): CharSequence {
     val builder = SpannableStringBuilder()
     lines.filter { l -> l.isNotBlank() }.let { nonBlankLines ->
         nonBlankLines.forEachIndexed { i, l ->
@@ -55,10 +58,10 @@ internal fun buildBulletLines(context: Context, vararg lines: SpannableStringBui
                     AbsoluteSizeSpan(8, true),
                     l.length - 2,
                     l.length,
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
                 )
             }
-            val bulletSpan = BulletSpan(8.dp, context.colorFromAttribute(R.attr.text_minor))
+            val bulletSpan = BulletSpan(8.dp, context.colorFromAttribute(R.attr.text_assist))
             l.setSpan(bulletSpan, 0, l.length, Spanned.SPAN_INCLUSIVE_EXCLUSIVE)
             builder.append(l)
         }
@@ -70,7 +73,7 @@ internal fun String.highLight(
     context: Context,
     target: String,
     ignoreCase: Boolean = true,
-    @ColorInt color: Int = context.colorFromAttribute(R.attr.text_primary)
+    @ColorInt color: Int = context.colorFromAttribute(R.attr.text_primary),
 ): SpannableStringBuilder {
     val spannable = SpannableStringBuilder(this)
     var index = indexOf(target, ignoreCase = ignoreCase)
@@ -79,7 +82,7 @@ internal fun String.highLight(
             TextAppearanceSpan(null, 0, 0, android.content.res.ColorStateList.valueOf(color), null),
             index,
             index + target.length,
-            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE,
         )
         spannable.setSpan(StyleSpan(Typeface.BOLD), index, index + target.length, Spannable.SPAN_INCLUSIVE_EXCLUSIVE)
         index = indexOf(target, index + target.length, ignoreCase = ignoreCase)

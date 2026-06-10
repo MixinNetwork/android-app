@@ -1,0 +1,159 @@
+package one.mixin.android.api.response.web3
+
+import android.os.Parcelable
+import com.google.gson.annotations.SerializedName
+import kotlinx.parcelize.IgnoredOnParcel
+import kotlinx.parcelize.Parcelize
+import one.mixin.android.Constants
+import one.mixin.android.extension.equalsIgnoreCase
+import java.math.BigDecimal
+
+@Suppress("EqualsOrHashCode")
+@Parcelize
+data class SwapToken(
+    @SerializedName("wallet_id") var walletId: String?,
+    @SerializedName("address") val address: String,
+    @SerializedName("assetId") val assetId: String,
+    @SerializedName("decimals") val decimals: Int,
+    @SerializedName("name") val name: String,
+    @SerializedName("symbol") val symbol: String,
+    @SerializedName("icon") val icon: String,
+    @SerializedName("chain") val chain: SwapChain,
+    val category: String? = null,
+    var price: String? = null,
+    var balance: String? = null,
+    var collectionHash: String? = null,
+    var changeUsd: String? = null,
+    var isWeb3: Boolean = false,
+    @SerializedName("level") val level: Int? = null
+) : Parcelable {
+    fun toLongAmount(amount: String): Long {
+        val a =
+            try {
+                BigDecimal(amount)
+            } catch (e: Exception) {
+                return 0
+            }
+        return a.multiply(BigDecimal.TEN.pow(decimals)).toLong()
+    }
+
+    fun toStringAmount(amount: String): String {
+        return if (address.isNotEmpty()) {
+            BigDecimal(amount).stripTrailingZeros().toPlainString()
+        } else {
+            amount
+        }
+    }
+
+    fun toStringAmount(amount: Long): String {
+        return if (address.isNotEmpty()) {
+            amount.toBigDecimal().stripTrailingZeros().toPlainString()
+        } else {
+            amount.toBigDecimal().toPlainString()
+        }
+    }
+
+    fun getUnique(): String {
+        return assetId
+    }
+
+    private val assetKey: String
+        get() = address
+
+    override fun equals(other: Any?): Boolean {
+        if (other !is SwapToken) return false
+
+        return if (assetId.isNotEmpty()) {
+            assetId == other.assetId && walletId == other.walletId
+        } else if (address.isNotEmpty()) {
+            assetKey == other.assetKey && walletId == other.walletId
+        } else {
+            name == other.name && chain.chainId == other.chain.chainId && walletId == other.walletId
+        }
+    }
+
+    override fun hashCode(): Int {
+        return if (assetId.isNotEmpty()) {
+            (assetId + walletId).hashCode()
+        } else if (address.isNotEmpty()) {
+            (assetKey + walletId).hashCode()
+        } else {
+            (name + chain.chainId + walletId).hashCode()
+        }
+    }
+
+    @IgnoredOnParcel
+    val priceValue: BigDecimal
+        get() = price?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+
+    @IgnoredOnParcel
+    val balanceValue: BigDecimal
+        get() = balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+
+    fun isSpam(): Boolean {
+        level ?: return false
+        return level <= Constants.AssetLevel.SPAM
+    }
+}
+
+interface Swappable : Parcelable {
+    fun toSwapToken(): SwapToken
+    fun getUnique(): String
+}
+
+fun List<SwapToken>.sortByKeywordAndBalance(query: String? = null): List<SwapToken> {
+    return this.sortedWith(
+        Comparator { o1, o2 ->
+            if (o1 == null && o2 == null) return@Comparator 0
+            if (o1 == null) return@Comparator 1
+            if (o2 == null) return@Comparator -1
+
+            val hasIcon1 = o1.icon != Constants.DEFAULT_ICON_URL
+            val hasIcon2 = o2.icon != Constants.DEFAULT_ICON_URL
+            if (hasIcon1 && !hasIcon2) {
+                return@Comparator -1
+            } else if (!hasIcon1 && hasIcon2) {
+                return@Comparator 1
+            }
+
+            if (query.isNullOrBlank().not()) {
+                val equal2Keyword1 = o1.symbol.equalsIgnoreCase(query)
+                val equal2Keyword2 = o2.symbol.equalsIgnoreCase(query)
+                if (equal2Keyword1 && !equal2Keyword2) {
+                    return@Comparator -1
+                } else if (!equal2Keyword1 && equal2Keyword2) {
+                    return@Comparator 1
+                }
+            }
+
+            val priceFiat1 = o1.priceValue
+            val priceFiat2 = o2.priceValue
+
+            val balance1 = o1.balanceValue
+            val balance2 = o2.balanceValue
+
+            val capitalization1 = priceFiat1 * balance1
+            val capitalization2 = priceFiat2 * balance2
+            if (capitalization1 != capitalization2) {
+                if (capitalization2 > capitalization1) {
+                    return@Comparator 1
+                } else if (capitalization2 < capitalization1) {
+                    return@Comparator -1
+                }
+            }
+
+            val balanceComparison = balance2.compareTo(balance1)
+            if (balanceComparison != 0) {
+                return@Comparator balanceComparison
+            }
+
+            if (priceFiat1 == BigDecimal.ZERO && priceFiat2 != BigDecimal.ZERO) {
+                return@Comparator 1
+            } else if (priceFiat1 != BigDecimal.ZERO && priceFiat2 == BigDecimal.ZERO) {
+                return@Comparator -1
+            }
+
+            return@Comparator o1.name.compareTo(o2.name)
+        }
+    )
+}

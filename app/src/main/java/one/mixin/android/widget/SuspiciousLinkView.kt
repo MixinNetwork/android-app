@@ -8,7 +8,6 @@ import android.widget.RelativeLayout
 import one.mixin.android.R
 
 class SuspiciousLinkView(context: Context, attrs: AttributeSet?) : RelativeLayout(context, attrs) {
-
     private val backView: View
     private val continueView: View
 
@@ -29,6 +28,7 @@ class SuspiciousLinkView(context: Context, attrs: AttributeSet?) : RelativeLayou
 
     interface SuspiciousListener {
         fun onBackClick()
+
         fun onContinueClick()
     }
 }

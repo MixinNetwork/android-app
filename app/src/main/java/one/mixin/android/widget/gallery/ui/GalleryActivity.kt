@@ -14,7 +14,10 @@ import android.os.Looper
 import android.view.MenuItem
 import android.view.View
 import android.widget.AdapterView
+import androidx.activity.enableEdgeToEdge
+import androidx.activity.addCallback
 import androidx.appcompat.app.AppCompatActivity
+import androidx.media3.common.util.UnstableApi
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityGalleryBinding
 import one.mixin.android.extension.colorFromAttribute
@@ -32,6 +35,7 @@ import one.mixin.android.widget.gallery.internal.ui.adapter.AlbumsAdapter
 import one.mixin.android.widget.gallery.internal.ui.widget.AlbumsSpinner
 import one.mixin.android.widget.gallery.internal.utils.MediaStoreCompat
 
+@UnstableApi
 class GalleryActivity :
     AppCompatActivity(),
     AlbumCollection.AlbumCallbacks,
@@ -58,6 +62,7 @@ class GalleryActivity :
     }
 
     private lateinit var binding: ActivityGalleryBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         if (isNightMode()) {
             setTheme(getNightThemeId())
@@ -66,11 +71,10 @@ class GalleryActivity :
             setTheme(getDefaultThemeId())
             SystemUIManager.lightUI(window, true)
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            window.navigationBarColor = colorFromAttribute(R.attr.bg_white)
-        }
         mSpec = SelectionSpec.getInstance()
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        SystemUIManager.setSafePadding(window, colorFromAttribute(R.attr.bg_white))
         if (!mSpec.hasInited) {
             setResult(Activity.RESULT_CANCELED)
             finish()
@@ -85,8 +89,9 @@ class GalleryActivity :
 
         if (mSpec.capture) {
             mMediaStoreCompat = MediaStoreCompat(this)
-            if (mSpec.captureStrategy == null)
+            if (mSpec.captureStrategy == null) {
                 throw RuntimeException("Don't forget to set CaptureStrategy.")
+            }
             mMediaStoreCompat.setCaptureStrategy(mSpec.captureStrategy)
         }
 
@@ -113,6 +118,9 @@ class GalleryActivity :
         mAlbumCollection.onCreate(this, this)
         mAlbumCollection.onRestoreInstanceState(savedInstanceState)
         mAlbumCollection.loadAlbums()
+        onBackPressedDispatcher.addCallback(enabled = false) {
+            setResult(Activity.RESULT_CANCELED)
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -130,18 +138,18 @@ class GalleryActivity :
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == android.R.id.home) {
-            onBackPressed()
+            onBackPressedDispatcher.onBackPressed()
             return true
         }
         return super.onOptionsItemSelected(item)
     }
 
-    override fun onBackPressed() {
-        setResult(Activity.RESULT_CANCELED)
-        super.onBackPressed()
-    }
-
-    override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
+    override fun onItemSelected(
+        parent: AdapterView<*>,
+        view: View,
+        position: Int,
+        id: Long,
+    ) {
         mAlbumCollection.setStateCurrentSelection(position)
         mAlbumsAdapter.cursor.moveToPosition(position)
         val album = Album.valueOf(mAlbumsAdapter.cursor)
@@ -163,7 +171,7 @@ class GalleryActivity :
             cursor.moveToPosition(mAlbumCollection.currentSelection)
             mAlbumsSpinner.setSelection(
                 this@GalleryActivity,
-                mAlbumCollection.currentSelection
+                mAlbumCollection.currentSelection,
             )
             val album = Album.valueOf(cursor)
             if (album.isAll && SelectionSpec.getInstance().capture) {
@@ -196,14 +204,17 @@ class GalleryActivity :
         if (mSpec.onSelectedListener != null) {
             mSpec.onSelectedListener.onSelected(
                 mSelectedCollection.asListOfUri(),
-                mSelectedCollection.asListOfString()
+                mSelectedCollection.asListOfString(),
             )
         }
     }
 
     private var previewDialogFragment: PreviewDialogFragment? = null
 
-    private fun showPreview(uri: Uri, action: (Uri) -> Unit) {
+    private fun showPreview(
+        uri: Uri,
+        action: (Uri, Float, Float) -> Unit,
+    ) {
         if (previewDialogFragment == null) {
             previewDialogFragment = PreviewDialogFragment.newInstance()
         }
@@ -212,14 +223,21 @@ class GalleryActivity :
 
     private var previewVideoDialogFragment: PreviewDialogFragment? = null
 
-    private fun showVideoPreview(uri: Uri, action: (Uri) -> Unit) {
+    private fun showVideoPreview(
+        uri: Uri,
+        action: (Uri, Float, Float) -> Unit,
+    ) {
         if (previewVideoDialogFragment == null) {
             previewVideoDialogFragment = PreviewDialogFragment.newInstance(true)
         }
         previewVideoDialogFragment?.show(supportFragmentManager, uri, okText = null, action)
     }
 
-    override fun onMediaClick(album: Album, item: Item, adapterPosition: Int) {
+    override fun onMediaClick(
+        album: Album,
+        item: Item,
+        adapterPosition: Int,
+    ) {
         if (!mSpec.preview) {
             val result = Intent()
             result.data = item.uri
@@ -229,17 +247,17 @@ class GalleryActivity :
             setResult(Activity.RESULT_OK, result)
             finish()
         } else if (item.isVideo) {
-            showVideoPreview(item.uri) {
+            showVideoPreview(item.uri) { uri, _, _ ->
                 val result = Intent()
-                result.data = item.uri
+                result.data = uri
                 result.putExtra(IS_VIDEO, true)
                 setResult(Activity.RESULT_OK, result)
                 finish()
             }
         } else {
-            showPreview(item.uri) {
+            showPreview(item.uri) { uri, _, _ ->
                 val result = Intent()
-                result.data = item.uri
+                result.data = uri
                 setResult(Activity.RESULT_OK, result)
                 finish()
             }

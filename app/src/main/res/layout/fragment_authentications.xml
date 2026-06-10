@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/bg_window"
+    android:background="?attr/bg_white"
     android:orientation="vertical">
 
     <one.mixin.android.widget.TitleView
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/setting_authentications" />
+        app:titleText="@string/Authorizations" />
 
     <EditText
         android:id="@+id/search_et"
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:background="?attr/bg_white"
-        android:drawableStart="@drawable/ic_search"
         android:drawablePadding="8dp"
         android:hint="@string/setting_auth_search_hint"
         android:maxLines="1"
@@ -27,7 +27,9 @@
         android:paddingEnd="@dimen/activity_horizontal_margin"
         android:textColor="?attr/text_primary"
         android:textColorHint="?attr/text_assist"
-        android:textSize="14sp"/>
+        android:textSize="14sp"
+        app:drawableStartCompat="@drawable/ic_search"
+        tools:ignore="Autofill" />
 
     <ViewAnimator
         android:id="@+id/auth_va"
@@ -73,8 +75,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
-                android:text="@string/setting_no_auth_app"
-                android:textColor="?attr/text_minor"
+                android:text="@string/NO_AUTHORIZATIONS"
+                android:textColor="?attr/text_assist"
                 android:textSize="16sp" />
         </RelativeLayout>
     </ViewAnimator>

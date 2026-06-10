@@ -8,7 +8,10 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-fun calculationByDistance(StartP: LatLng, EndP: LatLng): Double {
+fun calculationByDistance(
+    StartP: LatLng,
+    EndP: LatLng,
+): Double {
     val radius = 6371 // radius of earth in Km
     val lat1 = StartP.latitude
     val lat2 = EndP.latitude
@@ -22,8 +25,8 @@ fun calculationByDistance(StartP: LatLng, EndP: LatLng): Double {
                 cos(toRadians(lat1)) *
                     cos(toRadians(lat2)) * sin(dLon / 2) *
                     sin(dLon / 2)
-                )
-        )
+            )
+    )
     val c = 2 * asin(sqrt(a))
     return radius * c
 }

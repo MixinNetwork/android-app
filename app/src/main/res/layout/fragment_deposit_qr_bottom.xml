@@ -51,7 +51,7 @@
             android:layout_marginStart="32dp"
             android:layout_marginEnd="32dp"
             android:layout_marginBottom="@dimen/margin16"
-            android:textColor="?attr/text_minor"
+            android:textColor="?attr/text_assist"
             android:gravity="center"/>
     </LinearLayout>
 
@@ -65,8 +65,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:background="?attr/selectableItemBackground"
+            android:background="?android:attr/selectableItemBackground"
             android:padding="@dimen/margin16"
-            android:src="@drawable/ic_bottom_album"/>
+            android:src="@drawable/ic_bottom_album"
+            android:contentDescription="@string/Save" />
     </FrameLayout>
 </LinearLayout>

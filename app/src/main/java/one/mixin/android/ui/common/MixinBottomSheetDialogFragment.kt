@@ -7,18 +7,16 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
-import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.uber.autodispose.android.lifecycle.scope
 import one.mixin.android.R
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
-import java.lang.Exception
 
 abstract class MixinBottomSheetDialogFragment : DialogFragment() {
-
     protected lateinit var contentView: View
     protected val stopScope = scope(Lifecycle.Event.ON_STOP)
+    protected val destroyScope = scope(Lifecycle.Event.ON_DESTROY)
 
     protected val bottomViewModel by viewModels<BottomSheetViewModel>()
 
@@ -31,12 +29,11 @@ abstract class MixinBottomSheetDialogFragment : DialogFragment() {
 
     override fun onDetach() {
         super.onDetach()
+        // UrlInterpreterActivity doesn't have a UI and needs it's son fragment to handle it's finish.
         if (activity is UrlInterpreterActivity) {
             var realFragmentCount = 0
             parentFragmentManager.fragments.forEach { f ->
-                if (f !is SupportRequestManagerFragment) {
-                    realFragmentCount++
-                }
+                realFragmentCount++
             }
             if (realFragmentCount <= 0) {
                 activity?.finish()
@@ -72,7 +69,10 @@ abstract class MixinBottomSheetDialogFragment : DialogFragment() {
         }
     }
 
-    override fun show(manager: FragmentManager, tag: String?) {
+    override fun show(
+        manager: FragmentManager,
+        tag: String?,
+    ) {
         try {
             super.show(manager, tag)
         } catch (e: Exception) {
@@ -80,7 +80,10 @@ abstract class MixinBottomSheetDialogFragment : DialogFragment() {
         }
     }
 
-    override fun showNow(manager: FragmentManager, tag: String?) {
+    override fun showNow(
+        manager: FragmentManager,
+        tag: String?,
+    ) {
         try {
             super.showNow(manager, tag)
         } catch (e: Exception) {

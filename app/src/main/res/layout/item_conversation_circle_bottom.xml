@@ -8,6 +8,6 @@
     android:paddingEnd="32dp"
     android:paddingBottom="96dp"
     android:text="@string/circle_bottom"
-    android:textColor="?attr/text_minor"
+    android:textColor="?attr/text_assist"
     android:textSize="12sp" />
 

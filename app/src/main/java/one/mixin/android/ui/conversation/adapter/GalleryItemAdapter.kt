@@ -1,5 +1,6 @@
 package one.mixin.android.ui.conversation.adapter
 
+import android.annotation.SuppressLint
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
@@ -12,18 +13,19 @@ import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatGalleryBinding
+import one.mixin.android.extension.clear
 import one.mixin.android.extension.dpToPx
-import one.mixin.android.extension.loadGif
-import one.mixin.android.extension.loadImageCenterCrop
+import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.round
 import one.mixin.android.util.image.HeicLoader
 import one.mixin.android.util.image.ImageListener
 import one.mixin.android.widget.gallery.internal.entity.Item
 
 class GalleryItemAdapter(
-    private val needCamera: Boolean
+    private val needCamera: Boolean,
 ) : RecyclerView.Adapter<GalleryItemAdapter.ItemViewHolder>() {
     var items: List<Item>? = null
+        @SuppressLint("NotifyDataSetChanged")
         set(value) {
             field = value
             notifyDataSetChanged()
@@ -34,7 +36,10 @@ class GalleryItemAdapter(
     var selectedPos: Int? = null
     var selectedUri: Uri? = null
 
-    override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: ItemViewHolder,
+        position: Int,
+    ) {
         val params = holder.itemView.layoutParams
         params.width = size
         params.height = size
@@ -53,6 +58,7 @@ class GalleryItemAdapter(
                 width = ctx.dpToPx(42f)
                 height = ctx.dpToPx(42f)
             }
+            imageView.clear()
             imageView.setImageResource(R.drawable.ic_gallery_camera)
             holder.binding.bg.setBackgroundResource(R.drawable.bg_gray_black_round_8dp)
             imageView.setOnClickListener { listener?.onCameraClick() }
@@ -69,7 +75,7 @@ class GalleryItemAdapter(
                 holder.binding.gifTv.isVisible = true
                 holder.binding.videoIv.isVisible = false
                 holder.binding.durationTv.isVisible = false
-                imageView.loadGif(item.uri.toString(), centerCrop = true, holder = R.drawable.ic_giphy_place_holder)
+                imageView.loadImage(item.uri, R.drawable.ic_giphy_place_holder)
             } else {
                 holder.binding.gifTv.isVisible = false
                 if (item.isVideo) {
@@ -88,10 +94,10 @@ class GalleryItemAdapter(
                             override fun onResult(result: Drawable) {
                                 imageView.setImageDrawable(result)
                             }
-                        }
+                        },
                     )
                 } else {
-                    imageView.loadImageCenterCrop(item.uri, R.drawable.image_holder)
+                    imageView.loadImage(item.uri, R.drawable.image_holder)
                 }
             }
             if (selectedUri == item.uri) {
@@ -124,13 +130,17 @@ class GalleryItemAdapter(
         }
     }
 
-    override fun getItemCount(): Int = if (needCamera) {
-        items?.size ?: +1
-    } else {
-        items?.size ?: 0
-    }
+    override fun getItemCount(): Int =
+        if (needCamera) {
+            items?.size ?: +1
+        } else {
+            items?.size ?: 0
+        }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): ItemViewHolder {
         return ItemViewHolder(ItemChatGalleryBinding.inflate(LayoutInflater.from(parent.context), parent, false))
     }
 

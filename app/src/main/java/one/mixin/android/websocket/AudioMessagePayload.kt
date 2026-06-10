@@ -11,4 +11,5 @@ data class AudioMessagePayload(
     val waveForm: ByteArray,
     @SerializedName("attachment_extra")
     val attachmentExtra: String? = null,
+    val shareable: Boolean? = null,
 )

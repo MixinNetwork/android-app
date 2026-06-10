@@ -26,7 +26,6 @@ import org.commonmark.node.Text
 import org.commonmark.parser.Parser
 
 class SimplePlugin : AbstractMarkwonPlugin() {
-
     override fun configureParser(builder: Parser.Builder) {
         builder.extensions(setOf(StrikethroughExtension.create()))
             .inlineParserFactory { inlineParserContext -> SimpleInlineParser(inlineParserContext) }
@@ -92,12 +91,15 @@ class SimplePlugin : AbstractMarkwonPlugin() {
             .setFactory(Strikethrough::class.java) { _, _ -> StrikethroughSpan() }
             .setFactory(Code::class.java) { configuration, _ ->
                 RoundedBackgroundSpan(
-                    configuration.theme()
+                    configuration.theme(),
                 )
             }
     }
 
-    override fun beforeSetText(textView: TextView, markdown: Spanned) {
+    override fun beforeSetText(
+        textView: TextView,
+        markdown: Spanned,
+    ) {
         OrderedListItemSpan.measure(textView, markdown)
 
         if (markdown is Spannable) {

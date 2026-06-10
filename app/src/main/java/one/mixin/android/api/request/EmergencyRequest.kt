@@ -11,7 +11,6 @@ data class EmergencyRequest(
     val pin: String? = null,
     val code: String? = null,
     val purpose: String,
-
     val platform: String = "Android",
     @SerializedName("platform_version")
     val platformVersion: String = Build.VERSION.RELEASE,
@@ -24,10 +23,10 @@ data class EmergencyRequest(
     @SerializedName("session_secret")
     val sessionSecret: String? = null,
     @SerializedName("registration_id")
-    val registrationId: Int? = null
+    val registrationId: Int? = null,
 )
 
 enum class EmergencyPurpose {
     SESSION,
-    CONTACT
+    CONTACT,
 }

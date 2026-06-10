@@ -16,7 +16,7 @@ import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentPinLogsBinding
 import one.mixin.android.databinding.ItemPinLogsBinding
-import one.mixin.android.extension.localTime
+import one.mixin.android.extension.formatToLocalTime
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
@@ -29,13 +29,95 @@ class PinLogsFragment : BaseFragment(R.layout.fragment_pin_logs) {
 
     companion object {
         const val TAG = "PinLogsFragment"
+
         fun newInstance() = PinLogsFragment()
+
+        fun getLogDescription(
+            context: Context,
+            code: String,
+        ): Pair<String, String> {
+            fun description(
+                titleRes: Int,
+                subtitleRes: Int,
+            ) = Pair(context.getString(titleRes), context.getString(subtitleRes))
+
+            when (code) {
+                "VERIFICATION" ->
+                    return description(R.string.pin_log_title_verify_pin, R.string.pin_log_subtitle_pin_incorrect)
+                "RAW_TRANSFER" ->
+                    return description(R.string.pin_log_title_transfer, R.string.pin_log_subtitle_pin_incorrect)
+                "USER_TRANSFER" ->
+                    return description(R.string.pin_log_title_transfer, R.string.pin_log_subtitle_pin_incorrect)
+                "WITHDRAWAL" ->
+                    return description(R.string.pin_log_title_withdrawal, R.string.pin_log_subtitle_pin_incorrect)
+                "ADD_ADDRESS" ->
+                    return description(R.string.pin_log_title_add_address, R.string.pin_log_subtitle_pin_incorrect)
+                "DELETE_ADDRESS" ->
+                    return description(R.string.pin_log_title_delete_address, R.string.pin_log_subtitle_pin_incorrect)
+                "ADD_EMERGENCY" ->
+                    return description(R.string.pin_log_title_add_recovery_contact, R.string.pin_log_subtitle_pin_incorrect)
+                "DELETE_EMERGENCY" ->
+                    return description(R.string.pin_log_title_delete_recovery_contact, R.string.pin_log_subtitle_pin_incorrect)
+                "READ_EMERGENCY" ->
+                    return description(R.string.pin_log_title_view_recovery_contact, R.string.pin_log_subtitle_pin_incorrect)
+                "UPDATE_PHONE" ->
+                    return description(R.string.pin_log_title_update_mobile_number, R.string.pin_log_subtitle_pin_incorrect)
+                "UPDATE_PIN" ->
+                    return description(R.string.pin_log_title_change_pin, R.string.pin_log_subtitle_pin_incorrect)
+                "MULTISIG_SIGN" ->
+                    return description(R.string.pin_log_title_sign_multisig_transaction, R.string.pin_log_subtitle_pin_incorrect)
+                "MULTISIG_UNLOCK" ->
+                    return description(R.string.pin_log_title_revoke_multisig_transaction, R.string.pin_log_subtitle_pin_incorrect)
+                "LOGIN_FROM_DESKTOP" ->
+                    return description(R.string.pin_log_title_sign_in_on_desktop, R.string.pin_log_subtitle_pin_incorrect)
+                "COLLECTIBLE_SIGN" ->
+                    return description(R.string.pin_log_title_inscribe_collectible, R.string.pin_log_subtitle_pin_incorrect)
+                "COLLECTIBLE_UNLOCK" ->
+                    return description(R.string.pin_log_title_release_collectible, R.string.pin_log_subtitle_pin_incorrect)
+                "DO_AUTHORIZATION" ->
+                    return description(R.string.pin_log_title_authorize_bot, R.string.pin_log_subtitle_pin_incorrect)
+                "APP_OWNERSHIP_TRANSFER" ->
+                    return description(R.string.pin_log_title_transfer_bot_ownership, R.string.pin_log_subtitle_pin_incorrect)
+                "DELETE_ACCOUNT" ->
+                    return description(R.string.pin_log_title_delete_account, R.string.pin_log_subtitle_pin_incorrect)
+                "ACTIVITY_PIN_CREATION" ->
+                    return description(R.string.pin_log_title_set_pin, R.string.pin_log_subtitle_pin_set)
+                "ACTIVITY_PIN_MODIFICATION" ->
+                    return description(R.string.pin_log_title_change_pin, R.string.pin_log_subtitle_pin_changed)
+                "ACTIVITY_EMERGENCY_CONTACT_MODIFICATION" ->
+                    return description(R.string.pin_log_title_change_recovery_contact, R.string.pin_log_subtitle_recovery_contact_changed)
+                "ACTIVITY_PHONE_MODIFICATION" ->
+                    return description(R.string.pin_log_title_change_mobile_number, R.string.pin_log_subtitle_mobile_number_changed)
+                "ACTIVITY_LOGIN_BY_PHONE" ->
+                    return description(R.string.pin_log_title_sign_in_on_mobile, R.string.pin_log_subtitle_signed_in_via_mobile_number)
+                "ACTIVITY_LOGIN_BY_EMERGENCY_CONTACT" ->
+                    return description(R.string.pin_log_title_sign_in_on_mobile, R.string.pin_log_subtitle_signed_in_via_recovery_contact)
+                "ACTIVITY_LOGIN_BY_MNEMONIC" ->
+                    return description(R.string.pin_log_title_sign_in_on_mobile, R.string.pin_log_subtitle_signed_in_via_mnemonic_phrase)
+                "ACTIVITY_LOGIN_FROM_DESKTOP" ->
+                    return description(R.string.pin_log_title_sign_in_on_desktop, R.string.pin_log_subtitle_signed_in_on_desktop)
+                "ACTIVITY_LOGOUT_PHONE" ->
+                    return description(R.string.pin_log_title_sign_out_on_mobile, R.string.pin_log_subtitle_signed_out_on_mobile)
+                "ACTIVITY_LOGOUT_DESKTOP" ->
+                    return description(R.string.pin_log_title_sign_out_on_desktop, R.string.pin_log_subtitle_signed_out_on_desktop)
+                "USER_EXPORT_PRIVATE" ->
+                    return description(R.string.pin_log_title_export_mnemonic_phrase, R.string.pin_log_subtitle_mnemonic_phrase_exported)
+                "UPGRADE_SAFE" ->
+                    return description(R.string.pin_log_title_upgrade_safe, R.string.pin_log_subtitle_account_upgraded)
+                else ->
+                    return Pair(code, code)
+            }
+        }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    @SuppressLint("NotifyDataSetChanged")
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
-            title.leftIb.setOnClickListener { activity?.onBackPressed() }
+            title.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             list.adapter = adapter
             list.setOnScrollChangeListener { _, _, _, _, _ ->
                 if (isAdded) {
@@ -66,7 +148,7 @@ class PinLogsFragment : BaseFragment(R.layout.fragment_pin_logs) {
                         isLoading = false
                         progress.isVisible = false
                         ErrorHandler.handleError(it)
-                    }
+                    },
                 )
             }
         }
@@ -74,6 +156,8 @@ class PinLogsFragment : BaseFragment(R.layout.fragment_pin_logs) {
 
     private var hasMore = false
     private var isLoading = false
+
+    @SuppressLint("NotifyDataSetChanged")
     private fun loadMore() {
         if (isLoading || !hasMore) {
             return
@@ -93,7 +177,7 @@ class PinLogsFragment : BaseFragment(R.layout.fragment_pin_logs) {
                     hasMore = false
                     isLoading = false
                     ErrorHandler.handleError(it)
-                }
+                },
             )
         }
     }
@@ -109,70 +193,36 @@ class PinLogsFragment : BaseFragment(R.layout.fragment_pin_logs) {
             itemBinding.apply {
                 logTitle.text = result.first
                 logDesc.text = result.second
-                logCreated.text = pin.createdAt.localTime()
+                logCreated.text = pin.createdAt.formatToLocalTime()
                 logAddress.text = pin.ipAddress
-            }
-        }
-
-        private fun getLogDescription(context: Context, code: String): Pair<String, String> {
-            when (code) {
-                "VERIFICATION" ->
-                    return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.log_pin_verification))
-                "RAW_TRANSFER" ->
-                    return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.log_pin_raw_transfer))
-                "USER_TRANSFER" ->
-                    return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.log_pin_user_transfer))
-                "WITHDRAWAL" ->
-                    return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.log_pin_withdrawal))
-                "ADD_ADDRESS" ->
-                    return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.log_pin_add_address))
-                "DELETE_ADDRESS" ->
-                    return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.log_pin_delete_address))
-                "ADD_EMERGENCY" ->
-                    return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.log_pin_add_emergency))
-                "DELETE_EMERGENCY" ->
-                    return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.log_pin_delete_emergency))
-                "READ_EMERGENCY" ->
-                    return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.log_pin_read_emergency))
-                "UPDATE_PHONE" ->
-                    return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.log_pin_update_phone))
-                "UPDATE_PIN" ->
-                    return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.log_pin_update_pin))
-                "MULTISIG_SIGN" ->
-                    return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.log_pin_multisig_sign))
-                "MULTISIG_UNLOCK" ->
-                    return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.log_pin_multisig_unlock))
-                "ACTIVITY_PIN_MODIFICATION" ->
-                    return Pair(context.getString(R.string.log_category_pin_change), context.getString(R.string.log_pin_modification))
-                "ACTIVITY_EMERGENCY_CONTACT_MODIFICATION" ->
-                    return Pair(context.getString(R.string.log_category_emergency), context.getString(R.string.log_emergency_modification))
-                "ACTIVITY_PHONE_MODIFICATION" ->
-                    return Pair(context.getString(R.string.log_category_phone_change), context.getString(R.string.log_phone_modification))
-                "ACTIVITY_LOGIN_BY_PHONE" ->
-                    return Pair(context.getString(R.string.log_category_login), context.getString(R.string.log_login_phone))
-                "ACTIVITY_LOGIN_BY_EMERGENCY_CONTACT" ->
-                    return Pair(context.getString(R.string.log_category_login), context.getString(R.string.log_login_emergency))
-                "ACTIVITY_LOGIN_FROM_DESKTOP" ->
-                    return Pair(context.getString(R.string.log_category_login), context.getString(R.string.log_login_desktop))
-                else ->
-                    return Pair(code, code)
+                ipLocation.isVisible = pin.ipLocation.isNotBlank()
+                ipLocation.text = pin.ipLocation
             }
         }
     }
 
     class PinAdapter : RecyclerView.Adapter<PinHolder>() {
         var data: MutableList<LogResponse> = mutableListOf()
+
         override fun getItemCount(): Int = data.size
 
         fun getItem(position: Int) = data.get(position)
-        override fun onBindViewHolder(holder: PinHolder, position: Int) {
+
+        override fun onBindViewHolder(
+            holder: PinHolder,
+            position: Int,
+        ) {
             getItem(position).let {
                 holder.bind(it)
             }
         }
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PinHolder = PinHolder(
-            ItemPinLogsBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        )
+        override fun onCreateViewHolder(
+            parent: ViewGroup,
+            viewType: Int,
+        ): PinHolder =
+            PinHolder(
+                ItemPinLogsBinding.inflate(LayoutInflater.from(parent.context), parent, false),
+            )
     }
 }

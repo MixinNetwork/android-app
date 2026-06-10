@@ -7,12 +7,13 @@ import android.content.Context.CONNECTIVITY_SERVICE
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.NetworkInfo
+import android.os.Build
 import android.telephony.TelephonyManager
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Download.MOBILE_DEFAULT
 import one.mixin.android.Constants.Download.ROAMING_DEFAULT
 import one.mixin.android.Constants.Download.WIFI_DEFAULT
-import one.mixin.android.util.PropertyHelper
+import one.mixin.android.db.property.PropertyHelper
 import timber.log.Timber
 
 val autoDownloadPhoto: suspend (value: Int) -> Boolean = {
@@ -53,7 +54,11 @@ fun Context.isRoaming(): Boolean {
     return false
 }
 
-suspend fun Context.differentNetWorkAction(wifiAction: suspend () -> Unit, mobileAction: suspend () -> Unit, roaming: suspend () -> Unit) {
+suspend fun Context.differentNetWorkAction(
+    wifiAction: suspend () -> Unit,
+    mobileAction: suspend () -> Unit,
+    roaming: suspend () -> Unit,
+) {
     when {
         isConnectedToWiFi() -> {
             wifiAction()
@@ -67,8 +72,11 @@ suspend fun Context.differentNetWorkAction(wifiAction: suspend () -> Unit, mobil
     }
 }
 
-suspend fun Context.autoDownload(support: suspend (value: Int) -> Boolean, action: () -> Unit) {
-    if (hasWritePermission()) {
+suspend fun Context.autoDownload(
+    support: suspend (value: Int) -> Boolean,
+    action: () -> Unit,
+) {
+    if (hasWritePermission() || Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
         differentNetWorkAction(
             {
                 if (support(getAutoDownloadWifiValue())) {
@@ -84,14 +92,16 @@ suspend fun Context.autoDownload(support: suspend (value: Int) -> Boolean, actio
                 if (support(getAutoDownloadRoamingValue())) {
                     action()
                 }
-            }
+            },
         )
     }
 }
 
-suspend fun getAutoDownloadWifiValue() = PropertyHelper.findValueByKey(Constants.Download.AUTO_DOWNLOAD_WIFI)?.toIntOrNull() ?: WIFI_DEFAULT
-suspend fun getAutoDownloadMobileValue() = PropertyHelper.findValueByKey(Constants.Download.AUTO_DOWNLOAD_MOBILE)?.toIntOrNull() ?: MOBILE_DEFAULT
-suspend fun getAutoDownloadRoamingValue() = PropertyHelper.findValueByKey(Constants.Download.AUTO_DOWNLOAD_ROAMING)?.toIntOrNull() ?: ROAMING_DEFAULT
+suspend fun getAutoDownloadWifiValue() = PropertyHelper.findValueByKey(Constants.Download.AUTO_DOWNLOAD_WIFI, WIFI_DEFAULT)
+
+suspend fun getAutoDownloadMobileValue() = PropertyHelper.findValueByKey(Constants.Download.AUTO_DOWNLOAD_MOBILE, MOBILE_DEFAULT)
+
+suspend fun getAutoDownloadRoamingValue() = PropertyHelper.findValueByKey(Constants.Download.AUTO_DOWNLOAD_ROAMING, ROAMING_DEFAULT)
 
 fun Context.networkType(): String {
     val connectivityManager = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager

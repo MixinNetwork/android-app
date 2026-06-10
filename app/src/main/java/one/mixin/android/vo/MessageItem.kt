@@ -1,28 +1,38 @@
+@file:Suppress("DEPRECATION")
+@file:UnstableApi
+
 package one.mixin.android.vo
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.media.MediaScannerConnection
 import android.net.Uri
-import android.os.Environment
 import android.os.Parcelable
-import android.view.View
+import androidx.core.content.FileProvider
+import androidx.core.net.toFile
 import androidx.core.net.toUri
-import androidx.core.view.isVisible
+import androidx.media3.common.MimeTypes
+import androidx.media3.common.util.UnstableApi
 import androidx.paging.PositionalDataSource
 import androidx.recyclerview.widget.DiffUtil
 import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
-import com.google.android.exoplayer2.util.MimeTypes
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
+import one.mixin.android.BuildConfig
+import one.mixin.android.Constants
+import one.mixin.android.Constants.DEFAULT_THUMB_IMAGE
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.encodeBitmap
-import one.mixin.android.extension.getFilePath
+import one.mixin.android.extension.getPublicDownloadPath
+import one.mixin.android.extension.getPublicMusicPath
 import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.hasWritePermission
 import one.mixin.android.extension.isImageSupport
@@ -34,10 +44,11 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.VideoPlayer
 import one.mixin.android.util.blurhash.Base83
 import one.mixin.android.util.blurhash.BlurHashEncoder
+import one.mixin.android.util.reportException
 import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.websocket.toLocationData
+import timber.log.Timber
 import java.io.File
-import java.io.FileInputStream
 
 @SuppressLint("ParcelCreator")
 @Entity
@@ -69,18 +80,20 @@ data class MessageItem(
     val actionName: String?,
     val snapshotId: String?,
     val snapshotType: String?,
+    val snapshotMemo: String?,
     val snapshotAmount: String?,
     val assetId: String?,
     val assetType: String?,
     val assetSymbol: String?,
     val assetIcon: String?,
+    val assetCollectionHash: String?,
     val assetUrl: String?,
     val assetHeight: Int?,
     val assetWidth: Int?,
     @Deprecated(
         "Deprecated at database version 15",
         ReplaceWith("@{link sticker_id}", "one.mixin.android.vo.MessageItem.stickerId"),
-        DeprecationLevel.ERROR
+        DeprecationLevel.ERROR,
     )
     val albumId: String?,
     val stickerId: String?,
@@ -96,84 +109,175 @@ data class MessageItem(
     val sharedUserAvatarUrl: String? = null,
     val sharedUserIsVerified: Boolean? = null,
     val sharedUserAppId: String? = null,
+    val sharedMembership: Membership? = null,
     val mediaWaveform: ByteArray? = null,
     val quoteId: String? = null,
     val quoteContent: String? = null,
     val groupName: String? = null,
     val mentions: String? = null,
     val mentionRead: Boolean? = null,
-    val isPin: Boolean? = null
+    val isPin: Boolean? = null,
+    val expireIn: Long? = null,
+    val expireAt: Long? = null,
+    val caption: String? = null,
+    val membership: Membership? = null
 ) : Parcelable, ICategory {
-
     @IgnoredOnParcel
     @Ignore
     private var appCardShareable: Boolean? = null
 
+    @IgnoredOnParcel
+    val appCardData: AppCardData? by lazy {
+        content?.let {
+            runCatching {
+                GsonHelper.customGson.fromJson(it, AppCardData::class.java)
+            }.getOrNull()
+        }
+    }
+
+    val formatMemo: FormatMemo?
+        get() {
+            return if (snapshotMemo.isNullOrBlank()) {
+                null
+            } else {
+                FormatMemo(snapshotMemo)
+            }
+        }
+
     fun isShareable(): Boolean? {
-        if (type != MessageCategory.APP_CARD.name && type != MessageCategory.PLAIN_LIVE.name && type != MessageCategory.SIGNAL_LIVE.name && type != MessageCategory.ENCRYPTED_LIVE.name) return null
+        if (type != MessageCategory.APP_CARD.name &&
+            type != MessageCategory.PLAIN_LIVE.name &&
+            type != MessageCategory.SIGNAL_LIVE.name &&
+            type != MessageCategory.ENCRYPTED_LIVE.name &&
+            type != MessageCategory.PLAIN_AUDIO.name &&
+            type != MessageCategory.SIGNAL_AUDIO.name &&
+            type != MessageCategory.ENCRYPTED_AUDIO.name
+        ) {
+            return null
+        }
+
         try {
             if (type == MessageCategory.APP_CARD.name && appCardShareable == null) {
-                appCardShareable =
-                    GsonHelper.customGson.fromJson(content, AppCardData::class.java).shareable
+                appCardShareable = appCardData?.shareable
             } else if ((type == MessageCategory.PLAIN_LIVE.name || type == MessageCategory.SIGNAL_LIVE.name || type == MessageCategory.ENCRYPTED_LIVE.name) && appCardShareable == null) {
-                appCardShareable = GsonHelper.customGson.fromJson(
-                    content,
-                    LiveMessagePayload::class.java
-                ).shareable
+                appCardShareable =
+                    GsonHelper.customGson.fromJson(
+                        content,
+                        LiveMessagePayload::class.java,
+                    ).shareable
+            } else if ((type == MessageCategory.PLAIN_AUDIO.name || type == MessageCategory.SIGNAL_AUDIO.name || type == MessageCategory.ENCRYPTED_AUDIO.name) && appCardShareable == null) {
+                appCardShareable =
+                    GsonHelper.customGson.fromJson(
+                        content,
+                        AttachmentExtra::class.java,
+                    ).shareable
             }
-        } catch (e: Exception) {
+        } catch (ignore: Exception) {
         }
 
         return appCardShareable
     }
 
     companion object {
-        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<MessageItem>() {
-            override fun areItemsTheSame(oldItem: MessageItem, newItem: MessageItem) =
-                oldItem.messageId == newItem.messageId
+        val DIFF_CALLBACK =
+            object : DiffUtil.ItemCallback<MessageItem>() {
+                override fun areItemsTheSame(
+                    oldItem: MessageItem,
+                    newItem: MessageItem,
+                ) =
+                    oldItem.messageId == newItem.messageId
 
-            override fun areContentsTheSame(oldItem: MessageItem, newItem: MessageItem) =
-                oldItem == newItem
-        }
+                override fun areContentsTheSame(
+                    oldItem: MessageItem,
+                    newItem: MessageItem,
+                ) =
+                    oldItem == newItem
+            }
     }
 
-    fun canNotForward() = this.type == MessageCategory.APP_BUTTON_GROUP.name ||
-        this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
-        this.type == MessageCategory.SYSTEM_CONVERSATION.name ||
-        this.type == MessageCategory.MESSAGE_PIN.name ||
-        isCallMessage() || isRecall() || isGroupCall() || unfinishedAttachment() ||
-        (isTranscript() && this.mediaStatus != MediaStatus.DONE.name) ||
-        (isLive() && isShareable() == false)
+    fun canNotForward() =
+        this.type == MessageCategory.APP_BUTTON_GROUP.name ||
+            this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
+            this.type == MessageCategory.SYSTEM_SAFE_SNAPSHOT.name ||
+            this.type == MessageCategory.SYSTEM_SAFE_INSCRIPTION.name ||
+            this.type == MessageCategory.SYSTEM_CONVERSATION.name ||
+            this.type == MessageCategory.MESSAGE_PIN.name ||
+            isCallMessage() || isRecall() || isGroupCall() || unfinishedAttachment() ||
+            (isTranscript() && this.mediaStatus != MediaStatus.DONE.name) ||
+            (isLive() && isShareable() == false)
 
     fun canNotReply() =
         this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
+            this.type == MessageCategory.SYSTEM_SAFE_SNAPSHOT.name ||
+            this.type == MessageCategory.SYSTEM_SAFE_INSCRIPTION.name ||
             this.type == MessageCategory.SYSTEM_CONVERSATION.name ||
             this.type == MessageCategory.MESSAGE_PIN.name ||
             unfinishedAttachment() ||
             isCallMessage() || isRecall() || isGroupCall()
 
     fun canNotPin() =
-        canNotReply() || this.type == MessageCategory.MESSAGE_PIN.name || (status != MessageStatus.SENT.name && status != MessageStatus.DELIVERED.name && status != MessageStatus.READ.name)
+        this.canNotReply() || this.type == MessageCategory.MESSAGE_PIN.name || (status != MessageStatus.SENT.name && status != MessageStatus.DELIVERED.name && status != MessageStatus.READ.name)
+
+    fun isAppCardWithCover(): Boolean {
+        if (!isAppCard()) return false
+        return appCardData?.hashCover == true
+    }
 
     private fun unfinishedAttachment(): Boolean = !mediaDownloaded(this.mediaStatus) && (isData() || isImage() || isVideo() || isAudio())
+
+    fun isMembership() = membership?.isMembership() == true
+
+    fun isProsperity() = membership?.isProsperity() == true
+
+    fun isSharedMembership() = sharedMembership?.isMembership() == true
 }
 
-fun create(type: String, createdAt: String? = null) = MessageItem(
-    "", "", "", "", "",
-    type, null,
-    createdAt
-        ?: nowInUtc(),
-    MessageStatus.READ.name, null, null,
-    null, null, null, null, null, null, null, null,
-    null, null, null, null, null, null, null, null,
-    null, null, null, null, null, null, null, null, null, null
-)
-
-fun MessageItem.canNotReply() =
-    this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
-        this.type == MessageCategory.SYSTEM_CONVERSATION.name ||
-        (!mediaDownloaded(this.mediaStatus) && this.isMedia()) ||
-        isCallMessage() || isRecall() || isGroupCall()
+fun create(
+    type: String,
+    createdAt: String? = null,
+) =
+    MessageItem(
+        "",
+        "",
+        "",
+        "",
+        "",
+        type,
+        null,
+        createdAt
+            ?: nowInUtc(),
+        MessageStatus.READ.name,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+    )
 
 fun MessageItem.isCallMessage() =
     type == MessageCategory.WEBRTC_AUDIO_CANCEL.name ||
@@ -197,52 +301,76 @@ fun MessageItem.isLottie() = assetType?.equals(Sticker.STICKER_TYPE_JSON, true) 
 fun MessageItem.mediaDownloaded() =
     mediaStatus == MediaStatus.DONE.name || mediaStatus == MediaStatus.READ.name
 
-fun MessageItem.showVerifiedOrBot(verifiedView: View, botView: View) {
-    when {
-        sharedUserIsVerified == true -> {
-            verifiedView.isVisible = true
-            botView.isVisible = false
-        }
-        sharedUserAppId != null -> {
-            verifiedView.isVisible = false
-            botView.isVisible = true
-        }
-        else -> {
-            verifiedView.isVisible = false
-            botView.isVisible = false
-        }
-    }
-}
-
-fun MessageItem.saveToLocal(context: Context) {
+fun MessageItem.shareFile(
+    context: Context,
+    mediaMimeType: String,
+) {
     if (!hasWritePermission()) return
 
-    val filePath = absolutePath()?.toUri()?.getFilePath()
+    val filePath = absolutePath()
     if (filePath == null) {
-        toast(R.string.save_failure)
+        reportException(IllegalStateException("Share messageItem failure, category: $type, mediaUrl: $mediaUrl, absolutePath: $filePath)}"))
+        toast(R.string.File_error)
         return
     }
 
-    val file = File(filePath)
-    val outFile = if (MimeTypes.isVideo(mediaMimeType) || mediaMimeType?.isImageSupport() == true) {
-        File(context.getPublicPicturePath(), mediaName ?: file.name)
-    } else {
-        val dir = if (MimeTypes.isAudio(mediaMimeType)) {
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
-        } else {
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-        }
-        dir.mkdir()
-        File(dir, mediaName ?: file.name)
+    val file = filePath.toUri().toFile()
+    if (!file.exists()) {
+        reportException(IllegalStateException("Share messageItem failure, category: $type, mediaUrl: $mediaUrl, absolutePath: $filePath)}"))
+        toast(R.string.File_error)
+        return
     }
-    outFile.copyFromInputStream(FileInputStream(file))
-    context.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))
-    toast(
-        MixinApplication.appContext.getString(
-            R.string.save_to,
-            outFile.absolutePath
-        )
-    )
+    val uri = FileProvider.getUriForFile(context, BuildConfig.APPLICATION_ID + ".provider", file)
+
+    val share = Intent()
+    share.action = Intent.ACTION_SEND
+    share.type = mediaMimeType
+    share.putExtra(Intent.EXTRA_STREAM, uri)
+    context.startActivity(Intent.createChooser(share, context.getString(R.string.Share)))
+}
+
+suspend fun MessageItem.saveToLocal(context: Context) {
+    val filePath = absolutePath()
+    if (filePath == null) {
+        reportException(IllegalStateException("Save messageItem failure, category: $type, mediaUrl: $mediaUrl, absolutePath: null)}"))
+        toast(R.string.Save_failure)
+        return
+    }
+
+    val file = filePath.toUri().toFile()
+    if (!file.exists()) {
+        reportException(IllegalStateException("Save messageItem failure, category: $type, mediaUrl: $mediaUrl, absolutePath: $filePath)}"))
+        toast(R.string.Save_failure)
+        return
+    }
+
+    var str = R.string.Save_to_Gallery
+    val outFile =
+        if (MimeTypes.isVideo(mediaMimeType) || mediaMimeType?.isImageSupport() == true) {
+            val dir = context.getPublicPicturePath()
+            dir.mkdirs()
+            File(dir, mediaName ?: file.name)
+        } else {
+            val dir =
+                if (MimeTypes.isAudio(mediaMimeType)) {
+                    str = R.string.Save_to_Music
+                    context.getPublicMusicPath()
+                } else {
+                    str = R.string.Save_to_Downloads
+                    context.getPublicDownloadPath()
+                }
+            dir.mkdirs()
+            File(dir, mediaName ?: file.name)
+        }
+    if (outFile.isDirectory) {
+        toast(R.string.Save_failure)
+        return
+    }
+    withContext(Dispatchers.IO) {
+        outFile.copyFromInputStream(file.inputStream())
+    }
+    MediaScannerConnection.scanFile(context, arrayOf(outFile.toString()), null, null)
+    toast(str)
 }
 
 fun MessageItem.loadVideoOrLive(actionAfterLoad: (() -> Unit)? = null) {
@@ -272,13 +400,14 @@ private fun MessageItem.simpleChat(): String {
         isAudio() -> mediaUrl.notNullWithElse({ "[AUDIO - ${File(it).name}]" }, "[AUDIO]")
         type == MessageCategory.APP_BUTTON_GROUP.name -> "[Mixin APP]"
         type == MessageCategory.APP_CARD.name -> "[Mixin APP]"
-        type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ->
+        type == MessageCategory.SYSTEM_SAFE_INSCRIPTION.name -> "[COLLECTION]"
+        type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name || type == MessageCategory.SYSTEM_SAFE_SNAPSHOT.name ->
             "[TRANSFER ${
-            if (snapshotAmount?.toFloat()!! > 0) {
-                "+"
-            } else {
-                ""
-            }
+                if (snapshotAmount?.toFloat()!! > 0) {
+                    "+"
+                } else {
+                    ""
+                }
             }$snapshotAmount $assetSymbol]"
         isContact() -> {
             "[CONTACT - $sharedUserFullName]"
@@ -290,30 +419,44 @@ private fun MessageItem.simpleChat(): String {
     }
 }
 
-class FixedMessageDataSource(private val messageItems: List<MessageItem>) :
-    PositionalDataSource<MessageItem>() {
-    override fun loadRange(params: LoadRangeParams, callback: LoadRangeCallback<MessageItem>) {
-        callback.onResult(messageItems)
+class FixedMessageDataSource<T : Any>(private val items: List<T>, private val totalCount: Int) :
+    PositionalDataSource<T>() {
+    override fun loadRange(
+        params: LoadRangeParams,
+        callback: LoadRangeCallback<T>,
+    ) {
+        callback.onResult(items)
     }
 
     override fun loadInitial(
         params: LoadInitialParams,
-        callback: LoadInitialCallback<MessageItem>
+        callback: LoadInitialCallback<T>,
     ) {
-        callback.onResult(messageItems, 0, 1)
+        callback.onResult(items, 0, totalCount)
     }
 }
 
 fun MessageItem.toTranscript(transcriptId: String): TranscriptMessage {
-    val thumb = if (thumbImage != null && !Base83.isValid(thumbImage)) {
-        try {
-            val bitmap = thumbImage.decodeBase64().encodeBitmap()
-            BlurHashEncoder.encode(requireNotNull(bitmap))
-        } catch (e: Exception) {
+    val thumb =
+        if ((thumbImage?.length ?: 0) > Constants.MAX_THUMB_IMAGE_LENGTH) {
+            DEFAULT_THUMB_IMAGE
+        } else if (thumbImage != null && !Base83.isValid(thumbImage)) {
+            try {
+                val bitmap = thumbImage.decodeBase64().encodeBitmap()
+                BlurHashEncoder.encode(requireNotNull(bitmap))
+            } catch (e: Exception) {
+                thumbImage
+            }
+        } else {
             thumbImage
         }
+    val content = if (isAppCard()) {
+        appCardData?.copy(actions = null)?.let {
+            GsonHelper.customGson.toJson(it)
+        }
+            ?: this.content
     } else {
-        thumbImage
+        this.content
     }
     return TranscriptMessage(
         transcriptId,
@@ -341,10 +484,20 @@ fun MessageItem.toTranscript(transcriptId: String): TranscriptMessage {
         sharedUserId,
         mentions,
         quoteId,
-        quoteContent
+        quoteContent,
     )
 }
 
 fun MessageItem.absolutePath(context: Context = MixinApplication.appContext): String? {
     return absolutePath(context, conversationId, mediaUrl)
+}
+
+fun MessageItem.mediaExists(context: Context = MixinApplication.appContext): Boolean {
+    return try {
+        val path = absolutePath(context) ?: return false
+        return Uri.parse(path).toFile().exists()
+    } catch (e: Exception) {
+        Timber.e(e)
+        false
+    }
 }

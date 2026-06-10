@@ -11,10 +11,15 @@ class CropTopImageView : AppCompatImageView {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
         context,
         attrs,
-        defStyleAttr
+        defStyleAttr,
     )
 
-    override fun setFrame(l: Int, t: Int, r: Int, b: Int): Boolean {
+    override fun setFrame(
+        l: Int,
+        t: Int,
+        r: Int,
+        b: Int,
+    ): Boolean {
         if (drawable == null) {
             return super.setFrame(l, t, r, b)
         }

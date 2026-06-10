@@ -15,6 +15,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentDraggableRecyclerViewBinding
 import one.mixin.android.event.DragReleaseEvent
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.isWideScreen
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.withArgs
@@ -37,10 +38,14 @@ class GalleryItemFragment : Fragment(R.layout.fragment_draggable_recycler_view),
         const val PADDING = 10
         var COLUMN = 3
 
-        fun newInstance(album: Album, needCamera: Boolean) = GalleryItemFragment().withArgs {
-            putParcelable(ARGS_ALBUM, album)
-            putBoolean(ARGS_NEED_CAMERA, needCamera)
-        }
+        fun newInstance(
+            album: Album,
+            needCamera: Boolean,
+        ) =
+            GalleryItemFragment().withArgs {
+                putParcelable(ARGS_ALBUM, album)
+                putBoolean(ARGS_NEED_CAMERA, needCamera)
+            }
     }
 
     var callback: GalleryCallback? = null
@@ -48,7 +53,7 @@ class GalleryItemFragment : Fragment(R.layout.fragment_draggable_recycler_view),
 
     private val stopScope = scope(Lifecycle.Event.ON_STOP)
 
-    private val album: Album by lazy { requireArguments().getParcelable(ARGS_ALBUM)!! }
+    private val album: Album by lazy { requireArguments().getParcelableCompat(ARGS_ALBUM, Album::class.java)!! }
     private val needCamera: Boolean by lazy { requireArguments().getBoolean(ARGS_NEED_CAMERA) }
 
     private val padding: Int by lazy {
@@ -63,45 +68,58 @@ class GalleryItemFragment : Fragment(R.layout.fragment_draggable_recycler_view),
 
     private val binding by viewBinding(FragmentDraggableRecyclerViewBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
-        COLUMN = if (requireContext().isWideScreen()) {
-            5
-        } else {
-            3
-        }
+        COLUMN =
+            if (requireContext().isWideScreen()) {
+                5
+            } else {
+                3
+            }
         binding.apply {
             rv.layoutManager = GridLayoutManager(context, COLUMN)
             rv.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, true))
             adapter.size = (requireContext().realSize().x - (COLUMN + 1) * padding) / COLUMN
             rv.adapter = adapter
-            adapter.listener = object : GalleryCallback {
-                override fun onItemClick(pos: Int, item: Item, send: Boolean) {
-                    callback?.onItemClick(pos, item, send)
-                }
+            adapter.listener =
+                object : GalleryCallback {
+                    override fun onItemClick(
+                        pos: Int,
+                        item: Item,
+                        send: Boolean,
+                    ) {
+                        callback?.onItemClick(pos, item, send)
+                    }
 
-                override fun onCameraClick() {
-                    callback?.onCameraClick()
+                    override fun onCameraClick() {
+                        callback?.onCameraClick()
+                    }
                 }
-            }
             rv.addOnScrollListener(
                 object : RecyclerView.OnScrollListener() {
-                    override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                    override fun onScrollStateChanged(
+                        recyclerView: RecyclerView,
+                        newState: Int,
+                    ) {
                         if (rv.scrollState != SCROLL_STATE_IDLE) {
                             adapter.hideBLur()
                         }
                     }
-                }
+                },
             )
-            rv.callback = object : DraggableRecyclerView.Callback {
-                override fun onScroll(dis: Float) {
-                    rvCallback?.onScroll(dis)
-                }
+            rv.callback =
+                object : DraggableRecyclerView.Callback {
+                    override fun onScroll(dis: Float) {
+                        rvCallback?.onScroll(dis)
+                    }
 
-                override fun onRelease(fling: Int) {
-                    rvCallback?.onRelease(fling)
+                    override fun onRelease(fling: Int) {
+                        rvCallback?.onRelease(fling)
+                    }
                 }
-            }
         }
 
         albumMediaCollection.onCreate(this, this)
@@ -126,7 +144,7 @@ class GalleryItemFragment : Fragment(R.layout.fragment_draggable_recycler_view),
     }
 
     override fun onAlbumMediaLoad(cursor: Cursor?) {
-        if (cursor == null || cursor.isClosed) return
+        if (!isAdded || cursor == null || cursor.isClosed) return
 
         binding.rv.post {
             val itemList = arrayListOf<Item>()
@@ -134,7 +152,7 @@ class GalleryItemFragment : Fragment(R.layout.fragment_draggable_recycler_view),
                 val item = Item.valueOf(cursor)
                 itemList.add(item)
             }
-            if (itemList.isNullOrEmpty()) return@post
+            if (itemList.isEmpty()) return@post
 
             adapter.items = itemList
         }

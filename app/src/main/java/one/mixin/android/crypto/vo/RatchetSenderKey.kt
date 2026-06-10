@@ -14,7 +14,7 @@ class RatchetSenderKey(
     @ColumnInfo(name = "message_id")
     val messageId: String?,
     @ColumnInfo(name = "created_at")
-    val createdAt: String
+    val createdAt: String,
 )
 
 enum class RatchetStatus { REQUESTING }

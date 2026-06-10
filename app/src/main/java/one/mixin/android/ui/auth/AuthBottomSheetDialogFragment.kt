@@ -4,108 +4,280 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.DialogInterface
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
-import android.view.LayoutInflater
+import android.os.Build
+import android.view.Gravity
+import android.view.View
 import android.view.ViewGroup
-import androidx.collection.ArraySet
-import androidx.recyclerview.widget.RecyclerView
-import com.uber.autodispose.autoDispose
+import android.view.WindowManager
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import one.mixin.android.R
-import one.mixin.android.api.request.AuthorizeRequest
-import one.mixin.android.api.response.AuthorizationResponse
-import one.mixin.android.databinding.FragmentAuthBinding
-import one.mixin.android.databinding.ItemThirdLoginScopeBinding
+import one.mixin.android.api.DataErrorException
+import one.mixin.android.api.NetworkException
+import one.mixin.android.api.ResponseError
+import one.mixin.android.api.ServerErrorException
+import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.extension.booleanFromAttribute
+import one.mixin.android.extension.dp
+import one.mixin.android.extension.getSafeAreaInsetsBottom
+import one.mixin.android.extension.getParcelableArrayListCompat
+import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isWebUrl
-import one.mixin.android.extension.loadCircleImage
 import one.mixin.android.extension.withArgs
-import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
+import one.mixin.android.session.Session
+import one.mixin.android.tip.exception.TipException
+import one.mixin.android.tip.exception.TipNetworkException
+import one.mixin.android.tip.getTipExceptionMsg
+import one.mixin.android.ui.auth.compose.AuthBottomSheetDialogCompose
+import one.mixin.android.ui.auth.compose.AuthStep
+import one.mixin.android.ui.common.BottomSheetViewModel
+import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
+import one.mixin.android.ui.common.biometric.BiometricDialog
+import one.mixin.android.ui.common.biometric.BiometricInfo
+import one.mixin.android.ui.tip.TipActivity
+import one.mixin.android.ui.tip.TipType
+import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.util.viewBinding
+import one.mixin.android.util.SystemUIManager
+import one.mixin.android.util.getMixinErrorStringByCode
+import one.mixin.android.util.msg
 import one.mixin.android.vo.Scope
-import one.mixin.android.vo.Scope.Companion.SCOPES
-import one.mixin.android.vo.convertName
-import one.mixin.android.widget.BottomSheet
+import timber.log.Timber
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
 
 @AndroidEntryPoint
-class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
-
+class AuthBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
     companion object {
         const val TAG = "AuthBottomSheetDialogFragment"
 
-        const val POS_TEXT = 0
-        const val POS_PB = 1
-
         const val ARGS_SCOPES = "args_scopes"
-        const val ARGS_AUTHORIZATION = "args_authorization"
+        const val ARGS_AUTHORIZATION_ID = "args_authorization_id"
 
-        fun newInstance(scopes: ArrayList<Scope>, auth: AuthorizationResponse) =
+        private const val ARGS_NAME = "args_name"
+        private const val ARGS_NUMBER = "args_number"
+        private const val ARGS_ICON_URL = "args_icon_url"
+
+        fun newInstance(
+            scopes: ArrayList<Scope>,
+            name: String,
+            number: String,
+            iconUrl: String?,
+            authId: String,
+        ) =
             AuthBottomSheetDialogFragment().withArgs {
                 putParcelableArrayList(ARGS_SCOPES, scopes)
-                putParcelable(ARGS_AUTHORIZATION, auth)
+                putString(ARGS_NAME, name)
+                putString(ARGS_NUMBER, number)
+                putString(ARGS_ICON_URL, iconUrl)
+                putString(ARGS_AUTHORIZATION_ID, authId)
             }
     }
 
     private val scopes: List<Scope> by lazy {
-        requireArguments().getParcelableArrayList(ARGS_SCOPES)!!
+        requireArguments().getParcelableArrayListCompat(ARGS_SCOPES, Scope::class.java)!!
     }
 
-    private val auth: AuthorizationResponse by lazy {
-        requireArguments().getParcelable(ARGS_AUTHORIZATION)!!
+    private val authorizationId: String by lazy {
+        requireArguments().getString(ARGS_AUTHORIZATION_ID)!!
     }
 
-    private val scopeAdapter: ScopeAdapter by lazy {
-        ScopeAdapter(scopes)
+    private val appIconUrl: String? by lazy {
+        requireArguments().getString(ARGS_ICON_URL)
+    }
+    private val appName: String by lazy {
+        requireArguments().getString(ARGS_NAME)!!
+    }
+    private val appNumber: String by lazy {
+        requireArguments().getString(ARGS_NUMBER)!!
     }
 
     private var success = false
 
-    private val binding by viewBinding(FragmentAuthBinding::inflate)
 
-    @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
-        super.setupDialog(dialog, style)
-        contentView = binding.root
-        dialog as BottomSheet
-        dialog.setCustomView(contentView)
+    override fun getTheme() = R.style.AppTheme_Dialog
 
-        binding.apply {
-            titleView.rightIv.setOnClickListener { dismiss() }
-            avatar.loadCircleImage(auth.app.iconUrl, R.mipmap.ic_launcher_round)
-            scopeRv.adapter = scopeAdapter
-            scopeAdapter.onScopeListener = object : OnScopeListener {
-                override fun onScope(binding: ItemThirdLoginScopeBinding, position: Int) {
-                    binding.cb.isChecked = !binding.cb.isChecked
-                    if (binding.cb.isChecked) {
-                        scopeAdapter.checkedScopes.add(scopes[position].name)
+    private val bottomViewModel by viewModels<BottomSheetViewModel>()
+
+    private var step by mutableStateOf(AuthStep.DEFAULT)
+
+    private var errorContent by mutableStateOf("")
+    private var savedScopes: List<String>? = null
+
+    init {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.CREATED) {
+                snapshotFlow { step }.collect { value ->
+                    if (value == AuthStep.INPUT) {
+                        dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
                     } else {
-                        scopeAdapter.checkedScopes.remove(scopes[position].name)
+                        dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
                     }
                 }
             }
-            confirmAnim.setOnClickListener {
-                confirmAnim.displayedChild = POS_PB
-                confirmAnim.isEnabled = false
-                val request = AuthorizeRequest(auth.authorizationId, scopeAdapter.checkedScopes.toList())
-                bottomViewModel.authorize(request).autoDispose(stopScope).subscribe(
-                    { r ->
-                        confirmAnim.displayedChild = POS_TEXT
-                        confirmAnim.isEnabled = true
-                        if (r.isSuccess && r.data != null) {
-                            val redirectUri = r.data!!.app.redirectUri
-                            redirect(redirectUri, r.data!!.authorization_code)
-                            success = true
-                            dismiss()
-                        } else {
-                            ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
-                        }
-                    },
-                    { t: Throwable ->
-                        confirmAnim.displayedChild = POS_TEXT
-                        confirmAnim.isEnabled = true
-                        ErrorHandler.handleError(t)
+        }
+    }
+
+    @Composable
+    override fun ComposeContent() {
+        AuthBottomSheetDialogCompose(
+            name = "$appName($appNumber)",
+            iconUrl = appIconUrl,
+            scopes = scopes,
+            onDismissRequest = {
+                dismiss()
+            },
+            step = step,
+            errorContent = errorContent,
+            onConfirmed = {
+                if (Session.getAccount()?.hasPin != true) {
+                    TipActivity.show(requireActivity(), TipType.Create)
+                } else {
+                    step = AuthStep.INPUT
+                }
+            },
+            onResetClick = {
+                step = AuthStep.INPUT
+            },
+            onBiometricClick = {
+                savedScopes = it
+                showBiometricPrompt()
+            },
+            onVerifyRequest = { scopes, pin ->
+                authVerify(scopes, pin)
+            },
+        )
+    }
+
+
+    override fun getBottomSheetHeight(view: View): Int {
+        return 690.dp + view.getSafeAreaInsetsBottom()
+    }
+
+
+    private fun authVerify(
+        scopes: List<String>,
+        pin: String,
+    ) =
+        lifecycleScope.launch {
+            try {
+                step = AuthStep.LOADING
+                val response =
+                    bottomViewModel.authorize(
+                        authorizationId,
+                        scopes,
+                        pin,
+                    )
+                if (response.isSuccess) {
+                    step = AuthStep.DONE
+                    val data = response.data ?: return@launch
+                    val redirectUri = data.app.redirectUri
+                    redirect(redirectUri, data.authorizationCode)
+                    success = true
+                    delay(1000)
+                    dismiss()
+                } else {
+                    val errorInfo = getMixinErrorInfo(requireNotNull(response.error))
+                    step = AuthStep.ERROR
+                    errorContent = errorInfo
+                }
+            } catch (e: Exception) {
+                step = AuthStep.ERROR
+                errorContent =
+                    when (e) {
+                        is TipNetworkException -> getMixinErrorInfo(e.error)
+                        is TipException -> e.getTipExceptionMsg(requireContext())
+                        is SocketTimeoutException -> requireContext().getString(R.string.error_connection_timeout)
+                        is UnknownHostException -> requireContext().getString(R.string.No_network_connection)
+                        is ServerErrorException ->
+                            requireContext().getString(
+                                R.string.error_server_5xx_code,
+                                e.code,
+                            )
+                        is NetworkException -> requireContext().getString(R.string.No_network_connection)
+                        is DataErrorException -> requireContext().getString(R.string.Data_error)
+                        else ->
+                            requireContext().getString(
+                                R.string.error_unknown_with_message,
+                                e.msg())
                     }
+            }
+        }
+
+    @SuppressLint("RestrictedApi")
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
+        super.setupDialog(dialog, R.style.MixinBottomSheet)
+        dialog.window?.let { window ->
+            SystemUIManager.lightUI(window, requireContext().isNightMode())
+        }
+        dialog.window?.setGravity(Gravity.BOTTOM)
+        dialog.window?.setLayout(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT,
+        )
+    }
+
+    override fun onStart() {
+        super.onStart()
+        dialog?.window?.let { window ->
+            SystemUIManager.lightUI(
+                window,
+                !requireContext().booleanFromAttribute(R.attr.flag_night),
+            )
+        }
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        // UrlInterpreterActivity doesn't have a UI and needs it's son fragment to handle it's finish.
+        if (activity is UrlInterpreterActivity) {
+            var realFragmentCount = 0
+            parentFragmentManager.fragments.forEach { f ->
+                realFragmentCount++
+            }
+            if (realFragmentCount <= 0) {
+                activity?.finish()
+            }
+        }
+    }
+
+    override fun dismiss() {
+        dismissAllowingStateLoss()
+    }
+
+    private suspend fun getMixinErrorInfo(error: ResponseError): String {
+        val errorCode = error.code
+        val errorDescription = error.description
+        return when (errorCode) {
+            ErrorHandler.TOO_MANY_REQUEST -> {
+                requireContext().getString(R.string.error_pin_check_too_many_request)
+            }
+            ErrorHandler.PIN_INCORRECT -> {
+                val errorCount = bottomViewModel.errorCount()
+                requireContext().resources.getQuantityString(
+                    R.plurals.error_pin_incorrect_with_times,
+                    errorCount,
+                    errorCount,
+                )
+            }
+            else -> {
+                requireContext().getMixinErrorStringByCode(
+                    errorCode,
+                    errorDescription,
                 )
             }
         }
@@ -113,67 +285,84 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     override fun onDismiss(dialog: DialogInterface) {
         if (!success && isAdded) {
-            val request = AuthorizeRequest(auth.authorizationId, listOf())
-            bottomViewModel.authorize(request)
-                .autoDispose(stopScope)
-                .subscribe(
-                    {
-                        if (it.isSuccess && it.data != null) {
-                            redirect(it.data!!.app.redirectUri, it.data!!.authorization_code)
-                        }
+            lifecycleScope.launch {
+                bottomViewModel // init on main thread
+                handleMixinResponse(
+                    invokeNetwork = {
+                        bottomViewModel.authorize(authorizationId, listOf(), null)
                     },
-                    {
-                        ErrorHandler.handleError(it)
-                    }
+                    successBlock = {
+                        val data = it.data ?: return@handleMixinResponse
+                        redirect(data.app.redirectUri, data.authorizationCode)
+                    },
                 )
+            }
         }
         super.onDismiss(dialog)
     }
 
-    private fun redirect(uri: String, code: String?) {
+    private fun redirect(
+        uri: String,
+        code: String?,
+    ) {
         if (!uri.isWebUrl()) {
             val builder = Uri.parse(uri).buildUpon()
-            val redirect = if (code.isNullOrEmpty()) {
-                builder.appendQueryParameter("error", "access_denied").build()
-            } else {
-                builder.appendQueryParameter("code", code).build()
-            }
-            val intent = Intent.parseUri(redirect.toString(), Intent.URI_INTENT_SCHEME)
-            val info = context?.packageManager?.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
-            if (info != null) {
+            val redirect =
+                if (code.isNullOrEmpty()) {
+                    builder.appendQueryParameter("error", "access_denied").build()
+                } else {
+                    builder.appendQueryParameter("code", code).build()
+                }
+            try {
+                val intent =
+                    Intent(Intent.ACTION_VIEW, Uri.parse(redirect.toString())).apply {
+                        addCategory(Intent.CATEGORY_BROWSABLE)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                            flags = Intent.FLAG_ACTIVITY_REQUIRE_NON_BROWSER
+                        }
+                    }
                 context?.startActivity(intent)
+            } catch (e: Exception) {
+                Timber.e(e)
             }
         }
     }
 
-    private class ScopeAdapter(val scopes: List<Scope>) : RecyclerView.Adapter<ScopeViewHolder>() {
-        val checkedScopes = ArraySet<String>().apply {
-            addAll(SCOPES)
-        }
-        var onScopeListener: OnScopeListener? = null
+    private var biometricDialog: BiometricDialog? = null
 
-        override fun getItemCount(): Int = scopes.size
-
-        override fun onBindViewHolder(holder: ScopeViewHolder, position: Int) {
-            val scope = scopes[position]
-            holder.bind.title.text = scope.convertName(holder.itemView.context)
-            holder.bind.desc.text = scope.desc
-            holder.bind.cb.isChecked = checkedScopes.contains(scope.name)
-            if (scope.name == SCOPES[0]) {
-                holder.bind.cb.isEnabled = false
-            } else {
-                holder.bind.cb.isEnabled = true
-                holder.itemView.setOnClickListener { onScopeListener?.onScope(holder.bind, position) }
-            }
-        }
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ScopeViewHolder =
-            ScopeViewHolder(ItemThirdLoginScopeBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+    private fun showBiometricPrompt() {
+        biometricDialog =
+            BiometricDialog(
+                requireActivity(),
+                getBiometricInfo(),
+            )
+        biometricDialog?.callback = biometricDialogCallback
+        biometricDialog?.show()
     }
 
-    class ScopeViewHolder(val bind: ItemThirdLoginScopeBinding) : RecyclerView.ViewHolder(bind.root)
+    fun getBiometricInfo() =
+        BiometricInfo(
+            getString(R.string.Verify_by_Biometric),
+            "",
+            "",
+        )
 
-    interface OnScopeListener {
-        fun onScope(binding: ItemThirdLoginScopeBinding, position: Int)
+    private val biometricDialogCallback =
+        object : BiometricDialog.Callback {
+            override fun onPinComplete(pin: String) {
+                authVerify(
+                    requireNotNull(savedScopes),
+                    pin,
+                )
+            }
+
+            override fun showPin() {
+                dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+            }
+
+            override fun onCancel() {}
+        }
+
+    override fun showError(error: String) {
     }
 }

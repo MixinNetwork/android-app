@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
 import io.noties.markwon.Markwon
+import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatPostBinding
 import one.mixin.android.extension.dp
@@ -12,19 +13,24 @@ import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.postLengthOptimize
 import one.mixin.android.extension.postOptimize
 import one.mixin.android.extension.round
-import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
+import one.mixin.android.ui.conversation.holder.base.Terminable
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSecret
 
-class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(binding.root) {
+class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(binding.root), Terminable {
     init {
         binding.chatTv.layoutParams.width = itemView.context.maxItemWidth()
         binding.chatTv.maxHeight = itemView.context.maxItemWidth() * 10 / 16
         binding.chatTv.round(3.dp)
     }
 
-    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+    override fun chatLayout(
+        isMe: Boolean,
+        isLast: Boolean,
+        isBlink: Boolean,
+    ) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
             (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
@@ -50,13 +56,13 @@ class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_post_me_last,
-                    R.drawable.chat_bubble_post_me_last_night
+                    R.drawable.chat_bubble_post_me_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_post_me,
-                    R.drawable.chat_bubble_post_me_night
+                    R.drawable.chat_bubble_post_me_night,
                 )
             }
         } else {
@@ -65,13 +71,13 @@ class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_post_other_last,
-                    R.drawable.chat_bubble_post_other_last_night
+                    R.drawable.chat_bubble_post_other_last_night,
                 )
             } else {
                 setItemBackgroundResource(
                     binding.chatLayout,
                     R.drawable.chat_bubble_post_other,
-                    R.drawable.chat_bubble_post_other_night
+                    R.drawable.chat_bubble_post_other_night,
                 )
             }
         }
@@ -84,8 +90,8 @@ class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(
         hasSelect: Boolean,
         isSelect: Boolean,
         isRepresentative: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener,
-        miniMarkwon: Markwon
+        onItemListener: MessageAdapter.OnItemListener,
+        miniMarkwon: Markwon,
     ) {
         super.bind(messageItem)
         if (hasSelect && isSelect) {
@@ -146,24 +152,11 @@ class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(
         val isMe = meId == messageItem.userId
         if (isFirst && !isMe) {
             binding.chatName.visibility = View.VISIBLE
-            binding.chatName.text = messageItem.userFullName
-            if (messageItem.appId != null) {
-                binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-                binding.chatName.compoundDrawablePadding = 3.dp
-            } else {
-                binding.chatName.setCompoundDrawables(null, null, null, null)
-            }
+            binding.chatName.setMessageName(messageItem)
             binding.chatName.setTextColor(getColorById(messageItem.userId))
             binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
         } else {
             binding.chatName.visibility = View.GONE
-        }
-
-        if (messageItem.appId != null) {
-            binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-            binding.chatName.compoundDrawablePadding = 3.dp
-        } else {
-            binding.chatName.setCompoundDrawables(null, null, null, null)
         }
 
         binding.chatTime.load(
@@ -172,8 +165,10 @@ class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(
             messageItem.status,
             messageItem.isPin ?: false,
             isRepresentative = isRepresentative,
-            isSecret = messageItem.isSecret(), isWhite = true
+            isSecret = messageItem.isSecret(),
+            isWhite = true,
         )
+        chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, messageItem.expireAt, R.id.chat_layout)
         chatLayout(isMe, isLast)
     }
 }

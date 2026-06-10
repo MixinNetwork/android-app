@@ -12,6 +12,7 @@ import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.databinding.FragmentSettingPhoneNumberBinding
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.viewBinding
@@ -29,20 +30,20 @@ class PhoneNumberSettingFragment : BaseFragment(R.layout.fragment_setting_phone_
     private val viewModel by viewModels<SettingConversationViewModel>()
     private val binding by viewBinding(FragmentSettingPhoneNumberBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.leftIb.setOnClickListener {
-            activity?.onBackPressed()
+            activity?.onBackPressedDispatcher?.onBackPressed()
         }
         viewModel.initSearchPreference(requireContext())
-            .observe(
-                viewLifecycleOwner,
-                {
-                    it?.let {
-                        render(it)
-                    }
+            .observe(viewLifecycleOwner) {
+                it?.let {
+                    render(it)
                 }
-            )
+            }
     }
 
     private fun render(pref: String) {
@@ -65,7 +66,11 @@ class PhoneNumberSettingFragment : BaseFragment(R.layout.fragment_setting_phone_
         }
     }
 
-    private fun handleClick(viewId: Int, targetPref: String, curPref: String) {
+    private fun handleClick(
+        viewId: Int,
+        targetPref: String,
+        curPref: String,
+    ) {
         binding.apply {
             if (R.id.everybody_rl == viewId && everybodyIv.isVisible) return
             if (R.id.contact_rl == viewId && myContactsIv.isVisible) return
@@ -106,7 +111,7 @@ class PhoneNumberSettingFragment : BaseFragment(R.layout.fragment_setting_phone_
                 },
                 doAfterNetworkSuccess = {
                     resetPb(targetPref)
-                }
+                },
             )
         }
     }
@@ -126,6 +131,8 @@ class PhoneNumberSettingFragment : BaseFragment(R.layout.fragment_setting_phone_
     }
 
     private fun resetPb(pref: String) {
+        if (viewDestroyed()) return
+
         binding.apply {
             when (pref) {
                 SearchSource.EVERYBODY.name -> {

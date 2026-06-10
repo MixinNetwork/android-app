@@ -7,10 +7,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class TextPreviewViewModel
-@Inject
-internal constructor(
-    private val userRepository: UserRepository,
-) : ViewModel() {
-    suspend fun findUserByIdentityNumberSuspend(identityNumber: String) =
-        userRepository.findUserByIdentityNumberSuspend(identityNumber)
-}
+    @Inject
+    internal constructor(
+        private val userRepository: UserRepository,
+    ) : ViewModel() {
+        suspend fun findUserByIdentityNumberSuspend(identityNumber: String) =
+            userRepository.findUserByIdentityNumberSuspend(identityNumber)
+    }

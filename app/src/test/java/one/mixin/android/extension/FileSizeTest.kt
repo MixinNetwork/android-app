@@ -4,7 +4,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class FileSizeTest {
-
     @Test
     fun fileSizeTest() {
         assertEquals(1024L.fileSize(), "1.00 KB")

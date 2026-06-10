@@ -14,7 +14,6 @@ import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatImageView
 
 class SquareImageView : AppCompatImageView {
-
     private val mBitmapPaint: Paint = Paint()
     private val mMatrix: Matrix = Matrix()
 
@@ -32,7 +31,10 @@ class SquareImageView : AppCompatImageView {
         mBitmapPaint.isAntiAlias = true
     }
 
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+    override fun onMeasure(
+        widthMeasureSpec: Int,
+        heightMeasureSpec: Int,
+    ) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         mWidth = Math.min(measuredWidth, measuredHeight)
         setMeasuredDimension(mWidth, mWidth)
@@ -58,7 +60,12 @@ class SquareImageView : AppCompatImageView {
         canvas.drawRoundRect(mRoundRect!!, 0f, 0f, mBitmapPaint)
     }
 
-    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+    override fun onSizeChanged(
+        w: Int,
+        h: Int,
+        oldw: Int,
+        oldh: Int,
+    ) {
         super.onSizeChanged(w, h, oldw, oldh)
         mRoundRect = RectF(0f, 0f, w.toFloat(), h.toFloat())
     }

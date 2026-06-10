@@ -14,17 +14,19 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
+import one.mixin.android.Constants.Colors.LINK_COLOR
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.databinding.FragmentJoinGroupBottomSheetBinding
 import one.mixin.android.event.AvatarEvent
+import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.info.MixinScrollableBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
-import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment.Companion.CODE
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.widget.linktext.AutoLinkMode
@@ -35,7 +37,7 @@ data class JoinGroupConversation(
     val name: String,
     val announcement: String,
     val participantsCount: Int,
-    val iconUrl: String?
+    val iconUrl: String?,
 ) : Parcelable
 
 @AndroidEntryPoint
@@ -46,17 +48,18 @@ class JoinGroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragm
 
         fun newInstance(
             joinGroupConversation: JoinGroupConversation,
-            code: String
+            code: String,
         ) = JoinGroupBottomSheetDialogFragment().apply {
-            arguments = bundleOf(
-                ARGS_JOIN_GROUP_CONVERSATION to joinGroupConversation,
-                CODE to code
-            )
+            arguments =
+                bundleOf(
+                    ARGS_JOIN_GROUP_CONVERSATION to joinGroupConversation,
+                    CODE to code,
+                )
         }
     }
 
     private val c: JoinGroupConversation by lazy {
-        requireArguments().getParcelable(ARGS_JOIN_GROUP_CONVERSATION)!!
+        requireArguments().getParcelableCompat(ARGS_JOIN_GROUP_CONVERSATION, JoinGroupConversation::class.java)!!
     }
     private val code: String by lazy { requireArguments().getString(CODE)!! }
 
@@ -66,7 +69,10 @@ class JoinGroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragm
         FragmentJoinGroupBottomSheetBinding.bind(contentView)
     }
 
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         behavior?.isDraggable = false
         binding.title.rightIv.setOnClickListener { dismiss() }
@@ -80,9 +86,10 @@ class JoinGroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragm
                     if (it.isSuccess) {
                         val conversationResponse = it.data as ConversationResponse
                         val accountId = Session.getAccountId()
-                        val result = conversationResponse.participants.any { participant ->
-                            participant.userId == accountId
-                        }
+                        val result =
+                            conversationResponse.participants.any { participant ->
+                                participant.userId == accountId
+                            }
                         if (result) {
                             bottomViewModel.refreshConversation(c.conversationId)
                             ConversationActivity.showAndClear(requireContext(), c.conversationId)
@@ -96,12 +103,12 @@ class JoinGroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragm
                     binding.joinTv.visibility = View.VISIBLE
                     binding.joinProgress.visibility = View.GONE
                     ErrorHandler.handleError(it)
-                }
+                },
             )
         }
         binding.detailTv.movementMethod = LinkMovementMethod()
         binding.detailTv.addAutoLinkMode(AutoLinkMode.MODE_URL)
-        binding.detailTv.setUrlModeColor(BaseViewHolder.LINK_COLOR)
+        binding.detailTv.setUrlModeColor(LINK_COLOR)
         binding.detailTv.setAutoLinkOnClickListener { _, url ->
             url.openAsUrlOrWeb(requireContext(), c.conversationId, parentFragmentManager, lifecycleScope)
             dismiss()
@@ -122,27 +129,31 @@ class JoinGroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragm
         loadConversation()
     }
 
-    private fun loadConversation() = lifecycleScope.launch {
-        if (!isAdded) return@launch
+    private fun loadConversation() =
+        lifecycleScope.launch {
+            if (!isAdded) return@launch
 
-        binding.name.text = c.name
-        if (c.announcement.isBlank()) {
-            binding.detailTv.isVisible = false
-        } else {
-            binding.detailTv.isVisible = true
-            binding.detailTv.text = c.announcement
+            binding.name.text = c.name
+            if (c.announcement.isBlank()) {
+                binding.detailTv.isVisible = false
+            } else {
+                binding.detailTv.isVisible = true
+                binding.detailTv.text = c.announcement
+            }
+            binding.countTv.text =
+                requireContext().resources.getQuantityString(R.plurals.title_participants, c.participantsCount, c.participantsCount)
+            c.iconUrl?.let { binding.avatar.setGroup(it) }
+            binding.joinTv.isVisible = true
+
+            contentView.doOnPreDraw {
+                behavior?.peekHeight = requireContext().navigationBarHeight() + binding.title.height + binding.scrollContent.height
+            }
         }
-        binding.countTv.text =
-            getString(R.string.group_participants_count, c.participantsCount)
-        c.iconUrl?.let { binding.avatar.setGroup(it) }
-        binding.joinTv.isVisible = true
 
-        contentView.doOnPreDraw {
-            behavior?.peekHeight = binding.title.height + binding.scrollContent.height
-        }
-    }
-
-    override fun onStateChanged(bottomSheet: View, newState: Int) {
+    override fun onStateChanged(
+        bottomSheet: View,
+        newState: Int,
+    ) {
         when (newState) {
             BottomSheetBehavior.STATE_HIDDEN -> dismissAllowingStateLoss()
         }

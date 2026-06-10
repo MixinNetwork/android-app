@@ -1,60 +1,36 @@
 package one.mixin.android.ui.home.bot
 
 import androidx.annotation.DrawableRes
-import one.mixin.android.MixinApplication
+import androidx.annotation.StringRes
 import one.mixin.android.R
-import one.mixin.android.util.GsonHelper
-import one.mixin.android.vo.App
 import one.mixin.android.vo.BotInterface
 
-data class Bot(val id: String, val name: String, @DrawableRes val icon: Int) : BotInterface {
+data class Bot(
+    val id: String,
+    @StringRes val name: Int,
+    @StringRes val description: Int,
+    @DrawableRes val icon: Int,
+) : BotInterface {
     override fun getBotId() = id
 }
 
-const val INTERNAL_WALLET_ID = "1462e610-7de1-4865-bc06-d71cfcbd0329"
-const val INTERNAL_CAMERA_ID = "15366a81-077c-414b-8829-552c5c87a2ae"
-const val INTERNAL_SCAN_ID = "1cc9189a-ddcd-4b95-a18b-4411da1b8d80"
+const val INTERNAL_BUY_ID = "DC2C902F-7236-4049-85BC-5ECBD1971668"
+const val INTERNAL_SWAP_ID = "656A2DB8-F4DC-4035-AFDF-53F7321F47DB"
+const val INTERNAL_MEMBER_ID = "1592B537-E96D-45E4-B937-15E51FE9BAB7"
 
-const val TOP_BOT = "top_bot"
+const val INTERNAL_REFERRAL_ID = "b35af74d-cca6-400c-a62b-5a7e659de91e"
+const val INTERNAL_LINK_DESKTOP_ID = "7C4346C7-CFEF-40CD-AC70-4041FDC3D941"
 
-val DefaultTopBots: String = GsonHelper.customGson.toJson(arrayOf(INTERNAL_WALLET_ID, INTERNAL_SCAN_ID))
+const val INTERNAL_SUPPORT_ID = "77443b1f-bbr4-4aad-8b6b-b8f58761e2e9"
 
-val InternalWallet = Bot(INTERNAL_WALLET_ID, MixinApplication.appContext.getString(R.string.bot_internal_wallet), R.drawable.ic_bot_wallet)
-val InternalCamera = Bot(INTERNAL_CAMERA_ID, MixinApplication.appContext.getString(R.string.bot_internal_camera), R.drawable.ic_bot_camera)
-val InternalScan = Bot(INTERNAL_SCAN_ID, MixinApplication.appContext.getString(R.string.bot_internal_scan), R.drawable.ic_bot_scan)
+val InternalBuy = Bot(INTERNAL_BUY_ID, R.string.Buy, R.string.buy_crypto_with_cash, R.drawable.ic_bot_buy)
+val InternalSwap = Bot(INTERNAL_SWAP_ID, R.string.Trade, R.string.trade_native_tokens, R.drawable.ic_bot_swap)
+val InternalMember = Bot(INTERNAL_MEMBER_ID, R.string.Mixin_One, R.string.mixin_one_desc, R.drawable.ic_bot_member)
 
-enum class BotCategory(@DrawableRes val icon: Int) {
-    TRADING(R.drawable.ic_bot_category_trading),
-    BUSINESS(R.drawable.ic_bot_category_business),
-    BOOKS(R.drawable.ic_bot_category_books),
-    EDUCATION(R.drawable.ic_bot_category_education),
-    SOCIAL(R.drawable.ic_bot_category_social),
-    GAMES(R.drawable.ic_bot_category_games),
-    MUSIC(R.drawable.ic_bot_category_music),
-    NEWS(R.drawable.ic_bot_category_news),
-    SHOPPING(R.drawable.ic_bot_category_shopping),
-    TOOLS(R.drawable.ic_bot_category_tools),
-    VIDEO(R.drawable.ic_bot_category_video),
-    WALLET(R.drawable.ic_bot_category_wallet),
-    PHOTO(R.drawable.ic_bot_category_photo),
-    OTHER(R.drawable.ic_bot_category_other),
-}
+val InternalReferral = Bot(INTERNAL_REFERRAL_ID, R.string.Referral, R.string.referral_description, R.drawable.ic_bot_referral)
+val InternalLinkDesktop = Bot(INTERNAL_LINK_DESKTOP_ID, R.string.Link_desktop, R.string.link_desktop_description, R.drawable.ic_bot_desktop)
+val InternalSupport = Bot(INTERNAL_SUPPORT_ID, R.string.Contact_Support, R.string.leave_message_to_team_mixin, R.drawable.ic_bot_support)
 
-@DrawableRes
-fun App.getCategoryIcon(): Int = when (category) {
-    BotCategory.BOOKS.name -> BotCategory.BOOKS.icon
-    BotCategory.BUSINESS.name -> BotCategory.BUSINESS.icon
-    BotCategory.SOCIAL.name -> BotCategory.SOCIAL.icon
-    BotCategory.TRADING.name -> BotCategory.TRADING.icon
-    BotCategory.GAMES.name -> BotCategory.GAMES.icon
-    BotCategory.MUSIC.name -> BotCategory.MUSIC.icon
-    BotCategory.NEWS.name -> BotCategory.NEWS.icon
-    BotCategory.OTHER.name -> BotCategory.OTHER.icon
-    BotCategory.SHOPPING.name -> BotCategory.SHOPPING.icon
-    BotCategory.EDUCATION.name -> BotCategory.EDUCATION.icon
-    BotCategory.TOOLS.name -> BotCategory.TOOLS.icon
-    BotCategory.VIDEO.name -> BotCategory.VIDEO.icon
-    BotCategory.WALLET.name -> BotCategory.WALLET.icon
-    BotCategory.PHOTO.name -> BotCategory.PHOTO.icon
-    else -> BotCategory.OTHER.icon
-}
+val InternalLinkDesktopLogged = Bot(INTERNAL_LINK_DESKTOP_ID, R.string.Link_desktop, R.string.Logined, R.drawable.ic_bot_desktop_logged)
+
+val InternalBots = listOf(InternalBuy, InternalSwap, InternalMember, InternalReferral, InternalLinkDesktop, InternalSupport)

@@ -1,51 +1,50 @@
 package one.mixin.android.ui.contacts
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.work.WorkManager
-import com.tbruyelle.rxpermissions2.RxPermissions
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import ir.mirrajabi.rxcontacts.Contact
-import ir.mirrajabi.rxcontacts.RxContacts
 import one.mixin.android.Constants.Account.PREF_DELETE_MOBILE_CONTACTS
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentContactsBinding
 import one.mixin.android.databinding.ViewContactHeaderBinding
 import one.mixin.android.databinding.ViewContactListEmptyBinding
+import one.mixin.android.event.MembershipEvent
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshContactJob
 import one.mixin.android.job.UploadContactsJob
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment.Companion.TYPE_MY_QR
-import one.mixin.android.ui.common.QrBottomSheetDialogFragment.Companion.TYPE_RECEIVE_QR
-import one.mixin.android.ui.common.UserBottomSheetDialogFragment
+import one.mixin.android.ui.common.ReceiveQrActivity
 import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.group.GroupActivity
 import one.mixin.android.ui.setting.SettingActivity
+import one.mixin.android.util.rxcontact.Contact
+import one.mixin.android.util.rxcontact.RxContacts
+import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
-import one.mixin.android.worker.RefreshContactWorker
 import java.util.Collections
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
-
     @Inject
     lateinit var jobManager: MixinJobManager
 
@@ -63,7 +62,11 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
 
     private val binding by viewBinding(FragmentContactsBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    @SuppressLint("NotifyDataSetChanged")
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             contactRecyclerView.adapter = contactAdapter
@@ -80,8 +83,14 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
                 contactAdapter.hideEmptyFooter()
             }
             contactAdapter.setContactListener(mContactListener)
-            titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
-            titleView.rightAnimator.setOnClickListener { SettingActivity.show(requireContext()) }
+            titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+            titleView.rightAnimator.setOnClickListener {
+                SettingActivity.show(requireContext(), compose = false)
+            }
+            titleView.rightAnimator.setOnLongClickListener {
+                SettingActivity.show(requireContext())
+                true
+            }
         }
 
         if (hasContactPermission() &&
@@ -92,41 +101,49 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
 
         contactsViewModel.findContacts().observe(
             viewLifecycleOwner,
-            { users ->
-                if (users != null && users.isNotEmpty()) {
-                    if (!hasContactPermission()) {
-                        contactAdapter.friendSize = users.size
-                        contactAdapter.users = users
-                    } else {
-                        val newList = arrayListOf<User>().apply {
+        ) { users ->
+            if (users != null && users.isNotEmpty()) {
+                if (!hasContactPermission()) {
+                    contactAdapter.friendSize = users.size
+                    contactAdapter.users = users
+                } else {
+                    val newList =
+                        arrayListOf<User>().apply {
                             addAll(users)
                             addAll(contactAdapter.users.filter { it.relationship != UserRelationship.FRIEND.name })
                         }
-                        contactAdapter.friendSize = users.size
-                        contactAdapter.users = newList
-                    }
-                } else {
-                    if (!hasContactPermission()) {
-                        contactAdapter.users = Collections.emptyList()
-                    }
+                    contactAdapter.friendSize = users.size
+                    contactAdapter.users = newList
                 }
-                contactAdapter.notifyDataSetChanged()
+            } else {
+                if (!hasContactPermission()) {
+                    contactAdapter.users = Collections.emptyList()
+                }
             }
-        )
+            contactAdapter.notifyDataSetChanged()
+        }
         contactsViewModel.findSelf().observe(
             viewLifecycleOwner,
-            { self ->
-                if (self != null) {
-                    contactAdapter.me = self
+        ) { self ->
+            if (self != null) {
+                contactAdapter.me = self
+                contactAdapter.notifyDataSetChanged()
+            }
+        }
+        RxBus.listen(MembershipEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(pauseScope)
+            .subscribe { _ ->
+                if (isAdded) {
                     contactAdapter.notifyDataSetChanged()
                 }
             }
-        )
     }
 
     private fun hasContactPermission() =
         requireContext().checkSelfPermission(Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun fetchContacts() {
         RxContacts.fetch(requireContext())
             .toSortedList(Contact::compareTo)
@@ -140,8 +157,15 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
                         item.phoneNumbers.mapTo(mutableList) {
                             User(
                                 "",
-                                "", "contact", "", item.displayName,
-                                "", it, false, "", null
+                                "",
+                                "contact",
+                                "",
+                                item.displayName,
+                                "",
+                                it,
+                                false,
+                                "",
+                                null,
                             )
                         }
                     }
@@ -149,66 +173,63 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
                     contactAdapter.users = mutableList
                     contactAdapter.notifyDataSetChanged()
                 },
-                { }
+                { },
             )
         jobManager.addJobInBackground(UploadContactsJob())
     }
 
-    private val mContactListener: ContactsAdapter.ContactListener = object : ContactsAdapter.ContactListener {
+    private val mContactListener: ContactsAdapter.ContactListener =
+        object : ContactsAdapter.ContactListener {
+            override fun onHeaderRl() {
+                ProfileBottomSheetDialogFragment.newInstance().showNow(
+                    parentFragmentManager,
+                    ProfileBottomSheetDialogFragment.TAG,
+                )
+            }
 
-        override fun onHeaderRl() {
-            ProfileBottomSheetDialogFragment.newInstance().showNow(
-                parentFragmentManager,
-                UserBottomSheetDialogFragment.TAG
-            )
-        }
+            override fun onNewGroup() {
+                GroupActivity.show(requireContext())
+            }
 
-        override fun onNewGroup() {
-            GroupActivity.show(requireContext())
-        }
+            override fun onAddContact() {
+                activity?.addFragment(this@ContactsFragment, AddPeopleFragment.newInstance(), AddPeopleFragment.TAG)
+            }
 
-        override fun onAddContact() {
-            activity?.addFragment(this@ContactsFragment, AddPeopleFragment.newInstance(), AddPeopleFragment.TAG)
-        }
-
-        override fun onEmptyRl() {
-            RxPermissions(requireActivity())
-                .request(Manifest.permission.READ_CONTACTS)
-                .autoDispose(stopScope)
-                .subscribe { granted ->
-                    if (granted) {
-                        contactAdapter.hideEmptyFooter()
-                        jobManager.addJobInBackground(UploadContactsJob())
-                        fetchContacts()
-                        context?.let { context ->
-                            WorkManager.getInstance(context).enqueueOneTimeNetworkWorkRequest<RefreshContactWorker>()
+            override fun onEmptyRl() {
+                RxPermissions(requireActivity())
+                    .request(Manifest.permission.READ_CONTACTS)
+                    .autoDispose(stopScope)
+                    .subscribe { granted ->
+                        if (granted) {
+                            contactAdapter.hideEmptyFooter()
+                            jobManager.addJobInBackground(UploadContactsJob())
+                            fetchContacts()
+                            jobManager.addJobInBackground(RefreshContactJob())
+                        } else {
+                            context?.openPermissionSetting()
                         }
-                    } else {
-                        context?.openPermissionSetting()
                     }
+            }
+
+            override fun onFriendItem(user: User) {
+                context?.let { ctx -> ConversationActivity.show(ctx, null, user.userId) }
+            }
+
+            override fun onContactItem(user: User) {
+                ContactBottomSheetDialog.newInstance(user).showNow(parentFragmentManager, ContactBottomSheetDialog.TAG)
+            }
+
+            override fun onMyQr(self: User?) {
+                self?.let {
+                    QrBottomSheetDialogFragment.newInstance(it.userId, TYPE_MY_QR)
+                        .showNow(parentFragmentManager, QrBottomSheetDialogFragment.TAG)
                 }
-        }
+            }
 
-        override fun onFriendItem(user: User) {
-            context?.let { ctx -> ConversationActivity.show(ctx, null, user.userId) }
-        }
-
-        override fun onContactItem(user: User) {
-            ContactBottomSheetDialog.newInstance(user).showNow(parentFragmentManager, ContactBottomSheetDialog.TAG)
-        }
-
-        override fun onMyQr(self: User?) {
-            self?.let {
-                QrBottomSheetDialogFragment.newInstance(it.userId, TYPE_MY_QR)
-                    .showNow(parentFragmentManager, QrBottomSheetDialogFragment.TAG)
+            override fun onReceiveQr(self: User?) {
+                self?.let {
+                    ReceiveQrActivity.show(requireContext(), it.userId)
+                }
             }
         }
-
-        override fun onReceiveQr(self: User?) {
-            self?.let {
-                QrBottomSheetDialogFragment.newInstance(it.userId, TYPE_RECEIVE_QR)
-                    .showNow(parentFragmentManager, QrBottomSheetDialogFragment.TAG)
-            }
-        }
-    }
 }

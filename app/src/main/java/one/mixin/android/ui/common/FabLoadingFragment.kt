@@ -3,18 +3,21 @@ package one.mixin.android.ui.common
 import android.os.Bundle
 import android.view.View
 import androidx.annotation.LayoutRes
-import com.github.jorgecastilloprz.FABProgressCircle
-import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.reportException
 import one.mixin.android.widget.Keyboard
+import one.mixin.android.widget.fabprogresscircle.FABProgressCircle
 
 abstract class FabLoadingFragment : BaseFragment {
     constructor() : super()
-    constructor(@LayoutRes contentLayoutId: Int) : super(contentLayoutId)
+    constructor(
+        @LayoutRes contentLayoutId: Int,
+    ) : super(contentLayoutId)
 
     abstract fun getContentView(): View
+
     protected val _contentView get() = getContentView()
 
     protected val backIv: View by lazy {
@@ -30,10 +33,13 @@ abstract class FabLoadingFragment : BaseFragment {
         _contentView.findViewById(R.id.verification_next_fab)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
-        backIv.setOnClickListener { activity?.onBackPressed() }
-        verificationKeyboard.setKeyboardKeys(Constants.KEYS)
+        backIv.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+        verificationKeyboard.initPinKeys()
         verificationCover.isClickable = true
     }
 
@@ -43,6 +49,7 @@ abstract class FabLoadingFragment : BaseFragment {
         verificationNextFab.hide()
         verificationCover.visibility = View.GONE
         ErrorHandler.handleError(t)
+        reportException("FabLoadingFragment $this ", t)
     }
 
     protected fun showLoading() {

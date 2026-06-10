@@ -4,11 +4,14 @@
         android:shortcutId="wallet"
         android:enabled="true"
         android:icon="@mipmap/ic_adaptive_shortcut_wallet"
-        android:shortcutShortLabel="@string/shortcut_wallet_label">
+        android:shortcutShortLabel="@string/Wallet">
         <intent
             android:action="android.intent.action.VIEW"
             android:targetPackage="one.mixin.messenger"
-            android:targetClass="one.mixin.android.ui.wallet.WalletActivity" />
+            android:targetClass="one.mixin.android.ui.home.MainActivity" >
+
+            <extra android:name="wallet" android:value="true" />
+        </intent>
         <categories android:name="android.shortcut.conversation" />
     </shortcut>
 
@@ -16,7 +19,7 @@
         android:shortcutId="scan"
         android:enabled="true"
         android:icon="@mipmap/ic_adaptive_shortcut_scan"
-        android:shortcutShortLabel="@string/shortcut_scan_label">
+        android:shortcutShortLabel="@string/Scan">
         <intent
             android:action="android.intent.action.VIEW"
             android:targetPackage="one.mixin.messenger"

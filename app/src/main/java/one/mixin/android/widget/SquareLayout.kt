@@ -12,7 +12,6 @@ import one.mixin.android.R
 import one.mixin.android.extension.dp
 
 class SquareLayout : FrameLayout {
-
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
@@ -29,14 +28,17 @@ class SquareLayout : FrameLayout {
     private val path = Path()
     private var rect: RectF? = null
 
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+    override fun onMeasure(
+        widthMeasureSpec: Int,
+        heightMeasureSpec: Int,
+    ) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         val w = measuredWidth
         val h = measuredHeight
         val size = if (w > h) w else h
         super.onMeasure(
             MeasureSpec.makeMeasureSpec(size, MeasureSpec.EXACTLY),
-            MeasureSpec.makeMeasureSpec(size, MeasureSpec.EXACTLY)
+            MeasureSpec.makeMeasureSpec(size, MeasureSpec.EXACTLY),
         )
         if (rect == null) {
             rect = RectF(0f, 0f, measuredWidth.toFloat(), measuredHeight.toFloat())

@@ -3,34 +3,40 @@ package one.mixin.android.ui.web
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.Dialog
 import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.Context
 import android.content.Intent
+import android.content.Intent.ACTION_VIEW
+import android.content.Intent.CATEGORY_BROWSABLE
+import android.content.Intent.FLAG_ACTIVITY_REQUIRE_NON_BROWSER
 import android.content.pm.ActivityInfo
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
+import android.media.MediaScannerConnection
 import android.net.Uri
+import android.net.http.SslError
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.provider.Settings
 import android.util.Base64
+import android.util.Log
 import android.view.ContextMenu
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
-import android.view.View.INVISIBLE
-import android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.webkit.GeolocationPermissions
 import android.webkit.JavascriptInterface
 import android.webkit.PermissionRequest
+import android.webkit.SslErrorHandler
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
+import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -41,19 +47,34 @@ import android.webkit.WebViewClient.ERROR_TIMEOUT
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.app.ShareCompat
+import androidx.core.graphics.createBitmap
+import androidx.core.graphics.toColorInt
+import androidx.core.view.ViewCompat
+import androidx.core.view.drawToBitmap
+import androidx.core.view.get
 import androidx.core.view.isGone
+import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import com.bumptech.glide.Glide
+import androidx.webkit.WebSettingsCompat
+import androidx.webkit.WebViewFeature
+import coil3.annotation.ExperimentalCoilApi
+import coil3.imageLoader
+import coil3.request.ImageRequest
+import coil3.request.SuccessResult
+import coil3.toBitmap
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
-import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -62,77 +83,117 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Account.PREF_RECENT_SEARCH
 import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.api.response.AuthorizationResponse
+import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.databinding.FragmentWebBinding
 import one.mixin.android.databinding.ViewWebBottomMenuBinding
+import one.mixin.android.event.SearchEvent
 import one.mixin.android.extension.REQUEST_CAMERA
+import one.mixin.android.extension.alert
 import one.mixin.android.extension.checkInlinePermissions
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.copy
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getOtherPath
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getPublicPicturePath
+import one.mixin.android.extension.getSafeAreaInsetsBottom
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isDarkColor
+import one.mixin.android.extension.isExternalTransferUrl
+import one.mixin.android.extension.isLightningUrl
 import one.mixin.android.extension.isMixinUrl
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.extension.matchResourcePattern
 import one.mixin.android.extension.openAsUrl
 import one.mixin.android.extension.openAsUrlOrQrScan
 import one.mixin.android.extension.openCamera
+import one.mixin.android.extension.openInBrowser
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.openUrl
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.showPipPermissionNotification
+import one.mixin.android.extension.toOpenInBrowserUrlOrNull
 import one.mixin.android.extension.toUri
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
+import one.mixin.android.session.Session.getBotSignature
+import one.mixin.android.tip.Tip
+import one.mixin.android.tip.TipSignSpec
+import one.mixin.android.tip.privateKeyToAddress
+import one.mixin.android.tip.wc.WalletConnect
+import one.mixin.android.tip.wc.WalletConnectTIP
+import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.info.createMenuLayout
 import one.mixin.android.ui.common.info.menu
 import one.mixin.android.ui.common.info.menuList
+import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment.Companion.PERMISSION_AUDIO
 import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment.Companion.PERMISSION_VIDEO
 import one.mixin.android.ui.forward.ForwardActivity
+import one.mixin.android.ui.landing.LandingActivity
+import one.mixin.android.ui.home.web3.showGasCheckAndBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.player.MusicActivity
-import one.mixin.android.ui.player.MusicViewModel
-import one.mixin.android.ui.player.internal.MUSIC_PLAYLIST
-import one.mixin.android.ui.player.internal.MusicServiceConnection
-import one.mixin.android.ui.player.provideMusicViewModel
+import one.mixin.android.ui.player.MusicService
+import one.mixin.android.ui.player.MusicService.Companion.MUSIC_PLAYLIST
+import one.mixin.android.ui.player.collapse as collapsePlayer
 import one.mixin.android.ui.qr.QRCodeProcessor
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.setting.SettingActivity.Companion.ARGS_SUCCESS
+import one.mixin.android.ui.tip.wc.sessionproposal.PeerUI
+import one.mixin.android.ui.tip.wc.showWalletConnectBottomSheetDialogFragment
+import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.language.Lingver
+import one.mixin.android.util.SystemUIManager
+import one.mixin.android.util.getCountry
+import one.mixin.android.util.getLanguage
+import one.mixin.android.util.isFollowSystem
+import one.mixin.android.util.reportException
+import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardMessage
+import one.mixin.android.vo.RecentSearch
+import one.mixin.android.vo.RecentSearchType
 import one.mixin.android.vo.ShareCategory
-import one.mixin.android.vo.matchResourcePattern
+import one.mixin.android.web3.convertWcLink
+import one.mixin.android.web3.js.DAppMethod
+import one.mixin.android.web3.js.JsInjectorClient
+import one.mixin.android.web3.js.JsSignMessage
+import one.mixin.android.web3.js.SolanaTxSource
+import one.mixin.android.web3.js.SwitchChain
+import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.FailLoadView
 import one.mixin.android.widget.MixinWebView
 import one.mixin.android.widget.SuspiciousLinkView
 import one.mixin.android.widget.WebControlView
+import org.json.JSONObject
 import timber.log.Timber
 import java.io.ByteArrayInputStream
-import java.io.FileInputStream
+import java.net.URI
 import java.net.URISyntaxException
-import java.util.concurrent.TimeUnit
+import java.util.Locale
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -142,12 +203,16 @@ class WebFragment : BaseFragment() {
         private const val FILE_CHOOSER = 0x01
         private const val CONTEXT_MENU_ID_SCAN_IMAGE = 0x11
         private const val CONTEXT_MENU_ID_SAVE_IMAGE = 0x12
+        private const val CONTEXT_MENU_ID_COPY_LINK = 0x13
         const val URL = "url"
         const val CONVERSATION_ID = "conversation_id"
         const val ARGS_APP = "args_app"
         const val ARGS_APP_CARD = "args_app_card"
         const val ARGS_INDEX = "args_index"
         const val ARGS_SHAREABLE = "args_shareable"
+        const val ARGS_SAVE_NAME = "args_save_name"
+        const val ARGS_INJECTABLE = "args_injectable"
+        const val ARGS_FIXED_TITLE = "args_fixed_title"
         const val themeColorScript =
             """
             (function() {
@@ -162,17 +227,12 @@ class WebFragment : BaseFragment() {
             """
 
         fun newInstance(
-            bundle: Bundle
+            bundle: Bundle,
         ) = WebFragment().apply {
             arguments = bundle
         }
     }
 
-    @Inject
-    lateinit var musicServiceConnection: MusicServiceConnection
-    private val musicViewModel by viewModels<MusicViewModel> {
-        provideMusicViewModel(musicServiceConnection, MUSIC_PLAYLIST)
-    }
     private val bottomViewModel by viewModels<BottomSheetViewModel>()
     private val url: String by lazy {
         requireArguments().getString(URL)!!
@@ -182,36 +242,67 @@ class WebFragment : BaseFragment() {
     }
     private var app: App? = null
     private val appCard: AppCardData? by lazy {
-        requireArguments().getParcelable(ARGS_APP_CARD)
+        requireArguments().getParcelableCompat(ARGS_APP_CARD, AppCardData::class.java)
     }
     private val shareable: Boolean by lazy {
         requireArguments().getBoolean(ARGS_SHAREABLE, true)
     }
-    private var index: Int = -1
+
+    private val injectable: Boolean by lazy {
+        requireArguments().getBoolean(ARGS_INJECTABLE, true)
+    }
+    private val fixedTitle: String? by lazy {
+        requireArguments().getString(ARGS_FIXED_TITLE)
+    }
+
     private var currentUrl: String? = null
+    private var currentTitle: String? = null
     private var isFinished: Boolean = false
     private val processor = QRCodeProcessor()
     private var webAppInterface: WebAppInterface? = null
+    private var index: Int = -1
+
+    fun resetIndex(index: Int) {
+        if (this.index == index) {
+            this.index = -1
+        }
+    }
+
+    @Inject
+    lateinit var tip: Tip
 
     private lateinit var getPermissionResult: ActivityResultLauncher<Pair<App, AuthorizationResponse>>
 
     override fun onCreateContextMenu(
         menu: ContextMenu,
         v: View,
-        menuInfo: ContextMenu.ContextMenuInfo?
+        menuInfo: ContextMenu.ContextMenuInfo?,
     ) {
         super.onCreateContextMenu(menu, v, menuInfo)
         webView.hitTestResult.let {
             when (it.type) {
                 WebView.HitTestResult.IMAGE_TYPE, WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE -> {
-                    menu.add(0, CONTEXT_MENU_ID_SCAN_IMAGE, 0, R.string.contact_sq_scan_title)
-                    menu.getItem(0).setOnMenuItemClickListener { menu ->
+                    menu.add(0, CONTEXT_MENU_ID_SCAN_IMAGE, 0, R.string.Extract_QR_Code)
+                    menu[0].setOnMenuItemClickListener { menu ->
                         onContextItemSelected(menu)
                         return@setOnMenuItemClickListener true
                     }
-                    menu.add(0, CONTEXT_MENU_ID_SAVE_IMAGE, 1, R.string.contact_save_image)
-                    menu.getItem(1).setOnMenuItemClickListener { menu ->
+                    menu.add(0, CONTEXT_MENU_ID_SAVE_IMAGE, 1, R.string.Save_image)
+                    menu[1].setOnMenuItemClickListener { menu ->
                         onContextItemSelected(menu)
+                        return@setOnMenuItemClickListener true
+                    }
+                }
+                WebView.HitTestResult.SRC_ANCHOR_TYPE, WebView.HitTestResult.ANCHOR_TYPE -> {
+                    menu.add(0, CONTEXT_MENU_ID_COPY_LINK, 0, R.string.Copy_link)
+                    menu[0].setOnMenuItemClickListener { _ ->
+                        requireContext().getClipboardManager().setPrimaryClip(
+                            ClipData.newPlainText(
+                                null,
+                                it.extra,
+                            ),
+                        )
+                        toast(R.string.copied_to_clipboard)
                         return@setOnMenuItemClickListener true
                     }
                 }
@@ -234,15 +325,16 @@ class WebFragment : BaseFragment() {
             if (item.itemId == CONTEXT_MENU_ID_SCAN_IMAGE) {
                 lifecycleScope.launch {
                     try {
-                        val bitmap = withContext(Dispatchers.IO) {
-                            Glide.with(requireContext())
-                                .asBitmap()
-                                .load(url)
-                                .submit()
-                                .get(10, TimeUnit.SECONDS)
-                        }
-                        if (isDetached) return@launch
+                        val result =
+                            withContext(Dispatchers.IO) {
+                                val loader = requireContext().imageLoader
+                                val request = ImageRequest.Builder(requireContext()).data(url).build()
+                                loader.execute(request)
+                            }
 
+                        if (isDetached) return@launch
+                        if (result !is SuccessResult) return@launch
+                        val bitmap = result.image.toBitmap()
                         processor.detect(
                             lifecycleScope,
                             bitmap,
@@ -250,15 +342,15 @@ class WebFragment : BaseFragment() {
                                 result.openAsUrlOrQrScan(
                                     requireActivity(),
                                     parentFragmentManager,
-                                    lifecycleScope
+                                    lifecycleScope,
                                 )
                             },
                             onFailure = {
-                                if (isAdded) toast(R.string.can_not_recognize)
-                            }
+                                if (isAdded) toast(R.string.can_not_recognize_qr_code)
+                            },
                         )
                     } catch (e: Exception) {
-                        if (isAdded) toast(R.string.can_not_recognize)
+                        if (isAdded) toast(R.string.can_not_recognize_qr_code)
                     }
                 }
                 return true
@@ -269,12 +361,16 @@ class WebFragment : BaseFragment() {
         return super.onContextItemSelected(item)
     }
 
+    private lateinit var pickMedia: ActivityResultLauncher<PickVisualMediaRequest>
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         getPermissionResult = registerForActivityResult(SettingActivity.PermissionContract(), requireActivity().activityResultRegistry, ::callbackPermission)
+        pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia(), requireActivity().activityResultRegistry, ::callbackPicker)
     }
 
     var uploadMessage: ValueCallback<Array<Uri>>? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         index = requireArguments().getInt(ARGS_INDEX, -1)
@@ -282,10 +378,11 @@ class WebFragment : BaseFragment() {
 
     private var _binding: FragmentWebBinding? = null
     private val binding get() = requireNotNull(_binding)
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         _binding = FragmentWebBinding.inflate(layoutInflater, container, false)
         return binding.root
@@ -293,22 +390,30 @@ class WebFragment : BaseFragment() {
 
     private lateinit var contentView: ViewGroup
     private lateinit var webView: MixinWebView
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        contentView = binding.container
-        webView = if (index >= 0 && index < clips.size) {
-            clips[index].let { clip ->
-                binding.titleTv.text = clip.name
-                clip.icon?.let { icon ->
-                    this.icon = icon
-                    binding.iconIv.isVisible = true
-                    binding.iconIv.setImageBitmap(icon)
-                }
-                isFinished = clip.isFinished
-                clip.webView ?: MixinWebView(MixinApplication.get().contextWrapper)
-            }
-        } else {
-            MixinWebView(MixinApplication.get().contextWrapper)
+
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
+        if (activity is LandingActivity) {
+            applySafeTopPadding(view)
         }
+        contentView = binding.containerView
+        webView =
+            if (index >= 0 && index < clips.size) {
+                clips[index].let { clip ->
+                    binding.titleTv.text = clip.name
+                    clip.icon?.let { icon ->
+                        this.icon = icon
+                        binding.iconIv.isVisible = true
+                        binding.iconIv.setImageBitmap(icon)
+                    }
+                    isFinished = clip.isFinished
+                    clip.webView ?: MixinWebView(MixinApplication.get().contextWrapper)
+                }
+            } else {
+                MixinWebView(MixinApplication.get().contextWrapper)
+            }
         if (webView.parent != null) {
             (webView.parent as? ViewGroup)?.removeView(webView)
         }
@@ -316,47 +421,62 @@ class WebFragment : BaseFragment() {
         binding.webControl.updateLayoutParams<ViewGroup.MarginLayoutParams> {
             topMargin = requireContext().dpToPx(6f)
         }
+        if (!injectable) {
+            binding.titleVa.displayedChild = 1
+            binding.webControl.isVisible = false
+            binding.webClose.isVisible = true
+        } else {
+            binding.titleVa.displayedChild = 0
+            binding.webControl.isVisible = true
+            binding.webClose.isVisible = false
+        }
         registerForContextMenu(webView)
 
         WebView.setWebContentsDebuggingEnabled(
             defaultSharedPreferences.getBoolean(
                 Constants.Debug.WEB_DEBUG,
-                false
-            )
+                false,
+            ),
         )
 
-        app = requireArguments().getParcelable(ARGS_APP)
+        app = requireArguments().getParcelableCompat(ARGS_APP, App::class.java)
 
         initView()
 
-        appCard.notNullWithElse(
-            {
-                checkAppCard(it)
-            },
-            {
-                loadWebView()
-            }
-        )
-        if (requireContext().checkInlinePermissions()) {
-            showClip()
-        }
-    }
-
-    private fun checkAppCard(appCard: AppCardData) = lifecycleScope.launch {
-        if (viewDestroyed()) return@launch
-
-        if (appCard.appId != null) {
-            app = bottomViewModel.getAppAndCheckUser(appCard.appId, appCard.updatedAt)
-            if (app.matchResourcePattern(url)) {
-                controlSuspiciousView(false)
-                loadWebView()
-            } else {
-                controlSuspiciousView(true)
-            }
+        val card = appCard
+        if (card != null) {
+            checkAppCard(card)
         } else {
             loadWebView()
         }
     }
+
+    private fun applySafeTopPadding(rootView: View) {
+        val originalPaddingTop: Int = rootView.paddingTop
+        ViewCompat.setOnApplyWindowInsetsListener(rootView) { v: View, insets: WindowInsetsCompat ->
+            val topInset: Int = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
+            v.setPadding(v.paddingLeft, originalPaddingTop + topInset, v.paddingRight, v.paddingBottom)
+            insets
+        }
+        ViewCompat.requestApplyInsets(rootView)
+    }
+
+    private fun checkAppCard(appCard: AppCardData) =
+        lifecycleScope.launch {
+            if (viewDestroyed()) return@launch
+
+            if (appCard.appId != null) {
+                app = bottomViewModel.getAppAndCheckUser(appCard.appId, appCard.updatedAt)
+                if (url.matchResourcePattern(app?.resourcePatterns)) {
+                    controlSuspiciousView(false)
+                    loadWebView()
+                } else {
+                    controlSuspiciousView(true)
+                }
+            } else {
+                loadWebView()
+            }
+        }
 
     private fun controlSuspiciousView(show: Boolean) {
         _binding?.apply {
@@ -373,63 +493,76 @@ class WebFragment : BaseFragment() {
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun initView() {
-        binding.suspiciousLinkView.listener = object : SuspiciousLinkView.SuspiciousListener {
-            override fun onBackClick() {
-                requireActivity().finish()
-            }
-
-            override fun onContinueClick() {
-                loadWebView()
-                controlSuspiciousView(false)
-            }
+        activity?.window?.let { window->
+            SystemUIManager.lightUI(window , requireContext().isNightMode().not())
         }
-        app.notNullWithElse(
-            {
-                binding.failLoadView.contactTv.visibility = VISIBLE
-            },
-            {
-                binding.failLoadView.contactTv.visibility = INVISIBLE
-            }
-        )
-        binding.failLoadView.listener = object : FailLoadView.FailLoadListener {
-            override fun onReloadClick() {
-                refresh()
-            }
+        binding.suspiciousLinkView.listener =
+            object : SuspiciousLinkView.SuspiciousListener {
+                override fun onBackClick() {
+                    requireActivity().finish()
+                }
 
-            override fun onContactClick() {
-                app?.let { app ->
-                    lifecycleScope.launch {
-                        val user = bottomViewModel.refreshUser(app.creatorId)
-                        if (user != null) {
-                            ConversationActivity.show(requireContext(), recipientId = app.creatorId)
-                            this@WebFragment.requireActivity().finish()
+                override fun onContinueClick() {
+                    loadWebView()
+                    controlSuspiciousView(false)
+                }
+            }
+        binding.failLoadView.contactTv.isInvisible = app == null
+        binding.failLoadView.listener =
+            object : FailLoadView.FailLoadListener {
+                override fun onReloadClick() {
+                    refresh()
+                }
+
+                override fun onContactClick() {
+                    app?.let { app ->
+                        lifecycleScope.launch {
+                            val user = bottomViewModel.refreshUser(app.creatorId)
+                            if (user != null) {
+                                if (app.creatorId == Session.getAccountId()) {
+                                    ProfileBottomSheetDialogFragment.newInstance()
+                                        .showNow(parentFragmentManager, ProfileBottomSheetDialogFragment.TAG)
+                                    return@launch
+                                }
+
+                                ConversationActivity.show(requireContext(), recipientId = app.creatorId)
+                                this@WebFragment.requireActivity().finish()
+                            }
                         }
                     }
                 }
             }
-        }
 
-        binding.webControl.callback = object : WebControlView.Callback {
-            override fun onMoreClick() {
-                showBottomSheet()
-            }
+        binding.webControl.callback =
+            object : WebControlView.Callback {
+                override fun onMoreClick() {
+                    showBottomSheet()
+                }
 
-            override fun onCloseClick() {
-                requireActivity().finish()
+                override fun onCloseClick() {
+                    requireActivity().finish()
+                }
             }
+        binding.webClose.setOnClickListener {
+            requireActivity().onBackPressedDispatcher.onBackPressed()
         }
         webView.settings.javaScriptEnabled = true
         webView.settings.domStorageEnabled = true
         webView.settings.useWideViewPort = true
         webView.settings.loadWithOverviewMode = true
+        webView.settings.textZoom = 100
         webView.settings.mixedContentMode =
             WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
         webView.settings.mediaPlaybackRequiresUserGesture = false
         webView.settings.userAgentString =
-            webView.settings.userAgentString + " Mixin/" + BuildConfig.VERSION_NAME
+            webView.settings.userAgentString + " Mixin/" + BuildConfig.VERSION_NAME + " GOOGLE_PAY_SUPPORTED"
         webView.settings.setAppCachePath(requireContext().cacheDir.absolutePath)
         webView.settings.setAppCacheMaxSize(10 * 1024 * 1024)
         webView.settings.setAppCacheEnabled(true)
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.PAYMENT_REQUEST)) {
+            WebSettingsCompat.setPaymentRequestEnabled(webView.settings, true)
+        }
+
         webView.webViewClient =
             WebViewClientImpl(
                 object : WebViewClientImpl.OnPageFinishedListener {
@@ -439,12 +572,18 @@ class WebFragment : BaseFragment() {
                 },
                 conversationId,
                 MixinApplication.appContext,
+                this,
                 this.parentFragmentManager,
                 requireActivity().activityResultRegistry,
+                injectable,
                 lifecycleScope,
                 { url ->
                     currentUrl = url
                     isFinished = true
+                },
+                { title, url ->
+                    currentUrl = url
+                    currentTitle = title
                 },
                 { errorCode, _, failingUrl ->
                     currentUrl = failingUrl
@@ -459,225 +598,289 @@ class WebFragment : BaseFragment() {
                             failLoadView.isVisible = true
                         }
                     }
-                }
+                },
             )
 
-        webView.webChromeClient = object : WebChromeClient() {
-            override fun onShowCustomView(
-                view: View,
-                requestedOrientation: Int,
-                callback: CustomViewCallback?
-            ) {
-                onShowCustomView(view, callback)
-            }
+        webView.webChromeClient =
+            object : WebChromeClient() {
+                override fun onShowCustomView(
+                    view: View,
+                    requestedOrientation: Int,
+                    callback: CustomViewCallback?,
+                ) {
+                    onShowCustomView(view, callback)
+                }
 
-            override fun onShowCustomView(view: View, callback: CustomViewCallback?) {
-                if (customView != null || !isAdded) {
+                override fun onShowCustomView(
+                    view: View,
+                    callback: CustomViewCallback?,
+                ) {
+                    if (customView != null || !isAdded) {
+                        customViewCallback?.onCustomViewHidden()
+                        return
+                    }
+                    customView = view
+                    customViewCallback = callback
+                    originalSystemUiVisibility = requireActivity().window.decorView.systemUiVisibility
+
+                    binding.customViewContainer.addView(view)
+                    binding.customViewContainer.isVisible = true
+                    binding.webLl.isVisible = false
+                    binding.webControl.isVisible = false
+
+                    requireActivity().window.decorView.systemUiVisibility =
+                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                        View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+                        View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                        View.SYSTEM_UI_FLAG_FULLSCREEN or
+                        View.SYSTEM_UI_FLAG_IMMERSIVE
+                    requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                }
+
+                @SuppressLint("SourceLockedOrientationActivity")
+                override fun onHideCustomView() {
+                    if (customView == null) {
+                        return
+                    }
+                    _binding?.apply {
+                        customViewContainer.isVisible = false
+                        webLl.isVisible = true
+                        webControl.isVisible = true
+                        customViewContainer.removeView(customView)
+                    }
+
+                    customView = null
+
+                    requireActivity().window.decorView.systemUiVisibility = originalSystemUiVisibility
+                    requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+
                     customViewCallback?.onCustomViewHidden()
-                    return
-                }
-                customView = view
-                customViewCallback = callback
-                originalSystemUiVisibility = requireActivity().window.decorView.systemUiVisibility
-
-                binding.customViewContainer.addView(view)
-                binding.customViewContainer.isVisible = true
-                binding.webLl.isVisible = false
-                binding.webControl.isVisible = false
-
-                requireActivity().window.decorView.systemUiVisibility =
-                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
-                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
-                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
-                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
-                    View.SYSTEM_UI_FLAG_FULLSCREEN or
-                    View.SYSTEM_UI_FLAG_IMMERSIVE
-                requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-            }
-
-            @SuppressLint("SourceLockedOrientationActivity")
-            override fun onHideCustomView() {
-                if (customView == null)
-                    return
-                _binding?.apply {
-                    customViewContainer.isVisible = false
-                    webLl.isVisible = true
-                    webControl.isVisible = true
-                    customViewContainer.removeView(customView)
+                    customViewCallback = null
                 }
 
-                customView = null
-
-                requireActivity().window.decorView.systemUiVisibility = originalSystemUiVisibility
-                requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-
-                customViewCallback?.onCustomViewHidden()
-                customViewCallback = null
-            }
-
-            override fun onReceivedTitle(view: WebView?, title: String?) {
-                super.onReceivedTitle(view, title)
-                if (!isBot()) {
-                    _binding?.titleTv?.text = title
-                }
-            }
-
-            override fun onReceivedIcon(view: WebView?, icon: Bitmap?) {
-                super.onReceivedIcon(view, icon)
-                if (!isBot()) {
-                    icon?.let {
-                        _binding?.apply {
-                            iconIv.isVisible = true
-                            iconIv.setImageBitmap(it)
+                override fun onReceivedTitle(
+                    view: WebView?,
+                    title: String?,
+                ) {
+                    super.onReceivedTitle(view, title)
+                    if (!isBot()) {
+                        _binding?.titleTv?.text = fixedTitle ?: title
+                        if (once) {
+                            once = false
+                            val saveName = requireArguments().getBoolean(ARGS_SAVE_NAME, false)
+                            if (saveName) {
+                                saveName(title, url)
+                            }
                         }
-                        this@WebFragment.icon = it
                     }
                 }
-            }
 
-            private var lastGrantedUri: String? = null
-            override fun onPermissionRequest(request: PermissionRequest?) {
-                request?.let {
-                    val permission = mutableListOf<String>()
-                    for (code in request.resources) {
-                        if (code == PermissionRequest.RESOURCE_AUDIO_CAPTURE) {
-                            permission.add(Manifest.permission.RECORD_AUDIO)
-                        } else if (code == PermissionRequest.RESOURCE_VIDEO_CAPTURE) {
-                            permission.add(Manifest.permission.RECORD_AUDIO)
+                private var once: Boolean = true
+
+                private fun saveName(name: String?, url: String) {
+                    val sp = requireContext().defaultSharedPreferences
+                    val str = sp.getString(PREF_RECENT_SEARCH, null)
+                    val searches = if (str.isNullOrBlank()) mutableListOf()
+                    else GsonHelper.customGson.fromJson(str, Array<RecentSearch>::class.java).toMutableList()
+                    val recent = RecentSearch(RecentSearchType.LINK, title = name, subTitle = url)
+                    searches.remove(recent)
+                    searches.add(0, recent)
+                    sp.putString(PREF_RECENT_SEARCH, GsonHelper.customGson.toJson(searches.take(4)))
+                    RxBus.publish(SearchEvent())
+                }
+
+                override fun onReceivedIcon(
+                    view: WebView?,
+                    icon: Bitmap?,
+                ) {
+                    super.onReceivedIcon(view, icon)
+                    if (!isBot() && fixedTitle == null) {
+                        icon?.let {
+                            _binding?.apply {
+                                iconIv.isVisible = true
+                                iconIv.setImageBitmap(it)
+                            }
+                            this@WebFragment.icon = it
                         }
-                        if (code != PermissionRequest.RESOURCE_VIDEO_CAPTURE && code != PermissionRequest.RESOURCE_AUDIO_CAPTURE) {
-                            request.deny()
-                            lastGrantedUri = null
+                    }
+                }
+
+                private var lastGrantedUri: String? = null
+
+                override fun onPermissionRequest(request: PermissionRequest?) {
+                    request?.let {
+                        val permission = mutableListOf<String>()
+                        for (code in request.resources) {
+                            if (code == PermissionRequest.RESOURCE_AUDIO_CAPTURE) {
+                                permission.add(Manifest.permission.RECORD_AUDIO)
+                            } else if (code == PermissionRequest.RESOURCE_VIDEO_CAPTURE) {
+                                permission.add(Manifest.permission.CAMERA)
+                            }
+                            if (code != PermissionRequest.RESOURCE_VIDEO_CAPTURE && code != PermissionRequest.RESOURCE_AUDIO_CAPTURE) {
+                                request.deny()
+                                lastGrantedUri = null
+                                return@let
+                            }
+                        }
+                        if (lastGrantedUri == request.origin.toString()) {
+                            request.grant(request.resources)
                             return@let
                         }
-                    }
-                    if (lastGrantedUri == request.origin.toString()) {
-                        request.grant(request.resources)
-                        return@let
-                    }
 
-                    PermissionBottomSheetDialogFragment.request(
-                        binding.titleTv.text.toString(),
-                        app?.name,
-                        app?.appNumber,
-                        *permission.map {
-                            if (it == Manifest.permission.RECORD_AUDIO) {
-                                PERMISSION_AUDIO
-                            } else {
-                                PERMISSION_VIDEO
+                        PermissionBottomSheetDialogFragment.request(
+                            binding.titleTv.text.toString(),
+                            app?.name,
+                            app?.appNumber,
+                            *permission.map {
+                                if (it == Manifest.permission.RECORD_AUDIO) {
+                                    PERMISSION_AUDIO
+                                } else {
+                                    PERMISSION_VIDEO
+                                }
+                            }.toIntArray(),
+                        )
+                            .setCancelAction {
+                                lastGrantedUri = null
+                                request.deny()
+                            }.setGrantedAction {
+                                RxPermissions(requireActivity())
+                                    .request(*permission.toTypedArray())
+                                    .autoDispose(stopScope)
+                                    .subscribe(
+                                        { granted ->
+                                            if (granted) {
+                                                lastGrantedUri = request.origin.toString()
+                                                request.grant(request.resources)
+                                            } else {
+                                                lastGrantedUri = null
+                                                context?.openPermissionSetting()
+                                            }
+                                        },
+                                        {
+                                            lastGrantedUri = null
+                                        },
+                                    )
+                            }.show(parentFragmentManager, PermissionBottomSheetDialogFragment.TAG)
+                    }
+                }
+
+                override fun onShowFileChooser(
+                    webView: WebView?,
+                    filePathCallback: ValueCallback<Array<Uri>>?,
+                    fileChooserParams: FileChooserParams?,
+                ): Boolean {
+                    if (viewDestroyed()) return false
+                    uploadMessage?.onReceiveValue(null)
+                    uploadMessage = filePathCallback
+                    val intent: Intent? = fileChooserParams?.createIntent()
+                    if (fileChooserParams?.isCaptureEnabled == true) {
+                        if (intent?.type == "video/*") {
+                            PermissionBottomSheetDialogFragment.requestVideo(
+                                binding.titleTv.text.toString(),
+                                app?.name,
+                                app?.appNumber,
+                            )
+                                .setCancelAction {
+                                    uploadMessage?.onReceiveValue(null)
+                                    uploadMessage = null
+                                }
+                                .setGrantedAction {
+                                    RxPermissions(requireActivity())
+                                        .request(Manifest.permission.CAMERA)
+                                        .autoDispose(stopScope)
+                                        .subscribe(
+                                            { granted ->
+                                                if (granted) {
+                                                    startActivityForResult(
+                                                        Intent(MediaStore.ACTION_VIDEO_CAPTURE),
+                                                        FILE_CHOOSER,
+                                                    )
+                                                } else {
+                                                    context?.openPermissionSetting()
+                                                }
+                                            },
+                                            {
+                                            },
+                                        )
+                                }.show(parentFragmentManager, PermissionBottomSheetDialogFragment.TAG)
+                            return true
+                        } else if (intent?.type == "image/*") {
+                            PermissionBottomSheetDialogFragment.requestCamera(
+                                binding.titleTv.text.toString(),
+                                app?.appNumber,
+                                app?.iconUrl,
+                            )
+                                .setCancelAction {
+                                    uploadMessage?.onReceiveValue(null)
+                                    uploadMessage = null
+                                }.setGrantedAction {
+                                    RxPermissions(requireActivity())
+                                        .request(Manifest.permission.CAMERA)
+                                        .autoDispose(stopScope)
+                                        .subscribe(
+                                            { granted ->
+                                                if (granted) {
+                                                    openCamera(getImageUri())
+                                                } else {
+                                                    context?.openPermissionSetting()
+                                                }
+                                            },
+                                            {
+                                            },
+                                        )
+                                }.show(parentFragmentManager, PermissionBottomSheetDialogFragment.TAG)
+                            return true
+                        }
+                    }
+                    pickMedia.launch(
+                        when (intent?.type) {
+                            "image/*" -> {
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                             }
-                        }.toIntArray()
+                            "video/*" -> {
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.VideoOnly)
+                            }
+                            else -> {
+                                PickVisualMediaRequest()
+                            }
+                        },
+                    )
+                    return true
+                }
+
+                override fun onGeolocationPermissionsShowPrompt(
+                    origin: String?,
+                    callback: GeolocationPermissions.Callback?,
+                ) {
+                    PermissionBottomSheetDialogFragment.requestLocation(
+                        binding.titleTv.text.toString(),
+                        app?.appNumber,
+                        app?.iconUrl,
                     )
                         .setCancelAction {
-                            lastGrantedUri = null
-                            request.deny()
+                            callback?.invoke(origin, false, false)
                         }.setGrantedAction {
                             RxPermissions(requireActivity())
-                                .request(*permission.toTypedArray())
+                                .request(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
                                 .autoDispose(stopScope)
-                                .subscribe(
-                                    { granted ->
-                                        if (granted) {
-                                            lastGrantedUri = request.origin.toString()
-                                            request.grant(request.resources)
-                                        } else {
-                                            lastGrantedUri = null
-                                            context?.openPermissionSetting()
-                                        }
-                                    },
-                                    {
-                                        lastGrantedUri = null
+                                .subscribe { granted ->
+                                    if (granted) {
+                                        callback?.invoke(origin, true, false)
+                                    } else {
+                                        requireContext().openPermissionSetting()
                                     }
-                                )
+                                }
                         }.show(parentFragmentManager, PermissionBottomSheetDialogFragment.TAG)
                 }
             }
 
-            override fun onShowFileChooser(
-                webView: WebView?,
-                filePathCallback: ValueCallback<Array<Uri>>?,
-                fileChooserParams: FileChooserParams?
-            ): Boolean {
-                if (viewDestroyed()) return false
-                uploadMessage?.onReceiveValue(null)
-                uploadMessage = filePathCallback
-                val intent: Intent? = fileChooserParams?.createIntent()
-                if (fileChooserParams?.isCaptureEnabled == true) {
-                    if (intent?.type == "video/*") {
-                        PermissionBottomSheetDialogFragment.requestVideo(
-                            binding.titleTv.text.toString(),
-                            app?.name,
-                            app?.appNumber
-                        )
-                            .setCancelAction {
-                                uploadMessage?.onReceiveValue(null)
-                                uploadMessage = null
-                            }
-                            .setGrantedAction {
-                                RxPermissions(requireActivity())
-                                    .request(Manifest.permission.CAMERA)
-                                    .autoDispose(stopScope)
-                                    .subscribe(
-                                        { granted ->
-                                            if (granted) {
-                                                startActivityForResult(
-                                                    Intent(MediaStore.ACTION_VIDEO_CAPTURE),
-                                                    FILE_CHOOSER
-                                                )
-                                            } else {
-                                                context?.openPermissionSetting()
-                                            }
-                                        },
-                                        {
-                                        }
-                                    )
-                            }.show(parentFragmentManager, PermissionBottomSheetDialogFragment.TAG)
-                        return true
-                    } else if (intent?.type == "image/*") {
-                        PermissionBottomSheetDialogFragment.requestCamera(
-                            binding.titleTv.text.toString(),
-                            app?.appNumber,
-                            app?.iconUrl
-                        )
-                            .setCancelAction {
-                                uploadMessage?.onReceiveValue(null)
-                                uploadMessage = null
-                            }.setGrantedAction {
-                                RxPermissions(requireActivity())
-                                    .request(Manifest.permission.CAMERA)
-                                    .autoDispose(stopScope)
-                                    .subscribe(
-                                        { granted ->
-                                            if (granted) {
-                                                openCamera(getImageUri())
-                                            } else {
-                                                context?.openPermissionSetting()
-                                            }
-                                        },
-                                        {
-                                        }
-                                    )
-                            }.show(parentFragmentManager, PermissionBottomSheetDialogFragment.TAG)
-                        return true
-                    }
-                }
-                try {
-                    startActivityForResult(intent, FILE_CHOOSER)
-                } catch (e: ActivityNotFoundException) {
-                    uploadMessage = null
-                    toast(R.string.error_file_chooser)
-                    return false
-                }
-                return true
-            }
-        }
-
         webView.setDownloadListener { url, _, _, _, _ ->
             try {
                 startActivity(
-                    Intent(Intent.ACTION_VIEW).apply {
+                    Intent(ACTION_VIEW).apply {
                         data = url.toUri()
-                    }
+                    },
                 )
             } catch (ignored: ActivityNotFoundException) {
             }
@@ -685,7 +888,11 @@ class WebFragment : BaseFragment() {
     }
 
     @Override
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?,
+    ) {
         if (resultCode == Activity.RESULT_OK && requestCode == REQUEST_CAMERA) {
             imageUri?.let {
                 uploadMessage?.onReceiveValue(arrayOf(it))
@@ -693,13 +900,12 @@ class WebFragment : BaseFragment() {
             }
             uploadMessage = null
         } else if (requestCode == FILE_CHOOSER && resultCode == Activity.RESULT_OK) {
-            uploadMessage?.onReceiveValue(
-                WebChromeClient.FileChooserParams.parseResult(
-                    resultCode,
-                    data
-                )
-            )
-            uploadMessage = null
+            val dataString = data?.dataString
+            if (dataString != null) {
+                callbackPicker(Uri.parse(dataString))
+            } else {
+                callbackPicker(null)
+            }
         } else {
             uploadMessage?.onReceiveValue(null)
             uploadMessage = null
@@ -716,28 +922,102 @@ class WebFragment : BaseFragment() {
                 }
             }
             app?.name?.let { binding.titleTv.text = it }
-            app?.iconUrl?.let {
+            fixedTitle?.let {
+                binding.titleTv.text = it
+                binding.iconIv.isVisible = false
+                binding.webControl.hideMore()
+            }
+            if (fixedTitle == null) app?.iconUrl?.let {
                 binding.iconIv.isVisible = true
                 binding.iconIv.loadImage(it)
                 binding.titleTv.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                     marginStart = requireContext().dpToPx(10f)
                 }
             }
-            binding.titleLl.isGone = immersive
+            binding.titleVa.isGone = immersive
 
-            webAppInterface = WebAppInterface(
-                MixinApplication.appContext,
-                conversationId,
-                immersive,
-                reloadThemeAction = { reloadTheme() },
-                playlistAction = { showPlaylist(it) },
-                closeAction = {
-                    lifecycleScope.launch {
-                        closeSelf()
-                    }
-                },
-            )
+            webAppInterface =
+                WebAppInterface(
+                    MixinApplication.appContext,
+                    conversationId,
+                    immersive,
+                    reloadThemeAction = { reloadTheme() },
+                    playlistAction = { showPlaylist(it) },
+                    closeAction = {
+                        lifecycleScope.launch {
+                            closeSelf()
+                        }
+                    },
+                    getTipAddressAction = { chainId, callback ->
+                        getTipAddress(chainId, callback)
+                    },
+                    tipSignAction = { chainId, message, callback ->
+                        tipSign(chainId, message, callback)
+                    },
+                    getAssetAction = { ids, callback ->
+                        getAssets(ids, callback)
+                    },
+                    signBotSignature = { appId, reloadPublicKey, metho, path, body, callbackFunction ->
+                        botSign(appId, reloadPublicKey, metho, path, body, callbackFunction)
+                    },
+                    openInBrowserAction = { url ->
+                        openInBrowser(url)
+                    },
+                )
             webAppInterface?.let { webView.addJavascriptInterface(it, "MixinContext") }
+            webView.addJavascriptInterface(
+                Web3Interface(
+                    onWalletActionSuccessful = { e ->
+                        lifecycleScope.launch {
+                            webView.evaluateJavascript(e, Timber::d)
+                        }
+                    },
+                    onWalletActionError = { id ->
+                        lifecycleScope.launch {
+                            webView.evaluateJavascript("window.${Web3Signer.currentNetwork}.sendResponse($id, null)") {}
+                        }
+                    },
+                    onBrowserSign = { message ->
+                        lifecycleScope.launch {
+                            if (viewDestroyed()) return@launch
+
+                            showGasCheckAndBrowserBottomSheetDialogFragment(
+                                requireActivity(),
+                                message,
+                                currentUrl = currentUrl,
+                                currentTitle = currentTitle,
+                                onReject = {
+                                    lifecycleScope.launch {
+                                        webView.evaluateJavascript("window.${Web3Signer.currentNetwork}.sendResponse(${message.callbackId}, null)") {}
+                                    }
+                                },
+                                onDone = { callback ->
+                                    lifecycleScope.launch {
+                                        if (callback != null) webView.evaluateJavascript(callback) {}
+                                    }
+                                },
+                            )
+                        }
+                    },
+                    onEmptyAddress = { network ->
+                        lifecycleScope.launch {
+                            if (viewDestroyed()) return@launch
+                            if (network.equals("solana", true)) {
+                                if (Web3Signer.solanaAddress.isEmpty()) {
+                                    toast(getString(R.string.not_support_network, network))
+                                }
+                            } else if (network.equals("ethereum", true)) {
+                                if (Web3Signer.evmAddress.isEmpty()) {
+                                    toast(getString(R.string.not_support_network, network))
+                                }
+                            } else {
+                                return@launch
+                            }
+                        }
+                    },
+                ),
+                "_mw_",
+            )
             val extraHeaders = HashMap<String, String>()
             conversationId?.let {
                 extraHeaders[Mixin_Conversation_ID_HEADER] = it
@@ -752,7 +1032,37 @@ class WebFragment : BaseFragment() {
                 return
             }
             webView.loadUrl(url, extraHeaders)
+            if (WebViewFeature.isFeatureSupported(WebViewFeature.WEB_AUTHENTICATION)) {
+                WebSettingsCompat.setWebAuthenticationSupport(
+                    webView.settings,
+                    WebSettingsCompat.WEB_AUTHENTICATION_SUPPORT_FOR_APP,
+                )
+                Log.e(
+                    "WebFragment",
+                    "getWebAuthenticationSupport result: " + WebSettingsCompat.getWebAuthenticationSupport(
+                        webView.settings
+                    ),
+                )
+            } else {
+                Log.e("WebFragment", "WebView does not support passkeys.")
+            }
         }
+    }
+
+    private fun openInBrowser(url: String): Boolean {
+        if (viewDestroyed()) return false
+        val browserUrl = url.toOpenInBrowserUrlOrNull() ?: return false
+        val context = context ?: return false
+        lifecycleScope.launch {
+            if (viewDestroyed()) return@launch
+            context.openInBrowser(
+                browserUrl,
+                Bundle().apply {
+                    putString("Mixin", BuildConfig.VERSION_NAME)
+                },
+            )
+        }
+        return true
     }
 
     private fun closeSelf() {
@@ -761,22 +1071,19 @@ class WebFragment : BaseFragment() {
     }
 
     private fun showPlaylist(playlist: Array<String>) {
-        if (viewDestroyed()) return
-
-        if (!checkFloatingPermission()) {
-            return
-        }
         lifecycleScope.launch {
-            musicViewModel.showPlaylist(playlist) {
-                if (viewDestroyed()) return@showPlaylist
-                if (checkFloatingPermission()) {
-                    one.mixin.android.ui.player.collapse(MUSIC_PLAYLIST)
-                } else {
-                    requireActivity().showPipPermissionNotification(
-                        MusicActivity::class.java,
-                        getString(R.string.web_floating_permission)
-                    )
-                }
+            if (viewDestroyed()) return@launch
+
+            if (!checkFloatingPermission()) return@launch
+
+            MusicService.playUrls(requireContext(), playlist)
+            if (checkFloatingPermission()) {
+                collapsePlayer(MUSIC_PLAYLIST)
+            } else {
+                requireActivity().showPipPermissionNotification(
+                    MusicActivity::class.java,
+                    getString(R.string.web_floating_permission),
+                )
             }
         }
     }
@@ -791,7 +1098,173 @@ class WebFragment : BaseFragment() {
         }
     }
 
+    private fun getTipAddress(
+        chainId: String,
+        callbackFunction: String,
+    ) {
+        if (viewDestroyed()) return
+        if (!WalletConnect.isEnabled()) return
+        val isValid = chainId.isUUID()
+        if (!isValid) {
+            lifecycleScope.launch {
+                webView.evaluateJavascript("$callbackFunction('')") {}
+            }
+        }
+        lifecycleScope.launch {
+            WalletConnectTIP.peer = getPeerUI(Web3Signer.evmAddress)
+            showWalletConnectBottomSheetDialogFragment(
+                tip,
+                requireActivity(),
+                WalletConnect.RequestType.SessionProposal,
+                WalletConnect.Version.TIP,
+                null,
+                onReject = {
+                    lifecycleScope.launch {
+                        webView.evaluateJavascript("$callbackFunction('')") {}
+                    }
+                },
+                callback = {
+                    val address =
+                        try {
+                            privateKeyToAddress(it, chainId)
+                        } catch (e: IllegalArgumentException) {
+                            Timber.d("${WalletConnectTIP.TAG} ${e.stackTraceToString()}")
+                            ""
+                        }
+                    lifecycleScope.launch {
+                        webView.evaluateJavascript("$callbackFunction('$address')") {}
+                    }
+                },
+            )
+        }
+    }
+
+    private fun getAssets(
+        ids: Array<String>,
+        callbackFunction: String,
+    ) {
+        if (viewDestroyed()) return
+
+        lifecycleScope.launch {
+            if (app == null) {
+                webView.evaluateJavascript("$callbackFunction('[]')") {}
+                return@launch
+            }
+
+            val sameHost =
+                try {
+                    Uri.parse(webView.url).host == Uri.parse(app?.homeUri ?: "").host
+                    true
+                } catch (e: Exception) {
+                    false
+                }
+            if (!sameHost) {
+                webView.evaluateJavascript("$callbackFunction('[]')") {}
+                return@launch
+            }
+            val isValid = ids.isEmpty() || ids.all { it.isUUID() }
+            if (!isValid) {
+                webView.evaluateJavascript("$callbackFunction('[]')") {}
+                return@launch
+            }
+            val auth = bottomViewModel.getAuthorizationByAppId(app!!.appId)
+            val result =
+                if (auth?.scopes?.contains("ASSETS:READ") == true) {
+                    val tokens =
+                        if (ids.isEmpty()) {
+                            bottomViewModel.tokenEntry()
+                        } else {
+                            bottomViewModel.tokenEntry(ids)
+                        }
+                    GsonHelper.customGson.toJson(tokens)
+                } else {
+                    "[]"
+                }
+            webView.evaluateJavascript("$callbackFunction('$result')") {}
+        }
+    }
+
+    private fun botSign(appId: String, reloadPublicKey: Boolean, method: String, path: String, body: String, callbackFunction: String) {
+        if (viewDestroyed()) return
+
+        lifecycleScope.launch {
+            val app = bottomViewModel.findAndSync(appId)
+            if (app == null) {
+                webView.evaluateJavascript("$callbackFunction('[]')") {}
+                return@launch
+            }
+            if (webView.url?.matchResourcePattern(app.resourcePatterns) != true) {
+                webView.evaluateJavascript("$callbackFunction('[]')") {}
+                bottomViewModel.refreshUser(appId, true)
+                return@launch
+            }
+            val publicKey = bottomViewModel.getBotPublicKey(appId, defaultSharedPreferences, reloadPublicKey)
+            if (publicKey.isNullOrBlank()) {
+                webView.evaluateJavascript("$callbackFunction('[]')") {}
+                return@launch
+            }
+            val (ts, signature) = getBotSignature(publicKey, method, path, body)
+            webView.evaluateJavascript("$callbackFunction('$ts', '$signature')") {}
+        }
+    }
+
+    private fun tipSign(
+        chainId: String,
+        message: String,
+        callbackFunction: String,
+    ) {
+        if (viewDestroyed()) return
+        if (!WalletConnect.isEnabled()) return
+
+        lifecycleScope.launch {
+            WalletConnectTIP.signData = WalletConnect.WCSignData.TIPSignData(message)
+            showWalletConnectBottomSheetDialogFragment(
+                tip,
+                requireActivity(),
+                WalletConnect.RequestType.SessionRequest,
+                WalletConnect.Version.TIP,
+                null,
+                onReject = {
+                    lifecycleScope.launch {
+                        webView.evaluateJavascript("$callbackFunction('')") {}
+                    }
+                },
+                callback = {
+                    if (isAdded) {
+                        val priv = requireNotNull(CryptoWalletHelper.getWeb3PrivateKey(requireContext(), it, chainId))
+                        val sig = TipSignSpec.Ecdsa.Secp256k1.sign(priv, message.toByteArray())
+                        lifecycleScope.launch {
+                            webView.evaluateJavascript("$callbackFunction('$sig')") {}
+                        }
+                    }
+                },
+            )
+        }
+    }
+
+    private fun getPeerUI(account: String): PeerUI {
+        val a = app
+        return if (a != null) {
+            PeerUI(
+                uri = a.homeUri,
+                name = a.name,
+                icon = a.iconUrl,
+                desc = a.description,
+                account = account,
+            )
+        } else {
+            PeerUI(
+                uri = webView.url ?: url,
+                name = webView.title ?: "",
+                icon = "",
+                desc = "",
+                account = account,
+            )
+        }
+    }
+
     private var imageUri: Uri? = null
+
     private fun getImageUri(): Uri {
         if (imageUri == null) {
             imageUri = Uri.fromFile(requireContext().getOtherPath().createImageTemp())
@@ -800,13 +1273,15 @@ class WebFragment : BaseFragment() {
     }
 
     private fun isBot() = app != null
+
     private var hold = false
     private var icon: Bitmap? = null
+
     private fun generateWebClip(): WebClip? {
         val currentUrl = webView.url ?: url
         val v = webView
         if (v.height <= 0) return null
-        val screenshot = Bitmap.createBitmap(v.width, v.height, Bitmap.Config.RGB_565)
+        val screenshot = createBitmap(v.width, v.height, Bitmap.Config.RGB_565)
         val c = Canvas(screenshot)
         c.translate((-v.scrollX).toFloat(), (-v.scrollY).toFloat())
         v.draw(c)
@@ -815,6 +1290,7 @@ class WebFragment : BaseFragment() {
         webAppInterface?.playlistAction = null
         webAppInterface = null
         webView.removeJavascriptInterface("MixinContext")
+        webView.removeJavascriptInterface("mixin")
         webView.webChromeClient = null
         webView.webViewClient = object : WebViewClient() {}
 
@@ -828,7 +1304,7 @@ class WebFragment : BaseFragment() {
             conversationId,
             appCard?.shareable ?: shareable,
             webView,
-            isFinished
+            isFinished,
         )
     }
 
@@ -843,17 +1319,21 @@ class WebFragment : BaseFragment() {
                     holdClip(webClip)
                 }
             }
+
             index < 0 -> {
                 webView.destroy()
                 webView.webViewClient = object : WebViewClient() {}
                 webView.webChromeClient = null
             }
+
             else -> {
                 generateWebClip()?.let { webClip ->
                     updateClip(index, webClip)
                 }
             }
         }
+        progressDialog?.dismiss()
+        permissionAlert?.dismiss()
         unregisterForContextMenu(webView)
         binding.webLl.removeView(webView)
         processor.close()
@@ -868,11 +1348,12 @@ class WebFragment : BaseFragment() {
     private fun showBottomSheet() {
         if (viewDestroyed()) return
         val builder = BottomSheet.Builder(requireActivity())
-        val view = View.inflate(
-            ContextThemeWrapper(requireActivity(), R.style.Custom),
-            R.layout.view_web_bottom_menu,
-            null
-        )
+        val view =
+            View.inflate(
+                ContextThemeWrapper(requireActivity(), R.style.Custom),
+                R.layout.view_web_bottom_menu,
+                null,
+            )
         val viewBinding = ViewWebBottomMenuBinding.bind(view)
         if (isBot()) {
             app?.let {
@@ -889,183 +1370,209 @@ class WebFragment : BaseFragment() {
         builder.setCustomView(view)
         val bottomSheet = builder.create()
         viewBinding.closeIv.setOnClickListener { bottomSheet.dismiss() }
-        val shareMenu = menu {
-            title = getString(if (isBot()) R.string.about else R.string.share)
-            icon = if (isBot()) R.drawable.ic_setting_about else R.drawable.ic_web_share
-            action = {
-                if (isBot()) {
-                    openBot()
-                } else {
-                    activity?.let {
-                        ShareCompat.IntentBuilder
-                            .from(it)
-                            .setType("text/plain")
-                            .setChooserTitle(webView.title)
-                            .setText(webView.url)
-                            .startChooser()
-                        bottomSheet.dismiss()
-                    }
-                }
-                bottomSheet.dismiss()
-            }
-        }
-        val forwardMenu = menu {
-            title = getString(R.string.forward)
-            icon = R.drawable.ic_web_forward
-            action = {
-                if (appCard?.shareable == false || !shareable) {
-                    toast(R.string.link_shareable_false)
-                } else {
-                    val currentUrl = webView.url ?: url
+        val shareMenu =
+            menu {
+                title = getString(if (isBot()) R.string.About else R.string.Share)
+                icon = if (isBot()) R.drawable.ic_setting_about else R.drawable.ic_web_share
+                action = {
                     if (isBot()) {
-                        app?.appId?.let { id ->
-                            lifecycleScope.launch {
-                                val app = bottomViewModel.getAppAndCheckUser(id, app?.updatedAt)
-                                if (app.matchResourcePattern(currentUrl)) {
-                                    var webTitle = webView.title
-                                    if (webTitle.isNullOrBlank()) {
-                                        webTitle = app.name
-                                    }
-                                    val appCardData = AppCardData(
-                                        app.appId,
-                                        app.iconUrl,
-                                        webTitle,
-                                        app.name,
-                                        currentUrl,
-                                        app.updatedAt,
-                                        null,
-                                    )
-                                    ForwardActivity.show(
-                                        requireContext(),
-                                        arrayListOf(
-                                            ForwardMessage(
-                                                ShareCategory.AppCard,
-                                                GsonHelper.customGson.toJson(appCardData)
+                        openBot()
+                    } else {
+                        activity?.let {
+                            ShareCompat.IntentBuilder
+                                .from(it)
+                                .setType("text/plain")
+                                .setChooserTitle(webView.title)
+                                .setText(webView.url)
+                                .startChooser()
+                            bottomSheet.dismiss()
+                        }
+                    }
+                    bottomSheet.dismiss()
+                }
+            }
+        val forwardMenu =
+            menu {
+                title = getString(R.string.Forward)
+                icon = R.drawable.ic_web_forward
+                action = {
+                    if (appCard?.shareable == false || !shareable) {
+                        toast(R.string.app_card_shareable_false)
+                    } else {
+                        val currentUrl = webView.url ?: url
+                        if (isBot()) {
+                            app?.appId?.let { id ->
+                                lifecycleScope.launch {
+                                    val app = bottomViewModel.getAppAndCheckUser(id, app?.updatedAt)
+                                    if (app !== null && currentUrl.matchResourcePattern(app.resourcePatterns)) {
+                                        var webTitle = webView.title
+                                        if (webTitle.isNullOrBlank()) {
+                                            webTitle = app.name
+                                        }
+                                        val appCardData =
+                                            AppCardData(
+                                                app.appId,
+                                                app.iconUrl,
+                                                "",
+                                                null,
+                                                webTitle,
+                                                app.name,
+                                                currentUrl,
+                                                app.updatedAt,
+                                                null,
                                             )
-                                        ),
-                                        ForwardAction.App.Resultless()
-                                    )
-                                } else {
-                                    ForwardActivity.show(requireContext(), currentUrl)
+                                        ForwardActivity.show(
+                                            requireContext(),
+                                            arrayListOf(
+                                                ForwardMessage(
+                                                    ShareCategory.AppCard,
+                                                    GsonHelper.customGson.toJson(appCardData),
+                                                ),
+                                            ),
+                                            ForwardAction.App.Resultless(),
+                                        )
+                                    } else {
+                                        ForwardActivity.show(requireContext(), currentUrl)
+                                    }
                                 }
                             }
+                        } else {
+                            ForwardActivity.show(requireContext(), currentUrl)
                         }
-                    } else {
-                        ForwardActivity.show(requireContext(), currentUrl)
-                    }
-                    bottomSheet.dismiss()
-                }
-            }
-        }
-        val refreshMenu = menu {
-            title = getString(R.string.action_refresh)
-            icon = R.drawable.ic_web_refresh
-            action = {
-                refresh()
-                bottomSheet.dismiss()
-            }
-        }
-        val openMenu = menu {
-            title = getString(R.string.action_open)
-            icon = R.drawable.ic_web_browser
-            action = {
-                (webView.url ?: currentUrl)?.let {
-                    context?.openUrl(it)
-                }
-                bottomSheet.dismiss()
-            }
-        }
-        val copyMenu = menu {
-            title = getString(R.string.copy_link)
-            icon = R.drawable.ic_content_copy
-            action = {
-                requireContext().getClipboardManager()
-                    .setPrimaryClip(ClipData.newPlainText(null, url))
-                toast(R.string.copy_success)
-                bottomSheet.dismiss()
-            }
-        }
-        val isHold = isHold()
-        val floatingMenu = menu {
-            title = if (isHold) {
-                getString(R.string.cancel_floating)
-            } else {
-                getString(R.string.open_floating)
-            }
-            icon = if (isHold) {
-                R.drawable.ic_web_floating_cancel
-            } else {
-                R.drawable.ic_web_floating
-            }
-            action = {
-                if (isHold) {
-                    releaseClip(index)
-                    index = -1
-                    bottomSheet.dismiss()
-                } else {
-                    if (clips.size >= 6) {
-                        toast(R.string.web_full)
                         bottomSheet.dismiss()
-                    } else if (checkFloatingPermission()) {
-                        hold = true
-                        bottomSheet.fakeDismiss(false) {
-                            requireActivity().finish()
+                    }
+                }
+            }
+        val refreshMenu =
+            menu {
+                title = getString(R.string.Refresh)
+                icon = R.drawable.ic_web_refresh
+                action = {
+                    refresh()
+                    bottomSheet.dismiss()
+                }
+            }
+        val openMenu =
+            menu {
+                title = getString(R.string.Open_in_browser)
+                icon = R.drawable.ic_web_browser
+                action = {
+                    (webView.url ?: currentUrl)?.let {
+                        context?.openUrl(it)
+                    }
+                    bottomSheet.dismiss()
+                }
+            }
+        val scanMenu =
+            menu {
+                title = getString(R.string.Scan_QR_Code)
+                icon = R.drawable.ic_bot_category_scan
+                action = {
+                    tryScanQRCode()
+                    bottomSheet.dismiss()
+                }
+            }
+        val copyMenu =
+            menu {
+                title = getString(R.string.Copy_link)
+                icon = R.drawable.ic_content_copy
+                action = {
+                    requireContext().getClipboardManager()
+                        .setPrimaryClip(ClipData.newPlainText(null, url))
+                    toast(R.string.copied_to_clipboard)
+                    bottomSheet.dismiss()
+                }
+            }
+        val isHold = isHold()
+        val floatingMenu =
+            menu {
+                title =
+                    if (isHold) {
+                        getString(R.string.Cancel_Floating)
+                    } else {
+                        getString(R.string.Floating)
+                    }
+                icon =
+                    if (isHold) {
+                        R.drawable.ic_web_floating_cancel
+                    } else {
+                        R.drawable.ic_web_floating
+                    }
+                action = {
+                    if (isHold) {
+                        releaseClip(index)
+                        index = -1
+                        bottomSheet.dismiss()
+                    } else {
+                        if (clips.size >= 6) {
+                            toast(R.string.web_full)
+                            bottomSheet.dismiss()
+                        } else if (checkFloatingPermission()) {
+                            hold = true
+                            bottomSheet.fakeDismiss(false) {
+                                requireActivity().finish()
+                            }
                         }
                     }
                 }
             }
-        }
-        val viewAuthMenu = menu {
-            title = getString(R.string.action_view_auth)
-            icon = R.drawable.ic_web_floating
-            action = {
-                val app = requireNotNull(app)
-                lifecycleScope.launch {
-                    bottomSheet.dismiss()
-                    val pb = indeterminateProgressDialog(message = R.string.pb_dialog_message).apply {
-                        setCancelable(false)
-                    }
-                    val auth = bottomViewModel.getAuthorizationByAppId(app.appId)
-                    if (auth == null) {
-                        toast(R.string.not_auth_yet)
+        val viewAuthMenu =
+            menu {
+                title = getString(R.string.View_Authorization)
+                icon = R.drawable.ic_web_floating
+                action = {
+                    val app = requireNotNull(app)
+                    lifecycleScope.launch {
+                        bottomSheet.dismiss()
+                        val pb =
+                            indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                                setCancelable(false)
+                            }
+                        val auth = bottomViewModel.getAuthorizationByAppId(app.appId)
+                        if (auth == null) {
+                            toast(R.string.bot_not_auth_yet)
+                            pb.dismiss()
+                            return@launch
+                        }
                         pb.dismiss()
-                        return@launch
+                        getPermissionResult.launch(Pair(app, auth))
                     }
-                    pb.dismiss()
-                    getPermissionResult.launch(Pair(app, auth))
                 }
             }
-        }
-        val list = if (isBot()) {
-            menuList {
-                menuGroup {
-                    menu(forwardMenu)
-                    menu(floatingMenu)
-                    menu(refreshMenu)
+        val list =
+            if (isBot()) {
+                menuList {
+                    menuGroup {
+                        menu(forwardMenu)
+                        menu(floatingMenu)
+                        menu(refreshMenu)
+                    }
+                    menuGroup {
+                        menu(shareMenu)
+                        menu(viewAuthMenu)
+                    }
                 }
-                menuGroup {
-                    menu(shareMenu)
-                    menu(viewAuthMenu)
+            } else {
+                menuList {
+                    menuGroup {
+                        menu(forwardMenu)
+                        menu(shareMenu)
+                        menu(floatingMenu)
+                        menu(refreshMenu)
+                    }
+                    menuGroup {
+                        menu(scanMenu)
+                        menu(copyMenu)
+                        menu(openMenu)
+                    }
                 }
             }
-        } else {
-            menuList {
-                menuGroup {
-                    menu(forwardMenu)
-                    menu(shareMenu)
-                    menu(floatingMenu)
-                    menu(refreshMenu)
-                }
-                menuGroup {
-                    menu(copyMenu)
-                    menu(openMenu)
-                }
-            }
-        }
         list.createMenuLayout(requireContext()).let { layout ->
             viewBinding.root.addView(layout)
+            val safeBottomHeight = layout.getSafeAreaInsetsBottom()
             layout.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                bottomMargin = requireContext().dpToPx(30f)
+                bottomMargin = safeBottomHeight
+
             }
         }
         bottomSheet.show()
@@ -1078,27 +1585,39 @@ class WebFragment : BaseFragment() {
         webView.loadUrl("javascript:localStorage.clear()")
     }
 
+    private fun callbackPicker(uri: Uri?) {
+        if (uri != null) {
+            uploadMessage?.onReceiveValue(arrayOf(uri))
+            uploadMessage = null
+        } else {
+            uploadMessage?.onReceiveValue(null)
+            uploadMessage = null
+        }
+    }
+
     private var permissionAlert: AlertDialog? = null
+
     private fun checkFloatingPermission() =
         requireContext().checkInlinePermissions {
             if (permissionAlert != null && permissionAlert!!.isShowing) return@checkInlinePermissions
 
-            permissionAlert = AlertDialog.Builder(requireContext())
-                .setTitle(R.string.app_name)
-                .setMessage(R.string.web_floating_permission)
-                .setPositiveButton(R.string.live_setting) { dialog, _ ->
-                    try {
-                        startActivity(
-                            Intent(
-                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                Uri.parse("package:${requireContext().packageName}")
+            permissionAlert =
+                AlertDialog.Builder(requireContext())
+                    .setTitle(R.string.app_name)
+                    .setMessage(R.string.web_floating_permission)
+                    .setPositiveButton(R.string.Settings) { dialog, _ ->
+                        try {
+                            startActivity(
+                                Intent(
+                                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                    Uri.parse("package:${requireContext().packageName}"),
+                                ),
                             )
-                        )
-                    } catch (e: Exception) {
-                        Timber.e(e)
-                    }
-                    dialog.dismiss()
-                }.show()
+                        } catch (e: Exception) {
+                            Timber.e(e)
+                        }
+                        dialog.dismiss()
+                    }.show()
         }
 
     private fun isHold(): Boolean {
@@ -1111,19 +1630,46 @@ class WebFragment : BaseFragment() {
         _binding?.failLoadView?.isVisible = false
     }
 
-    private fun openBot() = lifecycleScope.launch {
-        if (viewDestroyed()) return@launch
+    private fun openBot() =
+        lifecycleScope.launch {
+            if (viewDestroyed()) return@launch
 
-        if (app?.appId != null) {
-            val u = bottomViewModel.suspendFindUserById(app?.appId!!)
-            if (u != null) {
-                showUserBottom(parentFragmentManager, u, conversationId)
+            if (app?.appId != null) {
+                val u = bottomViewModel.suspendFindUserById(app?.appId!!)
+                if (u != null) {
+                    showUserBottom(parentFragmentManager, u, conversationId)
+                }
             }
         }
+
+    private var progressDialog: Dialog? = null
+
+    private fun tryScanQRCode() {
+        progressDialog =
+            indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                show()
+            }
+        val bitmap = webView.drawToBitmap()
+        processor.detect(
+            lifecycleScope,
+            bitmap,
+            onSuccess = { result ->
+                result.openAsUrlOrQrScan(
+                    requireActivity(),
+                    parentFragmentManager,
+                    lifecycleScope,
+                )
+                progressDialog?.dismiss()
+            },
+            onFailure = {
+                toast(R.string.can_not_recognize_qr_code)
+                progressDialog?.dismiss()
+            },
+        )
     }
 
     override fun onPause() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N || !requireActivity().isInMultiWindowMode) {
+        if (!requireActivity().isInMultiWindowMode) {
             webView.onPause()
             webView.pauseTimers()
         }
@@ -1131,70 +1677,87 @@ class WebFragment : BaseFragment() {
     }
 
     override fun onResume() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N || !requireActivity().isInMultiWindowMode) {
+        if (!requireActivity().isInMultiWindowMode) {
             webView.onResume()
             webView.resumeTimers()
         }
         super.onResume()
     }
 
+    @OptIn(ExperimentalCoilApi::class)
     private fun saveImageFromUrl(url: String?) {
         if (viewDestroyed()) return
-        RxPermissions(requireActivity())
-            .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            .autoDispose(stopScope)
-            .subscribe { granted ->
-                if (granted) {
-                    lifecycleScope.launch(Dispatchers.IO) {
-                        try {
-                            val outFile = requireContext().getPublicPicturePath()
-                                .createImageTemp(noMedia = false)
-                            val encodingPrefix = "base64,"
-                            val prefixIndex = url?.indexOf(encodingPrefix)
-                            if (url != null && prefixIndex != null && prefixIndex != -1) {
-                                val dataStartIndex = prefixIndex + encodingPrefix.length
-                                val imageData =
-                                    Base64.decode(url.substring(dataStartIndex), Base64.DEFAULT)
-                                outFile.copyFromInputStream(ByteArrayInputStream(imageData))
-                            } else {
-                                val file = Glide.with(MixinApplication.appContext)
-                                    .asFile()
-                                    .load(url)
-                                    .submit()
-                                    .get(10, TimeUnit.SECONDS)
-                                outFile.copyFromInputStream(FileInputStream(file))
-                            }
-                            requireContext().sendBroadcast(
-                                Intent(
-                                    Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
-                                    Uri.fromFile(outFile)
-                                )
+
+        fun afterGranted() {
+            lifecycleScope.launch(Dispatchers.IO) {
+                try {
+                    val outFile =
+                        requireContext().getPublicPicturePath()
+                            .createImageTemp(noMedia = false)
+                    val encodingPrefix = "base64,"
+                    val prefixIndex = url?.indexOf(encodingPrefix)
+                    if (url != null && prefixIndex != null && prefixIndex != -1) {
+                        val dataStartIndex = prefixIndex + encodingPrefix.length
+                        val imageData =
+                            Base64.decode(url.substring(dataStartIndex), Base64.DEFAULT)
+                        outFile.copyFromInputStream(ByteArrayInputStream(imageData))
+                    } else {
+                        if (url == null) return@launch
+                        val loader = requireContext().imageLoader
+                        val request = ImageRequest.Builder(requireContext()).data(url).build()
+                        val result = loader.execute(request)
+                        if (result !is SuccessResult) return@launch
+                        val f = loader.diskCache?.openSnapshot(url)?.data?.toFile() ?: return@launch
+                        f.copy(outFile)
+                    }
+                    MediaScannerConnection.scanFile(
+                        requireContext(),
+                        arrayOf(outFile.toString()),
+                        null,
+                        null,
+                    )
+                    withContext(Dispatchers.Main) {
+                        if (isAdded) {
+                            toast(
+                                getString(
+                                    R.string.Save_to,
+                                    outFile.absolutePath,
+                                ),
                             )
-                            withContext(Dispatchers.Main) {
-                                if (isAdded) toast(
-                                    getString(
-                                        R.string.save_to,
-                                        outFile.absolutePath
-                                    )
-                                )
-                            }
-                        } catch (e: Exception) {
-                            withContext(Dispatchers.Main) { if (isAdded) toast(R.string.save_failure) }
                         }
                     }
-                } else {
-                    context?.openPermissionSetting()
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) { if (isAdded) toast(R.string.Save_failure) }
                 }
             }
+        }
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            RxPermissions(requireActivity())
+                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .autoDispose(stopScope)
+                .subscribe { granted ->
+                    if (granted) {
+                        afterGranted()
+                    } else {
+                        context?.openPermissionSetting()
+                    }
+                }
+        } else {
+            afterGranted()
+        }
     }
 
     private fun setStatusBarColor(content: String) {
         try {
+            if (content.isEmpty() || content == "\"\"") {
+                return
+            }
             val color = content.replace("\"", "")
-            val c = Color.parseColor(color)
+            val c = color.toColorInt()
             val dark = isDarkColor(c)
             refreshByLuminance(dark, c)
         } catch (e: Exception) {
+            Timber.e("setStatusBarColor error: ${e.stackTraceToString()} ${content.ifBlank { "" }}")
             context?.let {
                 refreshByLuminance(it.isNightMode(), it.colorFromAttribute(R.attr.icon_white))
             }
@@ -1203,23 +1766,17 @@ class WebFragment : BaseFragment() {
 
     private fun refreshByLuminance(
         dark: Boolean,
-        color: Int
+        color: Int,
     ) {
         if (viewDestroyed()) return
 
-        requireActivity().window.statusBarColor = color
-        requireActivity().window.decorView.let {
-            if (dark) {
-                binding.titleTv.setTextColor(Color.WHITE)
-                it.systemUiVisibility =
-                    it.systemUiVisibility and SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
-            } else {
-                binding.titleTv.setTextColor(Color.BLACK)
-                it.systemUiVisibility = it.systemUiVisibility or SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-            }
+        requireActivity().window?.let {
+            it.decorView.findViewById<ViewGroup>(R.id.container).setBackgroundColor(color)
+            SystemUIManager.setAppearanceLightStatusBars(it, !dark)
         }
         titleColor = color
-        binding.titleLl.setBackgroundColor(color)
+        binding.titleTv.setTextColor(if (dark) Color.WHITE else Color.BLACK)
+        binding.titleVa.setBackgroundColor(color)
         binding.webControl.mode = dark
     }
 
@@ -1228,45 +1785,130 @@ class WebFragment : BaseFragment() {
         private val onPageFinishedListener: OnPageFinishedListener,
         val conversationId: String?,
         private val context: Context,
+        private val fragment: Fragment,
         private val fragmentManager: FragmentManager,
         private val registry: ActivityResultRegistry,
+        private val inject: Boolean = true,
         private val scope: CoroutineScope,
         private val onFinished: (url: String?) -> Unit,
-        private val onReceivedError: (request: Int?, description: String?, failingUrl: String?) -> Unit
+        private val onWebpageLoaded: (title: String?, url: String?) -> Unit,
+        private val onReceivedError: (request: Int?, description: String?, failingUrl: String?) -> Unit,
     ) : WebViewClient() {
-        override fun onPageFinished(view: WebView?, url: String?) {
+        private var redirect = false
+        private var loadingError = false
+        private val jsInjectorClient by lazy {
+            JsInjectorClient()
+        }
+
+        private fun closeWebContainer() {
+            fragment.activity?.finish()
+        }
+
+        override fun onPageStarted(
+            view: WebView?,
+            url: String?,
+            favicon: Bitmap?,
+        ) {
+            super.onPageStarted(view, url, favicon)
+            view ?: return
+            view.clearCache(true)
+            Timber.e("onPageStarted ${Web3Signer.currentChain.name}")
+            if (!redirect && inject) {
+                view.evaluateJavascript(jsInjectorClient.loadProviderJs(view.context), null)
+                view.evaluateJavascript(jsInjectorClient.initJs(view.context), null)
+            }
+            redirect = false
+        }
+
+        override fun onPageFinished(
+            view: WebView?,
+            url: String?,
+        ) {
             super.onPageFinished(view, url)
+            if (!redirect && !loadingError) {
+                onWebpageLoaded.invoke(view?.title, url)
+            }
             onPageFinishedListener.onPageFinished()
             onFinished(url)
+            redirect = false
+            loadingError = false
         }
 
         override fun onReceivedError(
             view: WebView?,
             errorCode: Int,
             description: String?,
-            failingUrl: String?
+            failingUrl: String?,
         ) {
             super.onReceivedError(view, errorCode, description, failingUrl)
             onReceivedError(errorCode, description, failingUrl)
+            loadingError = true
         }
 
-        override fun onPageCommitVisible(view: WebView?, url: String?) {
+        @SuppressLint("WebViewClientOnReceivedSslError")
+        override fun onReceivedSslError(
+            view: WebView?,
+            handler: SslErrorHandler?,
+            error: SslError?,
+        ) {
+            error?.let { e ->
+                reportException(Exception("$e ${view?.url}"))
+            }
+            fragment.alert(context.getString(R.string.ssl_cert_invalid))
+                .setNegativeButton(R.string.OK) { dialog, _ ->
+                    handler?.cancel()
+                    dialog.dismiss()
+                }.show()
+        }
+
+        override fun onPageCommitVisible(
+            view: WebView?,
+            url: String?,
+        ) {
             super.onPageCommitVisible(view, url)
             onPageFinishedListener.onPageFinished()
         }
 
-        override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
-            if (view == null || url == null) {
-                return super.shouldOverrideUrlLoading(view, url)
+        private var lastHandleUrl: Pair<String, Long>? = null
+
+        override fun shouldOverrideUrlLoading(
+            view: WebView?,
+            request: WebResourceRequest?,
+        ): Boolean {
+            redirect = true
+            if (view == null || request == null) {
+                return super.shouldOverrideUrlLoading(view, request)
             }
-            if (url.isMixinUrl()) {
+            val url = request.url.toString()
+
+            if (url.startsWith(Constants.Scheme.WALLET_CONNECT_PREFIX, true) ||
+                url.startsWith(Constants.Scheme.MIXIN_WC) ||
+                url.startsWith(Constants.Scheme.HTTPS_MIXIN_WC)
+            ) {
+                val wcUrl = convertWcLink(url)
+                if (wcUrl != null) {
+                    // handle wallet connect url
+                    UrlInterpreterActivity.show(view.context, wcUrl)
+                    if (request.isForMainFrame) {
+                        closeWebContainer()
+                    }
+                }
+                // ignore wallet connect data url
+                return true
+            }
+
+            if (url.isMixinUrl() || url.isExternalTransferUrl() || url.isLightningUrl()) {
+                if (url == lastHandleUrl?.first && System.currentTimeMillis() - (lastHandleUrl?.second ?: 0) <= 1000L) {
+                    return true
+                }
+                lastHandleUrl = Pair<String, Long>(url, System.currentTimeMillis())
                 val host = view.url?.run { Uri.parse(this).host }
                 url.openAsUrl(
                     context,
                     fragmentManager,
                     scope,
                     host = host,
-                    currentConversation = conversationId
+                    currentConversation = conversationId,
                 ) {}
                 return true
             }
@@ -1280,33 +1922,268 @@ class WebFragment : BaseFragment() {
             } else {
                 try {
                     val context = view.context
-                    val intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME)
+                    // https://developer.android.com/training/package-visibility/use-cases#let-non-browser-apps-handle-urls
+                    val intent =
+                        Intent.parseUri(url, Intent.URI_INTENT_SCHEME).apply {
+                            action = ACTION_VIEW
+                            addCategory(CATEGORY_BROWSABLE)
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                                flags = FLAG_ACTIVITY_REQUIRE_NON_BROWSER
+                            }
+                        }
                     if (context !is Activity) {
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     }
-
-                    if (intent != null) {
-                        val packageManager = context.packageManager
-                        val info = packageManager.resolveActivity(
-                            intent,
-                            PackageManager.MATCH_DEFAULT_ONLY
-                        )
-                        if (info != null) {
-                            view.stopLoading()
-                            context.startActivity(intent)
+                    try {
+                        context.startActivity(intent)
+                        if (request.isForMainFrame) {
+                            closeWebContainer()
+                        }
+                    } catch (e: ActivityNotFoundException) {
+                        val fallbackUrl = intent.extras?.getString("browser_fallback_url")
+                        if (fallbackUrl != null && isFallbackUrlValid(fallbackUrl)) {
+                            view.loadUrl(fallbackUrl, extraHeaders)
+                        } else {
+                            throw e
                         }
                     }
-                } catch (e: URISyntaxException) {
-                    view.loadUrl(url, extraHeaders)
-                } catch (e: ActivityNotFoundException) {
-                    view.loadUrl(url, extraHeaders)
+                } catch (e: Exception) {
+                    if (e is ActivityNotFoundException) {
+                        // do nothing
+                    } else {
+                        view.loadUrl(url, extraHeaders)
+                    }
                 }
             }
             return true
         }
 
+        private fun isFallbackUrlValid(fallbackUrl: String): Boolean {
+            try {
+                val anyCaseScheme = URI(fallbackUrl).scheme
+                val scheme = anyCaseScheme?.lowercase(Locale.US)
+                if ("http" == scheme || "https" == scheme) {
+                    return true
+                } else {
+                    Timber.w("Fallback URI uses unsupported scheme: $scheme. Try http or https.")
+                }
+            } catch (e: URISyntaxException) {
+                Timber.w("URISyntaxException parsing fallback URI")
+            }
+            return false
+        }
+
         interface OnPageFinishedListener {
             fun onPageFinished()
+        }
+    }
+
+    class Web3Interface(
+        val onWalletActionSuccessful: (String) -> Unit,
+        val onWalletActionError: (Long) -> Unit,
+        val onBrowserSign: (JsSignMessage) -> Unit,
+        val onEmptyAddress: (String) -> Unit,
+    ) {
+        @JavascriptInterface
+        fun postMessage(json: String) {
+            if (BuildConfig.DEBUG) Timber.d("postMessage $json")
+            val obj = JSONObject(json)
+            val id = obj.getLong("id")
+            val method = DAppMethod.fromValue(obj.getString("name"))
+            val network = obj.getString("network")
+            if (network == Web3Signer.JsSignerNetwork.Solana.name) {
+                Web3Signer.useSolana()
+            } else {
+                Web3Signer.useEvm()
+            }
+            if (isAddressEmpty(network)) {
+                return
+            }
+            when (method) {
+                DAppMethod.REQUESTACCOUNTS -> {
+                    onWalletActionSuccessful("window.$network.setAddress(\"${Web3Signer.address}\");")
+                    onWalletActionSuccessful("window.$network.sendResponse($id, [\"${Web3Signer.address}\"]);")
+                }
+
+                DAppMethod.SWITCHETHEREUMCHAIN -> {
+                    walletSwitchEthereumChain(id, obj.getJSONObject("object").toString())
+                }
+
+                DAppMethod.SIGNMESSAGE -> {
+                    val o = obj.getJSONObject("object")
+                    val data =
+                        if (network == Web3Signer.JsSignerNetwork.Solana.name) {
+                            o.getString("data")
+                        } else {
+                            o.toString()
+                        }
+                    signMessage(id, data)
+                }
+
+                DAppMethod.SIGNPERSONALMESSAGE -> {
+                    signPersonalMessage(id, obj.getJSONObject("object"))
+                }
+
+                DAppMethod.SIGNTYPEDMESSAGE -> {
+                    signTypedMessage(id, obj.getJSONObject("object"))
+                }
+
+                DAppMethod.SIGNTRANSACTION -> {
+                    val transaction = obj.getJSONObject("object")
+                    val to = transaction.getString("to")
+                    val from = transaction.getString("from")
+                    val gas =
+                        if (transaction.has("gas")) {
+                            transaction.getString("gas")
+                        } else {
+                            null
+                        }
+                    val data =
+                        if (transaction.has("data")) {
+                            transaction.getString("data")
+                        } else {
+                            null
+                        }
+                    val value =
+                        if (transaction.has("value")) {
+                            transaction.getString("value")
+                        } else {
+                            "0x0"
+                        }
+                    val maxPriorityFeePerGas =
+                        if (transaction.has("maxPriorityFeePerGas")) {
+                            transaction.getString("maxPriorityFeePerGas")
+                        } else {
+                            null
+                        }
+                    val maxFeePerGas =
+                        if (transaction.has("maxFeePerGas")) {
+                            transaction.getString("maxFeePerGas")
+                        } else {
+                            null
+                        }
+
+                    if (!from.equals(Web3Signer.evmAddress, ignoreCase = true)) {
+                        onWalletActionError(id)
+                        return
+                    }
+                    signTransaction(id, WCEthereumTransaction(from, to, null, null, maxFeePerGas, maxPriorityFeePerGas, gas, null, value, data))
+                }
+
+                DAppMethod.SIGNRAWTRANSACTION -> {
+                    val o = obj.getJSONObject("object")
+                    val raw = o.getString("raw")
+                    signRawTransaction(id, raw)
+                }
+
+                DAppMethod.SINGIN -> {
+                    val o = obj.getJSONObject("object")
+                    val data = o.getJSONObject("data")
+                    onBrowserSign(JsSignMessage(id, JsSignMessage.TYPE_SIGN_IN, data = data.toString()))
+                }
+
+                else -> {
+                    Timber.e("json $json")
+                }
+            }
+        }
+
+        private fun isAddressEmpty(network: String): Boolean {
+            if (Web3Signer.address.isBlank()) {
+                onEmptyAddress(network)
+                return true
+            }
+            return false
+        }
+
+        private fun signTransaction(
+            callbackId: Long,
+            wcEthereumTransaction: WCEthereumTransaction,
+        ) {
+            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_TRANSACTION, wcEthereumTransaction = wcEthereumTransaction))
+        }
+
+        private fun signRawTransaction(
+            callbackId: Long,
+            raw: String,
+        ) {
+            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_RAW_TRANSACTION, data = raw, solanaTxSource = SolanaTxSource.Web))
+        }
+
+        private fun signMessage(
+            callbackId: Long,
+            data: String,
+        ) {
+            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_MESSAGE, data = data))
+        }
+
+        private fun signPersonalMessage(
+            callbackId: Long,
+            data: JSONObject,
+        ) {
+            try {
+                val address = data.getString("address")
+                if (!address.equals(Web3Signer.address, true)) {
+                    throw IllegalArgumentException("Address unequal")
+                }
+                onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_PERSONAL_MESSAGE, data = data.getString("data")))
+            } catch (e: Exception) {
+                onWalletActionError(callbackId)
+            }
+        }
+
+        private fun signTypedMessage(
+            callbackId: Long,
+            data: JSONObject,
+        ) {
+            try {
+                val address = data.getString("address")
+                if (!address.equals(Web3Signer.address, true)) {
+                    throw IllegalArgumentException("Address unequal")
+                }
+                onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_TYPED_MESSAGE, data = data.getString("raw")))
+            } catch (e: Exception) {
+                onWalletActionError(callbackId)
+            }
+        }
+
+        private fun ethCall(
+            callbackId: Long,
+            recipient: String,
+        ) {
+            // do nothing
+            Timber.e("ethCall $callbackId $recipient")
+        }
+
+        private fun walletAddEthereumChain(
+            callbackId: Long,
+            msgParams: String,
+        ) {
+            Timber.e("walletAddEthereumChain $callbackId $msgParams")
+        }
+
+        private fun walletSwitchEthereumChain(
+            callbackId: Long,
+            msgParams: String,
+        ) {
+            val switchChain = GsonHelper.customGson.fromJson(msgParams, SwitchChain::class.java)
+            val result = Web3Signer.switchChain(switchChain)
+            if (result.isSuccess) {
+                onWalletActionSuccessful(
+                    """
+                    var config = {
+                    ethereum: {
+                        address: "${Web3Signer.address}",
+                        chainId: ${Web3Signer.currentChain.chainReference},
+                        rpcUrl: "${Web3Signer.currentChain.rpcUrl}"
+                    }
+                };
+                mixinwallet.${Web3Signer.currentNetwork}.setConfig(config);
+                """,
+                )
+                onWalletActionSuccessful("window.${Web3Signer.currentNetwork}.emitChainChanged('${Web3Signer.currentChain.hexReference}');")
+            }
+            onWalletActionSuccessful("window.${Web3Signer.currentNetwork}.sendResponse($callbackId, null);")
         }
     }
 
@@ -1317,6 +2194,11 @@ class WebFragment : BaseFragment() {
         var reloadThemeAction: (() -> Unit)? = null,
         var playlistAction: ((Array<String>) -> Unit)? = null,
         var closeAction: (() -> Unit)? = null,
+        var getTipAddressAction: ((String, String) -> Unit)? = null,
+        var tipSignAction: ((String, String, String) -> Unit)? = null,
+        var getAssetAction: ((Array<String>, String) -> Unit)? = null,
+        var signBotSignature: ((String, Boolean, String, String, String, String) -> Unit)? = null,
+        var openInBrowserAction: ((String) -> Boolean)? = null,
     ) {
         @JavascriptInterface
         fun showToast(toast: String) {
@@ -1324,21 +2206,31 @@ class WebFragment : BaseFragment() {
         }
 
         @JavascriptInterface
-        fun getContext(): String? = Gson().toJson(
-            MixinContext(
-                conversationId,
-                immersive,
-                appearance = if (context.isNightMode()) {
-                    "dark"
-                } else {
-                    "light"
-                }
+        fun getContext(): String? =
+            Gson().toJson(
+                MixinContext(
+                    conversationId,
+                    immersive,
+                    appearance =
+                        if (context.isNightMode()) {
+                            "dark"
+                        } else {
+                            "light"
+                        },
+                ),
             )
-        )
 
         @JavascriptInterface
         fun reloadTheme() {
             reloadThemeAction?.invoke()
+        }
+
+        @JavascriptInterface
+        fun getAssets(
+            list: Array<String>,
+            callbackFunction: String,
+        ) {
+            getAssetAction?.invoke(list, callbackFunction)
         }
 
         @JavascriptInterface
@@ -1349,6 +2241,44 @@ class WebFragment : BaseFragment() {
         @JavascriptInterface
         fun close() {
             closeAction?.invoke()
+        }
+
+        @JavascriptInterface
+        fun openInBrowser(url: String): Boolean {
+            return openInBrowserAction?.invoke(url) ?: false
+        }
+
+        @JavascriptInterface
+        fun getTipAddress(
+            chainId: String,
+            callbackFunction: String,
+        ) {
+            getTipAddressAction?.invoke(chainId, callbackFunction)
+        }
+
+        @JavascriptInterface
+        fun tipSign(
+            chainId: String,
+            message: String,
+            callbackFunction: String,
+        ) {
+            tipSignAction?.invoke(chainId, message, callbackFunction)
+        }
+
+        @JavascriptInterface
+        fun signBotSignature(
+            messageBody: Array<String>,
+        ) {
+            if (messageBody.isEmpty()) {
+                return
+            }
+            val appId = messageBody[0]
+            val reloadPublicKey = messageBody[1]
+            val method = messageBody[2]
+            val path = messageBody[3]
+            val body = messageBody[4]
+            val callbackFunction = messageBody[5]
+            signBotSignature?.invoke(appId, reloadPublicKey.toBoolean(), method, path, body, callbackFunction)
         }
     }
 
@@ -1366,8 +2296,17 @@ class WebFragment : BaseFragment() {
         @SerializedName("currency")
         val currency: String = Session.getFiatCurrency(),
         @SerializedName("locale")
-        val locale: String = "${Lingver.getInstance().getLocale().language}-${
-        Lingver.getInstance().getLocale().country
-        }"
-    )
+        val locale: String = getLocale(),
+    ) {
+        companion object {
+            private fun getLocale(): String {
+                if (isFollowSystem()) {
+                    val locale = MixinApplication.get().resources.configuration.locales.get(0) ?: Locale.getDefault()
+                    return "${locale.language}-${locale.country}"
+                } else {
+                    return "${getLanguage()}-${getCountry()}"
+                }
+            }
+        }
+    }
 }

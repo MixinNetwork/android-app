@@ -12,30 +12,36 @@ import one.mixin.android.widget.imageeditor.Renderer
 import one.mixin.android.widget.imageeditor.RendererContext
 
 class SelectedElementGuideRenderer : Renderer {
-
     private val allPointsOnScreen = FloatArray(8)
-    private val allPointsInLocalCords = floatArrayOf(
-        Bounds.LEFT, Bounds.TOP,
-        Bounds.RIGHT, Bounds.TOP,
-        Bounds.RIGHT, Bounds.BOTTOM,
-        Bounds.LEFT, Bounds.BOTTOM
-    )
+    private val allPointsInLocalCords =
+        floatArrayOf(
+            Bounds.LEFT,
+            Bounds.TOP,
+            Bounds.RIGHT,
+            Bounds.TOP,
+            Bounds.RIGHT,
+            Bounds.BOTTOM,
+            Bounds.LEFT,
+            Bounds.BOTTOM,
+        )
 
     private val circleRadius = DimensionUnit.DP.toPixels(5f)
 
-    private val guidePaint = Paint().apply {
-        isAntiAlias = true
-        strokeWidth = DimensionUnit.DP.toPixels(1.5f)
-        color = Color.WHITE
-        style = Paint.Style.STROKE
-        pathEffect = DashPathEffect(floatArrayOf(15f, 15f), 0f)
-    }
+    private val guidePaint =
+        Paint().apply {
+            isAntiAlias = true
+            strokeWidth = DimensionUnit.DP.toPixels(1.5f)
+            color = Color.WHITE
+            style = Paint.Style.STROKE
+            pathEffect = DashPathEffect(floatArrayOf(15f, 15f), 0f)
+        }
 
-    private val circlePaint = Paint().apply {
-        isAntiAlias = true
-        color = Color.WHITE
-        style = Paint.Style.FILL
-    }
+    private val circlePaint =
+        Paint().apply {
+            isAntiAlias = true
+            color = Color.WHITE
+            style = Paint.Style.FILL
+        }
 
     private val path = Path()
 
@@ -49,7 +55,10 @@ class SelectedElementGuideRenderer : Renderer {
         performRender(rendererContext)
     }
 
-    override fun hitTest(x: Float, y: Float): Boolean = false
+    override fun hitTest(
+        x: Float,
+        y: Float,
+    ): Boolean = false
 
     private fun performRender(rendererContext: RendererContext) {
         rendererContext.save()
@@ -68,19 +77,22 @@ class SelectedElementGuideRenderer : Renderer {
             (allPointsOnScreen[6] + allPointsOnScreen[0]) / 2f,
             (allPointsOnScreen[7] + allPointsOnScreen[1]) / 2f,
             circleRadius,
-            circlePaint
+            circlePaint,
         )
         rendererContext.canvas.drawCircle(
             (allPointsOnScreen[4] + allPointsOnScreen[2]) / 2f,
             (allPointsOnScreen[5] + allPointsOnScreen[3]) / 2f,
             circleRadius,
-            circlePaint
+            circlePaint,
         )
 
         rendererContext.restore()
     }
 
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
+    override fun writeToParcel(
+        parcel: Parcel,
+        flags: Int,
+    ) {
     }
 
     override fun describeContents(): Int {

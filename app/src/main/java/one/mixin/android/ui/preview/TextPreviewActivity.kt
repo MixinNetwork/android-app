@@ -18,14 +18,18 @@ import androidx.core.view.doOnPreDraw
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants.Colors.LINK_COLOR
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityPreviewTextBinding
+import one.mixin.android.extension.callPhone
+import one.mixin.android.extension.getParcelableExtraCompat
+import one.mixin.android.extension.initChatMode
 import one.mixin.android.extension.openAsUrlOrWeb
+import one.mixin.android.extension.openEmail
 import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.common.showUserBottom
-import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.MessageItem
@@ -33,12 +37,7 @@ import one.mixin.android.widget.linktext.AutoLinkMode
 
 @AndroidEntryPoint
 class TextPreviewActivity : BlazeBaseActivity() {
-
     private lateinit var binding: ActivityPreviewTextBinding
-
-    private val messageItem: MessageItem by lazy {
-        intent.getParcelableExtra(ARGS_MESSAGE)!!
-    }
 
     private val viewModel by viewModels<TextPreviewViewModel>()
 
@@ -53,35 +52,45 @@ class TextPreviewActivity : BlazeBaseActivity() {
 
         binding.text.requestFocus()
         binding.text.movementMethod = LinkMovementMethod()
-        binding.text.addAutoLinkMode(AutoLinkMode.MODE_URL)
-        binding.text.setUrlModeColor(BaseViewHolder.LINK_COLOR)
-        binding.text.setMentionModeColor(BaseViewHolder.LINK_COLOR)
-        binding.text.setSelectedStateColor(BaseViewHolder.SELECT_COLOR)
-        binding.text.setAutoLinkOnClickListener { autoLinkMode, matchedText ->
-            when (autoLinkMode) {
-                AutoLinkMode.MODE_URL -> {
-                    dismissWhenClickText = false
-                    matchedText.openAsUrlOrWeb(this, messageItem.conversationId, supportFragmentManager, lifecycleScope)
-                }
-                AutoLinkMode.MODE_MENTION -> {
-                    dismissWhenClickText = false
-                    lifecycleScope.launch {
-                        viewModel.findUserByIdentityNumberSuspend(matchedText.substring(1))?.let { user ->
-                            showUserBottom(supportFragmentManager, user, messageItem.conversationId)
+        binding.text.initChatMode(LINK_COLOR)
+        if (intent.hasExtra(ARGS_MESSAGE)) {
+            val messageItem = requireNotNull(intent.getParcelableExtraCompat(ARGS_MESSAGE, MessageItem::class.java))
+            binding.text.setAutoLinkOnClickListener { autoLinkMode, matchedText ->
+                when (autoLinkMode) {
+                    AutoLinkMode.MODE_URL -> {
+                        dismissWhenClickText = false
+                        matchedText.openAsUrlOrWeb(this, messageItem.conversationId, supportFragmentManager, lifecycleScope)
+                    }
+                    AutoLinkMode.MODE_MENTION -> {
+                        dismissWhenClickText = false
+                        lifecycleScope.launch {
+                            viewModel.findUserByIdentityNumberSuspend(matchedText.substring(1))?.let { user ->
+                                showUserBottom(supportFragmentManager, user, messageItem.conversationId)
+                            }
                         }
                     }
-                }
-                else -> {
+                    AutoLinkMode.MODE_PHONE -> {
+                        this@TextPreviewActivity.callPhone(matchedText)
+                    }
+                    AutoLinkMode.MODE_EMAIL -> {
+                        this@TextPreviewActivity.openEmail(matchedText)
+                    }
+                    else -> {
+                    }
                 }
             }
-        }
-        val mention = messageItem.mentions
-        if (mention?.isNotBlank() == true) {
-            val mentionRenderContext = MentionRenderCache.singleton.getMentionRenderContext(mention)
-            binding.text.renderMessage(messageItem.content, null, mentionRenderContext)
+            val mention = messageItem.mentions
+            if (mention?.isNotBlank() == true) {
+                val mentionRenderContext = MentionRenderCache.singleton.getMentionRenderContext(mention)
+                binding.text.renderMessage(messageItem.content, null, mentionRenderContext)
+            } else {
+                binding.text.renderMessage(messageItem.content, null)
+            }
         } else {
-            binding.text.renderMessage(messageItem.content, null)
+            val content = intent.getStringExtra(ARGS_CONTENT)
+            binding.text.renderMessage(content, null)
         }
+
         binding.text.doOnPreDraw {
             val lineCount = binding.text.lineCount
             if (lineCount > 1) {
@@ -90,48 +99,59 @@ class TextPreviewActivity : BlazeBaseActivity() {
                 binding.text.gravity = Gravity.CENTER_HORIZONTAL
             }
         }
-        binding.text.customSelectionActionModeCallback = object : ActionMode.Callback {
-            override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
-                val menuInflater: MenuInflater = mode.menuInflater
-                menuInflater.inflate(R.menu.text_preview_selection_action_menu, menu)
-                actionMode = mode
-                dismissWhenClickText = false
-                return true
-            }
+        binding.text.customSelectionActionModeCallback =
+            object : ActionMode.Callback {
+                override fun onCreateActionMode(
+                    mode: ActionMode,
+                    menu: Menu,
+                ): Boolean {
+                    val menuInflater: MenuInflater = mode.menuInflater
+                    menuInflater.inflate(R.menu.text_preview_selection_action_menu, menu)
+                    actionMode = mode
+                    dismissWhenClickText = false
+                    return true
+                }
 
-            override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?): Boolean {
-                return true
-            }
+                override fun onPrepareActionMode(
+                    mode: ActionMode?,
+                    menu: Menu?,
+                ): Boolean {
+                    return true
+                }
 
-            override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
-                binding.text.text?.let { editable ->
-                    when (item.itemId) {
-                        android.R.id.copy -> {
-                            toast(R.string.copy_success)
+                override fun onActionItemClicked(
+                    mode: ActionMode,
+                    item: MenuItem,
+                ): Boolean {
+                    binding.text.text?.let { editable ->
+                        when (item.itemId) {
+                            android.R.id.copy -> {
+                                toast(R.string.copied_to_clipboard)
+                            }
+                            R.id.forward -> {
+                                ForwardActivity.show(this@TextPreviewActivity, editable.toString())
+                            }
+                            else -> ""
                         }
-                        R.id.forward -> {
-                            ForwardActivity.show(this@TextPreviewActivity, editable.toString())
-                        }
-                        else -> ""
                     }
+                    dismissWhenClickText = true
+                    return false
                 }
-                dismissWhenClickText = true
-                return false
-            }
 
-            override fun onDestroyActionMode(mode: ActionMode?) {
-                actionMode = null
-            }
-        }
-        binding.text.listener = object : GestureDetector.SimpleOnGestureListener() {
-            override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
-                if (actionMode == null && dismissWhenClickText) {
-                    finish()
+                override fun onDestroyActionMode(mode: ActionMode?) {
+                    actionMode = null
                 }
-                dismissWhenClickText = true
-                return true
             }
-        }
+        binding.text.listener =
+            object : GestureDetector.SimpleOnGestureListener() {
+                override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
+                    if (actionMode == null && dismissWhenClickText) {
+                        finish()
+                    }
+                    dismissWhenClickText = true
+                    return true
+                }
+            }
         binding.root.setOnClickListener {
             if (actionMode == null) {
                 finish()
@@ -165,10 +185,24 @@ class TextPreviewActivity : BlazeBaseActivity() {
 
     companion object {
         const val ARGS_MESSAGE = "args_message"
+        const val ARGS_CONTENT = "args_content"
 
-        fun show(context: Context, messageItem: MessageItem) {
+        fun show(
+            context: Context,
+            messageItem: MessageItem,
+        ) {
             Intent(context, TextPreviewActivity::class.java).apply {
                 putExtra(ARGS_MESSAGE, messageItem)
+                context.startActivity(this)
+            }
+        }
+
+        fun show(
+            context: Context,
+            content: String,
+        ) {
+            Intent(context, TextPreviewActivity::class.java).apply {
+                putExtra(ARGS_CONTENT, content)
                 context.startActivity(this)
             }
         }

@@ -10,14 +10,12 @@ import android.os.Bundle
 import android.view.View
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
-import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
-import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -28,9 +26,11 @@ import one.mixin.android.Constants.BackUp.BACKUP_MEDIA
 import one.mixin.android.Constants.BackUp.BACKUP_PERIOD
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentBackupBinding
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getDisplayPath
+import one.mixin.android.extension.getLegacyBackupPath
 import one.mixin.android.extension.getRelativeTimeSpan
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putString
@@ -39,13 +39,15 @@ import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.BackupJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.util.PropertyHelper
 import one.mixin.android.util.backup.Result
 import one.mixin.android.util.backup.canUserAccessBackupDirectory
 import one.mixin.android.util.backup.delete
 import one.mixin.android.util.backup.deleteApi29
 import one.mixin.android.util.backup.findBackup
 import one.mixin.android.util.backup.findBackupApi29
+import one.mixin.android.util.backup.getBackupDirectory
+import one.mixin.android.util.reportException
+import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
 import timber.log.Timber
 import javax.inject.Inject
@@ -54,6 +56,7 @@ import javax.inject.Inject
 class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
     companion object {
         const val TAG = "BackUpFragment"
+
         fun newInstance() = BackUpFragment()
     }
 
@@ -67,21 +70,27 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        if (!::resultRegistry.isInitialized) resultRegistry =
-            requireActivity().activityResultRegistry
+        if (!::resultRegistry.isInitialized) {
+            resultRegistry =
+                requireActivity().activityResultRegistry
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            chooseFolderResult = registerForActivityResult(
-                ChooseFolderContract(),
-                resultRegistry,
-                ::callbackChooseFolder
-            )
+            chooseFolderResult =
+                registerForActivityResult(
+                    ChooseFolderContract(),
+                    resultRegistry,
+                    ::callbackChooseFolder,
+                )
         }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
-            backupInfo.text = getString(R.string.backup_external_storage, getString(R.string.backup_never))
+            backupInfo.text = getString(R.string.backup_external_storage, getString(R.string.Never))
             backupChoose.setOnClickListener {
                 chooseFolder()
             }
@@ -106,31 +115,38 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
                     topToBottom = R.id.backup_des
                 }
             }
-            titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
+            titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             backupBn.setOnClickListener {
-                RxPermissions(requireActivity())
-                    .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    .autoDispose(stopScope)
-                    .subscribe(
-                        { granted ->
-                            if (granted) {
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                                    showBackupMediaDialog()
+                fun afterGranted() {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        showBackupMediaDialog()
+                    } else {
+                        jobManager.addJobInBackground(BackupJob(true))
+                    }
+                }
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                    RxPermissions(requireActivity())
+                        .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        .autoDispose(stopScope)
+                        .subscribe(
+                            { granted ->
+                                if (granted) {
+                                    afterGranted()
                                 } else {
-                                    jobManager.addJobInBackground(BackupJob(true))
+                                    context?.openPermissionSetting()
                                 }
-                            } else {
+                            },
+                            {
                                 context?.openPermissionSetting()
-                            }
-                        },
-                        {
-                            context?.openPermissionSetting()
-                        }
-                    )
+                            },
+                        )
+                } else {
+                    afterGranted()
+                }
             }
             if (ContextCompat.checkSelfPermission(
                     requireContext(),
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 ) == PackageManager.PERMISSION_GRANTED
             ) {
                 findBackUp()
@@ -139,8 +155,8 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
                 deleteBn.isVisible = false
                 lifecycleScope.launch {
                     if (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        deleteApi29(requireContext())
-                    } else {
+                            deleteApi29(requireContext())
+                        } else {
                             delete(requireContext())
                         }
                     ) {
@@ -154,7 +170,7 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
             }
         }
         BackupJob.backupLiveData.observe(
-            viewLifecycleOwner
+            viewLifecycleOwner,
         ) {
             if (it) {
                 binding.backupChoose.isVisible = false
@@ -166,15 +182,15 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
                 binding.backupBn.isInvisible = false
                 binding.progressGroup.isVisible = false
                 binding.deleteBn.isVisible = true
-                when (BackupJob.backupLiveData.result) {
+                when (val result = BackupJob.backupLiveData.result) {
                     Result.SUCCESS -> findBackUp()
                     Result.NO_AVAILABLE_MEMORY ->
                         alertDialogBuilder()
                             .setMessage(R.string.backup_no_available_memory)
-                            .setNegativeButton(R.string.group_ok) { dialog, _ -> dialog.dismiss() }
+                            .setNegativeButton(R.string.OK) { dialog, _ -> dialog.dismiss() }
                             .show()
                     Result.FAILURE -> toast(R.string.backup_failure_tip)
-                    else -> throw IllegalStateException("Unknown")
+                    else -> reportException(IllegalStateException("Backup result $result"))
                 }
             }
         }
@@ -185,60 +201,63 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
     }
 
     private suspend fun loadBackupPeriod(): Int =
-        PropertyHelper.findValueByKey(BACKUP_PERIOD)?.toIntOrNull() ?: 0
+        PropertyHelper.findValueByKey(BACKUP_PERIOD, 0)
 
-    private fun showBackupDialog() = lifecycleScope.launch {
-        val builder = alertDialogBuilder()
-        builder.setTitle(R.string.backup_dialog_title)
+    private fun showBackupDialog() =
+        lifecycleScope.launch {
+            val builder = alertDialogBuilder()
+            builder.setTitle(R.string.backup_dialog_title)
 
-        val checkedItem = loadBackupPeriod()
-        builder.setSingleChoiceItems(options, checkedItem) { dialog, which ->
-            binding.backupAutoTv.text = options[which]
-            lifecycleScope.launch {
-                PropertyHelper.updateKeyValue(BACKUP_PERIOD, which.toString())
+            val checkedItem = loadBackupPeriod()
+            builder.setSingleChoiceItems(options, checkedItem) { dialog, which ->
+                binding.backupAutoTv.text = options[which]
+                lifecycleScope.launch {
+                    PropertyHelper.updateKeyValue(BACKUP_PERIOD, which)
+                }
+                dialog.dismiss()
             }
-            dialog.dismiss()
-        }
-        builder.setNegativeButton(android.R.string.cancel) { dialog, _ ->
-            dialog.dismiss()
-        }
-        val dialog = builder.create()
-        dialog.show()
-    }
-
-    private fun showBackupMediaDialog() = lifecycleScope.launch {
-        val builder = alertDialogBuilder()
-        builder.setTitle(R.string.backup_dialog_title)
-        val animals = arrayOf(getString(R.string.backup_media))
-        var checked = PropertyHelper.findValueByKey(BACKUP_MEDIA)?.toBooleanStrictOrNull() ?: true
-        val checkedItems = booleanArrayOf(checked)
-        builder.setMultiChoiceItems(
-            animals, checkedItems
-        ) { _, _, isChecked ->
-            checked = isChecked
-            lifecycleScope.launch {
-                PropertyHelper.updateKeyValue(BACKUP_MEDIA, checked.toString())
+            builder.setNegativeButton(android.R.string.cancel) { dialog, _ ->
+                dialog.dismiss()
             }
+            val dialog = builder.create()
+            dialog.show()
         }
-        builder.setPositiveButton(R.string.backup) { dialog, _ ->
-            jobManager.addJobInBackground(BackupJob(force = true, backupMedia = checked))
-            dialog.dismiss()
+
+    private fun showBackupMediaDialog() =
+        lifecycleScope.launch {
+            val builder = alertDialogBuilder()
+            builder.setTitle(R.string.backup_dialog_title)
+            val animals = arrayOf(getString(R.string.backup_media))
+            var checked = PropertyHelper.findValueByKey(BACKUP_MEDIA, true)
+            val checkedItems = booleanArrayOf(checked)
+            builder.setMultiChoiceItems(
+                animals,
+                checkedItems,
+            ) { _, _, isChecked ->
+                checked = isChecked
+                lifecycleScope.launch {
+                    PropertyHelper.updateKeyValue(BACKUP_MEDIA, checked)
+                }
+            }
+            builder.setPositiveButton(R.string.Backup) { dialog, _ ->
+                jobManager.addJobInBackground(BackupJob(force = true, backupMedia = checked))
+                dialog.dismiss()
+            }
+            builder.setNegativeButton(android.R.string.cancel) { dialog, _ ->
+                dialog.dismiss()
+            }
+            builder.create().show()
         }
-        builder.setNegativeButton(android.R.string.cancel) { dialog, _ ->
-            dialog.dismiss()
-        }
-        builder.create().show()
-    }
 
     private fun chooseFolder() {
         val builder = alertDialogBuilder()
         builder.setMessage(R.string.backup_choose_a_folder)
-        builder.setPositiveButton(R.string.backup_choose_folder) { _, _ ->
+        builder.setPositiveButton(R.string.Choose_folder) { _, _ ->
             chooseFolderResult.launch(
                 defaultSharedPreferences.getString(
                     PREF_BACKUP_DIRECTORY,
-                    null
-                )
+                    null,
+                ),
             )
         }
         builder.setNegativeButton(android.R.string.cancel) { _, _ ->
@@ -247,13 +266,13 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
         dialog.show()
     }
 
-    @RequiresApi(Build.VERSION_CODES.N)
     private fun callbackChooseFolder(uri: Uri?) {
         if (uri != null) {
             Timber.d(requireContext().getDisplayPath(uri))
             defaultSharedPreferences.putString(PREF_BACKUP_DIRECTORY, uri.toString())
-            val takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION or
-                Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            val takeFlags =
+                Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION
             requireContext().contentResolver
                 .takePersistableUriPermission(uri, takeFlags)
             lifecycleScope.launch {
@@ -262,41 +281,72 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
             Timber.d("${canUserAccessBackupDirectory(requireContext())}")
         }
     }
-    private fun findBackUp() = lifecycleScope.launch(Dispatchers.IO) {
-        val info = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+
+    private fun findBackUp() =
+        lifecycleScope.launch(Dispatchers.IO) {
+            val info =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    withContext(Dispatchers.Main) {
+                        if (viewDestroyed()) return@withContext
+                        binding.backupProgress.isVisible = true
+                        binding.backupInfo.isInvisible = true
+                        binding.backupBn.isVisible = canUserAccessBackupDirectory(requireContext())
+                    }
+                    findBackupApi29(requireContext(), coroutineContext)
+                } else {
+                    if (ActivityCompat.checkSelfPermission(
+                            requireContext(),
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        ) != PackageManager.PERMISSION_GRANTED
+                    ) {
+                        return@launch
+                    }
+                    findBackup(requireContext(), coroutineContext)
+                }
             withContext(Dispatchers.Main) {
                 if (viewDestroyed()) return@withContext
-                binding.backupProgress.isVisible = true
-                binding.backupInfo.isInvisible = true
-            }
-            findBackupApi29(requireContext(), coroutineContext)
-        } else {
-            if (ActivityCompat.checkSelfPermission(
-                    requireContext(),
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                return@launch
-            }
-            findBackup(requireContext(), coroutineContext)
-        }
-        withContext(Dispatchers.Main) {
-            if (viewDestroyed()) return@withContext
-            binding.apply {
-                binding.backupProgress.isVisible = false
-                binding.backupInfo.isInvisible = false
-                if (info == null) {
-                    backupInfo.text = getString(R.string.backup_external_storage, getString(R.string.backup_never))
-                    backupPath.isVisible = false
-                } else {
-                    val time = info.lastModified.run {
-                        this.getRelativeTimeSpan()
+                binding.apply {
+                    binding.backupProgress.isVisible = false
+                    binding.backupInfo.isInvisible = false
+                    if (info == null) {
+                        backupInfo.text = getString(R.string.backup_external_storage, getString(R.string.Never))
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            if (canUserAccessBackupDirectory(requireContext())) {
+                                val backupDirectoryUri = getBackupDirectory(requireContext())
+                                if (backupDirectoryUri != null) {
+                                    backupPath.text =
+                                        getString(
+                                            R.string.restore_path,
+                                            requireContext().getDisplayPath(backupDirectoryUri),
+                                        )
+                                    backupPath.isVisible = true
+                                } else {
+                                    backupPath.isVisible = false
+                                }
+                            } else {
+                                backupPath.isVisible = false
+                            }
+                        } else {
+                            backupPath.isVisible = true
+                            backupPath.text =
+                                getString(
+                                    R.string.restore_path,
+                                    requireContext().getLegacyBackupPath(
+                                        create = false,
+                                        legacy = false,
+                                    )?.absolutePath,
+                                )
+                        }
+                    } else {
+                        val time =
+                            info.lastModified.run {
+                                this.getRelativeTimeSpan()
+                            }
+                        backupPath.text = getString(R.string.restore_path, info.path)
+                        backupInfo.text = getString(R.string.backup_external_storage, time)
+                        backupPath.isVisible = true
                     }
-                    backupPath.text = getString(R.string.restore_path, info.path)
-                    backupInfo.text = getString(R.string.backup_external_storage, time)
-                    backupPath.isVisible = true
                 }
             }
         }
-    }
 }

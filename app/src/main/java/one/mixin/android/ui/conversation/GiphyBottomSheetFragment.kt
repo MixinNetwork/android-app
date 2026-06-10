@@ -17,7 +17,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentGiphySearchBottomSheetBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.hideKeyboard
-import one.mixin.android.extension.loadGif
+import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
@@ -54,11 +54,14 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
         GiphyAdapter(
             (requireContext().realSize().x - (COLUMN + 1) * padding) / COLUMN,
             object : GifListener {
-                override fun onGifClick(image: Image, previewUrl: String) {
+                override fun onGifClick(
+                    image: Image,
+                    previewUrl: String,
+                ) {
                     callback?.onGiphyClick(image, previewUrl)
                     dismiss()
                 }
-            }
+            },
         )
     }
     private var offset = 0
@@ -88,23 +91,28 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
     private val binding by viewBinding(FragmentGiphySearchBottomSheetBinding::inflate)
 
     @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
 
         binding.apply {
-            stickerRv.layoutManager = GridLayoutManager(context, COLUMN).apply {
-                spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
-                    override fun getSpanSize(pos: Int): Int {
-                        return if (pos == adapter.itemCount - 1) {
-                            COLUMN
-                        } else {
-                            1
+            stickerRv.layoutManager =
+                GridLayoutManager(context, COLUMN).apply {
+                    spanSizeLookup =
+                        object : GridLayoutManager.SpanSizeLookup() {
+                            override fun getSpanSize(pos: Int): Int {
+                                return if (pos == adapter.itemCount - 1) {
+                                    COLUMN
+                                } else {
+                                    1
+                                }
+                            }
                         }
-                    }
                 }
-            }
             val foot = layoutInflater.inflate(R.layout.view_giphy_foot, stickerRv, false)
             adapter.footerView = foot
             stickerRv.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, true))
@@ -125,6 +133,7 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
         adapter.submitList(totalGifs)
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun performSearch() {
         fetching = true
         if (offset == 0) {
@@ -158,50 +167,64 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
                     binding.stickerVa.displayedChild = POS_EMPTY
                     Timber.d("Search gifs failed, t: ${t.printStackTrace()}")
                     if (t is HttpException && t.code() == 429) {
-                        toast("Giphy API rate limit exceeded")
+                        toast(R.string.giphy_api_rate_limit_exceeded)
                     }
-                }
+                },
             )
     }
 
-    private val onScrollListener = object : RecyclerView.OnScrollListener() {
-        override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-            if (!fetching && !binding.stickerRv.canScrollVertically(1)) {
-                val cur = System.currentTimeMillis()
-                if (noMore || cur - lastSearchTime < INTERVAL) return
+    private val onScrollListener =
+        object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(
+                recyclerView: RecyclerView,
+                newState: Int,
+            ) {
+                if (!fetching && !binding.stickerRv.canScrollVertically(1)) {
+                    val cur = System.currentTimeMillis()
+                    if (noMore || cur - lastSearchTime < INTERVAL) return
 
-                lastSearchTime = cur
-                performSearch()
+                    lastSearchTime = cur
+                    performSearch()
+                }
             }
         }
-    }
 
-    private val onEditorActionListener = TextView.OnEditorActionListener { _, actionId, _ ->
-        if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-            if (!fetching) {
-                offset = 0
-                searching = binding.searchEt.et.text.toString().trim().isNotEmpty()
-                noMore = false
-                totalGifs.clear()
-                binding.stickerRv.scrollToPosition(0)
-                performSearch()
-                binding.searchEt.hideKeyboard()
+    private val onEditorActionListener =
+        TextView.OnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                if (!fetching) {
+                    offset = 0
+                    searching = binding.searchEt.et.text.toString().trim().isNotEmpty()
+                    noMore = false
+                    totalGifs.clear()
+                    binding.stickerRv.scrollToPosition(0)
+                    performSearch()
+                    binding.searchEt.hideKeyboard()
+                }
+                return@OnEditorActionListener true
             }
-            return@OnEditorActionListener true
+            false
         }
-        false
-    }
 
     interface Callback {
-        fun onGiphyClick(image: Image, previewUrl: String)
+        fun onGiphyClick(
+            image: Image,
+            previewUrl: String,
+        )
     }
 
     class GiphyAdapter(private val size: Int, private val listener: GifListener) : FooterListAdapter<Gif, RecyclerView.ViewHolder>(Gif.DIFF_CALLBACK) {
-        override fun getNormalViewHolder(context: Context, parent: ViewGroup): NormalHolder {
+        override fun getNormalViewHolder(
+            context: Context,
+            parent: ViewGroup,
+        ): NormalHolder {
             return NormalHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_sticker, parent, false))
         }
 
-        override fun onBindViewHolder(holder: RecyclerView.ViewHolder, pos: Int) {
+        override fun onBindViewHolder(
+            holder: RecyclerView.ViewHolder,
+            pos: Int,
+        ) {
             if (pos == itemCount - 1) return
 
             val params = holder.itemView.layoutParams
@@ -216,12 +239,15 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
                 width = size
                 height = (size * (3f / 4)).toInt()
             }
-            item.loadGif(previewImage.url, centerCrop = true, holder = R.drawable.ic_giphy_place_holder)
+            item.loadImage(previewImage.url, holder = R.drawable.ic_giphy_place_holder)
             holder.itemView.setOnClickListener { listener.onGifClick(sendImage, previewImage.url) }
         }
     }
 
     interface GifListener {
-        fun onGifClick(image: Image, previewUrl: String)
+        fun onGifClick(
+            image: Image,
+            previewUrl: String,
+        )
     }
 }

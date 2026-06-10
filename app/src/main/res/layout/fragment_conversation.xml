@@ -24,7 +24,7 @@
         <one.mixin.android.widget.ToolView
             android:id="@+id/tool_view"
             android:layout_width="match_parent"
-            android:layout_height="?actionBarSize"
+            android:layout_height="?android:attr/actionBarSize"
             android:visibility="gone" />
     </FrameLayout>
 
@@ -39,7 +39,7 @@
             android:layout_height="match_parent">
 
             <one.mixin.android.widget.DraggableRecyclerView
-                android:id="@+id/chat_rv"
+                android:id="@+id/message_rv"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:clipChildren="false"
@@ -53,6 +53,17 @@
                 app:over_direction="-1"
                 app:stackFromEnd="true"
                 tools:listitem="@layout/item_chat_text" />
+
+            <!-- Hackfix: intercept touch event-->
+            <View
+                android:id="@+id/edge"
+                android:layout_width="30dp"
+                android:layout_height="0dp"
+                app:layout_constraintTop_toTopOf="@id/message_rv"
+                app:layout_constraintBottom_toBottomOf="@id/message_rv"
+                app:layout_constraintEnd_toEndOf="@id/message_rv"
+                android:clickable="true"
+                android:focusable="true"/>
 
             <include
                 layout="@layout/view_link_state"
@@ -68,7 +79,7 @@
                 android:clipToPadding="false"
                 android:padding="8dp"
                 android:translationY="130dp"
-                app:layout_constraintBottom_toBottomOf="@id/chat_rv"
+                app:layout_constraintBottom_toBottomOf="@id/message_rv"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="1"
                 app:layout_constraintStart_toStartOf="parent" />
@@ -220,7 +231,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/chat_rv">
+                app:layout_constraintTop_toBottomOf="@id/message_rv">
 
                 <View
                     android:layout_width="match_parent"
@@ -251,7 +262,7 @@
                     android:gravity="center"
                     android:paddingStart="16dp"
                     android:paddingEnd="16dp"
-                    android:text="@string/setting_unblock"
+                    android:text="@string/Unblock"
                     android:textColor="@color/colorBlue"
                     android:textSize="16sp"
                     android:visibility="gone" />
@@ -264,7 +275,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/chat_rv" />
+                app:layout_constraintTop_toBottomOf="@id/message_rv" />
 
             <one.mixin.android.widget.RecordCircleView
                 android:id="@+id/record_circle"

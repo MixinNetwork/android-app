@@ -6,12 +6,14 @@ import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.widget.ViewAnimator
+import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
 import androidx.core.view.setPadding
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewAvatarBinding
+import one.mixin.android.db.web3.vo.TransactionStatus
+import one.mixin.android.db.web3.vo.TransactionType
+import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.extension.CodeType
 import one.mixin.android.extension.clear
 import one.mixin.android.extension.dpToPx
@@ -22,13 +24,14 @@ import one.mixin.android.extension.sp
 import one.mixin.android.ui.home.bot.Bot
 import one.mixin.android.vo.App
 import one.mixin.android.vo.BotInterface
+import one.mixin.android.vo.ExploreApp
 
 class AvatarView : ViewAnimator {
-
     private val binding = ViewAvatarBinding.inflate(LayoutInflater.from(context), this)
     val avatarSimple get() = binding.avatarSimple
 
     constructor(context: Context) : this(context, null)
+
     @SuppressLint("CustomViewStyleable")
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
         val ta = context.obtainStyledAttributes(attrs, R.styleable.CircleImageView)
@@ -37,16 +40,17 @@ class AvatarView : ViewAnimator {
                 TypedValue.COMPLEX_UNIT_PX,
                 ta.getDimension(
                     R.styleable.CircleImageView_border_text_size,
-                    20f.sp.toFloat()
-                )
+                    20f.sp.toFloat(),
+                ),
             )
         }
         if (ta.hasValue(R.styleable.CircleImageView_border_width)) {
             avatarSimple.borderWidth = ta.getDimensionPixelSize(R.styleable.CircleImageView_border_width, 0)
-            avatarSimple.borderColor = ta.getColor(
-                R.styleable.CircleImageView_border_color,
-                ContextCompat.getColor(context, android.R.color.white)
-            )
+            avatarSimple.borderColor =
+                ta.getColor(
+                    R.styleable.CircleImageView_border_color,
+                    ContextCompat.getColor(context, android.R.color.white),
+                )
             binding.avatarTv.setBorderInfo(avatarSimple.borderWidth.toFloat(), avatarSimple.borderColor)
         }
 
@@ -82,45 +86,112 @@ class AvatarView : ViewAnimator {
     fun setGroup(url: String?) {
         if (!isActivityNotDestroyed()) return
         displayedChild = POS_AVATAR
-        Glide.with(this)
-            .load(url)
-            .apply(RequestOptions().dontAnimate().placeholder(R.drawable.ic_group_place_holder))
-            .into(avatarSimple)
+        avatarSimple.loadImage(url, R.drawable.ic_group_place_holder)
     }
 
     fun setNet(padding: Int = context.dpToPx(8f)) {
         displayedChild = POS_AVATAR
+        avatarSimple.clear()
         avatarSimple.setBackgroundResource(R.drawable.bg_circle_70_solid_gray)
         avatarSimple.setImageResource(R.drawable.ic_transfer_address)
         avatarSimple.setPadding(padding)
     }
 
-    fun setInfo(name: String?, url: String?, id: String) {
+    fun setDeposit() {
+        displayedChild = POS_AVATAR
+        avatarSimple.setImageResource(R.drawable.ic_snapshot_deposit)
+        avatarSimple.clear()
+    }
+
+    fun setWithdrawal() {
+        displayedChild = POS_AVATAR
+        avatarSimple.clear()
+        avatarSimple.setImageResource(R.drawable.ic_snapshot_withdrawal)
+    }
+
+    fun setAnonymous() {
+        displayedChild = POS_AVATAR
+        avatarSimple.clear()
+        avatarSimple.setImageResource(R.drawable.ic_snapshot_anonymous)
+    }
+
+    fun setImageResource(@DrawableRes resId: Int) {
+        displayedChild = POS_AVATAR
+        avatarSimple.clear()
+        avatarSimple.setImageResource(resId)
+    }
+
+    fun setInfo(
+        name: String?,
+        url: String?,
+        id: String,
+    ) {
         binding.avatarTv.text = checkEmoji(name)
         try {
             binding.avatarTv.setBackgroundColor(getAvatarPlaceHolderById(id.getColorCode(CodeType.Avatar(avatarArray.size))))
         } catch (e: NumberFormatException) {
         }
-        displayedChild = if (url != null && url.isNotEmpty()) {
-            avatarSimple.setBackgroundResource(0)
-            avatarSimple.setImageResource(0)
-            avatarSimple.setPadding(0)
-            avatarSimple.loadImage(url, R.drawable.ic_avatar_place_holder)
-            POS_AVATAR
+        displayedChild =
+            if (!url.isNullOrEmpty()) {
+                avatarSimple.setBackgroundResource(0)
+                avatarSimple.clear()
+                avatarSimple.setImageResource(0)
+                avatarSimple.setPadding(0)
+                avatarSimple.loadImage(url, R.drawable.ic_avatar_place_holder)
+                POS_AVATAR
+            } else {
+                POS_TEXT
+            }
+    }
+
+
+    fun loadUrl(url: String?, @DrawableRes holder: Int = R.drawable.ic_group_place_holder) {
+        displayedChild = POS_AVATAR
+        avatarSimple.setBackgroundResource(0)
+        avatarSimple.setImageResource(0)
+        avatarSimple.setPadding(0)
+        avatarSimple.clear()
+        avatarSimple.loadImage(url, holder)
+    }
+
+    fun loadUrl(transaction: Web3TransactionItem) {
+        displayedChild = POS_AVATAR
+        avatarSimple.setBackgroundResource(0)
+        avatarSimple.setImageResource(0)
+        avatarSimple.setPadding(0)
+        avatarSimple.clear()
+        if (transaction.status == TransactionStatus.NOT_FOUND.value || transaction.status == TransactionStatus.FAILED.value) {
+            avatarSimple.setImageResource(R.drawable.ic_web3_transaction_contract)
+        } else if (transaction.transactionType == TransactionType.TRANSFER_OUT.value) {
+            avatarSimple.setImageResource(R.drawable.ic_snapshot_withdrawal)
+        } else if (transaction.transactionType == TransactionType.TRANSFER_IN.value) {
+            avatarSimple.setImageResource(R.drawable.ic_snapshot_deposit)
+        } else if (transaction.transactionType == TransactionType.SWAP.value) {
+            avatarSimple.setImageResource(R.drawable.ic_web3_transaction_swap)
+        } else if (transaction.transactionType == TransactionType.APPROVAL.value) {
+            avatarSimple.setImageResource(R.drawable.ic_web3_transaction_approval)
         } else {
-            POS_TEXT
+            avatarSimple.setImageResource(R.drawable.ic_web3_transaction_unknown)
         }
     }
 
     fun renderApp(app: BotInterface) {
-        if (app is App) {
-            setInfo(app.name, app.iconUrl, app.appId)
-        } else if (app is Bot) {
-            displayedChild = POS_AVATAR
-            avatarSimple.setBackgroundResource(0)
-            avatarSimple.setPadding(0)
-            avatarSimple.clear()
-            avatarSimple.setImageResource(app.icon)
+        when (app) {
+            is ExploreApp -> {
+                setInfo(app.name, app.iconUrl, app.appId)
+            }
+
+            is App -> {
+                setInfo(app.name, app.iconUrl, app.appId)
+            }
+
+            is Bot -> {
+                displayedChild = POS_AVATAR
+                avatarSimple.setBackgroundResource(0)
+                avatarSimple.setPadding(0)
+                avatarSimple.clear()
+                avatarSimple.setImageResource(app.icon)
+            }
         }
     }
 

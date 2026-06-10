@@ -25,9 +25,9 @@ import one.mixin.android.databinding.ItemPermissionListBinding
 import one.mixin.android.databinding.LayoutPermissionListFootBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.fullDate
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.withArgs
-import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment.Companion.ARGS_AUTHORIZATION
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.FooterListAdapter
 import one.mixin.android.ui.common.recyclerview.NormalHolder
@@ -36,42 +36,62 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Scope
-import one.mixin.android.vo.convertName
 
 @AndroidEntryPoint
 class PermissionListFragment : BaseFragment(R.layout.fragment_permission_list) {
     companion object {
         const val TAG = "PermissionListFragment"
+        const val ARGS_AUTHORIZATION = "args_authorization_id"
         const val ARGS_APP = "args_app"
 
         fun newInstance(
             app: App,
-            authorization: AuthorizationResponse
+            authorization: AuthorizationResponse,
         ) = PermissionListFragment().withArgs {
             putParcelable(ARGS_APP, app)
             putParcelable(ARGS_AUTHORIZATION, authorization)
         }
+
+        fun clearRelatedCookies(app: App) {
+            val cm = CookieManager.getInstance()
+            val cookieString = cm.getCookie(app.homeUri)
+            if (cookieString.isNullOrBlank()) return
+
+            val cookies = cookieString.split(";")
+            val keys = mutableListOf<String>()
+            cookies.forEach { c ->
+                val kv = c.split("=")
+                keys.add(kv[0].trim())
+            }
+            keys.forEach { k ->
+                cm.setCookie(app.homeUri, "$k=")
+            }
+        }
     }
 
     private val app: App by lazy {
-        requireArguments().getParcelable(ARGS_APP)!!
+        requireArguments().getParcelableCompat(ARGS_APP, App::class.java)!!
     }
     private val auth: AuthorizationResponse by lazy {
-        requireArguments().getParcelable(ARGS_AUTHORIZATION)!!
+        requireArguments().getParcelableCompat(ARGS_AUTHORIZATION, AuthorizationResponse::class.java)!!
     }
 
     private val viewModel by viewModels<SettingViewModel>()
     private val binding by viewBinding(FragmentPermissionListBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
-            titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
+            titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             permissionRv.layoutManager = LinearLayoutManager(requireContext())
-            val footBinding = LayoutPermissionListFootBinding.inflate(layoutInflater, permissionRv, false).apply {
-                revokeRl.setOnClickListener { showDialog(app) }
-                timeTv.text = getString(R.string.setting_auth_access, auth.createAt.fullDate(), auth.accessedAt.fullDate())
-            }
+            val footBinding =
+                LayoutPermissionListFootBinding.inflate(layoutInflater, permissionRv, false).apply {
+                    revokeRl.setOnClickListener { showDialog(app) }
+                    timeTv.text = getString(R.string.setting_auth_access, auth.createAt.fullDate(), auth.accessedAt.fullDate())
+                }
             val adapter = PermissionListAdapter()
             permissionRv.adapter = adapter
             adapter.footerView = footBinding.root
@@ -79,22 +99,24 @@ class PermissionListFragment : BaseFragment(R.layout.fragment_permission_list) {
         }
     }
 
-    private fun loadData(adapter: PermissionListAdapter) = lifecycleScope.launch {
-        val assets = viewModel.simpleAssetsWithBalance()
-        val scopes = auth.getScopes(requireContext(), assets)
-        adapter.submitList(scopes)
-    }
+    private fun loadData(adapter: PermissionListAdapter) =
+        lifecycleScope.launch {
+            val scopes = auth.getScopes(requireContext())
+            scopes.sortBy { Scope.SCOPES.indexOf(it.source) }
+            adapter.submitList(scopes)
+        }
 
     private fun showDialog(app: App) {
         alertDialogBuilder()
-            .setNegativeButton(R.string.cancel) { dialog, _ ->
+            .setNegativeButton(R.string.Cancel) { dialog, _ ->
                 dialog.dismiss()
             }
-            .setMessage(getString(R.string.setting_auth_cancel_msg, app.name))
+            .setMessage(getString(R.string.setting_revoke_confirmation, app.name))
             .setPositiveButton(android.R.string.ok) { dialog, _ ->
-                val pb = indeterminateProgressDialog(message = R.string.pb_dialog_message).apply {
-                    setCancelable(false)
-                }
+                val pb =
+                    indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                        setCancelable(false)
+                    }
                 viewModel.deauthApp(app.appId).autoDispose(stopScope).subscribe(
                     {
                         clearRelatedCookies(app)
@@ -105,14 +127,14 @@ class PermissionListFragment : BaseFragment(R.layout.fragment_permission_list) {
                             Activity.RESULT_OK,
                             Intent().apply {
                                 putExtra(ARGS_SUCCESS, true)
-                            }
+                            },
                         )
-                        activity?.onBackPressed()
+                        activity?.onBackPressedDispatcher?.onBackPressed()
                     },
                     {
                         pb.dismiss()
                         ErrorHandler.handleError(it)
-                    }
+                    },
                 )
                 dialog.dismiss()
             }.create().apply {
@@ -122,27 +144,17 @@ class PermissionListFragment : BaseFragment(R.layout.fragment_permission_list) {
             }.show()
     }
 
-    private fun clearRelatedCookies(app: App) {
-        val cm = CookieManager.getInstance()
-        val cookieString = cm.getCookie(app.homeUri)
-        if (cookieString.isNullOrBlank()) return
-
-        val cookies = cookieString.split(";")
-        val keys = mutableListOf<String>()
-        cookies.forEach { c ->
-            val kv = c.split("=")
-            keys.add(kv[0].trim())
-        }
-        keys.forEach { k ->
-            cm.setCookie(app.homeUri, "$k=")
-        }
-    }
-
     class PermissionListAdapter : FooterListAdapter<Scope, RecyclerView.ViewHolder>(Scope.DIFF_CALLBACK) {
-        override fun getNormalViewHolder(context: Context, parent: ViewGroup) =
+        override fun getNormalViewHolder(
+            context: Context,
+            parent: ViewGroup,
+        ) =
             ItemHolder(ItemPermissionListBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
-        override fun onBindViewHolder(holder: RecyclerView.ViewHolder, pos: Int) {
+        override fun onBindViewHolder(
+            holder: RecyclerView.ViewHolder,
+            pos: Int,
+        ) {
             (holder as? ItemHolder)?.bindTo(getItem(pos))
         }
     }
@@ -150,7 +162,7 @@ class PermissionListFragment : BaseFragment(R.layout.fragment_permission_list) {
     class ItemHolder(private val itemBinding: ItemPermissionListBinding) : NormalHolder(itemBinding.root) {
         fun bindTo(scope: Scope) {
             itemBinding.apply {
-                nameTv.text = scope.convertName(itemView.context)
+                nameTv.text = scope.name
                 numberTv.text = scope.desc
             }
         }

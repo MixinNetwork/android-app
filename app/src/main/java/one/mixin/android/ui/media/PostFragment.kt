@@ -21,9 +21,10 @@ class PostFragment : BaseFragment(R.layout.layout_recycler_view) {
     companion object {
         const val TAG = "PostFragment"
 
-        fun newInstance(conversationId: String) = PostFragment().withArgs {
-            putString(Constants.ARGS_CONVERSATION_ID, conversationId)
-        }
+        fun newInstance(conversationId: String) =
+            PostFragment().withArgs {
+                putString(Constants.ARGS_CONVERSATION_ID, conversationId)
+            }
     }
 
     private val conversationId: String by lazy {
@@ -35,30 +36,36 @@ class PostFragment : BaseFragment(R.layout.layout_recycler_view) {
             requireActivity(),
             fun(messageItem: MessageItem) {
                 MarkdownActivity.show(requireActivity(), messageItem.content!!, conversationId)
-            }
+            },
+            fun(messageId: String) {
+                onLongClickListener?.invoke(messageId)
+            },
         )
     }
 
     private val viewModel by viewModels<SharedMediaViewModel>()
     private val binding by viewBinding(LayoutRecyclerViewBinding::bind)
+    var onLongClickListener: ((String) -> Unit)? = null
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.emptyIv.setImageResource(R.drawable.ic_empty_file)
-        binding.emptyTv.setText(R.string.no_post)
+        binding.emptyTv.setText(R.string.NO_POSTS)
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerView.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         binding.recyclerView.adapter = adapter
         viewModel.getPostMessages(conversationId).observe(
             viewLifecycleOwner,
-            {
-                if (it.size <= 0) {
-                    (view as ViewAnimator).displayedChild = 1
-                } else {
-                    (view as ViewAnimator).displayedChild = 0
-                }
-                adapter.submitList(it)
+        ) {
+            if (it.size <= 0) {
+                (view as ViewAnimator).displayedChild = 1
+            } else {
+                (view as ViewAnimator).displayedChild = 0
             }
-        )
+            adapter.submitList(it)
+        }
     }
 }

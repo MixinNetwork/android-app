@@ -1,7 +1,7 @@
 package one.mixin.android.vo
 
 import androidx.room.ColumnInfo
-import androidx.room.ColumnInfo.TEXT
+import androidx.room.ColumnInfo.Companion.TEXT
 import androidx.room.Entity
 import androidx.room.Fts4
 import androidx.room.FtsOptions
@@ -12,5 +12,5 @@ class MessageFts4(
     @ColumnInfo(name = "message_id", typeAffinity = TEXT)
     val messageId: String,
     @ColumnInfo(name = "content", typeAffinity = TEXT)
-    val content: String?
+    val content: String?,
 )

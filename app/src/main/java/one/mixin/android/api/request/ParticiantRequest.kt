@@ -8,7 +8,7 @@ class ParticipantRequest(
     @SerializedName("role")
     val role: String,
     @SerializedName("created_at")
-    val createdAt: String? = null
+    val createdAt: String? = null,
 )
 
 enum class ParticipantAction { ADD, REMOVE, JOIN, EXIT, ROLE }

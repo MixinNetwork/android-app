@@ -5,153 +5,210 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:animateLayoutChanges="true"
+    android:background="?attr/bg_white"
     android:clickable="true"
-    android:background="?attr/bg_window"
+    android:focusable="true"
     android:orientation="vertical">
 
     <one.mixin.android.widget.TitleView
         android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/pin" />
+        app:titleText="@string/PIN" />
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp"
-        android:background="?attr/bg_white"
-        android:orientation="vertical">
+        android:layout_height="wrap_content">
 
-        <ImageView
-            android:layout_width="92dp"
-            android:layout_height="83dp"
-            android:layout_gravity="center"
-            android:layout_marginTop="36dp"
-            android:layout_marginBottom="20dp"
-            android:src="?attr/icon_emergency" />
-
-        <TextView
-            android:id="@+id/tip_tv"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:layout_marginBottom="24dp"
-            android:lineSpacingExtra="2dp"
-            android:gravity="center"
-            android:text="@string/setting_emergency_content"
-            android:textColor="?attr/text_minor"
-            android:textSize="12sp" />
-    </LinearLayout>
+            android:orientation="vertical">
 
-    <RelativeLayout
-        android:id="@+id/biometrics_rl"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/item_contact_height"
-        android:layout_marginTop="@dimen/item_divider"
-        android:foreground="?attr/selectableItemBackground"
-        android:background="?attr/bg_white">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                android:background="?attr/bg_white"
+                android:orientation="vertical">
 
-        <TextView
-            style="@style/NormalTextStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/wallet_pay_with_biometrics"
-            tools:ignore="RelativeOverlap" />
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="36dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/bg_recovery_kit" />
 
-        <androidx.appcompat.widget.SwitchCompat
-            android:id="@+id/biometrics_sc"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            tools:ignore="RelativeOverlap" />
-    </RelativeLayout>
+                <TextView
+                    android:id="@+id/tip_tv"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                    android:layout_marginBottom="24dp"
+                    android:gravity="center"
+                    android:lineSpacingExtra="2dp"
+                    android:text="@string/setting_emergency_content"
+                    android:textColor="?attr/text_assist"
+                    android:textSize="12sp" />
 
-    <TextView
-        android:id="@+id/biometric_error_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="@dimen/activity_horizontal_margin"
-        android:textColor="@color/colorRed"
-        android:textSize="12sp" />
+            </LinearLayout>
 
-    <RelativeLayout
-        android:id="@+id/time_rl"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/item_contact_height"
-        android:foreground="?attr/selectableItemBackground"
-        android:background="?attr/bg_white">
+            <RelativeLayout
+                android:id="@+id/random_rl"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/item_contact_height"
+                android:layout_marginTop="@dimen/item_divider"
+                android:background="@drawable/ripple_round_window"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp">
 
-        <TextView
-            style="@style/NormalTextStyle"
-            android:id="@+id/time_tv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop=".5dp"
-            android:layout_centerVertical="true"
-            android:text="@string/wallet_pin_pay_interval"
-            android:gravity="center_vertical"
-            android:paddingStart="@dimen/activity_horizontal_margin"
-            android:paddingEnd="@dimen/activity_horizontal_margin" />
+                <TextView
+                    style="@style/NormalTextStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:text="@string/Random_keyboard"
+                    tools:ignore="RelativeOverlap" />
 
-        <TextView
-            android:id="@+id/time_desc_tv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:textColor="?attr/text_minor"
-            tools:ignore="RelativeOverlap" />
-    </RelativeLayout>
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/random_sc"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                    tools:ignore="RelativeOverlap" />
+            </RelativeLayout>
 
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?attr/bg_window">
+            <RelativeLayout
+                android:id="@+id/biometrics_rl"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/item_contact_height"
+                android:layout_marginTop="@dimen/item_divider"
+                android:background="@drawable/ripple_round_window_top"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:layout_marginBottom="@dimen/activity_vertical_margin"
-            android:text="@string/wallet_enable_biometric_pay_prompt"
-            android:textColor="?attr/text_minor"
-            android:textSize="12sp" />
-    </FrameLayout>
+                <TextView
+                    style="@style/NormalTextStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:text="@string/Pay_with_Biometrics"
+                    tools:ignore="RelativeOverlap" />
 
-    <TextView
-        android:id="@+id/change_tv"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/item_contact_height"
-        android:text="@string/wallet_password_change"
-        style="@style/NormalTextStyle"
-        android:gravity="center_vertical"
-        android:paddingStart="@dimen/activity_horizontal_margin"
-        android:paddingEnd="@dimen/activity_horizontal_margin"
-        android:foreground="?attr/selectableItemBackground"
-        android:background="?attr/bg_white" />
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/biometrics_sc"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                    tools:ignore="RelativeOverlap" />
+            </RelativeLayout>
 
-    <TextView
-        android:id="@+id/logs"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/item_contact_height"
-        android:text="@string/logs"
-        style="@style/NormalTextStyle"
-        android:gravity="center_vertical"
-        android:paddingStart="@dimen/activity_horizontal_margin"
-        android:paddingEnd="@dimen/activity_horizontal_margin"
-        android:foreground="?attr/selectableItemBackground"
-        android:background="?attr/bg_white" />
+            <TextView
+                android:id="@+id/biometric_error_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:textColor="@color/colorRed"
+                android:textSize="12sp"
+                android:visibility="gone" />
 
+            <RelativeLayout
+                android:id="@+id/time_rl"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/item_contact_height"
+                android:background="@drawable/ripple_round_window_bottom"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp">
+
+                <TextView
+                    android:id="@+id/time_tv"
+                    style="@style/NormalTextStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginTop=".5dp"
+                    android:gravity="center_vertical"
+                    android:paddingStart="@dimen/activity_horizontal_margin"
+                    android:paddingEnd="@dimen/activity_horizontal_margin"
+                    android:text="@string/Pay_with_PIN_interval" />
+
+                <TextView
+                    android:id="@+id/time_desc_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toStartOf="@id/arrow"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="8dp"
+                    android:textColor="?attr/text_assist"
+                    tools:ignore="RelativeOverlap" />
+
+                <ImageView
+                    android:id="@+id/arrow"
+                    android:src="@drawable/ic_arrow_gray_right"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="@dimen/activity_horizontal_margin" />
+            </RelativeLayout>
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                    android:layout_marginBottom="@dimen/activity_vertical_margin"
+                    android:text="@string/wallet_enable_biometric_pay_prompt"
+                    android:textColor="?attr/text_assist"
+                    android:textSize="12sp" />
+            </FrameLayout>
+
+            <RelativeLayout
+                android:id="@+id/change_tv"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/item_contact_height"
+                android:background="@drawable/ripple_round_window"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp">
+            <TextView
+                    style="@style/NormalTextStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginTop=".5dp"
+                    android:gravity="center_vertical"
+                    android:paddingStart="@dimen/activity_horizontal_margin"
+                    android:paddingEnd="@dimen/activity_horizontal_margin"
+                    android:text="@string/Change_PIN"  />
+
+                <ImageView
+                    android:id="@+id/change_arrow"
+                    android:src="@drawable/ic_arrow_gray_right"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="@dimen/activity_horizontal_margin" />
+            </RelativeLayout>
+
+        </LinearLayout>
+    </ScrollView>
 </LinearLayout>

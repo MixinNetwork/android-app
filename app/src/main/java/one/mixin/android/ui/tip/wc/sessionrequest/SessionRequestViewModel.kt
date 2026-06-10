@@ -1,0 +1,148 @@
+package one.mixin.android.ui.tip.wc.sessionrequest
+
+import androidx.core.net.toUri
+import androidx.lifecycle.ViewModel
+import com.google.gson.Gson
+import com.reown.walletkit.client.Wallet
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import one.mixin.android.db.web3.vo.Web3Address
+import one.mixin.android.db.web3.vo.isOwner
+import one.mixin.android.db.web3.vo.isTransferFeeFree
+import one.mixin.android.extension.hexStringToByteArray
+import one.mixin.android.repository.TokenRepository
+import one.mixin.android.repository.Web3Repository
+import one.mixin.android.tip.wc.WalletConnect
+import one.mixin.android.tip.wc.WalletConnectTIP
+import one.mixin.android.tip.wc.WalletConnectV2
+import one.mixin.android.tip.wc.internal.Chain
+import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
+import one.mixin.android.ui.tip.wc.sessionproposal.PeerUI
+import one.mixin.android.web3.js.Web3Signer
+import org.web3j.utils.Numeric
+import javax.inject.Inject
+
+@HiltViewModel
+class SessionRequestViewModel
+    @Inject
+    internal constructor(
+        val web3Repository: Web3Repository,
+        val tokenRepository: TokenRepository
+    ) : ViewModel() {
+        private var account: String = ""
+            get() {
+                return Web3Signer.address
+            }
+
+
+        fun rejectRequest(
+            version: WalletConnect.Version,
+            topic: String,
+            msg: String? = null,
+        ) {
+            when (version) {
+                WalletConnect.Version.V2 -> {
+                    WalletConnectV2.rejectRequest(msg, topic)
+                }
+                WalletConnect.Version.TIP -> {}
+            }
+        }
+
+        fun getSessionRequestUI(
+            version: WalletConnect.Version,
+            chain: Chain,
+            signData: WalletConnect.WCSignData.V2SignData<*>?,
+            sessionRequest: Wallet.Model.SessionRequest?,
+        ): SessionRequestUI<*>? {
+            when (version) {
+                WalletConnect.Version.V2 -> {
+                    if (signData == null || sessionRequest == null) return null
+                    val peer = sessionRequest.peerMetaData ?: return null
+                    val peerUI =
+                        PeerUI(
+                            name = peer.name,
+                            icon = peer.icons.firstOrNull() ?: "",
+                            uri = peer.url.toUri().host ?: "",
+                            desc = peer.description,
+                            account = account,
+                        )
+                    return SessionRequestUI(
+                        peerUI = peerUI,
+                        requestId = signData.requestId,
+                        data = signData.signMessage,
+                        chain = chain,
+                    )
+                }
+                WalletConnect.Version.TIP -> {
+                    return WalletConnectTIP.getSessionRequestUI()
+                }
+            }
+        }
+
+        fun <T> getContent(
+            version: WalletConnect.Version,
+            gson: Gson,
+            data: T,
+        ): String =
+            when (version) {
+                WalletConnect.Version.V2 -> {
+                    if (data is WCEthereumSignMessage && (data.type == WCEthereumSignMessage.WCSignType.PERSONAL_MESSAGE || data.type == WCEthereumSignMessage.WCSignType.TYPED_MESSAGE)) {
+                        if (data.type == WCEthereumSignMessage.WCSignType.PERSONAL_MESSAGE) {
+                            String(Numeric.cleanHexPrefix(data.data).hexStringToByteArray())
+                        } else {
+                            gson.toJson(data.data)
+                        }
+                    } else {
+                        gson.toJson(data)
+                    }
+                }
+                WalletConnect.Version.TIP -> {
+                    data as String
+                }
+            }
+
+        suspend fun findWalletById(walletId: String) = withContext(Dispatchers.IO) {
+            web3Repository.findWalletById(walletId)
+        }
+
+        suspend fun web3TokenItemById(walletId: String, assetId: String) = withContext(Dispatchers.IO) {
+            web3Repository.web3TokenItemById(walletId, assetId)
+        }
+
+        suspend fun findFirstAddressByWalletId(walletId: String): Web3Address? = withContext(Dispatchers.IO) {
+            web3Repository.getAddresses(walletId).firstOrNull()
+        }
+
+
+        // index 0 is address, index 1 is privacy wallet, 2 is safe wallet, 3 is common wallet, 4 is fee free wallet
+        suspend fun checkAddressAndGetDisplayName(destination: String, chainId: String?): Triple<String?, Int, Boolean?>? {
+            return withContext(Dispatchers.IO) {
+                if (chainId != null) {
+                    val existsInAddresses: Boolean = tokenRepository.findDepositEntry(chainId)?.destination == destination
+                    if (existsInAddresses) return@withContext Triple(null, 1, null) // Privacy Wallet
+                }
+
+                if (chainId != null) {
+                    val wallet = web3Repository.getWalletByAddress(destination, chainId)
+                    if (wallet != null) {
+                        val isOwner: Boolean = wallet.isOwner()
+                        return@withContext Triple(wallet.name, 2, isOwner) // Safe Wallet
+                    }
+                }
+
+                val wallet = web3Repository.getWalletByDestination(destination)
+                if (wallet != null) {
+                    val walletIndex: Int = if (wallet.isTransferFeeFree()) 4 else 3
+                    return@withContext Triple(wallet.name, walletIndex, null)
+                }
+                if (chainId != null) {
+                    val address = tokenRepository.matchAddress(destination, chainId)
+                    if (address != null) {
+                        return@withContext Triple(address.label, 0, null) // Address label
+                    }
+                }
+                return@withContext null
+            }
+        }
+}

@@ -7,7 +7,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentEmergencyContactBinding
@@ -18,6 +17,7 @@ import one.mixin.android.extension.openUrl
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.VerifyFragment
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
@@ -35,16 +35,18 @@ class EmergencyContactFragment : BaseFragment(R.layout.fragment_emergency_contac
     private val viewModel by viewModels<EmergencyViewModel>()
     private val binding by viewBinding(FragmentEmergencyContactBinding::bind)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             titleView.leftIb.setOnClickListener {
-                activity?.onBackPressed()
+                activity?.onBackPressedDispatcher?.onBackPressed()
             }
-            titleView.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.EMERGENCY) }
+            titleView.rightAnimator.setOnClickListener { context?.openUrl(getString(R.string.emergency_url)) }
             enableRl.setOnClickListener {
-                EmergencyContactTipBottomSheetDialogFragment.newInstance()
-                    .showNow(parentFragmentManager, EmergencyContactTipBottomSheetDialogFragment.TAG)
+                navTo(AddRecoveryContactFragment.newInstance(), AddRecoveryContactFragment.TAG)
             }
             viewRl.setOnClickListener {
                 showEmergency = true
@@ -58,7 +60,7 @@ class EmergencyContactFragment : BaseFragment(R.layout.fragment_emergency_contac
                         R.anim.slide_in_bottom,
                         R.anim.slide_out_bottom,
                         R.anim.slide_in_bottom,
-                        R.anim.slide_out_bottom
+                        R.anim.slide_out_bottom,
                     )
                         .add(R.id.container, VerifyFragment.newInstance(VerifyFragment.FROM_EMERGENCY))
                         .addToBackStack(null)
@@ -66,11 +68,11 @@ class EmergencyContactFragment : BaseFragment(R.layout.fragment_emergency_contac
             }
             deleteRl.setOnClickListener {
                 alertDialogBuilder()
-                    .setMessage(getString(R.string.setting_emergency_remove_tip))
-                    .setNegativeButton(R.string.cancel) { dialog, _ ->
+                    .setMessage(getString(R.string.Remove_emergency_contact_confirmation))
+                    .setNegativeButton(R.string.Cancel) { dialog, _ ->
                         dialog.dismiss()
                     }
-                    .setPositiveButton(R.string.confirm) { dialog, _ ->
+                    .setPositiveButton(R.string.Confirm) { dialog, _ ->
                         showEmergency = false
                         val pinBottom = PinEmergencyBottomSheetDialog.newInstance()
                         pinBottom.pinEmergencyCallback = bottomSheetCallback
@@ -99,59 +101,63 @@ class EmergencyContactFragment : BaseFragment(R.layout.fragment_emergency_contac
         }
     }
 
-    private fun fetchEmergencyContact(pinCode: String) = lifecycleScope.launch {
-        binding.apply {
-            viewPb.isVisible = true
-            handleMixinResponse(
-                invokeNetwork = { viewModel.showEmergency(pinCode) },
-                successBlock = { response ->
-                    val user = response.data as User
-                    navTo(ViewEmergencyContactFragment.newInstance(user), ViewEmergencyContactFragment.TAG)
-                },
-                exceptionBlock = {
-                    viewPb.isVisible = false
-                    setEmergencySet()
-                    return@handleMixinResponse false
-                },
-                doAfterNetworkSuccess = {
-                    viewPb.isVisible = false
-                    setEmergencySet()
-                }
-            )
-        }
-    }
-
-    private fun deleteEmergencyContact(pinCode: String) = lifecycleScope.launch {
-        binding.apply {
-            deletePb.isVisible = true
-            handleMixinResponse(
-                invokeNetwork = { viewModel.deleteEmergency(pinCode) },
-                successBlock = { response ->
-                    val a = response.data as Account
-                    Session.storeAccount(a)
-                    Session.setHasEmergencyContact(a.hasEmergencyContact)
-                    setEmergencySet()
-                },
-                exceptionBlock = {
-                    deletePb.isVisible = false
-                    setEmergencySet()
-                    return@handleMixinResponse false
-                },
-                doAfterNetworkSuccess = {
-                    deletePb.isVisible = false
-                    setEmergencySet()
-                }
-            )
-        }
-    }
-
-    private val bottomSheetCallback = object : PinEmergencyBottomSheetDialog.PinEmergencyCallback() {
-        override fun onSuccess(pinCode: String) {
-            if (showEmergency) {
-                fetchEmergencyContact(pinCode)
-            } else {
-                deleteEmergencyContact(pinCode)
+    private fun fetchEmergencyContact(pinCode: String) =
+        lifecycleScope.launch {
+            binding.apply {
+                viewPb.isVisible = true
+                handleMixinResponse(
+                    invokeNetwork = { viewModel.showEmergency(pinCode) },
+                    successBlock = { response ->
+                        val user = response.data as User
+                        navTo(ViewEmergencyContactFragment.newInstance(user), ViewEmergencyContactFragment.TAG)
+                    },
+                    exceptionBlock = {
+                        viewPb.isVisible = false
+                        setEmergencySet()
+                        return@handleMixinResponse false
+                    },
+                    doAfterNetworkSuccess = {
+                        viewPb.isVisible = false
+                        setEmergencySet()
+                    },
+                )
             }
         }
-    }
+
+    private fun deleteEmergencyContact(pinCode: String) =
+        lifecycleScope.launch {
+            binding.apply {
+                deletePb.isVisible = true
+                handleMixinResponse(
+                    invokeNetwork = { viewModel.deleteEmergency(pinCode) },
+                    successBlock = { response ->
+                        val a = response.data as Account
+                        Session.storeAccount(a)
+                        Session.setHasEmergencyContact(a.hasEmergencyContact)
+                        AnalyticsTracker.setHasRecoveryContact(a)
+                        setEmergencySet()
+                    },
+                    exceptionBlock = {
+                        deletePb.isVisible = false
+                        setEmergencySet()
+                        return@handleMixinResponse false
+                    },
+                    doAfterNetworkSuccess = {
+                        deletePb.isVisible = false
+                        setEmergencySet()
+                    },
+                )
+            }
+        }
+
+    private val bottomSheetCallback =
+        object : PinEmergencyBottomSheetDialog.PinEmergencyCallback() {
+            override fun onSuccess(pinCode: String) {
+                if (showEmergency) {
+                    fetchEmergencyContact(pinCode)
+                } else {
+                    deleteEmergencyContact(pinCode)
+                }
+            }
+        }
 }

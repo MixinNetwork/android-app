@@ -5,8 +5,10 @@ import android.view.KeyEvent
 import android.webkit.WebView
 
 class MixinWebView(context: Context) : WebView(context) {
-
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+    override fun onKeyDown(
+        keyCode: Int,
+        event: KeyEvent?,
+    ): Boolean {
         if (keyCode == KeyEvent.KEYCODE_BACK && canGoBack()) {
             goBack()
             return true

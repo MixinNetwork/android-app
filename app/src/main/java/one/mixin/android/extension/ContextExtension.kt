@@ -5,25 +5,30 @@ import android.app.Activity
 import android.app.ActivityManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.NotificationManager.BUBBLE_PREFERENCE_NONE
 import android.app.PendingIntent
+import android.app.UiModeManager
 import android.content.ActivityNotFoundException
+import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.ComponentName
 import android.content.ContentResolver
 import android.content.Context
 import android.content.Context.ACTIVITY_SERVICE
-import android.content.Context.CLIPBOARD_SERVICE
+import android.content.ContextWrapper
 import android.content.DialogInterface
 import android.content.Intent
-import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.database.Cursor
 import android.graphics.BitmapFactory
 import android.graphics.Point
+import android.graphics.Rect
 import android.media.MediaMetadataRetriever
 import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -35,6 +40,8 @@ import android.os.VibrationEffect.EFFECT_DOUBLE_CLICK
 import android.os.VibrationEffect.EFFECT_HEAVY_CLICK
 import android.os.VibrationEffect.EFFECT_TICK
 import android.os.Vibrator
+import android.os.VibratorManager
+import android.os.PersistableBundle
 import android.os.storage.StorageManager
 import android.os.storage.StorageVolume
 import android.provider.Browser
@@ -42,59 +49,80 @@ import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.provider.Settings
 import android.util.DisplayMetrics
-import android.util.Log
 import android.util.TypedValue
+import android.view.View
 import android.view.Window
 import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
 import androidx.annotation.RequiresApi
+import androidx.browser.customtabs.CustomTabColorSchemeParams
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
-import androidx.core.net.toUri
+import androidx.core.content.getSystemService
+import androidx.core.database.getStringOrNull
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import com.google.android.gms.common.ConnectionResult
-import com.google.android.gms.common.GoogleApiAvailability
+import com.google.android.gms.common.GoogleApiAvailabilityLight
 import com.google.android.gms.common.GooglePlayServicesUtil
 import com.google.firebase.installations.FirebaseInstallations
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.db.web3.vo.Web3Chain
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.receiver.ShareBroadcastReceiver
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.util.Attachment
+import one.mixin.android.util.RomUtil
+import one.mixin.android.util.RomPermissionUtil
 import one.mixin.android.util.XiaomiUtilities
 import one.mixin.android.util.blurhash.BlurHashEncoder
+import one.mixin.android.util.getChainName
 import one.mixin.android.util.video.MediaController
 import one.mixin.android.util.video.VideoEditedInfo
-import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.absolutePath
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.gallery.Gallery
 import one.mixin.android.widget.gallery.MimeType
 import one.mixin.android.widget.gallery.engine.impl.GlideEngine
 import timber.log.Timber
 import java.io.File
+import java.io.PrintWriter
+import java.io.StringWriter
 import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Future
+import kotlin.compareTo
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.roundToInt
 
 private val uiHandler = Handler(Looper.getMainLooper())
 
-fun Context.mainThread(runnable: () -> Unit) {
+fun mainThread(runnable: () -> Unit) {
     uiHandler.post(runnable)
 }
 
-fun Context.mainThreadDelayed(runnable: () -> Unit, delayMillis: Long) {
+fun mainThreadDelayed(
+    runnable: () -> Unit,
+    delayMillis: Long,
+) {
     uiHandler.postDelayed(runnable, delayMillis)
 }
 
@@ -112,10 +140,34 @@ fun Context.booleanFromAttribute(attribute: Int): Boolean {
     return b
 }
 
+fun Context.isScreenWideColorGamut(): Boolean {
+    return runCatching { resources.configuration.isScreenWideColorGamut }.getOrDefault(false)
+}
+
 inline val Context.layoutInflater: android.view.LayoutInflater
     get() = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as android.view.LayoutInflater
 
-fun Context.runOnUiThread(f: Context.() -> Unit, delay: Long = 0L) {
+// Please consider whether the soft keyboard is displayed.
+fun Activity.visibleDisplayHeight(): Int {
+    val outRect = Rect()
+    return try {
+        window.decorView.getWindowVisibleDisplayFrame(outRect)
+        outRect.height()
+    } catch (e: ClassCastException) {
+        Timber.e(e)
+        displayHeight()
+    }
+}
+
+fun Activity.hideKeyboard() {
+    val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+    inputMethodManager.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
+}
+
+fun Context.runOnUiThread(
+    f: Context.() -> Unit,
+    delay: Long = 0L,
+) {
     if (delay == 0L) {
         uiHandler.post { f() }
     } else {
@@ -123,11 +175,28 @@ fun Context.runOnUiThread(f: Context.() -> Unit, delay: Long = 0L) {
     }
 }
 
+fun Throwable.getStackTraceInfo(): String {
+    val trace: String
+    try {
+        val writer = StringWriter()
+        val pw = PrintWriter(writer)
+        this.printStackTrace(pw)
+        trace = writer.toString()
+        pw.close()
+    } catch (e: Exception) {
+        return ""
+    }
+    return trace
+}
+
 fun Context.runOnUiThread(f: Context.() -> Unit) {
     runOnUiThread(f, 0L)
 }
 
-fun Context.runOnUiThread(runnable: Runnable, delay: Long = 0L) {
+fun runOnUiThread(
+    runnable: Runnable,
+    delay: Long = 0L,
+) {
     if (delay == 0L) {
         uiHandler.post(runnable)
     } else {
@@ -135,32 +204,44 @@ fun Context.runOnUiThread(runnable: Runnable, delay: Long = 0L) {
     }
 }
 
-fun Context.cancelRunOnUiThread(runnable: Runnable) {
+fun cancelRunOnUiThread(runnable: Runnable) {
     uiHandler.removeCallbacks(runnable)
 }
 
-fun Context.async(runnable: () -> Unit) {
+fun async(runnable: () -> Unit) {
     Thread(runnable).start()
 }
 
-fun Context.async(runnable: () -> Unit, executor: ExecutorService): Future<out Any?> =
+fun async(
+    runnable: () -> Unit,
+    executor: ExecutorService,
+): Future<out Any?> =
     executor.submit(runnable)
 
-fun Context.statusBarHeight(): Int {
-    val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android")
-    if (resourceId > 0) {
-        return resources.getDimensionPixelSize(resourceId)
-    }
-    return dpToPx(24f)
+fun Context.getSystemBarHeight(resourceName: String, defaultDp: Float = 24f): Int {
+    val resourceId = resources.getIdentifier(resourceName, "dimen", "android")
+    return if (resourceId > 0) resources.getDimensionPixelSize(resourceId) else dpToPx(defaultDp)
 }
 
-fun Context.navigationBarHeight(): Int {
-    val resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android")
-    if (resourceId > 0) {
-        return resources.getDimensionPixelSize(resourceId)
-    }
-    return dpToPx(24f)
+fun View.getSafeAreaInsetsTop(): Int {
+    val insets = ViewCompat.getRootWindowInsets(this) ?: return 0
+
+    val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+    val displayCutout = insets.getInsets(WindowInsetsCompat.Type.displayCutout())
+
+    return maxOf(systemBars.top, displayCutout.top)
 }
+
+fun View.getSafeAreaInsetsBottom(): Int {
+    val insets = ViewCompat.getRootWindowInsets(this) ?: return 0
+
+    val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+    val navigationBarsInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
+    return maxOf(systemBars.bottom, navigationBarsInsets.bottom)
+}
+
+fun Context.statusBarHeight(): Int = getSystemBarHeight("status_bar_height")
+fun Context.navigationBarHeight(): Int = getSystemBarHeight("navigation_bar_height")
 
 @SuppressLint("PrivateApi")
 fun Context.hasNavigationBar(): Boolean {
@@ -179,7 +260,7 @@ fun Context.hasNavigationBar(): Boolean {
         } else if ("0" == navBarOverride) {
             hasNavigationBar = true
         }
-    } catch (e: Exception) {
+    } catch (_: Exception) {
     }
     return hasNavigationBar
 }
@@ -193,15 +274,65 @@ fun Context.isActivityNotDestroyed(): Boolean {
     return true
 }
 
-fun Context.vibrate(effect: VibrationEffect?, pattern: LongArray = longArrayOf(0, 20L)) {
+fun Context.vibrate(
+    effect: VibrationEffect?,
+    pattern: LongArray = longArrayOf(0, 20L),
+) {
+    val vibrator =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val vibratorManager = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+            vibratorManager.defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        }
     if (effect != null && Build.VERSION.SDK_INT >= 26) {
-        (getSystemService(Context.VIBRATOR_SERVICE) as Vibrator).vibrate(effect)
+        vibrator.vibrate(effect)
     } else if (Build.VERSION.SDK_INT >= 26) {
-        (getSystemService(Context.VIBRATOR_SERVICE) as Vibrator).vibrate(VibrationEffect.createWaveform(pattern, -1))
+        vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1))
     } else {
-        (getSystemService(Context.VIBRATOR_SERVICE) as Vibrator).vibrate(pattern, -1)
+        @Suppress("DEPRECATION")
+        vibrator.vibrate(pattern, -1)
     }
 }
+
+
+fun Context.startVibration(
+    effect: VibrationEffect? = null,
+    pattern: LongArray = longArrayOf(0, 1000), 
+) {
+    val vibrator =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val vibratorManager = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+            vibratorManager.defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        }
+
+    if (effect != null && Build.VERSION.SDK_INT >= 26) {
+        vibrator.vibrate(effect)
+    } else if (Build.VERSION.SDK_INT >= 26) {
+        vibrator.vibrate(VibrationEffect.createWaveform(pattern, 0))
+    } else {
+        @Suppress("DEPRECATION")
+        vibrator.vibrate(pattern, -1)
+    }
+}
+
+fun Context.stopVibration() {
+    val vibrator =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val vibratorManager = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+            vibratorManager.defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        }
+
+    vibrator.cancel()
+}
+
 fun Context.tickVibrate() {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
         vibrate(VibrationEffect.createPredefined(EFFECT_TICK))
@@ -243,19 +374,35 @@ fun Context.dpToPx(dp: Float): Int {
     }
 }
 
+fun Context.pxToDp(px: Float): Float {
+    return if (px == 0f) {
+        0f
+    } else {
+        val scale = resources.displayMetrics.density
+        px / scale
+    }
+}
+
 fun Context.spToPx(sp: Float): Int {
     return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, sp, resources.displayMetrics).toInt()
 }
 
 var Context.displayMetrics: DisplayMetrics
     get() = resources.displayMetrics
+
     @Deprecated("Property does not have a setter")
-    private set(value) = error("Property does not have a setter")
+    private set(
+    @Suppress("UNUSED_PARAMETER") value
+    ) = error("Property does not have a setter")
 
 @ColorInt
-fun Context.colorAttr(@AttrRes attribute: Int): Int = theme.color(attribute)
+fun Context.colorAttr(
+    @AttrRes attribute: Int,
+): Int = theme.color(attribute)
 
-fun Resources.Theme.attr(@AttrRes attribute: Int): TypedValue {
+fun Resources.Theme.attr(
+    @AttrRes attribute: Int,
+): TypedValue {
     val typedValue = TypedValue()
     if (!resolveAttribute(attribute, typedValue, true)) {
         throw IllegalArgumentException("Failed to resolve attribute: $attribute")
@@ -265,7 +412,9 @@ fun Resources.Theme.attr(@AttrRes attribute: Int): TypedValue {
 }
 
 @ColorInt
-fun Resources.Theme.color(@AttrRes attribute: Int): Int {
+fun Resources.Theme.color(
+    @AttrRes attribute: Int,
+): Int {
     val attr = attr(attribute)
     if (attr.type < TypedValue.TYPE_FIRST_COLOR_INT || attr.type > TypedValue.TYPE_LAST_COLOR_INT) {
         throw IllegalArgumentException("Attribute value type is not color: $attribute")
@@ -274,22 +423,34 @@ fun Resources.Theme.color(@AttrRes attribute: Int): Int {
     return attr.data
 }
 
-fun Context.getPixelsInCM(cm: Float, isX: Boolean): Float =
+fun Context.getPixelsInCM(
+    cm: Float,
+    isX: Boolean,
+): Float =
     cm / 2.54f * if (isX) displayMetrics.xdpi else displayMetrics.ydpi
 
 fun Context.isTablet(): Boolean = resources.getBoolean(R.bool.isTablet)
 
 fun Context.appCompatActionBarHeight(): Int {
     val tv = TypedValue()
-    theme.resolveAttribute(R.attr.actionBarSize, tv, true)
+    theme.resolveAttribute(android.R.attr.actionBarSize, tv, true)
     return resources.getDimensionPixelSize(tv.resourceId)
 }
-
-@Suppress("DEPRECATION")
 fun Context.networkConnected(): Boolean {
     val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-    val activeNetwork = connectivityManager.activeNetworkInfo ?: return false
-    return activeNetwork.isConnectedOrConnecting
+    return isInternetConnectivityValidated(connectivityManager)
+}
+
+private fun isInternetConnectivityValidated(connectivityManager: ConnectivityManager): Boolean {
+    val activeNetwork = connectivityManager.activeNetwork ?: return false
+    return try {
+        val networkCapabilities = connectivityManager.getNetworkCapabilities(activeNetwork)
+        networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true ||
+        networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) == true
+    } catch (e: SecurityException) {
+        // Workaround for https://issuetracker.google.com/issues/175055271.
+        true
+    }
 }
 
 fun Context.realSize(): Point {
@@ -299,7 +460,7 @@ fun Context.realSize(): Point {
     return size
 }
 
-fun Context.displayHeight() = realSize().y - statusBarHeight()
+fun Context.displayHeight() = realSize().y - statusBarHeight() - navigationBarHeight()
 
 fun Context.isWideScreen(): Boolean {
     val ratio = displayRatio()
@@ -320,29 +481,31 @@ fun Context.displayRatio(): Float {
 }
 
 fun Context.getUriForFile(file: File): Uri {
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-        val authority = String.format("%s.provider", this.packageName)
-        FileProvider.getUriForFile(this, authority, file)
-    } else {
-        Uri.fromFile(file)
-    }
+    val authority = String.format("%s.provider", this.packageName)
+    return FileProvider.getUriForFile(this, authority, file)
 }
 
-private var maxItemWidth: Int? = null
-
 fun Context.maxItemWidth(): Int {
-    if (maxItemWidth == null) {
-        maxItemWidth = realSize().x * 4 / 5
-    }
-    return maxItemWidth!!
+    return realSize().x * 4 / 5
+}
+
+fun Context.maxCardWidth(): Int {
+    return min(340.dp ,max(240.dp, realSize().x * 3 / 4))
 }
 
 // fragment
-fun FragmentActivity.replaceFragment(fragment: Fragment, frameId: Int) {
+fun FragmentActivity.replaceFragment(
+    fragment: Fragment,
+    frameId: Int,
+) {
     supportFragmentManager.inTransaction { replace(frameId, fragment) }
 }
 
-fun FragmentActivity.replaceFragment(fragment: Fragment, frameId: Int, tag: String) {
+fun FragmentActivity.replaceFragment(
+    fragment: Fragment,
+    frameId: Int,
+    tag: String,
+) {
     supportFragmentManager.inTransaction { replace(frameId, fragment, tag) }
 }
 
@@ -350,21 +513,27 @@ fun FragmentActivity.addFragment(
     @Suppress("UNUSED_PARAMETER") from: Fragment,
     to: Fragment,
     tag: String,
-    id: Int = R.id.container
+    id: Int = R.id.container,
+    name: String? = null
 ) {
-    val ft = supportFragmentManager.beginTransaction()
-        .setCustomAnimations(R.anim.slide_in_right, 0, 0, R.anim.slide_out_right)
+    val ft =
+        supportFragmentManager.beginTransaction()
+            .setCustomAnimations(R.anim.slide_in_right, 0, 0, R.anim.slide_out_right)
     if (to.isAdded) {
         ft.show(to)
     } else {
         ft.add(id, to, tag)
     }
-    ft.addToBackStack(null)
+    ft.addToBackStack(name)
     ft.commitAllowingStateLoss()
 }
 
-fun Fragment.navTo(fragment: Fragment, tag: String) {
-    activity?.addFragment(this, fragment, tag)
+fun Fragment.navTo(
+    fragment: Fragment,
+    tag: String,
+    name: String? = null
+) {
+    activity?.addFragment(this, fragment, tag, name = name)
 }
 
 inline fun FragmentManager.inTransaction(func: FragmentTransaction.() -> Unit) {
@@ -379,6 +548,8 @@ const val REQUEST_CAMERA = 0x03
 const val REQUEST_FILE = 0x04
 const val REQUEST_AUDIO = 0x05
 const val REQUEST_LOCATION = 0x06
+
+@Suppress("unused")
 fun Fragment.openImage(output: Uri) {
     val cameraIntents = ArrayList<Intent>()
     val captureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
@@ -397,7 +568,7 @@ fun Fragment.openImage(output: Uri) {
     galleryIntent.type = "image/*"
     galleryIntent.action = Intent.ACTION_PICK
 
-    val chooserIntent = Intent.createChooser(galleryIntent, "Select Picture")
+    val chooserIntent = Intent.createChooser(galleryIntent, getString(R.string.select_picture))
     chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, cameraIntents.toTypedArray())
     try {
         this.startActivityForResult(chooserIntent, REQUEST_IMAGE)
@@ -405,6 +576,7 @@ fun Fragment.openImage(output: Uri) {
     }
 }
 
+@SuppressLint("ObsoleteSdkInt")
 fun Fragment.openCamera(output: Uri) {
     val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
@@ -412,27 +584,28 @@ fun Fragment.openCamera(output: Uri) {
     } else {
         val path = output.path ?: return
         val file = File(path)
-        val photoUri = FileProvider.getUriForFile(
-            requireContext().applicationContext,
-            BuildConfig.APPLICATION_ID + ".provider",
-            file
-        )
+        val photoUri =
+            FileProvider.getUriForFile(
+                requireContext().applicationContext,
+                BuildConfig.APPLICATION_ID + ".provider",
+                file,
+            )
         intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri)
     }
     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     if (intent.resolveActivity(requireContext().packageManager) != null) {
         startActivityForResult(intent, REQUEST_CAMERA)
     } else {
-        toast(R.string.error_no_camera)
+        toast(R.string.No_camera)
     }
 }
 
 fun String.isFileUri(): Boolean {
-    try {
+    return try {
         val uri = Uri.parse(this)
-        return uri.scheme == ContentResolver.SCHEME_FILE
+        uri.scheme == ContentResolver.SCHEME_FILE
     } catch (e: Exception) {
-        return false
+        false
     }
 }
 
@@ -448,18 +621,19 @@ fun Context.openMedia(messageItem: MessageItem) {
                 intent.setDataAndType(uri, messageItem.mediaMimeType)
                 startActivity(intent)
             } else {
-                val path = if (uri.scheme == ContentResolver.SCHEME_FILE) {
-                    uri.path
-                } else {
-                    messageItem.absolutePath()
-                }
+                val path =
+                    if (uri.scheme == ContentResolver.SCHEME_FILE) {
+                        uri.path
+                    } else {
+                        messageItem.absolutePath()
+                    }
                 if (path == null) {
-                    toast(R.string.error_file_exists)
+                    toast(R.string.File_does_not_exist)
                     return@let
                 }
                 val file = File(path)
                 if (!file.exists()) {
-                    toast(R.string.error_file_exists)
+                    toast(R.string.File_does_not_exist)
                 } else {
                     intent.setDataAndType(getUriForFile(file), messageItem.mediaMimeType)
                     startActivity(intent)
@@ -469,7 +643,7 @@ fun Context.openMedia(messageItem: MessageItem) {
     } catch (e: ActivityNotFoundException) {
         toast(R.string.error_unable_to_open_media)
     } catch (e: SecurityException) {
-        toast(R.string.error_file_exists)
+        toast(R.string.File_does_not_exist)
     }
 }
 
@@ -485,18 +659,19 @@ fun Context.openMedia(messageItem: ChatHistoryMessageItem) {
                 intent.setDataAndType(uri, messageItem.mediaMimeType)
                 startActivity(intent)
             } else {
-                val path = if (uri.scheme == ContentResolver.SCHEME_FILE) {
-                    uri.path
-                } else {
-                    messageItem.absolutePath()
-                }
+                val path =
+                    if (uri.scheme == ContentResolver.SCHEME_FILE) {
+                        uri.path
+                    } else {
+                        messageItem.absolutePath()
+                    }
                 if (path == null) {
-                    toast(R.string.error_file_exists)
+                    toast(R.string.File_does_not_exist)
                     return@let
                 }
                 val file = File(path)
                 if (!file.exists()) {
-                    toast(R.string.error_file_exists)
+                    toast(R.string.File_does_not_exist)
                 } else {
                     intent.setDataAndType(getUriForFile(file), messageItem.mediaMimeType)
                     startActivity(intent)
@@ -506,11 +681,15 @@ fun Context.openMedia(messageItem: ChatHistoryMessageItem) {
     } catch (e: ActivityNotFoundException) {
         toast(R.string.error_unable_to_open_media)
     } catch (e: SecurityException) {
-        toast(R.string.error_file_exists)
+        toast(R.string.File_does_not_exist)
     }
 }
 
-fun Fragment.selectMediaType(type: String, extraMimeType: Array<String>?, requestCode: Int) {
+fun Fragment.selectMediaType(
+    type: String,
+    extraMimeType: Array<String>?,
+    requestCode: Int,
+) {
     val intent = Intent()
     intent.type = type
     intent.putExtra(Intent.EXTRA_MIME_TYPES, extraMimeType)
@@ -518,13 +697,14 @@ fun Fragment.selectMediaType(type: String, extraMimeType: Array<String>?, reques
     try {
         startActivityForResult(intent, requestCode)
         return
-    } catch (e: ActivityNotFoundException) {
+    } catch (_: ActivityNotFoundException) {
     }
 
     intent.action = Intent.ACTION_GET_CONTENT
     try {
         startActivityForResult(intent, requestCode)
-    } catch (e: ActivityNotFoundException) {
+    } catch (_: ActivityNotFoundException) {
+    } catch (_: SecurityException) {
     }
 }
 
@@ -565,30 +745,34 @@ fun Fragment.selectAudio() {
     selectMediaType("audio/*", null, REQUEST_AUDIO)
 }
 
-fun Context.getAttachment(local: Uri, mimeType: String? = null): Attachment? {
+fun Context.getAttachment(
+    local: Uri,
+    mimeType: String? = null,
+): Attachment? {
     var cursor: Cursor? = null
     try {
-        val uri = if (local.authority == null) {
-            val path = local.path ?: return null
-            getUriForFile(File(path))
-        } else {
-            local
-        }
+        val uri =
+            if (local.authority == null) {
+                val path = local.path ?: return null
+                getUriForFile(File(path))
+            } else {
+                local
+            }
         cursor = contentResolver.query(uri, null, null, null, null)
         if (cursor != null && cursor.moveToFirst()) {
-            val fileName = cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME))
-
+            val fileName = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME)) ?: "File"
             val copyPath = uri.copyFileUrlWithAuthority(this, fileName)
-            val resultUri = if (copyPath == null) {
-                return null
-            } else {
-                getUriForFile(File(copyPath))
-            }
+            val resultUri =
+                if (copyPath == null) {
+                    return null
+                } else {
+                    getUriForFile(File(copyPath))
+                }
             val fileSize = File(copyPath).length()
             return Attachment(resultUri, fileName, mimeType ?: contentResolver.getType(uri) ?: "", fileSize)
         }
-    } catch (e: SecurityException) {
-        toast(R.string.error_file_exists)
+    } catch (e: Exception) {
+        toast(R.string.File_does_not_exist)
     } finally {
         cursor?.close()
     }
@@ -601,10 +785,12 @@ private val maxVideoSize by lazy {
 
 fun getVideoModel(uri: Uri): VideoEditedInfo? {
     try {
+        @Suppress("DEPRECATION")
         val path = uri.getFilePath() ?: return null
-        val m = MediaMetadataRetriever().apply {
-            setDataSource(path)
-        }
+        val m =
+            MediaMetadataRetriever().apply {
+                setDataSource(path)
+            }
         val fileName = File(path).name
         val rotation = m.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION) ?: "0"
         val image = m.getFrameAtTime(0, MediaMetadataRetriever.OPTION_CLOSEST) ?: return null
@@ -618,19 +804,44 @@ fun getVideoModel(uri: Uri): VideoEditedInfo? {
         return if (scale < 1) {
             val bitrate = MediaController.getBitrate(path, scale)
             VideoEditedInfo(
-                path, duration, rotation, mediaWith, mediaHeight, resultWidth, resultHeight, thumbnail,
-                fileName, bitrate
+                path,
+                duration,
+                rotation,
+                mediaWith,
+                mediaHeight,
+                resultWidth,
+                resultHeight,
+                thumbnail,
+                fileName,
+                bitrate,
             )
         } else {
             VideoEditedInfo(
-                path, duration, rotation, mediaWith, mediaHeight, mediaWith, mediaHeight, thumbnail,
-                fileName, 0, false
+                path,
+                duration,
+                rotation,
+                mediaWith,
+                mediaHeight,
+                mediaWith,
+                mediaHeight,
+                thumbnail,
+                fileName,
+                0,
+                false,
             )
         }
     } catch (e: Exception) {
         Timber.e(e)
     }
     return null
+}
+
+fun Fragment.openImageGallery(preview: Boolean = false) {
+    Gallery.from(this)
+        .choose(MimeType.ofImage())
+        .imageEngine(GlideEngine())
+        .preview(preview)
+        .forResult(REQUEST_GALLERY)
 }
 
 fun Fragment.openGallery(preview: Boolean = false) {
@@ -650,7 +861,14 @@ fun Fragment.openGalleryFromSticker() {
         .forResult(REQUEST_GALLERY)
 }
 
-fun Context.openUrl(url: String) {
+fun Context.openUrl(
+    url: String,
+    source: String? = null,
+    wallet: String = one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet.MAIN,
+) {
+    if (openCustomerServiceIfMatched(url, source, wallet)) {
+        return
+    }
     var uri = url.toUri()
     if (uri.scheme.isNullOrBlank()) {
         uri = Uri.parse("http://$url")
@@ -658,30 +876,110 @@ fun Context.openUrl(url: String) {
     try {
         val actionIntent = Intent(this, ShareBroadcastReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(this, 0, actionIntent, PendingIntent.FLAG_IMMUTABLE)
-        val customTabsIntent = CustomTabsIntent.Builder()
-            .setToolbarColor(ContextCompat.getColor(this, android.R.color.white))
-            .setShowTitle(true)
-            .setActionButton(
-                BitmapFactory.decodeResource(this.resources, R.drawable.ic_share),
-                this.getString(R.string.share),
-                pendingIntent
-            )
-            .build()
+        val customTabsIntent =
+            CustomTabsIntent.Builder()
+                .setDefaultColorSchemeParams(
+                    CustomTabColorSchemeParams.Builder()
+                        .setToolbarColor(ContextCompat.getColor(this, android.R.color.white))
+                        .build(),
+                )
+                .setShowTitle(true)
+                .setActionButton(
+                    BitmapFactory.decodeResource(this.resources, R.drawable.ic_share),
+                    this.getString(R.string.Share),
+                    pendingIntent,
+                )
+                .build()
         customTabsIntent.launchUrl(this, uri)
         return
     } catch (e: Exception) {
-        Log.e("OpenUrl", "OpenUrl", e)
+        Timber.e(e, "OpenUrl")
     }
     try {
         val intent = Intent(Intent.ACTION_VIEW, uri)
         intent.putExtra(Browser.EXTRA_APPLICATION_ID, packageName)
         startActivity(intent)
     } catch (e: Exception) {
-        Log.e("OpenUrl", "OpenUrl", e)
+        Timber.e(e, "OpenUrl")
     }
 }
 
-fun Context.getClipboardManager(): ClipboardManager = this.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+fun Context.openInBrowser(
+    url: String,
+    extraHeaders: Bundle? = null,
+): Boolean {
+    val browserUrl = url.toOpenInBrowserUrlOrNull() ?: return false
+    val uri = browserUrl.toUri()
+
+    try {
+        val customTabsIntent =
+            CustomTabsIntent.Builder()
+                .setDefaultColorSchemeParams(
+                    CustomTabColorSchemeParams.Builder()
+                        .setToolbarColor(ContextCompat.getColor(this, android.R.color.white))
+                        .build(),
+                )
+                .setShowTitle(true)
+                .build()
+        extraHeaders?.let {
+            customTabsIntent.intent.putExtra(Browser.EXTRA_HEADERS, it)
+        }
+        customTabsIntent.launchUrl(this, uri)
+        return true
+    } catch (e: Exception) {
+        Timber.e(e, "OpenInBrowser")
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, uri)
+                .putExtra(Browser.EXTRA_APPLICATION_ID, packageName)
+            extraHeaders?.let {
+                intent.putExtra(Browser.EXTRA_HEADERS, it)
+            }
+            startActivity(intent)
+            return true
+        } catch (e: Exception) {
+            Timber.e(e, "OpenInBrowser")
+        }
+    }
+    return false
+}
+
+fun Context.openExternalUrl(url: String) {
+    try {
+        var uri = Uri.parse(url)
+        if (uri.scheme == null) {
+            uri = uri.buildUpon().scheme("https").build()
+        }
+        val intent = Intent(Intent.ACTION_VIEW, uri)
+        startActivity(intent)
+    } catch (e: Exception) {
+        Timber.e(e, "OpenUrl")
+    }
+}
+
+fun Context.getClipboardManager(): ClipboardManager = requireNotNull(getSystemService())
+
+fun Context.copySensitiveTextToClipboard(content: String, scope: CoroutineScope) {
+    val clipboard = getClipboardManager()
+    val clip = ClipData.newPlainText("", content)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        @Suppress("NewApi")
+        clip.description.extras = PersistableBundle().apply {
+            putBoolean("android.content.extra.IS_SENSITIVE", true)
+        }
+    }
+    clipboard.setPrimaryClip(clip)
+    scope.launch {
+        delay(60_000L)
+        val current = clipboard.primaryClip?.getItemAt(0)?.text?.toString()
+        if (current == content) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                clipboard.clearPrimaryClip()
+            } else {
+                clipboard.setPrimaryClip(ClipData.newPlainText("", ""))
+            }
+        }
+    }
+}
 
 fun Window.isNotchScreen(): Boolean {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -701,7 +999,10 @@ fun Window.isNotchScreen(): Boolean {
     }
 }
 
-inline fun <T, R> T?.notNullWithElse(normalAction: (T) -> R, default: R): R {
+inline fun <T, R> T?.notNullWithElse(
+    normalAction: (T) -> R,
+    default: R,
+): R {
     return if (this == null) {
         default
     } else {
@@ -709,7 +1010,10 @@ inline fun <T, R> T?.notNullWithElse(normalAction: (T) -> R, default: R): R {
     }
 }
 
-inline fun <T, R> T?.notNullWithElse(normalAction: (T) -> R, elseAction: () -> R): R {
+inline fun <T, R> T?.notNullWithElse(
+    normalAction: (T) -> R,
+    elseAction: () -> R,
+): R {
     return if (this != null) {
         normalAction(this)
     } else {
@@ -717,15 +1021,10 @@ inline fun <T, R> T?.notNullWithElse(normalAction: (T) -> R, elseAction: () -> R
     }
 }
 
-inline fun <T> T?.notNullWithElse(normalAction: (T) -> Unit, elseAction: () -> Unit) {
-    return if (this != null) {
-        normalAction(this)
-    } else {
-        elseAction()
-    }
-}
-
-inline fun CharSequence?.notEmptyWithElse(normalAction: (CharSequence) -> Unit, elseAction: () -> Unit) {
+inline fun CharSequence?.notEmptyWithElse(
+    normalAction: (CharSequence) -> Unit,
+    elseAction: () -> Unit,
+) {
     return if (!this.isNullOrEmpty()) {
         normalAction(this)
     } else {
@@ -733,7 +1032,10 @@ inline fun CharSequence?.notEmptyWithElse(normalAction: (CharSequence) -> Unit, 
     }
 }
 
-inline fun <T, R> Collection<T>?.notEmptyWithElse(normalAction: (Collection<T>) -> R, default: R): R {
+inline fun <T, R> Collection<T>?.notEmptyWithElse(
+    normalAction: (Collection<T>) -> R,
+    default: R,
+): R {
     return if (!this.isNullOrEmpty()) {
         normalAction(this)
     } else {
@@ -741,7 +1043,10 @@ inline fun <T, R> Collection<T>?.notEmptyWithElse(normalAction: (Collection<T>) 
     }
 }
 
-inline fun <T, R> Collection<T>?.notEmptyWithElse(normalAction: (Collection<T>) -> R, elseAction: () -> R): R {
+inline fun <T, R> Collection<T>?.notEmptyWithElse(
+    normalAction: (Collection<T>) -> R,
+    elseAction: () -> R,
+): R {
     return if (!this.isNullOrEmpty()) {
         normalAction(this)
     } else {
@@ -749,7 +1054,10 @@ inline fun <T, R> Collection<T>?.notEmptyWithElse(normalAction: (Collection<T>) 
     }
 }
 
-inline fun <T : Number, R> T?.notEmptyWithElse(normalAction: (T) -> R, elseAction: () -> R): R {
+inline fun <T : Number, R> T?.notEmptyWithElse(
+    normalAction: (T) -> R,
+    elseAction: () -> R,
+): R {
     return if (this != null && this != 0) {
         normalAction(this)
     } else {
@@ -757,7 +1065,10 @@ inline fun <T : Number, R> T?.notEmptyWithElse(normalAction: (T) -> R, elseActio
     }
 }
 
-fun supportsS(code: () -> Unit, elseAction: (() -> Unit)? = null) {
+fun supportsS(
+    code: () -> Unit,
+    elseAction: (() -> Unit)? = null,
+) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         code()
     } else {
@@ -765,7 +1076,10 @@ fun supportsS(code: () -> Unit, elseAction: (() -> Unit)? = null) {
     }
 }
 
-fun supportsR(code: () -> Unit, elseAction: (() -> Unit)? = null) {
+fun supportsR(
+    code: () -> Unit,
+    elseAction: (() -> Unit)? = null,
+) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
         code()
     } else {
@@ -791,7 +1105,10 @@ inline fun supportsOreo(code: () -> Unit) {
     }
 }
 
-fun supportsOreo(code: () -> Unit, elseAction: (() -> Unit)) {
+fun supportsOreo(
+    code: () -> Unit,
+    elseAction: (() -> Unit),
+) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         code()
     } else {
@@ -799,6 +1116,18 @@ fun supportsOreo(code: () -> Unit, elseAction: (() -> Unit)) {
     }
 }
 
+fun supportsVanillaIceCream(
+    code: () -> Unit,
+    elseAction: (() -> Unit),
+) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+        code()
+    } else {
+        elseAction.invoke()
+    }
+}
+
+@SuppressLint("ObsoleteSdkInt")
 inline fun supportsNougat(code: () -> Unit) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
         code()
@@ -815,29 +1144,66 @@ inline fun <T : Fragment> T.withArgs(argsBuilder: Bundle.() -> Unit): T =
     this.apply { arguments = Bundle().apply(argsBuilder) }
 
 fun Context.isGooglePlayServicesAvailable() =
-    GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this) == ConnectionResult.SUCCESS
+    GoogleApiAvailabilityLight.getInstance().isGooglePlayServicesAvailable(this) == ConnectionResult.SUCCESS
 
 fun Context.isFirebaseDecodeAvailable() =
     isGooglePlayServicesAvailable() && Locale.getDefault() != Locale.CHINA
 
-fun Fragment.getTipsByAsset(asset: AssetItem) =
+fun Fragment.getTipsByAsset(asset: TokenItem) =
     when (asset.assetId) {
-        Constants.ChainId.BITCOIN_CHAIN_ID -> getString(R.string.bottom_deposit_tip_btc)
-        Constants.ChainId.ETHEREUM_CHAIN_ID -> getString(R.string.bottom_deposit_tip_eth)
-        Constants.ChainId.EOS_CHAIN_ID -> getString(R.string.bottom_deposit_tip_eos)
-        Constants.ChainId.TRON_CHAIN_ID -> getString(R.string.bottom_deposit_tip_trx)
-        else -> getString(R.string.bottom_deposit_tip_common, asset.symbol)
+        Constants.ChainId.BITCOIN_CHAIN_ID -> getString(R.string.deposit_tip_btc)
+        Constants.ChainId.ETHEREUM_CHAIN_ID -> getString(R.string.deposit_tip_eth)
+        Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID -> getString(R.string.deposit_tip_lightning)
+        Constants.ChainId.EOS_CHAIN_ID,
+        Constants.ChainId.SOLANA_CHAIN_ID,
+        Constants.ChainId.TRON_CHAIN_ID,
+        Constants.ChainId.Base,
+        Constants.ChainId.BinanceSmartChain,
+        Constants.ChainId.Arbitrum,
+        Constants.ChainId.Optimism,
+        Constants.ChainId.Polygon,
+        Constants.ChainId.BitShares,
+        Constants.ChainId.Avalanche,
+        Constants.ChainId.HyperEVM
+            -> getString(R.string.deposit_tip_chain, asset.symbol, asset.chainName ?: getChainName(asset.chainId, asset.chainName, asset.assetKey ?: ""))
+        else -> getString(R.string.deposit_tip_common, asset.symbol)
+    }
+
+fun Fragment.getTipsByAsset(asset: Web3TokenItem, chain: Web3Chain?) =
+    when (asset.assetId) {
+        Constants.ChainId.BITCOIN_CHAIN_ID -> getString(R.string.deposit_tip_btc)
+        Constants.ChainId.ETHEREUM_CHAIN_ID -> getString(R.string.deposit_tip_eth)
+        else -> getString(R.string.deposit_tip_chain, asset.symbol, chain?.name ?: getChainName(asset.chainId, asset.chainName, asset.assetKey))
     }
 
 fun Context.showConfirmDialog(
     message: String,
-    action: () -> Unit
+    action: () -> Unit,
 ) {
     alertDialogBuilder()
         .setMessage(message)
-        .setNegativeButton(R.string.cancel) { dialog, _ ->
+        .setNegativeButton(R.string.Cancel) { dialog, _ ->
             dialog.dismiss()
-        }.setPositiveButton(R.string.ok) { dialog, _ ->
+        }.setPositiveButton(R.string.OK) { dialog, _ ->
+            action.invoke()
+            dialog.dismiss()
+        }.create().apply {
+            setOnShowListener {
+                getButton(DialogInterface.BUTTON_POSITIVE).textColorResource = R.color.colorRed
+            }
+        }.show()
+}
+
+fun Context.showConfirmDialog(
+    message: String,
+    cancelable: Boolean,
+    action: () -> Unit,
+) {
+    alertDialogBuilder()
+        .setMessage(message).setCancelable(cancelable)
+        .setNegativeButton(R.string.Cancel) { dialog, _ ->
+            dialog.dismiss()
+        }.setPositiveButton(R.string.Confirm) { dialog, _ ->
             action.invoke()
             dialog.dismiss()
         }.create().apply {
@@ -849,10 +1215,11 @@ fun Context.showConfirmDialog(
 
 fun Context.isNightMode(): Boolean {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        val currentId = defaultSharedPreferences.getInt(
-            Constants.Theme.THEME_CURRENT_ID,
-            Constants.Theme.THEME_AUTO_ID
-        )
+        val currentId =
+            defaultSharedPreferences.getInt(
+                Constants.Theme.THEME_CURRENT_ID,
+                Constants.Theme.THEME_AUTO_ID,
+            )
         return if (currentId == Constants.Theme.THEME_AUTO_ID) {
             resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
         } else {
@@ -861,7 +1228,7 @@ fun Context.isNightMode(): Boolean {
     } else {
         defaultSharedPreferences.getInt(
             Constants.Theme.THEME_CURRENT_ID,
-            Constants.Theme.THEME_DEFAULT_ID
+            Constants.Theme.THEME_DEFAULT_ID,
         ) == Constants.Theme.THEME_NIGHT_ID
     }
 }
@@ -872,19 +1239,21 @@ fun Context.isAutoRotate() = Settings.System.getInt(contentResolver, Settings.Sy
 
 fun toastShort(textResource: Int) = toast(textResource, ToastDuration.Short)
 
-fun Context.getCurrentThemeId() = defaultSharedPreferences.getInt(
-    Constants.Theme.THEME_CURRENT_ID,
-    defaultThemeId
-)
+fun Context.getCurrentThemeId() =
+    defaultSharedPreferences.getInt(
+        Constants.Theme.THEME_CURRENT_ID,
+        defaultThemeId,
+    )
 
-val defaultThemeId = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-    Constants.Theme.THEME_DEFAULT_ID
-} else {
-    Constants.Theme.THEME_AUTO_ID
-}
+val defaultThemeId =
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+        Constants.Theme.THEME_DEFAULT_ID
+    } else {
+        Constants.Theme.THEME_AUTO_ID
+    }
 
 fun Context.checkInlinePermissions(): Boolean {
-    if (XiaomiUtilities.isMIUI() && !XiaomiUtilities.isCustomPermissionGranted(XiaomiUtilities.OP_BACKGROUND_START_ACTIVITY)) {
+    if (!RomPermissionUtil.checkBackgroundStartPermission(this)) {
         return false
     }
     if (Settings.canDrawOverlays(this)) {
@@ -894,23 +1263,12 @@ fun Context.checkInlinePermissions(): Boolean {
 }
 
 fun Context.checkInlinePermissions(showAlert: () -> Unit): Boolean {
-    if (XiaomiUtilities.isMIUI() && !XiaomiUtilities.isCustomPermissionGranted(XiaomiUtilities.OP_BACKGROUND_START_ACTIVITY)) {
-        var intent = XiaomiUtilities.getPermissionManagerIntent()
-        if (intent != null) {
-            try {
-                startActivity(intent)
-            } catch (x: Exception) {
-                try {
-                    intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                    intent.data =
-                        Uri.parse("package:" + MixinApplication.appContext.packageName)
-                    startActivity(intent)
-                } catch (xx: Exception) {
-                    Timber.e(xx)
-                }
-            }
+    if (!RomPermissionUtil.checkBackgroundStartPermission(this)) {
+        if (RomPermissionUtil.openBackgroundPermissionSetting(this)) {
+            toast(R.string.need_background_permission)
+        } else {
+            toast(R.string.need_background_permission)
         }
-        toast(R.string.need_background_permission)
         return false
     }
     if (Settings.canDrawOverlays(this)) {
@@ -923,27 +1281,26 @@ fun Context.checkInlinePermissions(showAlert: () -> Unit): Boolean {
 
 fun Context.isPlayStoreInstalled(): Boolean {
     return try {
-        packageManager
-            .getPackageInfo(GooglePlayServicesUtil.GOOGLE_PLAY_STORE_PACKAGE, 0)
+        packageManager.getPackageInfoCompat(GooglePlayServicesUtil.GOOGLE_PLAY_STORE_PACKAGE, 0)
         true
-    } catch (e: PackageManager.NameNotFoundException) {
+    } catch (e: Exception) {
         false
     }
 }
 
-fun Context.openMarket() {
-    if (isPlayStoreInstalled()) {
-        try {
-            val intent = Intent(Intent.ACTION_VIEW)
-            intent.data = Uri.parse("market://details?id=${BuildConfig.APPLICATION_ID}")
-            intent.setPackage(GooglePlayServicesUtil.GOOGLE_PLAY_STORE_PACKAGE)
-            startActivity(intent)
-        } catch (e: Exception) {
-            openUrl(getString(R.string.website))
-        }
+fun PackageManager.getPackageInfoCompat(
+    packageName: String,
+    flags: Int = 0,
+): PackageInfo =
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        getPackageInfo(packageName, PackageManager.PackageInfoFlags.of(flags.toLong()))
     } else {
-        openUrl(getString(R.string.website))
+        @Suppress("DEPRECATION")
+        getPackageInfo(packageName, flags)
     }
+
+fun Context.openMarket() {
+    openExternalUrl(getString(R.string.website))
 }
 
 @Suppress("DEPRECATION") // Deprecated for third party Services.
@@ -952,32 +1309,38 @@ fun <T> Context.isServiceRunning(service: Class<T>) =
         .getRunningServices(Integer.MAX_VALUE)
         .any { it.service.className == service.name }
 
-fun Activity.showPipPermissionNotification(targetActivity: Class<*>, title: String) {
-    val pendingIntent = PendingIntent.getActivity(
-        this,
-        0,
-        Intent(this, targetActivity),
-        PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-    )
-    val builder = NotificationCompat.Builder(this, CallActivity.CHANNEL_PIP_PERMISSION)
-        .setSmallIcon(R.drawable.ic_msg_default)
-        .setContentIntent(pendingIntent)
-        .setContentTitle(title)
-        .setPriority(NotificationCompat.PRIORITY_HIGH)
-        .setAutoCancel(true)
-    supportsOreo {
-        val channel = NotificationChannel(
-            CallActivity.CHANNEL_PIP_PERMISSION,
-            getString(R.string.other),
-            NotificationManager.IMPORTANCE_HIGH
+fun Activity.showPipPermissionNotification(
+    targetActivity: Class<*>,
+    title: String,
+) {
+    val pendingIntent =
+        PendingIntent.getActivity(
+            this,
+            0,
+            Intent(this, targetActivity),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
+    val builder =
+        NotificationCompat.Builder(this, CallActivity.CHANNEL_PIP_PERMISSION)
+            .setSmallIcon(R.drawable.ic_msg_default)
+            .setContentIntent(pendingIntent)
+            .setContentTitle(title)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+    supportsOreo {
+        val channel =
+            NotificationChannel(
+                CallActivity.CHANNEL_PIP_PERMISSION,
+                getString(R.string.OTHER),
+                NotificationManager.IMPORTANCE_HIGH,
+            )
         notificationManager.createNotificationChannel(channel)
     }
     notificationManager.notify(CallActivity.ID_PIP_PERMISSION, builder.build())
 }
 
 @SuppressLint("HardwareIds")
-fun getDeviceId(resolver: ContentResolver): String {
+fun getStringDeviceId(resolver: ContentResolver): String {
     var deviceId = Settings.Secure.getString(resolver, Settings.Secure.ANDROID_ID)
     if (deviceId == null || deviceId == "9774d56d682e549c") {
         deviceId = FirebaseInstallations.getInstance().id.result
@@ -985,8 +1348,8 @@ fun getDeviceId(resolver: ContentResolver): String {
     return UUID.nameUUIDFromBytes(deviceId.toByteArray()).toString()
 }
 
-fun Context.getDeviceId(): String {
-    return getDeviceId(contentResolver)
+fun Context.getStringDeviceId(): String {
+    return getStringDeviceId(contentResolver)
 }
 
 fun Context.handleIgnoreBatteryOptimization(newTask: Boolean = false) {
@@ -1002,7 +1365,7 @@ fun Context.requestIgnoreBatteryOptimization(newTask: Boolean = false) {
         action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
         data = Uri.parse("package:$packageName")
         if (newTask) {
-            addFlags(FLAG_ACTIVITY_NEW_TASK)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
         try {
             startActivity(this)
@@ -1016,7 +1379,7 @@ fun Context.openIgnoreBatteryOptimizationSetting(newTask: Boolean = false) {
     Intent().apply {
         action = Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS
         if (newTask) {
-            addFlags(FLAG_ACTIVITY_NEW_TASK)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
         try {
             startActivity(this)
@@ -1026,17 +1389,17 @@ fun Context.openIgnoreBatteryOptimizationSetting(newTask: Boolean = false) {
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.N)
 fun Context.getDisplayPath(uri: Uri): String {
     val lastPathSegment = requireNotNull(uri.lastPathSegment)
     val backupVolume = lastPathSegment.replaceFirst(":.*".toRegex(), "")
     val backupName = lastPathSegment.replaceFirst(".*:".toRegex(), "")
-    val storageManager: StorageManager = requireNotNull(
-        ContextCompat.getSystemService(
-            this,
-            StorageManager::class.java
+    val storageManager: StorageManager =
+        requireNotNull(
+            ContextCompat.getSystemService(
+                this,
+                StorageManager::class.java,
+            ),
         )
-    )
     val storageVolumes = storageManager.storageVolumes
     var storageVolume: StorageVolume? = null
     for (volume in storageVolumes) {
@@ -1066,3 +1429,107 @@ inline fun <reified T> Fragment.findListener(): T? {
 
 val Context.notificationManager: NotificationManager
     get() = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+@RequiresApi(Build.VERSION_CODES.R)
+fun NotificationManager.areBubblesAllowedCompat(): Boolean {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        bubblePreference != BUBBLE_PREFERENCE_NONE
+    } else {
+        @Suppress("DEPRECATION")
+        areBubblesAllowed() || notificationChannels.any { it.canBubble() }
+    }
+}
+
+fun Context.shareFile(file: File) {
+    Intent().apply {
+        val uri = getUriForFile(file)
+        action = Intent.ACTION_SEND
+        putExtra(Intent.EXTRA_STREAM, uri)
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        val extraMimeTypes = arrayOf("text/plain", "audio/*", "image/*", "video/*")
+        putExtra(Intent.EXTRA_MIME_TYPES, extraMimeTypes)
+        setType("application/*")
+        val resInfoList = packageManager.queryIntentActivities(this, PackageManager.MATCH_DEFAULT_ONLY)
+        for (resolveInfo in resInfoList) {
+            val packageName = resolveInfo.activityInfo.packageName
+            grantUriPermission(packageName, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        try {
+            startActivity(Intent.createChooser(this, getString(R.string.File)))
+        } catch (ignored: ActivityNotFoundException) {
+            Timber.e(ignored)
+        }
+    }
+}
+
+fun Context.shareMedia(
+    isVideo: Boolean,
+    url: String,
+) {
+    var uri: Uri
+    val sendIntent =
+        Intent().apply {
+            action = Intent.ACTION_SEND
+            uri = Uri.parse(url)
+            if (ContentResolver.SCHEME_FILE == uri.scheme) {
+                @Suppress("DEPRECATION")
+                val path = uri.getFilePath(this@shareMedia)
+                if (path == null) {
+                    toast(R.string.File_does_not_exist)
+                    return
+                }
+                uri = getUriForFile(File(path))
+                putExtra(Intent.EXTRA_STREAM, uri)
+            } else {
+                putExtra(Intent.EXTRA_STREAM, uri)
+            }
+            type = if (isVideo) "video/*" else "image/*"
+        }
+    val name = getString(if (isVideo) R.string.Video else R.string.Photo)
+    val chooser = Intent.createChooser(sendIntent, getString(R.string.share_to, name))
+    val resInfoList = packageManager.queryIntentActivities(chooser, PackageManager.MATCH_DEFAULT_ONLY)
+    resInfoList.forEach {
+        val packageName = it.activityInfo.packageName
+        grantUriPermission(
+            packageName,
+            uri,
+            Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
+        )
+    }
+    startActivity(chooser)
+}
+
+fun Context.openEmail(email: String) {
+    try {
+        val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:$email"))
+        startActivity(intent)
+    } catch (e: Exception) {
+        Timber.e(e)
+    }
+}
+
+fun Context.callPhone(phone: String) {
+    try {
+        val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:$phone"))
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        startActivity(intent)
+    } catch (e: Exception) {
+        Timber.e(e)
+    }
+}
+
+fun Context.findFragmentActivityOrNull(): FragmentActivity? {
+    var ctx = this
+    while (ctx is ContextWrapper) {
+        if (ctx is FragmentActivity) {
+            return ctx
+        }
+        ctx = ctx.baseContext
+    }
+    return null
+}
+
+fun Context.isAuto(): Boolean {
+    val uiModeManager = getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
+    return uiModeManager.currentModeType == Configuration.UI_MODE_TYPE_CAR
+}

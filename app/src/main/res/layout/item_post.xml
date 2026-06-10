@@ -33,5 +33,6 @@
         android:layout_marginTop="6dp"
         android:layout_marginEnd="8dp"
         android:src="@drawable/ic_post"
-        tools:ignore="HardcodedText" />
+        tools:ignore="HardcodedText"
+        android:contentDescription="@null" />
 </FrameLayout>

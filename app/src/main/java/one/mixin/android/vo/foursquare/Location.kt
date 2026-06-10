@@ -11,5 +11,5 @@ class Location(
     val city: String?,
     val state: String?,
     val country: String?,
-    val formattedAddress: List<String>?
+    val formattedAddress: List<String>?,
 )

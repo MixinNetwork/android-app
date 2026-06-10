@@ -30,6 +30,8 @@ data class BlazeMessageData(
     val sessionId: String,
     @SerializedName("silent")
     val silent: Boolean? = null,
+    @SerializedName("expire_in")
+    val expireIn: Long? = null,
 ) : Serializable {
     companion object {
         private const val serialVersionUID: Long = 5L

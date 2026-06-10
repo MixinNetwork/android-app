@@ -4,7 +4,6 @@ import okhttp3.Dns
 import timber.log.Timber
 import java.net.InetAddress
 import java.net.UnknownHostException
-import kotlin.jvm.Throws
 
 class SequentialDns(vararg dns: Dns) : Dns {
     private val dnsList: List<Dns> = listOf(*dns)
@@ -19,6 +18,8 @@ class SequentialDns(vararg dns: Dns) : Dns {
                 } else {
                     Timber.w("Didn't find any addresses for %s using %s. Continuing.", hostname, dns.javaClass.simpleName)
                 }
+            } catch (e: RuntimeException) {
+                Timber.e(e, "Failed to resolve runtime %s using %s. Continuing.", hostname, dns.javaClass.simpleName)
             } catch (e: UnknownHostException) {
                 Timber.w(e, "Failed to resolve unknown host %s using %s. Continuing.", hostname, dns.toString())
             } catch (e: IllegalStateException) {

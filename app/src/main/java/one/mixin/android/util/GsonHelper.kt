@@ -12,19 +12,27 @@ import com.google.gson.JsonSerializer
 import one.mixin.android.crypto.Base64
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.decodeBitmapFromBase64
+import one.mixin.android.ui.wallet.components.WalletDestination
+import one.mixin.android.ui.wallet.components.WalletDestinationTypeAdapter
+import one.mixin.android.vo.Plan
+import one.mixin.android.vo.WithdrawalMemoPossibility
 import java.lang.reflect.Type
 
 object GsonHelper {
-    val customGson: Gson = GsonBuilder()
-        .registerTypeHierarchyAdapter(ByteArray::class.java, ByteArrayToBase64TypeAdapter())
-        .registerTypeHierarchyAdapter(Bitmap::class.java, BitmapToBase64TypeAdapter())
-        .create()
+    val customGson: Gson =
+        GsonBuilder()
+            .registerTypeHierarchyAdapter(ByteArray::class.java, ByteArrayToBase64TypeAdapter())
+            .registerTypeHierarchyAdapter(Bitmap::class.java, BitmapToBase64TypeAdapter())
+            .registerTypeHierarchyAdapter(WithdrawalMemoPossibility::class.java, WithdrawalMemoPossibilityAdapter())
+            .registerTypeHierarchyAdapter(Plan::class.java, PlanAdapter())
+            .registerTypeHierarchyAdapter(WalletDestination::class.java, WalletDestinationTypeAdapter())
+            .create()
 
     private class BitmapToBase64TypeAdapter : JsonSerializer<Bitmap>, JsonDeserializer<Bitmap> {
         override fun serialize(
             src: Bitmap,
             typeOfSrc: Type,
-            context: JsonSerializationContext
+            context: JsonSerializationContext,
         ): JsonElement {
             return JsonPrimitive(src.base64Encode(Bitmap.CompressFormat.PNG))
         }
@@ -32,11 +40,43 @@ object GsonHelper {
         override fun deserialize(
             json: JsonElement,
             typeOfT: Type,
-            context: JsonDeserializationContext
+            context: JsonDeserializationContext,
         ): Bitmap {
             return decodeBitmapFromBase64(json.asString)
         }
     }
+
+    class PlanAdapter : JsonDeserializer<Plan?> {
+        override fun deserialize(
+            json: JsonElement?,
+            typeOfT: Type?,
+            context: JsonDeserializationContext?,
+        ): Plan? {
+            return when (json?.asString) {
+                Plan.None.value -> Plan.None
+                Plan.ELITE.value -> Plan.ELITE
+                Plan.ADVANCE.value -> Plan.ADVANCE
+                Plan.PROSPERITY.value -> Plan.PROSPERITY
+                else -> null
+            }
+        }
+    }
+
+    class WithdrawalMemoPossibilityAdapter : JsonDeserializer<WithdrawalMemoPossibility?> {
+        override fun deserialize(
+            json: JsonElement?,
+            typeOfT: Type?,
+            context: JsonDeserializationContext?,
+        ): WithdrawalMemoPossibility? {
+            return when (json?.asString) {
+                WithdrawalMemoPossibility.NEGATIVE.value -> WithdrawalMemoPossibility.NEGATIVE
+                WithdrawalMemoPossibility.POSSIBLE.value -> WithdrawalMemoPossibility.POSSIBLE
+                WithdrawalMemoPossibility.POSITIVE.value -> WithdrawalMemoPossibility.POSITIVE
+                else -> null
+            }
+        }
+    }
+
 
     private class ByteArrayToBase64TypeAdapter :
         JsonSerializer<ByteArray>,
@@ -44,7 +84,7 @@ object GsonHelper {
         override fun deserialize(
             json: JsonElement,
             typeOfT: Type,
-            context: JsonDeserializationContext
+            context: JsonDeserializationContext,
         ): ByteArray {
             return Base64.decode(json.asString)
         }
@@ -52,9 +92,11 @@ object GsonHelper {
         override fun serialize(
             src: ByteArray,
             typeOfSrc: Type,
-            context: JsonSerializationContext
+            context: JsonSerializationContext,
         ): JsonElement {
             return JsonPrimitive(src.base64Encode())
         }
     }
+
+    // Removed LimitOrderStatus adapter; limit order state is handled as string mapping now.
 }

@@ -18,20 +18,48 @@ data class ParticipantItem(
     var muteUntil: String?,
     val hasPin: Boolean? = null,
     var appId: String? = null,
-    var isScam: Boolean? = null
+    var isScam: Boolean? = null,
+    val membership: Membership?,
 ) {
     companion object {
-        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<ParticipantItem>() {
-            override fun areItemsTheSame(oldItem: ParticipantItem, newItem: ParticipantItem) =
-                oldItem.userId == newItem.userId
+        val DIFF_CALLBACK =
+            object : DiffUtil.ItemCallback<ParticipantItem>() {
+                override fun areItemsTheSame(
+                    oldItem: ParticipantItem,
+                    newItem: ParticipantItem,
+                ) =
+                    oldItem.userId == newItem.userId
 
-            override fun areContentsTheSame(oldItem: ParticipantItem, newItem: ParticipantItem) =
-                oldItem == newItem
-        }
+                override fun areContentsTheSame(
+                    oldItem: ParticipantItem,
+                    newItem: ParticipantItem,
+                ) =
+                    oldItem == newItem
+            }
     }
 
-    fun toUser() = User(
-        userId, identityNumber, relationship, biography, fullName, avatarUrl,
-        phone, isVerified, userCreatedAt, muteUntil, hasPin, appId, isScam
-    )
+    fun toUser() =
+        User(
+            userId,
+            identityNumber,
+            relationship,
+            biography,
+            fullName,
+            avatarUrl,
+            phone,
+            isVerified,
+            userCreatedAt,
+            muteUntil,
+            hasPin,
+            appId,
+            isScam,
+        )
+
+    fun isMembership(): Boolean {
+        return membership?.isMembership() == true
+    }
+
+    fun isProsperity(): Boolean {
+        return membership?.isProsperity() == true
+    }
 }

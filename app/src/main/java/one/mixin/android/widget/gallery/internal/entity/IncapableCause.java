@@ -1,14 +1,16 @@
 package one.mixin.android.widget.gallery.internal.entity;
 
+import static java.lang.annotation.RetentionPolicy.SOURCE;
+
 import android.content.Context;
+import android.widget.Toast;
+
 import androidx.annotation.IntDef;
 import androidx.fragment.app.FragmentActivity;
-import android.widget.Toast;
+
 import java.lang.annotation.Retention;
+
 import one.mixin.android.widget.gallery.internal.ui.widget.IncapableDialog;
-
-
-import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 public class IncapableCause {
     public static final int TOAST = 0x00;

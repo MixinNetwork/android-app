@@ -60,7 +60,7 @@
             android:textColor="@color/white"
             android:textSize="10sp"
             android:visibility="gone"
-            tools:ignore="HardcodedText" />
+            tools:ignore="HardcodedText,SmallSp" />
     </FrameLayout>
 
     <one.mixin.android.widget.PlayView2
@@ -86,7 +86,7 @@
             android:text="@string/default_time"
             android:textColor="@color/transparent_white" />
 
-        <com.google.android.exoplayer2.ui.DefaultTimeBar
+        <androidx.media3.ui.DefaultTimeBar
             android:id="@id/exo_progress"
             android:layout_width="0dp"
             android:layout_height="wrap_content"

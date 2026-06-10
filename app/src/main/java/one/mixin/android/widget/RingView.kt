@@ -11,17 +11,20 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
 
 class RingView(context: Context, attributeSet: AttributeSet) : View(context, attributeSet) {
+    private val ringPaint =
+        Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style = Paint.Style.FILL
+            width
+        }
+    private val innerPaint =
+        Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style = Paint.Style.FILL
+            color = context.colorFromAttribute(R.attr.bg_white)
+        }
 
-    private val ringPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        style = Paint.Style.FILL
-        width
-    }
-    private val innerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        style = Paint.Style.FILL
-        color = context.colorFromAttribute(R.attr.bg_white)
-    }
-
-    fun setColor(@ColorRes id: Int) {
+    fun setColor(
+        @ColorRes id: Int,
+    ) {
         ringPaint.color = context.resources.getColor(id, null)
     }
 

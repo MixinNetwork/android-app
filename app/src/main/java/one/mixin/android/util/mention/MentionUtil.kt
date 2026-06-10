@@ -38,7 +38,11 @@ fun deleteMentionEnd(editText: EditText) {
     }
 }
 
-fun mentionReplace(editText: MentionEditText, user: User, selectionEnd: Int) {
+fun mentionReplace(
+    editText: MentionEditText,
+    user: User,
+    selectionEnd: Int,
+) {
     val edit = editText.text ?: return
     val text = edit.substring(0, selectionEnd)
     val index = text.lastIndexOf("@")
@@ -58,13 +62,16 @@ fun parseMentionData(
     conversationId: String,
     userDao: UserDao,
     messageMentionDao: MessageMentionDao,
-    userId: String
+    userId: String,
 ): Pair<List<MentionUser>?, Boolean> {
     val matcher = mentionNumberPattern.matcher(text)
     val numbers = arraySetOf<String>()
     while (matcher.find()) {
         val identityNumber = matcher.group().replace("@", "").replace(" ", "")
         numbers.add(identityNumber)
+    }
+    if (numbers.isEmpty()) {
+        return Pair(null, false)
     }
     val account = Session.getAccount()
     val mentions = userDao.findUserByIdentityNumbers(numbers)
@@ -77,9 +84,29 @@ fun parseMentionData(
     return Pair(mentions, mentionMe)
 }
 
+fun parseMentionData(
+    text: String,
+    userDao: UserDao,
+): String? {
+    val matcher = mentionNumberPattern.matcher(text)
+    val numbers = arraySetOf<String>()
+    while (matcher.find()) {
+        val identityNumber = matcher.group().replace("@", "").replace(" ", "")
+        numbers.add(identityNumber)
+    }
+    if (numbers.isEmpty()) {
+        return null
+    }
+    val mentions = userDao.findUserByIdentityNumbers(numbers)
+    if (mentions.isEmpty()) {
+        return null
+    }
+    return GsonHelper.customGson.toJson(mentions)
+}
+
 fun rendMentionContent(
     text: String?,
-    userMap: Map<String, String>?
+    userMap: Map<String, String>?,
 ): String? {
     if (text == null || userMap == null) return text
     val matcher = mentionNumberPattern.matcher(text)

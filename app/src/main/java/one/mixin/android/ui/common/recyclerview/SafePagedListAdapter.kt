@@ -11,10 +11,9 @@ import androidx.recyclerview.widget.RecyclerView
 import java.lang.reflect.InvocationTargetException
 import java.util.concurrent.Executor
 
-abstract class SafePagedListAdapter<T, VH : RecyclerView.ViewHolder>(
-    diffCallback: DiffUtil.ItemCallback<T>
+abstract class SafePagedListAdapter<T : Any, VH : RecyclerView.ViewHolder>(
+    diffCallback: DiffUtil.ItemCallback<T>,
 ) : PagedListAdapter<T, VH>(diffCallback) {
-
     init {
         try {
             val mDiffer = PagedListAdapter::class.java.getDeclaredField("mDiffer")
@@ -23,20 +22,22 @@ abstract class SafePagedListAdapter<T, VH : RecyclerView.ViewHolder>(
             executor.isAccessible = true
 
             val myDiffer = mDiffer.get(this) as AsyncPagedListDiffer<*>
-            val foreGround = object : Executor {
-                val mHandler = createAsync(Looper.getMainLooper())
-                override fun execute(command: Runnable?) {
-                    try {
-                        mHandler.post {
-                            try {
-                                command?.run()
-                            } catch (ignored: Exception) {
+            val foreGround =
+                object : Executor {
+                    val mHandler = createAsync(Looper.getMainLooper())
+
+                    override fun execute(command: Runnable?) {
+                        try {
+                            mHandler.post {
+                                try {
+                                    command?.run()
+                                } catch (ignored: Exception) {
+                                }
                             }
+                        } catch (ignored: Exception) {
                         }
-                    } catch (ignored: Exception) {
                     }
                 }
-            }
 
             executor.set(myDiffer, foreGround)
         } catch (ignored: Exception) {
@@ -53,7 +54,7 @@ abstract class SafePagedListAdapter<T, VH : RecyclerView.ViewHolder>(
                 return Handler::class.java.getDeclaredConstructor(
                     Looper::class.java,
                     Handler.Callback::class.java,
-                    Boolean::class.javaPrimitiveType
+                    Boolean::class.javaPrimitiveType,
                 ).newInstance(looper, null, true)
             } catch (ignored: IllegalAccessException) {
             } catch (ignored: InstantiationException) {

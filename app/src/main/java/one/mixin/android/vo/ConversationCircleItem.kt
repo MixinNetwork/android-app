@@ -20,18 +20,19 @@ class ConversationCircleItem(
     @ColumnInfo(name = "count")
     val count: Int,
     @ColumnInfo(name = "unseen_message_count")
-    val unseenMessageCount: Int
+    val unseenMessageCount: Int,
 ) : Parcelable
 
 fun getCircleColor(circleId: String?): Int {
     return if (circleId == null) {
         Color.BLACK
     } else {
-        val hashcode = try {
-            UUID.fromString(circleId).hashCode()
-        } catch (e: IllegalArgumentException) {
-            circleId.hashCode()
-        }
+        val hashcode =
+            try {
+                UUID.fromString(circleId).hashCode()
+            } catch (e: IllegalArgumentException) {
+                circleId.hashCode()
+            }
         colors[abs(hashcode).rem(colors.size)]
     }
 }

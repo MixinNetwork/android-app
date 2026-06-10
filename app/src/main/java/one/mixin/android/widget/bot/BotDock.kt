@@ -18,11 +18,9 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemDockBinding
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.vo.BotInterface
-import java.lang.Exception
 import kotlin.math.max
 
 class BotDock : ViewGroup, View.OnLongClickListener {
-
     constructor(context: Context) : this(context, null)
 
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
@@ -31,20 +29,21 @@ class BotDock : ViewGroup, View.OnLongClickListener {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
         context,
         attrs,
-        defStyleAttr
+        defStyleAttr,
     ) {
         val layoutInflater = LayoutInflater.from(context)
         addView(layoutInflater.inflate(R.layout.item_dock_empty, null))
         repeat(4) { index ->
             addView(
                 layoutInflater.inflate(R.layout.item_dock, null).apply {
-                    id = when (index) {
-                        0 -> R.id.dock_1
-                        1 -> R.id.dock_2
-                        2 -> R.id.dock_3
-                        else -> R.id.dock_4
-                    }
-                }
+                    id =
+                        when (index) {
+                            0 -> R.id.dock_1
+                            1 -> R.id.dock_2
+                            2 -> R.id.dock_3
+                            else -> R.id.dock_4
+                        }
+                },
             )
         }
         clipChildren = false
@@ -55,7 +54,11 @@ class BotDock : ViewGroup, View.OnLongClickListener {
     private fun getItemDock(view: View) = ItemDockBinding.bind(view)
 
     private var itemWidth = 0
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+
+    override fun onMeasure(
+        widthMeasureSpec: Int,
+        heightMeasureSpec: Int,
+    ) {
         measureChildren(MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.AT_MOST), heightMeasureSpec)
         var height = 0
         var width = 0
@@ -69,7 +72,13 @@ class BotDock : ViewGroup, View.OnLongClickListener {
         itemWidth = (measuredWidth - paddingStart - paddingEnd) / 4
     }
 
-    override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
+    override fun onLayout(
+        changed: Boolean,
+        l: Int,
+        t: Int,
+        r: Int,
+        b: Int,
+    ) {
         var itemOffset = paddingStart
         val firstView = getChildAt(0)
         if (firstView.isVisible) {
@@ -135,10 +144,14 @@ class BotDock : ViewGroup, View.OnLongClickListener {
             }
         }
         for (i in 1..4) {
-            val avatar = getItemDock(getChildAt(i)).apply {
-                avatar.alpha = 1f
-                avatar.translationX = 0f
-            }.avatar
+            val avatar =
+                getItemDock(getChildAt(i)).apply {
+                    avatar.alpha = 1f
+                    avatar.translationX = 0f
+                    root.setOnClickListener {
+                        // do nothing
+                    }
+                }.avatar
             if (i - 1 < apps.size) {
                 avatar.isVisible = true
                 val app = apps[i - 1]
@@ -158,7 +171,10 @@ class BotDock : ViewGroup, View.OnLongClickListener {
         requestLayout()
     }
 
-    fun addApp(position: Int, app: BotInterface) {
+    fun addApp(
+        position: Int,
+        app: BotInterface,
+    ) {
         if (!apps.contains(app) && apps.size < 4) {
             if (position < apps.size) {
                 apps.add(position, app)
@@ -178,7 +194,10 @@ class BotDock : ViewGroup, View.OnLongClickListener {
         }
     }
 
-    fun switch(index: Int, app: BotInterface) {
+    fun switch(
+        index: Int,
+        app: BotInterface,
+    ) {
         if (apps.contains(app)) {
             apps.remove(app)
             if (index < apps.size) {
@@ -192,6 +211,7 @@ class BotDock : ViewGroup, View.OnLongClickListener {
     }
 
     private var currentShoveIndex = -1
+
     fun shove(index: Int) {
         if (apps.size in 1 until 4 && currentShoveIndex != index) {
             currentShoveIndex = index
@@ -205,7 +225,10 @@ class BotDock : ViewGroup, View.OnLongClickListener {
         }
     }
 
-    fun shove(index: Int, bot: BotInterface) {
+    fun shove(
+        index: Int,
+        bot: BotInterface,
+    ) {
         val appIndex = apps.indexOf(bot)
         if (appIndex != -1 && currentShoveIndex != index) {
             currentShoveIndex = index
@@ -238,25 +261,27 @@ class BotDock : ViewGroup, View.OnLongClickListener {
     }
 
     private val animatorSet = arraySetOf<ViewPropertyAnimatorCompat>()
-    private fun viewPropertyAnimator(view: View) = ViewCompat.animate(view).setDuration(120).apply {
-        val animator = this
-        setListener(
-            object : ViewPropertyAnimatorListener {
-                override fun onAnimationStart(view: View) {
-                    animatorSet.add(animator)
-                }
 
-                override fun onAnimationEnd(view: View) {
-                    animatorSet.remove(animator)
-                }
+    private fun viewPropertyAnimator(view: View) =
+        ViewCompat.animate(view).setDuration(120).apply {
+            val animator = this
+            setListener(
+                object : ViewPropertyAnimatorListener {
+                    override fun onAnimationStart(view: View) {
+                        animatorSet.add(animator)
+                    }
 
-                override fun onAnimationCancel(view: View) {
-                    view.translationX = 0f
-                    animatorSet.remove(animator)
-                }
-            }
-        )
-    }
+                    override fun onAnimationEnd(view: View) {
+                        animatorSet.remove(animator)
+                    }
+
+                    override fun onAnimationCancel(view: View) {
+                        view.translationX = 0f
+                        animatorSet.remove(animator)
+                    }
+                },
+            )
+        }
 
     private var onDockListener: OnDockListener? = null
 

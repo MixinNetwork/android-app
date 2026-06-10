@@ -14,7 +14,10 @@ class NetworkCache(context: Context) {
         return cachedFile
     }
 
-    fun writeTempCacheFile(url: String, stream: InputStream): File {
+    fun writeTempCacheFile(
+        url: String,
+        stream: InputStream,
+    ): File {
         val fileName = filenameForUrl(url, true)
         val file = File(parentDir(), fileName)
         file.outputStream().use {
@@ -52,7 +55,9 @@ class NetworkCache(context: Context) {
         val file = File(parentDir(), filenameForUrl(url, false))
         return if (file.exists()) {
             file
-        } else null
+        } else {
+            null
+        }
     }
 
     private fun parentDir(): File {
@@ -67,7 +72,10 @@ class NetworkCache(context: Context) {
     }
 
     companion object {
-        fun filenameForUrl(url: String, isTemp: Boolean) =
+        fun filenameForUrl(
+            url: String,
+            isTemp: Boolean,
+        ) =
             "lottie_cache_" + url.replace("\\W+".toRegex(), "") + if (isTemp) TEMP_JSON_EXTENSION else JSON_EXTENSION
     }
 }

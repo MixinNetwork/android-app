@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.extension.findListener
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.ui.common.KeyboardEntryDialogFragment
 import one.mixin.android.widget.imageeditor.HiddenEditText
@@ -22,7 +23,6 @@ import one.mixin.android.widget.imageeditor.model.EditorElement
 import one.mixin.android.widget.imageeditor.renderers.MultiLineTextRenderer
 
 class TextEntryDialogFragment : KeyboardEntryDialogFragment(R.layout.image_editor_text_entry_fragment) {
-
     private lateinit var hiddenTextEntry: HiddenEditText
     private lateinit var controller: Controller
     private lateinit var colorRv: RecyclerView
@@ -30,7 +30,10 @@ class TextEntryDialogFragment : KeyboardEntryDialogFragment(R.layout.image_edito
     private val initColor by lazy { requireArguments().getInt("color") }
     private var activeColor = ColorPaletteAdapter.paletteColors[5]
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         controller = requireNotNull(findListener())
 
         hiddenTextEntry = HiddenEditText(requireContext())
@@ -46,7 +49,7 @@ class TextEntryDialogFragment : KeyboardEntryDialogFragment(R.layout.image_edito
         }
 
         activeColor = initColor
-        val element: EditorElement = requireNotNull(requireArguments().getParcelable("element"))
+        val element: EditorElement = requireNotNull(requireArguments().getParcelableCompat("element", EditorElement::class.java))
         val incognito = requireArguments().getBoolean("incognito")
         val selectAll = requireArguments().getBoolean("selectAll")
 
@@ -70,16 +73,17 @@ class TextEntryDialogFragment : KeyboardEntryDialogFragment(R.layout.image_edito
         val colorIndicator: ImageView = view.findViewById(R.id.color_indicator)
         colorIndicator.background = AppCompatResources.getDrawable(requireContext(), R.drawable.ic_color_preview)
 
-        val colorPaletteAdapter = ColorPaletteAdapter(
-            initColor,
-            onColorChanged = { c ->
-                activeColor = c
-                colorIndicator.drawable.colorFilter = SimpleColorFilter(c)
-                controller.onTextColorChange(c)
+        val colorPaletteAdapter =
+            ColorPaletteAdapter(
+                initColor,
+                onColorChanged = { c ->
+                    activeColor = c
+                    colorIndicator.drawable.colorFilter = SimpleColorFilter(c)
+                    controller.onTextColorChange(c)
+                },
+            ).apply {
+                submitList(ColorPaletteAdapter.paletteColors)
             }
-        ).apply {
-            submitList(ColorPaletteAdapter.paletteColors)
-        }
         colorRv.layoutManager = LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false)
         colorRv.adapter = colorPaletteAdapter
     }
@@ -95,7 +99,12 @@ class TextEntryDialogFragment : KeyboardEntryDialogFragment(R.layout.image_edito
 
     interface Controller {
         fun onTextEntryDialogDismissed(hasText: Boolean)
-        fun zoomToFitText(editorElement: EditorElement, textRenderer: MultiLineTextRenderer)
+
+        fun zoomToFitText(
+            editorElement: EditorElement,
+            textRenderer: MultiLineTextRenderer,
+        )
+
         fun onTextColorChange(color: Int)
     }
 
@@ -105,14 +114,15 @@ class TextEntryDialogFragment : KeyboardEntryDialogFragment(R.layout.image_edito
             editorElement: EditorElement,
             isIncognitoEnabled: Boolean,
             selectAll: Boolean,
-            color: Int
+            color: Int,
         ) {
-            val args = Bundle().apply {
-                putParcelable("element", editorElement)
-                putBoolean("incognito", isIncognitoEnabled)
-                putBoolean("selectAll", selectAll)
-                putInt("color", color)
-            }
+            val args =
+                Bundle().apply {
+                    putParcelable("element", editorElement)
+                    putBoolean("incognito", isIncognitoEnabled)
+                    putBoolean("selectAll", selectAll)
+                    putInt("color", color)
+                }
 
             TextEntryDialogFragment().apply {
                 arguments = args
@@ -122,5 +132,7 @@ class TextEntryDialogFragment : KeyboardEntryDialogFragment(R.layout.image_edito
     }
 }
 
-class SimpleColorFilter(@ColorInt color: Int) :
+class SimpleColorFilter(
+    @ColorInt color: Int,
+) :
     PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP)

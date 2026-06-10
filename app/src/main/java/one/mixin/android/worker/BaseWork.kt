@@ -13,9 +13,8 @@ import java.net.SocketTimeoutException
 
 abstract class BaseWork(
     context: Context,
-    parameters: WorkerParameters
+    parameters: WorkerParameters,
 ) : CoroutineWorker(context, parameters) {
-
     override suspend fun doWork(): Result {
         return try {
             onRun()
@@ -43,8 +42,8 @@ abstract class BaseWork(
                             ?: (
                                 (throwable as? WebSocketException)?.shouldRetry()
                                     ?: ((throwable as? LocalJobException)?.shouldRetry() ?: false)
-                                )
-                        )
-                )
+                            )
+                    )
+            )
     }
 }

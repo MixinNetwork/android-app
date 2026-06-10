@@ -4,7 +4,10 @@ import io.noties.prism4j.GrammarLocator
 import io.noties.prism4j.Prism4j
 
 class LanguageGrammerLocator : GrammarLocator {
-    override fun grammar(prism4j: Prism4j, language: String): Prism4j.Grammar? =
+    override fun grammar(
+        prism4j: Prism4j,
+        language: String,
+    ): Prism4j.Grammar? =
         when (language) {
             "c" -> Prism_c.create(prism4j)
             "clike" -> Prism_clike.create(prism4j)

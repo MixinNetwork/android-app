@@ -1,10 +1,28 @@
 package one.mixin.android.util
 
+import androidx.core.text.isDigitsOnly
 import com.google.i18n.phonenumbers.NumberParseException
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.google.i18n.phonenumbers.Phonenumber
 
-fun isValidNumber(phoneUtil: PhoneNumberUtil, number: String, countryCode: String, countryDialCode: String? = null): Pair<Boolean, Phonenumber.PhoneNumber?> {
+const val xinDialCode = "+XIN"
+
+fun isAnonymousNumber(
+    number: String,
+    countryDialCode: String,
+): Boolean {
+    if (countryDialCode != xinDialCode) return false
+
+    val numberWithoutDialCode = number.removePrefix(xinDialCode)
+    return numberWithoutDialCode.isDigitsOnly()
+}
+
+fun isValidNumber(
+    phoneUtil: PhoneNumberUtil,
+    number: String,
+    countryCode: String,
+    countryDialCode: String? = null,
+): Pair<Boolean, Phonenumber.PhoneNumber?> {
     return try {
         val phoneNumber = phoneUtil.parse(number, countryCode)
         var isValid = phoneUtil.isValidNumber(phoneNumber)
@@ -25,10 +43,18 @@ fun isValidNumber(phoneUtil: PhoneNumberUtil, number: String, countryCode: Strin
 // calls from outside Ivory Coast to a mobile number
 private val prefixList = listOf("07", "05", "01", "25")
 
-private fun addPrefixAndTry(phoneUtil: PhoneNumberUtil, phoneNumber: String, countryCode: String, countryDialCode: String? = null): Boolean {
-    val num = if (countryDialCode != null) {
-        phoneNumber.removePrefix(countryDialCode)
-    } else phoneNumber
+private fun addPrefixAndTry(
+    phoneUtil: PhoneNumberUtil,
+    phoneNumber: String,
+    countryCode: String,
+    countryDialCode: String? = null,
+): Boolean {
+    val num =
+        if (countryDialCode != null) {
+            phoneNumber.removePrefix(countryDialCode)
+        } else {
+            phoneNumber
+        }
     prefixList.forEach { p ->
         val phone = phoneUtil.parse("${countryDialCode ?: ""}$p$num", countryCode)
         if (phoneUtil.isValidNumber(phone)) {

@@ -18,7 +18,7 @@
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:layout_gravity="center"
-            android:src="@drawable/ic_empty_link"
+            android:src="@drawable/ic_link"
             tools:ignore="ContentDescription" />
     </FrameLayout>
 

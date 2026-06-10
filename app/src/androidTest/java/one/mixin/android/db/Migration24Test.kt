@@ -4,12 +4,13 @@ import one.mixin.android.Constants
 import org.junit.Test
 
 class Migration24Test : BaseMigrationTest() {
-
     @Test
     fun migrate_15_24() {
         create15()
         migrationTestHelper.runMigrationsAndValidate(
-            Constants.DataBase.DB_NAME, 24, true,
+            Constants.DataBase.DB_NAME,
+            24,
+            true,
             MixinDatabaseMigrations.MIGRATION_15_16,
             MixinDatabaseMigrations.MIGRATION_16_17,
             MixinDatabaseMigrations.MIGRATION_17_18,
@@ -18,7 +19,7 @@ class Migration24Test : BaseMigrationTest() {
             MixinDatabaseMigrations.MIGRATION_20_21,
             MixinDatabaseMigrations.MIGRATION_21_22,
             MixinDatabaseMigrations.MIGRATION_22_23,
-            MixinDatabaseMigrations.MIGRATION_23_24
+            MixinDatabaseMigrations.MIGRATION_23_24,
         )
     }
 
@@ -26,7 +27,9 @@ class Migration24Test : BaseMigrationTest() {
     fun migrate_16_24() {
         create16()
         migrationTestHelper.runMigrationsAndValidate(
-            Constants.DataBase.DB_NAME, 24, true,
+            Constants.DataBase.DB_NAME,
+            24,
+            true,
             MixinDatabaseMigrations.MIGRATION_16_17,
             MixinDatabaseMigrations.MIGRATION_17_18,
             MixinDatabaseMigrations.MIGRATION_18_19,
@@ -34,7 +37,7 @@ class Migration24Test : BaseMigrationTest() {
             MixinDatabaseMigrations.MIGRATION_20_21,
             MixinDatabaseMigrations.MIGRATION_21_22,
             MixinDatabaseMigrations.MIGRATION_22_23,
-            MixinDatabaseMigrations.MIGRATION_23_24
+            MixinDatabaseMigrations.MIGRATION_23_24,
         )
     }
 
@@ -42,14 +45,16 @@ class Migration24Test : BaseMigrationTest() {
     fun migrate_17_24() {
         create17()
         migrationTestHelper.runMigrationsAndValidate(
-            Constants.DataBase.DB_NAME, 24, true,
+            Constants.DataBase.DB_NAME,
+            24,
+            true,
             MixinDatabaseMigrations.MIGRATION_17_18,
             MixinDatabaseMigrations.MIGRATION_18_19,
             MixinDatabaseMigrations.MIGRATION_19_20,
             MixinDatabaseMigrations.MIGRATION_20_21,
             MixinDatabaseMigrations.MIGRATION_21_22,
             MixinDatabaseMigrations.MIGRATION_22_23,
-            MixinDatabaseMigrations.MIGRATION_23_24
+            MixinDatabaseMigrations.MIGRATION_23_24,
         )
     }
 
@@ -57,13 +62,15 @@ class Migration24Test : BaseMigrationTest() {
     fun migrate_18_24() {
         create18()
         migrationTestHelper.runMigrationsAndValidate(
-            Constants.DataBase.DB_NAME, 24, true,
+            Constants.DataBase.DB_NAME,
+            24,
+            true,
             MixinDatabaseMigrations.MIGRATION_18_19,
             MixinDatabaseMigrations.MIGRATION_19_20,
             MixinDatabaseMigrations.MIGRATION_20_21,
             MixinDatabaseMigrations.MIGRATION_21_22,
             MixinDatabaseMigrations.MIGRATION_22_23,
-            MixinDatabaseMigrations.MIGRATION_23_24
+            MixinDatabaseMigrations.MIGRATION_23_24,
         )
     }
 
@@ -78,7 +85,7 @@ class Migration24Test : BaseMigrationTest() {
             MixinDatabaseMigrations.MIGRATION_20_21,
             MixinDatabaseMigrations.MIGRATION_21_22,
             MixinDatabaseMigrations.MIGRATION_22_23,
-            MixinDatabaseMigrations.MIGRATION_23_24
+            MixinDatabaseMigrations.MIGRATION_23_24,
         )
     }
 
@@ -92,7 +99,7 @@ class Migration24Test : BaseMigrationTest() {
             MixinDatabaseMigrations.MIGRATION_20_21,
             MixinDatabaseMigrations.MIGRATION_21_22,
             MixinDatabaseMigrations.MIGRATION_22_23,
-            MixinDatabaseMigrations.MIGRATION_23_24
+            MixinDatabaseMigrations.MIGRATION_23_24,
         )
     }
 
@@ -105,7 +112,7 @@ class Migration24Test : BaseMigrationTest() {
             true,
             MixinDatabaseMigrations.MIGRATION_21_22,
             MixinDatabaseMigrations.MIGRATION_22_23,
-            MixinDatabaseMigrations.MIGRATION_23_24
+            MixinDatabaseMigrations.MIGRATION_23_24,
         )
     }
 
@@ -117,7 +124,7 @@ class Migration24Test : BaseMigrationTest() {
             24,
             true,
             MixinDatabaseMigrations.MIGRATION_22_23,
-            MixinDatabaseMigrations.MIGRATION_23_24
+            MixinDatabaseMigrations.MIGRATION_23_24,
         )
     }
 
@@ -128,7 +135,7 @@ class Migration24Test : BaseMigrationTest() {
             Constants.DataBase.DB_NAME,
             24,
             true,
-            MixinDatabaseMigrations.MIGRATION_23_24
+            MixinDatabaseMigrations.MIGRATION_23_24,
         )
     }
 }

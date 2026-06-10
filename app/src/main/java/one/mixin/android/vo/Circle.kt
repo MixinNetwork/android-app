@@ -20,14 +20,14 @@ data class Circle(
     val createdAt: String,
     @Expose
     @ColumnInfo(name = "ordered_at")
-    val orderedAt: String?
+    val orderedAt: String?,
 )
 
 data class CircleOrder(
     @ColumnInfo(name = "circle_id")
     val circleId: String,
     @ColumnInfo(name = "ordered_at")
-    val orderedAt: String
+    val orderedAt: String,
 )
 
 data class CircleName(val name: String)

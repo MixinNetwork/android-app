@@ -3,99 +3,160 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_root"
-    app:startDestination="@+id/wallet_fragment">
-
-    <fragment
-        android:id="@+id/wallet_fragment"
-        android:name="one.mixin.android.ui.wallet.WalletFragment"
-        tools:layout="@layout/fragment_wallet">
-
-        <action
-            android:id="@+id/action_wallet_fragment_to_all_transactions_fragment"
-            app:destination="@id/all_transactions_fragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
-
-        <action
-            android:id="@+id/action_wallet_fragment_to_hidden_assets_fragment"
-            app:destination="@id/hidden_assets_fragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
-
-        <action
-            android:id="@+id/action_wallet_fragment_to_transactions_fragment"
-            app:destination="@id/transactions_fragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
-
-        <action
-            android:id="@+id/action_wallet_to_wallet_search"
-            app:destination="@id/wallet_search_fragment"
-            app:enterAnim="@anim/fade_in"
-            app:popExitAnim="@anim/fade_out"/>
-    </fragment>
-
+    app:startDestination="@+id/transactions_fragment">
+    
     <fragment
         android:id="@+id/transactions_fragment"
         android:name="one.mixin.android.ui.wallet.TransactionsFragment"
         tools:layout="@layout/fragment_transactions">
         <argument
             android:name="args_asset"
-            app:argType="one.mixin.android.vo.AssetItem"/>
+            app:argType="one.mixin.android.vo.safe.TokenItem" />
+
+        <argument
+            android:name="args_from_market"
+            app:argType="boolean" />
 
         <action
             android:id="@+id/action_transactions_fragment_to_transaction_fragment"
             app:destination="@id/transaction_fragment"
             app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay" />
 
         <action
-            android:id="@+id/action_transactions_to_deposit_public_key"
-            app:destination="@id/deposit_public_key_fragment"
+            android:id="@+id/action_transactions_fragment_to_all_transactions_fragment"
+            app:destination="@id/all_transactions_fragment"
             app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay" />
 
         <action
-            android:id="@+id/action_transactions_to_deposit_account"
-            app:destination="@id/deposit_account_fragment"
+            android:id="@+id/action_transactions_to_deposit"
+            app:destination="@id/deposit_fragment"
             app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay"/>
 
         <action
-            android:id="@+id/action_transactions_to_single_friend_select"
-            app:destination="@id/single_friend_select_fragment"
+            android:id="@+id/action_transactions_to_utxo"
+            app:destination="@id/utxo_fragment"
             app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay"/>
 
         <action
-            android:id="@+id/action_transactions_to_user_transactions"
-            app:destination="@id/user_transactions_fragment"
+            android:id="@+id/action_transactions_to_market_details"
+            app:destination="@id/market_fragment_details"
             app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay"/>
 
         <action
-            android:id="@+id/action_transactions_to_address_management"
-            app:destination="@id/address_management_fragment"
+            android:id="@+id/action_transactions_to_transfer_destination"
+            app:destination="@id/transfer_destination_input_fragment"
             app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay"
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
+
+
+
+    <fragment
+        android:id="@+id/market_fragment_details"
+        android:name="one.mixin.android.ui.wallet.MarketDetailsFragment"
+        tools:layout="@layout/fragment_market">
+
+        <argument
+            android:name="args_market"
+            app:argType="one.mixin.android.vo.market.MarketItem" />
+
+        <argument
+            android:name="args_asset_id"
+            app:argType="string" />
+
+        <action
+            android:id="@+id/action_market_details_to_alert"
+            app:destination="@id/alert_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay"/>
+
+        <action
+            android:id="@+id/action_market_details_to_swap"
+            app:destination="@id/trade_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/alert_fragment"
+        android:name="one.mixin.android.ui.wallet.alert.AlertFragment"/>
+
+    <fragment
+        android:id="@+id/trade_fragment"
+        android:name="one.mixin.android.ui.home.web3.trade.TradeFragment">
+
+        <argument
+            android:name="args_output"
+            app:argType="string" />
+
+        <argument
+            android:name="args_input"
+            app:argType="string" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/utxo_fragment"
+        android:name="one.mixin.android.ui.wallet.UtxosFragment"
+        tools:layout="@layout/fragment_utxos"/>
 
     <fragment
         android:id="@+id/all_transactions_fragment"
         android:name="one.mixin.android.ui.wallet.AllTransactionsFragment"
-        tools:layout="@layout/fragment_pin_setting">
+        android:label="AllTransactionsFragment"
+        tools:layout="@layout/fragment_all_transactions">
+
+        <argument
+            android:name="args_user"
+            app:argType="one.mixin.android.vo.UserItem" />
+
+        <argument
+            android:name="args_token"
+            app:argType="one.mixin.android.vo.safe.TokenItem" />
 
         <action
             android:id="@+id/action_all_transactions_fragment_to_transaction_fragment"
             app:destination="@id/transaction_fragment"
             app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/all_web3_transactions_fragment"
+        android:name="one.mixin.android.ui.wallet.AllWeb3TransactionsFragment"
+        android:label="AllTransactionsFragment"
+        tools:layout="@layout/fragment_all_transactions">
+
+        <argument
+            android:name="args_token"
+            app:argType="one.mixin.android.db.web3.vo.Web3Token" />
 
         <action
-            android:id="@+id/action_all_transactions_to_user_transactions"
-            app:destination="@id/user_transactions_fragment"
+            android:id="@+id/action_all_web3_transactions_fragment_to_web3_transaction_fragment"
+            app:destination="@id/web3_transaction_fragment"
             app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
     <fragment
@@ -105,19 +166,25 @@
 
         <argument
             android:name="args_asset"
-            app:argType="one.mixin.android.vo.AssetItem"/>
+            app:argType="one.mixin.android.vo.safe.TokenItem" />
 
         <argument
             android:name="args_snapshot"
-            app:argType="one.mixin.android.vo.SnapshotItem"/>
+            app:argType="one.mixin.android.vo.SnapshotItem" />
 
         <argument
             android:name="args_asset_id"
-            app:argType="string"/>
+            app:argType="string" />
 
         <argument
             android:name="args_snapshot_id"
-            app:argType="string"/>
+            app:argType="string" />
+
+        <action
+            android:id="@+id/action_transaction_fragment_to_transactions"
+            app:destination="@id/transactions_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
     <fragment
@@ -127,65 +194,36 @@
 
         <argument
             android:name="args_asset"
-            app:argType="one.mixin.android.vo.AssetItem"/>
+            app:argType="one.mixin.android.vo.safe.TokenItem" />
 
         <action
             android:id="@+id/action_hidden_assets_to_transactions"
             app:destination="@id/transactions_fragment"
             app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
     <fragment
-        android:id="@+id/deposit_public_key_fragment"
-        android:name="one.mixin.android.ui.wallet.DepositPublicKeyFragment"
-        tools:layout="@layout/fragment_deposit_key">
+        android:id="@+id/web3_hidden_assets_fragment"
+        android:name="one.mixin.android.ui.wallet.Web3HiddenAssetsFragment"
+        tools:layout="@layout/fragment_hidden_assets">
+        <action
+            android:id="@+id/action_web3_hidden_assets_to_web3_transactions"
+            app:destination="@id/web3_transactions_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right" 
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/deposit_fragment"
+        android:name="one.mixin.android.ui.wallet.DepositFragment"
+        tools:layout="@layout/fragment_deposit">
 
         <argument
             android:name="args_asset"
-            app:argType="one.mixin.android.vo.AssetItem"/>
-
-        <action
-            android:id="@+id/action_wallet_fragment_to_all_transactions_fragment"
-            app:destination="@id/all_transactions_fragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
-    </fragment>
-
-    <fragment
-        android:id="@+id/deposit_account_fragment"
-        android:name="one.mixin.android.ui.wallet.DepositAccountFragment"
-        tools:layout="@layout/fragment_deposit_account">
-
-        <argument
-            android:name="args_asset"
-            app:argType="one.mixin.android.vo.AssetItem"/>
-
-        <action
-            android:id="@+id/action_wallet_fragment_to_all_transactions_fragment"
-            app:destination="@id/all_transactions_fragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
-    </fragment>
-
-    <fragment
-        android:id="@+id/single_friend_select_fragment"
-        android:name="one.mixin.android.ui.wallet.SingleFriendSelectFragment"
-        tools:layout="@layout/fragment_friends"/>
-
-    <fragment
-        android:id="@+id/user_transactions_fragment"
-        android:name="one.mixin.android.ui.conversation.UserTransactionsFragment"
-        tools:layout="@layout/fragment_transactions_user">
-
-        <argument
-            android:name="args_user_id"
-            app:argType="string"/>
-
-        <action android:id="@+id/action_user_transactions_to_transaction"
-            app:destination="@id/transaction_fragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:argType="one.mixin.android.vo.safe.TokenItem" />
     </fragment>
 
     <fragment
@@ -195,13 +233,163 @@
 
         <argument
             android:name="args_asset"
-            app:argType="one.mixin.android.vo.AssetItem"/>
+            app:argType="one.mixin.android.vo.safe.TokenItem" />
 
         <action
             android:id="@+id/action_address_management_to_address_add"
             app:destination="@id/address_add_fragment"
             app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right" />
+
+        <action
+            android:id="@+id/action_address_management_to_transactions"
+            app:destination="@id/transactions_fragment"
+            app:enterAnim="@null"
+            app:popExitAnim="@anim/slide_out_right"
+            app:popUpTo="@id/transactions_fragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/transfer_destination_input_fragment"
+        android:name="one.mixin.android.ui.address.TransferDestinationInputFragment"
+        tools:layout="@layout/fragment_address_input">
+
+        <argument
+            android:name="args_asset"
+            app:argType="one.mixin.android.vo.safe.TokenItem"
+            app:nullable="true" />
+        <argument
+            android:name="args_web3_token"
+            app:argType="one.mixin.android.db.web3.vo.Web3TokenItem"
+            app:nullable="true" />
+        <argument
+            android:name="args_chain_token"
+            app:argType="one.mixin.android.db.web3.vo.Web3TokenItem"
+            app:nullable="true" />
+        <argument
+            android:name="args_address"
+            app:argType="string"
+            app:nullable="true" />
+
+        <action
+            android:id="@+id/action_transfer_destination_to_input"
+            app:destination="@id/input_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay"
+            app:popExitAnim="@anim/slide_out_right" />
+
+        <action
+            android:id="@+id/action_transfer_destination_to_fetch_user_address"
+            app:destination="@id/fetch_user_address_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay"
+            app:popExitAnim="@anim/slide_out_right" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/fetch_user_address_fragment"
+        android:name="one.mixin.android.ui.address.FetchUserAddressFragment"
+        tools:layout="@layout/fragment_compose">
+
+        <argument
+            android:name="args_web3_token"
+            app:argType="one.mixin.android.db.web3.vo.Web3TokenItem" />
+
+        <argument
+            android:name="args_to_user"
+            app:argType="one.mixin.android.vo.User" />
+
+        <action
+            android:id="@+id/action_fetch_user_address_to_input"
+            app:destination="@id/input_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay"
+            app:popExitAnim="@anim/slide_out_right" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/input_fragment"
+        android:name="one.mixin.android.ui.wallet.InputFragment"
+        tools:layout="@layout/fragment_input">
+
+        <argument
+            android:name="args_token"
+            app:argType="one.mixin.android.vo.safe.TokenItem"
+            app:nullable="true" />
+
+        <argument
+            android:name="args_to_address"
+            app:argType="string"
+            app:nullable="true" />
+
+        <argument
+            android:name="args_to_address_tag"
+            app:argType="string"
+            app:nullable="true" />
+
+        <argument
+            android:name="args_to_address_id"
+            app:argType="string"
+            app:nullable="true" />
+
+        <argument
+            android:name="args_to_address_label"
+            app:argType="string"
+            app:nullable="true" />
+
+        <argument
+            android:name="args_to_user"
+            app:argType="one.mixin.android.vo.User"
+            app:nullable="true" />
+
+        <argument
+            android:name="args_web3_token"
+            app:argType="one.mixin.android.db.web3.vo.Web3TokenItem"
+            app:nullable="true" />
+
+        <argument
+            android:name="args_web3_chain_token"
+            app:argType="one.mixin.android.db.web3.vo.Web3TokenItem"
+            app:nullable="true" />
+
+        <argument
+            android:name="args_receive"
+            app:argType="boolean" />
+
+        <argument
+            android:name="args_biometric_item"
+            app:argType="one.mixin.android.ui.common.biometric.AssetBiometricItem"
+            app:nullable="true" />
+
+        <argument
+            android:name="args_to_wallet"
+            app:argType="boolean" />
+
+        <argument
+            android:name="args_to_account"
+            app:argType="boolean" />
+
+        <action
+            android:id="@+id/action_input_fragment_to_deposit_fragment"
+            app:destination="@id/deposit_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay" />
+
+        <action
+            android:id="@+id/action_input_fragment_to_web3_address_fragment"
+            app:destination="@id/web3_address_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay" />
     </fragment>
 
     <fragment
@@ -211,7 +399,7 @@
 
         <argument
             android:name="args_asset"
-            app:argType="one.mixin.android.vo.AssetItem"/>
+            app:argType="one.mixin.android.vo.safe.TokenItem" />
     </fragment>
 
     <fragment
@@ -223,6 +411,291 @@
             android:id="@+id/action_wallet_search_to_transactions"
             app:destination="@id/transactions_fragment"
             app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
+
+    <fragment
+        android:id="@+id/wallet_search_web3_fragment"
+        android:name="one.mixin.android.ui.wallet.WalletSearchWeb3Fragment"
+        tools:layout="@layout/fragment_wallet_search">
+
+        <action
+            android:id="@+id/action_wallet_search_web3_to_web3_transactions"
+            app:destination="@id/web3_transactions_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/wallet_identity"
+        android:name="one.mixin.android.ui.wallet.IdentityFragment" >
+        <argument
+            android:name="args_token"
+            app:argType="string" />
+        <argument
+            android:name="args_kyc_state"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/wallet_calculate"
+        android:name="one.mixin.android.ui.wallet.fiatmoney.CalculateFragment">
+
+        <argument
+            android:name="args_is_web3"
+            app:argType="boolean" />
+
+        <action
+            android:id="@+id/action_wallet_calculate_to_payment"
+            app:destination="@id/wallet_select_payment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right" />
+
+        <action
+            android:id="@+id/action_wallet_calculate_to_identity"
+            app:destination="@id/wallet_identity"
+            app:enterAnim="@anim/slide_in_bottom"
+            app:popExitAnim="@anim/slide_out_bottom" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/wallet_select_payment"
+        android:name="one.mixin.android.ui.wallet.fiatmoney.SelectPaymentFragment">
+
+        <argument
+            android:name="args_asset"
+            app:argType="one.mixin.android.vo.safe.TokenItem" />
+
+        <argument
+            android:name="args_currency"
+            app:argType="one.mixin.android.ui.setting.Currency" />
+
+        <argument
+            android:name="args_amount"
+            app:argType="long" />
+
+        <action
+            android:id="@+id/action_wallet_payment_to_order_confirm"
+            app:destination="@id/wallet_order_confirm"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right" />
+
+        <action
+            android:id="@+id/action_wallet_payment_to_order"
+            app:destination="@id/wallet_order_confirm"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/wallet_order_confirm"
+        android:name="one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment">
+        <argument
+            android:name="args_asset"
+            app:argType="one.mixin.android.vo.safe.TokenItem" />
+        <argument
+            android:name="args_currency"
+            app:argType="one.mixin.android.ui.setting.Currency" />
+        <argument
+            android:name="args_google_pay"
+            app:argType="boolean" />
+        <argument
+            android:name="args_amount"
+            app:argType="long" />
+        <argument
+            android:name="args_instrument_id"
+            app:argType="string" />
+        <argument
+            android:name="args_scheme"
+            app:argType="string" />
+        <argument
+            android:name="args_last4"
+            app:argType="string" />
+
+        <action
+            android:id="@+id/action_wallet_confirm_to_status"
+            app:destination="@id/wallet_order_status"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/wallet_order_status"
+        android:name="one.mixin.android.ui.wallet.fiatmoney.OrderStatusFragment">
+        <argument
+            android:name="args_asset"
+            app:argType="one.mixin.android.vo.safe.TokenItem" />
+        <argument
+            android:name="args_currency"
+            app:argType="one.mixin.android.ui.setting.Currency" />
+        <argument
+            android:name="args_google_pay"
+            app:argType="boolean" />
+        <argument
+            android:name="args_amount"
+            app:argType="long" />
+        <argument
+            android:name="args_instrument_id"
+            app:argType="string" />
+        <argument
+            android:name="args_scheme"
+            app:argType="string" />
+        <argument
+            android:name="args_info"
+            app:argType="one.mixin.android.ui.wallet.fiatmoney.OrderInfo" />
+
+        <action
+            android:id="@+id/action_wallet_status_to_select"
+            app:destination="@id/wallet_select_payment"
+            app:popUpTo="@id/wallet_select_payment"
+            app:popUpToInclusive="true"
+            app:popExitAnim="@anim/slide_out_right" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/web3_address_fragment"
+        android:name="one.mixin.android.web3.receive.Web3AddressFragment"
+        tools:layout="@layout/fragment_web3_address">
+
+        <argument
+            android:name="address"
+            app:argType="string" />
+
+        <argument
+            android:name="web3_token"
+            app:argType="one.mixin.android.db.web3.vo.Web3TokenItem" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/web3_transactions_fragment"
+        android:name="one.mixin.android.web3.details.Web3TransactionsFragment"
+        tools:layout="@layout/fragment_web3_transactions">
+
+        <argument
+            android:name="args_token"
+            app:argType="one.mixin.android.db.web3.vo.Web3TokenItem" />
+
+        <argument
+            android:name="args_address"
+            app:argType="string" />
+
+        <action
+            android:id="@+id/action_web3_transactions_to_all_web3_transactions"
+            app:destination="@id/all_web3_transactions_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay" />
+
+        <action
+            android:id="@+id/action_web3_transactions_to_market_details"
+            app:destination="@id/market_fragment_details"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay"/>
+
+        <action
+            android:id="@+id/action_web3_transactions_to_transfer_destination"
+            app:destination="@id/transfer_destination_input_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay"/>
+
+        <action
+            android:id="@+id/action_web3_transactions_to_web3_address"
+            app:destination="@id/web3_address_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay"/>
+
+        <action
+            android:id="@+id/action_web3_transactions_to_swap"
+            app:destination="@id/trade_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay"/>
+
+        <action
+            android:id="@+id/action_web3_transactions_to_web3_transaction"
+            app:destination="@id/web3_transaction_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay"/>
+
+        <action
+            android:id="@+id/action_web3_transactions_to_web3_btc_outputs"
+            app:destination="@id/web3_btc_outputs_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay" />
+
+        <action
+            android:id="@+id/action_web3_transactions_to_staking"
+            app:destination="@id/staking_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay"/>
+
+        <action
+            android:id="@+id/action_web3_transactions_to_validators"
+            app:destination="@id/validators_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/staking_fragment"
+        android:name="one.mixin.android.ui.home.web3.stake.StakingFragment" />
+
+    <fragment
+        android:id="@+id/validators_fragment"
+        android:name="one.mixin.android.ui.home.web3.stake.ValidatorsFragment" />
+
+    <fragment
+        android:id="@+id/web3_transaction_fragment"
+        android:name="one.mixin.android.web3.details.Web3TransactionFragment">
+        <argument
+            android:name="args_transaction"
+            app:argType="one.mixin.android.db.web3.vo.Web3TransactionItem" />
+        <argument
+            android:name="args_chain"
+            app:argType="string" />
+        <argument
+            android:name="args_token"
+            app:argType="one.mixin.android.db.web3.vo.Web3TokenItem" />
+
+        <action
+            android:id="@+id/action_web3_transaction_to_web3_btc_outputs"
+            app:destination="@id/web3_btc_outputs_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/web3_btc_outputs_fragment"
+        android:name="one.mixin.android.web3.details.Web3BtcOutputsFragment"
+        tools:layout="@layout/fragment_web3_btc_outputs">
+        <argument
+            android:name="args_wallet_id"
+            app:argType="string" />
+        <argument
+            android:name="args_address"
+            app:argType="string" />
+    </fragment>
+
 </navigation>

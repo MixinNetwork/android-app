@@ -1,11 +1,9 @@
 package one.mixin.android.util;
 
-import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.AppOpsManager;
 import android.content.Context;
 import android.content.Intent;
-import android.text.TextUtils;
 import one.mixin.android.MixinApplication;
 import timber.log.Timber;
 
@@ -40,10 +38,6 @@ public class XiaomiUtilities {
     public static final int OP_WIFI_CHANGE = 10001;
     public static final int OP_WRITE_MMS = 10006;
 
-    public static boolean isMIUI() {
-        return !TextUtils.isEmpty(getSystemProperty("ro.miui.ui.version.name"));
-    }
-
     @SuppressWarnings("JavaReflectionMemberAccess")
     @TargetApi(19)
     public static boolean isCustomPermissionGranted(int permission) {
@@ -59,27 +53,6 @@ public class XiaomiUtilities {
             Timber.e(x);
         }
         return true;
-    }
-
-    public static int getMIUIMajorVersion() {
-        String prop = getSystemProperty("ro.miui.ui.version.name");
-        if (prop != null) {
-            try {
-                return Integer.parseInt(prop.replace("V", ""));
-            } catch (NumberFormatException ignore) {
-            }
-        }
-        return -1;
-    }
-
-    @SuppressLint("PrivateApi")
-    public static String getSystemProperty(String key) {
-        try {
-            Class props = Class.forName("android.os.SystemProperties");
-            return (String) props.getMethod("get", String.class).invoke(null, key);
-        } catch (Exception ignore) {
-        }
-        return null;
     }
 
     public static Intent getPermissionManagerIntent() {
