@@ -118,8 +118,9 @@ class SendReceiveView : LinearLayoutCompat {
         val remainingWidth = (contentWidth - childrenWidth).coerceAtLeast(0)
         return when (actionCount) {
             WALLET_HOME_ACTION_COUNT_WITHOUT_BUY -> {
-                val spacing = remainingWidth / actionCount
-                spacing / 2 to spacing
+                val contentInset = minOf(WALLET_HOME_ACTION_ROW_CONTENT_INSET_DP.dp, remainingWidth / 2)
+                val spacing = ((remainingWidth - contentInset * 2).coerceAtLeast(0)) / actionCount
+                contentInset + spacing / 2 to spacing
             }
             WALLET_HOME_ACTION_COUNT_WITH_BUY -> {
                 val outerPadding = WALLET_HOME_ACTION_ROW_HORIZONTAL_PADDING_DP.dp
@@ -137,6 +138,7 @@ class SendReceiveView : LinearLayoutCompat {
         const val WALLET_HOME_ACTION_WIDTH_DP = 64
         const val WALLET_HOME_ACTION_COUNT_WITHOUT_BUY = 3
         const val WALLET_HOME_ACTION_COUNT_WITH_BUY = 4
+        const val WALLET_HOME_ACTION_ROW_CONTENT_INSET_DP = 16
         const val WALLET_HOME_ACTION_ROW_HORIZONTAL_PADDING_DP = 9
     }
 
