@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -50,10 +51,9 @@ internal fun BannerPager(
     state: WalletHomeState,
     callbacks: WalletHomeCallbacks,
 ) {
-    val pages = remember(state.showAddWalletBanner, state.showCashbackBanner) {
+    val pages = remember(state.showAddWalletBanner) {
         buildList {
             if (state.showAddWalletBanner) add(WalletHomeBannerPage.ADD_WALLET)
-            if (state.showCashbackBanner) add(WalletHomeBannerPage.CASHBACK)
         }
     }
     if (pages.isEmpty()) return
@@ -67,7 +67,7 @@ internal fun BannerPager(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp)
-                .height(116.dp)
+                .wrapContentHeight()
                 .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor),
         ) {
             Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 20.dp)) {
@@ -75,7 +75,7 @@ internal fun BannerPager(
                     state = pagerState,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(76.dp),
+                        .wrapContentHeight(),
                     verticalAlignment = Alignment.CenterVertically,
                 ) { page ->
                     when (pages[page]) {
@@ -85,13 +85,6 @@ internal fun BannerPager(
                             descriptionRes = null,
                             ctaRes = R.string.add_wallet,
                             onClick = callbacks::onAddWalletClicked,
-                        )
-                        WalletHomeBannerPage.CASHBACK -> BannerCard(
-                            iconRes = R.drawable.ic_wallet_home_buy,
-                            titleRes = R.string.wallet_home_cashback_banner_title,
-                            descriptionRes = null,
-                            ctaRes = R.string.wallet_home_cashback_banner_cta,
-                            onClick = callbacks::onBuyClicked,
                         )
                     }
                 }
@@ -107,7 +100,6 @@ internal fun BannerPager(
                     .clickable {
                         when (pages.getOrNull(pagerState.currentPage)) {
                             WalletHomeBannerPage.ADD_WALLET -> callbacks.onBannerClosed()
-                            WalletHomeBannerPage.CASHBACK -> callbacks.onCashbackBannerClosed()
                             null -> Unit
                         }
                     },
@@ -149,7 +141,7 @@ private fun BannerCard(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(end = 16.dp),
+            .padding(end = 22.dp),
         verticalAlignment = Alignment.Top,
     ) {
         Image(
@@ -303,5 +295,4 @@ private fun BannerAction(
 
 private enum class WalletHomeBannerPage {
     ADD_WALLET,
-    CASHBACK,
 }

@@ -316,7 +316,6 @@ class WalletHomeAllTokensFragment : BaseFragment() {
     private val callbacks = object : WalletHomeCallbacks {
         override fun onAddWalletClicked() = Unit
         override fun onBannerClosed() = Unit
-        override fun onCashbackBannerClosed() = Unit
         override fun onReferralClicked() = Unit
         override fun onReferralClosed() = Unit
         override fun onSupportClicked() = Unit

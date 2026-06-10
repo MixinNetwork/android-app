@@ -2,6 +2,7 @@ package one.mixin.android.ui.wallet.home.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -195,24 +196,28 @@ internal fun BalanceCard(state: WalletHomeState, callbacks: WalletHomeCallbacks)
                     iconRes = R.drawable.ic_wallet_buy,
                     labelRes = R.string.Buy,
                     showBadge = state.showBuyBadge,
+                    modifier = Modifier.weight(1f),
                     onClick = callbacks::onBuyClicked,
                 )
                 ActionItem(
                     iconRes = R.drawable.ic_wallet_receive,
                     labelRes = R.string.Receive,
                     showBadge = false,
+                    modifier = Modifier.weight(1f),
                     onClick = callbacks::onReceiveClicked,
                 )
                 ActionItem(
                     iconRes = R.drawable.ic_wallet_send,
                     labelRes = R.string.Send_transfer,
                     showBadge = false,
+                    modifier = Modifier.weight(1f),
                     onClick = callbacks::onSendClicked,
                 )
                 ActionItem(
                     iconRes = R.drawable.ic_wallet_swap,
                     labelRes = R.string.Trade,
                     showBadge = state.showSwapBadge,
+                    modifier = Modifier.weight(1f),
                     onClick = callbacks::onSwapClicked,
                 )
             }
@@ -267,6 +272,7 @@ private fun PendingIconGroup(indicator: WalletHomePendingIndicator) {
                 placeholder = R.drawable.ic_avatar_place_holder,
                 modifier = Modifier
                     .size(20.dp)
+                    .border(1.dp, Color.White, CircleShape)
                     .clip(CircleShape),
             )
         }
@@ -276,7 +282,8 @@ private fun PendingIconGroup(indicator: WalletHomePendingIndicator) {
                 modifier = Modifier
                     .size(20.dp)
                     .clip(CircleShape)
-                    .background(MixinAppTheme.colors.backgroundWindow),
+                    .background(MixinAppTheme.colors.backgroundWindow)
+                    .border(1.dp, Color.White, CircleShape),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(

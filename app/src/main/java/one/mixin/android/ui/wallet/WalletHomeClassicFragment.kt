@@ -108,9 +108,6 @@ import kotlin.time.measureTime
 class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet), HeaderAdapter.OnItemListener {
     companion object {
         const val TAG = "WalletHomeClassicFragment"
-        private const val PREF_WALLET_HOME_ADD_WALLET_BANNER_CLOSED = "pref_wallet_home_add_wallet_banner_closed"
-        private const val PREF_WALLET_HOME_CASHBACK_BANNER_CLOSED = "pref_wallet_home_cashback_banner_closed"
-        private const val PREF_WALLET_HOME_REFERRAL_CLOSED = "pref_wallet_home_referral_closed"
 
         fun newInstance(): WalletHomeClassicFragment = WalletHomeClassicFragment()
     }
@@ -502,8 +499,7 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
     private fun buildHomeState(): WalletHomeState {
         val totalFiat = assets.fold(BigDecimal.ZERO) { acc, item -> acc + item.fiat() }
         val showAddWalletBanner = !defaultSharedPreferences.getBoolean(PREF_WALLET_HOME_ADD_WALLET_BANNER_CLOSED, false)
-        val showCashbackBanner = !defaultSharedPreferences.getBoolean(PREF_WALLET_HOME_CASHBACK_BANNER_CLOSED, false)
-        val showBanner = showAddWalletBanner || showCashbackBanner
+        val showBanner = showAddWalletBanner
         val showReferral = !defaultSharedPreferences.getBoolean(PREF_WALLET_HOME_REFERRAL_CLOSED, false)
         val currentImportKeyAction = importKeyAction
         val pendingCount = walletHomePendingTransactionCount(pendingRawTransactionCount, pendingTransactionCount)
@@ -536,7 +532,6 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             watchIndicator = if (isWatchWallet) walletHomeWatchIndicator(watchAddresses) else null,
             importKeyAction = currentImportKeyAction,
             showAddWalletBanner = showAddWalletBanner,
-            showCashbackBanner = showCashbackBanner,
             showReferralBanner = showReferral,
             showImportSafetyFooter = !isLoading,
         )
@@ -618,11 +613,6 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
 
         override fun onBannerClosed() {
             defaultSharedPreferences.putBoolean(PREF_WALLET_HOME_ADD_WALLET_BANNER_CLOSED, true)
-            renderHome()
-        }
-
-        override fun onCashbackBannerClosed() {
-            defaultSharedPreferences.putBoolean(PREF_WALLET_HOME_CASHBACK_BANNER_CLOSED, true)
             renderHome()
         }
 

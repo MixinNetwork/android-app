@@ -138,7 +138,7 @@ class WalletAssetAdapter(
                 binding.naTv.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                     marginEnd = 16.dp
                 }
-                binding.balance.setTextSize(TypedValue.COMPLEX_UNIT_SP, 19f)
+                binding.balance.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
                 binding.changeTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
             }
             binding.balance.text =

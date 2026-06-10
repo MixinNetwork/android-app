@@ -108,9 +108,6 @@ import kotlin.time.measureTime
 class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet), HeaderAdapter.OnItemListener {
     companion object {
         const val TAG = "WalletHomePrivacyFragment"
-        private const val PREF_WALLET_HOME_ADD_WALLET_BANNER_CLOSED = "pref_wallet_home_add_wallet_banner_closed"
-        private const val PREF_WALLET_HOME_CASHBACK_BANNER_CLOSED = "pref_wallet_home_cashback_banner_closed"
-        private const val PREF_WALLET_HOME_REFERRAL_CLOSED = "pref_wallet_home_referral_closed"
 
         fun newInstance(): WalletHomePrivacyFragment = WalletHomePrivacyFragment()
     }
@@ -399,11 +396,20 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
     private var isLoading = true
 
     private fun buildHomeState(): WalletHomeState {
-        val totalFiat = assets.fold(BigDecimal.ZERO) { acc, item -> acc + item.fiat() }
-        val totalBtc = assets.fold(BigDecimal.ZERO) { acc, item -> acc + item.btc() }
+        val tokenFiat = assets.fold(BigDecimal.ZERO) { acc, item -> acc + item.fiat() }
+        val totalFiat = tokenFiat + positions.positionMarginFiatTotal()
+        val tokenBtc = assets.fold(BigDecimal.ZERO) { acc, item -> acc + item.btc() }
+        val totalBtc = assets
+            .find { it.assetId == Constants.ChainId.BITCOIN_CHAIN_ID }
+            ?.priceUsd
+            ?.toBigDecimalOrNull()
+            ?.takeIf { it > BigDecimal.ZERO }
+            ?.let { bitcoinPriceUsd ->
+                totalFiat.divide(BigDecimal(Fiats.getRate()), 16, RoundingMode.HALF_UP)
+                    .divide(bitcoinPriceUsd, 16, RoundingMode.HALF_UP)
+            } ?: tokenBtc
         val showAddWalletBanner = !defaultSharedPreferences.getBoolean(PREF_WALLET_HOME_ADD_WALLET_BANNER_CLOSED, false)
-        val showCashbackBanner = !defaultSharedPreferences.getBoolean(PREF_WALLET_HOME_CASHBACK_BANNER_CLOSED, false)
-        val showBanner = showAddWalletBanner || showCashbackBanner
+        val showBanner = showAddWalletBanner
         val showReferral = !defaultSharedPreferences.getBoolean(PREF_WALLET_HOME_REFERRAL_CLOSED, false)
         val cards = WalletHomeBuilder.build(
             walletType = WalletHomeType.PRIVACY,
@@ -435,7 +441,6 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             pendingIndicator = pendingDisplays.toWalletHomePendingIndicator(),
             quoteColorReversed = defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false),
             showAddWalletBanner = showAddWalletBanner,
-            showCashbackBanner = showCashbackBanner,
             showReferralBanner = showReferral,
             showBuyBadge = defaultSharedPreferences.getBoolean(PREF_HAS_USED_BUY, true),
             showSwapBadge = defaultSharedPreferences.getBoolean(PREF_HAS_USED_SWAP, true),
@@ -450,9 +455,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
 
     private fun List<PerpsPositionItem>.toWalletHomePositionSummary(): WalletHomePositionSummary? {
         if (isEmpty()) return null
-        val totalMargin = fold(BigDecimal.ZERO) { total, position ->
-            total + (position.margin?.toBigDecimalOrNull() ?: BigDecimal.ZERO)
-        }.multiply(BigDecimal(Fiats.getRate()))
+        val totalMargin = positionMarginFiatTotal()
         val totalPnl = fold(BigDecimal.ZERO) { total, position ->
             total + (position.unrealizedPnl?.toBigDecimalOrNull() ?: BigDecimal.ZERO)
         }.multiply(BigDecimal(Fiats.getRate()))
@@ -473,6 +476,11 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         )
     }
 
+    private fun List<PerpsPositionItem>.positionMarginFiatTotal(): BigDecimal =
+        fold(BigDecimal.ZERO) { total, position ->
+            total + (position.margin?.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+        }.multiply(BigDecimal(Fiats.getRate()))
+
     private val walletHomeCallbacks = object : WalletHomeCallbacks {
         override fun onAddWalletClicked() {
             AddWalletBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, AddWalletBottomSheetDialogFragment.TAG)
@@ -480,11 +488,6 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
 
         override fun onBannerClosed() {
             defaultSharedPreferences.putBoolean(PREF_WALLET_HOME_ADD_WALLET_BANNER_CLOSED, true)
-            renderHome()
-        }
-
-        override fun onCashbackBannerClosed() {
-            defaultSharedPreferences.putBoolean(PREF_WALLET_HOME_CASHBACK_BANNER_CLOSED, true)
             renderHome()
         }
 

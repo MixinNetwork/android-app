@@ -37,7 +37,6 @@ data class WalletHomeState(
     val hideActions: Boolean = false,
     val quoteColorReversed: Boolean = false,
     val showAddWalletBanner: Boolean = false,
-    val showCashbackBanner: Boolean = false,
     val showReferralBanner: Boolean = false,
     val showBuyBadge: Boolean = false,
     val showSwapBadge: Boolean = false,
@@ -53,7 +52,6 @@ data class WalletHomePositionSummary(
 interface WalletHomeCallbacks {
     fun onAddWalletClicked()
     fun onBannerClosed()
-    fun onCashbackBannerClosed()
     fun onReferralClicked()
     fun onReferralClosed()
     fun onSupportClicked()
