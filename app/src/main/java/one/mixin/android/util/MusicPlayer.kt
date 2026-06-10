@@ -1,5 +1,6 @@
 package one.mixin.android.util
 
+import android.annotation.SuppressLint
 import android.support.v4.media.MediaMetadataCompat
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
@@ -8,7 +9,6 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
-import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlaybackException
 import androidx.media3.exoplayer.ExoPlaybackException.TYPE_SOURCE
 import androidx.media3.exoplayer.ExoPlayer
@@ -34,7 +34,7 @@ import one.mixin.android.widget.CircleProgress.Companion.STATUS_PAUSE
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
 import java.util.concurrent.TimeUnit
 
-@UnstableApi class MusicPlayer private constructor() {
+class MusicPlayer private constructor() {
     companion object {
         @Synchronized
         fun get(): MusicPlayer {
@@ -95,7 +95,7 @@ import java.util.concurrent.TimeUnit
 
     private val updater = MusicPlayerUpdater(exoPlayer)
 
-    @UnstableApi private inner class PlayerListener : Player.Listener {
+    private inner class PlayerListener : Player.Listener {
         override fun onPlaybackStateChanged(playbackState: Int) {
             if (playbackState == Player.STATE_ENDED) {
                 id()?.let { id -> RxBus.publish(pauseEvent(id)) }
@@ -128,6 +128,7 @@ import java.util.concurrent.TimeUnit
             }
         }
 
+        @SuppressLint("UnsafeOptInUsageError")
         override fun onPlayerError(error: PlaybackException) {
             if (error.cause is UnrecognizedInputFormatException) {
                 status = STATUS_ERROR

@@ -7,6 +7,7 @@ import kotlinx.parcelize.Parcelize
 import one.mixin.android.api.response.web3.SwapChain
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Swappable
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.PriceAndChange
 import one.mixin.android.vo.WithdrawalMemoPossibility
@@ -23,18 +24,19 @@ data class TokenItem(
     val priceBtc: String,
     val priceUsd: String,
     val chainId: String,
-    val changeUsd: String,
+    var changeUsd: String,
     val changeBtc: String,
     var hidden: Boolean?,
     val confirmations: Int,
     var chainIconUrl: String?,
     var chainSymbol: String?,
     var chainName: String?,
-    var chainPriceUsd: String?,
     val assetKey: String?,
     val dust: String?,
     val withdrawalMemoPossibility: WithdrawalMemoPossibility?,
     val collectionHash: String?,
+    val level: Int?,
+    val precision: Int,
 ) : Parcelable, Swappable {
     fun fiat(): BigDecimal {
         return try {
@@ -49,13 +51,6 @@ data class TokenItem(
             BigDecimal.ZERO
         } else {
             BigDecimal(priceUsd).multiply(BigDecimal(Fiats.getRate()))
-        }
-
-    fun chainPriceFiat(): BigDecimal =
-        if (chainPriceUsd == null || chainPriceUsd == "0") {
-            BigDecimal.ZERO
-        } else {
-            BigDecimal(chainPriceUsd).multiply(BigDecimal(Fiats.getRate()))
         }
 
     fun btc(): BigDecimal =
@@ -74,7 +69,8 @@ data class TokenItem(
 
     override fun toSwapToken(): SwapToken {
         return SwapToken(
-            address = "",
+            walletId = null,
+            address = assetKey ?: "",
             assetId = assetId,
             decimals = 0,
             name = name,
@@ -83,7 +79,6 @@ data class TokenItem(
             chain =
             SwapChain(
                 chainId = chainId,
-                decimals = 0,
                 name = chainName ?: "",
                 symbol = chainSymbol ?: "",
                 icon = chainIconUrl ?: "",
@@ -91,6 +86,7 @@ data class TokenItem(
             ),
             balance = balance,
             price = priceUsd,
+            collectionHash = collectionHash
         )
     }
 
@@ -114,8 +110,32 @@ data class TokenItem(
                     oldItem == newItem
             }
     }
+
+
 }
 
 fun TokenItem.toPriceAndChange(): PriceAndChange {
     return PriceAndChange(assetId, priceBtc, priceUsd, changeUsd, changeBtc)
+}
+
+fun TokenItem.toWeb3TokenItem(walletId: String): Web3TokenItem {
+    return Web3TokenItem(
+        walletId = walletId,
+        assetId = assetId,
+        chainId = chainId,
+        name = name,
+        assetKey = assetKey ?: "",
+        symbol = symbol,
+        iconUrl = iconUrl,
+        precision = 18,
+        kernelAssetId = "",
+        balance = balance,
+        priceUsd = priceUsd,
+        changeUsd = (changeUsd.toBigDecimalOrNull()?.multiply(BigDecimal.TEN.pow(2))?.toPlainString()) ?: "0",
+        chainIcon = chainIconUrl,
+        chainName = chainName,
+        chainSymbol = chainSymbol,
+        hidden = hidden,
+        level = 0
+    )
 }

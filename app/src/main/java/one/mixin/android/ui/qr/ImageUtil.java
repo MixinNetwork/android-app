@@ -23,13 +23,15 @@ import android.graphics.ImageFormat;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.util.Size;
+
 import androidx.annotation.Nullable;
 import androidx.camera.core.ImageProxy;
-import timber.log.Timber;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+
+import timber.log.Timber;
 
 /**
  * Utility class for image related operations.

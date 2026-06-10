@@ -1,6 +1,5 @@
 package one.mixin.android.ui.wallet.alert
 
-import PageScaffold
 import android.content.Context
 import android.graphics.Rect
 import androidx.annotation.DrawableRes
@@ -26,11 +25,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.ModalBottomSheetLayout
-import androidx.compose.material.ModalBottomSheetState
-import androidx.compose.material.ModalBottomSheetValue.Hidden
 import androidx.compose.material.Text
-import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -59,18 +54,18 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.removeEnd
-import one.mixin.android.ui.wallet.alert.components.AlertFrequencyBottom
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.wallet.alert.components.AlertFrequencySelector
-import one.mixin.android.ui.wallet.alert.components.AlertTypeBottom
 import one.mixin.android.ui.wallet.alert.components.AlertTypeSelector
 import one.mixin.android.ui.wallet.alert.components.PercentagesRow
+import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.ui.wallet.alert.vo.Alert
 import one.mixin.android.ui.wallet.alert.vo.AlertFrequency
 import one.mixin.android.ui.wallet.alert.vo.AlertRequest
@@ -99,17 +94,20 @@ fun Modifier.draw9Patch(
 }
 
 @Composable
-fun AlertEditPage(coin: CoinItem?, alert: Alert?, onAdd: (CoinItem) -> Unit, pop: () -> Unit) {
+fun AlertEditPage(
+    coin: CoinItem?,
+    alert: Alert?,
+    onAdd: (CoinItem) -> Unit,
+    pop: () -> Unit,
+    onSaved: (Boolean, String, String) -> Unit,
+    onShowTypeSelector: (AlertType, (AlertType) -> Unit) -> Unit,
+    onShowFrequencySelector: (AlertFrequency, (AlertFrequency) -> Unit) -> Unit,
+) {
     MixinAppTheme {
-        val bottomSheetState: ModalBottomSheetState = rememberModalBottomSheetState(
-            Hidden,
-            skipHalfExpanded = true
-        )
         val coroutineScope = rememberCoroutineScope()
         if (coin != null) {
             val context = LocalContext.current
             val currentPrice = BigDecimal(coin.currentPrice)
-            var expandType by remember { mutableStateOf(true) }
             var alertValue by remember { mutableStateOf(alert?.rawValue ?: currentPrice.toPlainString()) }
             val maxPrice = currentPrice.multiply(BigDecimal(100))
             val minPrice = currentPrice.divide(BigDecimal(100))
@@ -120,43 +118,7 @@ fun AlertEditPage(coin: CoinItem?, alert: Alert?, onAdd: (CoinItem) -> Unit, pop
             var isLoading by remember { mutableStateOf(false) }
             var inputError by remember { mutableStateOf(if (alertValue.toBigDecimalOrNull() == currentPrice && selectedAlertType != AlertType.PRICE_REACHED) InputError.EQUALS_CURRENT_PRICE else null) }
             val viewModel = hiltViewModel<AlertViewModel>()
-            ModalBottomSheetLayout(
-                sheetState = bottomSheetState,
-                scrimColor = Color.Black.copy(alpha = 0.3f),
-                sheetBackgroundColor = Color.Transparent,
-                sheetContent = {
-                    if (expandType) {
-                        AlertTypeBottom(selectedAlertType, { newType: AlertType ->
-                            if (selectedAlertType != newType) {
-                                inputError = null
-                                alertValue = ""
-                                selectedAlertType = newType
-                            }
-                            coroutineScope.launch {
-                                bottomSheetState.hide()
-                            }
-                        }, {
-                            coroutineScope.launch {
-                                bottomSheetState.hide()
-                            }
-                        })
-                    } else {
-                        AlertFrequencyBottom(selectedAlertFrequency, { newFrequency: AlertFrequency ->
-                            if (selectedAlertFrequency != newFrequency) {
-                                selectedAlertFrequency = newFrequency
-                            }
-                            coroutineScope.launch {
-                                bottomSheetState.hide()
-                            }
-                        }, {
-                            coroutineScope.launch {
-                                bottomSheetState.hide()
-                            }
-                        })
-                    }
-                },
-            ) {
-                PageScaffold(
+            PageScaffold(
                     title = stringResource(id = if (alert == null) R.string.Add_Alert else R.string.Edit_Alert),
                     verticalScrollable = false,
                     pop = pop,
@@ -165,7 +127,7 @@ fun AlertEditPage(coin: CoinItem?, alert: Alert?, onAdd: (CoinItem) -> Unit, pop
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(horizontal = 10.dp)
+                            .padding(horizontal = 12.dp)
                             .verticalScroll(rememberScrollState())
                             .imePadding(),
                         horizontalAlignment = Alignment.Start,
@@ -193,17 +155,22 @@ fun AlertEditPage(coin: CoinItem?, alert: Alert?, onAdd: (CoinItem) -> Unit, pop
                             Spacer(modifier = Modifier.height(12.dp))
 
                             AlertTypeSelector(selectedType = selectedAlertType) {
-                                expandType = true
-                                coroutineScope.launch { bottomSheetState.show() }
+                                onShowTypeSelector(selectedAlertType) { newType ->
+                                    if (selectedAlertType != newType) {
+                                        inputError = null
+                                        alertValue = ""
+                                        selectedAlertType = newType
+                                    }
+                                }
                             }
+                            Spacer(modifier = Modifier.height(6.dp))
 
                             Spacer(modifier = Modifier.height(2.dp))
-
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(horizontal = 8.dp)
-                                    .draw9Patch(context, MixinAppTheme.drawables.bgAlertCard),
+                                    .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
                             ) {
                                 Column(
                                     modifier = Modifier
@@ -373,7 +340,7 @@ fun AlertEditPage(coin: CoinItem?, alert: Alert?, onAdd: (CoinItem) -> Unit, pop
                                     )
                                 }
                             }
-
+                            Spacer(modifier = Modifier.height(6.dp))
                             if (inputError != null) {
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Column(modifier = Modifier.padding(horizontal = 10.dp)) {
@@ -423,9 +390,10 @@ fun AlertEditPage(coin: CoinItem?, alert: Alert?, onAdd: (CoinItem) -> Unit, pop
                             Spacer(modifier = Modifier.height(14.dp))
 
                             AlertFrequencySelector(selectedAlertFrequency) {
-                                coroutineScope.launch {
-                                    expandType = false
-                                    bottomSheetState.show()
+                                onShowFrequencySelector(selectedAlertFrequency) { newFrequency ->
+                                    if (selectedAlertFrequency != newFrequency) {
+                                        selectedAlertFrequency = newFrequency
+                                    }
                                 }
                             }
                         }
@@ -461,7 +429,7 @@ fun AlertEditPage(coin: CoinItem?, alert: Alert?, onAdd: (CoinItem) -> Unit, pop
                                         )
                                         val re = viewModel.updateAlert(alert.alertId, alertRequest)
                                         if (re?.isSuccess == true) {
-                                            pop.invoke()
+                                            onSaved(false, selectedAlertFrequency.value, selectedAlertType.value)
                                         }
                                     } else {
                                         val alertRequest = AlertRequest(
@@ -480,7 +448,7 @@ fun AlertEditPage(coin: CoinItem?, alert: Alert?, onAdd: (CoinItem) -> Unit, pop
                                         val re = viewModel.add(alertRequest)
                                         if (re?.isSuccess == true) {
                                             onAdd.invoke(coin)
-                                            pop.invoke()
+                                            onSaved(true, selectedAlertFrequency.value, selectedAlertType.value)
                                         }
                                     }
                                     isLoading = false
@@ -515,7 +483,6 @@ fun AlertEditPage(coin: CoinItem?, alert: Alert?, onAdd: (CoinItem) -> Unit, pop
                         Spacer(modifier = Modifier.height(20.dp))
                     }
                 }
-            }
         }
     }
 }

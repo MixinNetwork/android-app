@@ -1,5 +1,6 @@
 package one.mixin.android.ui.player
 
+import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
@@ -15,7 +16,6 @@ import androidx.media3.common.Player
 import androidx.media3.common.Player.DISCONTINUITY_REASON_INTERNAL
 import androidx.media3.common.Player.DISCONTINUITY_REASON_REMOVE
 import androidx.media3.common.Player.DISCONTINUITY_REASON_SEEK_ADJUSTMENT
-import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
 import androidx.paging.PagedList
@@ -25,6 +25,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.event.ProgressEvent.Companion.playEvent
 import one.mixin.android.extension.isServiceRunning
+import one.mixin.android.session.CurrentUserScopeManager
 import one.mixin.android.ui.player.internal.ConversationLoader
 import one.mixin.android.ui.player.internal.UrlLoader
 import one.mixin.android.ui.player.internal.currentMediaItems
@@ -36,7 +37,7 @@ import javax.inject.Inject
 import kotlin.math.max
 import kotlin.math.min
 
-@UnstableApi @AndroidEntryPoint
+@AndroidEntryPoint
 class MusicService : MediaSessionService(), LifecycleOwner {
     private lateinit var mediaSession: MediaSession
 
@@ -48,7 +49,9 @@ class MusicService : MediaSessionService(), LifecycleOwner {
     private var currentPlaylist: List<MediaMetadataCompat>? = null
 
     @Inject
-    lateinit var db: MixinDatabase
+    lateinit var currentUserScopeManager: CurrentUserScopeManager
+
+    private fun mixinDatabase(): MixinDatabase = currentUserScopeManager.getMixinDatabase()
 
     private val dispatcher = ServiceLifecycleDispatcher(this)
 
@@ -144,7 +147,7 @@ class MusicService : MediaSessionService(), LifecycleOwner {
                 if (exists == null) {
                     RxBus.publish(playEvent(mediaId)) // respond UI before load
 
-                    val index = db.messageDao().indexAudioByConversationId(mediaId, albumId)
+                    val index = mixinDatabase().messageDao().indexAudioByConversationId(mediaId, albumId)
                     conversationObserver.loadAround(index, mediaId)
                 } else {
                     MusicPlayer.get().playMediaById(mediaId)
@@ -169,11 +172,11 @@ class MusicService : MediaSessionService(), LifecycleOwner {
         conversationObserver = ConversationObserver(mediaId)
         val initialLoadKey =
             if (mediaId != null) {
-                db.messageDao().indexAudioByConversationId(mediaId, albumId)
+                mixinDatabase().messageDao().indexAudioByConversationId(mediaId, albumId)
             } else {
                 0
             }
-        conversationLiveData = conversationLoader.conversationLiveData(albumId, db, initialLoadKey = initialLoadKey)
+        conversationLiveData = conversationLoader.conversationLiveData(albumId, mixinDatabase(), initialLoadKey = initialLoadKey)
         conversationLiveData?.observe(this, conversationObserver)
     }
 
@@ -265,7 +268,8 @@ class MusicService : MediaSessionService(), LifecycleOwner {
 
     private inner class MediaSessionCallback : MediaSession.Callback
 
-    @UnstableApi private inner class PlayerEventListener : Player.Listener {
+    private inner class PlayerEventListener : Player.Listener {
+        @SuppressLint("UnsafeOptInUsageError")
         override fun onPositionDiscontinuity(
             oldPosition: Player.PositionInfo,
             newPosition: Player.PositionInfo,
@@ -284,7 +288,7 @@ class MusicService : MediaSessionService(), LifecycleOwner {
                 if (oldPos != newPos && newPos == 0 || newPos == (currentPlaylist?.size ?: 0) - 1) {
                     lifecycleScope.launch {
                         val item = newPosition.mediaItem ?: return@launch
-                        val index = db.messageDao().indexAudioByConversationId(item.mediaId, albumId)
+                        val index = mixinDatabase().messageDao().indexAudioByConversationId(item.mediaId, albumId)
                         conversationObserver.loadAround(index, item.mediaId, false)
                     }
                 }

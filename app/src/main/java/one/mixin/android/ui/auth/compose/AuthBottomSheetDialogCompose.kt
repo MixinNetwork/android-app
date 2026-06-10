@@ -20,13 +20,17 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -35,11 +39,10 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -62,16 +65,48 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.google.accompanist.pager.HorizontalPagerIndicator
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
+
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.vo.Scope
 import one.mixin.android.vo.getScopeGroupIcon
 import one.mixin.android.vo.getScopeGroupName
 import one.mixin.android.vo.groupScope
+import one.mixin.android.widget.components.MixinButton
 import kotlin.math.abs
+
+@Composable
+private fun PagerIndicator(
+    pagerState: PagerState,
+    pageCount: Int,
+    modifier: Modifier = Modifier,
+    activeColor: Color = Color.White,
+    inactiveColor: Color = Color.Gray,
+    indicatorWidth: Dp = 8.dp,
+    indicatorHeight: Dp = 8.dp,
+    spacing: Dp = 8.dp,
+) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(spacing),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        repeat(pageCount) { index ->
+            val isSelected = pagerState.currentPage == index
+            Box(
+                modifier = Modifier
+                    .size(
+                        width = if (isSelected) indicatorWidth * 1.5f else indicatorWidth,
+                        height = indicatorHeight
+                    )
+                    .clip(CircleShape)
+                    .background(if (isSelected) activeColor else inactiveColor)
+            )
+        }
+    }
+}
 
 @Composable
 fun AuthBottomSheetDialogCompose(
@@ -97,7 +132,9 @@ fun AuthBottomSheetDialogCompose(
                     .fillMaxWidth()
                     .height(690.dp)
                     .background(MixinAppTheme.colors.background)
-                    .padding(top = 16.dp),
+                    .padding(top = 16.dp)
+                    .navigationBarsPadding()
+                    .imePadding(),
         ) {
             Image(
                 painter = painterResource(R.drawable.ic_circle_close),
@@ -259,7 +296,7 @@ fun ScopesContent(
             }
         }
         if (scopeGroup.size > 1) {
-            HorizontalPagerIndicator(
+            PagerIndicator(
                 pagerState = pagerState,
                 pageCount = scopeGroup.size,
                 modifier =
@@ -270,12 +307,11 @@ fun ScopesContent(
             )
             Spacer(modifier = Modifier.height(16.dp))
         }
-        Button(
+        MixinButton(
             modifier =
                 Modifier
                     .align(CenterHorizontally),
-            shape = RoundedCornerShape(20.dp),
-            colors = ButtonDefaults.buttonColors(backgroundColor = MixinAppTheme.colors.accent),
+            shape = RoundedCornerShape(30.dp),
             contentPadding = PaddingValues(vertical = 8.dp, horizontal = 28.dp),
             onClick = {
                 if (pagerState.currentPage < scopeGroup.keys.size - 1) {

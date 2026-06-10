@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_upper_round">
@@ -8,6 +9,37 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
+
+        <FrameLayout
+            android:id="@+id/wallet_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#8666F0"
+            android:drawablePadding="4dp"
+            android:gravity="center"
+            android:paddingTop="8dp">
+
+            <TextView
+                android:id="@+id/wallet_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:drawablePadding="4dp"
+                android:textColor="@android:color/white"
+                android:textSize="14sp"
+                android:drawableEnd="@drawable/ic_wallet_privacy_white"
+                android:text="@string/Privacy_Wallet"
+                android:layout_marginBottom="18dp"
+                android:translationY="10dp"
+                android:gravity="center_vertical"
+                tools:ignore="UseCompatTextViewDrawableXml" />
+
+            <View
+                android:layout_width="match_parent"
+                android:background="@drawable/bg_upper_round"
+                android:layout_height="12dp"
+                android:layout_gravity="bottom" />
+        </FrameLayout>
 
         <ScrollView
             android:layout_width="match_parent"

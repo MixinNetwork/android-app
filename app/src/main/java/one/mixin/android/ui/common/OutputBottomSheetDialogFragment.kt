@@ -43,6 +43,7 @@ import one.mixin.android.util.ErrorHandler.Companion.TOO_SMALL
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.User
+import one.mixin.android.vo.notMessengerUser
 import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.BottomSheet
@@ -87,7 +88,7 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
                             val user = t.users.first()
                             title.text =
                                 getString(R.string.transfer_to, user.fullName ?: "")
-                            subTitle.text = if (user.identityNumber == "0") user.userId else "Mixin ID: ${user.identityNumber}"
+                            subTitle.text = if (user.notMessengerUser()) user.userId else "Mixin ID: ${user.identityNumber}"
                         } else {
                             title.text = getString(R.string.Multisig_Transaction)
                             subTitle.text = t.memo
@@ -199,13 +200,13 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
                 }
                 is AddressTransferBiometricItem -> {
                     trace = Trace(t.traceId, asset.assetId, t.amount, null, t.address, null, null, nowInUtc())
-                    bottomViewModel.kernelAddressTransaction(asset.assetId, t.address, t.amount, pin, t.traceId, t.memo, t.reference)
+                    bottomViewModel.kernelAddressTransaction(asset.assetId, t.address, t.amount, t.threshold, pin, t.traceId, t.memo, t.reference)
                 }
                 else -> {
                     t as WithdrawBiometricItem
                     trace = Trace(t.traceId, asset.assetId, t.amount, null, t.address.destination, t.address.tag, null, nowInUtc())
                     val fee = requireNotNull(t.fee) { "required fee can not be null" }
-                    bottomViewModel.kernelWithdrawalTransaction(MIXIN_FEE_USER_ID, t.traceId, asset.assetId, fee.token.assetId, t.amount, fee.fee, t.address.destination, t.address.tag, t.memo, pin)
+                    bottomViewModel.kernelWithdrawalTransaction(MIXIN_FEE_USER_ID, t.traceId, asset.assetId, fee.token.assetId, t.amount, fee.fee, t.address.destination, t.address.tag, t.memo, pin, t.toWallet, t.isFeeWaived)
                 }
             }
         bottomViewModel.insertTrace(trace)

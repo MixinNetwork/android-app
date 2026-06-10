@@ -30,7 +30,7 @@ fun getDefaultCurrency(
 private val phoneNumberUtil by lazy { PhoneNumberUtil.getInstance() }
 
 fun getCountryCodeFromPhoneNumber(phone: String?): String? {
-    if (phone == null) {
+    if (phone.isNullOrBlank()) {
         return null
     }
     return try {
@@ -43,7 +43,7 @@ fun getCountryCodeFromPhoneNumber(phone: String?): String? {
 }
 
 fun getCurrencyFromPhoneNumber(phone: String?): String? {
-    if (phone == null) {
+    if (phone.isNullOrBlank()) {
         return null
     }
     return try {

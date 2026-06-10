@@ -2,6 +2,7 @@ package one.mixin.android.ui.common
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import dagger.hilt.android.AndroidEntryPoint
@@ -20,15 +21,25 @@ class VerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
     companion object {
         const val TAG = "VerifyBottomSheetDialogFragment"
         const val ARGS_DISABLE_BIOMETRIC = "args_disable_biometric"
+        const val ARGS_IS_HINT_RED = "args_is_hint_red"
+        const val ARGS_SUBTITLE = "args_subtitle"
 
         fun newInstance(
             title: String? = null,
             disableBiometric: Boolean = false,
+            isHintRed: Boolean = false,
+            subtitle: String? = null,
         ) =
             VerifyBottomSheetDialogFragment().withArgs {
                 title?.let { putString(ARGS_TITLE, it) }
+                subtitle?.let { putString(ARGS_SUBTITLE, it) }
                 putBoolean(ARGS_DISABLE_BIOMETRIC, disableBiometric)
+                putBoolean(ARGS_IS_HINT_RED, isHintRed)
             }
+    }
+
+    private val isHintRed by lazy {
+        requireArguments().getBoolean(ARGS_IS_HINT_RED, false)
     }
 
     private val binding by viewBinding(FragmentVerifyBottomSheetBinding::inflate)
@@ -46,9 +57,21 @@ class VerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         val title = arguments?.getString(ARGS_TITLE)
         if (!title.isNullOrBlank()) {
             binding.title.text = title
+            if (isHintRed) {
+                binding.title.setTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_pink))
+            }
+        }
+
+        val subtitle = arguments?.getString(ARGS_SUBTITLE)
+        if (!subtitle.isNullOrBlank()) {
+            binding.subTitle.text = subtitle
+            binding.subTitle.isVisible = true
+        } else {
+            binding.subTitle.isVisible = false
         }
 
         val disableBiometric = arguments?.getBoolean(ARGS_DISABLE_BIOMETRIC) ?: false
+        val isHintRed = arguments?.getBoolean(ARGS_IS_HINT_RED) ?: false
         if (disableBiometric) {
             binding.biometricLayout.biometricTv.isVisible = false
         } else {

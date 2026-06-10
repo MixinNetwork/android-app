@@ -8,9 +8,10 @@ import com.coremedia.iso.boxes.SampleSizeBox;
 import com.coremedia.iso.boxes.TrackBox;
 import com.coremedia.iso.boxes.TrackHeaderBox;
 import com.googlecode.mp4parser.util.Path;
-import timber.log.Timber;
 
 import java.util.List;
+
+import timber.log.Timber;
 
 public class MediaController {
 
@@ -68,21 +69,16 @@ public class MediaController {
     public static int makeVideoBitrate(int originalHeight, int originalWidth, int originalBitrate, int height, int width) {
         float compressFactor;
         float minCompressFactor;
-        int maxBitrate;
         if (Math.min(height, width) >= 1080) {
-            maxBitrate = 6800_000;
             compressFactor = 1f;
             minCompressFactor = 1f;
         } else if (Math.min(height, width) >= 720) {
-            maxBitrate = 2621_440;
             compressFactor = 1f;
             minCompressFactor = 1f;
         } else if (Math.min(height, width) >= 480) {
-            maxBitrate = 1000_000;
             compressFactor = 0.8f;
             minCompressFactor = 0.9f;
         } else {
-            maxBitrate = 750_000;
             compressFactor = 0.6f;
             minCompressFactor = 0.7f;
         }
@@ -90,7 +86,6 @@ public class MediaController {
         remeasuredBitrate *= compressFactor;
         int minBitrate = (int) (getVideoBitrateWithFactor(minCompressFactor) / (1280f * 720f / (width * height)));
         if (originalBitrate < minBitrate) return remeasuredBitrate;
-        if (remeasuredBitrate > maxBitrate) return maxBitrate;
         return Math.max(remeasuredBitrate, minBitrate);
     }
 

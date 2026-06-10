@@ -16,6 +16,7 @@ import android.view.View
 import android.view.animation.DecelerateInterpolator
 import androidx.core.animation.doOnEnd
 import androidx.core.view.doOnPreDraw
+import coil3.toBitmap
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityAvatarBinding
 import one.mixin.android.extension.belowOreo
@@ -24,6 +25,7 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.supportsS
 import one.mixin.android.ui.web.getScreenshot
 import one.mixin.android.ui.web.refreshScreenshot
+import one.mixin.android.util.SystemUIManager
 import one.mixin.android.widget.AvatarTransform
 
 class AvatarActivity : BaseActivity() {
@@ -66,7 +68,8 @@ class AvatarActivity : BaseActivity() {
             requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
         postponeEnterTransition()
-        window.statusBarColor = Color.TRANSPARENT
+        SystemUIManager.setSafePadding(window, Color.TRANSPARENT)
+        SystemUIManager.fullScreen(window)
         binding = ActivityAvatarBinding.inflate(layoutInflater)
         setContentView(binding.root)
         getScreenshot()?.let {
@@ -80,7 +83,7 @@ class AvatarActivity : BaseActivity() {
 
         binding.avatar.loadImage(url, onSuccess = { _, result ->
             binding.avatar.doOnPreDraw {
-                val bitmap = (result.drawable as BitmapDrawable).bitmap
+                val bitmap = result.image.toBitmap()
                 val avatarTransform = AvatarTransform(bitmap).apply { addTarget(binding.avatar) }
                 window.sharedElementEnterTransition = avatarTransform
                 startPostponedEnterTransition()

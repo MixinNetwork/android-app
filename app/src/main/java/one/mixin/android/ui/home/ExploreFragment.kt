@@ -2,11 +2,13 @@ package one.mixin.android.ui.home
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.edit
+import androidx.core.view.isInvisible
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -16,19 +18,24 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Account
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentExploreBinding
 import one.mixin.android.databinding.ItemFavoriteBinding
 import one.mixin.android.databinding.ItemFavoriteEditBinding
 import one.mixin.android.databinding.ItemFavoriteTitleBinding
+import one.mixin.android.event.BadgeEvent
 import one.mixin.android.event.BotEvent
 import one.mixin.android.event.FavoriteEvent
 import one.mixin.android.event.SessionEvent
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.dp
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.toast
 import one.mixin.android.job.TipCounterSyncedLiveData
@@ -41,32 +48,43 @@ import one.mixin.android.ui.device.DeviceFragment
 import one.mixin.android.ui.home.bot.Bot
 import one.mixin.android.ui.home.bot.BotManagerViewModel
 import one.mixin.android.ui.home.bot.INTERNAL_BUY_ID
-import one.mixin.android.ui.home.bot.INTERNAL_CAMERA_ID
 import one.mixin.android.ui.home.bot.INTERNAL_LINK_DESKTOP_ID
+import one.mixin.android.ui.home.bot.INTERNAL_MEMBER_ID
+import one.mixin.android.ui.home.bot.INTERNAL_REFERRAL_ID
 import one.mixin.android.ui.home.bot.INTERNAL_SUPPORT_ID
+import one.mixin.android.ui.home.bot.INTERNAL_SWAP_ID
 import one.mixin.android.ui.home.bot.InternalBots
 import one.mixin.android.ui.home.bot.InternalLinkDesktop
 import one.mixin.android.ui.home.bot.InternalLinkDesktopLogged
-import one.mixin.android.ui.home.web3.EthereumFragment
-import one.mixin.android.ui.home.web3.MarketFragment
-import one.mixin.android.ui.home.web3.SolanaFragment
-import one.mixin.android.ui.search.SearchBotsFragment
+import one.mixin.android.ui.home.bot.InternalReferral
+import one.mixin.android.ui.home.inscription.CollectiblesFragment
+import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.trade.SwapActivity
+import one.mixin.android.ui.search.SearchExploreFragment
+import one.mixin.android.ui.search.SearchInscriptionFragment
 import one.mixin.android.ui.setting.SettingActivity
+import one.mixin.android.ui.setting.member.MixinMemberInvoicesFragment
+import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.BotInterface
 import one.mixin.android.vo.ExploreApp
+import one.mixin.android.vo.Plan
 import one.mixin.android.widget.SegmentationItemDecoration
+import one.mixin.android.widget.lottie.RLottieDrawable
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class ExploreFragment : BaseFragment() {
     companion object {
         const val TAG = "ExploreFragment"
-
+        const val PREF_BOT_CLICKED_IDS = "explore_bot_clicked_ids"
+        val SHOW_DOT_BOT_IDS = setOf(INTERNAL_BUY_ID, INTERNAL_SWAP_ID, INTERNAL_MEMBER_ID, INTERNAL_REFERRAL_ID)
         fun newInstance() = ExploreFragment()
     }
 
@@ -98,11 +116,21 @@ class ExploreFragment : BaseFragment() {
                 // do nothing
             }
             searchIb.setOnClickListener {
-                activity?.addFragment(
-                    this@ExploreFragment,
-                    SearchBotsFragment(),
-                    SearchBotsFragment.TAG,
-                )
+                if (radioCollectible.isChecked) {
+                    activity?.addFragment(
+                        this@ExploreFragment,
+                        SearchInscriptionFragment(),
+                        SearchInscriptionFragment.TAG,
+                        id = R.id.internal_container,
+                    )
+                } else {
+                    activity?.addFragment(
+                        this@ExploreFragment,
+                        SearchExploreFragment.newInstance(),
+                        SearchExploreFragment.TAG,
+                        id = R.id.internal_container,
+                    )
+                }
             }
             scanIb.setOnClickListener {
                 RxPermissions(requireActivity()).request(Manifest.permission.CAMERA).autoDispose(stopScope).subscribe { granted ->
@@ -124,36 +152,14 @@ class ExploreFragment : BaseFragment() {
                 0 -> {
                     exploreVa.displayedChild = 0
                     radioFavorite.isChecked = true
-                    radioMarket.isChecked = false
-                    radioEth.isChecked = false
-                    radioSolana.isChecked = false
+                    radioCollectible.isChecked = false
                 }
 
                 1 -> {
                     exploreVa.displayedChild = 1
                     radioFavorite.isChecked = false
-                    radioMarket.isChecked = true
-                    radioEth.isChecked = false
-                    radioSolana.isChecked = false
-                    navigate(marketFragment, MarketFragment.TAG)
-                }
-
-                2 -> {
-                    exploreVa.displayedChild = 1
-                    radioFavorite.isChecked = false
-                    radioMarket.isChecked = false
-                    radioEth.isChecked = true
-                    radioSolana.isChecked = false
-                    navigate(ethereumFragment, EthereumFragment.TAG)
-                }
-
-                3 -> {
-                    exploreVa.displayedChild = 1
-                    radioFavorite.isChecked = false
-                    radioMarket.isChecked = false
-                    radioEth.isChecked = false
-                    radioSolana.isChecked = true
-                    navigate(solanaFragment, SolanaFragment.TAG)
+                    radioCollectible.isChecked = true
+                    navigate(collectiblesFragment, CollectiblesFragment.TAG)
                 }
             }
 
@@ -164,23 +170,17 @@ class ExploreFragment : BaseFragment() {
                         exploreVa.displayedChild = 0
                     }
 
-                    R.id.radio_market -> {
+                    R.id.radio_collectible -> {
                         defaultSharedPreferences.putInt(Constants.Account.PREF_EXPLORE_SELECT, 1)
                         exploreVa.displayedChild = 1
-                        navigate(marketFragment, MarketFragment.TAG)
+                        navigate(collectiblesFragment, CollectiblesFragment.TAG)
+                        radioCollectible.setBackgroundResource(R.drawable.selector_radio)
+                        lifecycleScope.launch {
+                            defaultSharedPreferences.putBoolean(Account.PREF_HAS_USED_MARKET, false)
+                        }
+                        RxBus.publish(BadgeEvent(Account.PREF_HAS_USED_MARKET))
                     }
 
-                    R.id.radio_eth -> {
-                        defaultSharedPreferences.putInt(Constants.Account.PREF_EXPLORE_SELECT, 2)
-                        exploreVa.displayedChild = 1
-                        navigate(ethereumFragment, EthereumFragment.TAG)
-                    }
-
-                    R.id.radio_solana -> {
-                        defaultSharedPreferences.putInt(Constants.Account.PREF_EXPLORE_SELECT, 3)
-                        exploreVa.displayedChild = 1
-                        navigate(solanaFragment, SolanaFragment.TAG)
-                    }
                 }
             }
 
@@ -189,19 +189,35 @@ class ExploreFragment : BaseFragment() {
         loadData()
         loadBotData()
         refresh()
+        updateFavoriteDot()
 
         RxBus.listen(BotEvent::class.java).observeOn(AndroidSchedulers.mainThread()).autoDispose(destroyScope).subscribe {
             loadBotData()
+            updateFavoriteDot()
         }
         RxBus.listen(FavoriteEvent::class.java).observeOn(AndroidSchedulers.mainThread()).autoDispose(destroyScope).subscribe {
             loadData()
+            updateFavoriteDot()
         }
         RxBus.listen(SessionEvent::class.java).observeOn(AndroidSchedulers.mainThread()).autoDispose(destroyScope).subscribe {
             adapter.isDesktopLogin = Session.getExtensionSessionId() != null
+            updateFavoriteDot()
+        }
+        RxBus.listen(BadgeEvent::class.java).observeOn(AndroidSchedulers.mainThread()).autoDispose(destroyScope).subscribe { event ->
+            loadData()
+            updateFavoriteDot()
+        }
+        lifecycleScope.launch {
+            val market = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_MARKET, true)
+            if (market) {
+                binding.radioCollectible.setBackgroundResource(R.drawable.selector_radio_badge)
+            } else {
+                binding.radioCollectible.setBackgroundResource(R.drawable.selector_radio)
+            }
         }
     }
 
-    private val containerFragmentTags = listOf(MarketFragment.TAG, EthereumFragment.TAG, SolanaFragment.TAG)
+    private val containerFragmentTags = listOf(CollectiblesFragment.TAG)
     private fun navigate(
         destinationFragment: Fragment,
         tag: String,
@@ -222,31 +238,14 @@ class ExploreFragment : BaseFragment() {
         tx.commitAllowingStateLoss()
     }
 
-    private val ethereumFragment by lazy {
-        EthereumFragment()
-    }
-
-    private val marketFragment by lazy {
-        MarketFragment()
-    }
-
-    private val solanaFragment by lazy {
-        SolanaFragment()
+    private val collectiblesFragment by lazy {
+        CollectiblesFragment()
     }
 
     private fun loadData() {
         lifecycleScope.launch {
             val favoriteApps = botManagerViewModel.getFavoriteAppsByUserId(Session.getAccountId()!!)
             adapter.setData(favoriteApps)
-        }
-    }
-
-    override fun onHiddenChanged(hidden: Boolean) {
-        super.onHiddenChanged(hidden)
-        if (!hidden) {
-            if (ethereumFragment.isVisible) ethereumFragment.updateUI()
-            if (solanaFragment.isVisible) solanaFragment.updateUI()
-            if (marketFragment.isVisible) marketFragment.updateUI()
         }
     }
 
@@ -262,7 +261,7 @@ class ExploreFragment : BaseFragment() {
         }, { bot ->
             lifecycleScope.launch {
                 botManagerViewModel.findUserByAppId(bot.getBotId())?.let { user ->
-                    showUserBottom(parentFragmentManager, user)
+                    showUserBottom(parentFragmentManager, user, botEntrySource = AnalyticsTracker.BotSource.MORE_EXPLORE_DIALOG)
                 }
             }
         })
@@ -286,33 +285,102 @@ class ExploreFragment : BaseFragment() {
         }
     }
 
+    private fun getClickedBotIds(): Set<String> {
+        return requireContext().defaultSharedPreferences.getString(PREF_BOT_CLICKED_IDS, "")
+            ?.split(",")?.filter { it.isNotBlank() }?.toSet() ?: emptySet()
+    }
+
+    private fun setClickedBotId(id: String) {
+        val sp = requireContext().defaultSharedPreferences
+        val old = getClickedBotIds().toMutableSet()
+        if (old.add(id)) {
+            sp.edit { putString(PREF_BOT_CLICKED_IDS, old.joinToString(",")) }
+            updateFavoriteDot()
+            RxBus.publish(BadgeEvent(PREF_BOT_CLICKED_IDS))
+        }
+    }
+
+    private fun updateFavoriteDot() {
+        val clickedIds = getClickedBotIds()
+        val needShow = SHOW_DOT_BOT_IDS.any { !clickedIds.contains(it) }
+        binding.radioFavorite.setBackgroundResource(
+            if (needShow) {
+                R.drawable.selector_radio_badge
+            } else {
+                R.drawable.selector_radio
+            }
+        )
+    }
+
     private val clickAction: (BotInterface) -> Unit = { app ->
         if (app is ExploreApp) {
             lifecycleScope.launch {
-                botManagerViewModel.findAppByAppId(app.appId)?.let { app ->
-                    WebActivity.show(requireActivity(), url = app.homeUri, app = app, conversationId = null)
+                botManagerViewModel.findAppByAppId(app.appId)?.let { favoriteApp ->
+                    AnalyticsTracker.trackOpenBotHomePage(AnalyticsTracker.BotSource.MORE_EXPLORE_FAVORITE, favoriteApp.appNumber)
+                    WebActivity.show(requireActivity(), url = favoriteApp.homeUri, app = favoriteApp, conversationId = null)
                 }
             }
         } else if (app is Bot) {
+            if (SHOW_DOT_BOT_IDS.contains(app.id)) {
+                setClickedBotId(app.id)
+                adapter.notifyDataSetChanged()
+            }
             when (app.id) {
-                INTERNAL_CAMERA_ID -> {
-                    RxPermissions(requireActivity()).request(Manifest.permission.CAMERA).autoDispose(stopScope).subscribe { granted ->
-                        if (granted) {
-                            (requireActivity() as? MainActivity)?.showCapture(false)
-                        } else {
-                            context?.openPermissionSetting()
-                        }
-                    }
-                }
-
-                INTERNAL_BUY_ID -> {
-                    WalletActivity.showBuy(requireActivity(), null, null)
-                }
-
                 INTERNAL_LINK_DESKTOP_ID -> {
                     DeviceFragment.newInstance().showNow(parentFragmentManager, DeviceFragment.TAG)
                 }
-
+                INTERNAL_BUY_ID -> {
+                    WalletActivity.showBuy(
+                        requireActivity(),
+                        false,
+                        null,
+                        null,
+                        source = AnalyticsTracker.TradeSource.EXPLORE
+                    )
+                }
+                INTERNAL_SWAP_ID -> {
+                    val shown = RecoveryReminderBottomSheetDialogFragment.showForRiskAction(parentFragmentManager) {
+                        AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, AnalyticsTracker.TradeSource.EXPLORE)
+                        SwapActivity.show(
+                            requireActivity(),
+                            null,
+                            null,
+                            null,
+                            null,
+                            entrySource = AnalyticsTracker.TradeSource.EXPLORE,
+                            entryType = AnalyticsTracker.SpotTradeType.SIMPLE,
+                        )
+                    }
+                    if (!shown) {
+                        AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, AnalyticsTracker.TradeSource.EXPLORE)
+                        SwapActivity.show(
+                            requireActivity(),
+                            null,
+                            null,
+                            null,
+                            null,
+                            entrySource = AnalyticsTracker.TradeSource.EXPLORE,
+                            entryType = AnalyticsTracker.SpotTradeType.SIMPLE,
+                        )
+                    }
+                }
+                INTERNAL_MEMBER_ID -> {
+                    if (Session.getAccount()?.membership != null && Session.getAccount()?.membership?.plan != Plan.None) {
+                        navTo(MixinMemberInvoicesFragment.newInstance(), MixinMemberInvoicesFragment.TAG)
+                    } else {
+                        MixinMemberUpgradeBottomSheetDialogFragment.newInstance().showNow(
+                            parentFragmentManager, MixinMemberUpgradeBottomSheetDialogFragment.TAG
+                        )
+                    }
+                }
+                INTERNAL_REFERRAL_ID -> {
+                    lifecycleScope.launch {
+                        botManagerViewModel.findOrSyncApp(INTERNAL_REFERRAL_ID)?.let { app ->
+                            setClickedBotId(INTERNAL_REFERRAL_ID)
+                            WebActivity.show(requireActivity(), url = app.homeUri, app = app, conversationId = null)
+                        }
+                    }
+                }
                 INTERNAL_SUPPORT_ID -> {
                     lifecycleScope.launch {
                         val userTeamMixin = botManagerViewModel.refreshUser(Constants.TEAM_MIXIN_USER_ID)
@@ -325,7 +393,13 @@ class ExploreFragment : BaseFragment() {
                 }
             }
         } else {
-            // do nothing
+            lifecycleScope.launch {
+                botManagerViewModel.findUserByAppId(app.getBotId())?.let { user ->
+                    showUserBottom(parentFragmentManager, user, botEntrySource = AnalyticsTracker.BotSource.MORE_EXPLORE_FAVORITE)
+                } ?: botManagerViewModel.findAppByAppId(app.getBotId())?.let { favoriteApp ->
+                    WebActivity.show(requireActivity(), url = favoriteApp.homeUri, app = favoriteApp, conversationId = null)
+                }
+            }
         }
     }
 
@@ -473,10 +547,43 @@ class ExploreFragment : BaseFragment() {
                         app
                     }
                 itemBinding.apply {
-                    avatar.renderApp(a)
+                    if (app == InternalReferral) {
+                        lottie.setImageDrawable(
+                            RLottieDrawable(
+                                R.raw.referral,
+                                "referral",
+                                35.dp,
+                                35.dp,
+                            ).apply {
+                                setAllowDecodeSingleFrame(true)
+                                setAutoRepeat(1)
+                                setAutoRepeatCount(Int.MAX_VALUE)
+                                start()
+                            },
+                        )
+                        avatar.isInvisible = true
+                        lottieFl.isVisible = true
+                    } else {
+                        avatar.renderApp(a)
+                        avatar.isVisible = true
+                        lottieFl.isVisible = false
+                    }
                     name.setTextOnly(a.name)
                     mixinIdTv.setText(a.description)
                     name.setTextOnly(a.name)
+                    val context = itemView.context
+                    val clickedIds =
+                        try {
+                            context.defaultSharedPreferences.getString(PREF_BOT_CLICKED_IDS, "")
+                                ?.split(",")?.toSet() ?: emptySet()
+                        } catch (e: Exception) {
+                            emptySet()
+                        }
+                    if (SHOW_DOT_BOT_IDS.contains(a.id) && !clickedIds.contains(a.id)) {
+                        dot.visibility = View.VISIBLE
+                    } else {
+                        dot.visibility = View.GONE
+                    }
                 }
             } else if (app is ExploreApp) {
                 itemBinding.apply {
@@ -484,6 +591,7 @@ class ExploreFragment : BaseFragment() {
                     name.setTextOnly(app.name)
                     mixinIdTv.text = app.appNumber
                     name.setName(app)
+                    dot.visibility = View.GONE
                 }
             }
         }
@@ -497,7 +605,3 @@ class ExploreFragment : BaseFragment() {
         }
     }
 }
-
-fun exploreEvm(context: Context): Boolean = context.defaultSharedPreferences.getInt(Constants.Account.PREF_EXPLORE_SELECT, 0) == 2
-
-fun exploreSolana(context: Context): Boolean = context.defaultSharedPreferences.getInt(Constants.Account.PREF_EXPLORE_SELECT, 0) == 3

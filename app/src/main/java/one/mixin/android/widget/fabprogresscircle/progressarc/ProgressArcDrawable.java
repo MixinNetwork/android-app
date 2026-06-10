@@ -15,6 +15,8 @@
  */
 package one.mixin.android.widget.fabprogresscircle.progressarc;
 
+import static one.mixin.android.widget.fabprogresscircle.utils.AnimationUtils.getAnimatedFraction;
+
 import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.graphics.Canvas;
@@ -26,9 +28,8 @@ import android.graphics.RectF;
 import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;
 import android.view.animation.DecelerateInterpolator;
-import one.mixin.android.widget.fabprogresscircle.progressarc.animations.ArcAnimationFactory;
 
-import static one.mixin.android.widget.fabprogresscircle.utils.AnimationUtils.getAnimatedFraction;
+import one.mixin.android.widget.fabprogresscircle.progressarc.animations.ArcAnimationFactory;
 
 /**
  * This view is used to draw the progress circle animated arc

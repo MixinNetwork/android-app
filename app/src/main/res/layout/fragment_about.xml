@@ -27,13 +27,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:src="@drawable/ic_logo"
+                android:src="?attr/ic_logo"
                 tools:ignore="ContentDescription" />
 
             <TextView
                 android:id="@+id/twitter"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/bottom_button_height"
+                android:foreground="?android:attr/selectableItemBackground"
                 android:gravity="center_vertical"
                 android:paddingStart="@dimen/activity_horizontal_margin"
                 android:paddingEnd="@dimen/activity_horizontal_margin"
@@ -45,6 +46,7 @@
                 android:id="@+id/facebook"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/bottom_button_height"
+                android:foreground="?android:attr/selectableItemBackground"
                 android:gravity="center_vertical"
                 android:paddingStart="@dimen/activity_horizontal_margin"
                 android:paddingEnd="@dimen/activity_horizontal_margin"
@@ -56,6 +58,7 @@
                 android:id="@+id/help_center"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/bottom_button_height"
+                android:foreground="?android:attr/selectableItemBackground"
                 android:gravity="center_vertical"
                 android:paddingStart="@dimen/activity_horizontal_margin"
                 android:paddingEnd="@dimen/activity_horizontal_margin"
@@ -67,6 +70,7 @@
                 android:id="@+id/terms"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/bottom_button_height"
+                android:foreground="?android:attr/selectableItemBackground"
                 android:gravity="center_vertical"
                 android:paddingStart="@dimen/activity_horizontal_margin"
                 android:paddingEnd="@dimen/activity_horizontal_margin"
@@ -78,6 +82,7 @@
                 android:id="@+id/privacy"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/bottom_button_height"
+                android:foreground="?android:attr/selectableItemBackground"
                 android:gravity="center_vertical"
                 android:paddingStart="@dimen/activity_horizontal_margin"
                 android:paddingEnd="@dimen/activity_horizontal_margin"
@@ -89,6 +94,7 @@
                 android:id="@+id/checkUpdates"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/bottom_button_height"
+                android:foreground="?android:attr/selectableItemBackground"
                 android:gravity="center_vertical"
                 android:paddingStart="@dimen/activity_horizontal_margin"
                 android:paddingEnd="@dimen/activity_horizontal_margin"
@@ -97,15 +103,29 @@
                 android:textSize="16sp" />
 
             <TextView
-                    android:id="@+id/logAndDebug"
-                    android:layout_width="match_parent"
-                    android:layout_height="@dimen/bottom_button_height"
-                    android:gravity="center_vertical"
-                    android:paddingStart="@dimen/activity_horizontal_margin"
-                    android:paddingEnd="@dimen/activity_horizontal_margin"
-                    android:text="@string/LogAndDebug"
-                    android:textColor="@color/colorBlue"
-                    android:textSize="16sp" />
+                android:id="@+id/logAndDebug"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/bottom_button_height"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:gravity="center_vertical"
+                android:paddingStart="@dimen/activity_horizontal_margin"
+                android:paddingEnd="@dimen/activity_horizontal_margin"
+                android:text="@string/LogAndDebug"
+                android:textColor="@color/colorBlue"
+                android:textSize="16sp" />
+
+
+            <TextView
+                android:id="@+id/open_source"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/bottom_button_height"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:gravity="center_vertical"
+                android:paddingStart="@dimen/activity_horizontal_margin"
+                android:paddingEnd="@dimen/activity_horizontal_margin"
+                android:text="@string/open_source"
+                android:textColor="?attr/text_assist"
+                android:textSize="13sp" />
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

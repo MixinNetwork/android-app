@@ -1,7 +1,7 @@
 package one.mixin.android.tip.wc
 
-import android.util.LruCache
-import com.walletconnect.web3.wallet.client.Wallet
+import com.reown.walletkit.client.Wallet
+import com.reown.walletkit.client.WalletKit
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import one.mixin.android.BuildConfig
@@ -10,16 +10,13 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.extension.toUri
 import one.mixin.android.session.Session
-import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
 import one.mixin.android.tip.wc.internal.WalletConnectException
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Sign
 import org.web3j.crypto.StructuredDataEncoder
-import org.web3j.protocol.Web3j
 import org.web3j.protocol.core.Response
-import org.web3j.protocol.http.HttpService
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigDecimal
@@ -34,10 +31,22 @@ abstract class WalletConnect {
         fun isEnabled(): Boolean =
             Session.getAccount()?.hasPin == true && !Session.getTipPub().isNullOrBlank()
 
+        fun isPaymentLink(url: String): Boolean =
+            try {
+                url.toUri()?.host == "pay.walletconnect.com" && WalletKit.Pay.isPaymentLink(url)
+            } catch (e: Exception) {
+                false
+            }
+
         fun connect(
             url: String,
             afterConnect: (() -> Unit)? = null,
         ) {
+            if (isPaymentLink(url)) {
+                RxBus.publish(WCEvent.Pay(Version.V2, RequestType.Pay, url))
+                afterConnect?.invoke()
+                return
+            }
             if (!url.startsWith("wc:")) return
 
             val uri =
@@ -70,6 +79,7 @@ abstract class WalletConnect {
         Connect,
         SessionProposal,
         SessionRequest,
+        Pay,
     }
 
     sealed class WCSignData<T>(
@@ -87,19 +97,6 @@ abstract class WalletConnect {
         data class TIPSignData(
             override val signMessage: String,
         ) : WCSignData<String>(0L, signMessage)
-    }
-
-    private var web3jPool = LruCache<Chain, Web3j>(3)
-
-    protected fun getWeb3j(chain: Chain): Web3j {
-        val exists = web3jPool[chain]
-        return if (exists == null) {
-            val web3j = Web3j.build(HttpService(chain.rpcUrl, buildOkHttpClient()))
-            web3jPool.put(chain, web3j)
-            web3j
-        } else {
-            exists
-        }
     }
 
     private fun buildOkHttpClient(): OkHttpClient {

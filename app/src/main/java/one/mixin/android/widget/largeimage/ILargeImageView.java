@@ -2,7 +2,9 @@ package one.mixin.android.widget.largeimage;
 
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+
 import androidx.annotation.DrawableRes;
+
 import one.mixin.android.widget.largeimage.factory.BitmapDecoderFactory;
 
 /**

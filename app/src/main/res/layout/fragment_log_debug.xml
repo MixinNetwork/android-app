@@ -5,7 +5,9 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="?attr/bg_white"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:clickable="true"
+        android:focusable="true">
 
     <one.mixin.android.widget.TitleView
             android:id="@+id/title_view"
@@ -13,108 +15,180 @@
             android:layout_height="wrap_content"
             app:titleText="@string/LogAndDebug" />
 
-    <TextView
-            android:id="@+id/diagnosis"
+    <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
-            android:layout_height="@dimen/bottom_button_height"
-            android:gravity="center_vertical"
-            android:paddingStart="@dimen/activity_horizontal_margin"
-            android:paddingEnd="@dimen/activity_horizontal_margin"
-            android:text="@string/Net_Diagnosis"
-            android:textColor="@color/colorBlue"
-            android:foreground="?android:attr/selectableItemBackground"
-            android:textSize="16sp" />
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:fillViewport="true">
 
-    <TextView
-            android:id="@+id/logs"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="@dimen/bottom_button_height"
-            android:gravity="center_vertical"
-            android:paddingStart="@dimen/activity_horizontal_margin"
-            android:paddingEnd="@dimen/activity_horizontal_margin"
-            android:text="@string/Share_Logs"
-            android:textColor="@color/colorBlue"
-            android:foreground="?android:attr/selectableItemBackground"
-            android:textSize="16sp" />
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                    android:id="@+id/diagnosis"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/bottom_button_height"
+                    android:gravity="center_vertical"
+                    android:paddingStart="@dimen/activity_horizontal_margin"
+                    android:paddingEnd="@dimen/activity_horizontal_margin"
+                    android:text="@string/Net_Diagnosis"
+                    android:textColor="@color/colorBlue"
+                    android:foreground="?android:attr/selectableItemBackground"
+                    android:textSize="16sp" />
+
+            <TextView
+                    android:id="@+id/logs"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/bottom_button_height"
+                    android:gravity="center_vertical"
+                    android:paddingStart="@dimen/activity_horizontal_margin"
+                    android:paddingEnd="@dimen/activity_horizontal_margin"
+                    android:text="@string/Share_Logs"
+                    android:textColor="@color/colorBlue"
+                    android:foreground="?android:attr/selectableItemBackground"
+                    android:textSize="16sp" />
 
 
-    <RelativeLayout
-            android:id="@+id/web_debug"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/bottom_button_height"
-            android:background="?attr/bg_white"
-            android:foreground="?android:attr/selectableItemBackground">
+            <RelativeLayout
+                    android:id="@+id/web_debug"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/bottom_button_height"
+                    android:background="?attr/bg_white"
+                    android:foreground="?android:attr/selectableItemBackground">
 
-        <TextView
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:text="@string/Web_debug"
+                    android:textColor="@color/colorBlue"
+                    android:textSize="16sp"
+                    android:layout_centerVertical="true"
+                    tools:ignore="RelativeOverlap" />
+
+                <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/web_debug_sc"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                        tools:ignore="RelativeOverlap" />
+            </RelativeLayout>
+
+            <TextView
+                    android:id="@+id/database"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/bottom_button_height"
+                    android:gravity="center_vertical"
+                    android:paddingStart="@dimen/activity_horizontal_margin"
+                    android:paddingEnd="@dimen/activity_horizontal_margin"
+                    android:text="@string/Debug_database"
+                    android:textColor="@color/colorBlue"
+                    android:foreground="?android:attr/selectableItemBackground"
+                    android:textSize="16sp" />
+
+            <RelativeLayout
+                    android:id="@+id/database_debug_logs"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/bottom_button_height"
+                    android:foreground="?android:attr/selectableItemBackground"
+                    android:background="?attr/bg_white">
+
+                <TextView
+                        android:textColor="@color/colorBlue"
+                        android:textSize="16sp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_marginStart="@dimen/activity_horizontal_margin"
+                        android:text="@string/Debug_database_logs"
+                        tools:ignore="RelativeOverlap" />
+
+                <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/database_debug_logs_sc"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                        tools:ignore="RelativeOverlap" />
+            </RelativeLayout>
+
+            <TextView
+                android:id="@+id/safe"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/bottom_button_height"
+                android:gravity="center_vertical"
+                android:paddingStart="@dimen/activity_horizontal_margin"
+                android:paddingEnd="@dimen/activity_horizontal_margin"
+                android:text="Safe"
                 android:textColor="@color/colorBlue"
-                android:textSize="16sp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/Web_debug"
-                tools:ignore="RelativeOverlap" />
-
-        <androidx.appcompat.widget.SwitchCompat
-                android:id="@+id/web_debug_sc"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                tools:ignore="RelativeOverlap" />
-    </RelativeLayout>
-
-    <TextView
-            android:id="@+id/database"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/bottom_button_height"
-            android:gravity="center_vertical"
-            android:paddingStart="@dimen/activity_horizontal_margin"
-            android:paddingEnd="@dimen/activity_horizontal_margin"
-            android:text="@string/Debug_database"
-            android:textColor="@color/colorBlue"
-            android:foreground="?android:attr/selectableItemBackground"
-            android:textSize="16sp" />
-
-    <RelativeLayout
-            android:id="@+id/database_debug_logs"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/bottom_button_height"
-            android:foreground="?android:attr/selectableItemBackground"
-            android:background="?attr/bg_white">
-
-        <TextView
-                android:textColor="@color/colorBlue"
-                android:textSize="16sp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/Debug_database_logs"
                 android:foreground="?android:attr/selectableItemBackground"
-                tools:ignore="RelativeOverlap" />
+                android:textSize="16sp" />
 
-        <androidx.appcompat.widget.SwitchCompat
-                android:id="@+id/database_debug_logs_sc"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                tools:ignore="RelativeOverlap" />
-    </RelativeLayout>
+            <TextView
+                android:id="@+id/preview_verify_mobile_reminder"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/bottom_button_height"
+                android:gravity="center_vertical"
+                android:paddingStart="@dimen/activity_horizontal_margin"
+                android:paddingEnd="@dimen/activity_horizontal_margin"
+                android:text="@string/Preview_Verify_Mobile_Reminder"
+                android:textColor="@color/colorBlue"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:textSize="16sp" />
 
-    <TextView
-        android:id="@+id/safe"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/bottom_button_height"
-        android:gravity="center_vertical"
-        android:paddingStart="@dimen/activity_horizontal_margin"
-        android:paddingEnd="@dimen/activity_horizontal_margin"
-        android:text="Safe"
-        android:textColor="@color/colorBlue"
-        android:foreground="?android:attr/selectableItemBackground"
-        android:textSize="16sp" />
+            <TextView
+                android:id="@+id/preview_recovery_reminder"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/bottom_button_height"
+                android:gravity="center_vertical"
+                android:paddingStart="@dimen/activity_horizontal_margin"
+                android:paddingEnd="@dimen/activity_horizontal_margin"
+                android:text="@string/Preview_Recovery_Reminder"
+                android:textColor="@color/colorBlue"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/preview_new_update_reminder"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/bottom_button_height"
+                android:gravity="center_vertical"
+                android:paddingStart="@dimen/activity_horizontal_margin"
+                android:paddingEnd="@dimen/activity_horizontal_margin"
+                android:text="@string/Preview_New_Update_Reminder"
+                android:textColor="@color/colorBlue"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/reset_tpsl_guide"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/bottom_button_height"
+                android:gravity="center_vertical"
+                android:paddingStart="@dimen/activity_horizontal_margin"
+                android:paddingEnd="@dimen/activity_horizontal_margin"
+                android:text="@string/Reset_TpSl_Guide"
+                android:textColor="@color/colorBlue"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/delete_web3_transactions"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/bottom_button_height"
+                android:gravity="center_vertical"
+                android:paddingStart="@dimen/activity_horizontal_margin"
+                android:paddingEnd="@dimen/activity_horizontal_margin"
+                android:text="@string/Delete_Web3_Transactions"
+                android:textColor="@color/colorRed"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:textSize="16sp" />
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 
 </LinearLayout>

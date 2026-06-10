@@ -19,7 +19,12 @@ import one.mixin.android.extension.isTablet
 import one.mixin.android.extension.isWideScreen
 import kotlin.math.abs
 
-class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(context, theme) {
+class MixinBottomSheetDialog(
+    context: Context,
+    theme: Int,
+    val transparentStatusBar: Boolean = false,
+    private val applyBottomInsetToSheet: Boolean = true,
+) : BottomSheetDialog(context, theme) {
     companion object {
         const val BACK_DRAWABLE_ALPHA = 51
     }
@@ -47,7 +52,16 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
                     else -> width
                 }
         }
+        behavior.isGestureInsetBottomIgnored = true
         behavior.addBottomSheetCallback(bottomSheetBehaviorCallback)
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        applyBottomSheetContainerInsets(
+            transparentStatusBar = transparentStatusBar,
+            applyBottomInsetToSheet = applyBottomInsetToSheet,
+        )
     }
 
     override fun show() {

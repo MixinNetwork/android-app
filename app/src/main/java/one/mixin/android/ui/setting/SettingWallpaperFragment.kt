@@ -258,7 +258,6 @@ class SettingWallpaperFragment : BaseFragment(R.layout.fragment_setting_chat) {
             }
             val options = UCrop.Options()
             options.setToolbarColor(ContextCompat.getColor(requireContext(), R.color.black))
-            options.setStatusBarColor(ContextCompat.getColor(requireContext(), R.color.black))
             options.setToolbarWidgetColor(Color.WHITE)
             options.setHideBottomControls(true)
             UCrop.of(selectedImageUri, imageUri)

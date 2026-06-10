@@ -2,20 +2,37 @@
 
 package one.mixin.android.crypto
 
+import android.content.Context
 import android.os.Build
+import androidx.core.content.edit
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import com.lambdapioneer.argon2kt.Argon2Kt
 import com.lambdapioneer.argon2kt.Argon2KtResult
 import com.lambdapioneer.argon2kt.Argon2Mode
 import ed25519.Ed25519
 import okhttp3.tls.HeldCertificate
 import okio.ByteString.Companion.toByteString
+import one.mixin.android.Constants.Tip.ENCRYPTED_MNEMONIC
 import one.mixin.android.extension.base64Encode
+import one.mixin.android.extension.base64RawURLDecode
+import one.mixin.android.extension.base64RawURLEncode
+import one.mixin.android.extension.currentTimeSeconds
+import one.mixin.android.extension.hexStringToByteArray
+import one.mixin.android.extension.hmacSha256
+import one.mixin.android.extension.isValidBase58
+import one.mixin.android.extension.isValidHex
+import one.mixin.android.extension.toHex
+import one.mixin.android.session.Session
 import one.mixin.android.util.InvalidEd25519Exception
 import one.mixin.eddsa.Ed25519Sign
 import one.mixin.eddsa.Ed25519Verify
 import one.mixin.eddsa.Field25519
 import org.komputing.khash.keccak.KeccakParameter
 import org.komputing.khash.keccak.extensions.digestKeccak
+import org.sol4k.Base58
+import org.web3j.crypto.WalletUtils
+import org.web3j.utils.Numeric
 import org.whispersystems.curve25519.Curve25519
 import org.whispersystems.curve25519.Curve25519.BEST
 import java.security.KeyFactory
@@ -49,14 +66,14 @@ fun generateRSAKeyPair(keyLength: Int = 2048): KeyPair {
 
 fun generateEd25519KeyPair(): EdKeyPair {
     return if (useGoEd()) {
-        val priv = Ed25519.generateKey()
-        EdKeyPair(priv.sliceArray(32..63), priv.sliceArray(0..31))
+        val private = Ed25519.generateKey()
+        EdKeyPair(private.sliceArray(32..63), private.sliceArray(0..31))
     } else {
         val keyPair = one.mixin.eddsa.KeyPair.newKeyPair(true)
         val ktEdKeyPair = EdKeyPair(keyPair.publicKey.toByteArray(), keyPair.privateKey.toByteArray())
 
-        val priv = Ed25519.newKeyFromSeed(ktEdKeyPair.privateKey)
-        val goEdKeyPair = EdKeyPair(priv.sliceArray(32..63), priv.sliceArray(0..31))
+        val private = Ed25519.newKeyFromSeed(ktEdKeyPair.privateKey)
+        val goEdKeyPair = EdKeyPair(private.sliceArray(32..63), private.sliceArray(0..31))
         if (!goEdKeyPair.privateKey.contentEquals(ktEdKeyPair.privateKey) || !goEdKeyPair.publicKey.contentEquals(ktEdKeyPair.publicKey)) {
             throw InvalidEd25519Exception()
         }
@@ -65,8 +82,8 @@ fun generateEd25519KeyPair(): EdKeyPair {
 }
 
 fun newKeyPairFromSeed(seed: ByteArray): EdKeyPair {
-    val priv = Ed25519.newKeyFromSeed(seed)
-    val goEdKeyPair = EdKeyPair(priv.sliceArray(32..63), priv.sliceArray(0..31))
+    val private = Ed25519.newKeyFromSeed(seed)
+    val goEdKeyPair = EdKeyPair(private.sliceArray(32..63), private.sliceArray(0..31))
     return if (useGoEd()) {
         goEdKeyPair
     } else {
@@ -79,11 +96,23 @@ fun newKeyPairFromSeed(seed: ByteArray): EdKeyPair {
     }
 }
 
+fun newKeyPairFromMnemonic(mnemonic: String): EdKeyPair {
+    val masterKey = newMasterPrivateKeyFromMnemonic(mnemonic)
+    return newKeyPairFromSeed(masterKey.privKeyBytes)
+}
+
 fun calculateAgreement(
     publicKey: ByteArray,
     privateKey: ByteArray,
 ): ByteArray {
     return Curve25519.getInstance(BEST).calculateAgreement(publicKey, privateKey)
+}
+
+fun calculateSignature(
+    privateKey: ByteArray,
+    message: ByteArray,
+): ByteArray {
+    return Curve25519.getInstance(BEST).calculateSignature(privateKey, message)
 }
 
 fun initFromSeedAndSign(
@@ -153,25 +182,13 @@ fun ByteArray.sha3Sum256(): ByteArray {
 }
 
 fun Argon2Kt.argon2IHash(
-    pin: String,
-    seed: String,
-): Argon2KtResult =
-    argon2IHash(pin, seed.toByteArray())
-
-fun Argon2Kt.argon2IHash(
-    pin: String,
-    seed: ByteArray,
-): Argon2KtResult =
-    argon2IHash(pin.toByteArray(), seed)
-
-fun Argon2Kt.argon2IHash(
-    pin: ByteArray,
-    seed: ByteArray,
+    password: ByteArray,
+    salt: ByteArray,
 ): Argon2KtResult {
     return hash(
         mode = Argon2Mode.ARGON2_I,
-        password = pin,
-        salt = seed,
+        password = password,
+        salt = salt,
         tCostInIterations = 4,
         mCostInKibibyte = 1024,
         hashLengthInBytes = 32,
@@ -189,9 +206,9 @@ fun generateRandomBytes(len: Int = 16): ByteArray {
 fun aesGcmEncrypt(
     plain: ByteArray,
     key: ByteArray,
+    iv: ByteArray? = null,
 ): ByteArray {
-    val iv = ByteArray(GCM_IV_LENGTH)
-    secureRandom.nextBytes(iv)
+    val iv = iv ?: ByteArray(GCM_IV_LENGTH).also { secureRandom.nextBytes(it) }
     val cipher = Cipher.getInstance("AES/GCM/NoPadding")
     val parameterSpec = GCMParameterSpec(128, iv) // 128 bit auth tag length
     val secretKey = SecretKeySpec(key, "AES")
@@ -289,8 +306,123 @@ private fun stripRsaPrivateKeyHeaders(privatePem: String): String {
     val lines = privatePem.split("\n".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
     lines.filter { line ->
         !line.contains("BEGIN RSA PRIVATE KEY") &&
-            !line.contains("END RSA PRIVATE KEY") && !line.trim { it <= ' ' }.isEmpty()
+                !line.contains("END RSA PRIVATE KEY") && !line.trim { it <= ' ' }.isEmpty()
     }
         .forEach { line -> strippedKey.append(line.trim { it <= ' ' }) }
     return strippedKey.toString().trim { it <= ' ' }
+}
+
+fun storeValueInEncryptedPreferences(context: Context, alias: String, entropy: ByteArray) {
+    val encryptedPrefs = runCatching {
+        EncryptedSharedPreferences.create(
+            context,
+            ENCRYPTED_MNEMONIC,
+            MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+    }.onFailure {
+        context.deleteSharedPreferences(ENCRYPTED_MNEMONIC)
+    }.getOrThrow()  // Unable to create when logging in, it crashes directly
+    val encodedKey = entropy.toHex()
+    encryptedPrefs.edit(commit = true) { putString(alias, encodedKey) }
+}
+
+fun removeValueFromEncryptedPreferences(context: Context, alias: String) {
+    runCatching {
+        val encryptedPrefs = EncryptedSharedPreferences.create(
+            context,
+            ENCRYPTED_MNEMONIC,
+            MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+        encryptedPrefs.edit { remove(alias) }
+    }.onFailure {
+        if (Session.saltExported()) context.deleteSharedPreferences(ENCRYPTED_MNEMONIC)
+    }
+}
+
+fun getValueFromEncryptedPreferences(context: Context, alias: String): ByteArray? {
+    val encryptedPrefs = runCatching {
+        EncryptedSharedPreferences.create(
+            context,
+            ENCRYPTED_MNEMONIC,
+            MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+    }.onFailure {
+        if (Session.saltExported()) context.deleteSharedPreferences(ENCRYPTED_MNEMONIC)
+    }.getOrNull()
+
+    val encodedText = encryptedPrefs?.getString(alias, null) ?: return null
+    return encodedText.hexStringToByteArray()
+}
+
+fun signBotSignature(
+    accountId: String,
+    botPublicKey: String,
+    edKeyPair: EdKeyPair,
+    method: String,
+    path: String,
+    body: String?,
+): Pair<Long, String> {
+    val botPk = botPublicKey.base64RawURLDecode()
+    val private = privateKeyToCurve25519(edKeyPair.privateKey)
+    val sharedKey = calculateAgreement(botPk, private)
+    val ts = currentTimeSeconds()
+    var content = "$ts${method}${path}"
+    if (body.isNullOrBlank().not()) {
+        content += body
+    }
+    return Pair(ts, (accountId.toByteArray() + content.hmacSha256(sharedKey)).base64RawURLEncode())
+}
+
+
+fun isEvmAddressValid(address: String): Boolean {
+    return try {
+        WalletUtils.isValidAddress(address)
+    } catch (e: Exception) {
+        false
+    }
+}
+
+fun isEvmPrivateKeyValid(privateKey: String): Boolean {
+    return try {
+        WalletUtils.isValidPrivateKey(privateKey)
+    } catch (e: Exception) {
+        false
+    }
+}
+
+fun isSolanaAddressValid(address: String): Boolean {
+    return try {
+        val decoded = Base58.decode(address)
+        decoded.size == 32
+    } catch (e: Exception) {
+        false
+    }
+}
+
+fun isSolanaPrivateKeyValid(privateKey: String): Boolean {
+    return try {
+        val decoded = Base58.decode(privateKey)
+        decoded.size == 64
+    } catch (e: Exception) {
+        isSolanaHexPrivateKeyValid(privateKey)
+    }
+}
+
+fun isSolanaHexPrivateKeyValid(privateKey: String): Boolean {
+    return try {
+        if (privateKey.isValidBase58().not() && privateKey.isValidHex()) {
+            val d = Numeric.hexStringToByteArray(privateKey)
+            d.size == 64
+        } else {
+            false
+        }
+    } catch (e: Exception) {
+        false
+    }
 }

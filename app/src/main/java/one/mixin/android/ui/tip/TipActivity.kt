@@ -10,13 +10,13 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ActivityContactBinding
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.replaceFragment
-import one.mixin.android.ui.common.BlazeBaseActivity
+import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.tip.TipFragment.Companion.ARGS_SHOULD_WATCH
 import one.mixin.android.ui.tip.TipFragment.Companion.ARGS_TIP_BUNDLE
 import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
-class TipActivity : BlazeBaseActivity() {
+class TipActivity : BaseActivity() {
     companion object {
         const val TAG = "TipActivity"
 

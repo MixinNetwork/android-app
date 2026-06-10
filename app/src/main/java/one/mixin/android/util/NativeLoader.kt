@@ -10,7 +10,7 @@ import java.io.FileOutputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 
-private val libNames = listOf("mixin", "argon2jni", "barhopper_v3", "rlottie")
+private val libNames = listOf("mixin", "argon2jni", "argon2native", "barhopper_v3", "rlottie", "gojni", "curve25519")
 private val libSoNames = libNames.map { "lib$it.so" }
 private val localLibSoNames = libNames.map { "lib${it}loc.so" }
 private val nativeLoadedList = libNames.map { false }.toMutableList()

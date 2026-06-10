@@ -64,6 +64,8 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
             android:textColor="?attr/text_assist"
+            android:singleLine="true"
+            android:maxWidth="280dp"
             android:textSize="12sp"
             android:layout_toEndOf="@id/asset_number"
             android:layout_alignTop="@id/asset_number"

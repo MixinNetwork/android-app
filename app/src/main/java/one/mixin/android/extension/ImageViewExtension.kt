@@ -5,16 +5,24 @@ import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.widget.ImageView
+import android.widget.TextView
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
-import coil.dispose
-import coil.imageLoader
-import coil.load
-import coil.request.CachePolicy
-import coil.request.ErrorResult
-import coil.request.ImageRequest
-import coil.request.SuccessResult
-import coil.transform.Transformation
+import coil3.dispose
+import coil3.load
+import coil3.request.ErrorResult
+import coil3.request.ImageRequest
+import coil3.request.SuccessResult
+import coil3.request.allowHardware
+import coil3.request.bitmapConfig
+import coil3.request.error
+import coil3.request.placeholder
+import coil3.request.CachePolicy
+import coil3.request.transformations
+import coil3.transform.Transformation
+import androidx.core.widget.TextViewCompat
+import coil3.asDrawable
+import coil3.imageLoader
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
@@ -25,6 +33,7 @@ import jp.wasabeef.glide.transformations.CropTransformation
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation
 import one.mixin.android.R
 import one.mixin.android.util.StringSignature
+import one.mixin.android.widget.CoilRoundedHexagonTransformation
 import one.mixin.android.widget.lottie.RLottieDrawable
 import one.mixin.android.widget.lottie.RLottieImageView
 
@@ -41,9 +50,18 @@ fun ImageView.loadImage(
     onError: ((request: ImageRequest, result: ErrorResult) -> Unit)? = null,
     transformation: Transformation? = null,
 ) {
+    if (data == null) {
+        dispose()
+        if (base64Holder != null) {
+            setImageDrawable(base64Holder.toDrawable(layoutParams?.width ?: 0, layoutParams?.height ?: 0))
+        } else if (holder != null) {
+            setImageResource(holder)
+        }
+        return
+    }
     this.load(data) {
         if (base64Holder != null) {
-            placeholder(base64Holder.toDrawable(layoutParams.width, layoutParams.height))
+            placeholder(base64Holder.toDrawable(layoutParams?.width ?: 0, layoutParams?.height ?: 0))
         } else if (holder != null) {
             placeholder(holder)
             error(holder)
@@ -72,9 +90,18 @@ fun ImageView.loadImageCompat(
     onError: ((request: ImageRequest, result: ErrorResult) -> Unit)? = null,
     transformation: Transformation? = null,
 ) {
+    if (data == null) {
+        dispose()
+        if (base64Holder != null) {
+            setImageDrawable(base64Holder.toDrawable(layoutParams?.width ?: 0, layoutParams?.height ?: 0))
+        } else if (holder != null) {
+            setImageResource(holder)
+        }
+        return
+    }
     this.load(data) {
         if (base64Holder != null) {
-            placeholder(base64Holder.toDrawable(layoutParams.width, layoutParams.height))
+            placeholder(base64Holder.toDrawable(layoutParams?.width ?: 0, layoutParams?.height ?: 0))
         } else if (holder != null) {
             placeholder(holder)
             error(holder)
@@ -96,9 +123,18 @@ fun ImageView.loadImage(
     @DrawableRes holder: Int? = null,
     base64Holder: String? = null,
 ) {
+    if (uri == null) {
+        dispose()
+        if (base64Holder != null) {
+            setImageDrawable(base64Holder.toDrawable(layoutParams?.width ?: 0, layoutParams?.height ?: 0))
+        } else if (holder != null) {
+            setImageResource(holder)
+        }
+        return
+    }
     this.load(uri) {
         if (base64Holder != null) {
-            placeholder(base64Holder.toDrawable(layoutParams.width, layoutParams.height))
+            placeholder(base64Holder.toDrawable(layoutParams?.width ?: 0, layoutParams?.height ?: 0))
         } else if (holder != null) {
             placeholder(holder)
             error(holder)
@@ -116,7 +152,7 @@ fun ImageView.loadSvgWithTint(url: String, isRising: Boolean, isColorReversed: B
     }
     setColorFilter(ContextCompat.getColor(context, colorRes))
     load(url) {
-        memoryCacheKey("$url$isRising$isColorReversed")
+        memoryCachePolicy(CachePolicy.DISABLED)
     }
 }
 
@@ -411,4 +447,20 @@ fun ImageView.loadRoundImage(
         )
             .into(this)
     }
+}
+
+fun TextView.loadImage(data: Any?, size: Int, @DrawableRes placeholder: Int? = null) {
+    if (data == null) {
+        TextViewCompat.setCompoundDrawablesRelative(this, null, null, null, null)
+        return
+    }
+    val request = ImageRequest.Builder(context).data(data).apply {
+        placeholder?.let { placeholder(it) }
+        transformations(CoilRoundedHexagonTransformation())
+    }.target { image ->
+        val drawable = image.asDrawable(this.context.resources)
+        drawable.setBounds(0, 0, size, size)
+        TextViewCompat.setCompoundDrawablesRelative(this, drawable, null, null, null)
+    }.build()
+    context.imageLoader.enqueue(request)
 }

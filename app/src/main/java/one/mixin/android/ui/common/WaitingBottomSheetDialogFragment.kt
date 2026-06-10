@@ -11,7 +11,7 @@ import one.mixin.android.widget.BottomSheet
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class WaitingBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+class WaitingBottomSheetDialogFragment() : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "WaitingBottomSheetDialogFragment"
 
@@ -40,7 +40,6 @@ class WaitingBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 dismiss()
             }
         }
-
         jobManager.addJobInBackground(RestoreTransactionJob())
     }
 }

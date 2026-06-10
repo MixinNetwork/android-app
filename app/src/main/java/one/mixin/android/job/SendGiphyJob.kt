@@ -1,10 +1,10 @@
 package one.mixin.android.job
 
 import android.content.Context
-import coil.annotation.ExperimentalCoilApi
-import coil.imageLoader
-import coil.request.ImageRequest
-import coil.request.SuccessResult
+import coil3.annotation.ExperimentalCoilApi
+import coil3.imageLoader
+import coil3.request.ImageRequest
+import coil3.request.SuccessResult
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking

@@ -18,7 +18,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="?android:attr/actionBarSize"
-            android:background="?attr/bg_white"
+            android:background="?attr/bg_window"
             android:clickable="true"
             android:focusable="true"
             app:layout_constraintTop_toTopOf="parent" />

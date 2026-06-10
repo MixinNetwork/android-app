@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/wallet_text_gray" />
+    <padding android:left="4dp" android:right="4dp"
+        android:top="2dp" android:bottom="2dp"/>
+    <corners android:radius="4dp" />
+</shape>

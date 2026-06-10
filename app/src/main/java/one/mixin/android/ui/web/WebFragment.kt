@@ -15,7 +15,6 @@ import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.drawable.BitmapDrawable
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.net.http.SslError
@@ -24,6 +23,7 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.provider.Settings
 import android.util.Base64
+import android.util.Log
 import android.view.ContextMenu
 import android.view.LayoutInflater
 import android.view.MenuItem
@@ -52,18 +52,27 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.app.ShareCompat
+import androidx.core.graphics.createBitmap
+import androidx.core.graphics.toColorInt
+import androidx.core.view.ViewCompat
 import androidx.core.view.drawToBitmap
+import androidx.core.view.get
 import androidx.core.view.isGone
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import coil.annotation.ExperimentalCoilApi
-import coil.imageLoader
-import coil.request.ImageRequest
-import coil.request.SuccessResult
+import androidx.webkit.WebSettingsCompat
+import androidx.webkit.WebViewFeature
+import coil3.annotation.ExperimentalCoilApi
+import coil3.imageLoader
+import coil3.request.ImageRequest
+import coil3.request.SuccessResult
+import coil3.toBitmap
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.uber.autodispose.autoDispose
@@ -74,15 +83,18 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
-import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
+import one.mixin.android.Constants.Account.PREF_RECENT_SEARCH
 import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.api.response.AuthorizationResponse
+import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.databinding.FragmentWebBinding
 import one.mixin.android.databinding.ViewWebBottomMenuBinding
-import one.mixin.android.db.property.PropertyHelper
+import one.mixin.android.event.SearchEvent
 import one.mixin.android.extension.REQUEST_CAMERA
+import one.mixin.android.extension.alert
 import one.mixin.android.extension.checkInlinePermissions
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.copy
@@ -94,8 +106,11 @@ import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getPublicPicturePath
+import one.mixin.android.extension.getSafeAreaInsetsBottom
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isDarkColor
+import one.mixin.android.extension.isExternalTransferUrl
+import one.mixin.android.extension.isLightningUrl
 import one.mixin.android.extension.isMixinUrl
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isUUID
@@ -105,17 +120,20 @@ import one.mixin.android.extension.matchResourcePattern
 import one.mixin.android.extension.openAsUrl
 import one.mixin.android.extension.openAsUrlOrQrScan
 import one.mixin.android.extension.openCamera
+import one.mixin.android.extension.openInBrowser
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.openUrl
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.showPipPermissionNotification
+import one.mixin.android.extension.toOpenInBrowserUrlOrNull
 import one.mixin.android.extension.toUri
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
+import one.mixin.android.session.Session.getBotSignature
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.TipSignSpec
 import one.mixin.android.tip.privateKeyToAddress
-import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectTIP
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
@@ -131,14 +149,15 @@ import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment.Companion.PERMISSION_AUDIO
 import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment.Companion.PERMISSION_VIDEO
 import one.mixin.android.ui.forward.ForwardActivity
-import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
+import one.mixin.android.ui.landing.LandingActivity
+import one.mixin.android.ui.home.web3.showGasCheckAndBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.player.MusicActivity
 import one.mixin.android.ui.player.MusicService
 import one.mixin.android.ui.player.MusicService.Companion.MUSIC_PLAYLIST
+import one.mixin.android.ui.player.collapse as collapsePlayer
 import one.mixin.android.ui.qr.QRCodeProcessor
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.setting.SettingActivity.Companion.ARGS_SUCCESS
-import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.sessionproposal.PeerUI
 import one.mixin.android.ui.tip.wc.showWalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.url.UrlInterpreterActivity
@@ -147,20 +166,23 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.getCountry
 import one.mixin.android.util.getLanguage
 import one.mixin.android.util.isFollowSystem
+import one.mixin.android.util.reportException
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardMessage
+import one.mixin.android.vo.RecentSearch
+import one.mixin.android.vo.RecentSearchType
 import one.mixin.android.vo.ShareCategory
 import one.mixin.android.web3.convertWcLink
 import one.mixin.android.web3.js.DAppMethod
 import one.mixin.android.web3.js.JsInjectorClient
 import one.mixin.android.web3.js.JsSignMessage
-import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.js.SwitchChain
+import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.FailLoadView
 import one.mixin.android.widget.MixinWebView
@@ -188,6 +210,9 @@ class WebFragment : BaseFragment() {
         const val ARGS_APP_CARD = "args_app_card"
         const val ARGS_INDEX = "args_index"
         const val ARGS_SHAREABLE = "args_shareable"
+        const val ARGS_SAVE_NAME = "args_save_name"
+        const val ARGS_INJECTABLE = "args_injectable"
+        const val ARGS_FIXED_TITLE = "args_fixed_title"
         const val themeColorScript =
             """
             (function() {
@@ -223,6 +248,13 @@ class WebFragment : BaseFragment() {
         requireArguments().getBoolean(ARGS_SHAREABLE, true)
     }
 
+    private val injectable: Boolean by lazy {
+        requireArguments().getBoolean(ARGS_INJECTABLE, true)
+    }
+    private val fixedTitle: String? by lazy {
+        requireArguments().getString(ARGS_FIXED_TITLE)
+    }
+
     private var currentUrl: String? = null
     private var currentTitle: String? = null
     private var isFinished: Boolean = false
@@ -251,19 +283,19 @@ class WebFragment : BaseFragment() {
             when (it.type) {
                 WebView.HitTestResult.IMAGE_TYPE, WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE -> {
                     menu.add(0, CONTEXT_MENU_ID_SCAN_IMAGE, 0, R.string.Extract_QR_Code)
-                    menu.getItem(0).setOnMenuItemClickListener { menu ->
+                    menu[0].setOnMenuItemClickListener { menu ->
                         onContextItemSelected(menu)
                         return@setOnMenuItemClickListener true
                     }
                     menu.add(0, CONTEXT_MENU_ID_SAVE_IMAGE, 1, R.string.Save_image)
-                    menu.getItem(1).setOnMenuItemClickListener { menu ->
+                    menu[1].setOnMenuItemClickListener { menu ->
                         onContextItemSelected(menu)
                         return@setOnMenuItemClickListener true
                     }
                 }
                 WebView.HitTestResult.SRC_ANCHOR_TYPE, WebView.HitTestResult.ANCHOR_TYPE -> {
                     menu.add(0, CONTEXT_MENU_ID_COPY_LINK, 0, R.string.Copy_link)
-                    menu.getItem(0).setOnMenuItemClickListener { _ ->
+                    menu[0].setOnMenuItemClickListener { _ ->
                         requireContext().getClipboardManager().setPrimaryClip(
                             ClipData.newPlainText(
                                 null,
@@ -302,7 +334,7 @@ class WebFragment : BaseFragment() {
 
                         if (isDetached) return@launch
                         if (result !is SuccessResult) return@launch
-                        val bitmap = (result.drawable as BitmapDrawable).bitmap
+                        val bitmap = result.image.toBitmap()
                         processor.detect(
                             lifecycleScope,
                             bitmap,
@@ -363,7 +395,10 @@ class WebFragment : BaseFragment() {
         view: View,
         savedInstanceState: Bundle?,
     ) {
-        contentView = binding.container
+        if (activity is LandingActivity) {
+            applySafeTopPadding(view)
+        }
+        contentView = binding.containerView
         webView =
             if (index >= 0 && index < clips.size) {
                 clips[index].let { clip ->
@@ -386,6 +421,15 @@ class WebFragment : BaseFragment() {
         binding.webControl.updateLayoutParams<ViewGroup.MarginLayoutParams> {
             topMargin = requireContext().dpToPx(6f)
         }
+        if (!injectable) {
+            binding.titleVa.displayedChild = 1
+            binding.webControl.isVisible = false
+            binding.webClose.isVisible = true
+        } else {
+            binding.titleVa.displayedChild = 0
+            binding.webControl.isVisible = true
+            binding.webClose.isVisible = false
+        }
         registerForContextMenu(webView)
 
         WebView.setWebContentsDebuggingEnabled(
@@ -405,6 +449,16 @@ class WebFragment : BaseFragment() {
         } else {
             loadWebView()
         }
+    }
+
+    private fun applySafeTopPadding(rootView: View) {
+        val originalPaddingTop: Int = rootView.paddingTop
+        ViewCompat.setOnApplyWindowInsetsListener(rootView) { v: View, insets: WindowInsetsCompat ->
+            val topInset: Int = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
+            v.setPadding(v.paddingLeft, originalPaddingTop + topInset, v.paddingRight, v.paddingBottom)
+            insets
+        }
+        ViewCompat.requestApplyInsets(rootView)
     }
 
     private fun checkAppCard(appCard: AppCardData) =
@@ -439,6 +493,9 @@ class WebFragment : BaseFragment() {
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun initView() {
+        activity?.window?.let { window->
+            SystemUIManager.lightUI(window , requireContext().isNightMode().not())
+        }
         binding.suspiciousLinkView.listener =
             object : SuspiciousLinkView.SuspiciousListener {
                 override fun onBackClick() {
@@ -486,6 +543,9 @@ class WebFragment : BaseFragment() {
                     requireActivity().finish()
                 }
             }
+        binding.webClose.setOnClickListener {
+            requireActivity().onBackPressedDispatcher.onBackPressed()
+        }
         webView.settings.javaScriptEnabled = true
         webView.settings.domStorageEnabled = true
         webView.settings.useWideViewPort = true
@@ -495,7 +555,10 @@ class WebFragment : BaseFragment() {
             WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
         webView.settings.mediaPlaybackRequiresUserGesture = false
         webView.settings.userAgentString =
-            webView.settings.userAgentString + " Mixin/" + BuildConfig.VERSION_NAME
+            webView.settings.userAgentString + " Mixin/" + BuildConfig.VERSION_NAME + " GOOGLE_PAY_SUPPORTED"
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.PAYMENT_REQUEST)) {
+            WebSettingsCompat.setPaymentRequestEnabled(webView.settings, true)
+        }
 
         webView.webViewClient =
             WebViewClientImpl(
@@ -506,8 +569,10 @@ class WebFragment : BaseFragment() {
                 },
                 conversationId,
                 MixinApplication.appContext,
+                this,
                 this.parentFragmentManager,
                 requireActivity().activityResultRegistry,
+                injectable,
                 lifecycleScope,
                 { url ->
                     currentUrl = url
@@ -597,8 +662,29 @@ class WebFragment : BaseFragment() {
                 ) {
                     super.onReceivedTitle(view, title)
                     if (!isBot()) {
-                        _binding?.titleTv?.text = title
+                        _binding?.titleTv?.text = fixedTitle ?: title
+                        if (once) {
+                            once = false
+                            val saveName = requireArguments().getBoolean(ARGS_SAVE_NAME, false)
+                            if (saveName) {
+                                saveName(title, url)
+                            }
+                        }
                     }
+                }
+
+                private var once: Boolean = true
+
+                private fun saveName(name: String?, url: String) {
+                    val sp = requireContext().defaultSharedPreferences
+                    val str = sp.getString(PREF_RECENT_SEARCH, null)
+                    val searches = if (str.isNullOrBlank()) mutableListOf()
+                    else GsonHelper.customGson.fromJson(str, Array<RecentSearch>::class.java).toMutableList()
+                    val recent = RecentSearch(RecentSearchType.LINK, title = name, subTitle = url)
+                    searches.remove(recent)
+                    searches.add(0, recent)
+                    sp.putString(PREF_RECENT_SEARCH, GsonHelper.customGson.toJson(searches.take(4)))
+                    RxBus.publish(SearchEvent())
                 }
 
                 override fun onReceivedIcon(
@@ -606,7 +692,7 @@ class WebFragment : BaseFragment() {
                     icon: Bitmap?,
                 ) {
                     super.onReceivedIcon(view, icon)
-                    if (!isBot()) {
+                    if (!isBot() && fixedTitle == null) {
                         icon?.let {
                             _binding?.apply {
                                 iconIv.isVisible = true
@@ -833,14 +919,19 @@ class WebFragment : BaseFragment() {
                 }
             }
             app?.name?.let { binding.titleTv.text = it }
-            app?.iconUrl?.let {
+            fixedTitle?.let {
+                binding.titleTv.text = it
+                binding.iconIv.isVisible = false
+                binding.webControl.hideMore()
+            }
+            if (fixedTitle == null) app?.iconUrl?.let {
                 binding.iconIv.isVisible = true
                 binding.iconIv.loadImage(it)
                 binding.titleTv.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                     marginStart = requireContext().dpToPx(10f)
                 }
             }
-            binding.titleLl.isGone = immersive
+            binding.titleVa.isGone = immersive
 
             webAppInterface =
                 WebAppInterface(
@@ -863,6 +954,12 @@ class WebFragment : BaseFragment() {
                     getAssetAction = { ids, callback ->
                         getAssets(ids, callback)
                     },
+                    signBotSignature = { appId, reloadPublicKey, metho, path, body, callbackFunction ->
+                        botSign(appId, reloadPublicKey, metho, path, body, callbackFunction)
+                    },
+                    openInBrowserAction = { url ->
+                        openInBrowser(url)
+                    },
                 )
             webAppInterface?.let { webView.addJavascriptInterface(it, "MixinContext") }
             webView.addJavascriptInterface(
@@ -874,21 +971,21 @@ class WebFragment : BaseFragment() {
                     },
                     onWalletActionError = { id ->
                         lifecycleScope.launch {
-                            webView.evaluateJavascript("window.${JsSigner.currentNetwork}.sendResponse($id, null)") {}
+                            webView.evaluateJavascript("window.${Web3Signer.currentNetwork}.sendResponse($id, null)") {}
                         }
                     },
                     onBrowserSign = { message ->
                         lifecycleScope.launch {
                             if (viewDestroyed()) return@launch
 
-                            showBrowserBottomSheetDialogFragment(
+                            showGasCheckAndBrowserBottomSheetDialogFragment(
                                 requireActivity(),
                                 message,
                                 currentUrl = currentUrl,
                                 currentTitle = currentTitle,
                                 onReject = {
                                     lifecycleScope.launch {
-                                        webView.evaluateJavascript("window.${JsSigner.currentNetwork}.sendResponse(${message.callbackId}, null)") {}
+                                        webView.evaluateJavascript("window.${Web3Signer.currentNetwork}.sendResponse(${message.callbackId}, null)") {}
                                     }
                                 },
                                 onDone = { callback ->
@@ -902,8 +999,17 @@ class WebFragment : BaseFragment() {
                     onEmptyAddress = { network ->
                         lifecycleScope.launch {
                             if (viewDestroyed()) return@launch
-
-                            WalletUnlockBottomSheetDialogFragment.getInstance(network).showIfNotShowing(parentFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
+                            if (network.equals("solana", true)) {
+                                if (Web3Signer.solanaAddress.isEmpty()) {
+                                    toast(getString(R.string.not_support_network, network))
+                                }
+                            } else if (network.equals("ethereum", true)) {
+                                if (Web3Signer.evmAddress.isEmpty()) {
+                                    toast(getString(R.string.not_support_network, network))
+                                }
+                            } else {
+                                return@launch
+                            }
                         }
                     },
                 ),
@@ -923,7 +1029,37 @@ class WebFragment : BaseFragment() {
                 return
             }
             webView.loadUrl(url, extraHeaders)
+            if (WebViewFeature.isFeatureSupported(WebViewFeature.WEB_AUTHENTICATION)) {
+                WebSettingsCompat.setWebAuthenticationSupport(
+                    webView.settings,
+                    WebSettingsCompat.WEB_AUTHENTICATION_SUPPORT_FOR_APP,
+                )
+                Log.e(
+                    "WebFragment",
+                    "getWebAuthenticationSupport result: " + WebSettingsCompat.getWebAuthenticationSupport(
+                        webView.settings
+                    ),
+                )
+            } else {
+                Log.e("WebFragment", "WebView does not support passkeys.")
+            }
         }
+    }
+
+    private fun openInBrowser(url: String): Boolean {
+        if (viewDestroyed()) return false
+        val browserUrl = url.toOpenInBrowserUrlOrNull() ?: return false
+        val context = context ?: return false
+        lifecycleScope.launch {
+            if (viewDestroyed()) return@launch
+            context.openInBrowser(
+                browserUrl,
+                Bundle().apply {
+                    putString("Mixin", BuildConfig.VERSION_NAME)
+                },
+            )
+        }
+        return true
     }
 
     private fun closeSelf() {
@@ -939,7 +1075,7 @@ class WebFragment : BaseFragment() {
 
             MusicService.playUrls(requireContext(), playlist)
             if (checkFloatingPermission()) {
-                one.mixin.android.ui.player.collapse(MUSIC_PLAYLIST)
+                collapsePlayer(MUSIC_PLAYLIST)
             } else {
                 requireActivity().showPipPermissionNotification(
                     MusicActivity::class.java,
@@ -972,7 +1108,7 @@ class WebFragment : BaseFragment() {
             }
         }
         lifecycleScope.launch {
-            WalletConnectTIP.peer = getPeerUI(PropertyHelper.findValueByKey(EVM_ADDRESS, ""))
+            WalletConnectTIP.peer = getPeerUI(Web3Signer.evmAddress)
             showWalletConnectBottomSheetDialogFragment(
                 tip,
                 requireActivity(),
@@ -1005,9 +1141,13 @@ class WebFragment : BaseFragment() {
         callbackFunction: String,
     ) {
         if (viewDestroyed()) return
-        app ?: return
 
         lifecycleScope.launch {
+            if (app == null) {
+                webView.evaluateJavascript("$callbackFunction('[]')") {}
+                return@launch
+            }
+
             val sameHost =
                 try {
                     Uri.parse(webView.url).host == Uri.parse(app?.homeUri ?: "").host
@@ -1041,6 +1181,30 @@ class WebFragment : BaseFragment() {
         }
     }
 
+    private fun botSign(appId: String, reloadPublicKey: Boolean, method: String, path: String, body: String, callbackFunction: String) {
+        if (viewDestroyed()) return
+
+        lifecycleScope.launch {
+            val app = bottomViewModel.findAndSync(appId)
+            if (app == null) {
+                webView.evaluateJavascript("$callbackFunction('[]')") {}
+                return@launch
+            }
+            if (webView.url?.matchResourcePattern(app.resourcePatterns) != true) {
+                webView.evaluateJavascript("$callbackFunction('[]')") {}
+                bottomViewModel.refreshUser(appId, true)
+                return@launch
+            }
+            val publicKey = bottomViewModel.getBotPublicKey(appId, defaultSharedPreferences, reloadPublicKey)
+            if (publicKey.isNullOrBlank()) {
+                webView.evaluateJavascript("$callbackFunction('[]')") {}
+                return@launch
+            }
+            val (ts, signature) = getBotSignature(publicKey, method, path, body)
+            webView.evaluateJavascript("$callbackFunction('$ts', '$signature')") {}
+        }
+    }
+
     private fun tipSign(
         chainId: String,
         message: String,
@@ -1063,9 +1227,12 @@ class WebFragment : BaseFragment() {
                     }
                 },
                 callback = {
-                    val sig = TipSignSpec.Ecdsa.Secp256k1.sign(tipPrivToPrivateKey(it, chainId), message.toByteArray())
-                    lifecycleScope.launch {
-                        webView.evaluateJavascript("$callbackFunction('$sig')") {}
+                    if (isAdded) {
+                        val priv = requireNotNull(CryptoWalletHelper.getWeb3PrivateKey(requireContext(), it, chainId))
+                        val sig = TipSignSpec.Ecdsa.Secp256k1.sign(priv, message.toByteArray())
+                        lifecycleScope.launch {
+                            webView.evaluateJavascript("$callbackFunction('$sig')") {}
+                        }
                     }
                 },
             )
@@ -1111,7 +1278,7 @@ class WebFragment : BaseFragment() {
         val currentUrl = webView.url ?: url
         val v = webView
         if (v.height <= 0) return null
-        val screenshot = Bitmap.createBitmap(v.width, v.height, Bitmap.Config.RGB_565)
+        val screenshot = createBitmap(v.width, v.height, Bitmap.Config.RGB_565)
         val c = Canvas(screenshot)
         c.translate((-v.scrollX).toFloat(), (-v.scrollY).toFloat())
         v.draw(c)
@@ -1171,7 +1338,6 @@ class WebFragment : BaseFragment() {
             requireActivity().window.decorView.systemUiVisibility = originalSystemUiVisibility
             requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
-        JsSigner.reset()
         super.onDestroyView()
         _binding = null
     }
@@ -1400,8 +1566,10 @@ class WebFragment : BaseFragment() {
             }
         list.createMenuLayout(requireContext()).let { layout ->
             viewBinding.root.addView(layout)
+            val safeBottomHeight = layout.getSafeAreaInsetsBottom()
             layout.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                bottomMargin = requireContext().dpToPx(30f)
+                bottomMargin = safeBottomHeight
+
             }
         }
         bottomSheet.show()
@@ -1578,11 +1746,15 @@ class WebFragment : BaseFragment() {
 
     private fun setStatusBarColor(content: String) {
         try {
+            if (content.isEmpty() || content == "\"\"") {
+                return
+            }
             val color = content.replace("\"", "")
-            val c = Color.parseColor(color)
+            val c = color.toColorInt()
             val dark = isDarkColor(c)
             refreshByLuminance(dark, c)
         } catch (e: Exception) {
+            Timber.e("setStatusBarColor error: ${e.stackTraceToString()} ${content.ifBlank { "" }}")
             context?.let {
                 refreshByLuminance(it.isNightMode(), it.colorFromAttribute(R.attr.icon_white))
             }
@@ -1595,13 +1767,13 @@ class WebFragment : BaseFragment() {
     ) {
         if (viewDestroyed()) return
 
-        requireActivity().window.statusBarColor = color
         requireActivity().window?.let {
+            it.decorView.findViewById<ViewGroup>(R.id.container).setBackgroundColor(color)
             SystemUIManager.setAppearanceLightStatusBars(it, !dark)
         }
         titleColor = color
         binding.titleTv.setTextColor(if (dark) Color.WHITE else Color.BLACK)
-        binding.titleLl.setBackgroundColor(color)
+        binding.titleVa.setBackgroundColor(color)
         binding.webControl.mode = dark
     }
 
@@ -1610,8 +1782,10 @@ class WebFragment : BaseFragment() {
         private val onPageFinishedListener: OnPageFinishedListener,
         val conversationId: String?,
         private val context: Context,
+        private val fragment: Fragment,
         private val fragmentManager: FragmentManager,
         private val registry: ActivityResultRegistry,
+        private val inject: Boolean = true,
         private val scope: CoroutineScope,
         private val onFinished: (url: String?) -> Unit,
         private val onWebpageLoaded: (title: String?, url: String?) -> Unit,
@@ -1623,6 +1797,10 @@ class WebFragment : BaseFragment() {
             JsInjectorClient()
         }
 
+        private fun closeWebContainer() {
+            fragment.activity?.finish()
+        }
+
         override fun onPageStarted(
             view: WebView?,
             url: String?,
@@ -1631,8 +1809,8 @@ class WebFragment : BaseFragment() {
             super.onPageStarted(view, url, favicon)
             view ?: return
             view.clearCache(true)
-            Timber.e("onPageStarted ${JsSigner.currentChain.name}")
-            if (!redirect) {
+            Timber.e("onPageStarted ${Web3Signer.currentChain.name}")
+            if (!redirect && inject) {
                 view.evaluateJavascript(jsInjectorClient.loadProviderJs(view.context), null)
                 view.evaluateJavascript(jsInjectorClient.initJs(view.context), null)
             }
@@ -1664,13 +1842,20 @@ class WebFragment : BaseFragment() {
             loadingError = true
         }
 
+        @SuppressLint("WebViewClientOnReceivedSslError")
         override fun onReceivedSslError(
             view: WebView?,
             handler: SslErrorHandler?,
             error: SslError?,
         ) {
-            handler?.proceed()
-            Timber.e("${error?.toString()}")
+            error?.let { e ->
+                reportException(Exception("$e ${view?.url}"))
+            }
+            fragment.alert(context.getString(R.string.ssl_cert_invalid))
+                .setNegativeButton(R.string.OK) { dialog, _ ->
+                    handler?.cancel()
+                    dialog.dismiss()
+                }.show()
         }
 
         override fun onPageCommitVisible(
@@ -1701,12 +1886,15 @@ class WebFragment : BaseFragment() {
                 if (wcUrl != null) {
                     // handle wallet connect url
                     UrlInterpreterActivity.show(view.context, wcUrl)
+                    if (request.isForMainFrame) {
+                        closeWebContainer()
+                    }
                 }
                 // ignore wallet connect data url
                 return true
             }
 
-            if (url.isMixinUrl()) {
+            if (url.isMixinUrl() || url.isExternalTransferUrl() || url.isLightningUrl()) {
                 if (url == lastHandleUrl?.first && System.currentTimeMillis() - (lastHandleUrl?.second ?: 0) <= 1000L) {
                     return true
                 }
@@ -1745,6 +1933,9 @@ class WebFragment : BaseFragment() {
                     }
                     try {
                         context.startActivity(intent)
+                        if (request.isForMainFrame) {
+                            closeWebContainer()
+                        }
                     } catch (e: ActivityNotFoundException) {
                         val fallbackUrl = intent.extras?.getString("browser_fallback_url")
                         if (fallbackUrl != null && isFallbackUrlValid(fallbackUrl)) {
@@ -1767,7 +1958,7 @@ class WebFragment : BaseFragment() {
         private fun isFallbackUrlValid(fallbackUrl: String): Boolean {
             try {
                 val anyCaseScheme = URI(fallbackUrl).scheme
-                val scheme = if ((anyCaseScheme == null)) null else anyCaseScheme.lowercase(Locale.US)
+                val scheme = anyCaseScheme?.lowercase(Locale.US)
                 if ("http" == scheme || "https" == scheme) {
                     return true
                 } else {
@@ -1792,23 +1983,23 @@ class WebFragment : BaseFragment() {
     ) {
         @JavascriptInterface
         fun postMessage(json: String) {
-            Timber.e("postMessage $json")
+            if (BuildConfig.DEBUG) Timber.d("postMessage $json")
             val obj = JSONObject(json)
             val id = obj.getLong("id")
             val method = DAppMethod.fromValue(obj.getString("name"))
             val network = obj.getString("network")
-            if (network == JsSigner.JsSignerNetwork.Solana.name) {
-                JsSigner.useSolana()
+            if (network == Web3Signer.JsSignerNetwork.Solana.name) {
+                Web3Signer.useSolana()
             } else {
-                JsSigner.useEvm()
+                Web3Signer.useEvm()
             }
             if (isAddressEmpty(network)) {
                 return
             }
             when (method) {
                 DAppMethod.REQUESTACCOUNTS -> {
-                    onWalletActionSuccessful("window.$network.setAddress(\"${JsSigner.address}\");")
-                    onWalletActionSuccessful("window.$network.sendResponse($id, [\"${JsSigner.address}\"]);")
+                    onWalletActionSuccessful("window.$network.setAddress(\"${Web3Signer.address}\");")
+                    onWalletActionSuccessful("window.$network.sendResponse($id, [\"${Web3Signer.address}\"]);")
                 }
 
                 DAppMethod.SWITCHETHEREUMCHAIN -> {
@@ -1818,7 +2009,7 @@ class WebFragment : BaseFragment() {
                 DAppMethod.SIGNMESSAGE -> {
                     val o = obj.getJSONObject("object")
                     val data =
-                        if (network == JsSigner.JsSignerNetwork.Solana.name) {
+                        if (network == Web3Signer.JsSignerNetwork.Solana.name) {
                             o.getString("data")
                         } else {
                             o.toString()
@@ -1869,6 +2060,10 @@ class WebFragment : BaseFragment() {
                             null
                         }
 
+                    if (!from.equals(Web3Signer.evmAddress, ignoreCase = true)) {
+                        onWalletActionError(id)
+                        return
+                    }
                     signTransaction(id, WCEthereumTransaction(from, to, null, null, maxFeePerGas, maxPriorityFeePerGas, gas, null, value, data))
                 }
 
@@ -1891,7 +2086,7 @@ class WebFragment : BaseFragment() {
         }
 
         private fun isAddressEmpty(network: String): Boolean {
-            if (JsSigner.address.isBlank()) {
+            if (Web3Signer.address.isBlank()) {
                 onEmptyAddress(network)
                 return true
             }
@@ -1925,7 +2120,7 @@ class WebFragment : BaseFragment() {
         ) {
             try {
                 val address = data.getString("address")
-                if (!address.equals(JsSigner.address, true)) {
+                if (!address.equals(Web3Signer.address, true)) {
                     throw IllegalArgumentException("Address unequal")
                 }
                 onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_PERSONAL_MESSAGE, data = data.getString("data")))
@@ -1940,7 +2135,7 @@ class WebFragment : BaseFragment() {
         ) {
             try {
                 val address = data.getString("address")
-                if (!address.equals(JsSigner.address, true)) {
+                if (!address.equals(Web3Signer.address, true)) {
                     throw IllegalArgumentException("Address unequal")
                 }
                 onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_TYPED_MESSAGE, data = data.getString("raw")))
@@ -1969,23 +2164,23 @@ class WebFragment : BaseFragment() {
             msgParams: String,
         ) {
             val switchChain = GsonHelper.customGson.fromJson(msgParams, SwitchChain::class.java)
-            val result = JsSigner.switchChain(switchChain)
+            val result = Web3Signer.switchChain(switchChain)
             if (result.isSuccess) {
                 onWalletActionSuccessful(
                     """
                     var config = {
                     ethereum: {
-                        address: "${JsSigner.address}",
-                        chainId: ${JsSigner.currentChain.chainReference},
-                        rpcUrl: "${JsSigner.currentChain.rpcUrl}"
+                        address: "${Web3Signer.address}",
+                        chainId: ${Web3Signer.currentChain.chainReference},
+                        rpcUrl: "${Web3Signer.currentChain.rpcUrl}"
                     }
                 };
-                mixinwallet.${JsSigner.currentNetwork}.setConfig(config);
+                mixinwallet.${Web3Signer.currentNetwork}.setConfig(config);
                 """,
                 )
-                onWalletActionSuccessful("window.${JsSigner.currentNetwork}.emitChainChanged('${JsSigner.currentChain.hexReference}');")
+                onWalletActionSuccessful("window.${Web3Signer.currentNetwork}.emitChainChanged('${Web3Signer.currentChain.hexReference}');")
             }
-            onWalletActionSuccessful("window.${JsSigner.currentNetwork}.sendResponse($callbackId, null);")
+            onWalletActionSuccessful("window.${Web3Signer.currentNetwork}.sendResponse($callbackId, null);")
         }
     }
 
@@ -1999,6 +2194,8 @@ class WebFragment : BaseFragment() {
         var getTipAddressAction: ((String, String) -> Unit)? = null,
         var tipSignAction: ((String, String, String) -> Unit)? = null,
         var getAssetAction: ((Array<String>, String) -> Unit)? = null,
+        var signBotSignature: ((String, Boolean, String, String, String, String) -> Unit)? = null,
+        var openInBrowserAction: ((String) -> Boolean)? = null,
     ) {
         @JavascriptInterface
         fun showToast(toast: String) {
@@ -2044,6 +2241,11 @@ class WebFragment : BaseFragment() {
         }
 
         @JavascriptInterface
+        fun openInBrowser(url: String): Boolean {
+            return openInBrowserAction?.invoke(url) ?: false
+        }
+
+        @JavascriptInterface
         fun getTipAddress(
             chainId: String,
             callbackFunction: String,
@@ -2058,6 +2260,22 @@ class WebFragment : BaseFragment() {
             callbackFunction: String,
         ) {
             tipSignAction?.invoke(chainId, message, callbackFunction)
+        }
+
+        @JavascriptInterface
+        fun signBotSignature(
+            messageBody: Array<String>,
+        ) {
+            if (messageBody.isEmpty()) {
+                return
+            }
+            val appId = messageBody[0]
+            val reloadPublicKey = messageBody[1]
+            val method = messageBody[2]
+            val path = messageBody[3]
+            val body = messageBody[4]
+            val callbackFunction = messageBody[5]
+            signBotSignature?.invoke(appId, reloadPublicKey.toBoolean(), method, path, body, callbackFunction)
         }
     }
 

@@ -8,7 +8,6 @@ import dagger.assisted.AssistedInject
 import one.mixin.android.api.service.ContactService
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.UserDao
-import one.mixin.android.db.insertUpdateList
 import one.mixin.android.vo.User
 
 @HiltWorker
@@ -25,7 +24,11 @@ class RefreshContactWorker
             val response = contactService.friends().execute().body()
             return if (response != null && response.isSuccess && response.data != null) {
                 val users = response.data as List<User>
-                userDao.insertUpdateList(users, appDao)
+                val existedUserIds = userDao.findUserExist(users.map { it.userId })
+                val newUsers = users.filter { user ->
+                    !existedUserIds.contains(user.userId)
+                }
+                userDao.insertUpdateList(newUsers, appDao)
                 Result.success()
             } else {
                 Result.failure()

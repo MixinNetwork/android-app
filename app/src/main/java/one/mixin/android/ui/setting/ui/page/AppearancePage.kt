@@ -107,6 +107,8 @@ fun AppearancePage() {
 private fun ThemeItem() {
     val context = LocalContext.current
     val preference = context.defaultSharedPreferences
+    val themeTitle = stringResource(id = R.string.Theme)
+    val themeOptions = stringArrayResource(R.array.setting_night_array_oreo)
 
     val currentThemeId =
         remember {
@@ -123,11 +125,11 @@ private fun ThemeItem() {
         }
 
     AppearanceItem(
-        label = stringResource(id = R.string.Theme),
-        value = context.resources.getStringArray(R.array.setting_night_array_oreo)[currentThemeId.value],
+        label = themeTitle,
+        value = themeOptions[currentThemeId.value],
     ) {
         context.singleChoice(
-            context.getString(R.string.Theme),
+            themeTitle,
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
                 R.array.setting_night_array
             } else {

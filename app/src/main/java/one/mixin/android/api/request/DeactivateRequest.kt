@@ -6,5 +6,5 @@ data class DeactivateRequest(
     @SerializedName("pin_base64")
     val pin: String,
     @SerializedName("verification_id")
-    val verificationId: String,
+    val verificationId: String? = null,
 )

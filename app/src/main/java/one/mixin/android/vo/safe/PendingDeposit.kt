@@ -14,7 +14,7 @@ data class PendingDeposit(
     @SerializedName("sender")
     val sender: String?,
     val amount: String,
-    val confirmations: Int,
+    val confirmations: Long,
     @SerializedName("created_at")
     val createdAt: String,
 )

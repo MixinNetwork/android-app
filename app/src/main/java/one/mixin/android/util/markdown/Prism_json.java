@@ -1,12 +1,15 @@
 package one.mixin.android.util.markdown;
 
-import io.noties.prism4j.Prism4j;
-import io.noties.prism4j.annotations.Aliases;
-import org.jetbrains.annotations.NotNull;
-
-import static io.noties.prism4j.Prism4j.*;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.regex.Pattern.compile;
+import static io.noties.prism4j.Prism4j.grammar;
+import static io.noties.prism4j.Prism4j.pattern;
+import static io.noties.prism4j.Prism4j.token;
+
+import org.jetbrains.annotations.NotNull;
+
+import io.noties.prism4j.Prism4j;
+import io.noties.prism4j.annotations.Aliases;
 
 @SuppressWarnings("unused")
 @Aliases("jsonp")

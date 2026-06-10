@@ -1,116 +1,138 @@
-<?xml version="1.0" encoding="utf-8"?>
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="44dp"
-    android:weightSum="2">
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:weightSum="3"
+    tools:parentTag="android.widget.LinearLayout">
 
-    <TextView
-        android:id="@+id/send_tv"
+    <LinearLayout
+        android:id="@+id/buy"
         android:layout_width="0dp"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:gravity="center"
-        android:foreground="@drawable/mixin_ripple_round_left_12dp"
-        android:text="@string/Send_transfer"
-        android:textSize="14sp"
-        android:textFontWeight="600"
-        android:textColor="?attr/text_primary" />
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:visibility="gone">
 
-    <View
-        android:layout_width="2dp"
-        android:layout_height="20dp"
-        android:layout_gravity="center_vertical"
-        android:background="#0D000000" />
-
-    <FrameLayout
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1">
-
-        <TextView
-            android:id="@+id/receive_tv"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:foreground="@drawable/mixin_ripple_round_right_12dp"
-            android:textFontWeight="600"
-            android:text="@string/Receive"
-            android:textSize="14sp"
-            android:textColor="?attr/text_primary" />
-
-        <ProgressBar
-            android:id="@+id/receive_progress"
-            style="?android:attr/progressBarStyleSmall"
+        <FrameLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:theme="@style/AppTheme.BlueProgress"
-            android:visibility="gone" />
-    </FrameLayout>
+            android:layout_weight="1">
 
-    <View
-        android:id="@+id/buy_delimiter"
-        android:layout_width="2dp"
-        android:layout_height="20dp"
-        android:visibility="gone"
-        android:layout_gravity="center_vertical"
-        android:background="#0D000000" />
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:foreground="@drawable/mixin_ripple_24"
+                android:src="@drawable/ic_wallet_buy" />
 
-    <ViewAnimator
-        android:id="@+id/buy_va"
-        android:layout_width="0dp"
-        android:layout_weight="1"
-        android:visibility="gone"
-        android:foreground="@drawable/mixin_ripple_round_right_12dp"
-        android:layout_height="match_parent">
+            <View
+                android:id="@+id/buy_badge"
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:layout_gravity="end|top"
+                android:layout_marginTop="3dp"
+                android:background="@drawable/bg_red_dot"
+                android:visibility="gone" />
+
+        </FrameLayout>
 
         <TextView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
             android:text="@string/Buy"
-            android:textSize="14sp"
+            android:textColor="?attr/text_primary"
             android:textFontWeight="600"
-            android:textColor="?attr/text_primary" />
+            android:textSize="12sp" />
+    </LinearLayout>
 
-        <ProgressBar
-            style="?android:attr/progressBarStyleSmall"
-            android:theme="@style/AppTheme.BlueProgress"
+    <LinearLayout
+        android:id="@+id/receive"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center" />
-    </ViewAnimator>
-
-    <View
-        android:id="@+id/swap_delimiter"
-        android:layout_width="2dp"
-        android:layout_height="20dp"
-        android:visibility="gone"
-        android:layout_gravity="center_vertical"
-        android:background="#0D000000" />
-
-    <ViewAnimator
-        android:id="@+id/swap_va"
-        android:layout_width="0dp"
-        android:layout_weight="1"
-        android:visibility="gone"
-        android:foreground="@drawable/mixin_ripple_round_right_12dp"
-        android:layout_height="match_parent">
+            android:foreground="@drawable/mixin_ripple_24"
+            android:src="@drawable/ic_wallet_receive" />
 
         <TextView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:text="@string/Swap"
-            android:textSize="14sp"
-            android:textFontWeight="600"
-            android:textColor="?attr/text_primary" />
-
-        <ProgressBar
-            style="?android:attr/progressBarStyleSmall"
-            android:theme="@style/AppTheme.BlueProgress"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center" />
-    </ViewAnimator>
+            android:layout_marginTop="8dp"
+            android:text="@string/Receive"
+            android:textColor="?attr/text_primary"
+            android:textFontWeight="600"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/send"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:foreground="@drawable/mixin_ripple_24"
+            android:src="@drawable/ic_wallet_send" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/Send_transfer"
+            android:textColor="?attr/text_primary"
+            android:textFontWeight="600"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/swap"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:foreground="@drawable/mixin_ripple_24"
+                android:src="@drawable/ic_wallet_swap" />
+
+            <View
+                android:id="@+id/swap_badge"
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:layout_gravity="end|top"
+                android:layout_marginTop="3dp"
+                android:background="@drawable/bg_red_dot"
+                android:visibility="gone" />
+
+        </FrameLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/Trade"
+            android:textColor="?attr/text_primary"
+            android:textFontWeight="600"
+            android:textSize="12sp" />
+    </LinearLayout>
+
 </merge>

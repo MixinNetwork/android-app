@@ -31,11 +31,8 @@ interface AssetDao : BaseDao<Asset> {
     @Query("SELECT * FROM assets $POSTFIX")
     fun assets(): LiveData<List<Asset>>
 
-    @Query("SELECT * FROM assets WHERE balance > 0 $POSTFIX")
-    fun assetsWithBalance(): LiveData<List<Asset>>
-
-    @Query("SELECT * FROM assets WHERE balance > 0 $POSTFIX")
-    suspend fun simpleAssetsWithBalance(): List<Asset>
+    @Query("SELECT EXISTS(SELECT 1 FROM assets WHERE (balance * price_usd) > 0)")
+    fun hasAssetsWithValue(): LiveData<Boolean>
 
     @Query("$PREFIX_ASSET_ITEM WHERE a1.symbol = 'XIN' $POSTFIX_ASSET_ITEM limit 1")
     fun getXIN(): AssetItem?

@@ -56,17 +56,17 @@
 
     <one.mixin.android.widget.NameTextView
         android:id="@+id/name_tv"
-        android:ellipsize="end"
         android:layout_width="wrap_content"
         android:gravity="center"
         android:textColor="?attr/text_primary"
         android:layout_marginTop="3dp"
         android:layout_height="wrap_content"
+        app:ellipsize="end"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/avatar_view"
-        app:badgePadding="4dp"
+        app:badgePadding="0dp"
         app:lines="1"
-        app:maxWidth="120dp"/>
+        app:maxWidth="54dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

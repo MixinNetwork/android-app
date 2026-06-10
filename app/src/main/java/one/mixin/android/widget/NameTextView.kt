@@ -3,8 +3,10 @@ package one.mixin.android.widget
 import android.content.Context
 import android.graphics.Typeface
 import android.graphics.drawable.Drawable
-import android.os.Build.*
+import android.os.Build.VERSION
+import android.os.Build.VERSION_CODES
 import android.text.InputFilter
+import android.text.SpannableString
 import android.text.TextUtils
 import android.util.AttributeSet
 import android.util.TypedValue
@@ -28,13 +30,16 @@ import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationMinimal
 import one.mixin.android.vo.ExploreApp
+import one.mixin.android.vo.MaoUser
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.ParticipantItem
 import one.mixin.android.vo.QuoteMessageItem
+import one.mixin.android.vo.SearchBot
 import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserItem
+import one.mixin.android.vo.isBotIdentityNumber
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.vo.membershipIcon
 import one.mixin.android.widget.lottie.RLottieDrawable
@@ -45,6 +50,9 @@ class NameTextView : LinearLayoutCompat {
     private val binding = ViewNameTextBinding.inflate(LayoutInflater.from(context), this)
     val textView get() = binding.nameText
     private val iconView get() = binding.nameIcon
+    private val iconContainer get() = binding.iconContainer
+
+    private var iconClickListener: OnClickListener? = null
 
     constructor(context: Context) : this(context, null)
 
@@ -59,8 +67,11 @@ class NameTextView : LinearLayoutCompat {
         iconView.updateLayoutParams<MarginLayoutParams> {
             width = badgeSize
             height = badgeSize
+        }
+        iconContainer.updateLayoutParams<MarginLayoutParams> {
             marginStart = badgePadding
         }
+
         val textSize = a.getDimension(R.styleable.NameTextView_textSize, sp14)
         textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize)
 
@@ -82,13 +93,11 @@ class NameTextView : LinearLayoutCompat {
         }
 
         val ellipsize = a.getString(R.styleable.NameTextView_ellipsize)
-        if (ellipsize != null) {
-            textView.ellipsize = when {
-                ellipsize.equalsIgnoreCase("end") -> TextUtils.TruncateAt.END
-                ellipsize.equalsIgnoreCase("start") -> TextUtils.TruncateAt.START
-                ellipsize.equalsIgnoreCase("middle") -> TextUtils.TruncateAt.MIDDLE
-                else -> null
-            }
+        textView.ellipsize = when {
+            ellipsize?.equalsIgnoreCase("end") == true -> TextUtils.TruncateAt.END
+            ellipsize?.equalsIgnoreCase("start") == true -> TextUtils.TruncateAt.START
+            ellipsize?.equalsIgnoreCase("middle") == true -> TextUtils.TruncateAt.MIDDLE
+            else -> TextUtils.TruncateAt.END // default end
         }
         val maxWidth = a.getDimensionPixelSize(R.styleable.NameTextView_maxWidth, 0)
         if (maxWidth > 0) {
@@ -98,8 +107,8 @@ class NameTextView : LinearLayoutCompat {
         if (maxWidth > 0) {
             textView.minWidth = minWidth
         }
-        val maxLength  = a.getInt(R.styleable.NameTextView_maxLength, 0)
-        if (maxLength>0){
+        val maxLength = a.getInt(R.styleable.NameTextView_maxLength, 0)
+        if (maxLength > 0) {
             textView.filters = arrayOf(InputFilter.LengthFilter(maxLength))
         }
         val lines = a.getInt(R.styleable.NameTextView_lines, 1)
@@ -130,6 +139,13 @@ class NameTextView : LinearLayoutCompat {
         this.textView.setCompoundDrawables(null, null, null, null)
     }
 
+    fun setTextOnly(text: SpannableString?) {
+        this.textView.text = text
+        iconView.isVisible = false
+        iconView.stopAnimation()
+        this.textView.setCompoundDrawables(null, null, null, null)
+    }
+
     fun setTextOnly(@StringRes text: Int) {
         textView.setText(text)
         iconView.isVisible = false
@@ -138,6 +154,59 @@ class NameTextView : LinearLayoutCompat {
     }
 
     fun setName(user: User) {
+        this.textView.text = user.fullName
+        if (user.isProsperity()) {
+            iconView.isVisible = true
+            iconView.setImageDrawable(
+                RLottieDrawable(
+                    R.raw.prosperity,
+                    "prosperity",
+                    badgeSize,
+                    badgeSize,
+                ).apply {
+                    setAllowDecodeSingleFrame(true)
+                    setAutoRepeat(1)
+                    setAutoRepeatCount(Int.MAX_VALUE)
+                    start()
+                },
+            )
+        } else {
+            val badge = getBadge(user)
+            if (badge != null) {
+                iconView.isVisible = true
+                iconView.setImageDrawable(badge)
+            } else {
+                iconView.isVisible = false
+            }
+            iconView.stopAnimation()
+        }
+    }
+
+    fun setName(user: MaoUser) {
+        this.textView.text = user.fullName
+        if (user.isProsperity()) {
+            iconView.isVisible = true
+            iconView.setImageDrawable(
+                RLottieDrawable(
+                    R.raw.prosperity,
+                    "prosperity",
+                    badgeSize,
+                    badgeSize,
+                ).apply {
+                    setAllowDecodeSingleFrame(true)
+                    setAutoRepeat(1)
+                    setAutoRepeatCount(Int.MAX_VALUE)
+                    start()
+                },
+            )
+        } else {
+            iconView.isVisible = false
+            iconView.stopAnimation()
+        }
+        this.textView.setCompoundDrawables(null, null, getBadge(user), null)
+    }
+
+    fun setName(user: SearchBot) {
         this.textView.text = user.fullName
         if (user.isProsperity()) {
             iconView.isVisible = true
@@ -227,10 +296,15 @@ class NameTextView : LinearLayoutCompat {
                 },
             )
         } else {
-            iconView.isVisible = false
+            val badge = getBadge(account)
+            if (badge != null) {
+                iconView.isVisible = true
+                iconView.setImageDrawable(badge)
+            } else {
+                iconView.isVisible = false
+            }
             iconView.stopAnimation()
         }
-        this.textView.setCompoundDrawables(null, null, getBadge(account), null)
     }
 
     fun setName(user: ParticipantItem) {
@@ -504,7 +578,6 @@ class NameTextView : LinearLayoutCompat {
         this.textView.setCompoundDrawables(null, null, getMessageBadge(message), null)
     }
 
-
     fun setName(conversationItem: ConversationItem) {
         this.textView.text = conversationItem.getConversationName()
         if (conversationItem.isProsperity()) {
@@ -614,12 +687,46 @@ class NameTextView : LinearLayoutCompat {
         }
     }
 
+    private fun getBadge(user: MaoUser): Drawable? {
+        val resources = if (user.isMembership()) {
+            user.membership.membershipIcon()
+        } else if (user.isVerified == true) {
+            R.drawable.ic_user_verified
+        } else if (user.isBot()) {
+            R.drawable.ic_bot
+        } else {
+            null
+        }
+        return resources?.let { res ->
+            AppCompatResources.getDrawable(context, res).also { icon ->
+                icon?.setBounds(0, 0, badgeSize, badgeSize)
+            }
+        }
+    }
+
+    private fun getBadge(user: SearchBot): Drawable? {
+        val resources = if (user.isMembership()) {
+            user.membership.membershipIcon()
+        } else if (user.isVerified == true) {
+            R.drawable.ic_user_verified
+        } else if (user.isBot()) {
+            R.drawable.ic_bot
+        } else {
+            null
+        }
+        return resources?.let { res ->
+            AppCompatResources.getDrawable(context, res).also { icon ->
+                icon?.setBounds(0, 0, badgeSize, badgeSize)
+            }
+        }
+    }
+
     private fun getBadge(user: UserItem): Drawable? {
         val resources = if (user.isMembership()) {
             user.membership.membershipIcon()
         } else if (user.isVerified == true) {
             R.drawable.ic_user_verified
-        } else if (user.appId != null) {
+        } else if (user.appId != null && user.identityNumber.isBotIdentityNumber()) {
             R.drawable.ic_bot
         } else {
             null
@@ -649,7 +756,7 @@ class NameTextView : LinearLayoutCompat {
             user.membership.membershipIcon()
         } else if (user.isVerified == true) {
             R.drawable.ic_user_verified
-        } else if (!user.appId.isNullOrEmpty()) {
+        } else if (!user.appId.isNullOrEmpty() && user.identityNumber.isBotIdentityNumber()) {
             R.drawable.ic_bot
         } else {
             null
@@ -696,7 +803,7 @@ class NameTextView : LinearLayoutCompat {
             item.sharedMembership.membershipIcon()
         } else if (item.sharedUserIsVerified == true) {
             R.drawable.ic_user_verified
-        } else if (item.sharedUserAppId != null) {
+        } else if (item.sharedUserAppId != null && item.userIdentityNumber.isBotIdentityNumber()) {
             R.drawable.ic_bot
         } else {
             null
@@ -724,7 +831,7 @@ class NameTextView : LinearLayoutCompat {
     private fun getMessageBadge(item: MessageItem): Drawable? {
         val resources = if (item.isMembership()) {
             item.membership.membershipIcon()
-        } else if (item.appId != null) {
+        } else if (item.appId != null && item.userIdentityNumber.isBotIdentityNumber()) {
             R.drawable.ic_bot
         } else {
             null
@@ -741,7 +848,7 @@ class NameTextView : LinearLayoutCompat {
             user.membership.membershipIcon()
         } else if (user.isVerified == true) {
             R.drawable.ic_user_verified
-        } else if (!user.appId.isNullOrEmpty()) {
+        } else if (!user.appId.isNullOrEmpty() && user.identityNumber.isBotIdentityNumber()) {
             R.drawable.ic_bot
         } else {
             null
@@ -758,7 +865,7 @@ class NameTextView : LinearLayoutCompat {
             item.membership.membershipIcon()
         } else if (item.isVerified) {
             R.drawable.ic_user_verified
-        } else if (!item.appId.isNullOrEmpty()) {
+        } else if (!item.appId.isNullOrEmpty() && item.userIdentityNumber.isBotIdentityNumber()) {
             R.drawable.ic_bot
         } else {
             null
@@ -775,7 +882,7 @@ class NameTextView : LinearLayoutCompat {
             item.sharedMembership.membershipIcon()
         } else if (item.sharedUserIsVerified == true) {
             R.drawable.ic_user_verified
-        } else if (item.sharedUserAppId != null) {
+        } else if (item.sharedUserAppId != null && item.sharedUserIdentityNumber.isBotIdentityNumber()) {
             R.drawable.ic_bot
         } else {
             null
@@ -790,7 +897,7 @@ class NameTextView : LinearLayoutCompat {
     private fun getMessageBadge(item: ChatHistoryMessageItem): Drawable? {
         val resources = if (item.isMembership()) {
             item.membership.membershipIcon()
-        } else if (item.appId != null) {
+        } else if (item.appId != null && item.userIdentityNumber.isBotIdentityNumber()) {
             R.drawable.ic_bot
         } else {
             null
@@ -878,5 +985,15 @@ class NameTextView : LinearLayoutCompat {
 
     fun setMaxWidth(maxWidth: Int) {
         this.textView.maxWidth = maxWidth
+    }
+
+    fun setOnIconClickListener(listener: OnClickListener) {
+        this.iconContainer.apply {
+            setOnClickListener(listener)
+        }
+    }
+
+    override fun setOnClickListener(l: OnClickListener?) {
+        this.textView.setOnClickListener(l)
     }
 }

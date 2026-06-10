@@ -1,13 +1,17 @@
 package one.mixin.android.util.blurhash;
 
+import static one.mixin.android.util.blurhash.BlurHashUtil.linearTosRGB;
+import static one.mixin.android.util.blurhash.BlurHashUtil.max;
+import static one.mixin.android.util.blurhash.BlurHashUtil.sRGBToLinear;
+import static one.mixin.android.util.blurhash.BlurHashUtil.signPow;
+
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.io.InputStream;
-
-import static one.mixin.android.util.blurhash.BlurHashUtil.*;
 
 public final class BlurHashEncoder {
 

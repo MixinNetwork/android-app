@@ -28,8 +28,8 @@ fun buildGhostKeyRequest(
     val output = uniqueObjectId(traceId, "OUTPUT", "0")
     val change = uniqueObjectId(traceId, "OUTPUT", "1")
     return listOf(
-        GhostKeyRequest(receiverIds, 0, output),
-        GhostKeyRequest(senderIds, 1, change),
+        GhostKeyRequest(receiverIds.sorted(), 0, output),
+        GhostKeyRequest(senderIds.sorted(), 1, change),
     )
 }
 

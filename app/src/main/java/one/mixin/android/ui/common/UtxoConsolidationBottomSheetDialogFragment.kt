@@ -69,17 +69,21 @@ class UtxoConsolidationBottomSheetDialogFragment : ValuableBiometricBottomSheetD
     }
 
     override fun getBiometricInfo(): BiometricInfo {
-        return BiometricInfo(
-            getString(
-                R.string.transfer_to,
-                t.users.first().fullName,
-            ),
-            getString(
-                R.string.contact_mixin_id,
-                t.users.first().identityNumber,
-            ),
-            getDescription(),
-        )
+        return runCatching {
+            BiometricInfo(
+                getString(
+                    R.string.transfer_to,
+                    t.users.firstOrNull()?.fullName ?: "",
+                ),
+                getString(
+                    R.string.contact_mixin_id,
+                    t.users.firstOrNull()?.identityNumber ?: "",
+                ),
+                getDescription(),
+            )
+        }.getOrElse {
+            BiometricInfo("", "", getDescription())
+        }
     }
 
     override fun getBiometricItem() = t

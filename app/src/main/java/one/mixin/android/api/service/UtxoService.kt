@@ -57,6 +57,11 @@ interface UtxoService {
         @Path("id") id: String,
     ): MixinResponse<TransactionResponse>
 
+    @POST("safe/transactions/fetch")
+    suspend fun transactionsFetch(
+        @Body ids: List<String>,
+    ): MixinResponse<List<TransactionResponse>>
+
     @GET("safe/multisigs/{id}")
     suspend fun getMultisigs(
         @Path("id") requestId: String,

@@ -5,15 +5,17 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.RenderEffect
 import android.graphics.Shader
-import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
+import androidx.core.graphics.drawable.toDrawable
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityWebBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.blurBitmap
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.isDarkColor
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.openCustomerServiceIfMatched
 import one.mixin.android.extension.supportsS
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
@@ -43,7 +45,12 @@ class WebActivity : BaseActivity() {
             conversationId: String?,
             app: App? = null,
             appCard: AppCardData? = null,
+            saveName: Boolean? = null,
+            fixedTitle: String? = null
         ) {
+            if (context.openCustomerServiceIfMatched(url)) {
+                return
+            }
             context.startActivity(
                 Intent(context, WebActivity::class.java).apply {
                     if (context !is Activity) {
@@ -61,6 +68,8 @@ class WebActivity : BaseActivity() {
                             )
                             putParcelable(WebFragment.ARGS_APP, app)
                             putParcelable(WebFragment.ARGS_APP_CARD, appCard)
+                            putBoolean(WebFragment.ARGS_SAVE_NAME, saveName ?: false)
+                            putString(WebFragment.ARGS_FIXED_TITLE, fixedTitle)
                         },
                     )
                 },
@@ -81,14 +90,15 @@ class WebActivity : BaseActivity() {
             overridePendingTransition(R.anim.fade_in, R.anim.stay)
         }
         super.onCreate(savedInstanceState)
+        SystemUIManager.setSafePaddingOnce(window = window, color = colorFromAttribute(R.attr.bg_white), R.id.container)
         binding = ActivityWebBinding.inflate(layoutInflater)
         setContentView(binding.root)
         getScreenshot()?.let {
             supportsS({
-                binding.background.background = BitmapDrawable(resources, it)
+                binding.background.background = it.toDrawable(resources)
                 binding.background.setRenderEffect(RenderEffect.createBlurEffect(10f, 10f, Shader.TileMode.MIRROR))
             }, {
-                binding.container.background = BitmapDrawable(resources, it.blurBitmap(25))
+                binding.container.background = it.blurBitmap(25).toDrawable(resources)
             })
         }
         binding.container.setOnClickListener {
@@ -135,9 +145,8 @@ class WebActivity : BaseActivity() {
                 isExpand = true
                 supportFragmentManager.beginTransaction().show(f).commit()
                 if (f is WebFragment) {
-                    val dark = isDarkColor(f.titleColor)
-                    window.statusBarColor = f.titleColor
-                    SystemUIManager.lightUI(window, !dark)
+                    val isDark: Boolean = isDarkColor(f.titleColor)
+                    SystemUIManager.lightUI(window, !isDark)
                 }
             } else {
                 onBackPressedDispatcher.onBackPressed()
@@ -173,12 +182,10 @@ class WebActivity : BaseActivity() {
         extras.putParcelable(WebFragment.ARGS_APP, clip.app)
         clip.shareable?.let { extras.putBoolean(WebFragment.ARGS_SHAREABLE, it) }
         isExpand = true
-
-        window.statusBarColor =
-            clip.titleColor.apply {
-                val dark = isDarkColor(this)
-                SystemUIManager.lightUI(window, !dark)
-            }
+        val safeColor: Int = clip.titleColor.apply {
+            val isDark: Boolean = isDarkColor(this)
+            SystemUIManager.lightUI(window, !isDark)
+        }
         releaseWeb()
         supportFragmentManager.beginTransaction().add(
             R.id.container,

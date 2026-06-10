@@ -19,7 +19,6 @@ import androidx.collection.ArraySet
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.net.toFile
 import androidx.core.net.toUri
-import androidx.core.os.bundleOf
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
@@ -113,10 +112,10 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         ): ForwardFragment {
             val fragment = ForwardFragment()
             val b =
-                bundleOf(
-                    ARGS_MESSAGES to messages,
-                    ARGS_ACTION to action,
-                )
+                Bundle().apply {
+                    putParcelableArrayList(ARGS_MESSAGES, messages)
+                    putParcelable(ARGS_ACTION, action)
+                }
             fragment.arguments = b
             return fragment
         }
@@ -127,10 +126,10 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         ): ForwardFragment {
             val fragment = ForwardFragment()
             val b =
-                bundleOf(
-                    ARGS_COMBINE_MESSAGES to messages,
-                    ARGS_ACTION to action,
-                )
+                Bundle().apply {
+                    putParcelableArrayList(ARGS_COMBINE_MESSAGES, messages)
+                    putParcelable(ARGS_ACTION, action)
+                }
             fragment.arguments = b
             return fragment
         }
@@ -181,9 +180,11 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
 
     private fun setForwardText() {
         if (adapter.selectItem.size > 0) {
-            binding.forwardGroup.visibility = View.VISIBLE
+            binding.forwardBn.visibility = View.VISIBLE
+            binding.forwardTv.visibility = View.VISIBLE
         } else {
-            binding.forwardGroup.visibility = View.GONE
+            binding.forwardBn.visibility = View.GONE
+            binding.forwardTv.visibility = View.GONE
         }
         val str = StringBuffer()
         for (i in adapter.selectItem.size - 1 downTo 0) {

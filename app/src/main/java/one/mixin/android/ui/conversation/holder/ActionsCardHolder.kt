@@ -19,6 +19,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSecret
+import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.widget.ActionButton
 
 class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
@@ -66,7 +67,7 @@ class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
 
         if (isFirst && !isMe) {
             binding.chatName.visibility = View.VISIBLE
-            binding.chatName.setName(messageItem)
+            binding.chatName.setMessageName(messageItem)
             binding.chatName.setTextColor(getColorById(messageItem.userId))
             binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
         } else {
@@ -103,6 +104,19 @@ class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
                 messageItem.isPin ?: false,
                 isRepresentative = isRepresentative,
                 isSecret = messageItem.isSecret(),
+                coverClick = {
+                    if (hasSelect) {
+                        onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
+                    } else {
+                        MediaPagerActivity.show(
+                            itemView.context,
+                            messageItem.conversationId,
+                            messageItem.messageId,
+                            0f,
+                            MediaPagerActivity.MediaSource.Chat,
+                        )
+                    }
+                },
             )
         }
         binding.chatGroupLayout.removeAllViews()

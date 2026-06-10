@@ -3,8 +3,9 @@ package one.mixin.android.tip.wc.internal
 import android.os.Parcelable
 import com.github.salomonbrys.kotson.jsonDeserializer
 import kotlinx.parcelize.Parcelize
-import org.web3j.protocol.core.methods.request.Transaction
-import org.web3j.utils.Numeric
+import org.web3j.utils.Convert
+import java.math.BigDecimal
+import java.math.BigInteger
 
 @Parcelize
 data class WCEthereumTransaction(
@@ -18,7 +19,18 @@ data class WCEthereumTransaction(
     val gasLimit: String?,
     val value: String?,
     val data: String?,
-) : Parcelable
+) : Parcelable {
+    fun getMainTokenAmount(): BigDecimal {
+        return value?.let {
+            try {
+                val wei = BigInteger(it.removePrefix("0x"), 16)
+                Convert.fromWei(wei.toString(), Convert.Unit.ETHER)
+            } catch (e: Exception) {
+                BigDecimal.ZERO
+            }
+        } ?: BigDecimal.ZERO
+    }
+}
 
 val ethTransactionSerializer =
     jsonDeserializer<List<WCEthereumTransaction>> {
@@ -30,15 +42,3 @@ val ethTransactionSerializer =
         }
         array
     }
-
-fun WCEthereumTransaction.toTransaction(): Transaction {
-    return Transaction(
-        from,
-        nonce?.let { Numeric.decodeQuantity(it) },
-        gasPrice?.let { Numeric.decodeQuantity(it) },
-        gasLimit?.let { Numeric.decodeQuantity(it) },
-        to,
-        value?.let { Numeric.decodeQuantity(it) },
-        data,
-    )
-}

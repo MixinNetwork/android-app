@@ -2,6 +2,7 @@ package one.mixin.android.tip
 
 import one.mixin.android.extension.sha256
 import one.mixin.android.extension.stripAmountZero
+import java.util.Locale
 
 object TipBody {
     private const val TIPVerify = "TIP:VERIFY:"
@@ -22,9 +23,13 @@ object TipBody {
     private const val TIPOAuthApprove = "TIP:OAUTH:APPROVE:"
     private const val TIPProvisioningCreate = "TIP:PROVISIONING:UPDATE:"
     private const val TIPBodyForSequencerRegister = "SEQUENCER:REGISTER:"
+    private const val TIPBodyForExport = "TIP:USER:EXPORT:PRIVATE:"
+    private const val TIPBodyForDeactivate = "TIP:USER:DEACTIVATE:"
+    private const val TIPSessionLogout = "TIP:SESSION:LOGOUT:"
 
-    fun forVerify(timestamp: Long): ByteArray =
-        String.format("%s%032d", TIPVerify, timestamp).toByteArray()
+    fun forVerify(timestamp: Long): ByteArray {
+        return "%s%032d".format(Locale.ENGLISH, TIPVerify, timestamp).toByteArray()
+    }
 
     fun forRawTransactionCreate(
         assetId: String,
@@ -106,6 +111,15 @@ object TipBody {
 
     fun forOAuthApprove(authorizationId: String): ByteArray =
         (TIPOAuthApprove + authorizationId).hashToBody()
+
+    fun forExport(userId: String): ByteArray =
+        (TIPBodyForExport + userId).hashToBody()
+
+    fun forDeactivate(userId: String): ByteArray =
+        (TIPBodyForDeactivate + userId).hashToBody()
+
+    fun forLogout(sessionId: String): ByteArray =
+        (TIPSessionLogout + sessionId).hashToBody()
 
     fun forProvisioningCreate(
         id: String,

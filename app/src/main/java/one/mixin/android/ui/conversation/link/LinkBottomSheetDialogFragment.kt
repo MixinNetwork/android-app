@@ -17,7 +17,6 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.annotations.SerializedName
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -26,6 +25,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.Scheme
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.api.ServerErrorException
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.response.AuthorizationResponse
@@ -35,24 +35,29 @@ import one.mixin.android.api.response.NonFungibleOutputResponse
 import one.mixin.android.api.response.PaymentCodeResponse
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.getScopes
+import one.mixin.android.api.response.signature.SignatureAction
 import one.mixin.android.api.response.signature.SignatureState
 import one.mixin.android.databinding.FragmentBottomSheetBinding
 import one.mixin.android.extension.appendQueryParamsFromOtherUri
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.booleanFromAttribute
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getGroupAvatarPath
 import one.mixin.android.extension.handleSchemeSend
 import one.mixin.android.extension.isExternalScheme
 import one.mixin.android.extension.isExternalTransferUrl
+import one.mixin.android.extension.isLightningUrl
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.isValidStartParam
+import one.mixin.android.extension.putInt
 import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.job.getIconUrlName
 import one.mixin.android.repository.QrCodeType
@@ -66,17 +71,23 @@ import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment
 import one.mixin.android.ui.common.JoinGroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.JoinGroupConversation
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
+import one.mixin.android.ui.common.SchemeBottomSheet
 import one.mixin.android.ui.common.biometric.AddressManageBiometricItem
 import one.mixin.android.ui.common.biometric.SafeMultisigsBiometricItem
+import one.mixin.android.ui.common.profile.InputReferralBottomSheetDialogFragment
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
+import one.mixin.android.ui.conversation.link.parser.BalanceError
 import one.mixin.android.ui.conversation.link.parser.NewSchemeParser
 import one.mixin.android.ui.conversation.link.parser.ParserError
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.home.inscription.InscriptionActivity
-import one.mixin.android.ui.home.web3.BrowserWalletBottomSheetDialogFragment
-import one.mixin.android.ui.home.web3.swap.SwapActivity
+import one.mixin.android.ui.home.web3.GasCheckBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.trade.SwapActivity
+import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.PREF_TRADE_SELECTED_TAB_PREFIX
+import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.TAB_PERPETUAL
+import one.mixin.android.ui.home.web3.trade.perps.PerpsActivity
 import one.mixin.android.ui.oldwallet.BottomSheetViewModel
 import one.mixin.android.ui.oldwallet.MultisigsBottomSheetDialogFragment
 import one.mixin.android.ui.oldwallet.NftBottomSheetDialogFragment
@@ -90,15 +101,18 @@ import one.mixin.android.ui.oldwallet.biometric.Multi2MultiBiometricItem
 import one.mixin.android.ui.oldwallet.biometric.NftBiometricItem
 import one.mixin.android.ui.oldwallet.biometric.One2MultiBiometricItem
 import one.mixin.android.ui.oldwallet.biometric.TransferBiometricItem
-import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.WalletActivity.Destination
+import one.mixin.android.ui.wallet.transfer.TransferBalanceErrorBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
@@ -107,8 +121,8 @@ import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toUser
 import one.mixin.android.web3.convertWcLink
 import one.mixin.android.web3.js.JsSignMessage
-import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.js.SolanaTxSource
+import one.mixin.android.web3.js.Web3Signer
 import timber.log.Timber
 import java.io.IOException
 import java.io.UnsupportedEncodingException
@@ -118,9 +132,10 @@ import java.net.UnknownHostException
 import java.nio.charset.StandardCharsets.UTF_8
 import java.util.UUID
 import javax.inject.Inject
+import one.mixin.android.ui.common.BottomSheetViewModel as CommonBottomSheetViewModel
 
 @AndroidEntryPoint
-class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
+class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
     companion object {
         const val TAG = "LinkBottomSheetDialogFragment"
         const val CODE = "code"
@@ -152,7 +167,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private val oldLinkViewModel by viewModels<BottomSheetViewModel>()
 
-    val linkViewModel by viewModels<one.mixin.android.ui.common.BottomSheetViewModel>()
+    val linkViewModel by viewModels<CommonBottomSheetViewModel>()
 
     private val binding by viewBinding(FragmentBottomSheetBinding::inflate)
 
@@ -162,7 +177,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private lateinit var url: String
     private val from: Int by lazy { requireArguments().getInt(FROM, FROM_EXTERNAL) }
 
-    private val newSchemeParser: NewSchemeParser by lazy { NewSchemeParser(this) }
+    private val newSchemeParser: NewSchemeParser by lazy { NewSchemeParser(this, linkViewModel) }
 
     override fun onStart() {
         try {
@@ -238,13 +253,14 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                     } catch (e: Exception) {
                                         app.homeUri
                                     }
+                                AnalyticsTracker.trackOpenBotHomePage(AnalyticsTracker.BotSource.SCHEME, app.appNumber)
                                 WebActivity.show(requireActivity(), url, null, app)
                             } else {
-                                showUserBottom(parentFragmentManager, user)
+                                showUserBottom(parentFragmentManager, user, botEntrySource = AnalyticsTracker.BotSource.SCHEME)
                             }
                         }
                     } else {
-                        showUserBottom(parentFragmentManager, user)
+                        showUserBottom(parentFragmentManager, user, botEntrySource = AnalyticsTracker.BotSource.SCHEME)
                     }
                     dismiss()
                 }
@@ -291,8 +307,10 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 if (!requestId.isUUID()) {
                     showError(R.string.Invalid_payment_link)
                 }
-                val action = uri.getQueryParameter("action") ?: "sign"
-                if (!action.equals("sign", true) && !action.equals("unlock", true)) {
+                var action = uri.getQueryParameter("action") ?: SignatureAction.sign.name
+                if (action.equals(SignatureAction.unlock.name, true)) {
+                    action = SignatureAction.revoke.name // compatible unlock
+                } else if (!action.equals(SignatureAction.sign.name, true) && !action.equals(SignatureAction.revoke.name, true)) {
                     showError()
                     return@launch
                 }
@@ -313,8 +331,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     multisigs.signers?.let { signers ->
                         when {
                             signers.size >= multisigs.sendersThreshold -> state = PaymentStatus.paid.name
-                            action == "sign" && Session.getAccountId() in signers -> state = SignatureState.signed.name
-                            action == "unlock" && signers.isEmpty() -> state = SignatureState.unlocked.name
+                            action == SignatureAction.sign.name && Session.getAccountId() in signers -> state = SignatureState.signed.name
+                            action == SignatureAction.revoke.name && signers.isEmpty() -> state = SignatureState.unlocked.name
                         }
                     }
                     val multisigsBiometricItem =
@@ -357,8 +375,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 multisigs.signers?.let { signers ->
                     when {
                         signers.size >= multisigs.sendersThreshold -> state = PaymentStatus.paid.name
-                        action == "sign" && Session.getAccountId() in signers -> state = SignatureState.signed.name
-                        action == "unlock" && signers.isEmpty() -> state = SignatureState.unlocked.name
+                        action == SignatureAction.sign.name && Session.getAccountId() in signers -> state = SignatureState.signed.name
+                        action == SignatureAction.revoke.name && signers.isEmpty() -> state = SignatureState.unlocked.name
                     }
                 }
                 val sendersHash = multisigs.sendersHash
@@ -405,10 +423,14 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     dismiss()
                 } else {
                     val e = r.exceptionOrNull()
-                    if (e is ParserError && e.symbol != null) {
+                    if (e is BalanceError) {
+                        TransferBalanceErrorBottomSheetDialogFragment.newInstance(e.assetBiometricItem).showNow(parentFragmentManager,
+                            TransferBalanceErrorBottomSheetDialogFragment.TAG)
+                        dismiss()
+                    } else if (e is ParserError && e.symbol != null) {
                         showError("${e.symbol} ${getString(R.string.insufficient_balance)}")
                     } else if (e is ParserError && e.message != null) {
-                        showError(e.message!!)
+                        showError(e.message)
                     } else {
                         showError(getString(R.string.Invalid_payment_link))
                     }
@@ -430,10 +452,14 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         dismiss()
                     } else {
                         val e = r.exceptionOrNull()
-                        if (e is ParserError && e.symbol != null) {
+                        if (e is BalanceError) {
+                            TransferBalanceErrorBottomSheetDialogFragment.newInstance(e.assetBiometricItem).showNow(parentFragmentManager,
+                                TransferBalanceErrorBottomSheetDialogFragment.TAG)
+                            dismiss()
+                        } else if (e is ParserError && e.symbol != null) {
                             showError("${e.symbol} ${getString(R.string.insufficient_balance)}")
                         } else if (e is ParserError && e.message != null) {
-                            showError(e.message!!)
+                            showError(e.message)
                         } else {
                             showError(getString(R.string.Invalid_payment_link))
                         }
@@ -553,7 +579,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         val user = result.second as User
                         val account = Session.getAccount()
                         if (account != null && account.userId == (result.second as User).userId) {
-                            toast("It's your QR Code, please try another.")
+                            toast(R.string.qr_code_self_hint)
                         } else {
                             showUserBottom(parentFragmentManager, user)
                         }
@@ -679,10 +705,26 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     else -> showError()
                 }
             }
+        } else if (url.startsWith(Scheme.MIXIN_REFERRALS, true) || url.startsWith(Scheme.HTTPS_REFERRALS, true)) {
+            val uri = url.toUri()
+            val referralCode = uri.lastPathSegment
+            if (uri.pathSegments.size == 1) {
+                InputReferralBottomSheetDialogFragment
+                    .newInstance("")
+                    .show(parentFragmentManager, InputReferralBottomSheetDialogFragment.TAG)
+                dismiss()
+            } else if (referralCode.isNullOrBlank()) {
+                showError()
+            } else {
+                InputReferralBottomSheetDialogFragment
+                    .newInstance(referralCode)
+                    .show(parentFragmentManager, InputReferralBottomSheetDialogFragment.TAG)
+                dismiss()
+            }
         } else if (url.startsWith(Scheme.MIXIN_MARKET, true) || url.startsWith(Scheme.HTTPS_MARKET, true)) {
             val uri = Uri.parse(url)
             val id = uri.lastPathSegment
-            lifecycleScope.launch {
+            lifecycleScope.launch(ErrorHandler.errorHandler) {
                 if (id.isNullOrBlank()) {
                     showError()
                 } else {
@@ -690,9 +732,14 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     if (marketItem == null) {
                         showError(R.string.Data_error)
                     } else {
-                        WalletActivity.showWithMarket(requireActivity(), marketItem, Destination.Market)
+                        WalletActivity.showWithMarket(
+                            requireActivity(),
+                            marketItem,
+                            Destination.Market,
+                            AnalyticsTracker.MarketSource.SCHEMA,
+                        )
+                        dismiss()
                     }
-                    dismiss()
                 }
             }
 
@@ -706,14 +753,18 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 val addressId = uri.getQueryParameter("address")
                 if (assetId != null && assetId.isUUID() && addressId != null && addressId.isUUID()) {
                     lifecycleScope.launch(errorHandler) {
-                        val pair = oldLinkViewModel.findAddressById(addressId, assetId)
+                        val asset = checkToken(assetId)
+                        if (asset == null) {
+                            showError()
+                            return@launch
+                        }
+                        val pair = oldLinkViewModel.findAddressById(addressId, asset.chainId)
                         val address = pair.first
                         if (pair.second) {
                             showError(R.string.error_address_exists)
                         } else if (address == null) {
                             showError(R.string.error_address_not_sync)
                         } else {
-                            val asset = checkToken(assetId)
                             if (asset != null) {
                                 TransferBottomSheetDialogFragment.newInstance(
                                     AddressManageBiometricItem(
@@ -842,7 +893,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     }
                 }
             }
-        } else if (url.startsWith(Scheme.SEND, true) || url.startsWith(Scheme.MIXIN_SEND, true) || url.startsWith(one.mixin.android.Constants.Scheme.HTTPS_SEND)) {
+        } else if (url.startsWith(Scheme.SEND, true) || url.startsWith(Scheme.MIXIN_SEND, true) || url.startsWith(Scheme.HTTPS_SEND)) {
             val uri = Uri.parse(url)
             lifecycleScope.launch(errorHandler) {
                 val userId = uri.getQueryParameter("user")
@@ -870,7 +921,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 ConfirmBottomFragment.show(requireContext(), parentFragmentManager, url)
                 dismiss()
             }
-        } else if (url.startsWith(Scheme.BUY, true)) {
+        } else if (url.startsWith(Scheme.HTTPS_BUY, true) || url.startsWith(Scheme.MIXIN_BUY, true) || url.startsWith(Scheme.BUY, true)) {
             MainActivity.showWallet(requireContext(), buy = true)
             dismiss()
         } else if (url.startsWith(Scheme.TIP, true)) {
@@ -886,6 +937,22 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             lifecycleScope.launch(errorHandler) {
                 handleSwapScheme(url.toUri())
             }
+        } else if (url.startsWith(Scheme.HTTPS_TRADE) || url.startsWith(Scheme.MIXIN_TRADE)) {
+            lifecycleScope.launch(errorHandler) {
+                handleTradeScheme(url.toUri())
+            }
+        } else if (WalletConnect.isEnabled() && WalletConnect.isPaymentLink(url)) {
+            if (MixinApplication.get().topActivity is WebActivity) {
+                WalletConnect.connect(url)
+            } else {
+                startActivity(
+                    Intent(requireContext(), MainActivity::class.java).apply {
+                        putExtra(MainActivity.WALLET_CONNECT, url)
+                        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
+                    },
+                )
+            }
+            dismiss()
         } else if (url.startsWith(Scheme.HTTPS_MIXIN_WC) || url.startsWith(Scheme.MIXIN_WC) ||
             url.startsWith(Scheme.WALLET_CONNECT_PREFIX)
         ) {
@@ -906,7 +973,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 showError(R.string.Not_recognized)
             }
         } else {
-            val isExternalTransferUrl = url.isExternalTransferUrl()
+            val isExternalTransferUrl = url.isExternalTransferUrl() || url.isLightningUrl()
             if (isExternalTransferUrl) {
                 if (checkHasPin()) return
 
@@ -968,9 +1035,9 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
     }
 
-    private fun handleTipSignScheme(uri: Uri): Boolean {
+    private suspend fun handleTipSignScheme(uri: Uri): Boolean {
         val chain = uri.getQueryParameter("chain")
-        if (chain.isNullOrBlank() || !chain.equals(JsSigner.JsSignerNetwork.Solana.name, true)) {
+        if (chain.isNullOrBlank() || !chain.equals(Web3Signer.JsSignerNetwork.Solana.name, true)) {
             return false
         }
         val raw = uri.getQueryParameter("raw")
@@ -988,15 +1055,12 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             } catch (e: IllegalArgumentException) {
                 return false
             }
-        JsSigner.useSolana()
-        if (JsSigner.address.isBlank()) {
-            WalletUnlockBottomSheetDialogFragment.getInstance(JsSigner.JsSignerNetwork.Solana.name)
-                .setOnDismiss { dismiss() }
-                .showIfNotShowing(childFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
+        Web3Signer.useSolana()
+        if (Web3Signer.address.isBlank()) {
             return true
         }
         val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = data, solanaTxSource = SolanaTxSource.Link)
-        BrowserWalletBottomSheetDialogFragment.newInstance(signMessage, null, null)
+        GasCheckBottomSheetDialogFragment.newInstance(signMessage, null, null)
             .setOnDismiss { dismiss() }
             .setOnTxhash { sig, _ ->
                 val cid = MixinApplication.conversationId
@@ -1007,7 +1071,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     linkViewModel.sendTextMessage(cid, self, linkSigData.base64Encode())
                 }
             }
-            .showNow(childFragmentManager, BrowserWalletBottomSheetDialogFragment.TAG)
+            .showNow(childFragmentManager, GasCheckBottomSheetDialogFragment.TAG)
         return true
     }
 
@@ -1015,8 +1079,104 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         val input = uri.getQueryParameter("input")
         val output = uri.getQueryParameter("output")
         val amount = uri.getQueryParameter("amount")
-        SwapActivity.show(requireContext(), input, output, amount)
+        if (output != null && output.isUUID()) {
+            checkToken(output)
+        }
+        if (input != null && input.isUUID()) {
+            checkToken(input)
+        }
+        val referral = uri.getQueryParameter("referral")
+        if (activity is ConversationActivity) {
+            AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.APP_CARD)
+        } else {
+            AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.SCHEMA)
+        }
+        defaultSharedPreferences.putInt("$PREF_TRADE_SELECTED_TAB_PREFIX${Session.getAccountId() ?: ""}", 0)
+        SwapActivity.show(
+            requireContext(),
+            input,
+            output,
+            amount,
+            referral,
+            entrySource = if (activity is ConversationActivity) TradeSource.APP_CARD else TradeSource.SCHEMA,
+            entryType = AnalyticsTracker.SpotTradeType.SIMPLE,
+        )
+        closeSourceWebActivityIfNeeded()
         dismiss()
+    }
+
+    private suspend fun handleTradeScheme(uri: Uri) {
+        val type = uri.getQueryParameter("type")
+        
+        if (type.equals("perps", true) || type.equals("perpetual", true)) {
+            val marketId = uri.getQueryParameter("market")
+            if (marketId.isNullOrBlank() || !marketId.isUUID()) {
+                defaultSharedPreferences.putInt(
+                    "$PREF_TRADE_SELECTED_TAB_PREFIX${Session.getAccountId() ?: ""}",
+                    TAB_PERPETUAL,
+                )
+                SwapActivity.show(
+                    requireContext(),
+                    entrySource = if (activity is ConversationActivity) TradeSource.APP_CARD else TradeSource.SCHEMA,
+                    entryType = AnalyticsTracker.SpotTradeType.PERPETUAL,
+                )
+                closeSourceWebActivityIfNeeded()
+                dismiss()
+                return
+            }
+
+            val market = linkViewModel.getPerpsMarket(marketId)
+            if (market == null) {
+                showError(R.string.Data_error)
+                return
+            }
+
+            PerpsActivity.showDetail(
+                requireContext(),
+                market.marketId,
+                market.displaySymbol,
+                market.displaySymbol,
+                market.tokenSymbol,
+                AnalyticsTracker.PerpsSource.APP_CARD,
+            )
+            closeSourceWebActivityIfNeeded()
+            dismiss()
+            return
+        }
+        
+        val input = uri.getQueryParameter("input")
+        val output = uri.getQueryParameter("output")
+        val amount = uri.getQueryParameter("amount")
+        if (output != null && output.isUUID()) {
+            checkToken(output)
+        }
+        if (input != null && input.isUUID()) {
+            checkToken(input)
+        }
+        val referral = uri.getQueryParameter("referral")
+        val openLimit = type.equals("limit", true)
+        if (activity is ConversationActivity) {
+            AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.APP_CARD)
+        } else {
+            AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.SCHEMA)
+        }
+
+        defaultSharedPreferences.putInt("$PREF_TRADE_SELECTED_TAB_PREFIX${Session.getAccountId() ?: ""}", if (openLimit) 1 else 0)
+        SwapActivity.show(
+            requireContext(),
+            input,
+            output,
+            amount,
+            referral,
+            entrySource = if (activity is ConversationActivity) TradeSource.APP_CARD else TradeSource.SCHEMA,
+            entryType = if (openLimit) AnalyticsTracker.SpotTradeType.ADVANCED else AnalyticsTracker.SpotTradeType.SIMPLE,
+        )
+        closeSourceWebActivityIfNeeded()
+        dismiss()
+    }
+
+    private fun closeSourceWebActivityIfNeeded() {
+        (activity as? WebActivity)?.finish()
     }
 
     private fun handleTipScheme(uri: Uri) {
@@ -1131,7 +1291,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 showOldTransferBottom(user, amount, asset, trace, response.status, memo, returnTo)
                 return@handleMixinResponse true
             },
-        ) ?: false
+        ) == true
     }
 
     private suspend fun showOldTransferBottom(
@@ -1173,6 +1333,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         var asset = oldLinkViewModel.findAssetItemById(assetId)
         if (asset == null) {
             asset = oldLinkViewModel.refreshAsset(assetId)
+        } else {
+            jobManager.addJobInBackground(RefreshAssetsJob(assetId))
         }
         if (asset != null && asset.assetId != asset.chainId && oldLinkViewModel.findAssetItemById(asset.chainId) == null) {
             oldLinkViewModel.refreshAsset(asset.chainId)
@@ -1192,8 +1354,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     @SuppressLint("SetTextI18n")
-    fun showError(
-        @StringRes errorRes: Int = R.string.Invalid_Link,
+    override fun showError(
+        @StringRes errorRes: Int,
     ) {
         if (!isAdded) return
 
@@ -1209,7 +1371,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
     }
 
-    fun showError(error: String) {
+    override fun showError(error: String) {
         if (!isAdded) return
 
         binding.apply {
@@ -1240,20 +1402,28 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             ) {}
         }
 
-    fun syncUtxo() {
+    override fun syncUtxo() {
         jobManager.addJobInBackground(SyncOutputJob())
     }
 
     private val errorHandler =
         CoroutineExceptionHandler { _, error ->
             when (error) {
+                is ServerErrorException -> {
+                    showError(getString(R.string.error_server_5xx_code, error.code))
+                }
+                is BalanceError -> {
+                    TransferBalanceErrorBottomSheetDialogFragment.newInstance(error.assetBiometricItem).showNow(parentFragmentManager,
+                        TransferBalanceErrorBottomSheetDialogFragment.TAG)
+                    dismiss()
+                }
                 is SocketTimeoutException -> showError(R.string.error_connection_timeout)
                 is UnknownHostException -> showError(R.string.No_network_connection)
                 is IOException -> showError(R.string.No_network_connection)
                 else -> {
                     ErrorHandler.handleError(error)
                     Timber.e(error)
-                    showError(R.string.Network_error)
+                    showError(error.message ?: getString(R.string.Unknown))
                 }
             }
         }

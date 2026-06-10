@@ -32,23 +32,30 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.deserialize
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.isUUID
+import one.mixin.android.extension.isValidMao
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.wallet.WalletActivity
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.ChatMinimal
+import one.mixin.android.vo.Dapp
+import one.mixin.android.vo.MaoUser
 import one.mixin.android.vo.RecentUsedApp
+import one.mixin.android.vo.SearchBot
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
+import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.safe.TokenItem
 
 @AndroidEntryPoint
@@ -87,6 +94,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
     }
 
     private var searchJob: Job? = null
+    private var searchMaoJob: Job? = null
     private var searchUrlJob: Job? = null
     private var messageSearchJob: Job? = null
     private var refreshAssetsJob: Job? = null
@@ -95,6 +103,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
     @Suppress("UNCHECKED_CAST")
     private fun bindData(keyword: String? = this@SearchFragment.keyword) {
         searchUrlJob?.cancel()
+        searchMaoJob?.cancel()
         refreshAssetsJob?.cancel()
         messageSearchJob?.cancel()
         searchJob?.cancel()
@@ -173,7 +182,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
                                             )
                                         } else {
                                             searchViewModel.insertUser(user = data)
-                                            showUserBottom(parentFragmentManager, data)
+                                            showUserBottom(parentFragmentManager, data, botEntrySource = AnalyticsTracker.BotSource.SEARCH_MAO_NAME)
                                         }
                                     }
                                 r.errorCode == ErrorHandler.NOT_FOUND -> toast(R.string.User_not_found)
@@ -191,8 +200,16 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
                     url.openAsUrlOrWeb(requireContext(), null, parentFragmentManager, lifecycleScope)
                 }
 
-                override fun onAsset(tokenItem: TokenItem) {
+                override fun onAssetClick(tokenItem: TokenItem) {
                     activity?.let { WalletActivity.showWithToken(it, tokenItem, WalletActivity.Destination.Transactions) }
+                }
+
+                override fun onMarketClick(market: Market) {
+                    // Todo
+                }
+
+                override fun onDappClick(dapp: Dapp) {
+                    // Todo
                 }
 
                 override fun onMessageClick(message: SearchMessageItem) {
@@ -203,12 +220,52 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
 
                 override fun onChatClick(chatMinimal: ChatMinimal) {
                     binding.searchRv.hideKeyboard()
+                    if (chatMinimal.isBot()) {
+                        AnalyticsTracker.trackOpenBotConversation(AnalyticsTracker.BotSource.SEARCH_KEY_CONVERSATION, chatMinimal.ownerIdentityNumber)
+                    }
                     context?.let { ctx -> ConversationActivity.show(ctx, chatMinimal.conversationId) }
+                }
+
+                override fun onUserClick(user: MaoUser) {
+                    binding.searchRv.hideKeyboard()
+                    if (user.userId == Session.getAccountId()) {
+                        ProfileBottomSheetDialogFragment.newInstance().showNow(
+                            parentFragmentManager,
+                            UserBottomSheetDialogFragment.TAG,
+                        )
+                        return
+                    }
+                    context?.let { ctx -> ConversationActivity.show(ctx, null, user.userId) }
                 }
 
                 override fun onUserClick(user: User) {
                     binding.searchRv.hideKeyboard()
+                    if (user.userId == Session.getAccountId()) {
+                        ProfileBottomSheetDialogFragment.newInstance().showNow(
+                            parentFragmentManager,
+                            UserBottomSheetDialogFragment.TAG,
+                        )
+                        return
+                    }
                     context?.let { ctx -> ConversationActivity.show(ctx, null, user.userId) }
+                }
+
+                override fun onMaoAppClick(appId: String) {
+                    binding.searchRv.hideKeyboard()
+                    lifecycleScope.launch {
+                        val app = searchViewModel.findOrSyncApp(appId)
+                        if (app != null) {
+                            searchViewModel.updateRecentUsedBots(this@SearchFragment.defaultSharedPreferences, app.appId)
+                            AnalyticsTracker.trackOpenBotHomePage(AnalyticsTracker.BotSource.SEARCH_MAO_NAME, app.appNumber)
+                            WebActivity.show(requireContext(), url = app.homeUri, null, app = app)
+                        } else {
+                            toast(R.string.Bot_not_found)
+                        }
+                    }
+                }
+
+                override fun onBotClick(bot: SearchBot) {
+                    // Todo
                 }
 
                 override fun onChatLongClick(
@@ -328,6 +385,17 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
                     }
                 }
 
+            if (keyword.isValidMao()) {
+                searchAdapter.setMaoUser(null)
+                searchMaoJob = launch {
+                    searchViewModel.searchMaoUser(keyword)?.let { maoUser ->
+                        searchAdapter.setMaoUser(maoUser)
+                    }
+                }
+            } else {
+                searchAdapter.setMaoUser(null)
+            }
+
             val tokenItems = searchViewModel.fuzzySearch<TokenItem>(cancellationSignal, keyword) as List<TokenItem>?
             refreshAssetsJob =
                 launch {
@@ -340,6 +408,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
             searchAdapter.setData(tokenItems, users, chatMinimals)
 
             messageSearchJob?.join()
+
             (requireActivity() as MainActivity).hideSearchLoading()
         }
 
@@ -397,11 +466,21 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
     interface OnSearchClickListener {
         fun onUserClick(user: User)
 
+        fun onUserClick(user: MaoUser)
+
+        fun onMaoAppClick(userId: String)
+
+        fun onBotClick(bot: SearchBot)
+
         fun onChatClick(chatMinimal: ChatMinimal)
 
         fun onMessageClick(message: SearchMessageItem)
 
-        fun onAsset(tokenItem: TokenItem)
+        fun onAssetClick(tokenItem: TokenItem)
+
+        fun onMarketClick(market: Market)
+
+        fun onDappClick(dapp: Dapp)
 
         fun onTipClick()
 

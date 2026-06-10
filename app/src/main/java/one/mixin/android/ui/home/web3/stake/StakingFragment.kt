@@ -25,7 +25,7 @@ import one.mixin.android.ui.home.web3.stake.StakeFragment.Companion.ARGS_BALANCE
 class StakingFragment : BaseFragment() {
     companion object {
         const val TAG = "StakingFragment"
-        private const val ARGS_STAKE_ACCOUNTS = "args_stake_accounts"
+        const val ARGS_STAKE_ACCOUNTS = "args_stake_accounts"
 
         fun newInstance(
             stakeAccounts: ArrayList<StakeAccount>,
@@ -47,9 +47,11 @@ class StakingFragment : BaseFragment() {
     ): View {
         val stakeAccounts = requireNotNull(requireArguments().getParcelableArrayListCompat(ARGS_STAKE_ACCOUNTS, StakeAccount::class.java)) { "required stakeAccounts cannot be null" }
         val balance = requireNotNull(requireArguments().getString(ARGS_BALANCE))
-        lifecycleScope.launch {
-            loadStakeActivations(stakeAccounts)
-            loadValidators(stakeAccounts)
+        if (stakeAccounts.isNotEmpty()) {
+            lifecycleScope.launch {
+                loadStakeActivations(stakeAccounts)
+                loadValidators(stakeAccounts)
+            }
         }
         return ComposeView(inflater.context).apply {
             setContent {

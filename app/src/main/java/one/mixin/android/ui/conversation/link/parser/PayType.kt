@@ -4,4 +4,5 @@ enum class PayType {
     Uuid,
     XinAddress,
     MixAddress,
+    Invoice
 }

@@ -54,6 +54,17 @@
                 app:stackFromEnd="true"
                 tools:listitem="@layout/item_chat_text" />
 
+            <!-- Hackfix: intercept touch event-->
+            <View
+                android:id="@+id/edge"
+                android:layout_width="30dp"
+                android:layout_height="0dp"
+                app:layout_constraintTop_toTopOf="@id/message_rv"
+                app:layout_constraintBottom_toBottomOf="@id/message_rv"
+                app:layout_constraintEnd_toEndOf="@id/message_rv"
+                android:clickable="true"
+                android:focusable="true"/>
+
             <include
                 layout="@layout/view_link_state"
                 app:layout_constraintTop_toTopOf="parent"

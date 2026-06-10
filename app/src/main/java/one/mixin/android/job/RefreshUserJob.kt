@@ -2,6 +2,7 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
+import one.mixin.android.extension.isUUID
 
 /**
  * @param conversationId NOT NULL means should generate the group avatar
@@ -19,7 +20,7 @@ class RefreshUserJob(
 
     override fun onRun() =
         runBlocking {
-            val ids = userIds.filter { it.isNotBlank() }
+            val ids = userIds.filter { it.isNotBlank() && it.isUUID() }
             if (ids.isEmpty()) {
                 return@runBlocking
             }

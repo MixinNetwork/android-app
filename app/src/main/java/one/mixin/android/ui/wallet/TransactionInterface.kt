@@ -384,12 +384,16 @@ interface TransactionInterface {
                     transactionIdLl.isVisible = false
                     transactionHashLayout.isVisible = false
                     confirmationLl.isVisible = true
+                    val maxConfirmations = snapshot.assetConfirmations.coerceAtLeast(0)
+                    val currentConfirmations = (snapshot.confirmations ?: 0)
+                        .coerceAtLeast(0)
+                        .coerceAtMost(maxConfirmations)
                     confirmationTv.text =
                         fragment.requireContext().resources.getQuantityString(
                             R.plurals.pending_confirmation,
-                            snapshot.confirmations ?: 0,
-                            snapshot.confirmations ?: 0,
-                            snapshot.assetConfirmations,
+                            currentConfirmations,
+                            currentConfirmations,
+                            maxConfirmations,
                         )
                     if (snapshot.deposit != null) {
                         hashLl.isVisible = true
@@ -463,6 +467,7 @@ interface TransactionInterface {
         if (snapshot.isDataIncomplete()) {
             lifecycleScope.launch {
                 walletViewModel.refreshSnapshot(snapshot.snapshotId)?.let {
+                    it.label = snapshot.label // Saving temporary variables
                     updateUI(fragment, contentBinding, asset, it)
                 }
             }

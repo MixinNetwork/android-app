@@ -60,10 +60,12 @@ class PinSettingFragment : BaseFragment(R.layout.fragment_pin_setting) {
             biometricsRl.setOnClickListener(biometricsClickListener)
             val open = defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
             if (open) {
+                biometricsRl.setBackgroundResource(R.drawable.ripple_round_window_top)
                 biometricsSc.isChecked = true
                 timeRl.visibility = VISIBLE
                 setTimeDesc()
             } else {
+                biometricsRl.setBackgroundResource(R.drawable.ripple_round_window)
                 biometricsSc.isChecked = false
                 timeRl.visibility = GONE
             }
@@ -118,6 +120,7 @@ class PinSettingFragment : BaseFragment(R.layout.fragment_pin_setting) {
     private fun updateWhenSuccess() {
         binding.biometricsSc.isChecked = true
         binding.timeRl.visibility = VISIBLE
+        binding.biometricsRl.setBackgroundResource(R.drawable.ripple_round_window_top)
         setTimeDesc()
         defaultSharedPreferences.putLong(Constants.BIOMETRIC_PIN_CHECK, System.currentTimeMillis())
         defaultSharedPreferences.putBoolean(Constants.Account.PREF_BIOMETRICS, true)
@@ -126,6 +129,7 @@ class PinSettingFragment : BaseFragment(R.layout.fragment_pin_setting) {
     private fun resetBiometricLayout() {
         binding.biometricsSc.isChecked = false
         binding.timeRl.visibility = GONE
+        binding.biometricsRl.setBackgroundResource(R.drawable.ripple_round_window)
         BiometricUtil.deleteKey(requireContext())
     }
 }

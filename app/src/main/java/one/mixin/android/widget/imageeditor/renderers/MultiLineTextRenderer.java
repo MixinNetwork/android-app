@@ -1,5 +1,7 @@
 package one.mixin.android.widget.imageeditor.renderers;
 
+import static java.util.Collections.emptyList;
+
 import android.animation.ValueAnimator;
 import android.graphics.Color;
 import android.graphics.Matrix;
@@ -10,19 +12,19 @@ import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Parcel;
 import android.view.animation.Interpolator;
+
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import one.mixin.android.widget.imageeditor.Bounds;
 import one.mixin.android.widget.imageeditor.ColorableRenderer;
 import one.mixin.android.widget.imageeditor.DimensionUnit;
 import one.mixin.android.widget.imageeditor.RendererContext;
 import one.mixin.android.widget.imageeditor.SelectableRenderer;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static java.util.Collections.emptyList;
 
 
 /**

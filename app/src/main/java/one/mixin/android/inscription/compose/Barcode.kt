@@ -11,7 +11,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
-import com.walletconnect.util.bytesToHex
+import com.reown.util.bytesToHex
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.extension.hexStringToByteArray
 import kotlin.math.max

@@ -55,8 +55,10 @@
             <Button
                 style="@style/AppTheme.MaterialButton"
                 android:id="@+id/continue_tv"
-                android:layout_width="116dp"
-                android:layout_height="40dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="36dp"
+                android:layout_marginEnd="36dp"
                 android:layout_marginBottom="16dp"
                 android:text="@string/Continue"
                 android:textColor="@color/white"

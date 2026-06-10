@@ -6,7 +6,7 @@ import android.graphics.Paint
 import android.graphics.Paint.ANTI_ALIAS_FLAG
 import android.util.AttributeSet
 import android.view.View
-import com.walletconnect.util.bytesToHex
+import com.reown.util.bytesToHex
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.extension.hexStringToByteArray
 import kotlin.math.max

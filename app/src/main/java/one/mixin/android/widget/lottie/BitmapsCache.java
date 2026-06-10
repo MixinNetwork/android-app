@@ -1,11 +1,10 @@
 package one.mixin.android.widget.lottie;
 
+import static one.mixin.android.widget.lottie.RLottieDrawable.uiHandler;
+
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
-import one.mixin.android.MixinApplication;
-import one.mixin.android.widget.AndroidUtilities;
-import timber.log.Timber;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -22,7 +21,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static one.mixin.android.widget.lottie.RLottieDrawable.uiHandler;
+import one.mixin.android.MixinApplication;
+import one.mixin.android.widget.AndroidUtilities;
+import timber.log.Timber;
 
 public class BitmapsCache {
 

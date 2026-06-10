@@ -30,8 +30,11 @@ import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.forward.ForwardActivity
+import one.mixin.android.ui.setting.SettingActivity
+import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.web.WebActivity
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ForwardAction
@@ -40,6 +43,8 @@ import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.getShareCategory
+import one.mixin.android.web3.js.Web3Signer
+import one.mixin.android.widget.gallery.MimeType
 import timber.log.Timber
 
 fun String.openAsUrlOrWeb(
@@ -49,8 +54,9 @@ fun String.openAsUrlOrWeb(
     scope: CoroutineScope,
     app: App? = null,
     appCard: AppCardData? = null,
+    saveName: Boolean = false,
 ) = openAsUrl(context, supportFragmentManager, scope, currentConversation = conversationId, app = app) {
-    WebActivity.show(context, this, conversationId, app, appCard)
+    WebActivity.show(context, this, conversationId, app, appCard, saveName)
 }
 
 fun String.openAsUrlOrQrScan(
@@ -70,6 +76,9 @@ fun String.isMixinUrl(): Boolean {
         startsWith(Constants.Scheme.HTTPS_INSCRIPTION, true) ||
         startsWith(Constants.Scheme.MIXIN_MARKET, true) ||
         startsWith(Constants.Scheme.HTTPS_MARKET, true) ||
+        startsWith(Constants.Scheme.MIXIN_REFERRALS, true) ||
+        startsWith(Constants.Scheme.HTTPS_REFERRALS, true) ||
+        startsWith(Constants.Scheme.HTTPS_MEMBERSHIP, true) ||
         startsWith(Constants.Scheme.DEVICE, true) ||
         startsWith(Constants.Scheme.SEND, true) ||
         startsWith(Constants.Scheme.MIXIN_SEND, true) ||
@@ -79,6 +88,7 @@ fun String.isMixinUrl(): Boolean {
         startsWith(Constants.Scheme.CONVERSATIONS, true) ||
         startsWith(Constants.Scheme.TIP, true) ||
         startsWith(Constants.Scheme.BUY, true) ||
+        startsWith(Constants.Scheme.MIXIN_BUY, true) ||
         startsWith(Constants.Scheme.MIXIN_PAY, true) ||
         startsWith(Constants.Scheme.HTTPS_SEND, true) ||
         startsWith(Constants.Scheme.HTTPS_MULTISIGS, true) ||
@@ -91,7 +101,11 @@ fun String.isMixinUrl(): Boolean {
         startsWith(Constants.Scheme.HTTPS_TIP_SIGN, true) ||
         startsWith(Constants.Scheme.MIXIN_TIP_SIGN, true) ||
         startsWith(Constants.Scheme.HTTPS_SWAP, true) ||
-        startsWith(Constants.Scheme.MIXIN_SWAP, true)
+        startsWith(Constants.Scheme.MIXIN_SWAP, true) ||
+        startsWith(Constants.Scheme.HTTPS_TRADE, true) ||
+        startsWith(Constants.Scheme.HTTPS_BUY, true) ||
+        startsWith(Constants.Scheme.MIXIN_TRADE, true) ||
+        startsWith(Constants.Scheme.DEBUG, true)
     ) {
         true
     } else {
@@ -111,7 +125,7 @@ fun String.isMixinUrl(): Boolean {
         } else if (startsWith(Constants.Scheme.HTTPS_TRANSFER, true)) {
             segments.size >= 2 && segments[1].isUUID()
         } else {
-            startsWith(Constants.Scheme.HTTPS_ADDRESS, true) || startsWith(Constants.Scheme.HTTPS_INSCRIPTION, true) || startsWith(Constants.Scheme.MIXIN_MARKET, true) || startsWith(Constants.Scheme.HTTPS_MARKET, true)
+            startsWith(Constants.Scheme.HTTPS_ADDRESS, true) || startsWith(Constants.Scheme.HTTPS_INSCRIPTION, true) || startsWith(Constants.Scheme.MIXIN_MARKET, true) || startsWith(Constants.Scheme.HTTPS_MARKET, true) || startsWith(Constants.Scheme.HTTPS_BUY, true) || startsWith(Constants.Scheme.MIXIN_BUY, true) || startsWith(Constants.Scheme.MIXIN_REFERRALS, true) || startsWith(Constants.Scheme.HTTPS_REFERRALS, true)
         }
     }
 }
@@ -139,6 +153,8 @@ fun String.openAsUrl(
                 Timber.e(IllegalStateException(err))
             },
         )
+    } else if (startsWith(Constants.Scheme.DEBUG, true)) {
+        SettingActivity.showDebug(context)
     } else if (startsWith(Constants.Scheme.INFO, true)) {
         val content = """
 Brand: ${Build.BRAND} 
@@ -151,8 +167,16 @@ SDK: ${Build.VERSION.SDK_INT}
 Incremental: ${Build.VERSION.INCREMENTAL} 
 Version Code: ${Build.VERSION.RELEASE}
 User ID: ${Session.getAccountId()}
+Is Anonymous: ${Session.isAnonymous()}
+Has Phone: ${Session.hasPhone()}
+Phone Verified At: ${Session.getAccount()?.phoneVerifiedAt}
+Salt Exported: ${Session.saltExported()}
+Has Safe: ${Session.hasSafe()}
 Google Available: ${context.isGooglePlayServicesAvailable()}
 User-agent: ${WebView(context).settings.userAgentString}
+Solana Address: ${Web3Signer.solanaAddress}
+EVM Address: ${Web3Signer.address}
+BTC Address: ${Web3Signer.btcAddress}
 """
         context.alert(content).setPositiveButton(android.R.string.copy) { dialog, _ ->
             context.getClipboardManager().setPrimaryClip(
@@ -168,9 +192,12 @@ User-agent: ${WebView(context).settings.userAgentString}
         ConfirmBottomFragment.show(MixinApplication.appContext, supportFragmentManager, this)
     } else if (isUserScheme() || isAppScheme()) {
         checkUserOrApp(context, supportFragmentManager, scope)
-    } else if(isConversationScheme()) {
+    } else if (isMembershipScheme()) {
+        MixinMemberUpgradeBottomSheetDialogFragment.newInstance(Session.getAccount()?.membership?.plan).showNow(supportFragmentManager,
+            MixinMemberUpgradeBottomSheetDialogFragment.TAG)
+    } else if (isConversationScheme()) {
         checkConversation(context, scope) {
-            if (isMixinUrl() || isExternalScheme(context) || isExternalTransferUrl()) {
+            if (isMixinUrl() || isExternalScheme(context) || isExternalTransferUrl() || isLightningUrl()) {
                 LinkBottomSheetDialogFragment.newInstance(this)
                     .showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
             } else {
@@ -220,7 +247,13 @@ fun String.checkUserOrApp(
         return
     }
 
-    val db = MixinDatabase.getDatabase(ctx)
+    val identityNumber = Session.getAccount()?.identityNumber
+    if (identityNumber.isNullOrBlank()) {
+        val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString())
+        bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
+        return
+    }
+    val db = MixinDatabase.getDatabase(ctx, identityNumber)
     val userDao = db.userDao()
     val appDao = db.appDao()
     scope.launch {
@@ -239,6 +272,7 @@ fun String.checkUserOrApp(
                         } catch (e: Exception) {
                             app.homeUri
                         }
+                    AnalyticsTracker.trackOpenBotHomePage(AnalyticsTracker.BotSource.SCHEME, app.appNumber)
                     WebActivity.show(context, url, null, app)
                     if (context is UrlInterpreterActivity) {
                         context.finish()
@@ -246,7 +280,7 @@ fun String.checkUserOrApp(
                     return@launch
                 }
             }
-            showUserBottom(supportFragmentManager, user)
+            showUserBottom(supportFragmentManager, user, botEntrySource = AnalyticsTracker.BotSource.SCHEME)
         }
     }
 }
@@ -254,13 +288,17 @@ fun String.checkUserOrApp(
 fun String.checkConversation(
     context: Context,
     scope: CoroutineScope,
-    elseAction: () -> Unit
+    elseAction: () -> Unit,
 ) {
     val uri = Uri.parse(this)
     val segments = uri.pathSegments
     if (segments.isEmpty()) return
     scope.launch {
-        val db = MixinDatabase.getDatabase(context)
+        val identityNumber = Session.getAccount()?.identityNumber ?: run {
+            elseAction.invoke()
+            return@launch
+        }
+        val db = MixinDatabase.getDatabase(context, identityNumber)
         val conversationDao = db.conversationDao()
         val conversationId = segments[0]
         if (!conversationId.isNullOrBlank() && conversationId.isUUID()) { // Judge in advance before displaying the interface
@@ -283,11 +321,16 @@ fun String.isValidStartParam(): Boolean {
     return this.length <= 64
 }
 
-fun String.isExternalTransferUrl() = externalTransferAssetIdMap.keys.any { startsWith("$it:") }
+fun String.isExternalTransferUrl() = externalTransferAssetIdMap.keys.any { startsWith("$it:", ignoreCase = true) }
+
+fun String.isLightningUrl() = startsWith("lnbc", true)  || startsWith("lnurl", true) || startsWith("lightning:", true)
 
 private fun String.isUserScheme() =
     startsWith(Constants.Scheme.USERS, true) ||
         startsWith(Constants.Scheme.HTTPS_USERS, true)
+
+private fun String.isMembershipScheme() =
+    startsWith(Constants.Scheme.HTTPS_MEMBERSHIP, true)
 
 private fun String.isInscriptionScheme() = startsWith(Constants.Scheme.HTTPS_INSCRIPTION, true)
 
@@ -327,7 +370,8 @@ fun Uri.handleSchemeSend(
     if (text != null) {
         if (userId != null) {
             scope.launch {
-                val db = MixinDatabase.getDatabase(context)
+                val identityNumber = Session.getAccount()?.identityNumber ?: return@launch
+                val db = MixinDatabase.getDatabase(context, identityNumber)
                 val userDao = db.userDao()
                 val user = userDao.suspendFindUserById(userId)
                 if (user == null) {
@@ -360,7 +404,8 @@ fun Uri.handleSchemeSend(
         if (shareCategory != null && data != null) {
             if (userId != null) {
                 scope.launch {
-                    val db = MixinDatabase.getDatabase(context)
+                    val identityNumber = Session.getAccount()?.identityNumber ?: return@launch
+                    val db = MixinDatabase.getDatabase(context, identityNumber)
                     val userDao = db.userDao()
                     val user = userDao.suspendFindUserById(userId)
                     if (user == null) {
@@ -412,8 +457,32 @@ fun Uri.getCapturedImage(contentResolver: ContentResolver): Bitmap =
             @Suppress("DEPRECATION")
             MediaStore.Images.Media.getBitmap(contentResolver, this)
         }
+
         else -> {
             val source = ImageDecoder.createSource(contentResolver, this)
             ImageDecoder.decodeBitmap(source)
         }
     }
+
+fun Uri.isVideo(context: Context): Boolean {
+    val mimeType = context.contentResolver.getType(this)
+    return mimeType.equals(MimeType.MPEG.toString())
+        || mimeType.equals(MimeType.MP4.toString())
+        || mimeType.equals(MimeType.QUICKTIME.toString())
+        || mimeType.equals(MimeType.THREEGPP.toString())
+        || mimeType.equals(MimeType.THREEGPP2.toString())
+        || mimeType.equals(MimeType.MKV.toString())
+        || mimeType.equals(MimeType.WEBM.toString())
+        || mimeType.equals(MimeType.TS.toString())
+        || mimeType.equals(MimeType.AVI.toString())
+}
+
+fun Uri.isWebp(context: Context): Boolean {
+    val mimeType = context.contentResolver.getType(this)
+    return mimeType.equals(MimeType.WEBP.toString(), true)
+}
+
+fun Uri.isGif(context: Context): Boolean {
+    val mimeType = context.contentResolver.getType(this)
+    return mimeType.equals(MimeType.GIF.toString(), true)
+}

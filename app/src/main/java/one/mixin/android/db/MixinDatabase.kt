@@ -9,13 +9,12 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import androidx.room.withTransaction
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.DataBase.CURRENT_VERSION
 import one.mixin.android.Constants.DataBase.DB_NAME
-import one.mixin.android.MixinApplication
+import one.mixin.android.api.response.MembershipOrder
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_15_16
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_16_17
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_17_18
@@ -63,7 +62,17 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_58_59
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_59_60
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_60_61
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_61_62
+import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_62_63
+import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_63_64
+import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_64_65
+import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_65_66
+import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_66_67
+import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_67_68
+import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_68_69
+import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_69_70
 import one.mixin.android.db.converter.DepositEntryListConverter
+import one.mixin.android.db.converter.FiatOrderConverter
+ 
 import one.mixin.android.db.converter.MembershipConverter
 import one.mixin.android.db.converter.MessageStatusConverter
 import one.mixin.android.db.converter.OutputStateConverter
@@ -73,11 +82,17 @@ import one.mixin.android.db.converter.SafeDepositConverter
 import one.mixin.android.db.converter.SafeWithdrawalConverter
 import one.mixin.android.db.converter.TreasuryConverter
 import one.mixin.android.db.converter.WithdrawalMemoPossibilityConverter
+import one.mixin.android.session.Session
 import one.mixin.android.ui.wallet.alert.vo.Alert
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_EXECUTOR
+import one.mixin.android.util.database.dbDir
+import one.mixin.android.util.database.moveLegacyDatabaseFile
+import one.mixin.android.util.database.moveLegacyFtsDatabaseFile
+import one.mixin.android.util.database.moveLegacyPendingDatabaseFile
 import one.mixin.android.util.debug.getContent
 import one.mixin.android.util.reportException
+import one.mixin.android.vo.Account
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Asset
@@ -126,6 +141,7 @@ import one.mixin.android.vo.safe.RawTransaction
 import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.vo.safe.TokensExtra
+import java.io.File
 import java.util.concurrent.Executors
 import kotlin.math.max
 import kotlin.math.min
@@ -180,11 +196,24 @@ import kotlin.math.min
         (MarketCoin::class),
         (MarketFavored::class),
         (Alert::class),
-        (MarketCapRank::class)
+        (MarketCapRank::class),
+        (MembershipOrder::class)
     ],
     version = CURRENT_VERSION,
 )
-@TypeConverters(MessageStatusConverter::class, DepositEntryListConverter::class, WithdrawalMemoPossibilityConverter::class, SafeDepositConverter::class, SafeWithdrawalConverter::class, RawTransactionTypeConverter::class, OutputStateConverter::class, TreasuryConverter::class, PriceListConverter::class, MembershipConverter::class)
+@TypeConverters(
+    MessageStatusConverter::class,
+    DepositEntryListConverter::class,
+    WithdrawalMemoPossibilityConverter::class,
+    SafeDepositConverter::class,
+    SafeWithdrawalConverter::class,
+    RawTransactionTypeConverter::class,
+    OutputStateConverter::class,
+    TreasuryConverter::class,
+    PriceListConverter::class,
+    MembershipConverter::class,
+    FiatOrderConverter::class
+)
 abstract class MixinDatabase : RoomDatabase() {
     abstract fun conversationDao(): ConversationDao
 
@@ -276,19 +305,59 @@ abstract class MixinDatabase : RoomDatabase() {
 
     abstract fun marketCapRankDao(): MarketCapRankDao
 
+    abstract fun memberOrderDao(): MembershipOrderDao
     companion object {
         private var INSTANCE: MixinDatabase? = null
 
         private val lock = Any()
         private var supportSQLiteDatabase: SupportSQLiteDatabase? = null
+        private var currentIdentityNumber: String? = null
+
+        fun destroy(close: Boolean = false) {
+            synchronized(lock) {
+                if (close) {
+                    INSTANCE?.close()
+                }
+                INSTANCE = null
+                supportSQLiteDatabase = null
+                currentIdentityNumber = null
+            }
+        }
+
+        fun migrateRelatedDatabaseFilesIfNeeded(
+            context: Context,
+            account: Account,
+        ): Boolean {
+            val mixinValidated = moveLegacyDatabaseFile(context, account)
+            if (!mixinValidated) {
+                return false
+            }
+            moveLegacyPendingDatabaseFile(context, account)
+            moveLegacyFtsDatabaseFile(context, account)
+            return true
+        }
 
         @Suppress("UNUSED_ANONYMOUS_PARAMETER")
         @SuppressLint("RestrictedApi")
-        fun getDatabase(context: Context): MixinDatabase {
+        fun getDatabase(
+            context: Context,
+            identityNumber: String,
+        ): MixinDatabase {
+            val scopedIdentity = identityNumber.takeIf { it.isNotBlank() }
+                ?: throw IllegalArgumentException("identityNumber is required for MixinDatabase")
             synchronized(lock) {
+                if (INSTANCE != null && currentIdentityNumber != scopedIdentity) {
+                    INSTANCE?.close()
+                    INSTANCE = null
+                    supportSQLiteDatabase = null
+                }
                 if (INSTANCE == null) {
+                    Session.getAccount()?.let { account ->
+                        migrateRelatedDatabaseFilesIfNeeded(context, account)
+                    }
+                    val dbPath = File(dbDir(context, scopedIdentity), DB_NAME).absolutePath
                     val builder =
-                        Room.databaseBuilder(context, MixinDatabase::class.java, DB_NAME)
+                        Room.databaseBuilder(context, MixinDatabase::class.java, dbPath)
                             .openHelperFactory(
                                 MixinOpenHelperFactory(
                                     FrameworkSQLiteOpenHelperFactory(),
@@ -350,6 +419,14 @@ abstract class MixinDatabase : RoomDatabase() {
                                 MIGRATION_59_60,
                                 MIGRATION_60_61,
                                 MIGRATION_61_62,
+                                MIGRATION_62_63,
+                                MIGRATION_63_64,
+                                MIGRATION_64_65,
+                                MIGRATION_65_66,
+                                MIGRATION_66_67,
+                                MIGRATION_67_68,
+                                MIGRATION_68_69,
+                                MIGRATION_69_70,
                             )
                             .enableMultiInstanceInvalidation()
                             .setQueryExecutor(
@@ -376,6 +453,7 @@ abstract class MixinDatabase : RoomDatabase() {
                         )
                     }
                     INSTANCE = builder.build()
+                    currentIdentityNumber = scopedIdentity
                 }
                 return INSTANCE as MixinDatabase
             }
@@ -425,12 +503,15 @@ abstract class MixinDatabase : RoomDatabase() {
                 }
             }
     }
-}
 
-fun runInTransaction(block: () -> Unit) {
-    MixinDatabase.getDatabase(MixinApplication.appContext).runInTransaction(block)
-}
-
-suspend fun withTransaction(block: suspend () -> Unit) {
-    MixinDatabase.getDatabase(MixinApplication.appContext).withTransaction(block)
+    override fun close() {
+        super.close()
+        synchronized(lock) {
+            if (INSTANCE === this) {
+                INSTANCE = null
+                supportSQLiteDatabase = null
+                currentIdentityNumber = null
+            }
+        }
+    }
 }

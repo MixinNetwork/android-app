@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.doOnPreDraw
 import androidx.lifecycle.Lifecycle
@@ -30,9 +32,29 @@ open class BaseActivity : AppCompatActivity() {
         } else {
             setTheme(getDefaultThemeId())
         }
+        enableEdgeToEdge()
         if (!skipSystemUi) {
-            window.navigationBarColor = colorFromAttribute(R.attr.bg_white)
+            SystemUIManager.setSafePadding(window, colorFromAttribute(R.attr.bg_white))
         }
+        onBackPressedDispatcher.addCallback(
+            this,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    val fragments = supportFragmentManager.fragments
+                    if (fragments.isNotEmpty()) {
+                        for (i in fragments.indices.reversed()) {
+                            val f = fragments[i]
+                            if (f is BaseFragment && f.onBackPressed()) {
+                                return
+                            }
+                        }
+                    }
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                    isEnabled = true
+                }
+            },
+        )
     }
 
     override fun setContentView(layoutResID: Int) {
@@ -73,15 +95,4 @@ open class BaseActivity : AppCompatActivity() {
         return R.style.AppTheme_NoActionBar
     }
 
-    override fun onBackPressed() {
-        val fragments = supportFragmentManager.fragments
-        if (fragments.size > 0) {
-            // Make sure there is a BaseFragment handle this event.
-            fragments.indices.reversed()
-                .map { fragments[it] }
-                .filter { it != null && it is BaseFragment && it.onBackPressed() }
-                .forEach { _ -> return }
-        }
-        super.onBackPressed()
-    }
 }

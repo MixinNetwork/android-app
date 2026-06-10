@@ -18,6 +18,7 @@ import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.safe.TokenItem
@@ -119,7 +120,7 @@ class PriceExpiredBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     @SuppressLint("SetTextI18n")
     private fun refresh() {
-        lifecycleScope.launch {
+        lifecycleScope.launch(ErrorHandler.errorHandler) {
             var time = 0
             while (isActive) {
                 if (time == 10) {

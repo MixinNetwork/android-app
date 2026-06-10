@@ -14,7 +14,6 @@ import one.mixin.android.api.request.CircleConversationRequest
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.response.ConversationResponse
-import one.mixin.android.db.withTransaction
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.ConversationJob
 import one.mixin.android.job.ConversationJob.Companion.TYPE_CREATE
@@ -23,7 +22,9 @@ import one.mixin.android.job.TranscriptDeleteJob
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.message.CleanMessageHelper
+import one.mixin.android.util.ConversationIdUtil
 import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.CircleOrder
@@ -35,6 +36,7 @@ import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -88,16 +90,26 @@ class ConversationListViewModel
 
                 val participantRequestList = mutableListOf<ParticipantRequest>()
                 mutableList.mapTo(participantRequestList) { ParticipantRequest(it.userId, it.role) }
+
+                val randomId = UUID.randomUUID().toString()
+                val cid = ConversationIdUtil.generateGroupConversationId(
+                    ownerId = Session.getAccountId()!!,
+                    groupName = c.name!!,
+                    participants = participants.map { it.userId },
+                    randomId = randomId
+                )
+
                 val request =
                     ConversationRequest(
-                        conversationId,
+                        cid,
                         it.category!!,
                         it.name,
                         it.iconUrl,
                         it.announcement,
                         participantRequestList,
+                        randomId =randomId,
                     )
-                jobManager.addJobInBackground(ConversationJob(request, type = TYPE_CREATE))
+                jobManager.addJobInBackground(ConversationJob(request, type = TYPE_CREATE, oldConversationId = conversationId))
             }
         }
 
@@ -173,10 +185,7 @@ class ConversationListViewModel
         suspend fun deleteCircle(circleId: String) = userRepository.deleteCircle(circleId)
 
         suspend fun deleteCircleById(circleId: String) {
-            withTransaction {
-                userRepository.deleteCircleById(circleId)
-                userRepository.deleteByCircleId(circleId)
-            }
+            userRepository.deleteCircleById(circleId)
         }
 
         suspend fun insertCircle(circle: Circle) = userRepository.insertCircle(circle)

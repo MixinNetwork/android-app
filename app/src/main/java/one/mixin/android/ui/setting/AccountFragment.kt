@@ -2,7 +2,6 @@ package one.mixin.android.ui.setting
 
 import android.os.Bundle
 import android.view.View
-import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAccountBinding
@@ -12,6 +11,7 @@ import one.mixin.android.extension.navTo
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.VerifyFragment
+import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
 import one.mixin.android.ui.setting.delete.DeleteAccountFragment
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipType
@@ -25,7 +25,6 @@ class AccountFragment : BaseFragment(R.layout.fragment_account) {
         fun newInstance() = AccountFragment()
     }
 
-    private val viewModel by viewModels<SettingViewModel>()
     private val binding by viewBinding(FragmentAccountBinding::bind)
 
     override fun onViewCreated(
@@ -49,13 +48,22 @@ class AccountFragment : BaseFragment(R.layout.fragment_account) {
             changeRl.setOnClickListener {
                 changeNumber()
             }
+            logOutRl.setOnClickListener {
+                logOut()
+            }
         }
     }
 
+    private fun logOut() {
+        if (RecoveryReminderBottomSheetDialogFragment.showForLogout(parentFragmentManager)) return
+        LogoutPinBottomSheetDialogFragment.newInstance()
+            .showNow(parentFragmentManager, LogoutPinBottomSheetDialogFragment.TAG)
+    }
+
     private fun changeNumber() {
-        alert(getString(R.string.profile_modify_number))
+        alert(getString(if (Session.hasPhone()) R.string.profile_modify_number else R.string.profile_add_number))
             .setNegativeButton(android.R.string.cancel) { dialog, _ -> dialog.dismiss() }
-            .setPositiveButton(R.string.Change_Phone_Number) { dialog, _ ->
+            .setPositiveButton(if (Session.hasPhone()) R.string.Change_Phone_Number else R.string.Add_Mobile_Number) { dialog, _ ->
                 dialog.dismiss()
                 if (Session.getAccount()?.hasPin == true) {
                     activity?.supportFragmentManager?.inTransaction {

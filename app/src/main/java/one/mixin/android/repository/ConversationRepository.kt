@@ -61,6 +61,7 @@ import one.mixin.android.vo.ConversationMinimal
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.ConversationStorageUsage
 import one.mixin.android.vo.GroupInfo
+import one.mixin.android.vo.isAppCard
 import one.mixin.android.vo.Job
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageItem
@@ -70,12 +71,11 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.PinMessage
+import one.mixin.android.vo.PinMessageItem
 import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 class ConversationRepository
     @Inject
     internal constructor(
@@ -97,6 +97,9 @@ class ConversationRepository
         private val jobManager: MixinJobManager,
         private val ftsDbHelper: FtsDatabase,
     ) {
+        private fun identityNumber(): String =
+            requireNotNull(Session.getAccount()) { "Account is required for database access." }.identityNumber
+
         suspend fun getChatMessages(
             conversationId: String,
             offset: Int,
@@ -104,10 +107,10 @@ class ConversationRepository
         ): List<MessageItem> = messageDao.getChatMessages(conversationId, offset, limit)
 
         fun observeConversations(circleId: String?): DataSource.Factory<Int, ConversationItem> =
-            if (circleId == null) {
-                DataProvider.observeConversations(appDatabase)
+            if (circleId.isNullOrBlank()) {
+                DataProvider.observeConversations(MixinDatabase.getDatabase(MixinApplication.appContext, identityNumber()))
             } else {
-                DataProvider.observeConversationsByCircleId(circleId, appDatabase)
+                DataProvider.observeConversationsByCircleId(circleId, MixinDatabase.getDatabase(MixinApplication.appContext, identityNumber()))
             }
 
         suspend fun successConversationList(): List<ConversationMinimal> =
@@ -192,12 +195,38 @@ class ConversationRepository
             conversationId: String,
             messageId: String,
             excludeLive: Boolean,
-        ): Int =
-            if (excludeLive) {
-                messageDao.indexMediaMessagesExcludeLive(conversationId, messageId)
+        ): Int {
+            val list = if (excludeLive) {
+                messageDao.getMediaMessagesExcludeLiveList(conversationId)
             } else {
-                messageDao.indexMediaMessages(conversationId, messageId)
+                messageDao.getMediaMessagesList(conversationId)
             }
+            val filteredList = list.filter { !it.isAppCard() || it.isAppCardWithCover() }
+            return filteredList.indexOfFirst { it.messageId == messageId }.coerceAtLeast(0)
+        }
+
+        suspend fun countIndexMediaMessages(
+            conversationId: String,
+            excludeLive: Boolean,
+        ): Int {
+            val list = if (excludeLive) {
+                messageDao.getMediaMessagesExcludeLiveList(conversationId)
+            } else {
+                messageDao.getMediaMessagesList(conversationId)
+            }
+            return list.count { !it.isAppCard() || it.isAppCardWithCover() }
+        }
+
+        fun getMediaMessagesDataSource(
+            conversationId: String,
+            excludeLive: Boolean,
+        ): DataSource.Factory<Int, MessageItem> {
+            return if (excludeLive) {
+                messageDao.getMediaMessagesExcludeLive(conversationId)
+            } else {
+                messageDao.getMediaMessages(conversationId)
+            }
+        }
 
         fun getMediaMessages(
             conversationId: String,
@@ -224,8 +253,10 @@ class ConversationRepository
         suspend fun getMediaMessage(
             conversationId: String,
             messageId: String,
-        ) =
-            messageDao.getMediaMessage(conversationId, messageId)
+        ): MessageItem? {
+            val item = messageDao.getMediaMessage(conversationId, messageId) ?: return null
+            return if (item.isAppCard() && !item.isAppCardWithCover()) null else item
+        }
 
         suspend fun getConversationIdIfExistsSync(recipientId: String) =
             conversationDao.getConversationIdIfExistsSync(recipientId)
@@ -250,10 +281,10 @@ class ConversationRepository
         suspend fun getParticipantsWithoutBot(conversationId: String) =
             participantDao.getParticipantsWithoutBot(conversationId)
 
-        fun observeGroupParticipants(conversationId: String) =
+        fun observeGroupParticipantsPagingSource(conversationId: String) =
             participantDao.observeGroupParticipants(conversationId)
 
-        fun fuzzySearchGroupParticipants(
+        fun fuzzySearchGroupParticipantsPagingSource(
             conversationId: String,
             username: String,
             identityNumber: String,
@@ -467,7 +498,9 @@ class ConversationRepository
 
         suspend fun getAnnouncementByConversationId(conversationId: String) = conversationDao.getAnnouncementByConversationId(conversationId)
 
-        fun getUnreadMentionMessageByConversationId(conversationId: String) = messageMentionDao.getUnreadMentionMessageByConversationId(conversationId)
+        fun countUnreadMentionMessageByConversationId(conversationId: String) = messageMentionDao.countUnreadMentionMessageByConversationId(conversationId)
+
+        suspend fun getFirstUnreadMentionMessageByConversationId(conversationId: String) = messageMentionDao.getFirstUnreadMentionMessageByConversationId(conversationId)
 
         suspend fun updateCircles(
             conversationId: String?,
@@ -520,8 +553,6 @@ class ConversationRepository
         }
 
         suspend fun findTranscriptIdByConversationId(conversationId: String) = messageDao.findTranscriptIdByConversationId(conversationId)
-
-        fun create(request: ConversationRequest) = conversationService.create(request)
 
         suspend fun createSuspend(request: ConversationRequest) = conversationService.createSuspend(request)
 
@@ -660,10 +691,13 @@ class ConversationRepository
             }
         }
 
-        fun getLastPinMessages(conversationId: String) =
-            pinMessageDao.getLastPinMessages(conversationId)
+        fun getLastPinMessageId(conversationId: String): LiveData<String?> =
+            pinMessageDao.getLastPinMessageId(conversationId)
 
-        fun countPinMessages(conversationId: String) =
+        suspend fun getPinMessageById(conversationId: String, messageId: String): PinMessageItem? =
+            pinMessageDao.getPinMessageById(conversationId, messageId)
+
+        suspend fun countPinMessages(conversationId: String) =
             pinMessageDao.countPinMessages(conversationId)
 
         fun insertPinMessages(pinMessages: List<PinMessage>) {
@@ -721,4 +755,10 @@ class ConversationRepository
             conversationId: String,
         ): Int =
             messageDao.indexAudioByConversationId(messageId, conversationId)
+
+        suspend fun getMediaMessagesList(conversationId: String) = messageDao.getMediaMessagesList(conversationId)
+
+        suspend fun getMediaMessagesExcludeLiveList(conversationId: String) = messageDao.getMediaMessagesExcludeLiveList(conversationId)
+
+        suspend fun getAudioMessagesList(conversationId: String) = messageDao.getAudioMessagesList(conversationId)
     }
