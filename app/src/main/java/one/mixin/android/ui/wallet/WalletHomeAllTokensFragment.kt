@@ -42,6 +42,7 @@ import one.mixin.android.ui.wallet.home.WalletHomeCardType
 import one.mixin.android.ui.wallet.home.WalletHomeImportKeyAction
 import one.mixin.android.ui.wallet.home.WalletHomeImportKeyKind
 import one.mixin.android.ui.wallet.home.WalletHomeState
+import one.mixin.android.ui.wallet.home.WalletHomeTokenHandoff
 import one.mixin.android.ui.wallet.home.WalletHomeType
 import one.mixin.android.ui.wallet.home.calculateWalletHomeTotalFiat
 import one.mixin.android.ui.wallet.home.formatWalletHomeBtcTotal
@@ -152,6 +153,8 @@ class WalletHomeAllTokensFragment : BaseFragment() {
             }
         }
 
+        applyInitialTokenSnapshot()
+
         if (walletType == WalletHomeType.CLASSIC) {
             lifecycleScope.launch {
                 wallet = walletViewModel.findWalletById(walletId)
@@ -201,6 +204,22 @@ class WalletHomeAllTokensFragment : BaseFragment() {
             }
         }
         renderHome()
+    }
+
+    private fun applyInitialTokenSnapshot() {
+        if (walletType == WalletHomeType.PRIVACY) {
+            val tokens = WalletHomeTokenHandoff.consumePrivacyTokens()
+            if (tokens.isNotEmpty()) {
+                privacyTokens = tokens
+                renderHome()
+            }
+        } else {
+            val tokens = WalletHomeTokenHandoff.consumeWeb3Tokens(walletId)
+            if (tokens.isNotEmpty()) {
+                web3Tokens = tokens
+                renderHome()
+            }
+        }
     }
 
     @SuppressLint("InflateParams")
@@ -356,9 +375,16 @@ class WalletHomeAllTokensFragment : BaseFragment() {
         override fun onBuyClicked() {
             if (walletType == WalletHomeType.CLASSIC) {
                 if (shouldHideWeb3Actions()) return
-                WalletActivity.showBuy(requireActivity(), true, null, null, walletId)
+                WalletActivity.showBuy(
+                    requireActivity(),
+                    true,
+                    null,
+                    null,
+                    walletId = walletId,
+                    source = TradeSource.TOKEN_LIST,
+                )
             } else {
-                WalletActivity.showBuy(requireActivity(), false, null, null)
+                WalletActivity.showBuy(requireActivity(), false, null, null, source = TradeSource.TOKEN_LIST)
             }
         }
 
@@ -466,11 +492,11 @@ class WalletHomeAllTokensFragment : BaseFragment() {
     }
 
     private fun showPrivacySwap() {
-        AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.WALLET_HOME)
+        AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.TOKEN_LIST)
         SwapActivity.show(
             requireActivity(),
             inMixin = true,
-            entrySource = TradeSource.WALLET_HOME,
+            entrySource = TradeSource.TOKEN_LIST,
             entryType = AnalyticsTracker.SpotTradeType.SIMPLE,
         )
     }
@@ -506,12 +532,12 @@ class WalletHomeAllTokensFragment : BaseFragment() {
     }
 
     private fun showWeb3Swap() {
-        AnalyticsTracker.trackTradeStart(TradeWallet.WEB3, TradeSource.WALLET_HOME)
+        AnalyticsTracker.trackTradeStart(TradeWallet.WEB3, TradeSource.TOKEN_LIST)
         SwapActivity.show(
             requireActivity(),
             inMixin = false,
             walletId = walletId,
-            entrySource = TradeSource.WALLET_HOME,
+            entrySource = TradeSource.TOKEN_LIST,
             entryType = AnalyticsTracker.SpotTradeType.SIMPLE,
         )
     }

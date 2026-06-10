@@ -359,6 +359,7 @@ object AnalyticsTracker {
         const val TRADE_DETAIL = "trade_detail"
         const val SCHEMA = "scheme"
         const val ASSET_DETAIL = "asset_detail"
+        const val TOKEN_LIST = "token_list"
         const val EXPLORE = "explore"
         const val FEE = "fee"
         const val BALANCE = "balance"

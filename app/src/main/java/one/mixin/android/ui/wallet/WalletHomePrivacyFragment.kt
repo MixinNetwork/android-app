@@ -72,6 +72,7 @@ import one.mixin.android.ui.wallet.home.WalletHomePage
 import one.mixin.android.ui.wallet.home.WalletHomePositionSummary
 import one.mixin.android.ui.wallet.home.WalletHomeSection
 import one.mixin.android.ui.wallet.home.WalletHomeState
+import one.mixin.android.ui.wallet.home.WalletHomeTokenHandoff
 import one.mixin.android.ui.wallet.home.WalletHomeType
 import one.mixin.android.ui.wallet.home.calculateWalletHomeTotalFiat
 import one.mixin.android.ui.wallet.home.formatWalletHomeBtcTotal
@@ -553,6 +554,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         override fun onImportKeyLearnMoreClicked() = Unit
 
         override fun onViewMoreTokensClicked() {
+            WalletHomeTokenHandoff.savePrivacyTokens(assets)
             WalletActivity.show(requireActivity(), WalletActivity.Destination.AllTokens)
         }
 
