@@ -12,6 +12,8 @@ import kotlinx.serialization.SerialName
 import one.mixin.android.extension.hexString
 import one.mixin.android.extension.isByteArrayValidUtf8
 import one.mixin.android.extension.isValidHex
+import one.mixin.android.vo.safe.OutputState
+import one.mixin.android.vo.safe.RawTransaction
 import one.mixin.android.vo.safe.SafeDeposit
 import one.mixin.android.vo.safe.SafeSnapshotType
 import one.mixin.android.vo.safe.SafeWithdrawal
@@ -159,6 +161,8 @@ data class SnapshotItem(
     }
 
     fun isPendingWithdrawal() = withdrawal != null && withdrawal.withdrawalHash.isNullOrBlank()
+
+    fun shouldShowPendingHash(rawTransaction: RawTransaction?) = rawTransaction?.state == OutputState.unspent
 }
 
 @Parcelize

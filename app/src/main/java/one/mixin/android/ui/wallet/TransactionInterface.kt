@@ -34,6 +34,7 @@ import one.mixin.android.ui.home.inscription.InscriptionActivity
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Ticker
+import one.mixin.android.vo.safe.RawTransaction
 import one.mixin.android.vo.safe.SafeSnapshotType
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.linktext.RoundBackgroundColorSpan
@@ -61,7 +62,8 @@ interface TransactionInterface {
                         contentBinding.avatarVa.setOnClickListener {
                             clickAvatar(fragment, asset, snapshot.inscriptionHash)
                         }
-                        updateUI(fragment, contentBinding, asset, snapshot)
+                        val rawTransaction = snapshot.traceId?.let { walletViewModel.findRawTransaction(it) }
+                        updateUI(fragment, contentBinding, asset, snapshot, rawTransaction)
                         fetchThatTimePrice(
                             fragment,
                             lifecycleScope,
@@ -77,6 +79,7 @@ interface TransactionInterface {
                             walletViewModel,
                             snapshot,
                             asset,
+                            rawTransaction,
                         )
                     }
                 }
@@ -87,23 +90,27 @@ interface TransactionInterface {
             contentBinding.avatarVa.setOnClickListener {
                 clickAvatar(fragment, tokenItem, snapshotItem.inscriptionHash)
             }
-            updateUI(fragment, contentBinding, tokenItem, snapshotItem)
-            fetchThatTimePrice(
-                fragment,
-                lifecycleScope,
-                walletViewModel,
-                contentBinding,
-                tokenItem.assetId,
-                snapshotItem,
-            )
-            refreshIncompleteSnapshot(
-                fragment,
-                contentBinding,
-                lifecycleScope,
-                walletViewModel,
-                snapshotItem,
-                tokenItem,
-            )
+            lifecycleScope.launch {
+                val rawTransaction = snapshotItem.traceId?.let { walletViewModel.findRawTransaction(it) }
+                updateUI(fragment, contentBinding, tokenItem, snapshotItem, rawTransaction)
+                fetchThatTimePrice(
+                    fragment,
+                    lifecycleScope,
+                    walletViewModel,
+                    contentBinding,
+                    tokenItem.assetId,
+                    snapshotItem,
+                )
+                refreshIncompleteSnapshot(
+                    fragment,
+                    contentBinding,
+                    lifecycleScope,
+                    walletViewModel,
+                    snapshotItem,
+                    tokenItem,
+                    rawTransaction,
+                )
+            }
         }
     }
 
@@ -286,12 +293,14 @@ interface TransactionInterface {
         contentBinding: FragmentTransactionBinding,
         asset: TokenItem,
         snapshot: SnapshotItem,
+        rawTransaction: RawTransaction? = null,
     ) {
         if (checkDestroyed(fragment)) return
 
         contentBinding.apply {
             val amountVal = snapshot.amount.toFloatOrNull()
             val isPositive = if (amountVal == null) false else amountVal > 0
+            val showPendingHash = snapshot.shouldShowPendingHash(rawTransaction)
             if (snapshot.inscriptionHash.isNullOrEmpty()) {
                 avatarVa.displayedChild = 0
                 contentBinding.avatar.loadToken(asset)
@@ -326,7 +335,7 @@ interface TransactionInterface {
             val amountColor =
                 fragment.resources.getColor(
                     when {
-                        snapshot.type == SafeSnapshotType.pending.name -> {
+                        snapshot.type == SafeSnapshotType.pending.name || showPendingHash -> {
                             R.color.wallet_text_gray
                         }
                         isPositive -> {
@@ -352,6 +361,7 @@ interface TransactionInterface {
             transactionIdTv.text = snapshot.snapshotId
             transactionHashLayout.isVisible = !snapshot.transactionHash.isNullOrBlank()
             transactionHashTv.text = snapshot.transactionHash
+            hashPendingPb.isVisible = false
             dateTv.text = snapshot.createdAt.fullDate()
             memoLl.isVisible = snapshot.formatMemo != null
             memoTv.text = snapshot.formatMemo?.utf ?: snapshot.formatMemo?.hex
@@ -425,6 +435,7 @@ interface TransactionInterface {
                     if (snapshot.withdrawal != null) {
                         hashLl.isVisible = true
                         hashTitle.text = fragment.getString(R.string.withdrawal_hash)
+                        hashPendingPb.isVisible = showPendingHash
                         if (snapshot.withdrawal.withdrawalHash.isBlank()) {
                             hashTv.text = fragment.getString(R.string.withdrawal_pending)
                         } else {
@@ -463,12 +474,13 @@ interface TransactionInterface {
         walletViewModel: WalletViewModel,
         snapshot: SnapshotItem,
         asset: TokenItem,
+        rawTransaction: RawTransaction? = null,
     ) {
         if (snapshot.isDataIncomplete()) {
             lifecycleScope.launch {
                 walletViewModel.refreshSnapshot(snapshot.snapshotId)?.let {
                     it.label = snapshot.label // Saving temporary variables
-                    updateUI(fragment, contentBinding, asset, it)
+                    updateUI(fragment, contentBinding, asset, it, rawTransaction)
                 }
             }
         }
