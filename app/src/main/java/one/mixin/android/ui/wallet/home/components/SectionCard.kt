@@ -19,6 +19,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.PlatformTextStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -55,6 +57,9 @@ internal fun SectionCard(
             color = MixinAppTheme.colors.textMinor,
             fontSize = 14.sp,
             fontWeight = FontWeight.W400,
+            style = TextStyle(
+                platformStyle = PlatformTextStyle(includeFontPadding = false),
+            ),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = if (headerTrailing == null) Modifier else Modifier.weight(1f),

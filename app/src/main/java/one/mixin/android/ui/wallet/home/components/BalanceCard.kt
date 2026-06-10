@@ -393,8 +393,8 @@ private fun ActionItem(
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .padding(top = 3.dp)
-                        .size(12.dp)
+                        .padding(top = 2.dp)
+                        .size(8.dp)
                         .clip(CircleShape)
                         .background(MixinAppTheme.colors.tipError),
                 )

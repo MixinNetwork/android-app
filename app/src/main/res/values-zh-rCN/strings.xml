@@ -2528,4 +2528,5 @@
     <string name="wallet_home_privacy_wallet_reason_1">隐藏余额与交易记录，链上完全匿名</string>
     <string name="wallet_home_privacy_wallet_reason_2">不必输入复杂地址，彻底告别转账错误</string>
     <string name="wallet_home_privacy_wallet_reason_3">拦截恶意授权，杜绝应用偷转资产</string>
+    <string name="no_tokens">没有代币</string>
 </resources>

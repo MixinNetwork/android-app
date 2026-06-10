@@ -2589,7 +2589,7 @@
     <string name="wallet_home_add_wallet_banner_title">Add Wallets via Private Key, Phrase, or Watch Address</string>
     <string name="wallet_home_cashback_banner_title">Buy crypto with 100% fee cashback</string>
     <string name="wallet_home_cashback_banner_cta">Claim Now</string>
-    <string name="wallet_home_referral_banner_title">Referral Rewards</string>
+    <string name="wallet_home_referral_banner_title">Referral</string>
     <string name="wallet_home_referral_banner_desc">Invite and get up to 60% trading fee and exclusive revenue sharing.</string>
     <string name="wallet_home_top_movers">Top Movers</string>
     <string name="wallet_home_tokens">Tokens</string>
@@ -2605,4 +2605,5 @@
     <string name="wallet_home_privacy_wallet_reason_1">Keep balances and transactions private from public explorers.</string>
     <string name="wallet_home_privacy_wallet_reason_2">Avoid transfer errors caused by complex wallet addresses.</string>
     <string name="wallet_home_privacy_wallet_reason_3">Block malicious apps from gaining unsafe permissions.</string>
+    <string name="no_tokens">No Tokens</string>
 </resources>
