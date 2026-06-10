@@ -44,6 +44,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsOrderItem
+import one.mixin.android.api.response.perps.PerpsPosition
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -137,7 +138,8 @@ fun PositionDetailPage(
         }
     }
 
-    val isPending = position.state == "processing" || position.state == "adding"
+    val isAdding = position.state == PerpsPosition.STATE_ADDING
+    val isPending = position.state == PerpsPosition.STATE_OPENING || isAdding
     val leverageTextColor = if (isPending) MixinAppTheme.colors.textAssist else sideColor
     val leverageBackgroundColor = if (isPending) {
         MixinAppTheme.colors.backgroundGrayLight
@@ -196,10 +198,6 @@ fun PositionDetailPage(
 
     fun formatSignedFiat(value: BigDecimal): String {
         return formatPerpsSignedRawUsdDecimal(value)
-    }
-
-    fun formatPriceUsd(value: BigDecimal): String {
-        return formatPerpsUsdDecimal(value)
     }
 
     PageScaffold(
@@ -296,7 +294,7 @@ fun PositionDetailPage(
                 ) {
                     if (isPending) {
                         Text(
-                            text = stringResource(if (position.state == "adding") R.string.adding_position else R.string.Pending),
+                            text = stringResource(if (isAdding) R.string.adding_position else R.string.Pending),
                             color = MixinAppTheme.colors.textAssist,
                             fontWeight = FontWeight.W500,
                             modifier = Modifier
@@ -395,7 +393,7 @@ fun PositionDetailPage(
 
                 PositionDetailItem(
                     label = stringResource(R.string.Entry_Price).uppercase(),
-                    value = formatPriceUsd(entryPrice)
+                    value = formatPerpsPrice(entryPrice, position.priceScale)
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -547,10 +545,6 @@ fun PositionDetailPage(
 
     fun formatSignedFiat(value: BigDecimal): String {
         return formatPerpsSignedRawUsdDecimal(value)
-    }
-
-    fun formatPriceUsd(value: BigDecimal): String {
-        return formatPerpsUsdDecimal(value)
     }
 
     PageScaffold(
@@ -710,14 +704,14 @@ fun PositionDetailPage(
 
                 PositionDetailItem(
                     label = stringResource(R.string.Entry_Price).uppercase(),
-                    value = formatPriceUsd(closeOrder.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+                    value = formatPerpsPrice(closeOrder.entryPrice, closeOrder.priceScale)
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
 
                 PositionDetailItem(
                     label = stringResource(R.string.Close_Price).uppercase(),
-                    value = formatPriceUsd(closeOrder.closePrice.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+                    value = formatPerpsPrice(closeOrder.closePrice, closeOrder.priceScale)
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -799,12 +793,7 @@ fun OpenedOrderDetailPage(
 
     val quantity = openedOrder.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val absQuantity = quantity.abs()
-    val entryPrice = openedOrder.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val leverage = openedOrder.leverage
-
-    fun formatPriceUsd(value: BigDecimal): String {
-        return formatPerpsUsdDecimal(value)
-    }
 
     PageScaffold(
         title = title,
@@ -940,7 +929,7 @@ fun OpenedOrderDetailPage(
                 if (!isFailed) {
                     PositionDetailItem(
                         label = stringResource(R.string.Entry_Price).uppercase(),
-                        value = formatPriceUsd(entryPrice)
+                        value = formatPerpsPrice(openedOrder.entryPrice, openedOrder.priceScale)
                     )
 
                     Spacer(modifier = Modifier.height(20.dp))

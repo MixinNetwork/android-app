@@ -6,6 +6,7 @@ import android.view.View
 import android.view.View.VISIBLE
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.text.HtmlCompat
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
@@ -19,6 +20,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentDetailsMarketBinding
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.dayTime
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.indeterminateProgressDialog
@@ -28,6 +30,7 @@ import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.priceFormat2
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.setQuoteText
 import one.mixin.android.extension.setQuoteTextWithBackgroud
 import one.mixin.android.extension.toast
@@ -50,6 +53,7 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
+import java.util.Locale
 import javax.inject.Inject
 import timber.log.Timber
 
@@ -60,6 +64,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
         const val ARGS_MARKET = "args_market"
         const val ARGS_ASSET_ID = "args_asset_id"
         const val ARGS_MARKET_SOURCE = "args_market_source"
+        private const val PREF_MARKET_CHART_TYPE = "pref_market_chart_type"
     }
 
     private val binding by viewBinding(FragmentDetailsMarketBinding::bind)
@@ -143,42 +148,20 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         toast(getString(R.string.swap_not_supported, marketItem.name))
                         return@launch
                     }
-                    val assets = walletViewModel.allAssetItems()
-                    if (nowTokens.size == 1) {
-                        val input = if (nowTokens.first().assetId == USDT_ASSET_ETH_ID) {
-                            XIN_ASSET_ID
-                        } else {
-                            USDT_ASSET_ETH_ID
-                        }
-
-                        AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.MARKET_DETAIL)
-                        view.navigate(R.id.action_market_details_to_swap,
-                            Bundle().apply {
-                                putString(ARGS_INPUT, input)
-                                putString(ARGS_OUTPUT, nowTokens.first().assetId)
-                                putString(TradeFragment.ARGS_ENTRY_SOURCE, TradeSource.MARKET_DETAIL)
-                                putString(TradeFragment.ARGS_ENTRY_TYPE, AnalyticsTracker.SpotTradeType.SIMPLE)
-                            })
+                    val token = nowTokens.first()
+                    val input = if (token.assetId == USDT_ASSET_ETH_ID) {
+                        XIN_ASSET_ID
                     } else {
-                        DepositTokensBottomSheetDialogFragment.newInstance(ArrayList<TokenItem>().apply { addAll(nowTokens) }).apply {
-                            callback = { token ->
-                                val output = if (token.assetId == USDT_ASSET_ETH_ID) {
-                                    XIN_ASSET_ID
-                                } else {
-                                    USDT_ASSET_ETH_ID
-                                }
-
-                                AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.MARKET_DETAIL)
-                                view.navigate(R.id.action_market_details_to_swap,
-                                    Bundle().apply {
-                                        putString(ARGS_INPUT, token.assetId)
-                                        putString(ARGS_OUTPUT, output)
-                                        putString(TradeFragment.ARGS_ENTRY_SOURCE, TradeSource.MARKET_DETAIL)
-                                        putString(TradeFragment.ARGS_ENTRY_TYPE, AnalyticsTracker.SpotTradeType.SIMPLE)
-                                    })
-                            }
-                        }.show(parentFragmentManager, DepositTokensBottomSheetDialogFragment.TAG)
+                        USDT_ASSET_ETH_ID
                     }
+                    AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.MARKET_DETAIL)
+                    view.navigate(R.id.action_market_details_to_swap,
+                        Bundle().apply {
+                            putString(ARGS_INPUT, input)
+                            putString(ARGS_OUTPUT, token.assetId)
+                            putString(TradeFragment.ARGS_ENTRY_SOURCE, TradeSource.MARKET_DETAIL)
+                            putString(TradeFragment.ARGS_ENTRY_TYPE, AnalyticsTracker.SpotTradeType.SIMPLE)
+                        })
                 }
             }
             if (marketItem.coinId.isBlank()) {
@@ -261,31 +244,29 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
             radio1m.text = getString(R.string.months_count_short, 1)
             radioYtd.text = getString(R.string.ytd)
             radioAll.text = getString(R.string.All).uppercase()
+            val savedType = defaultSharedPreferences.getString(PREF_MARKET_CHART_TYPE, "1D") ?: "1D"
+            typeState.value = savedType
+            radioGroup.check(
+                when (savedType) {
+                    "1W" -> R.id.radio_1w
+                    "1M" -> R.id.radio_1m
+                    "1Y" -> R.id.radio_ytd
+                    "ALL" -> R.id.radio_all
+                    else -> R.id.radio_1d
+                },
+            )
             radioGroup.setOnCheckedChangeListener { _, checkedId ->
                 requireActivity().heavyClickVibrate()
-                typeState.value =
+                val type =
                     when (checkedId) {
-
-                        R.id.radio_1d -> {
-                            "1D"
-                        }
-
-                        R.id.radio_1w -> {
-                            "1W"
-                        }
-
-                        R.id.radio_1m -> {
-                            "1M"
-                        }
-
-                        R.id.radio_ytd -> {
-                            "1Y"
-                        }
-
-                        else -> {
-                            "ALL"
-                        }
+                        R.id.radio_1d -> "1D"
+                        R.id.radio_1w -> "1W"
+                        R.id.radio_1m -> "1M"
+                        R.id.radio_ytd -> "1Y"
+                        else -> "ALL"
                     }
+                typeState.value = type
+                defaultSharedPreferences.putString(PREF_MARKET_CHART_TYPE, type)
             }
 
             name.text = marketItem.name
@@ -369,6 +350,13 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     lowTime.isVisible = true
                     lowTime.text = info.atlDate.dayTime()
 
+                    val desc = info.descriptions?.let { map ->
+                        val lang = Locale.getDefault().language
+                        selectLocalizedMarketDescription(map, lang)
+                    }?.let { HtmlCompat.fromHtml(it, HtmlCompat.FROM_HTML_MODE_LEGACY).toString().trim() }
+                    aboutContainer.isVisible = !desc.isNullOrBlank()
+                    aboutContent.text = desc.orEmpty()
+
                     priceValue.setTextColor(textPrimary)
                     marketCap.setTextColor(textPrimary)
                     marketHigh.setTextColor(textPrimary)
@@ -403,6 +391,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     highValue.setText(R.string.N_A)
                     lowValue.setTextColor(textAssist)
                     lowValue.setText(R.string.N_A)
+                    aboutContainer.isVisible = false
                 }
             }
         }

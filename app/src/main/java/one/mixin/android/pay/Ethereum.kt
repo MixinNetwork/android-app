@@ -20,7 +20,12 @@ internal suspend fun parseEthereum(
     getAssetPrecisionById: suspend (String) -> AssetPrecision?,
     balanceCheck: suspend (String, BigDecimal, String?, BigDecimal?) -> Unit,
 ): ExternalTransfer? {
-    val erc681 = EthereumURI(url).toERC681()
+    val normalized = if (url.startsWith("ethereum://", ignoreCase = true)) {
+        "ethereum:" + url.substring("ethereum://".length)
+    } else {
+        url
+    }
+    val erc681 = EthereumURI(normalized).toERC681()
     if (!erc681.valid) return null
 
     val chainId = erc681.chainId?.toInt() ?: 1

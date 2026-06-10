@@ -74,4 +74,10 @@ data class PerpsPosition(
     @SerializedName("updated_at")
     @ColumnInfo(name = "updated_at")
     val updatedAt: String,
-) : Parcelable
+) : Parcelable {
+    companion object {
+        const val STATE_OPEN = "open"
+        const val STATE_OPENING = "opening"
+        const val STATE_ADDING = "adding"
+    }
+}

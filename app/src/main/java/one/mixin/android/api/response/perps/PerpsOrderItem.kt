@@ -1,10 +1,12 @@
 package one.mixin.android.api.response.perps
 
 import android.os.Parcelable
+import androidx.compose.runtime.Immutable
 import androidx.room.ColumnInfo
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 
+@Immutable
 @Parcelize
 data class PerpsOrderItem(
     @SerializedName("order_id")
@@ -64,4 +66,6 @@ data class PerpsOrderItem(
     val iconUrl: String? = null,
     @ColumnInfo(name = "token_symbol")
     val tokenSymbol: String? = null,
+    @ColumnInfo(name = "price_scale")
+    val priceScale: Int = 2,
 ) : Parcelable

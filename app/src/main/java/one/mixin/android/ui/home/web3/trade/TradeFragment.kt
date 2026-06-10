@@ -144,6 +144,10 @@ class TradeFragment : BaseFragment() {
         const val PREF_TRADE_SPOT_GUIDE_SHOWN: String = "pref_trade_spot_guide_shown"
         const val PREF_TRADE_PERPETUAL_GUIDE_SHOWN: String = "pref_trade_perpetual_guide_shown"
 
+        const val TAB_SIMPLE = 0
+        const val TAB_ADVANCED = 1
+        const val TAB_PERPETUAL = 2
+
         inline fun <reified T : Swappable> newInstance(
             input: String? = null,
             output: String? = null,
@@ -519,8 +523,8 @@ class TradeFragment : BaseFragment() {
                                 onShowMarketList = { isLong ->
                                     PerpsMarketListBottomSheetDialogFragment.newInstance(isLong).show(parentFragmentManager, PerpsMarketListBottomSheetDialogFragment.TAG)
                                 },
-                                onShowAllMarkets = { initialCategory ->
-                                    PerpsMarketListBottomSheetDialogFragment.newInstance(initialCategory).show(parentFragmentManager, PerpsMarketListBottomSheetDialogFragment.TAG)
+                                onShowAllMarkets = { initialCategory, initialSort ->
+                                    PerpsMarketListBottomSheetDialogFragment.newInstance(initialCategory, initialSort).show(parentFragmentManager, PerpsMarketListBottomSheetDialogFragment.TAG)
                                 },
                                 onShowAllOpenPositions = {
                                     navTo(AllPositionsFragment.newOpenInstance(), AllPositionsFragment.TAG)
@@ -1466,6 +1470,9 @@ class TradeFragment : BaseFragment() {
     }
 
     private fun getInitialTabIndex(currentWalletId: String): Int {
+        val entryType = arguments?.getString(ARGS_ENTRY_TYPE)
+        val entrySource = arguments?.getString(ARGS_ENTRY_SOURCE)
+        if (entrySource == AnalyticsTracker.TradeSource.MARKET_DETAIL && entryType == AnalyticsTracker.SpotTradeType.SIMPLE) return TAB_SIMPLE
         val preferenceKey = "$PREF_TRADE_SELECTED_TAB_PREFIX$currentWalletId"
         return defaultSharedPreferences.getInt(preferenceKey, 0)
     }

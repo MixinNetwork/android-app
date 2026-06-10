@@ -125,6 +125,7 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.showPipPermissionNotification
+import one.mixin.android.extension.toOpenInBrowserUrlOrNull
 import one.mixin.android.extension.toUri
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
@@ -554,7 +555,10 @@ class WebFragment : BaseFragment() {
             WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
         webView.settings.mediaPlaybackRequiresUserGesture = false
         webView.settings.userAgentString =
-            webView.settings.userAgentString + " Mixin/" + BuildConfig.VERSION_NAME
+            webView.settings.userAgentString + " Mixin/" + BuildConfig.VERSION_NAME + " GOOGLE_PAY_SUPPORTED"
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.PAYMENT_REQUEST)) {
+            WebSettingsCompat.setPaymentRequestEnabled(webView.settings, true)
+        }
 
         webView.webViewClient =
             WebViewClientImpl(
@@ -1056,20 +1060,6 @@ class WebFragment : BaseFragment() {
             )
         }
         return true
-    }
-
-    private fun String.toOpenInBrowserUrlOrNull(): String? {
-        val url = trim()
-        if (url.isBlank() || url.equals("undefined", true) || url.equals("null", true)) {
-            return null
-        }
-        var uri = url.toUri()
-        if (uri.scheme.isNullOrBlank()) {
-            uri = Uri.parse("http://$url")
-        }
-        return url.takeIf {
-            uri.scheme.equals("http", true) || uri.scheme.equals("https", true)
-        }
     }
 
     private fun closeSelf() {

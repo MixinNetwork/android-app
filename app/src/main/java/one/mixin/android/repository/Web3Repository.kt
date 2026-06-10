@@ -293,7 +293,15 @@ constructor(
 
     suspend fun deleteTransactionsByWalletId(walletId: String) = web3TransactionDao.deleteByWalletId(walletId)
 
-    suspend fun getAddressesByChainId(walletId: String, chainId: String) = web3AddressDao.getAddressesByChainId(walletId, chainId)
+    suspend fun getAddressesByChainId(walletId: String, chainId: String): Web3Address? {
+        val address = web3AddressDao.getAddressesByChainId(walletId, chainId)
+        if (address != null) return address
+        // EVM chains share the same derived address; fall back to Ethereum entry for non-Ethereum EVM chains
+        if (chainId != Constants.ChainId.ETHEREUM_CHAIN_ID && chainId in Constants.Web3EvmChainIds) {
+            return web3AddressDao.getAddressesByChainId(walletId, Constants.ChainId.ETHEREUM_CHAIN_ID)
+        }
+        return null
+    }
 
     suspend fun getAddresses(walletId: String) = web3AddressDao.getAddressesByWalletId(walletId)
 
@@ -305,10 +313,16 @@ constructor(
     suspend fun getSafeWalletsByChainId(chainId: String) =
         web3WalletDao.getSafeWalletsByChainId(chainId).updateWithLocalKeyInfo(context)
     suspend fun getWalletsExcluding(excludeWalletId: String, chainId: String, query: String): List<WalletItem> {
-        val wallets = if (chainId.isBlank()) {
+        // EVM chains share the same derived address stored under ETHEREUM_CHAIN_ID
+        val effectiveChainId = if (chainId != Constants.ChainId.ETHEREUM_CHAIN_ID && chainId in Constants.Web3EvmChainIds) {
+            Constants.ChainId.ETHEREUM_CHAIN_ID
+        } else {
+            chainId
+        }
+        val wallets = if (effectiveChainId.isBlank()) {
             web3WalletDao.getWalletsExcludingByNameAllChains(excludeWalletId, query)
         } else {
-            web3WalletDao.getWalletsExcludingByName(excludeWalletId, chainId, query)
+            web3WalletDao.getWalletsExcludingByName(excludeWalletId, effectiveChainId, query)
         }
         return wallets.updateWithLocalKeyInfo(context)
     }

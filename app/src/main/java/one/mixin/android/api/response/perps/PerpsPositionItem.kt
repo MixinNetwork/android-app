@@ -1,10 +1,12 @@
 package one.mixin.android.api.response.perps
 
 import android.os.Parcelable
+import androidx.compose.runtime.Immutable
 import androidx.room.ColumnInfo
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 
+@Immutable
 @Parcelize
 data class PerpsPositionItem(
     @SerializedName("position_id")

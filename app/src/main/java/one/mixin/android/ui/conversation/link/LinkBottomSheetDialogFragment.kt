@@ -86,6 +86,7 @@ import one.mixin.android.ui.home.inscription.InscriptionActivity
 import one.mixin.android.ui.home.web3.GasCheckBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.PREF_TRADE_SELECTED_TAB_PREFIX
+import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.TAB_PERPETUAL
 import one.mixin.android.ui.home.web3.trade.perps.PerpsActivity
 import one.mixin.android.ui.oldwallet.BottomSheetViewModel
 import one.mixin.android.ui.oldwallet.MultisigsBottomSheetDialogFragment
@@ -1107,19 +1108,29 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
     private suspend fun handleTradeScheme(uri: Uri) {
         val type = uri.getQueryParameter("type")
         
-        if (type.equals("perps", true)) {
+        if (type.equals("perps", true) || type.equals("perpetual", true)) {
             val marketId = uri.getQueryParameter("market")
             if (marketId.isNullOrBlank() || !marketId.isUUID()) {
-                showError(R.string.Invalid_payment_link)
+                defaultSharedPreferences.putInt(
+                    "$PREF_TRADE_SELECTED_TAB_PREFIX${Session.getAccountId() ?: ""}",
+                    TAB_PERPETUAL,
+                )
+                SwapActivity.show(
+                    requireContext(),
+                    entrySource = if (activity is ConversationActivity) TradeSource.APP_CARD else TradeSource.SCHEMA,
+                    entryType = AnalyticsTracker.SpotTradeType.PERPETUAL,
+                )
+                closeSourceWebActivityIfNeeded()
+                dismiss()
                 return
             }
-            
+
             val market = linkViewModel.getPerpsMarket(marketId)
             if (market == null) {
                 showError(R.string.Data_error)
                 return
             }
-            
+
             PerpsActivity.showDetail(
                 requireContext(),
                 market.marketId,
