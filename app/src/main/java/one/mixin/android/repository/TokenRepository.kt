@@ -1007,7 +1007,7 @@ class TokenRepository
 
         suspend fun removeUtxo(outputId: String) = outputDao.removeUtxo(outputId)
 
-        fun firstUnspentTransaction() = rawTransactionDao.findUnspentTransaction()
+        fun firstSignedTransaction() = rawTransactionDao.findSignedTransaction()
 
         suspend fun findLastWithdrawalSnapshotByReceiver(formatDestination: String) = safeSnapshotDao.findLastWithdrawalSnapshotByReceiver(formatDestination)
 
