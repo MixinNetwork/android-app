@@ -273,13 +273,15 @@ class WalletActivity : BlazeBaseActivity() {
             activity: Activity,
             tokenItem: TokenItem,
             destination: Destination,
-            fromMarket: Boolean = false
+            fromMarket: Boolean = false,
+            source: String = AnalyticsTracker.AssetSource.WALLET_HOME,
         ) {
             activity.startActivity(
                 Intent(activity, WalletActivity::class.java).apply {
                     putExtra(DESTINATION, destination)
                     putExtra(ASSET, tokenItem)
                     putExtra(ARGS_FROM_MARKET, fromMarket)
+                    putExtra(TransactionsFragment.ARGS_SOURCE, source)
                 },
             )
         }

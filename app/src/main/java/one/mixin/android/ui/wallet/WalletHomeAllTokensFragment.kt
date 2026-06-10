@@ -418,7 +418,12 @@ class WalletHomeAllTokensFragment : BaseFragment() {
         override fun onTokenClicked(index: Int) {
             if (walletType == WalletHomeType.PRIVACY) {
                 privacyTokens.getOrNull(index)?.let {
-                    WalletActivity.showWithToken(requireActivity(), it, WalletActivity.Destination.Transactions)
+                    WalletActivity.showWithToken(
+                        requireActivity(),
+                        it,
+                        WalletActivity.Destination.Transactions,
+                        source = AnalyticsTracker.AssetSource.TOKEN_LIST,
+                    )
                 }
             } else {
                 web3Tokens.getOrNull(index)?.let { token ->

@@ -867,6 +867,11 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
     }
 
     override fun <T> onNormalItemClick(item: T) {
-        WalletActivity.showWithToken(requireActivity(), item as TokenItem, WalletActivity.Destination.Transactions)
+        WalletActivity.showWithToken(
+            requireActivity(),
+            item as TokenItem,
+            WalletActivity.Destination.Transactions,
+            source = AnalyticsTracker.AssetSource.TOKEN_LIST,
+        )
     }
 }

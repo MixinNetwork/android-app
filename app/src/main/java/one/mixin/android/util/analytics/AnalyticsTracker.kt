@@ -153,6 +153,7 @@ object AnalyticsTracker {
 
     object AssetSource {
         const val WALLET_HOME = "wallet_home"
+        const val TOKEN_LIST = "token_list"
         const val ASSET_DETAIL = "asset_detail"
         const val PROFILE = "profile"
         const val MARKET_DETAIL = "market_detail"
