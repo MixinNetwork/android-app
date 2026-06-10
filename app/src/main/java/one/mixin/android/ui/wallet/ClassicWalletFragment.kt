@@ -35,6 +35,7 @@ import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.db.web3.vo.toWeb3Wallet
 import one.mixin.android.event.QuoteColorEvent
+import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.mainThread
@@ -163,6 +164,19 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         binding.apply {
             _headBinding =
                 ViewWalletFragmentHeaderBinding.bind(layoutInflater.inflate(R.layout.view_wallet_fragment_header, coinsRv, false)).apply {
+                    lifecycleScope.launch {
+                        updateMissingKeyView(walletId)
+                    }
+                    RxBus.listen(WalletRefreshedEvent::class.java)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .autoDispose(destroyScope)
+                        .subscribe { event ->
+                            if (event.walletId == walletId) {
+                                lifecycleScope.launch {
+                                    updateMissingKeyView(walletId)
+                                }
+                            }
+                        }
                     sendReceiveView.enableBuy()
                     sendReceiveView.buy.setOnClickListener {
                         lifecycleScope.launch {
@@ -580,6 +594,24 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
 
     private fun showRecoveryReminderForRiskAction(onContinue: (() -> Unit)? = null): Boolean {
         return RecoveryReminderBottomSheetDialogFragment.showForRiskAction(parentFragmentManager, onContinue)
+    }
+
+    private suspend fun updateMissingKeyView(id: String) {
+        val wallet = web3ViewModel.findWalletById(id) ?: return
+        val isMissingKey = wallet.isImported() && !wallet.hasLocalPrivateKey
+        _headBinding?.viewAnimator?.displayedChild = if (isMissingKey) 1 else 0
+        if (!isMissingKey) return
+
+        val isMnemonic = wallet.category == WalletCategory.IMPORTED_MNEMONIC.value
+        val chainId = web3ViewModel.getAddresses(id).firstOrNull()?.chainId
+        _headBinding?.missingKeyView?.setMissingKey(isMnemonic) {
+            val mode = if (isMnemonic) {
+                WalletSecurityActivity.Mode.RE_IMPORT_MNEMONIC
+            } else {
+                WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY
+            }
+            WalletSecurityActivity.show(requireActivity(), mode, walletId = id, chainId = chainId)
+        }
     }
 
     private fun showImportKeyReminderIfNeeded(wallet: Web3Wallet?, chainId: String?): Boolean {

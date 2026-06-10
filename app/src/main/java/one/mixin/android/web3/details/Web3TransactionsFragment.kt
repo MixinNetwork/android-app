@@ -131,15 +131,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
     ) {
         super.onViewCreated(view, savedInstanceState)
         lifecycleScope.launch {
-            val wallet = web3ViewModel.findWalletById(token.walletId)
-            binding.sendReceiveView.isVisible = wallet?.isWatch() != true
-            binding.empty.isVisible = wallet?.isWatch() == true
-            if (token.isNativeSolAsset() && wallet != null && (wallet.category == WalletCategory.CLASSIC.value || (wallet.isImported() && wallet.hasLocalPrivateKey))) {
-                binding.stake.root.visibility = View.VISIBLE
-                address?.let { address -> getStakeAccounts(address)}
-            } else{
-                binding.stake.root.visibility = View.GONE
-            }
+            updateWalletUI()
         }
 
         jobManager.addJobInBackground(RefreshPriceJob(token.assetId))
@@ -509,6 +501,9 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
 
     override fun onResume() {
         super.onResume()
+        lifecycleScope.launch {
+            updateWalletUI()
+        }
         refreshJob = PendingTransactionRefreshHelper.startRefreshData(
             fragment = this,
             web3ViewModel = web3ViewModel,
@@ -520,6 +515,33 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
     override fun onPause() {
         super.onPause()
         refreshJob = PendingTransactionRefreshHelper.cancelRefreshData(refreshJob)
+    }
+
+    private suspend fun updateWalletUI() {
+        val wallet = web3ViewModel.findWalletById(token.walletId)
+        val isMissingKey = wallet?.isImported() == true && !wallet.hasLocalPrivateKey
+        binding.viewAnimator.displayedChild = if (isMissingKey) 1 else 0
+        binding.sendReceiveView.isVisible = wallet?.isWatch() != true
+        binding.empty.isVisible = wallet?.isWatch() == true
+
+        if (isMissingKey && wallet != null) {
+            val isMnemonic = wallet.category == WalletCategory.IMPORTED_MNEMONIC.value
+            binding.missingKeyView.setMissingKey(isMnemonic) {
+                val mode = if (isMnemonic) {
+                    WalletSecurityActivity.Mode.RE_IMPORT_MNEMONIC
+                } else {
+                    WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY
+                }
+                WalletSecurityActivity.show(requireActivity(), mode, walletId = token.walletId, chainId = token.chainId)
+            }
+        }
+
+        if (token.isNativeSolAsset() && wallet != null && (wallet.category == WalletCategory.CLASSIC.value || (wallet.isImported() && wallet.hasLocalPrivateKey))) {
+            binding.stake.root.visibility = View.VISIBLE
+            address?.let { getStakeAccounts(it) }
+        } else {
+            binding.stake.root.visibility = View.GONE
+        }
     }
 
     private suspend fun getStakeAccounts(address: String) {
