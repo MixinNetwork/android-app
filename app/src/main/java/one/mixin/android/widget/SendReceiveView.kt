@@ -86,23 +86,26 @@ class SendReceiveView : LinearLayoutCompat {
         val visibleChildren = (0 until childCount)
             .map { getChildAt(it) }
             .filter { it.visibility != View.GONE }
-        if (visibleChildren.size <= 1) {
+        if (visibleChildren.isEmpty()) {
             super.onLayout(changed, left, top, right, bottom)
             return
         }
-        val contentWidth = right - left - paddingLeft - paddingRight
-        val totalChildWidth = visibleChildren.sumOf { it.measuredWidth }
-        val gap = ((contentWidth - totalChildWidth).coerceAtLeast(0)).toFloat() / (visibleChildren.size - 1)
-        var childLeft = paddingLeft.toFloat()
-        visibleChildren.forEach { child ->
-            val childTop = paddingTop
+        val contentWidth = (right - left - paddingLeft - paddingRight).coerceAtLeast(0)
+        val childTop = paddingTop
+        val slotWidth = contentWidth.toFloat() / visibleChildren.size
+        visibleChildren.forEachIndexed { index, child ->
+            val childLeft = paddingLeft + (slotWidth * index).toInt()
+            val childRight = if (index == visibleChildren.lastIndex) {
+                paddingLeft + contentWidth
+            } else {
+                paddingLeft + (slotWidth * (index + 1)).toInt()
+            }
             child.layout(
-                childLeft.toInt(),
+                childLeft,
                 childTop,
-                childLeft.toInt() + child.measuredWidth,
+                childRight,
                 childTop + child.measuredHeight,
             )
-            childLeft += child.measuredWidth + gap
         }
     }
 
