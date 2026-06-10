@@ -112,12 +112,15 @@ private fun SlippageInfo(
 @Preview
 @Composable
 fun PreviewSlippageInfo() {
-    SlippageInfo(slippageBps = 50, true) {}
+    MixinAppTheme {
+        SlippageInfo(slippageBps = 50, true) {}
+    }
 }
 
 @Preview
 @Composable
 fun PreviewSlippageInfoWarning() {
-    SlippageInfo(slippageBps = 600, true) {}
+    MixinAppTheme {
+        SlippageInfo(slippageBps = 600, true) {}
+    }
 }
-

@@ -315,5 +315,7 @@ fun SegmentedControl(
 @Composable
 @Preview
 fun SelectDatePagePreview() {
-    SelectDatePage(onExit = {}, onResult = {})
+    MixinAppTheme {
+        SelectDatePage(onExit = {}, onResult = {})
+    }
 }

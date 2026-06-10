@@ -36,24 +36,37 @@ import one.mixin.android.vo.MessageSource
 @Composable
 fun ConversationSettingPage() {
     val viewModel = hiltViewModel<SettingConversationViewModel>()
+    val context = LocalContext.current
+    ConversationSettingPageContent(
+        initMessageSourcePreferences = { viewModel.initPreferences(context) },
+        doUpdateMessageSource = {
+            viewModel.savePreferences(AccountUpdateRequest(receiveMessageSource = it.name))
+        },
+        initGroupPreferences = { viewModel.initGroupPreferences(context) },
+        doUpdateGroupSource = {
+            viewModel.savePreferences(AccountUpdateRequest(acceptConversationSource = it.name))
+        }
+    )
+}
 
+@Composable
+fun ConversationSettingPageContent(
+    initMessageSourcePreferences: () -> SettingConversationViewModel.BaseMessageSourcePreferences,
+    doUpdateMessageSource: suspend (source: MessageSource) -> MixinResponse<Account>,
+    initGroupPreferences: () -> SettingConversationViewModel.BaseMessageSourcePreferences,
+    doUpdateGroupSource: suspend (source: MessageSource) -> MixinResponse<Account>,
+) {
     SettingPageScaffold(title = stringResource(id = R.string.Conversation)) {
-        val context = LocalContext.current
-
         MessageSettingTips(stringResource(id = R.string.setting_conversation_tip))
         SettingGroup(
-            initMessageSourcePreferences = { viewModel.initPreferences(context) },
-            doUpdate = {
-                viewModel.savePreferences(AccountUpdateRequest(receiveMessageSource = it.name))
-            },
+            initMessageSourcePreferences = initMessageSourcePreferences,
+            doUpdate = doUpdateMessageSource,
         )
 
         MessageSettingTips(stringResource(id = R.string.setting_conversation_group_tip))
         SettingGroup(
-            initMessageSourcePreferences = { viewModel.initGroupPreferences(context) },
-            doUpdate = {
-                viewModel.savePreferences(AccountUpdateRequest(acceptConversationSource = it.name))
-            },
+            initMessageSourcePreferences = initGroupPreferences,
+            doUpdate = doUpdateGroupSource,
         )
     }
 }

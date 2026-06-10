@@ -157,6 +157,7 @@ android {
             excludes += "META-INF/DISCLAIMER"
             excludes += "META-INF/NOTICE.md"
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "google/protobuf/descriptor.proto"
         }
         jniLibs {
             useLegacyPackaging = true
@@ -331,7 +332,9 @@ dependencies {
     }
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:$desugarJdkLibsVersion")
     implementation(platform("com.google.firebase:firebase-bom:$firebaseBomVersion"))
-    implementation("com.google.firebase:firebase-perf")
+    implementation("com.google.firebase:firebase-perf") {
+        exclude(group = "com.google.firebase", module = "protolite-well-known-types")
+    }
     implementation(fileTree(mapOf("include" to listOf("*.aar"), "dir" to "libs")))
     implementation("androidx.fragment:fragment-ktx:$fragmentVersion")
     implementation("androidx.activity:activity-ktx:$activity_version")
@@ -442,11 +445,7 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-crashlytics")
 
-    implementation("com.google.protobuf:protobuf-javalite") {
-        version {
-            strictly("3.11.0")
-        }
-    }
+    implementation("com.google.protobuf:protobuf-javalite:4.29.3")
 
     implementation("com.android.billingclient:billing-ktx:$billingKtxVersion")
     implementation("com.google.mlkit:barcode-scanning:$mlkitBarcodeVersion")
@@ -558,6 +557,7 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-contrib:$espressoVersion") {
         exclude(group = "com.android.support", module = "support-annotations")
         exclude(group = "org.checkerframework", module = "checker")
+        exclude(group = "com.google.protobuf", module = "protobuf-lite")
     }
     androidTestImplementation("androidx.test.espresso:espresso-idling-resource:$espressoVersion")
     androidTestImplementation("androidx.test.ext:junit:$androidxJunitVersion")
@@ -572,11 +572,8 @@ dependencies {
     // ML Kit
     implementation("com.google.mlkit:entity-extraction:16.0.0-beta6")
 
-    testImplementation("com.google.protobuf:protobuf-javalite") {
-        version {
-            strictly("3.11.0")
-        }
-    }
+    testImplementation("com.google.protobuf:protobuf-javalite:4.29.3")
+    androidTestImplementation("com.google.protobuf:protobuf-javalite:4.29.3")
 
     // SumSub
     implementation("com.sumsub.sns:idensic-mobile-sdk:$sumsubVersion") {
@@ -622,24 +619,3 @@ tasks.register("allTests") {
     description = "Run unit tests and instrumentation tests"
 }
 
-tasks.register("syncStrings") {
-    doLast {
-        listOf("en", "zh", "zh-TW", "ja", "ru", "in", "ms").forEach { lang ->
-            project.extensions.getByName("download").let { ext ->
-                val downloadExt = ext as de.undercouch.gradle.tasks.download.DownloadExtension
-                downloadExt.run {
-                    src("https://raw.githubusercontent.com/Tougee/sync-google-sheet/master/generated/output/Android/value-$lang/strings.xml")
-                    dest(
-                        when (lang) {
-                            "en" -> "src/main/res/values"
-                            "zh" -> "src/main/res/values-zh-rCN"
-                            "zh-TW" -> "src/main/res/values-zh-rTW"
-                            "zh-HK" -> "src/main/res/values-zh-rHK"
-                            else -> "src/main/res/values-$lang"
-                        }
-                    )
-                }
-            }
-        }
-    }
-}

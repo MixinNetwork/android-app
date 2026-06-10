@@ -951,11 +951,13 @@ fun InputBar(string: String, callback: (String) -> Unit) {
 @Preview(backgroundColor = 0xFFFFFFFF, showSystemUi = true)
 @Composable
 fun MnemonicPhraseInputPreview() {
-    MnemonicPhraseInput(
-        state = MnemonicState.Input,
-        onScan = {},
-        onComplete = { mnemonicList -> /* Handle mnemonic change */ },
-    )
+    MixinAppTheme {
+        MnemonicPhraseInput(
+            state = MnemonicState.Input,
+            onScan = {},
+            onComplete = { },
+        )
+    }
 }
 
 @Composable
