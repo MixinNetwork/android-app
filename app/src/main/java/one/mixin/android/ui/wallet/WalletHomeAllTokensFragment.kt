@@ -10,12 +10,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.switchMap
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.R
 import one.mixin.android.db.web3.vo.WalletItem
 import one.mixin.android.db.web3.vo.Web3TokenItem
@@ -34,14 +36,17 @@ import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragm
 import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
+import one.mixin.android.ui.home.web3.trade.perps.PerpetualViewModel
 import one.mixin.android.ui.wallet.home.WalletHomeCallbacks
 import one.mixin.android.ui.wallet.home.WalletHomeCardType
 import one.mixin.android.ui.wallet.home.WalletHomeImportKeyAction
 import one.mixin.android.ui.wallet.home.WalletHomeImportKeyKind
 import one.mixin.android.ui.wallet.home.WalletHomeState
 import one.mixin.android.ui.wallet.home.WalletHomeType
+import one.mixin.android.ui.wallet.home.calculateWalletHomeTotalFiat
 import one.mixin.android.ui.wallet.home.formatWalletHomeBtcTotal
 import one.mixin.android.ui.wallet.home.components.WalletHomeAllTokensPage
+import one.mixin.android.ui.wallet.home.positionMarginFiatTotal
 import one.mixin.android.ui.wallet.home.walletHomeImportKeyAction
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
@@ -64,6 +69,7 @@ class WalletHomeAllTokensFragment : BaseFragment() {
 
     private val walletViewModel by viewModels<WalletViewModel>()
     private val web3ViewModel by viewModels<Web3ViewModel>()
+    private val perpetualViewModel by viewModels<PerpetualViewModel>()
 
     private val walletType by lazy {
         WalletHomeType.valueOf(requireArguments().getString(ARGS_WALLET_TYPE) ?: WalletHomeType.PRIVACY.name)
@@ -73,6 +79,7 @@ class WalletHomeAllTokensFragment : BaseFragment() {
     private val homeState = MutableStateFlow(WalletHomeState(walletType = WalletHomeType.PRIVACY))
     private var privacyTokens: List<TokenItem> = emptyList()
     private var web3Tokens: List<Web3TokenItem> = emptyList()
+    private var positions: List<PerpsPositionItem> = emptyList()
     private var wallet: WalletItem? = null
     private var bitcoinPriceUsd: BigDecimal? = null
     private var importKeyAction: WalletHomeImportKeyAction? = null
@@ -86,6 +93,15 @@ class WalletHomeAllTokensFragment : BaseFragment() {
                 MutableLiveData<List<Web3TokenItem>>(emptyList())
             } else {
                 web3ViewModel.web3TokensExcludeHidden(id)
+            }
+        }
+    }
+    private val positionsLiveData by lazy {
+        _walletId.switchMap { id ->
+            if (id.isNullOrEmpty()) {
+                MutableLiveData<List<PerpsPositionItem>>(emptyList())
+            } else {
+                perpetualViewModel.observeOpenPositions(id).asLiveData()
             }
         }
     }
@@ -165,6 +181,11 @@ class WalletHomeAllTokensFragment : BaseFragment() {
                 privacyTokens = tokens
                 renderHome()
             }
+            _walletId.value = walletId
+            positionsLiveData.observe(viewLifecycleOwner) { positions ->
+                this.positions = positions
+                renderHome()
+            }
         } else {
             _walletId.value = walletId
             lifecycleScope.launch {
@@ -236,12 +257,23 @@ class WalletHomeAllTokensFragment : BaseFragment() {
     }
 
     private fun buildPrivacyState(): WalletHomeState {
-        val totalFiat = privacyTokens.fold(BigDecimal.ZERO) { acc, item -> acc + item.fiat() }
-        val totalBtc = privacyTokens.fold(BigDecimal.ZERO) { acc, item -> acc + item.btc() }
+        val tokenFiat = privacyTokens.fold(BigDecimal.ZERO) { acc, item -> acc + item.fiat() }
+        val totalFiat = calculateWalletHomeTotalFiat(tokenFiat, positions.positionMarginFiatTotal())
+        val tokenBtc = privacyTokens.fold(BigDecimal.ZERO) { acc, item -> acc + item.btc() }
+        val totalBtc = privacyTokens
+            .find { it.assetId == Constants.ChainId.BITCOIN_CHAIN_ID }
+            ?.priceUsd
+            ?.toBigDecimalOrNull()
+            ?.takeIf { it > BigDecimal.ZERO }
+            ?.let { bitcoinPriceUsd ->
+                totalFiat.divide(BigDecimal(Fiats.getRate()), 16, RoundingMode.HALF_UP)
+                    .divide(bitcoinPriceUsd, 16, RoundingMode.HALF_UP)
+            } ?: tokenBtc
         return WalletHomeState(
             walletType = WalletHomeType.PRIVACY,
             cards = listOf(WalletHomeCardType.BALANCE),
             fiatTotal = totalFiat.numberFormat2(),
+            tokenFiatTotal = tokenFiat.numberFormat2(),
             btcTotal = formatWalletHomeBtcTotal(totalBtc),
             fiatSymbol = Fiats.getSymbol(),
             privacyTokens = privacyTokens,
@@ -260,6 +292,7 @@ class WalletHomeAllTokensFragment : BaseFragment() {
             walletType = WalletHomeType.CLASSIC,
             cards = listOf(WalletHomeCardType.BALANCE),
             fiatTotal = totalFiat.numberFormat2(),
+            tokenFiatTotal = totalFiat.numberFormat2(),
             btcTotal = formatWalletHomeBtcTotal(totalBtc),
             fiatSymbol = Fiats.getSymbol(),
             web3Tokens = web3Tokens,

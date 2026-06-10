@@ -519,6 +519,7 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             walletType = WalletHomeType.CLASSIC,
             cards = cards,
             fiatTotal = totalFiat.numberFormat2(),
+            tokenFiatTotal = totalFiat.numberFormat2(),
             btcTotal = cachedBtcTotal,
             fiatSymbol = Fiats.getSymbol(),
             web3Tokens = assets.take(WalletHomeSection.PREVIEW_LIMIT),

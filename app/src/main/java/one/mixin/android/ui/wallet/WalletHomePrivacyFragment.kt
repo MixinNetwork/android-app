@@ -73,8 +73,10 @@ import one.mixin.android.ui.wallet.home.WalletHomePositionSummary
 import one.mixin.android.ui.wallet.home.WalletHomeSection
 import one.mixin.android.ui.wallet.home.WalletHomeState
 import one.mixin.android.ui.wallet.home.WalletHomeType
+import one.mixin.android.ui.wallet.home.calculateWalletHomeTotalFiat
 import one.mixin.android.ui.wallet.home.formatWalletHomeBtcTotal
 import one.mixin.android.ui.wallet.home.getWalletHomeCacheState
+import one.mixin.android.ui.wallet.home.positionMarginFiatTotal
 import one.mixin.android.ui.wallet.home.putWalletHomeCache
 import one.mixin.android.ui.wallet.home.toWalletHomePendingIndicator
 import one.mixin.android.ui.wallet.home.walletHomeCacheKey
@@ -397,7 +399,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
 
     private fun buildHomeState(): WalletHomeState {
         val tokenFiat = assets.fold(BigDecimal.ZERO) { acc, item -> acc + item.fiat() }
-        val totalFiat = tokenFiat + positions.positionMarginFiatTotal()
+        val totalFiat = calculateWalletHomeTotalFiat(tokenFiat, positions.positionMarginFiatTotal())
         val tokenBtc = assets.fold(BigDecimal.ZERO) { acc, item -> acc + item.btc() }
         val totalBtc = assets
             .find { it.assetId == Constants.ChainId.BITCOIN_CHAIN_ID }
@@ -426,6 +428,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             walletType = WalletHomeType.PRIVACY,
             cards = cards,
             fiatTotal = totalFiat.numberFormat2(),
+            tokenFiatTotal = tokenFiat.numberFormat2(),
             btcTotal = formatWalletHomeBtcTotal(totalBtc),
             fiatSymbol = Fiats.getSymbol(),
             privacyTokens = assets.take(WalletHomeSection.PREVIEW_LIMIT),
@@ -475,11 +478,6 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             isProfit = isProfit,
         )
     }
-
-    private fun List<PerpsPositionItem>.positionMarginFiatTotal(): BigDecimal =
-        fold(BigDecimal.ZERO) { total, position ->
-            total + (position.margin?.toBigDecimalOrNull() ?: BigDecimal.ZERO)
-        }.multiply(BigDecimal(Fiats.getRate()))
 
     private val walletHomeCallbacks = object : WalletHomeCallbacks {
         override fun onAddWalletClicked() {

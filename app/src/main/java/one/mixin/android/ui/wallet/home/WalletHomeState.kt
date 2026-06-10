@@ -17,6 +17,7 @@ data class WalletHomeState(
     val cards: List<WalletHomeCardType> = emptyList(),
     val isLoading: Boolean = false,
     val fiatTotal: String = "0.00",
+    val tokenFiatTotal: String? = null,
     val btcTotal: String = "0.00",
     val fiatSymbol: String = "",
     val privacyTokens: List<TokenItem> = emptyList(),

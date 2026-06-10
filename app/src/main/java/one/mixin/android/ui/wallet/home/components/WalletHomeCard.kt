@@ -116,6 +116,9 @@ internal fun WalletHomeCard(
                     onClick = callbacks::onViewMoreTokensClicked,
                     contentUsesOwnPadding = true,
                     showBottomSpacer = hasTokens,
+                    headerTrailing = {
+                        TokenBalanceHeader("${state.fiatSymbol}${state.tokenFiatTotal ?: state.fiatTotal}")
+                    },
                 ) {
                     if (!state.allTokensHidden) {
                         if (state.walletType == WalletHomeType.PRIVACY) {
@@ -191,6 +194,28 @@ private fun PositionSummaryHeader(
                 modifier = Modifier.widthIn(max = 190.dp),
             )
         }
+        Icon(
+            painter = painterResource(R.drawable.ic_arrow_gray_right),
+            contentDescription = null,
+            tint = Color.Unspecified,
+            modifier = Modifier.size(16.dp),
+        )
+    }
+}
+
+@Composable
+private fun TokenBalanceHeader(balanceText: String) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = balanceText,
+            color = MixinAppTheme.colors.textPrimary,
+            fontSize = 14.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.widthIn(max = 190.dp),
+        )
         Icon(
             painter = painterResource(R.drawable.ic_arrow_gray_right),
             contentDescription = null,
