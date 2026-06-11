@@ -70,7 +70,7 @@ internal fun BannerPager(
                 .wrapContentHeight()
                 .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor),
         ) {
-            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 20.dp)) {
+            Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 20.dp)) {
                 HorizontalPager(
                     state = pagerState,
                     modifier = Modifier
@@ -204,7 +204,7 @@ internal fun ReferralBannerCard(callbacks: WalletHomeCallbacks) {
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .fillMaxSize()
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 20.dp)
                 .padding(bottom = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Bottom,

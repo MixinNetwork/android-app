@@ -44,8 +44,8 @@ internal fun SectionCard(
             .fillMaxWidth()
             .clickable { onClick() }
             .padding(
-                start = 16.dp,
-                end = 16.dp,
+                start = 20.dp,
+                end = 20.dp,
                 top = 20.dp,
                 bottom = if (contentFlush) 0.dp else 20.dp,
             ),
@@ -79,7 +79,7 @@ internal fun SectionCard(
     if (contentUsesOwnPadding) {
         content()
     } else {
-        Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+        Column(modifier = Modifier.padding(horizontal = 20.dp)) {
             content()
         }
     }

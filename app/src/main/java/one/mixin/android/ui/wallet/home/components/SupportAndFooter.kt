@@ -42,7 +42,7 @@ internal fun SupportCard(callbacks: WalletHomeCallbacks) {
             .padding(horizontal = 20.dp)
             .clip(RoundedCornerShape(8.dp))
             .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
-            .padding(horizontal = 16.dp, vertical = 20.dp),
+            .padding(horizontal = 20.dp, vertical = 20.dp),
     ) {
         Text(
             text = stringResource(R.string.wallet_home_support),

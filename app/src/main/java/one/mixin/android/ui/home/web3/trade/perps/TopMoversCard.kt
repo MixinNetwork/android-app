@@ -67,9 +67,9 @@ fun TopMoversCard(
             color = MixinAppTheme.colors.textPrimary,
         )
         Icon(
-            painter = painterResource(R.drawable.ic_arrow_right),
+            painter = painterResource(R.drawable.ic_arrow_gray_right),
             contentDescription = null,
-            tint = MixinAppTheme.colors.textAssist,
+            tint = Color.Unspecified,
             modifier = Modifier.size(16.dp),
         )
     }
