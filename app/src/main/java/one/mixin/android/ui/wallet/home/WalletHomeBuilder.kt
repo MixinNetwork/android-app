@@ -21,11 +21,12 @@ object WalletHomeBuilder {
         if (showBanner) cards += WalletHomeCardType.BANNER
         val showTopMovers = walletType == WalletHomeType.PRIVACY && hasTopMovers
         if (walletType == WalletHomeType.PRIVACY && hasPositions) cards += WalletHomeCardType.POSITIONS
-        if (!hasPositions && showTopMovers) cards += WalletHomeCardType.TOP_MOVERS
 
         cards += WalletHomeCardType.TOKENS
 
         if (hasTransactions) cards += WalletHomeCardType.TRANSACTIONS
+
+        if (!hasPositions && showTopMovers) cards += WalletHomeCardType.TOP_MOVERS
 
         if (showReferral) cards += WalletHomeCardType.REFERRAL
         cards += WalletHomeCardType.SUPPORT

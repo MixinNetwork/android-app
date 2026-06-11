@@ -29,7 +29,7 @@ class WalletHomeBuilderTest {
     }
 
     @Test
-    fun privacyWalletWithoutPositionsShowsTopMoversBeforeTokens() {
+    fun privacyWalletWithoutPositionsShowsTopMoversAfterTransactions() {
         val cards = WalletHomeBuilder.build(
             walletType = WalletHomeType.PRIVACY,
             hasAssetValue = true,
@@ -43,9 +43,9 @@ class WalletHomeBuilderTest {
         assertEquals(
             listOf(
                 WalletHomeCardType.BALANCE,
-                WalletHomeCardType.TOP_MOVERS,
                 WalletHomeCardType.TOKENS,
                 WalletHomeCardType.TRANSACTIONS,
+                WalletHomeCardType.TOP_MOVERS,
                 WalletHomeCardType.SUPPORT,
             ),
             cards,
