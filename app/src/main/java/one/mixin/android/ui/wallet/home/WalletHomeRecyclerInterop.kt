@@ -388,16 +388,16 @@ private fun WalletTokenItemLayout(
                 )
             }
             Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = fiatValue,
-                    color = MixinAppTheme.colors.textAssist,
-                    fontSize = 12.sp,
-                    lineHeight = 12.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    style = noFontPaddingTextStyle(),
-                    modifier = Modifier.offset(y = (-2).dp),
-                )
+            Text(
+                text = fiatValue,
+                color = MixinAppTheme.colors.textAssist,
+                fontSize = 12.sp,
+                lineHeight = 12.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                style = noFontPaddingTextStyle(),
+                modifier = Modifier.offset(y = (-2).dp),
+            )
         }
         Spacer(modifier = Modifier.width(12.dp))
         TokenPriceColumn(
@@ -447,16 +447,16 @@ private fun TokenPriceColumn(
                 style = noFontPaddingTextStyle(),
             )
             Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = price,
-                    color = MixinAppTheme.colors.textAssist,
-                    fontSize = 12.sp,
-                    lineHeight = 12.sp,
-                    maxLines = 1,
-                    textAlign = TextAlign.End,
-                    style = noFontPaddingTextStyle(),
-                    modifier = Modifier.offset(y = (-2).dp),
-                )
+            Text(
+                text = price,
+                color = MixinAppTheme.colors.textAssist,
+                fontSize = 12.sp,
+                lineHeight = 12.sp,
+                maxLines = 1,
+                textAlign = TextAlign.End,
+                style = noFontPaddingTextStyle(),
+                modifier = Modifier.offset(y = (-2).dp),
+            )
         }
     }
 }

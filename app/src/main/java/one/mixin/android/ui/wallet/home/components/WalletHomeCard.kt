@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
@@ -187,6 +188,7 @@ private fun PositionSummaryHeader(
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.widthIn(max = 190.dp),
             )
+            Spacer(modifier = Modifier.width(6.dp))
         }
         Icon(
             painter = painterResource(R.drawable.ic_arrow_gray_right),
@@ -210,6 +212,7 @@ private fun TokenBalanceHeader(balanceText: String) {
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.widthIn(max = 190.dp),
         )
+        Spacer(modifier = Modifier.width(6.dp))
         Icon(
             painter = painterResource(R.drawable.ic_arrow_gray_right),
             contentDescription = null,
