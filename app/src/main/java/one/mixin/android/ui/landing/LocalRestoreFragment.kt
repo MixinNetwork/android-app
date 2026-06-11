@@ -34,6 +34,7 @@ import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.resolveCurrentUserScopeManager
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.logs.LogViewerBottomSheet
 import one.mixin.android.ui.setting.ChooseFolderContract
 import one.mixin.android.util.backup.BackupInfo
 import one.mixin.android.util.backup.BackupNotification
@@ -72,6 +73,10 @@ class LocalRestoreFragment : BaseFragment(R.layout.fragment_local_restore) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        binding.restoreTitle.setOnLongClickListener {
+            LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
+            true
+        }
         alertDialogBuilder()
             .setMessage(R.string.restore_message)
             .setNegativeButton(R.string.Skip) { dialog, _ ->

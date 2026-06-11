@@ -951,7 +951,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                             }
                         } catch (e: Exception) {
                             Timber.e(e, "Failed to build transaction")
-                            errorInfo = if (e is EmptyUtxoException) getString(R.string.no_available_utxo) else e.message
+                            errorInfo = if (e is EmptyUtxoException) getString(R.string.no_available_utxo) else ErrorHandler.getErrorMessage(e)
                             step = Step.Error
                         }
                     }
