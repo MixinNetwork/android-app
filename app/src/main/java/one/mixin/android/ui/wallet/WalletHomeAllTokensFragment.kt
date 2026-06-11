@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.api.response.perps.PerpsPositionItem
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.R
 import one.mixin.android.db.web3.vo.WalletItem
 import one.mixin.android.db.web3.vo.Web3TokenItem
@@ -48,12 +49,17 @@ import one.mixin.android.ui.wallet.home.calculateWalletHomeTotalFiat
 import one.mixin.android.ui.wallet.home.formatWalletHomeBtcTotal
 import one.mixin.android.ui.wallet.home.components.WalletHomeAllTokensPage
 import one.mixin.android.ui.wallet.home.positionMarginUsdTotal
+import one.mixin.android.ui.wallet.home.toWalletHomePendingIndicator
 import one.mixin.android.ui.wallet.home.walletHomeImportKeyAction
+import one.mixin.android.ui.wallet.home.walletHomePendingTransactionIndicator
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.Fiats
+import one.mixin.android.vo.PendingDisplay
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.safe.toSnapshot
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE as WEB3_TYPE_FROM_RECEIVE
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_SEND as WEB3_TYPE_FROM_SEND
@@ -81,6 +87,8 @@ class WalletHomeAllTokensFragment : BaseFragment() {
     private var privacyTokens: List<TokenItem> = emptyList()
     private var web3Tokens: List<Web3TokenItem> = emptyList()
     private var positions: List<PerpsPositionItem> = emptyList()
+    private var pendingTxCount: Int = 0
+    private var pendingDisplays: List<PendingDisplay> = emptyList()
     private var wallet: WalletItem? = null
     private var bitcoinPriceUsd: BigDecimal? = null
     private var importKeyAction: WalletHomeImportKeyAction? = null
@@ -103,6 +111,16 @@ class WalletHomeAllTokensFragment : BaseFragment() {
                 MutableLiveData<List<PerpsPositionItem>>(emptyList())
             } else {
                 perpetualViewModel.observeOpenPositions(id).asLiveData()
+            }
+        }
+    }
+
+    private val pendingTxCountLiveData by lazy {
+        _walletId.switchMap { id ->
+            if (id.isNullOrEmpty()) {
+                MutableLiveData(0)
+            } else {
+                web3ViewModel.getPendingTransactionCount(id)
             }
         }
     }
@@ -154,6 +172,13 @@ class WalletHomeAllTokensFragment : BaseFragment() {
         }
 
         applyInitialTokenSnapshot()
+        walletViewModel.getPendingDisplays().observe(viewLifecycleOwner) {
+            pendingDisplays = it
+            renderHome()
+        }
+        if (walletType == WalletHomeType.PRIVACY) {
+            refreshAllPendingDeposit()
+        }
 
         if (walletType == WalletHomeType.CLASSIC) {
             lifecycleScope.launch {
@@ -202,6 +227,10 @@ class WalletHomeAllTokensFragment : BaseFragment() {
                 web3Tokens = tokens
                 renderHome()
             }
+            pendingTxCountLiveData.observe(viewLifecycleOwner) { count ->
+                pendingTxCount = count
+                renderHome()
+            }
         }
         renderHome()
     }
@@ -221,6 +250,39 @@ class WalletHomeAllTokensFragment : BaseFragment() {
             }
         }
     }
+
+    private fun refreshAllPendingDeposit() =
+        lifecycleScope.launch {
+            handleMixinResponse(
+                invokeNetwork = { walletViewModel.allPendingDeposit() },
+                exceptionBlock = { e ->
+                    reportException(e)
+                    false
+                },
+                successBlock = {
+                    val pendingDeposits = it.data ?: emptyList()
+                    val destinationTags = walletViewModel.findDepositEntryDestinations()
+                    pendingDeposits
+                        .filter { pd ->
+                            destinationTags.any { dt ->
+                                dt.destination == pd.destination && (dt.tag.isNullOrBlank() || dt.tag == pd.tag)
+                            }
+                        }
+                        .map { pd -> pd.toSnapshot() }.let { snapshots ->
+                            if (snapshots.isEmpty()) {
+                                walletViewModel.clearAllPendingDeposits()
+                                return@let
+                            }
+                            lifecycleScope.launch {
+                                snapshots.map { it.assetId }.distinct().forEach {
+                                    walletViewModel.findOrSyncAsset(it)
+                                }
+                                walletViewModel.insertPendingDeposit(snapshots)
+                            }
+                        }
+                },
+            )
+        }
 
     @SuppressLint("InflateParams")
     private fun showPrivacyBottom() {
@@ -297,6 +359,7 @@ class WalletHomeAllTokensFragment : BaseFragment() {
             fiatSymbol = Fiats.getSymbol(),
             privacyTokens = privacyTokens,
             totalTokenCount = privacyTokens.size,
+            pendingIndicator = pendingDisplays.toWalletHomePendingIndicator(),
         )
     }
 
@@ -318,6 +381,7 @@ class WalletHomeAllTokensFragment : BaseFragment() {
             totalTokenCount = web3Tokens.size,
             isWatchWallet = wallet?.isWatch() == true,
             importKeyAction = importKeyAction,
+            pendingIndicator = walletHomePendingTransactionIndicator(pendingTxCount) ?: pendingDisplays.toWalletHomePendingIndicator(),
             hideActions = shouldHideWeb3Actions(),
         )
     }
@@ -420,7 +484,17 @@ class WalletHomeAllTokensFragment : BaseFragment() {
                 showPrivacySwap()
             }
         }
-        override fun onPendingIndicatorClicked() = Unit
+        override fun onPendingIndicatorClicked() {
+            if (pendingDisplays.size == 1) {
+                lifecycleScope.launch {
+                    val token = walletViewModel.simpleAssetItem(pendingDisplays[0].assetId) ?: return@launch
+                    WalletActivity.showWithToken(requireActivity(), token, WalletActivity.Destination.Transactions)
+                }
+            } else if (pendingDisplays.size > 1) {
+                WalletActivity.show(requireActivity(), WalletActivity.Destination.AllTransactions, true)
+            }
+        }
+
         override fun onWatchIndicatorClicked() = Unit
         override fun onImportKeyClicked() {
             val mode = when (importKeyAction?.kind) {
