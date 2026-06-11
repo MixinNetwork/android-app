@@ -729,7 +729,7 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     }
                 } catch (e: Exception) {
                     Timber.e(e, "Failed to build transaction")
-                    errorInfo = e.message
+                    errorInfo = ErrorHandler.getErrorMessage(e)
                     step = Step.Error
                 }
             }
