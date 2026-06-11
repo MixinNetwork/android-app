@@ -29,7 +29,7 @@ import one.mixin.android.tip.wc.internal.WcBitcoinSignature
 import one.mixin.android.tip.wc.internal.WcSignature
 import one.mixin.android.tip.wc.internal.WcSolanaMessage
 import one.mixin.android.tip.wc.internal.WcSolanaTransaction
-import one.mixin.android.tip.wc.internal.accountForChainId
+import one.mixin.android.tip.wc.internal.buildUpdatedNamespaces
 import one.mixin.android.tip.wc.internal.ethTransactionSerializer
 import one.mixin.android.tip.wc.internal.getSupportedNamespaces
 import one.mixin.android.tip.wc.internal.supportChainList
@@ -522,23 +522,11 @@ object WalletConnectV2 : WalletConnect() {
             return
         }
         sessions.forEach { session ->
-            val newNamespaces = session.namespaces.mapValues { (_, ns) ->
-                val chains = ns.chains
-                if (chains.isNullOrEmpty()) {
-                    Timber.w("$TAG switchAccount: namespace has no chains, skipping update for it")
-                    return@mapValues ns
-                }
-                val newAccounts = chains.mapNotNull { chainId ->
-                    addresses.accountForChainId(chainId)?.let { address -> "$chainId:$address" }
-                }
-                if (newAccounts.isEmpty()) return@mapValues ns
-
-                Wallet.Model.Namespace.Session(
-                    chains = ns.chains,
-                    accounts = newAccounts,
-                    methods = ns.methods,
-                    events = ns.events,
-                )
+            val newNamespaces = buildUpdatedNamespaces(session.namespaces, addresses)
+            if (newNamespaces == null) {
+                Timber.w("$TAG switchAccount: current wallet does not have every connected chain address, disconnecting ${session.topic}")
+                disconnect(session.topic)
+                return@forEach
             }
 
             val updateParams = Wallet.Params.SessionUpdate(

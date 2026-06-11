@@ -84,6 +84,28 @@ internal fun WalletConnectAddresses.accountForChainId(chainId: String): String? 
         accountFor(chain).takeIf { it.isNotBlank() }
     }
 
+internal fun buildUpdatedNamespaces(
+    namespaces: Map<String, Wallet.Model.Namespace.Session>,
+    addresses: WalletConnectAddresses,
+): Map<String, Wallet.Model.Namespace.Session>? =
+    namespaces.mapValues { (_, namespace) ->
+        val chains = namespace.chains
+        if (chains.isNullOrEmpty()) return@mapValues namespace
+
+        val accounts =
+            chains.map { chainId ->
+                val address = addresses.accountForChainId(chainId) ?: return null
+                "$chainId:$address"
+            }
+
+        Wallet.Model.Namespace.Session(
+            chains = chains,
+            accounts = accounts,
+            methods = namespace.methods,
+            events = namespace.events,
+        )
+    }
+
 internal fun String.getChain(): Chain? {
     return when (this) {
         Chain.Ethereum.chainReference -> Chain.Ethereum
