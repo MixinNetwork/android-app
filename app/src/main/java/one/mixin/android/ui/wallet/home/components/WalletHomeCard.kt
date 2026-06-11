@@ -189,7 +189,7 @@ private fun PositionSummaryHeader(
                 fontSize = 14.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.widthIn(max = 190.dp),
+                modifier = Modifier.widthIn(max = 190.dp).offset(x = 4.dp),
             )
             Spacer(modifier = Modifier.width(6.dp))
         }
@@ -213,7 +213,7 @@ private fun TokenBalanceHeader(balanceText: String) {
             fontSize = 14.sp,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.widthIn(max = 190.dp),
+            modifier = Modifier.widthIn(max = 190.dp).offset(x = 4.dp),
         )
         Spacer(modifier = Modifier.width(6.dp))
         Icon(
