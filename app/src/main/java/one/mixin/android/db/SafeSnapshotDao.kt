@@ -127,6 +127,9 @@ interface SafeSnapshotDao : BaseDao<SafeSnapshot> {
     @Query("SELECT t.symbol, t.icon_url, s.amount, t.asset_id FROM safe_snapshots s LEFT JOIN tokens t ON t.asset_id = s.asset_id WHERE s.type = 'pending' AND t.symbol IS NOT NULL")
     fun getPendingDisplays(): LiveData<List<PendingDisplay>>
 
+    @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.type = 'pending' AND s.asset_id = :assetId ORDER BY s.created_at DESC, s.snapshot_id DESC LIMIT 1")
+    suspend fun getPendingSnapshot(assetId: String): SnapshotItem?
+
     @Query("DELETE FROM safe_snapshots WHERE type = 'pending'")
     suspend fun clearAllPendingDeposits()
 

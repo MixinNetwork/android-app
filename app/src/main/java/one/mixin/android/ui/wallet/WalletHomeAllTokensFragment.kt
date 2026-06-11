@@ -22,6 +22,7 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.R
 import one.mixin.android.db.web3.vo.WalletItem
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.isClassic
 import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.db.web3.vo.isMixinSafe
@@ -30,9 +31,11 @@ import one.mixin.android.db.web3.vo.toWeb3Wallet
 import one.mixin.android.databinding.FragmentWalletHomeAllTokensBinding
 import one.mixin.android.databinding.ViewClassicWalletBottomBinding
 import one.mixin.android.databinding.ViewPrivacyWalletBottomBinding
+import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.common.BaseFragment
@@ -60,6 +63,8 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.PendingDisplay
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.toSnapshot
+import one.mixin.android.web3.details.Web3TransactionFragment
+import one.mixin.android.web3.details.Web3TransactionsFragment
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE as WEB3_TYPE_FROM_RECEIVE
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_SEND as WEB3_TYPE_FROM_SEND
@@ -429,6 +434,36 @@ class WalletHomeAllTokensFragment : BaseFragment() {
         }
     }
 
+    private suspend fun showWeb3PendingTransactionDetail(transaction: Web3TransactionItem): Boolean {
+        val token = web3ViewModel.web3TokenItemById(walletId, transaction.getMainAssetId()) ?: return false
+        val wallet = web3ViewModel.findWalletById(walletId) ?: return false
+        if (!isAdded) return false
+        activity?.addFragment(
+            this@WalletHomeAllTokensFragment,
+            Web3TransactionFragment().withArgs {
+                putParcelable(Web3TransactionFragment.ARGS_TRANSACTION, transaction)
+                putString(Web3TransactionFragment.ARGS_CHAIN, transaction.chainId)
+                putParcelable(Web3TransactionsFragment.ARGS_TOKEN, token)
+                putParcelable(Web3TransactionFragment.ARGS_WALLET, wallet.toWeb3Wallet())
+            },
+            Web3TransactionFragment.TAG,
+            name = Web3TransactionsFragment.TAG,
+        )
+        return true
+    }
+
+    private suspend fun showPendingDepositDetail(pendingDisplay: PendingDisplay): Boolean {
+        val snapshot = walletViewModel.getPendingSnapshot(pendingDisplay.assetId) ?: return false
+        val token = walletViewModel.simpleAssetItem(snapshot.assetId) ?: return false
+        if (!isAdded) return false
+        activity?.addFragment(
+            this@WalletHomeAllTokensFragment,
+            TransactionFragment.newInstance(snapshot, token),
+            TransactionFragment.TAG,
+        )
+        return true
+    }
+
     private val callbacks = object : WalletHomeCallbacks {
         override fun onAddWalletClicked() = Unit
         override fun onBannerClosed() = Unit
@@ -485,10 +520,24 @@ class WalletHomeAllTokensFragment : BaseFragment() {
             }
         }
         override fun onPendingIndicatorClicked() {
+            if (walletType == WalletHomeType.CLASSIC && pendingTxCount > 0) {
+                lifecycleScope.launch {
+                    val pendingTransactions = web3ViewModel.getPendingTransactionItems(walletId)
+                    if (pendingTransactions.size == 1 && showWeb3PendingTransactionDetail(pendingTransactions.first())) {
+                        return@launch
+                    }
+                    if (!isAdded) return@launch
+                    WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Transactions(walletId = walletId), pendingType = true)
+                }
+                return
+            }
             if (pendingDisplays.size == 1) {
                 lifecycleScope.launch {
-                    val token = walletViewModel.simpleAssetItem(pendingDisplays[0].assetId) ?: return@launch
-                    WalletActivity.showWithToken(requireActivity(), token, WalletActivity.Destination.Transactions)
+                    if (showPendingDepositDetail(pendingDisplays[0])) {
+                        return@launch
+                    }
+                    if (!isAdded) return@launch
+                    WalletActivity.show(requireActivity(), WalletActivity.Destination.AllTransactions, true)
                 }
             } else if (pendingDisplays.size > 1) {
                 WalletActivity.show(requireActivity(), WalletActivity.Destination.AllTransactions, true)

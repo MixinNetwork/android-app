@@ -196,6 +196,8 @@ internal constructor(
 
     fun getPendingDisplays() = tokenRepository.getPendingDisplays()
 
+    suspend fun getPendingSnapshot(assetId: String) = tokenRepository.getPendingSnapshot(assetId)
+
     suspend fun clearAllPendingDeposits() = tokenRepository.clearAllPendingDeposits()
 
     suspend fun clearPendingDepositsByAssetId(assetId: String) = tokenRepository.clearPendingDepositsByAssetId(assetId)

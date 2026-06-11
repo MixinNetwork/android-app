@@ -605,6 +605,8 @@ class TokenRepository
 
         fun getPendingDisplays() = safeSnapshotDao.getPendingDisplays()
 
+        suspend fun getPendingSnapshot(assetId: String) = safeSnapshotDao.getPendingSnapshot(assetId)
+
         suspend fun pendingDeposits(
             asset: String,
         ) = tokenService.pendingDeposits(asset)
