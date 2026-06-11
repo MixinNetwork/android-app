@@ -11,10 +11,12 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.core.content.ContextCompat
+import androidx.core.widget.TextViewCompat
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewSendReceiveBinding
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.sp
 
 class SendReceiveView : LinearLayoutCompat {
     constructor(context: Context) : this(context, null)
@@ -63,10 +65,12 @@ class SendReceiveView : LinearLayoutCompat {
             item.collectViews(TextView::class.java).forEach { text ->
                 text.setTextColor(context.colorAttr(R.attr.text_minor))
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                    text.typeface = Typeface.create(text.typeface, 500)
+                    text.typeface = Typeface.create(text.typeface, 600, false)
                 } else {
                     text.setTypeface(text.typeface, Typeface.BOLD)
                 }
+                text.setIncludeFontPadding(false)
+                TextViewCompat.setLineHeight(text, 16.sp)
                 (text.layoutParams as? MarginLayoutParams)?.topMargin = 11.dp
             }
         }

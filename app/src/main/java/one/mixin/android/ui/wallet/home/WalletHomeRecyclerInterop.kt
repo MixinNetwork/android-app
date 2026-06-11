@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberUpdatedState
@@ -337,7 +338,7 @@ private fun WalletTokenItemLayout(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(CircleShape)
+            .clip(RoundedCornerShape(8.dp))
             .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -348,7 +349,11 @@ private fun WalletTokenItemLayout(
             collectionHash = collectionHash,
         )
         Spacer(modifier = Modifier.width(14.dp))
-        Column(modifier = Modifier.weight(1f)) {
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .offset(y = 2.dp),
+        ) {
             Row(verticalAlignment = Alignment.Bottom) {
                 if (showSpam) {
                     Image(
@@ -383,15 +388,16 @@ private fun WalletTokenItemLayout(
                 )
             }
             Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = fiatValue,
-                color = MixinAppTheme.colors.textAssist,
-                fontSize = 12.sp,
-                lineHeight = 12.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                style = noFontPaddingTextStyle(),
-            )
+                Text(
+                    text = fiatValue,
+                    color = MixinAppTheme.colors.textAssist,
+                    fontSize = 12.sp,
+                    lineHeight = 12.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    style = noFontPaddingTextStyle(),
+                    modifier = Modifier.offset(y = (-2).dp),
+                )
         }
         Spacer(modifier = Modifier.width(12.dp))
         TokenPriceColumn(
@@ -441,15 +447,16 @@ private fun TokenPriceColumn(
                 style = noFontPaddingTextStyle(),
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = price,
-                color = MixinAppTheme.colors.textAssist,
-                fontSize = 12.sp,
-                lineHeight = 12.sp,
-                maxLines = 1,
-                textAlign = TextAlign.End,
-                style = noFontPaddingTextStyle(),
-            )
+                Text(
+                    text = price,
+                    color = MixinAppTheme.colors.textAssist,
+                    fontSize = 12.sp,
+                    lineHeight = 12.sp,
+                    maxLines = 1,
+                    textAlign = TextAlign.End,
+                    style = noFontPaddingTextStyle(),
+                    modifier = Modifier.offset(y = (-2).dp),
+                )
         }
     }
 }

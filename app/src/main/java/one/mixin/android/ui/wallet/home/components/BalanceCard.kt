@@ -230,7 +230,7 @@ internal fun BalanceCard(
             !state.hideActions &&
             !(state.walletType == WalletHomeType.CLASSIC && state.isWatchWallet)
         if (showActions) {
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(19.5.dp))
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -450,7 +450,7 @@ private fun ActionItem(
             text = stringResource(labelRes),
             color = MixinAppTheme.colors.textMinor,
             fontSize = 12.sp,
-            fontWeight = FontWeight.W500,
+            fontWeight = FontWeight.W600,
             lineHeight = 16.sp,
             textAlign = TextAlign.Center,
         )

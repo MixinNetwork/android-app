@@ -130,6 +130,8 @@ class Web3ViewModel @Inject constructor(
 
     fun recentWeb3Transactions(walletId: String) = web3Repository.recentWeb3Transactions(walletId)
 
+    suspend fun getPendingTransactionItems(walletId: String) = web3Repository.getPendingTransactionItems(walletId)
+
     fun web3TokenExtraFlow(walletId: String, assetId: String) =
         tokenRepository.web3TokenExtraFlow(walletId, assetId)
 

@@ -59,7 +59,7 @@ internal fun WalletHomeCard(
 
     val contentPadding = when {
         card.hasSelfPaddedItems() -> Modifier
-        card == WalletHomeCardType.BALANCE -> Modifier.padding(vertical = 20.dp)
+        card == WalletHomeCardType.BALANCE -> Modifier.padding(top = 20.dp, bottom = 12.dp)
         else -> Modifier.padding(20.dp)
     }
     Column(
@@ -86,7 +86,6 @@ internal fun WalletHomeCard(
                 headerTrailing = {
                     PositionSummaryHeader(
                         summary = state.positionSummary,
-                        quoteColorReversed = state.quoteColorReversed,
                     )
                 },
             ) {
@@ -175,26 +174,13 @@ internal fun WalletHomeCard(
 @Composable
 private fun PositionSummaryHeader(
     summary: WalletHomePositionSummary?,
-    quoteColorReversed: Boolean,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (summary != null) {
-            val pnlColor = when (summary.isProfit) {
-                true -> if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
-                false -> if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
-                null -> MixinAppTheme.colors.textAssist
-            }
             Text(
-                text = buildAnnotatedString {
-                    append(summary.valueText)
-                    withStyle(SpanStyle(color = pnlColor)) {
-                        append("(")
-                        append(summary.pnlText)
-                        append(")")
-                    }
-                },
+                text = summary.valueText,
                 color = MixinAppTheme.colors.textMinor,
                 fontSize = 14.sp,
                 maxLines = 1,

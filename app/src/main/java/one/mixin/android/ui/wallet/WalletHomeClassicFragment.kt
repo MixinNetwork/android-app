@@ -663,8 +663,17 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         }
 
         override fun onPendingIndicatorClicked() {
-            if (walletHomePendingTransactionCount(pendingRawTransactionCount, pendingTransactionCount) > 0) {
-                WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Transactions(walletId = walletId), pendingType = true)
+            when (walletHomePendingTransactionCount(pendingRawTransactionCount, pendingTransactionCount)) {
+                0 -> Unit
+                1 -> lifecycleScope.launch {
+                    val transaction = web3ViewModel.getPendingTransactionItems(walletId).singleOrNull()
+                    if (transaction != null) {
+                        showTransactionDetail(transaction)
+                    } else {
+                        showPendingTransactions()
+                    }
+                }
+                else -> showPendingTransactions()
             }
         }
 
@@ -717,20 +726,7 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         override fun onTransactionClicked(index: Int) {
             val transaction = recentTransactions.getOrNull(index) ?: return
             lifecycleScope.launch {
-                val token = web3ViewModel.web3TokenItemById(walletId, transaction.getMainAssetId()) ?: return@launch
-                val wallet = web3ViewModel.findWalletById(walletId) ?: return@launch
-                if (!isAdded) return@launch
-                activity?.addFragment(
-                    this@WalletHomeClassicFragment,
-                    Web3TransactionFragment().withArgs {
-                        putParcelable(Web3TransactionFragment.ARGS_TRANSACTION, transaction)
-                        putString(Web3TransactionFragment.ARGS_CHAIN, transaction.chainId)
-                        putParcelable(Web3TransactionsFragment.ARGS_TOKEN, token)
-                        putParcelable(Web3TransactionFragment.ARGS_WALLET, wallet.toWeb3Wallet())
-                    },
-                    Web3TransactionFragment.TAG,
-                    name = Web3TransactionsFragment.TAG,
-                )
+                showTransactionDetail(transaction)
             }
         }
 
@@ -739,6 +735,29 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         override fun onPositionClicked(index: Int) = Unit
 
         override fun onTopMoverClicked(index: Int) = Unit
+    }
+
+    private fun showPendingTransactions() {
+        if (walletId.isNotEmpty()) {
+            WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Transactions(walletId = walletId), pendingType = true)
+        }
+    }
+
+    private suspend fun showTransactionDetail(transaction: Web3TransactionItem) {
+        val token = web3ViewModel.web3TokenItemById(walletId, transaction.getMainAssetId()) ?: return
+        val wallet = web3ViewModel.findWalletById(walletId) ?: return
+        if (!isAdded) return
+        activity?.addFragment(
+            this@WalletHomeClassicFragment,
+            Web3TransactionFragment().withArgs {
+                putParcelable(Web3TransactionFragment.ARGS_TRANSACTION, transaction)
+                putString(Web3TransactionFragment.ARGS_CHAIN, transaction.chainId)
+                putParcelable(Web3TransactionsFragment.ARGS_TOKEN, token)
+                putParcelable(Web3TransactionFragment.ARGS_WALLET, wallet.toWeb3Wallet())
+            },
+            Web3TransactionFragment.TAG,
+            name = Web3TransactionsFragment.TAG,
+        )
     }
 
     fun update() {

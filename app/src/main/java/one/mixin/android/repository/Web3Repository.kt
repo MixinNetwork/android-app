@@ -257,6 +257,9 @@ constructor(
         return web3TransactionDao.allTransactions(filterParams.buildQuery())
     }
 
+    suspend fun getPendingTransactionItems(walletId: String): List<Web3TransactionItem> =
+        web3TransactionDao.getPendingTransactionItems(walletId).map { mapWeb3Transaction(it, walletId) }
+
     suspend fun mapWeb3Transaction(transaction: Web3TransactionItem, walletId: String): Web3TransactionItem = withContext(Dispatchers.IO) {
         val assetIds = transaction.senders.map { it.assetId } + transaction.receivers.map { it.assetId } + (transaction.approvals?.map { it.assetId } ?: emptyList())
         val tokens = web3TokenDao.findWeb3TokenItemsByIdsSync(walletId, assetIds.distinct()).associateBy { it.assetId }
