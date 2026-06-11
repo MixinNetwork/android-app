@@ -1250,7 +1250,7 @@ class TradeFragment : BaseFragment() {
         val lastFrom = lastSelectedPair?.getOrNull(0)
         val lastTo = lastSelectedPair?.getOrNull(1)
 
-        val tempFromToken = if (input != null) {
+        var tempFromToken = if (input != null) {
             if (inMixin()) swapViewModel.findToken(input)?.toSwapToken() else swapViewModel.web3TokenItemById(walletId!!, input)?.toSwapToken()
         } else if (lastFrom != null) {
             if (inMixin()) swapViewModel.findToken(lastFrom.assetId)?.toSwapToken() else swapViewModel.web3TokenItemById(walletId!!, lastFrom.assetId)?.toSwapToken()
@@ -1271,8 +1271,14 @@ class TradeFragment : BaseFragment() {
         } else {
             tokens.firstOrNull { t -> t.getUnique() != tempFromToken?.getUnique() && t.getUnique() in Constants.usdIds }
         }
-        if (tempToToken?.getUnique() == tempFromToken?.getUnique()) {
-            tempToToken = tokens.firstOrNull { t -> t.getUnique() != tempFromToken?.getUnique() && t.getUnique() in Constants.usdIds } ?: tokens.firstOrNull { t -> t.getUnique() != tempFromToken?.getUnique() }
+        resolveDuplicateSwapTokenPair(
+            tokens = tokens,
+            fromToken = tempFromToken,
+            toToken = tempToToken,
+            keepToToken = output != null,
+        ).let { pair ->
+            tempFromToken = pair.from
+            tempToToken = pair.to
         }
 
         if (isLimit) {
