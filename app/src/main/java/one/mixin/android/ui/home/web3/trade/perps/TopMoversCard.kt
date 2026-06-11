@@ -70,7 +70,7 @@ fun TopMoversCard(
             painter = painterResource(R.drawable.ic_arrow_gray_right),
             contentDescription = null,
             tint = Color.Unspecified,
-            modifier = Modifier.size(16.dp),
+            modifier = Modifier.size(16.dp).offset(x = 4.dp),
         )
     }
     Spacer(modifier = Modifier.height(12.dp))

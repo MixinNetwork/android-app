@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -284,7 +285,7 @@ private fun PendingIndicator(
             Image(
                 painter = painterResource(id = R.drawable.ic_arrow_gray_right),
                 contentDescription = null,
-                modifier = Modifier.padding(start = 2.dp),
+                modifier = Modifier.padding(start = 2.dp).offset(x = 4.dp),
             )
         }
     }

@@ -11,6 +11,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -116,8 +117,10 @@ fun PrivacyTransactionRecycler(
     onUserClick: (String) -> Unit,
     modifier: Modifier = Modifier,
     itemSpacing: Dp = 20.dp,
+    contentHorizontalPadding: Dp = 16.dp,
 ) {
     val spacing = with(LocalDensity.current) { itemSpacing.roundToPx() }
+    val contentHorizontalPaddingPx = with(LocalDensity.current) { contentHorizontalPadding.roundToPx() }
     val currentTransactions = rememberUpdatedState(transactions)
     val currentOnClick = rememberUpdatedState(onClick)
     val currentOnUserClick = rememberUpdatedState(onUserClick)
@@ -128,7 +131,10 @@ fun PrivacyTransactionRecycler(
                 layoutManager = LinearLayoutManager(context)
                 isNestedScrollingEnabled = false
                 if (spacing > 0) addItemDecoration(TokenItemSpacingDecoration(spacing))
-                adapter = SnapshotAdapter(compact = true).apply {
+                adapter = SnapshotAdapter(
+                    compact = true,
+                    compactAvatarStartMargin = contentHorizontalPaddingPx,
+                ).apply {
                     listener =
                         object : OnSnapshotListener {
                             override fun <T> onNormalItemClick(item: T) {
@@ -171,8 +177,10 @@ fun Web3TransactionRecycler(
     onClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
     itemSpacing: Dp = 20.dp,
+    contentHorizontalPadding: Dp = 16.dp,
 ) {
     val spacing = with(LocalDensity.current) { itemSpacing.roundToPx() }
+    val contentHorizontalPaddingPx = with(LocalDensity.current) { contentHorizontalPadding.roundToPx() }
     val currentOnClick = rememberUpdatedState(onClick)
     AndroidView(
         modifier = modifier,
@@ -181,7 +189,10 @@ fun Web3TransactionRecycler(
                 layoutManager = LinearLayoutManager(context)
                 isNestedScrollingEnabled = false
                 if (spacing > 0) addItemDecoration(TokenItemSpacingDecoration(spacing))
-                adapter = Web3TransactionListAdapter(compact = true)
+                adapter = Web3TransactionListAdapter(
+                    compact = true,
+                    compactAvatarStartMargin = contentHorizontalPaddingPx,
+                )
             }
         },
         update = { recyclerView ->
@@ -210,6 +221,7 @@ fun PositionRecycler(
             position = positions[index],
             onClick = { onClick(index) },
             compact = compact,
+            contentPadding = PaddingValues(horizontal = 20.dp, vertical = if (compact) 4.dp else 8.dp),
         )
     }
 }
@@ -233,6 +245,7 @@ private class TokenItemSpacingDecoration(
 
 private class Web3TransactionListAdapter(
     private val compact: Boolean,
+    private val compactAvatarStartMargin: Int,
 ) : RecyclerView.Adapter<Web3TransactionHolder>() {
     private var items: List<Web3TransactionItem> = emptyList()
     private var onClick: (Int) -> Unit = {}
@@ -248,7 +261,7 @@ private class Web3TransactionListAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Web3TransactionHolder {
         val binding = ItemWeb3TransactionsBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return Web3TransactionHolder(binding, compact)
+        return Web3TransactionHolder(binding, compact, compactAvatarStartMargin)
     }
 
     override fun onBindViewHolder(holder: Web3TransactionHolder, position: Int) {
@@ -404,6 +417,7 @@ private fun WalletTokenItemLayout(
             price = price,
             change = change,
             isRising = isRising,
+            modifier = Modifier.offset(x = 4.dp),
         )
     }
 }
@@ -413,6 +427,7 @@ private fun TokenPriceColumn(
     price: String?,
     change: String?,
     isRising: Boolean?,
+    modifier: Modifier = Modifier,
 ) {
     val quoteColorReversed = LocalContext.current.defaultSharedPreferences
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
@@ -423,6 +438,7 @@ private fun TokenPriceColumn(
     }
 
     Column(
+        modifier = modifier,
         horizontalAlignment = Alignment.End,
         verticalArrangement = Arrangement.Center,
     ) {

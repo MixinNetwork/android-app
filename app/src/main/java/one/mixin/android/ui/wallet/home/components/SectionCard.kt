@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -69,7 +70,7 @@ internal fun SectionCard(
                 painter = painterResource(R.drawable.ic_arrow_gray_right),
                 contentDescription = null,
                 tint = Color.Unspecified,
-                modifier = Modifier.size(16.dp),
+                modifier = Modifier.size(16.dp).offset(x = 4.dp),
             )
         } else {
             Spacer(modifier = Modifier.width(8.dp))

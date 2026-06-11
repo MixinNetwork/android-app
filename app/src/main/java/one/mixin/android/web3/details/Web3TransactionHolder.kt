@@ -47,6 +47,7 @@ import one.mixin.android.extension.dp as dip
 class Web3TransactionHolder(
     val binding: ItemWeb3TransactionsBinding,
     private val compact: Boolean = false,
+    private val compactAvatarStartMargin: Int = 16.dip,
 ) : RecyclerView.ViewHolder(binding.root) {
     init {
         if (compact) {
@@ -55,7 +56,7 @@ class Web3TransactionHolder(
             }
             binding.root.setPadding(0, 4.dip, 0, 4.dip)
             binding.avatarFl.updateLayoutParams<MarginLayoutParams> {
-                marginStart = 16.dip
+                marginStart = compactAvatarStartMargin
                 marginEnd = 14.dip
             }
             binding.amountAnimator.updateLayoutParams<MarginLayoutParams> {

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -156,12 +157,14 @@ internal fun WalletHomeCard(
                         transactions = state.privacyTransactions.take(PREVIEW_LIMIT),
                         onClick = callbacks::onTransactionClicked,
                         onUserClick = callbacks::onTransactionUserClicked,
+                        contentHorizontalPadding = 20.dp,
                         modifier = Modifier.fillMaxWidth(),
                     )
                 } else {
                     Web3TransactionRecycler(
                         transactions = state.web3Transactions.take(PREVIEW_LIMIT),
                         onClick = callbacks::onTransactionClicked,
+                        contentHorizontalPadding = 20.dp,
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
@@ -194,7 +197,7 @@ private fun PositionSummaryHeader(
             painter = painterResource(R.drawable.ic_arrow_gray_right),
             contentDescription = null,
             tint = Color.Unspecified,
-            modifier = Modifier.size(16.dp),
+            modifier = Modifier.size(16.dp).offset(x = 4.dp),
         )
     }
 }
@@ -217,7 +220,7 @@ private fun TokenBalanceHeader(balanceText: String) {
             painter = painterResource(R.drawable.ic_arrow_gray_right),
             contentDescription = null,
             tint = Color.Unspecified,
-            modifier = Modifier.size(16.dp),
+            modifier = Modifier.size(16.dp).offset(x = 4.dp),
         )
     }
 }

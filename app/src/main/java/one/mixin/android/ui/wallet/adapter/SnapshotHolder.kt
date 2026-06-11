@@ -30,6 +30,7 @@ open class SnapshotHolder(
     itemView: View,
     layout: Boolean = false,
     compact: Boolean = false,
+    private val compactAvatarStartMargin: Int = 16.dp,
 ) : NormalHolder(itemView) {
     private val binding = ItemWalletTransactionsBinding.bind(itemView)
 
@@ -54,7 +55,7 @@ open class SnapshotHolder(
             itemView.setPadding(0, 4.dp, 0, 4.dp)
             binding.avatar.updateLayoutParams<MarginLayoutParams> {
                 marginEnd = 14.dp
-                marginStart = 16.dp
+                marginStart = compactAvatarStartMargin
             }
         }
     }
