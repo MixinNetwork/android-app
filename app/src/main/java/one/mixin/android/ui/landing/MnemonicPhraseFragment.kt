@@ -48,6 +48,7 @@ import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.components.MnemonicPhrasePage
 import one.mixin.android.ui.landing.vo.MnemonicPhraseState
+import one.mixin.android.ui.logs.LogViewerBottomSheet
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
 import one.mixin.android.util.GsonHelper
@@ -103,6 +104,10 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
         Timber.e("MnemonicPhraseFragment onViewCreated")
         binding.titleView.leftIb.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
+        }
+        binding.titleView.setOnLongClickListener {
+            LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
+            true
         }
         binding.compose.setContent {
             MnemonicPhrasePage(!words.isNullOrEmpty(), errorInfo) {
