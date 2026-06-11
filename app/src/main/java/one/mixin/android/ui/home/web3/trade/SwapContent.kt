@@ -113,11 +113,6 @@ fun SwapContent(
     var quoteMin by remember { mutableStateOf<String?>(null) }
     var quoteMax by remember { mutableStateOf<String?>(null) }
 
-    var inputText by remember { mutableStateOf(initialAmount ?: "") }
-    LaunchedEffect(lastOrderTime) {
-        inputText = initialAmount ?: ""
-    }
-
     var isLoading by remember { mutableStateOf(false) }
     var isReverse by remember { mutableStateOf(false) }
     var invalidFlag by remember { mutableStateOf(false) }
@@ -127,6 +122,14 @@ fun SwapContent(
     }
     var toToken by remember(from, to, isReverse) {
         mutableStateOf(if (isReverse) from else to)
+    }
+    val fromMaxDecimalPlaces = fromToken.tradeInputMaxDecimalPlaces()
+
+    var inputText by remember {
+        mutableStateOf(limitTradeInputDecimalPlaces(initialAmount ?: "", fromMaxDecimalPlaces))
+    }
+    LaunchedEffect(lastOrderTime, fromMaxDecimalPlaces) {
+        inputText = limitTradeInputDecimalPlaces(initialAmount ?: "", fromMaxDecimalPlaces)
     }
 
     val shouldRefreshQuote = remember { MutableStateFlow(inputText) }
@@ -242,7 +245,8 @@ fun SwapContent(
                                             }
                                         }
                                         quoteResult?.let {
-                                            inputText = it.outAmount
+                                            val nextFromMaxDecimalPlaces = toToken.tradeInputMaxDecimalPlaces()
+                                            inputText = limitTradeInputDecimalPlaces(it.outAmount, nextFromMaxDecimalPlaces)
                                             quoteResult = null
                                         }
                                         context.clickVibrate()
@@ -268,11 +272,12 @@ fun SwapContent(
                                 onInputChanged = { inputText = it },
                                 onDeposit = onDeposit,
                                 displayBalanceOverride = if (from.isNativeSolAsset()) fromBalance else null,
+                                maxDecimalPlaces = fromMaxDecimalPlaces,
                                 onMax = {
                                     AnalyticsTracker.trackSpotSendInputBalance()
                                     val balance = availableFromBalanceValue
                                     if (balance > BigDecimal.ZERO) {
-                                        inputText = balance.stripTrailingZeros().toPlainString()
+                                        inputText = limitTradeInputDecimalPlaces(balance.stripTrailingZeros().toPlainString(), fromMaxDecimalPlaces)
                                     } else {
                                         inputText = ""
                                     }
@@ -301,7 +306,9 @@ fun SwapContent(
                                     inputText = inputText,
                                     quoteMin = quoteMin,
                                     quoteMax = quoteMax,
-                                    onInputTextChange = { inputText = it },
+                                    onInputTextChange = {
+                                        inputText = limitTradeInputDecimalPlaces(it, fromMaxDecimalPlaces)
+                                    },
                                     onInvalidFlagChange = { invalidFlag = !invalidFlag },
                                     onSwitchToLimitOrder = onSwitchToLimitOrder,
                                 )
@@ -341,7 +348,7 @@ fun SwapContent(
                 InputAction("25%", showBorder = true) {
                     AnalyticsTracker.trackSpotSendInputPercent("25%")
                     if (balance > BigDecimal.ZERO) {
-                        inputText = (balance * BigDecimal("0.25")).stripTrailingZeros().toPlainString()
+                        inputText = limitTradeInputDecimalPlaces((balance * BigDecimal("0.25")).stripTrailingZeros().toPlainString(), fromMaxDecimalPlaces)
                     } else {
                         inputText = ""
                     }
@@ -349,7 +356,7 @@ fun SwapContent(
                 InputAction("50%", showBorder = true) {
                     AnalyticsTracker.trackSpotSendInputPercent("50%")
                     if (balance > BigDecimal.ZERO) {
-                        inputText = (balance * BigDecimal("0.5")).stripTrailingZeros().toPlainString()
+                        inputText = limitTradeInputDecimalPlaces((balance * BigDecimal("0.5")).stripTrailingZeros().toPlainString(), fromMaxDecimalPlaces)
                     } else {
                         inputText = ""
                     }
@@ -357,7 +364,7 @@ fun SwapContent(
                 InputAction(stringResource(R.string.Max), showBorder = true) {
                     AnalyticsTracker.trackSpotSendInputPercent("max")
                     if (balance > BigDecimal.ZERO) {
-                        inputText = balance.stripTrailingZeros().toPlainString()
+                        inputText = limitTradeInputDecimalPlaces(balance.stripTrailingZeros().toPlainString(), fromMaxDecimalPlaces)
                     } else {
                         inputText = ""
                     }

@@ -46,6 +46,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.session.decryptPinToken
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.logs.LogViewerBottomSheet
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipType
 import one.mixin.android.util.ErrorHandler
@@ -81,6 +82,10 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        binding.loadingTitle.setOnLongClickListener {
+            LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
+            true
+        }
         MixinApplication.get().isOnline.set(true)
         when (arguments?.getString(ARGS_SOURCE)) {
             InitializeActivity.SOURCE_SIGN_UP -> AnalyticsTracker.trackSignUpSignalInit()
