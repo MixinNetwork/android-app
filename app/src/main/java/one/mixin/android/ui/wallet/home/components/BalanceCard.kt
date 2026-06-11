@@ -158,7 +158,7 @@ internal fun BalanceCard(
             lineHeight = 14.sp,
             style = compactTextStyle,
         )
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(10.dp))
         Row(verticalAlignment = Alignment.Bottom) {
             Text(
                 text = state.fiatTotal.uppercase(),
@@ -179,6 +179,7 @@ internal fun BalanceCard(
                 modifier = Modifier.alignByBaseline(),
             )
         }
+        Spacer(modifier = Modifier.height(2.dp))
         Text(
             text = "${state.btcTotal} BTC",
             color = MixinAppTheme.colors.textRemarks,

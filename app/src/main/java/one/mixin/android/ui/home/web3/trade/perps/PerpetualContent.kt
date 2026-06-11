@@ -279,7 +279,7 @@ fun PerpetualContent(
                         Text(
                             text = stringResource(R.string.positions_count, openPositionsCount),
                             fontSize = 14.sp,
-                            color = MixinAppTheme.colors.textPrimary,
+                            color = MixinAppTheme.colors.textMinor,
                         )
                         Icon(
                             painter = painterResource(R.drawable.ic_arrow_gray_right),
@@ -455,7 +455,7 @@ fun PerpetualContent(
                     Text(
                         text = stringResource(R.string.perps_activity),
                         fontSize = 14.sp,
-                        color = MixinAppTheme.colors.textPrimary,
+                        color = MixinAppTheme.colors.textMinor,
                     )
                     Icon(
                         painter = painterResource(R.drawable.ic_arrow_gray_right),
@@ -613,7 +613,7 @@ private fun MarketPreviewSection(
         Text(
             text = title,
             fontSize = 14.sp,
-            color = MixinAppTheme.colors.textPrimary,
+            color = MixinAppTheme.colors.textMinor,
         )
         Icon(
             painter = painterResource(R.drawable.ic_arrow_gray_right),

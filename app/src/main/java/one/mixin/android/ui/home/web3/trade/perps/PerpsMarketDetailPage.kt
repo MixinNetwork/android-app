@@ -973,11 +973,10 @@ private fun OpenPositionCard(
         ) {
             Text(
                 text = stringResource(R.string.perps_position),
-                fontSize = 16.sp,
-                lineHeight = 16.sp,
+                fontSize = 14.sp,
                 style = compactTextStyle,
-                fontWeight = FontWeight.Medium,
-                color = MixinAppTheme.colors.textPrimary
+                fontWeight = FontWeight.W400,
+                color = MixinAppTheme.colors.textMinor
             )
             Spacer(modifier = Modifier.weight(1f))
             Icon(
@@ -1382,9 +1381,9 @@ private fun ClosedPositionsSection(
         ) {
             Text(
                 text = stringResource(R.string.perps_activity),
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium,
-                color = MixinAppTheme.colors.textPrimary
+                fontSize = 14.sp,
+                fontWeight = FontWeight.W400,
+                color = MixinAppTheme.colors.textMinor
             )
 
             Icon(
