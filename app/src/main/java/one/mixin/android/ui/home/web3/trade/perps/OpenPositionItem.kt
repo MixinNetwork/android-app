@@ -194,7 +194,6 @@ fun OpenPositionItem(
                     Spacer(modifier = Modifier.width(8.dp))
                 } else {
                     val unrealizedPnl = position.unrealizedPnl?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-                    val roe = (position.roe?.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(BigDecimal(100))
                     val isProfit = unrealizedPnl >= BigDecimal.ZERO
                     val pnlColor = if (isProfit) {
                         if (quoteColorPref) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
@@ -204,7 +203,7 @@ fun OpenPositionItem(
 
                     Spacer(modifier = Modifier.width(8.dp))
                     BasicText(
-                        text = "${formatPerpsSignedRawUsdDecimal(unrealizedPnl)} (${formatPerpsSignedPercent(roe, withSign = false)})",
+                        text = formatPerpsSignedRawUsdDecimal(unrealizedPnl),
                         modifier = Modifier.widthIn(max = 120.dp),
                         style = TextStyle(
                             fontSize = 14.sp,
