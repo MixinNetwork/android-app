@@ -115,6 +115,7 @@
                             android:layout_toStartOf="@id/avatar"
                             android:textIsSelectable="true"
                             android:textSize="14sp"
+                            android:lineHeight="30sp"
                             android:includeFontPadding="false"
                             tools:ignore="RelativeOverlap" />
 
