@@ -66,6 +66,7 @@ import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
 import timber.log.Timber
 
@@ -369,7 +370,7 @@ class WalletConnectPayBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
     private fun fetchPaymentOptions() {
         val exHandler = CoroutineExceptionHandler { _, e ->
             Timber.e(e)
-            errorInfo = e.message
+            errorInfo = ErrorHandler.getErrorMessage(e)
             step = Step.Error
         }
         lifecycleScope.launch(exHandler) {
@@ -426,7 +427,7 @@ class WalletConnectPayBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
     private fun handleException(e: Throwable) {
         errorInfo = when (e) {
             is TipNetworkException -> "code: ${e.error.code}, message: ${e.error.description}"
-            else -> e.message ?: e.stackTraceToString()
+            else -> ErrorHandler.getErrorMessage(e)
         }
         Timber.e(e)
         step = Step.Error
