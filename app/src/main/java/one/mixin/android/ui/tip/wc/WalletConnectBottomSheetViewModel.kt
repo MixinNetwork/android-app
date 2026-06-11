@@ -60,6 +60,14 @@ class WalletConnectBottomSheetViewModel
             return requireNotNull(CryptoWalletHelper.getWeb3PrivateKey(context, spendKey, chainId))
         }
 
+        suspend fun verifyPin(
+            context: Context,
+            pin: String,
+        ) {
+            val result = tip.getOrRecoverTipPriv(context, pin)
+            result.getOrThrow()
+        }
+
         suspend fun refreshAsset(assetId: String) = assetRepo.refreshAsset(assetId)
 
         suspend fun sendTransaction(

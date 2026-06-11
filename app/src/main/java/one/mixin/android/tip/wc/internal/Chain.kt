@@ -35,7 +35,7 @@ sealed class Chain(
 
     object Solana : Chain(SOLANA_CHAIN_ID, "solana", "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ", "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ", "Solana", "SOL", listOf("https://api.mainnet-beta.solana.com"))
 
-    object Bitcoin : Chain(BITCOIN_CHAIN_ID, "BTC", "", "", "Bitcoin", "BTC", listOf(""))
+    object Bitcoin : Chain(BITCOIN_CHAIN_ID, "bip122", "000000000019d6689c085ae165831e93", "000000000019d6689c085ae165831e93", "Bitcoin", "BTC", listOf(""))
 
     val chainId: String
         get() {
@@ -58,12 +58,31 @@ sealed class Chain(
             Base ->  Constants.ChainId.Base
             Avalanche -> Constants.ChainId.Avalanche
             HyperEVM -> Constants.ChainId.HyperEVM
-            else ->  Constants.ChainId.Solana
+            Solana -> Constants.ChainId.Solana
+            Bitcoin -> BITCOIN_CHAIN_ID
         }
 }
 // Chain.Blast
-internal val supportChainList = listOf(Chain.Solana, Chain.Ethereum, Chain.Base, Chain.BinanceSmartChain, Chain.Polygon, Chain.Optimism, Chain.Arbitrum, Chain.Avalanche, Chain.HyperEVM)
+internal val supportChainList = listOf(Chain.Solana, Chain.Bitcoin, Chain.Ethereum, Chain.Base, Chain.BinanceSmartChain, Chain.Polygon, Chain.Optimism, Chain.Arbitrum, Chain.Avalanche, Chain.HyperEVM)
 internal val evmChainList = listOf(Chain.Ethereum, Chain.Base, Chain.BinanceSmartChain, Chain.Polygon, Chain.Optimism, Chain.Arbitrum, Chain.Avalanche, Chain.HyperEVM)
+
+data class WalletConnectAddresses(
+    val evm: String,
+    val solana: String,
+    val bitcoin: String,
+)
+
+internal fun WalletConnectAddresses.accountFor(chain: Chain): String =
+    when (chain) {
+        Chain.Solana -> solana
+        Chain.Bitcoin -> bitcoin
+        else -> evm
+    }
+
+internal fun WalletConnectAddresses.accountForChainId(chainId: String): String? =
+    getChainByChainId(chainId)?.let { chain ->
+        accountFor(chain).takeIf { it.isNotBlank() }
+    }
 
 internal fun String.getChain(): Chain? {
     return when (this) {
@@ -76,6 +95,7 @@ internal fun String.getChain(): Chain? {
         Chain.Polygon.chainReference -> Chain.Polygon
         Chain.HyperEVM.chainReference -> Chain.HyperEVM
         Chain.Solana.chainId -> Chain.Solana
+        Chain.Bitcoin.chainId -> Chain.Bitcoin
         else -> null
     }
 }
@@ -93,9 +113,23 @@ internal fun getChainByChainId(chainId: String?): Chain? {
         Chain.Polygon.chainId -> Chain.Polygon
         Chain.HyperEVM.chainId -> Chain.HyperEVM
         Chain.Solana.chainId -> Chain.Solana
+        Chain.Bitcoin.chainId -> Chain.Bitcoin
         else -> null
     }
 }
+
+fun getSupportedNamespaces(addresses: WalletConnectAddresses): Map<String, Wallet.Model.Namespace.Session> =
+    buildMap {
+        if (addresses.evm.isNotBlank()) {
+            putAll(getEvmNamespaces(addresses.evm))
+        }
+        if (addresses.solana.isNotBlank()) {
+            putAll(getSolanaNamespaces(addresses.solana))
+        }
+        if (addresses.bitcoin.isNotBlank()) {
+            putAll(getBitcoinNamespaces(addresses.bitcoin))
+        }
+    }
 
 fun getSupportedNamespaces(
     chain: Chain,
@@ -108,6 +142,10 @@ fun getSupportedNamespaces(
 
         evmChainList.contains(chain) -> {
             getEvmNamespaces(address)
+        }
+
+        chain == Chain.Bitcoin -> {
+            getBitcoinNamespaces(address)
         }
 
         else -> {
@@ -126,6 +164,18 @@ private fun getEvmNamespaces(address: String): Map<String, Wallet.Model.Namespac
                 methods = evmSupportedMethods,
                 events = listOf("connect", "disconnect", "chainChanged", "accountsChanged", "message"),
                 accounts = accounts,
+            ),
+    )
+}
+
+private fun getBitcoinNamespaces(address: String): Map<String, Wallet.Model.Namespace.Session> {
+    return mapOf(
+        "bip122" to
+            Wallet.Model.Namespace.Session(
+                chains = listOf(Chain.Bitcoin.chainId),
+                methods = bitcoinSupportedMethods,
+                events = listOf("bip122_addressesChanged"),
+                accounts = listOf("${Chain.Bitcoin.chainId}:$address"),
             ),
     )
 }

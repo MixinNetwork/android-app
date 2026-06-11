@@ -44,6 +44,7 @@ import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnect.RequestType
 import one.mixin.android.tip.wc.WalletConnectTIP
 import one.mixin.android.tip.wc.WalletConnectV2
+import one.mixin.android.tip.wc.WalletConnectV2.getProposalChainIds
 import one.mixin.android.tip.wc.WalletConnectV2.getNamespaceProposal
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
@@ -73,7 +74,6 @@ import one.mixin.android.vo.safe.Token
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.js.throwIfAnyMaliciousInstruction
-import org.sol4k.VersionedTransaction
 import org.sol4k.exception.RpcException
 import org.sol4kt.VersionedTransactionCompat
 import timber.log.Timber
@@ -275,8 +275,8 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                 RequestType.SessionProposal -> {
                     sessionProposal =
                         viewModel.getV2SessionProposal(topic)?.apply {
-                            this.getNamespaceProposal()?.chains?.firstOrNull {
-                                c -> c.getChain() != null
+                            this.getNamespaceProposal()?.chains?.firstOrNull { c ->
+                                c.getChain() != null
                             }?.getChain()?.let { chain = it }
                         }
                 }
@@ -290,10 +290,10 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             }
 
             account =
-                if (chain != Chain.Solana) {
-                    Web3Signer.evmAddress
+                if (requestType == RequestType.SessionProposal) {
+                    sessionProposal?.let { proposalAccountText(it) } ?: accountFor(chain)
                 } else {
-                    Web3Signer.solanaAddress
+                    accountFor(chain)
                 }
 
             if (requestType != RequestType.SessionRequest) return@launch
@@ -337,10 +337,6 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         val tx = signData.signMessage
         if (tx !is WCEthereumTransaction) return
         val assetId = chain.getWeb3ChainId()
-        if (assetId == null) {
-            Timber.d("$TAG refreshEstimatedGasAndAsset assetId not support")
-            return
-        }
 
         tickerFlow(15.seconds)
             .onEach {
@@ -366,7 +362,7 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                             tipGas = buildTipGas(chain.chainId, r.data!!)
                         }
                         if (tipGas != null) {
-                            (signData as? WalletConnect.WCSignData.V2SignData)?.tipGas = tipGas
+                            signData.tipGas = tipGas
                         }
                     } catch (e: Exception) {
                         Timber.e(e)
@@ -385,8 +381,13 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                         if (onPinCompleteAction != null) {
                             onPinCompleteAction?.invoke(pin)
                         } else {
-                            val privateKey = viewModel.getWeb3Priv(requireContext(), pin, chain.assetId)
-                            approveWithPriv(privateKey)
+                            if (version == WalletConnect.Version.V2 && requestType == RequestType.SessionProposal) {
+                                viewModel.verifyPin(requireContext(), pin)
+                                approveWithPriv(ByteArray(0))
+                            } else {
+                                val privateKey = viewModel.getWeb3Priv(requireContext(), pin, chain.assetId)
+                                approveWithPriv(privateKey)
+                            }
                         }
                     }
                 if (error == null) {
@@ -436,7 +437,7 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                 when (requestType) {
                     RequestType.Connect -> {}
                     RequestType.SessionProposal -> {
-                        WalletConnectV2.approveSession(priv, topic)
+                        WalletConnectV2.approveSession(topic)
                     }
                     RequestType.SessionRequest -> {
                         val signData = this.signData ?: return "SignData is null"
@@ -509,9 +510,32 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         step = Step.Error
     }
 
+    private fun accountFor(chain: Chain): String =
+        when (chain) {
+            Chain.Solana -> Web3Signer.solanaAddress
+            Chain.Bitcoin -> Web3Signer.btcAddress
+            else -> Web3Signer.evmAddress
+        }
+
+    private fun proposalAccountText(sessionProposal: Wallet.Model.SessionProposal): String {
+        val chainIds = sessionProposal.getProposalChainIds()
+        val accounts = buildList {
+            if (chainIds.any { it.startsWith("eip155:") } && Web3Signer.evmAddress.isNotBlank()) {
+                add("EVM: ${Web3Signer.evmAddress}")
+            }
+            if (Chain.Solana.chainId in chainIds && Web3Signer.solanaAddress.isNotBlank()) {
+                add("${Chain.Solana.name}: ${Web3Signer.solanaAddress}")
+            }
+            if (Chain.Bitcoin.chainId in chainIds && Web3Signer.btcAddress.isNotBlank()) {
+                add("${Chain.Bitcoin.name}: ${Web3Signer.btcAddress}")
+            }
+        }
+        return accounts.joinToString("\n").ifBlank { Web3Signer.address }
+    }
+
     private fun isSignEvmTransaction() = signData != null && signData?.signMessage is WCEthereumTransaction
 
-    private fun isSignSolanaTransaction() = signData != null && signData?.signMessage is VersionedTransaction
+    private fun isSignSolanaTransaction() = signData != null && signData?.signMessage is VersionedTransactionCompat
 
     private val bottomSheetBehaviorCallback =
         object : BottomSheetBehavior.BottomSheetCallback() {

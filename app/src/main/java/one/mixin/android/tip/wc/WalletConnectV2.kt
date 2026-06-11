@@ -19,29 +19,39 @@ import one.mixin.android.tip.wc.internal.Method
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.WalletConnectException
+import one.mixin.android.tip.wc.internal.WalletConnectAddresses
 import one.mixin.android.tip.wc.internal.WcInstruction
 import one.mixin.android.tip.wc.internal.WcInstructionDeserializer
+import one.mixin.android.tip.wc.internal.WcBitcoinAccountAddress
+import one.mixin.android.tip.wc.internal.WcBitcoinGetAccountAddresses
+import one.mixin.android.tip.wc.internal.WcBitcoinSignMessage
+import one.mixin.android.tip.wc.internal.WcBitcoinSignature
 import one.mixin.android.tip.wc.internal.WcSignature
 import one.mixin.android.tip.wc.internal.WcSolanaMessage
 import one.mixin.android.tip.wc.internal.WcSolanaTransaction
+import one.mixin.android.tip.wc.internal.accountForChainId
 import one.mixin.android.tip.wc.internal.ethTransactionSerializer
 import one.mixin.android.tip.wc.internal.getSupportedNamespaces
 import one.mixin.android.tip.wc.internal.supportChainList
 import one.mixin.android.tip.wc.internal.evmChainList
 import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.encodeToBase58String
+import one.mixin.android.extension.toHex
 import one.mixin.android.util.reportException
 import one.mixin.android.web3.js.Web3Signer
+import org.bitcoinj.base.BitcoinNetwork
+import org.bitcoinj.base.ScriptType
+import org.bitcoinj.crypto.ECKey
 import org.sol4k.Keypair
 import org.sol4kt.VersionedTransactionCompat
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
-import org.web3j.crypto.Keys
 import org.web3j.crypto.RawTransaction
 import org.web3j.crypto.TransactionEncoder
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigInteger
+import java.util.Base64
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
@@ -52,6 +62,7 @@ object WalletConnectV2 : WalletConnect() {
     private const val CHAIN_TYPE_POLYGON: String = "polygon"
     private const val CHAIN_TYPE_BSC: String = "bsc"
     private const val CHAIN_TYPE_SOLANA: String = "solana"
+    private const val CHAIN_TYPE_BTC: String = "btc"
 
     private val gson =
         GsonBuilder()
@@ -134,14 +145,18 @@ object WalletConnectV2 : WalletConnect() {
                     verifyContext: Wallet.Model.VerifyContext,
                 ) {
                     Timber.d("$TAG onSessionProposal $sessionProposal $verifyContext")
-                    val chains = supportChainList.map { c -> c.chainId }
+                    val supportedWalletChains =
+                        getSupportedNamespaces(currentWalletConnectAddresses())
+                            .values
+                            .flatMap { it.chains ?: emptyList() }
+                            .toSet()
                     val namespaces =
                         (sessionProposal.requiredNamespaces.values + sessionProposal.optionalNamespaces.values)
                             .filter { proposal -> proposal.chains != null }
                     val hasSupportChain =
                         namespaces.any { proposal ->
                             proposal.chains!!.any { chain ->
-                                chains.contains(chain)
+                                supportedWalletChains.contains(chain)
                             }
                         }
 
@@ -165,6 +180,7 @@ object WalletConnectV2 : WalletConnect() {
                     val chainType =
                         when {
                             requireChain is Chain.Solana -> CHAIN_TYPE_SOLANA
+                            requireChain is Chain.Bitcoin -> CHAIN_TYPE_BTC
                             requireChain is Chain.BinanceSmartChain -> CHAIN_TYPE_BSC
                             requireChain is Chain.Polygon -> CHAIN_TYPE_POLYGON
                             else -> CHAIN_TYPE_ETH
@@ -176,7 +192,7 @@ object WalletConnectV2 : WalletConnect() {
                         val notSupportChainIds =
                             namespaces.flatMap { proposal ->
                                 proposal.chains!!.filter { chain ->
-                                    !chains.contains(chain)
+                                    !supportedWalletChains.contains(chain)
                                 }
                             }.toSet().joinToString()
                         RxBus.publish(
@@ -229,17 +245,7 @@ object WalletConnectV2 : WalletConnect() {
         }
     }
 
-    private fun <T> flattenCollections(collection: List<List<T>?>): List<T> {
-        val result = mutableListOf<T>()
-        for (innerCollection in collection) {
-            if (innerCollection == null) continue
-            result.addAll(innerCollection)
-        }
-        return result
-    }
-
     fun approveSession(
-        priv: ByteArray,
         topic: String,
     ) {
         val sessionProposal = getSessionProposal(topic)
@@ -247,27 +253,11 @@ object WalletConnectV2 : WalletConnect() {
             Timber.e("$TAG approveSession sessionProposal is null")
             return
         }
-        val namespaces: Collection<String> = flattenCollections((sessionProposal.requiredNamespaces + sessionProposal.optionalNamespaces).values.map { it.chains })
-        val chain =
-            if (namespaces.isEmpty()) {
-                supportChainList.firstOrNull()
-            } else {
-                supportChainList.find {
-                    it.chainId in namespaces
-                }
-            }
-        if (chain == null) {
-            Timber.e("$TAG approveSession sessionProposal chain is null")
+        val supportedNamespaces = getSupportedNamespaces(currentWalletConnectAddresses())
+        if (supportedNamespaces.isEmpty()) {
+            Timber.e("$TAG approveSession wallet has no supported address")
             return
         }
-        val address =
-            if (chain == Chain.Solana) {
-                Keypair.fromSecretKey(priv).publicKey.toBase58()
-            } else {
-                val pub = ECKeyPair.create(priv).publicKey
-                Keys.toChecksumAddress(Keys.getAddress(pub))
-            }
-        val supportedNamespaces = getSupportedNamespaces(chain, address)
         Timber.e("$TAG supportedNamespaces $supportedNamespaces")
         val sessionNamespaces = WalletKit.generateApprovedNamespaces(sessionProposal, supportedNamespaces)
         Timber.d("$TAG approveSession $sessionNamespaces")
@@ -380,6 +370,17 @@ object WalletConnectV2 : WalletConnect() {
                     val message = gson.fromJson<WcSolanaMessage>(request.request.params)
                     WCSignData.V2SignData(request.request.id, message, request)
                 }
+                Method.BtcGetAccountAddresses.name -> {
+                    val message = gson.fromJson<WcBitcoinGetAccountAddresses>(request.request.params)
+                    validateBitcoinAccount(message.account, localAddress)
+                    WCSignData.V2SignData(request.request.id, message, request)
+                }
+                Method.BtcSignMessage.name -> {
+                    val message = gson.fromJson<WcBitcoinSignMessage>(request.request.params)
+                    validateBitcoinAccount(message.account, localAddress)
+                    message.address?.let { validateBitcoinAccount(it, localAddress) }
+                    WCSignData.V2SignData(request.request.id, message, request)
+                }
                 else -> {
                     Timber.e("$TAG ${request.request.method} parseSessionRequest not supported method ${request.request.method}")
                     null
@@ -432,6 +433,10 @@ object WalletConnectV2 : WalletConnect() {
             val wcSig = WcSignature(signMessage.pubkey, sig)
             approveRequestInternal(gson.toJson(wcSig), sessionRequest)
             return null
+        } else if (signMessage is WcBitcoinGetAccountAddresses) {
+            approveBitcoinAddresses(signMessage, sessionRequest)
+        } else if (signMessage is WcBitcoinSignMessage) {
+            approveBitcoinMessage(priv, signMessage, sessionRequest)
         }
         return null
     }
@@ -510,7 +515,7 @@ object WalletConnectV2 : WalletConnect() {
         }
     }
 
-    fun switchAccount(address:String) {
+    fun switchAccount(addresses: WalletConnectAddresses = currentWalletConnectAddresses()) {
         val sessions = getListOfActiveSessions()
         if (sessions.isEmpty()) {
             Timber.e("$TAG switchAccount session not found for topic")
@@ -518,22 +523,19 @@ object WalletConnectV2 : WalletConnect() {
         }
         sessions.forEach { session ->
             val newNamespaces = session.namespaces.mapValues { (_, ns) ->
-                val chainId = ns.chains?.firstOrNull()
-                if (chainId == null) {
+                val chains = ns.chains
+                if (chains.isNullOrEmpty()) {
                     Timber.w("$TAG switchAccount: namespace has no chains, skipping update for it")
                     return@mapValues ns
                 }
-                val chain = supportChainList.find { it.chainId == chainId }
-                if (chain == null) {
-                    Timber.w("$TAG switchAccount: unsupported chainId $chainId, skipping update for it")
-                    return@mapValues ns
+                val newAccounts = chains.mapNotNull { chainId ->
+                    addresses.accountForChainId(chainId)?.let { address -> "$chainId:$address" }
                 }
-
-                val newAccount = "$chainId:$address"
+                if (newAccounts.isEmpty()) return@mapValues ns
 
                 Wallet.Model.Namespace.Session(
                     chains = ns.chains,
-                    accounts = listOf(newAccount),
+                    accounts = newAccounts,
                     methods = ns.methods,
                     events = ns.events,
                 )
@@ -644,6 +646,46 @@ object WalletConnectV2 : WalletConnect() {
         return hexMessage
     }
 
+    private fun approveBitcoinAddresses(
+        request: WcBitcoinGetAccountAddresses,
+        sessionRequest: Wallet.Model.SessionRequest,
+    ) {
+        val address = request.account
+        val result =
+            listOf(
+                WcBitcoinAccountAddress(
+                    address = address,
+                    intention = request.intentions?.firstOrNull() ?: "payment",
+                ),
+            )
+        approveRequestInternal(gson.toJson(result), sessionRequest)
+    }
+
+    private fun approveBitcoinMessage(
+        priv: ByteArray,
+        request: WcBitcoinSignMessage,
+        sessionRequest: Wallet.Model.SessionRequest,
+    ) {
+        if (request.protocol != null && request.protocol != "ecdsa") {
+            throw IllegalArgumentException("Unsupported Bitcoin signature protocol ${request.protocol}")
+        }
+        val key = ECKey.fromPrivate(priv, true)
+        val address = key.toAddress(ScriptType.P2WPKH, BitcoinNetwork.MAINNET).toString()
+        val requestedAddress = request.address ?: request.account
+        validateBitcoinAccount(requestedAddress, address)
+        val signature = Base64.getDecoder().decode(key.signMessage(request.message, ScriptType.P2WPKH)).toHex()
+        approveRequestInternal(gson.toJson(WcBitcoinSignature(address, signature)), sessionRequest)
+    }
+
+    private fun validateBitcoinAccount(
+        requested: String,
+        localAddress: String,
+    ) {
+        if (localAddress.isNotBlank() && requested != localAddress) {
+            throw IllegalArgumentException("Address unequal")
+        }
+    }
+
     fun approveSolanaTransaction(
         signature: String,
         sessionRequest: Wallet.Model.SessionRequest,
@@ -707,4 +749,16 @@ object WalletConnectV2 : WalletConnect() {
 
     fun Wallet.Model.SessionProposal.getNamespaceProposal(): Wallet.Model.Namespace.Proposal? =
         this.requiredNamespaces["solana"] ?: this.optionalNamespaces["solana"] ?: this.requiredNamespaces.values.firstOrNull() ?: this.optionalNamespaces.values.firstOrNull()
+
+    fun Wallet.Model.SessionProposal.getProposalChainIds(): Set<String> =
+        (this.requiredNamespaces.values + this.optionalNamespaces.values)
+            .flatMap { it.chains ?: emptyList() }
+            .toSet()
+
+    private fun currentWalletConnectAddresses(): WalletConnectAddresses =
+        WalletConnectAddresses(
+            evm = Web3Signer.evmAddress,
+            solana = Web3Signer.solanaAddress,
+            bitcoin = Web3Signer.btcAddress,
+        )
 }

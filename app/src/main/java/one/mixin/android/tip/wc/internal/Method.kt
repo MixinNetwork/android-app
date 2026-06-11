@@ -16,6 +16,10 @@ sealed class Method(val name: String) {
     object SolanaSignTransaction : Method("solana_signTransaction")
 
     object SolanaSignMessage : Method("solana_signMessage")
+
+    object BtcGetAccountAddresses : Method("getAccountAddresses")
+
+    object BtcSignMessage : Method("signMessage")
 }
 
 val evmSupportedMethods =
@@ -26,10 +30,14 @@ val evmSupportedMethods =
         Method.ETHSignTypedDataV4.name,
         Method.ETHSignTransaction.name,
         Method.ETHSendTransaction.name,
-        Method.SolanaSignMessage.name,
     )
 val solanaSupporedMethods =
     listOf(
         Method.SolanaSignMessage.name,
         Method.SolanaSignTransaction.name,
+    )
+val bitcoinSupportedMethods =
+    listOf(
+        Method.BtcGetAccountAddresses.name,
+        Method.BtcSignMessage.name,
     )
