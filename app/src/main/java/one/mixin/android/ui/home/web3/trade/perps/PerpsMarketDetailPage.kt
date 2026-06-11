@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -1338,10 +1339,10 @@ private fun TpSlActionCell(
             } else if (!loading) {
                 Spacer(modifier = Modifier.width(4.dp))
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_arrow_right),
+                    painter = painterResource(id = R.drawable.ic_arrow_gray_right),
                     contentDescription = null,
-                    tint = MixinAppTheme.colors.textAssist,
-                    modifier = Modifier.size(16.dp)
+                    tint = Color.Unspecified,
+                    modifier = Modifier.size(16.dp).offset(x = 4.dp)
                 )
             }
         }
@@ -1387,10 +1388,10 @@ private fun ClosedPositionsSection(
             )
 
             Icon(
-                painter = painterResource(R.drawable.ic_arrow_right),
+                painter = painterResource(R.drawable.ic_arrow_gray_right),
                 contentDescription = null,
-                tint = MixinAppTheme.colors.textAssist,
-                modifier = Modifier.size(16.dp)
+                tint = Color.Unspecified,
+                modifier = Modifier.size(16.dp).offset(x = 4.dp)
             )
         }
 
