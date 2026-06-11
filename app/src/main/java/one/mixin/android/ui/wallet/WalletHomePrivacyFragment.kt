@@ -61,7 +61,6 @@ import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragm
 import one.mixin.android.ui.home.bot.INTERNAL_REFERRAL_ID
 import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.home.web3.trade.TradeFragment
-import one.mixin.android.ui.home.web3.trade.perps.AllPositionsFragment
 import one.mixin.android.ui.home.web3.trade.perps.PerpsActivity
 import one.mixin.android.ui.home.web3.trade.perps.PerpetualViewModel
 import one.mixin.android.ui.home.web3.trade.perps.topMoversPreview
@@ -566,9 +565,12 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
 
         override fun onViewMorePositionsClicked() {
             AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.WALLET_HOME)
-            navTo(
-                AllPositionsFragment.newOpenInstance(AnalyticsTracker.PerpsSource.WALLET_HOME),
-                AllPositionsFragment.TAG,
+            SwapActivity.show(
+                requireActivity(),
+                inMixin = true,
+                entrySource = TradeSource.WALLET_HOME,
+                entryType = AnalyticsTracker.SpotTradeType.SIMPLE,
+                initialTab = TradeFragment.TAB_PERPETUAL,
             )
         }
 
