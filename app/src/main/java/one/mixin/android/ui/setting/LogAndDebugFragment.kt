@@ -34,7 +34,6 @@ import one.mixin.android.ui.home.reminder.VerifyMobileReminderBottomSheetDialogF
 import one.mixin.android.ui.home.web3.trade.TradeFragment
 import one.mixin.android.ui.home.web3.trade.perps.PREF_HIDE_SL_GUIDE_UNTIL
 import one.mixin.android.ui.home.web3.trade.perps.PREF_HIDE_TP_GUIDE_UNTIL
-import one.mixin.android.ui.home.web3.trade.perps.PREF_MARKET_DETAIL_TIME_FRAME
 import one.mixin.android.ui.setting.diagnosis.DiagnosisFragment
 import one.mixin.android.ui.wallet.PREF_WALLET_HOME_ADD_WALLET_BANNER_CLOSED
 import one.mixin.android.ui.wallet.PREF_WALLET_HOME_REFERRAL_CLOSED
@@ -190,7 +189,6 @@ class LogAndDebugFragment : BaseFragment(R.layout.fragment_log_debug) {
         buildList {
             add(PREF_HIDE_TP_GUIDE_UNTIL)
             add(PREF_HIDE_SL_GUIDE_UNTIL)
-            add(PREF_MARKET_DETAIL_TIME_FRAME)
             add(TradeFragment.PREF_TRADE_SPOT_GUIDE_SHOWN)
             add(TradeFragment.PREF_TRADE_PERPETUAL_GUIDE_SHOWN)
             add(Constants.Account.PREF_GLOBAL_MARKET)
