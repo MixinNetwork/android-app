@@ -85,6 +85,7 @@ import one.mixin.android.databinding.ViewUrlBottomBinding
 import one.mixin.android.db.fetcher.MessageFetcher
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.flow.MessageFlow.ANY_ID
+import one.mixin.android.db.perps.PerpsMarketDao
 import one.mixin.android.event.BlinkEvent
 import one.mixin.android.event.CallEvent
 import one.mixin.android.event.ExitEvent
@@ -135,6 +136,7 @@ import one.mixin.android.extension.openMedia
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putBoolean
+import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.replaceFragment
@@ -186,6 +188,9 @@ import one.mixin.android.ui.conversation.markdown.MarkdownActivity
 import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_RESULT
+import one.mixin.android.ui.home.web3.trade.SwapActivity
+import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.PREF_TRADE_SELECTED_TAB_PREFIX
+import one.mixin.android.ui.home.web3.trade.perps.PerpsActivity
 import one.mixin.android.ui.imageeditor.ImageEditorActivity
 import one.mixin.android.ui.media.SharedMediaActivity
 import one.mixin.android.ui.media.pager.MediaPagerActivity
@@ -215,6 +220,8 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MusicPlayer
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
 import one.mixin.android.util.debug.debugLongClick
 import one.mixin.android.util.markdown.MarkwonUtil.Companion.getMiniMarkwon
 import one.mixin.android.util.mention.mentionDisplay
@@ -358,6 +365,9 @@ class ConversationFragment() :
 
     @Inject
     lateinit var utxoService: UtxoService
+
+    @Inject
+    lateinit var perpsMarketDao: PerpsMarketDao
 
     private val chatViewModel by viewModels<ConversationViewModel>()
 
@@ -818,8 +828,11 @@ class ConversationFragment() :
                 if (openInputAction(action)) return
 
                 lifecycleScope.launch {
+                    if (openLocalMixinTradeAction(action)) return@launch
+
+                    val context = context ?: return@launch
                     val app = chatViewModel.findAppById(appId ?: userId)
-                    action.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, lifecycleScope, app)
+                    action.openAsUrlOrWeb(context, conversationId, parentFragmentManager, lifecycleScope, app)
                 }
             }
 
@@ -2530,6 +2543,62 @@ class ConversationFragment() :
     ) {
         binding.chatControl.chatEt.hideKeyboard()
         url.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, lifecycleScope, app, appCard)
+    }
+
+    private suspend fun openLocalMixinTradeAction(action: String): Boolean {
+        if (openLocalPerpsTradeAction(action)) return true
+
+        val spotTradeAction = action.toSpotTradeAction() ?: return false
+        if (!hasLocalSpotTradeData(spotTradeAction)) return false
+        val context = context ?: return true
+
+        AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.APP_CARD)
+        defaultSharedPreferences.putInt(
+            "$PREF_TRADE_SELECTED_TAB_PREFIX${Session.getAccountId() ?: ""}",
+            if (spotTradeAction.openLimit) 1 else 0,
+        )
+        SwapActivity.show(
+            context,
+            spotTradeAction.input,
+            spotTradeAction.output,
+            spotTradeAction.amount,
+            spotTradeAction.referral,
+            entrySource = TradeSource.APP_CARD,
+            entryType = if (spotTradeAction.openLimit) {
+                AnalyticsTracker.SpotTradeType.ADVANCED
+            } else {
+                AnalyticsTracker.SpotTradeType.SIMPLE
+            },
+        )
+        return true
+    }
+
+    private suspend fun openLocalPerpsTradeAction(action: String): Boolean {
+        val perpsTradeAction = action.toPerpsTradeAction() ?: return false
+        val market = withContext(Dispatchers.IO) {
+            perpsMarketDao.getMarket(perpsTradeAction.marketId)
+        } ?: return false
+        val context = context ?: return true
+
+        PerpsActivity.showDetail(
+            context,
+            market.marketId,
+            market.displaySymbol,
+            market.displaySymbol,
+            market.tokenSymbol,
+            AnalyticsTracker.PerpsSource.APP_CARD,
+        )
+        return true
+    }
+
+    private suspend fun hasLocalSpotTradeData(action: SpotTradeAction): Boolean =
+        hasLocalTokenData(action.input) && hasLocalTokenData(action.output)
+
+    private suspend fun hasLocalTokenData(assetId: String?): Boolean {
+        if (assetId == null) return true
+
+        val token = chatViewModel.findAssetItemById(assetId) ?: return false
+        return token.assetId == token.chainId || chatViewModel.findAssetItemById(token.chainId) != null
     }
 
     private fun openInputAction(action: String): Boolean {

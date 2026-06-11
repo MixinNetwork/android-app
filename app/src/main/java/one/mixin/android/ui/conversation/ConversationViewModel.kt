@@ -656,6 +656,12 @@ class ConversationViewModel
 
         fun observeAddress(addressId: String) = tokenRepository.observeAddress(addressId)
 
+        suspend fun findAssetItemById(assetId: String): TokenItem? {
+            return withContext(Dispatchers.IO) {
+                tokenRepository.findAssetItemById(assetId)
+            }
+        }
+
         suspend fun refreshAsset(assetId: String): TokenItem? {
             return withContext(Dispatchers.IO) {
                 tokenRepository.findOrSyncAsset(assetId)
