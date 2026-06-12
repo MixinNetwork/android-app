@@ -34,6 +34,7 @@ import one.mixin.android.tip.wc.internal.ethTransactionSerializer
 import one.mixin.android.tip.wc.internal.getSupportedNamespaces
 import one.mixin.android.tip.wc.internal.supportChainList
 import one.mixin.android.tip.wc.internal.evmChainList
+import one.mixin.android.tip.wc.internal.isSupportedMethodForChain
 import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.encodeToBase58String
 import one.mixin.android.extension.toHex
@@ -305,6 +306,10 @@ object WalletConnectV2 : WalletConnect() {
         localAddress: String,
         request: Wallet.Model.SessionRequest,
     ): WCSignData.V2SignData<*>? {
+        if (!isSupportedMethodForChain(request.request.method, request.chainId)) {
+            Timber.e("$TAG ${request.request.method} parseSessionRequest not supported method ${request.request.method} for chain ${request.chainId}")
+            return null
+        }
         val signData =
             when (request.request.method) {
                 Method.ETHSign.name -> {

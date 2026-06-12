@@ -153,29 +153,6 @@ fun getSupportedNamespaces(addresses: WalletConnectAddresses): Map<String, Walle
         }
     }
 
-fun getSupportedNamespaces(
-    chain: Chain,
-    address: String,
-): Map<String, Wallet.Model.Namespace.Session> {
-    return when {
-        chain == Chain.Solana -> {
-            getSolanaNamespaces(address)
-        }
-
-        evmChainList.contains(chain) -> {
-            getEvmNamespaces(address)
-        }
-
-        chain == Chain.Bitcoin -> {
-            getBitcoinNamespaces(address)
-        }
-
-        else -> {
-            throw IllegalArgumentException("Not supported chain ${chain.name}")
-        }
-    }
-}
-
 private fun getEvmNamespaces(address: String): Map<String, Wallet.Model.Namespace.Session> {
     val chainIds = evmChainList.map { chain -> chain.chainId }
     val accounts = evmChainList.map { chain -> "${chain.chainNamespace}:${chain.chainReference}:$address" }
@@ -207,7 +184,7 @@ private fun getSolanaNamespaces(address: String): Map<String, Wallet.Model.Names
         "solana" to
             Wallet.Model.Namespace.Session(
                 chains = listOf("solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ"),
-                methods = solanaSupporedMethods,
+                methods = solanaSupportedMethods,
                 events = listOf(""),
                 accounts = listOf("solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ:$address"),
             ),

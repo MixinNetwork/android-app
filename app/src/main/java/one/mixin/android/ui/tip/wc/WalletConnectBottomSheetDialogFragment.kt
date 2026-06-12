@@ -49,8 +49,10 @@ import one.mixin.android.tip.wc.WalletConnectV2.getNamespaceProposal
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
+import one.mixin.android.tip.wc.internal.WalletConnectAddresses
 import one.mixin.android.tip.wc.internal.WalletConnectException
 import one.mixin.android.tip.wc.internal.buildTipGas
+import one.mixin.android.tip.wc.internal.formatProposalAccountText
 import one.mixin.android.tip.wc.internal.getChain
 import one.mixin.android.tip.wc.internal.getChainByChainId
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
@@ -518,19 +520,14 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         }
 
     private fun proposalAccountText(sessionProposal: Wallet.Model.SessionProposal): String {
-        val chainIds = sessionProposal.getProposalChainIds()
-        val accounts = buildList {
-            if (chainIds.any { it.startsWith("eip155:") } && Web3Signer.evmAddress.isNotBlank()) {
-                add("EVM: ${Web3Signer.evmAddress}")
-            }
-            if (Chain.Solana.chainId in chainIds && Web3Signer.solanaAddress.isNotBlank()) {
-                add("${Chain.Solana.name}: ${Web3Signer.solanaAddress}")
-            }
-            if (Chain.Bitcoin.chainId in chainIds && Web3Signer.btcAddress.isNotBlank()) {
-                add("${Chain.Bitcoin.name}: ${Web3Signer.btcAddress}")
-            }
-        }
-        return accounts.joinToString("\n").ifBlank { Web3Signer.address }
+        return formatProposalAccountText(
+            sessionProposal.getProposalChainIds(),
+            WalletConnectAddresses(
+                evm = Web3Signer.evmAddress,
+                solana = Web3Signer.solanaAddress,
+                bitcoin = Web3Signer.btcAddress,
+            ),
+        )
     }
 
     private fun isSignEvmTransaction() = signData != null && signData?.signMessage is WCEthereumTransaction

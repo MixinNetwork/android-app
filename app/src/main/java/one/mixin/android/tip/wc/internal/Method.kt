@@ -31,7 +31,7 @@ val evmSupportedMethods =
         Method.ETHSignTransaction.name,
         Method.ETHSendTransaction.name,
     )
-val solanaSupporedMethods =
+val solanaSupportedMethods =
     listOf(
         Method.SolanaSignMessage.name,
         Method.SolanaSignTransaction.name,
@@ -41,3 +41,16 @@ val bitcoinSupportedMethods =
         Method.BtcGetAccountAddresses.name,
         Method.BtcSignMessage.name,
     )
+
+internal fun isSupportedMethodForChain(
+    method: String,
+    chainId: String?,
+): Boolean {
+    val chain = getChainByChainId(chainId)
+    return when {
+        chain == Chain.Bitcoin -> bitcoinSupportedMethods.contains(method)
+        chain == Chain.Solana -> solanaSupportedMethods.contains(method)
+        chain != null && evmChainList.contains(chain) -> evmSupportedMethods.contains(method)
+        else -> false
+    }
+}

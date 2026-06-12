@@ -60,6 +60,26 @@ class WalletConnectNamespaceTest {
     }
 
     @Test
+    fun walletConnectMethodsAreScopedToTheirChainNamespace() {
+        assertTrue(isSupportedMethodForChain(Method.BtcSignMessage.name, Chain.Bitcoin.chainId))
+        assertFalse(isSupportedMethodForChain(Method.BtcSignMessage.name, Chain.Ethereum.chainId))
+        assertFalse(isSupportedMethodForChain(Method.BtcSignMessage.name, Chain.Solana.chainId))
+        assertTrue(isSupportedMethodForChain(Method.ETHSendTransaction.name, Chain.Base.chainId))
+        assertFalse(isSupportedMethodForChain(Method.ETHSendTransaction.name, Chain.Bitcoin.chainId))
+    }
+
+    @Test
+    fun proposalAccountTextDoesNotFallBackToEvmWhenProposalHasNoSupportedAccount() {
+        val addresses = WalletConnectAddresses(
+            evm = "0x1111111111111111111111111111111111111111",
+            solana = "",
+            bitcoin = "",
+        )
+
+        assertEquals("", formatProposalAccountText(setOf(Chain.Solana.chainId), addresses))
+    }
+
+    @Test
     fun sessionNamespaceUpdateReturnsNullWhenWalletNoLongerHasAConnectedChainAddress() {
         val namespaces =
             mapOf(
@@ -113,7 +133,7 @@ class WalletConnectNamespaceTest {
                     Wallet.Model.Namespace.Session(
                         chains = listOf(Chain.Solana.chainId),
                         accounts = listOf("${Chain.Solana.chainId}:OldSolanaAddress"),
-                        methods = solanaSupporedMethods,
+                        methods = solanaSupportedMethods,
                         events = emptyList(),
                     ),
                 "bip122" to
