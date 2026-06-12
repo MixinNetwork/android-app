@@ -396,7 +396,12 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                 { r: MixinResponse<VerificationResponse> ->
                     if (!r.isSuccess) {
                         if (r.errorCode == NEED_CAPTCHA) {
-                            initAndLoadCaptcha(r.errorDescription)
+                            if (captchaResponse == null) {
+                                initAndLoadCaptcha(r.errorDescription)
+                            } else {
+                                hideLoading()
+                                ErrorHandler.handleMixinError(ErrorHandler.RECAPTCHA_IS_INVALID, r.errorDescription)
+                            }
                         } else {
                             hideLoading()
                             ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)

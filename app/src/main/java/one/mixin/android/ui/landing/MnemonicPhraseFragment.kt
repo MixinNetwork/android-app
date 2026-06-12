@@ -294,9 +294,9 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 failureBlock = { r ->
                     if (r.errorCode == NEED_CAPTCHA) {
                         needCaptcha = true
-                        errorInfo = null
-                        landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Creating)
-                        initAndLoadCaptcha(sessionKey, edKey, r.errorDescription)
+                        errorInfo = requireContext().getMixinErrorStringByCode(ErrorHandler.RECAPTCHA_IS_INVALID, r.errorDescription)
+                        landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
+                        binding.mobileCover.isVisible = false
                     } else {
                         errorInfo = requireContext().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
                         landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
