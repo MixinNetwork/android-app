@@ -428,12 +428,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                 { r: MixinResponse<VerificationResponse> ->
                     if (!r.isSuccess) {
                         if (r.errorCode == NEED_CAPTCHA) {
-                            if (captchaResponse == null) {
-                                initAndLoadCaptcha(r.errorDescription)
-                            } else {
-                                hideLoading()
-                                ErrorHandler.handleMixinError(ErrorHandler.RECAPTCHA_IS_INVALID, r.errorDescription)
-                            }
+                            initAndLoadCaptcha(r.errorDescription)
                         } else {
                             hideLoading()
                             ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)

@@ -217,12 +217,7 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
             failureBlock = { r ->
                 if (viewDestroyed()) return@handleMixinResponse true
                 if (r.errorCode == ErrorHandler.NEED_CAPTCHA) {
-                    if (captchaResponse == null) {
-                        initAndLoadCaptcha(r.errorDescription)
-                    } else {
-                        binding.deleteCover.isVisible = false
-                        ErrorHandler.handleMixinError(ErrorHandler.RECAPTCHA_IS_INVALID, r.errorDescription)
-                    }
+                    initAndLoadCaptcha(r.errorDescription)
                     return@handleMixinResponse true
                 }
                 binding.deleteCover.isVisible = false
