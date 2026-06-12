@@ -66,7 +66,7 @@ class LeverageBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
             currentLeverage: Float,
             maxLeverage: Int,
             amount: String,
-            isLong: Boolean
+            isLong: Boolean,
         ): LeverageBottomSheetDialogFragment {
             return LeverageBottomSheetDialogFragment().apply {
                 this.currentLeverage = currentLeverage
@@ -150,7 +150,7 @@ private fun LeverageContent(
     amount: String,
     isLong: Boolean,
     onCancel: () -> Unit,
-    onApply: (Float) -> Unit
+    onApply: (Float) -> Unit,
 ) {
     val boundedMaxLeverage = maxLeverage.coerceAtLeast(1)
     var tempLeverage by remember(currentLeverage, boundedMaxLeverage) {
@@ -329,20 +329,13 @@ private fun LeverageStepperButton(
             .clickable(enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
-        Box(
-            modifier = Modifier
-                .size(32.dp)
-                .clip(CircleShape)
-                .background(MixinAppTheme.colors.backgroundWindow),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(
-                painter = painterResource(id = iconRes),
-                contentDescription = null,
-                tint = Color.Unspecified,
-                modifier = Modifier.size(16.dp),
-            )
-        }
+
+        Icon(
+            painter = painterResource(id = iconRes),
+            contentDescription = null,
+            tint = Color.Unspecified,
+            modifier = Modifier.size(16.dp),
+        )
     }
 }
 
@@ -350,14 +343,14 @@ private fun LeverageStepperButton(
 private fun ProfitLossInfo(
     amount: String,
     leverage: Int,
-    isLong: Boolean
+    isLong: Boolean,
 ) {
     val context = LocalContext.current
     val amountValue = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val priceChangePercent = 1
     val profitPercent = leverage
     val liquidationPercent = 100.0 / leverage.toDouble()
-    
+
     if (amountValue == BigDecimal.ZERO) {
         Column(
             modifier = Modifier

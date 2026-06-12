@@ -352,9 +352,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
 
                     val desc = info.descriptions?.let { map ->
                         val lang = Locale.getDefault().language
-                        (map[lang]?.takeIf { it.isNotBlank() }
-                            ?: map["en"]?.takeIf { it.isNotBlank() }
-                            ?: map.values.firstOrNull { it.isNotBlank() })
+                        selectLocalizedMarketDescription(map, lang)
                     }?.let { HtmlCompat.fromHtml(it, HtmlCompat.FROM_HTML_MODE_LEGACY).toString().trim() }
                     aboutContainer.isVisible = !desc.isNullOrBlank()
                     aboutContent.text = desc.orEmpty()
