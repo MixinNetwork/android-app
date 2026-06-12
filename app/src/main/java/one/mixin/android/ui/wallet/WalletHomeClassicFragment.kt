@@ -68,7 +68,8 @@ import one.mixin.android.ui.wallet.home.WalletHomeDataState
 import one.mixin.android.ui.wallet.home.WalletHomePage
 import one.mixin.android.ui.wallet.home.WalletHomeSection
 import one.mixin.android.ui.wallet.home.WalletHomeState
-import one.mixin.android.ui.wallet.home.WalletHomeTokenHandoff
+import one.mixin.android.ui.wallet.home.WalletHomeBalanceHandoff
+import one.mixin.android.ui.wallet.home.WalletHomeBalanceSnapshot
 import one.mixin.android.ui.wallet.home.WalletHomeType
 import one.mixin.android.ui.wallet.home.formatWalletHomeBtcTotal
 import one.mixin.android.ui.wallet.home.getWalletHomeCache
@@ -695,7 +696,17 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         }
 
         override fun onViewMoreTokensClicked() {
-            WalletHomeTokenHandoff.saveWeb3Tokens(walletId, assets)
+            val state = _homeState.value
+            WalletHomeBalanceHandoff.saveWeb3Balance(
+                walletId,
+                WalletHomeBalanceSnapshot(
+                    fiatTotal = state.fiatTotal,
+                    tokenFiatTotal = state.tokenFiatTotal,
+                    btcTotal = state.btcTotal,
+                    fiatSymbol = state.fiatSymbol,
+                    totalTokenCount = state.totalTokenCount,
+                ),
+            )
             WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Tokens(walletId))
         }
 

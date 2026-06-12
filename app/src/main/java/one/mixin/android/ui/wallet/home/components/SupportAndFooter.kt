@@ -80,7 +80,6 @@ private fun SupportRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(50.dp)
             .clip(RoundedCornerShape(8.dp))
             .clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically,

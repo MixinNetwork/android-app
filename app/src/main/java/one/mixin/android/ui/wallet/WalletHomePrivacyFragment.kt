@@ -71,7 +71,8 @@ import one.mixin.android.ui.wallet.home.WalletHomePage
 import one.mixin.android.ui.wallet.home.WalletHomePositionSummary
 import one.mixin.android.ui.wallet.home.WalletHomeSection
 import one.mixin.android.ui.wallet.home.WalletHomeState
-import one.mixin.android.ui.wallet.home.WalletHomeTokenHandoff
+import one.mixin.android.ui.wallet.home.WalletHomeBalanceHandoff
+import one.mixin.android.ui.wallet.home.WalletHomeBalanceSnapshot
 import one.mixin.android.ui.wallet.home.WalletHomeType
 import one.mixin.android.ui.wallet.home.calculateWalletHomeTotalFiat
 import one.mixin.android.ui.wallet.home.formatWalletHomeBtcTotal
@@ -553,7 +554,40 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         override fun onImportKeyLearnMoreClicked() = Unit
 
         override fun onViewMoreTokensClicked() {
-            WalletHomeTokenHandoff.savePrivacyTokens(assets)
+            // Pass the token-only balance (excluding perps position margin) so the AllTokens
+            // header shows its token-list baseline immediately and avoids a flicker when
+            // positions load on a separate, slower path. Fall back to the cached home state
+            // when the token list has not been loaded from the database yet.
+            val state = _homeState.value
+            val snapshot = if (assets.isEmpty()) {
+                WalletHomeBalanceSnapshot(
+                    fiatTotal = state.tokenFiatTotal ?: state.fiatTotal,
+                    tokenFiatTotal = state.tokenFiatTotal,
+                    btcTotal = state.btcTotal,
+                    fiatSymbol = state.fiatSymbol,
+                    totalTokenCount = state.totalTokenCount,
+                )
+            } else {
+                val tokenFiat = assets.fold(BigDecimal.ZERO) { acc, item -> acc + item.fiat() }
+                val tokenBtc = assets.fold(BigDecimal.ZERO) { acc, item -> acc + item.btc() }
+                val btcTotal = assets
+                    .find { it.assetId == Constants.ChainId.BITCOIN_CHAIN_ID }
+                    ?.priceUsd
+                    ?.toBigDecimalOrNull()
+                    ?.takeIf { it > BigDecimal.ZERO }
+                    ?.let { bitcoinPriceUsd ->
+                        tokenFiat.divide(BigDecimal(Fiats.getRate()), 16, RoundingMode.HALF_UP)
+                            .divide(bitcoinPriceUsd, 16, RoundingMode.HALF_UP)
+                    } ?: tokenBtc
+                WalletHomeBalanceSnapshot(
+                    fiatTotal = tokenFiat.numberFormat2(),
+                    tokenFiatTotal = tokenFiat.numberFormat2(),
+                    btcTotal = formatWalletHomeBtcTotal(btcTotal),
+                    fiatSymbol = Fiats.getSymbol(),
+                    totalTokenCount = assets.size,
+                )
+            }
+            WalletHomeBalanceHandoff.savePrivacyBalance(snapshot)
             WalletActivity.show(requireActivity(), WalletActivity.Destination.AllTokens)
         }
 

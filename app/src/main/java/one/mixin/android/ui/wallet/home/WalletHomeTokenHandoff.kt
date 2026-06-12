@@ -1,41 +1,37 @@
 package one.mixin.android.ui.wallet.home
 
-import one.mixin.android.db.web3.vo.Web3TokenItem
-import one.mixin.android.vo.safe.TokenItem
-
-object WalletHomeTokenHandoff {
-    private var privacyTokens: List<TokenItem> = emptyList()
-    private val web3Tokens = mutableMapOf<String, List<Web3TokenItem>>()
+object WalletHomeBalanceHandoff {
+    private var privacyBalance: WalletHomeBalanceSnapshot? = null
+    private val web3Balance = mutableMapOf<String, WalletHomeBalanceSnapshot>()
 
     @Synchronized
-    fun savePrivacyTokens(tokens: List<TokenItem>) {
-        privacyTokens = tokens.toList()
+    fun savePrivacyBalance(snapshot: WalletHomeBalanceSnapshot) {
+        privacyBalance = snapshot
     }
 
     @Synchronized
-    fun consumePrivacyTokens(): List<TokenItem> {
-        val tokens = privacyTokens
-        privacyTokens = emptyList()
-        return tokens
+    fun consumePrivacyBalance(): WalletHomeBalanceSnapshot? {
+        val snapshot = privacyBalance
+        privacyBalance = null
+        return snapshot
     }
 
     @Synchronized
-    fun saveWeb3Tokens(
+    fun saveWeb3Balance(
         walletId: String,
-        tokens: List<Web3TokenItem>,
+        snapshot: WalletHomeBalanceSnapshot,
     ) {
         if (walletId.isNotEmpty()) {
-            web3Tokens[walletId] = tokens.toList()
+            web3Balance[walletId] = snapshot
         }
     }
 
     @Synchronized
-    fun consumeWeb3Tokens(walletId: String): List<Web3TokenItem> =
-        web3Tokens.remove(walletId).orEmpty()
+    fun consumeWeb3Balance(walletId: String): WalletHomeBalanceSnapshot? = web3Balance.remove(walletId)
 
     @Synchronized
     fun clear() {
-        privacyTokens = emptyList()
-        web3Tokens.clear()
+        privacyBalance = null
+        web3Balance.clear()
     }
 }

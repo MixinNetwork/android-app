@@ -1,7 +1,7 @@
 package one.mixin.android.ui.wallet.home.components
 
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -20,11 +20,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
@@ -38,10 +35,10 @@ import one.mixin.android.ui.wallet.home.PrivacyTransactionRecycler
 import one.mixin.android.ui.wallet.home.WalletHomeCallbacks
 import one.mixin.android.ui.wallet.home.WalletHomeCardType
 import one.mixin.android.ui.wallet.home.WalletHomeImportKeyAction
+import one.mixin.android.ui.wallet.home.WalletHomePositionSummary
 import one.mixin.android.ui.wallet.home.WalletHomeSection
 import one.mixin.android.ui.wallet.home.WalletHomeSection.PREVIEW_LIMIT
 import one.mixin.android.ui.wallet.home.WalletHomeState
-import one.mixin.android.ui.wallet.home.WalletHomePositionSummary
 import one.mixin.android.ui.wallet.home.WalletHomeType
 import one.mixin.android.ui.wallet.home.Web3TokenRecycler
 import one.mixin.android.ui.wallet.home.Web3TransactionRecycler

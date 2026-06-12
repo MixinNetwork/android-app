@@ -1,6 +1,5 @@
 package one.mixin.android.ui.wallet.components
 
-import one.mixin.android.ui.home.web3.components.PageScaffold
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -59,6 +58,7 @@ import one.mixin.android.crypto.isSolanaHexPrivateKeyValid
 import one.mixin.android.crypto.isSolanaPrivateKeyValid
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.home.web3.Web3ViewModel
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.wallet.WalletSecurityActivity
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.encodeToBase58String

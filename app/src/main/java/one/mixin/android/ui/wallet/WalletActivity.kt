@@ -17,7 +17,6 @@ import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.common.biometric.BiometricItem
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET
-import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET_SOURCE
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_FROM_MARKET
 import one.mixin.android.ui.wallet.fiatmoney.CalculateFragment

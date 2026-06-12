@@ -282,7 +282,7 @@ private fun PendingIndicator(
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f, fill = false),
         )
-        if (indicator.kind == WalletHomePendingKind.SINGLE_DEPOSIT || indicator.kind == WalletHomePendingKind.MULTIPLE_DEPOSITS) {
+        if (indicator.showsArrow()) {
             Image(
                 painter = painterResource(id = R.drawable.ic_arrow_gray_right),
                 contentDescription = null,
@@ -291,6 +291,12 @@ private fun PendingIndicator(
         }
     }
 }
+
+private fun WalletHomePendingIndicator.showsArrow(): Boolean =
+    kind == WalletHomePendingKind.SINGLE_DEPOSIT ||
+        kind == WalletHomePendingKind.MULTIPLE_DEPOSITS ||
+        kind == WalletHomePendingKind.SINGLE_TRANSACTION ||
+        kind == WalletHomePendingKind.MULTIPLE_TRANSACTIONS
 
 @Composable
 private fun PendingIconGroup(indicator: WalletHomePendingIndicator) {

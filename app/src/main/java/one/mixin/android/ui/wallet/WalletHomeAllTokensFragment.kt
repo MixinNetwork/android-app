@@ -17,9 +17,12 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
-import one.mixin.android.api.response.perps.PerpsPositionItem
-import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.response.perps.PerpsPositionItem
+import one.mixin.android.databinding.FragmentWalletHomeAllTokensBinding
+import one.mixin.android.databinding.ViewClassicWalletBottomBinding
+import one.mixin.android.databinding.ViewPrivacyWalletBottomBinding
 import one.mixin.android.db.web3.vo.WalletItem
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
@@ -28,29 +31,27 @@ import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.db.web3.vo.isMixinSafe
 import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.db.web3.vo.toWeb3Wallet
-import one.mixin.android.databinding.FragmentWalletHomeAllTokensBinding
-import one.mixin.android.databinding.ViewClassicWalletBottomBinding
-import one.mixin.android.databinding.ViewPrivacyWalletBottomBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
-import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
-import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
+import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.home.web3.trade.perps.PerpetualViewModel
 import one.mixin.android.ui.wallet.home.WalletHomeCallbacks
 import one.mixin.android.ui.wallet.home.WalletHomeCardType
 import one.mixin.android.ui.wallet.home.WalletHomeImportKeyAction
 import one.mixin.android.ui.wallet.home.WalletHomeImportKeyKind
 import one.mixin.android.ui.wallet.home.WalletHomeState
-import one.mixin.android.ui.wallet.home.WalletHomeTokenHandoff
+import one.mixin.android.ui.wallet.home.WalletHomeBalanceHandoff
+import one.mixin.android.ui.wallet.home.WalletHomeBalanceSnapshot
 import one.mixin.android.ui.wallet.home.WalletHomeType
 import one.mixin.android.ui.wallet.home.calculateWalletHomeTotalFiat
-import one.mixin.android.ui.wallet.home.formatWalletHomeBtcTotal
 import one.mixin.android.ui.wallet.home.components.WalletHomeAllTokensPage
+import one.mixin.android.ui.wallet.home.formatWalletHomeBtcTotal
 import one.mixin.android.ui.wallet.home.positionMarginUsdTotal
 import one.mixin.android.ui.wallet.home.toWalletHomePendingIndicator
 import one.mixin.android.ui.wallet.home.walletHomeImportKeyAction
@@ -66,11 +67,11 @@ import one.mixin.android.vo.safe.toSnapshot
 import one.mixin.android.web3.details.Web3TransactionFragment
 import one.mixin.android.web3.details.Web3TransactionsFragment
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
-import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE as WEB3_TYPE_FROM_RECEIVE
-import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_SEND as WEB3_TYPE_FROM_SEND
 import one.mixin.android.widget.BottomSheet
 import java.math.BigDecimal
 import java.math.RoundingMode
+import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE as WEB3_TYPE_FROM_RECEIVE
+import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_SEND as WEB3_TYPE_FROM_SEND
 
 @AndroidEntryPoint
 class WalletHomeAllTokensFragment : BaseFragment() {
@@ -91,6 +92,7 @@ class WalletHomeAllTokensFragment : BaseFragment() {
     private val homeState = MutableStateFlow(WalletHomeState(walletType = WalletHomeType.PRIVACY))
     private var privacyTokens: List<TokenItem> = emptyList()
     private var web3Tokens: List<Web3TokenItem> = emptyList()
+    private var balanceSnapshot: WalletHomeBalanceSnapshot? = null
     private var positions: List<PerpsPositionItem> = emptyList()
     private var pendingTxCount: Int = 0
     private var pendingDisplays: List<PendingDisplay> = emptyList()
@@ -176,7 +178,7 @@ class WalletHomeAllTokensFragment : BaseFragment() {
             }
         }
 
-        applyInitialTokenSnapshot()
+        applyInitialBalanceSnapshot()
         walletViewModel.getPendingDisplays().observe(viewLifecycleOwner) {
             pendingDisplays = it
             renderHome()
@@ -240,19 +242,14 @@ class WalletHomeAllTokensFragment : BaseFragment() {
         renderHome()
     }
 
-    private fun applyInitialTokenSnapshot() {
-        if (walletType == WalletHomeType.PRIVACY) {
-            val tokens = WalletHomeTokenHandoff.consumePrivacyTokens()
-            if (tokens.isNotEmpty()) {
-                privacyTokens = tokens
-                renderHome()
-            }
+    private fun applyInitialBalanceSnapshot() {
+        balanceSnapshot = if (walletType == WalletHomeType.PRIVACY) {
+            WalletHomeBalanceHandoff.consumePrivacyBalance()
         } else {
-            val tokens = WalletHomeTokenHandoff.consumeWeb3Tokens(walletId)
-            if (tokens.isNotEmpty()) {
-                web3Tokens = tokens
-                renderHome()
-            }
+            WalletHomeBalanceHandoff.consumeWeb3Balance(walletId)
+        }
+        if (balanceSnapshot != null) {
+            renderHome()
         }
     }
 
@@ -343,6 +340,20 @@ class WalletHomeAllTokensFragment : BaseFragment() {
     }
 
     private fun buildPrivacyState(): WalletHomeState {
+        balanceSnapshot?.let { snapshot ->
+            if (privacyTokens.isEmpty()) {
+                return WalletHomeState(
+                    walletType = WalletHomeType.PRIVACY,
+                    cards = listOf(WalletHomeCardType.BALANCE),
+                    fiatTotal = snapshot.fiatTotal,
+                    tokenFiatTotal = snapshot.tokenFiatTotal,
+                    btcTotal = snapshot.btcTotal,
+                    fiatSymbol = snapshot.fiatSymbol,
+                    totalTokenCount = snapshot.totalTokenCount,
+                    pendingIndicator = pendingDisplays.toWalletHomePendingIndicator(),
+                )
+            }
+        }
         val tokenFiat = privacyTokens.fold(BigDecimal.ZERO) { acc, item -> acc + item.fiat() }
         val totalFiat = calculateWalletHomeTotalFiat(tokenFiat, positions.positionMarginUsdTotal())
         val tokenBtc = privacyTokens.fold(BigDecimal.ZERO) { acc, item -> acc + item.btc() }
@@ -369,6 +380,23 @@ class WalletHomeAllTokensFragment : BaseFragment() {
     }
 
     private fun buildWeb3State(): WalletHomeState {
+        balanceSnapshot?.let { snapshot ->
+            if (web3Tokens.isEmpty()) {
+                return WalletHomeState(
+                    walletType = WalletHomeType.CLASSIC,
+                    cards = listOf(WalletHomeCardType.BALANCE),
+                    fiatTotal = snapshot.fiatTotal,
+                    tokenFiatTotal = snapshot.tokenFiatTotal,
+                    btcTotal = snapshot.btcTotal,
+                    fiatSymbol = snapshot.fiatSymbol,
+                    totalTokenCount = snapshot.totalTokenCount,
+                    isWatchWallet = wallet?.isWatch() == true,
+                    importKeyAction = importKeyAction,
+                    pendingIndicator = walletHomePendingTransactionIndicator(pendingTxCount) ?: pendingDisplays.toWalletHomePendingIndicator(),
+                    hideActions = shouldHideWeb3Actions(),
+                )
+            }
+        }
         val totalFiat = web3Tokens.fold(BigDecimal.ZERO) { acc, item -> acc + item.fiat() }
         val totalBtc = bitcoinPriceUsd?.let { priceUsd ->
             totalFiat

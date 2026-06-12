@@ -50,6 +50,14 @@ data class WalletHomePositionSummary(
     val isProfit: Boolean?,
 )
 
+data class WalletHomeBalanceSnapshot(
+    val fiatTotal: String,
+    val tokenFiatTotal: String?,
+    val btcTotal: String,
+    val fiatSymbol: String,
+    val totalTokenCount: Int,
+)
+
 interface WalletHomeCallbacks {
     fun onAddWalletClicked()
     fun onBannerClosed()
