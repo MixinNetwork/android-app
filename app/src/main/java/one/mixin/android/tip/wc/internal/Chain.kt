@@ -33,7 +33,7 @@ sealed class Chain(
 
     object HyperEVM : Chain(Constants.ChainId.HyperEVM, "eip155", "999", "0x3e7", "HyperEVM", "HYPE", listOf("https://rpc.hyperliquid.xyz/evm"))
 
-    object Solana : Chain(SOLANA_CHAIN_ID, "solana", "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ", "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ", "Solana", "SOL", listOf("https://api.mainnet-beta.solana.com"))
+    object Solana : Chain(SOLANA_CHAIN_ID, "solana", "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp", "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp", "Solana", "SOL", listOf("https://api.mainnet-beta.solana.com"))
 
     object Bitcoin : Chain(BITCOIN_CHAIN_ID, "bip122", "000000000019d6689c085ae165831e93", "000000000019d6689c085ae165831e93", "Bitcoin", "BTC", listOf(""))
 
@@ -183,10 +183,10 @@ private fun getSolanaNamespaces(address: String): Map<String, Wallet.Model.Names
     return mapOf(
         "solana" to
             Wallet.Model.Namespace.Session(
-                chains = listOf("solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ"),
+                chains = listOf(Chain.Solana.chainId),
                 methods = solanaSupportedMethods,
                 events = listOf(""),
-                accounts = listOf("solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ:$address"),
+                accounts = listOf("${Chain.Solana.chainId}:$address"),
             ),
     )
 }

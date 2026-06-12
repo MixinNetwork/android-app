@@ -9,6 +9,12 @@ import kotlin.test.assertTrue
 
 class WalletConnectNamespaceTest {
     @Test
+    fun solanaChainIdUsesMainnetCaip2Reference() {
+        assertEquals("solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp", Chain.Solana.chainId)
+        assertEquals(Chain.Solana, getChainByChainId("solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"))
+    }
+
+    @Test
     fun supportedNamespacesIncludeEveryAvailableWalletAddress() {
         val evmAddress = "0x1111111111111111111111111111111111111111"
         val solanaAddress = "So11111111111111111111111111111111111111112"
