@@ -2550,7 +2550,7 @@ class ConversationFragment() :
 
         val spotTradeAction = action.toSpotTradeAction() ?: return false
         if (!hasLocalSpotTradeData(spotTradeAction)) return false
-        val context = context ?: return true
+        val context = context ?: return false
 
         AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.APP_CARD)
         defaultSharedPreferences.putInt(
@@ -2578,7 +2578,7 @@ class ConversationFragment() :
         val market = withContext(Dispatchers.IO) {
             perpsMarketDao.getMarket(perpsTradeAction.marketId)
         } ?: return false
-        val context = context ?: return true
+        val context = context ?: return false
 
         PerpsActivity.showDetail(
             context,

@@ -40,7 +40,7 @@ internal fun String.toSpotTradeAction(): SpotTradeAction? {
         return null
     }
 
-    val query = runCatching { URI(this).rawQuery }.getOrNull()
+    val query = runCatching { URI(this).rawQuery }.getOrElse { return null }
     val type = query?.queryParameter("type")
     if (type.equals("perps", true) || type.equals("perpetual", true)) {
         return null
@@ -71,5 +71,5 @@ private fun String.queryParameter(name: String): String? =
         }
         .firstOrNull()
 
-private fun String.urlDecode(): String =
-    URLDecoder.decode(this, StandardCharsets.UTF_8.name())
+private fun String.urlDecode(): String? =
+    runCatching { URLDecoder.decode(this, StandardCharsets.UTF_8.name()) }.getOrNull()

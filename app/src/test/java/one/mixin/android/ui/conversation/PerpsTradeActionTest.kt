@@ -71,4 +71,12 @@ class PerpsTradeActionTest {
 
         assertNull(action.toPerpsTradeAction())
     }
+
+    @Test
+    fun ignoresMalformedEncodedTradeAction() {
+        val action = "https://mixin.one/trade?type=%ZZ&market=e015f42e-b0ff-38e7-87b1-7e8d46fea119"
+
+        assertNull(action.toPerpsTradeAction())
+        assertNull(action.toSpotTradeAction())
+    }
 }
