@@ -8,10 +8,26 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class WalletConnectNamespaceTest {
+    private val legacySolanaChainId = "solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ"
+
     @Test
     fun solanaChainIdUsesMainnetCaip2Reference() {
         assertEquals("solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp", Chain.Solana.chainId)
         assertEquals(Chain.Solana, getChainByChainId("solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"))
+    }
+
+    @Test
+    fun legacySolanaChainIdResolvesToSolana() {
+        val addresses = WalletConnectAddresses(
+            evm = "0x1111111111111111111111111111111111111111",
+            solana = "So11111111111111111111111111111111111111112",
+            bitcoin = "bc1qcr8te4kr609gcawutmrza0j4xv80jy8z306fyu",
+        )
+
+        assertEquals(Chain.Solana, getChainByChainId(legacySolanaChainId))
+        assertEquals(Chain.Solana, legacySolanaChainId.getChain())
+        assertEquals(addresses.solana, addresses.accountForChainId(legacySolanaChainId))
+        assertTrue(isSupportedMethodForChain(Method.SolanaSignMessage.name, legacySolanaChainId))
     }
 
     @Test
@@ -32,8 +48,8 @@ class WalletConnectNamespaceTest {
         assertEquals(evmChainList.map { it.chainId }, namespaces.getValue("eip155").chains)
         assertTrue(namespaces.getValue("eip155").accounts.contains("${Chain.Ethereum.chainId}:$evmAddress"))
         assertFalse(namespaces.getValue("eip155").methods.contains(Method.SolanaSignMessage.name))
-        assertEquals(listOf(Chain.Solana.chainId), namespaces.getValue("solana").chains)
-        assertEquals(listOf("${Chain.Solana.chainId}:$solanaAddress"), namespaces.getValue("solana").accounts)
+        assertEquals(listOf(Chain.Solana.chainId, legacySolanaChainId), namespaces.getValue("solana").chains)
+        assertEquals(listOf("${Chain.Solana.chainId}:$solanaAddress", "$legacySolanaChainId:$solanaAddress"), namespaces.getValue("solana").accounts)
         assertEquals(listOf(Chain.Bitcoin.chainId), namespaces.getValue("bip122").chains)
         assertEquals(listOf("${Chain.Bitcoin.chainId}:$bitcoinAddress"), namespaces.getValue("bip122").accounts)
         assertTrue(namespaces.getValue("bip122").methods.contains(Method.BtcGetAccountAddresses.name))
@@ -83,6 +99,17 @@ class WalletConnectNamespaceTest {
         )
 
         assertEquals("", formatProposalAccountText(setOf(Chain.Solana.chainId), addresses))
+    }
+
+    @Test
+    fun proposalAccountTextAcceptsLegacySolanaChainId() {
+        val addresses = WalletConnectAddresses(
+            evm = "0x1111111111111111111111111111111111111111",
+            solana = "So11111111111111111111111111111111111111112",
+            bitcoin = "",
+        )
+
+        assertEquals("${Chain.Solana.name}: ${addresses.solana}", formatProposalAccountText(setOf(legacySolanaChainId), addresses))
     }
 
     @Test
@@ -137,8 +164,8 @@ class WalletConnectNamespaceTest {
                     ),
                 "solana" to
                     Wallet.Model.Namespace.Session(
-                        chains = listOf(Chain.Solana.chainId),
-                        accounts = listOf("${Chain.Solana.chainId}:OldSolanaAddress"),
+                        chains = listOf(legacySolanaChainId),
+                        accounts = listOf("$legacySolanaChainId:OldSolanaAddress"),
                         methods = solanaSupportedMethods,
                         events = emptyList(),
                     ),
@@ -165,7 +192,7 @@ class WalletConnectNamespaceTest {
             listOf("${Chain.Ethereum.chainId}:$evmAddress", "${Chain.Base.chainId}:$evmAddress"),
             updated?.getValue("eip155")?.accounts,
         )
-        assertEquals(listOf("${Chain.Solana.chainId}:$solanaAddress"), updated?.getValue("solana")?.accounts)
+        assertEquals(listOf("$legacySolanaChainId:$solanaAddress"), updated?.getValue("solana")?.accounts)
         assertEquals(listOf("${Chain.Bitcoin.chainId}:$bitcoinAddress"), updated?.getValue("bip122")?.accounts)
     }
 }

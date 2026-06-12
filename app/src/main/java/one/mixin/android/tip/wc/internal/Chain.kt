@@ -16,6 +16,7 @@ sealed class Chain(
     val name: String,
     val symbol: String,
     private val rpcServers: List<String>,
+    private val walletConnectChainIdAliases: List<String> = emptyList(),
 ) {
     object Ethereum : Chain(ETHEREUM_CHAIN_ID, "eip155", "1", "0x1", "Ethereum", "ETH", listOf("https://eth.llamarpc.com"))
 
@@ -33,7 +34,16 @@ sealed class Chain(
 
     object HyperEVM : Chain(Constants.ChainId.HyperEVM, "eip155", "999", "0x3e7", "HyperEVM", "HYPE", listOf("https://rpc.hyperliquid.xyz/evm"))
 
-    object Solana : Chain(SOLANA_CHAIN_ID, "solana", "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp", "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp", "Solana", "SOL", listOf("https://api.mainnet-beta.solana.com"))
+    object Solana : Chain(
+        SOLANA_CHAIN_ID,
+        "solana",
+        "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "Solana",
+        "SOL",
+        listOf("https://api.mainnet-beta.solana.com"),
+        listOf("solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ"),
+    )
 
     object Bitcoin : Chain(BITCOIN_CHAIN_ID, "bip122", "000000000019d6689c085ae165831e93", "000000000019d6689c085ae165831e93", "Bitcoin", "BTC", listOf(""))
 
@@ -42,10 +52,15 @@ sealed class Chain(
             return "$chainNamespace:$chainReference"
         }
 
+    val walletConnectChainIds: List<String>
+        get() = listOf(chainId) + walletConnectChainIdAliases
+
     val rpcUrl: String
         get() {
             return MixinApplication.appContext.defaultSharedPreferences.getString(chainId, null) ?: rpcServers.first()
         }
+
+    fun supportsWalletConnectChainId(chainId: String): Boolean = chainId in walletConnectChainIds
 
     fun getWeb3ChainId(): String =
         // Blast ->  Constants.ChainId.
@@ -107,36 +122,16 @@ internal fun buildUpdatedNamespaces(
     }
 
 internal fun String.getChain(): Chain? {
-    return when (this) {
-        Chain.Ethereum.chainReference -> Chain.Ethereum
-        Chain.Base.chainReference -> Chain.Base
-        Chain.Arbitrum.chainReference -> Chain.Arbitrum
-        Chain.Optimism.chainReference -> Chain.Optimism
-        Chain.Avalanche.chainReference -> Chain.Avalanche
-        Chain.BinanceSmartChain.chainReference -> Chain.BinanceSmartChain
-        Chain.Polygon.chainReference -> Chain.Polygon
-        Chain.HyperEVM.chainReference -> Chain.HyperEVM
-        Chain.Solana.chainId -> Chain.Solana
-        Chain.Bitcoin.chainId -> Chain.Bitcoin
-        else -> null
+    return supportChainList.firstOrNull { chain ->
+        this == chain.chainReference || chain.supportsWalletConnectChainId(this)
     }
 }
 
 internal fun getChainByChainId(chainId: String?): Chain? {
     if (chainId == null) return null
 
-    return when (chainId) {
-        Chain.Ethereum.chainId -> Chain.Ethereum
-        Chain.Base.chainId -> Chain.Base
-        Chain.Arbitrum.chainId -> Chain.Arbitrum
-        Chain.Optimism.chainId -> Chain.Optimism
-        Chain.Avalanche.chainId -> Chain.Avalanche
-        Chain.BinanceSmartChain.chainId -> Chain.BinanceSmartChain
-        Chain.Polygon.chainId -> Chain.Polygon
-        Chain.HyperEVM.chainId -> Chain.HyperEVM
-        Chain.Solana.chainId -> Chain.Solana
-        Chain.Bitcoin.chainId -> Chain.Bitcoin
-        else -> null
+    return supportChainList.firstOrNull { chain ->
+        chain.supportsWalletConnectChainId(chainId)
     }
 }
 
@@ -180,13 +175,14 @@ private fun getBitcoinNamespaces(address: String): Map<String, Wallet.Model.Name
 }
 
 private fun getSolanaNamespaces(address: String): Map<String, Wallet.Model.Namespace.Session> {
+    val chainIds = Chain.Solana.walletConnectChainIds
     return mapOf(
         "solana" to
             Wallet.Model.Namespace.Session(
-                chains = listOf(Chain.Solana.chainId),
+                chains = chainIds,
                 methods = solanaSupportedMethods,
                 events = listOf(""),
-                accounts = listOf("${Chain.Solana.chainId}:$address"),
+                accounts = chainIds.map { chainId -> "$chainId:$address" },
             ),
     )
 }
