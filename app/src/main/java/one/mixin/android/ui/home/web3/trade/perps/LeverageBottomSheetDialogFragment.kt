@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -155,6 +156,8 @@ private fun LeverageContent(
     var tempLeverage by remember(currentLeverage, boundedMaxLeverage) {
         mutableIntStateOf(currentLeverage.roundToInt().coerceIn(1, boundedMaxLeverage))
     }
+    val stepperEdgePadding = (LocalConfiguration.current.screenWidthDp.dp * 0.16f).coerceAtMost(60.dp)
+    val stepperTouchPadding = (stepperEdgePadding - 8.dp).coerceAtLeast(0.dp)
 
     Column(
         modifier = Modifier
@@ -188,7 +191,7 @@ private fun LeverageContent(
                     onClick = { tempLeverage = (tempLeverage - 1).coerceAtLeast(1) },
                     modifier = Modifier
                         .align(Alignment.CenterStart)
-                        .padding(start = 60.dp),
+                        .padding(start = stepperTouchPadding),
                 )
                 Box(contentAlignment = Alignment.Center) {
                     Text(
@@ -212,7 +215,7 @@ private fun LeverageContent(
                     onClick = { tempLeverage = (tempLeverage + 1).coerceAtMost(boundedMaxLeverage) },
                     modifier = Modifier
                         .align(Alignment.CenterEnd)
-                        .padding(end = 60.dp),
+                        .padding(end = stepperTouchPadding),
                 )
             }
 
@@ -320,19 +323,26 @@ private fun LeverageStepperButton(
 ) {
     Box(
         modifier = modifier
-            .size(32.dp)
+            .size(48.dp)
             .clip(CircleShape)
-            .background(MixinAppTheme.colors.backgroundWindow)
             .alpha(if (enabled) 1f else 0.5f)
             .clickable(enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
-        Icon(
-            painter = painterResource(id = iconRes),
-            contentDescription = null,
-            tint = Color.Unspecified,
-            modifier = Modifier.size(18.dp),
-        )
+        Box(
+            modifier = Modifier
+                .size(32.dp)
+                .clip(CircleShape)
+                .background(MixinAppTheme.colors.backgroundWindow),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                painter = painterResource(id = iconRes),
+                contentDescription = null,
+                tint = Color.Unspecified,
+                modifier = Modifier.size(16.dp),
+            )
+        }
     }
 }
 
