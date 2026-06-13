@@ -2364,6 +2364,15 @@
     <string name="perps_liquidation_price_key_point_1">Liquidation is triggered by mark price</string>
     <string name="perps_liquidation_price_key_point_2">Liquidation does not affect other assets in your wallet</string>
     <string name="perps_liquidation_price_key_point_3">Higher leverage increases the risk of liquidation</string>
+    <string name="perps_funding_rate_overview">Funding rate is a fee paid or received between long and short traders to keep the perpetual price close to the spot price. When positive, longs pay shorts. When negative, shorts pay longs.</string>
+    <string name="perps_funding_rate_purpose">Purpose</string>
+    <string name="perps_funding_rate_key_point_1">Keep perp prices close to spot prices</string>
+    <string name="perps_funding_rate_key_point_2">Balance long and short positions</string>
+    <string name="perps_funding_rate_key_point_3">Create arbitrage opportunities</string>
+    <string name="perps_funding_frequency">Frequency</string>
+    <string name="perps_funding_frequency_value">8 hours</string>
+    <string name="perps_receive">Receive</string>
+    <string name="perps_liquidation_price_short">Liq. Price</string>
     <string name="Take_Profit_When">Take Profit When</string>
     <string name="Stop_Loss_When">Stop Loss When</string>
     <string name="profit_reaches_percent">Profit reaches %</string>

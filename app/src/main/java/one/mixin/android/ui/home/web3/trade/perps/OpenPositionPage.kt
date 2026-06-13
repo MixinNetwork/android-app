@@ -490,11 +490,27 @@ fun OpenPositionPage(
                     }
                 }
                 Spacer(modifier = Modifier.height(2.dp))
+                val showLeverageInput = {
+                    val activity = context as? FragmentActivity
+                    if (activity != null) {
+                        LeverageBottomSheetDialogFragment.newInstance(
+                            currentLeverage = leverage,
+                            maxLeverage = maxLeverage,
+                            amount = usdtAmount,
+                            isLong = isLong
+                        ).setOnLeverageSelected { newLeverage ->
+                            leverage = newLeverage
+                            context.defaultSharedPreferences.putInt(getLeveragePrefKey(marketId), newLeverage.toInt())
+                            AnalyticsTracker.trackPerpsLeverageSelect(PERPS_LEVERAGE_CUSTOM_INPUT)
+                        }.show(activity.supportFragmentManager, LeverageBottomSheetDialogFragment.TAG)
+                    }
+                }
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp))
                         .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
+                        .clickable(onClick = showLeverageInput)
                         .padding(16.dp)
                 ) {
 
@@ -521,10 +537,11 @@ fun OpenPositionPage(
                                 context.defaultSharedPreferences.putInt(getLeveragePrefKey(marketId), newLeverage.toInt())
                                 AnalyticsTracker.trackPerpsLeverageSelect(PERPS_LEVERAGE_CUSTOM_INPUT)
                             }.show(activity.supportFragmentManager, LeverageBottomSheetDialogFragment.TAG)
-                        },
+                        }.widthIn(min = 52.dp),
                         text = "${leverage.toInt()}x",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Black,
+                        textAlign = TextAlign.Center,
                         color = MixinAppTheme.colors.textPrimary
                     )
 

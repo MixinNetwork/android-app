@@ -380,6 +380,12 @@ fun PerpsMarketDetailPage(
                     }
                     MarketInfoCard(
                         market = market!!,
+                        onFundingRateTipClick = {
+                            val activity = context as? FragmentActivity ?: return@MarketInfoCard
+                            PerpetualGuideBottomSheetDialogFragment.newInstance(
+                                PerpetualGuideBottomSheetDialogFragment.TAB_FUNDING_RATE
+                            ).show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
+                        }
                     )
                 }
 
@@ -686,6 +692,7 @@ private fun HowPerpsWorksCard(
 @Composable
 private fun MarketInfoCard(
     market: PerpsMarket,
+    onFundingRateTipClick: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -707,11 +714,22 @@ private fun MarketInfoCard(
         )
 
         Spacer(modifier = Modifier.height(12.dp))
-        Text(
-            text = stringResource(R.string.Funding_Rate).uppercase(),
-            fontSize = 14.sp,
-            color = MixinAppTheme.colors.textAssist
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = stringResource(R.string.Funding_Rate).uppercase(),
+                fontSize = 14.sp,
+                color = MixinAppTheme.colors.textAssist
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Icon(
+                painter = painterResource(id = R.drawable.ic_tip),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(12.dp)
+                    .clickable(onClick = onFundingRateTipClick),
+                tint = MixinAppTheme.colors.textAssist
+            )
+        }
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = formatFundingRate(market.fundingRate),
