@@ -205,13 +205,6 @@ class WalletHomeAllTokensFragment : BaseFragment() {
         }
 
         if (walletType == WalletHomeType.PRIVACY) {
-            lifecycleScope.launch {
-                val tokens = walletViewModel.assetItemsNotHiddenRaw()
-                if (tokens.isNotEmpty()) {
-                    privacyTokens = tokens
-                    renderHome()
-                }
-            }
             walletViewModel.assetItemsNotHidden().observe(viewLifecycleOwner) { tokens ->
                 privacyTokens = tokens
                 renderHome()
@@ -223,13 +216,6 @@ class WalletHomeAllTokensFragment : BaseFragment() {
             }
         } else {
             _walletId.value = walletId
-            lifecycleScope.launch {
-                val tokens = web3ViewModel.web3TokensExcludeHiddenRaw(walletId)
-                if (tokens.isNotEmpty()) {
-                    web3Tokens = tokens
-                    renderHome()
-                }
-            }
             web3TokensLiveData.observe(viewLifecycleOwner) { tokens ->
                 web3Tokens = tokens
                 renderHome()

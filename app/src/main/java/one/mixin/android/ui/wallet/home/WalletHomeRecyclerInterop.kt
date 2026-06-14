@@ -290,7 +290,7 @@ private fun WalletHomeItemColumn(
 }
 
 @Composable
-private fun PrivacyWalletTokenItem(
+fun PrivacyWalletTokenItem(
     token: TokenItem,
     onClick: () -> Unit,
 ) {
@@ -313,7 +313,7 @@ private fun PrivacyWalletTokenItem(
 }
 
 @Composable
-private fun Web3WalletTokenItem(
+fun Web3WalletTokenItem(
     token: Web3TokenItem,
     onClick: () -> Unit,
 ) {
