@@ -2,6 +2,11 @@ package one.mixin.android.util.analytics
 
 import java.math.BigDecimal
 
+internal data class AnalyticsEvent(
+    val name: String,
+    val params: Map<String, String> = emptyMap(),
+)
+
 internal object AnalyticsRules {
     private const val NON_ORGANIC = "Non-Organic"
 
@@ -19,6 +24,9 @@ internal object AnalyticsRules {
         "trade_perps_open_position_end",
         "asset_send_start",
         "asset_send_end",
+        "share_market",
+        "hide_asset",
+        "show_asset",
     )
 
     fun appsFlyerEventName(eventName: String): String? =
@@ -42,6 +50,32 @@ internal object AnalyticsRules {
         }
         return properties
     }
+
+    fun marketShareEvent(type: String) =
+        AnalyticsEvent("share_market", mapOf("type" to type))
+
+    fun spotOrdersEvent(type: String) =
+        AnalyticsEvent("trade_spot_orders", mapOf("type" to type))
+
+    fun spotOrderDetailEvent(type: String) =
+        AnalyticsEvent("trade_spot_order_detail", mapOf("type" to type))
+
+    fun assetVisibilityEvent(
+        hidden: Boolean,
+        wallet: String,
+        source: String,
+    ) =
+        if (hidden) {
+            AnalyticsEvent(
+                "hide_asset",
+                mapOf(
+                    "wallet" to wallet,
+                    "source" to source,
+                ),
+            )
+        } else {
+            AnalyticsEvent("show_asset", mapOf("wallet" to wallet))
+        }
 
     fun receiveAssetLevel(amountUsd: BigDecimal): String =
         when {

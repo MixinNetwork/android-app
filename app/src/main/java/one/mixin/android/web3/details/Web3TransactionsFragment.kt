@@ -447,8 +447,10 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
             
             hide.setText(if (token.hidden == true) R.string.Show else R.string.Hide)
             hide.setOnClickListener {
+                val hidden = token.hidden != true
+                AnalyticsTracker.trackAssetVisibility(hidden, TradeWallet.WEB3, AnalyticsTracker.AssetSource.ASSET_DETAIL)
                 lifecycleScope.launch(Dispatchers.IO) {
-                    web3ViewModel.updateTokenHidden(token.assetId, token.walletId, token.hidden != true)
+                    web3ViewModel.updateTokenHidden(token.assetId, token.walletId, hidden)
                 }
                 bottomSheet.dismiss()
                 mainThreadDelayed({ activity?.onBackPressedDispatcher?.onBackPressed() }, 200)

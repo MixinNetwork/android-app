@@ -138,21 +138,22 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
             close.setOnClickListener { dismiss() }
             share.setOnClickListener {
                 if (isLoading) return@setOnClickListener
-                AnalyticsTracker.trackMarketDetailShare(AnalyticsTracker.MarketShareType.SHARE_IMAGE)
+                AnalyticsTracker.trackShareMarket(AnalyticsTracker.MarketShareType.SHARE_IMAGE)
                 shareToSystem()
             }
             mixinContact.setOnClickListener {
                 if (isLoading) return@setOnClickListener
+                AnalyticsTracker.trackShareMarket(AnalyticsTracker.MarketShareType.MIXIN_CONTACT)
                 shareToMixinContact()
             }
             copy.setOnClickListener {
                 if (isLoading) return@setOnClickListener
-                AnalyticsTracker.trackMarketDetailShare(AnalyticsTracker.MarketShareType.COPY_LINK)
+                AnalyticsTracker.trackShareMarket(AnalyticsTracker.MarketShareType.COPY_LINK)
                 copyLink()
             }
             save.setOnClickListener {
                 if (isLoading) return@setOnClickListener
-                AnalyticsTracker.trackMarketDetailShare(AnalyticsTracker.MarketShareType.SAVE_TO_ALBUM)
+                AnalyticsTracker.trackShareMarket(AnalyticsTracker.MarketShareType.SAVE_TO_ALBUM)
                 saveToAlbum()
             }
         }

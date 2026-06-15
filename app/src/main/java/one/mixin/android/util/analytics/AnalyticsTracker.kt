@@ -22,6 +22,17 @@ object AnalyticsTracker {
         logEvent(name, Bundle().apply(block))
     }
 
+    private fun logEvent(event: AnalyticsEvent) {
+        logEvent(
+            event.name,
+            Bundle().apply {
+                event.params.forEach { (key, value) ->
+                    putString(key, value)
+                }
+            }.takeIf { event.params.isNotEmpty() },
+        )
+    }
+
     private fun logEvent(name: String, params: Bundle?) {
         firebaseAnalytics.logEvent(name, params)
         if (BuildConfig.APPSFLYER_DEV_KEY.isBlank()) {
@@ -173,8 +184,8 @@ object AnalyticsTracker {
         }
     }
 
-    fun trackAssetDetailHide() {
-        logEvent("asset_detail_hide")
+    fun trackAssetVisibility(hidden: Boolean, wallet: String, source: String) {
+        logEvent(AnalyticsRules.assetVisibilityEvent(hidden, wallet, source))
     }
 
     fun trackAllTransactions(source: String) {
@@ -520,6 +531,7 @@ object AnalyticsTracker {
 
     object MarketShareType {
         const val SHARE_IMAGE = "share_image"
+        const val MIXIN_CONTACT = "mixin_contact"
         const val COPY_LINK = "copy_link"
         const val SAVE_TO_ALBUM = "save_to_album"
     }
@@ -795,15 +807,11 @@ object AnalyticsTracker {
     }
 
     fun trackSpotTransactions(type: String) {
-        logEvent("trade_spot_transactions") {
-            putString("type", type)
-        }
+        logEvent(AnalyticsRules.spotOrdersEvent(type))
     }
 
     fun trackSpotDetail(type: String) {
-        logEvent("trade_spot_detail") {
-            putString("type", type)
-        }
+        logEvent(AnalyticsRules.spotOrderDetailEvent(type))
     }
 
     fun trackSpotGuide(type: String, source: String) {
@@ -892,10 +900,8 @@ object AnalyticsTracker {
         }
     }
 
-    fun trackMarketDetailShare(type: String) {
-        logEvent("market_detail_share") {
-            putString("type", type)
-        }
+    fun trackShareMarket(type: String) {
+        logEvent(AnalyticsRules.marketShareEvent(type))
     }
 
     fun trackMarketFavoriteAdd(source: String) {
