@@ -8,8 +8,6 @@ import android.text.Selection
 import android.text.TextWatcher
 import android.view.View
 import android.view.View.AUTOFILL_HINT_PHONE
-import android.view.ViewGroup
-import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.WindowManager
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -261,6 +259,12 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
         setupFocusListeners()
     }
 
+    override fun onDestroyView() {
+        captchaView?.release()
+        captchaView = null
+        super.onDestroyView()
+    }
+
     private fun applySafeTopPadding(rootView: View) {
         val originalPaddingTop: Int = rootView.paddingTop
         ViewCompat.setOnApplyWindowInsetsListener(rootView) { v: View, insets: WindowInsetsCompat ->
@@ -304,10 +308,6 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
     }
 
     override fun onBackPressed(): Boolean {
-        if (captchaView?.isVisible() == true) {
-            hideLoading()
-            return true
-        }
         if (binding.keyboard.translationY == 0f) {
             binding.mobileEt.clearFocus()
             binding.countryCodeEt.clearFocus()
@@ -466,7 +466,6 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                             }
                         },
                     )
-                (view as ViewGroup).addView(captchaView?.webView, MATCH_PARENT, MATCH_PARENT)
             }
             val captchaType = if (errorDescription.containsIgnoreCase(gtCAPTCHA)) {
                 CaptchaView.CaptchaType.GTCaptcha
