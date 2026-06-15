@@ -130,6 +130,17 @@ class StringExtensionTest {
     }
 
     @Test
+    fun isValidMaoAllowsSearchBeforeMaoSuffix() {
+        assertTrue("alice".isValidMao())
+        assertTrue("alice.".isValidMao())
+        assertTrue("alice.mao".isValidMao())
+        assertFalse("123".isValidMao())
+        assertFalse("has space".isValidMao())
+        assertFalse("".isValidMao())
+        assertFalse(null.isValidMao())
+    }
+
+    @Test
     fun maxLimit() {
         var str =
             """
