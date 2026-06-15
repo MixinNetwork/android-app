@@ -32,7 +32,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
@@ -48,7 +47,6 @@ private const val RECOMMENDED_MARKET_LIMIT = 8
 
 enum class SwapRecommendedMarketType {
     Trending,
-    Stocks,
     TopGainers,
     TopLosers,
 }
@@ -65,11 +63,9 @@ private data class RecommendedMarketUiItem(
 @Composable
 fun SwapRecommendedMarketCards(
     trendingMarkets: List<MarketItem>,
-    stockTokens: List<SwapToken>,
     topGainerMarkets: List<MarketItem>,
     topLoserMarkets: List<MarketItem>,
     onMarketClick: (MarketItem) -> Unit,
-    onStockClick: (SwapToken) -> Unit,
     onViewAllClick: (SwapRecommendedMarketType) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -79,14 +75,6 @@ fun SwapRecommendedMarketCards(
             type = SwapRecommendedMarketType.Trending,
             items = trendingMarkets.take(RECOMMENDED_MARKET_LIMIT).map { market ->
                 market.toRecommendedMarketUiItem { onMarketClick(market) }
-            },
-        ),
-        RecommendedMarketCardData(
-            titleRes = R.string.Stocks,
-            type = SwapRecommendedMarketType.Stocks,
-            showViewAll = true,
-            items = stockTokens.take(RECOMMENDED_MARKET_LIMIT).map { token ->
-                token.toRecommendedMarketUiItem { onStockClick(token) }
             },
         ),
         RecommendedMarketCardData(
@@ -256,7 +244,7 @@ private fun RecommendedMarketGridItem(
             item.changePercent?.let { changePercent ->
                 Text(
                     text = changePercent,
-                    fontSize = 11.sp,
+                    fontSize = 10.sp,
                     fontWeight = FontWeight.Medium,
                     color = Color.White,
                     maxLines = 1,
@@ -266,16 +254,16 @@ private fun RecommendedMarketGridItem(
                         .align(Alignment.BottomCenter)
                         .background(
                             color = if (item.isPositive) risingColor else fallingColor,
-                            shape = RoundedCornerShape(4.dp),
+                            shape = RoundedCornerShape(3.dp),
                         )
-                        .padding(horizontal = 4.dp, vertical = 1.dp),
+                        .padding(horizontal = 3.dp, vertical = 1.dp),
                 )
             }
         }
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = item.symbol,
-            fontSize = 16.sp,
+            fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
             color = MixinAppTheme.colors.textPrimary,
             maxLines = 1,
@@ -287,7 +275,7 @@ private fun RecommendedMarketGridItem(
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = price,
-                fontSize = 13.sp,
+                fontSize = 12.sp,
                 color = MixinAppTheme.colors.textAssist,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -304,18 +292,6 @@ private fun MarketItem.toRecommendedMarketUiItem(onClick: () -> Unit): Recommend
         symbol = symbol,
         iconUrl = iconUrl,
         price = currentPrice.formatFiatPrice(),
-        changePercent = changeValue.formatSignedPercent(),
-        isPositive = changeValue?.let { it >= BigDecimal.ZERO } ?: true,
-        onClick = onClick,
-    )
-}
-
-private fun SwapToken.toRecommendedMarketUiItem(onClick: () -> Unit): RecommendedMarketUiItem {
-    val changeValue = changeUsd?.toBigDecimalOrNull()
-    return RecommendedMarketUiItem(
-        symbol = symbol,
-        iconUrl = icon,
-        price = price.formatFiatPrice(),
         changePercent = changeValue.formatSignedPercent(),
         isPositive = changeValue?.let { it >= BigDecimal.ZERO } ?: true,
         onClick = onClick,

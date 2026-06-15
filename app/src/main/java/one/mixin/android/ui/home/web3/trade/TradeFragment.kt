@@ -350,7 +350,6 @@ class TradeFragment : BaseFragment() {
                             source = getSource(),
                             entrySource = getEntrySource(),
                             trendingMarkets = trendingMarkets,
-                            stockTokens = stocks,
                             topGainerMarkets = topGainerMarkets,
                             topLoserMarkets = topLoserMarkets,
                             onSelectToken = { isReverse, type, isLimit ->
@@ -540,9 +539,6 @@ class TradeFragment : BaseFragment() {
                             },
                             onRecommendedMarketClick = { marketItem ->
                                 showMarketDetails(marketItem)
-                            },
-                            onRecommendedStockClick = { token ->
-                                showStockMarketDetails(token)
                             },
                             onRecommendedMarketViewAllClick = {
                                 requireContext().openMarket()
@@ -1323,17 +1319,6 @@ class TradeFragment : BaseFragment() {
             Destination.Market,
             AnalyticsTracker.MarketSource.MORE_MARKET_CAP,
         )
-    }
-
-    private fun showStockMarketDetails(token: SwapToken) {
-        lifecycleScope.launch(coroutineErrorHandler) {
-            val marketItem = swapViewModel.checkMarketById(token.assetId, false)
-            if (marketItem == null) {
-                toast(R.string.Data_error)
-            } else {
-                showMarketDetails(marketItem)
-            }
-        }
     }
 
     private suspend fun refreshRecommendedMarkets() {

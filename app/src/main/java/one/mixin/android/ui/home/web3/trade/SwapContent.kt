@@ -97,14 +97,12 @@ fun SwapContent(
     reviewing: Boolean,
     source: String,
     trendingMarkets: List<MarketItem>,
-    stockTokens: List<SwapToken>,
     topGainerMarkets: List<MarketItem>,
     topLoserMarkets: List<MarketItem>,
     onSelectToken: (Boolean, SelectTokenType) -> Unit,
     onReview: (QuoteResult, SwapToken, SwapToken, String) -> Unit,
     onDeposit: (SwapToken) -> Unit,
     onRecommendedMarketClick: (MarketItem) -> Unit,
-    onRecommendedStockClick: (SwapToken) -> Unit,
     onRecommendedMarketViewAllClick: (SwapRecommendedMarketType) -> Unit,
     onSwitchToLimitOrder: (String, SwapToken, SwapToken) -> Unit,
 ) {
@@ -320,16 +318,14 @@ fun SwapContent(
                         },
                         margin = 6.dp,
                     )
-                    val hasRecommendedCards = stockTokens.isNotEmpty() || topGainerMarkets.isNotEmpty() || topLoserMarkets.isNotEmpty()
+                    val hasRecommendedCards = topGainerMarkets.isNotEmpty() || topLoserMarkets.isNotEmpty()
                     if (hasRecommendedCards && inputText.isBlank() && availableHeight == null) {
-                        Spacer(modifier = Modifier.height(20.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
                         SwapRecommendedMarketCards(
                             trendingMarkets = emptyList(),
-                            stockTokens = stockTokens,
                             topGainerMarkets = topGainerMarkets,
                             topLoserMarkets = topLoserMarkets,
                             onMarketClick = onRecommendedMarketClick,
-                            onStockClick = onRecommendedStockClick,
                             onViewAllClick = onRecommendedMarketViewAllClick,
                             modifier = Modifier.padding(horizontal = 20.dp),
                         )
