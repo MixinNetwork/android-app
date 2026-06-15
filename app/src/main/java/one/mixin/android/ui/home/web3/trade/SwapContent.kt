@@ -82,6 +82,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.getMixinErrorStringByCode
+import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.web3.isNativeSolAsset
 import one.mixin.android.web3.nativeSolSpendableBalance
 import java.math.BigDecimal
@@ -95,9 +96,16 @@ fun SwapContent(
     lastOrderTime: Long?,
     reviewing: Boolean,
     source: String,
+    trendingMarkets: List<MarketItem>,
+    stockTokens: List<SwapToken>,
+    topGainerMarkets: List<MarketItem>,
+    topLoserMarkets: List<MarketItem>,
     onSelectToken: (Boolean, SelectTokenType) -> Unit,
     onReview: (QuoteResult, SwapToken, SwapToken, String) -> Unit,
     onDeposit: (SwapToken) -> Unit,
+    onRecommendedMarketClick: (MarketItem) -> Unit,
+    onRecommendedStockClick: (SwapToken) -> Unit,
+    onRecommendedMarketViewAllClick: (SwapRecommendedMarketType) -> Unit,
     onSwitchToLimitOrder: (String, SwapToken, SwapToken) -> Unit,
 ) {
     val context = LocalContext.current
@@ -195,7 +203,11 @@ fun SwapContent(
             rawFromBalanceValue
         }
         val availableFromBalance = availableFromBalanceValue.stripTrailingZeros().toPlainString()
-        KeyboardAwareBox(modifier = Modifier.fillMaxHeight(), content = { availableHeight ->
+
+        KeyboardAwareBox(
+            modifier = Modifier.fillMaxHeight(),
+            content = { availableHeight ->
+            val scrollState = rememberScrollState()
             Column(
                 modifier = if (availableHeight != null) {
                     Modifier
@@ -205,20 +217,12 @@ fun SwapContent(
                     Modifier.fillMaxSize()
                 }
             ) {
-
-                val scrollState = rememberScrollState()
                 Column(
-                    modifier = if (availableHeight != null) {
-                        Modifier
-                            .fillMaxWidth()
-                            .weight(1f)
-                            .verticalScroll(scrollState)
-                            .verticalScrollbar(scrollState)
-                    } else {
-                        Modifier
-                            .fillMaxWidth()
-                            .wrapContentHeight()
-                    }
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .verticalScroll(scrollState)
+                        .verticalScrollbar(scrollState)
                 ) {
                     TradeLayout(
                         centerCompose = {
@@ -317,24 +321,43 @@ fun SwapContent(
                         },
                         margin = 6.dp,
                     )
+                    val hasRecommendedCards = stockTokens.isNotEmpty() || topGainerMarkets.isNotEmpty() || topLoserMarkets.isNotEmpty()
+                    if (hasRecommendedCards && inputText.isBlank() && availableHeight == null) {
+                        Spacer(modifier = Modifier.height(10.dp))
+                        SwapRecommendedMarketCards(
+                            trendingMarkets = emptyList(),
+                            stockTokens = stockTokens,
+                            topGainerMarkets = topGainerMarkets,
+                            topLoserMarkets = topLoserMarkets,
+                            onMarketClick = onRecommendedMarketClick,
+                            onStockClick = onRecommendedStockClick,
+                            onViewAllClick = onRecommendedMarketViewAllClick,
+                            modifier = Modifier.padding(horizontal = 20.dp),
+                        )
+                        Spacer(modifier = Modifier.height(14.dp))
+                    }
                 }
-                Spacer(modifier = Modifier.height(if (availableHeight == null) 14.dp else 8.dp))
-                ReviewButton(
-                    inputText = inputText,
-                    fromBalance = availableFromBalance,
-                    fromToken = fromToken!!,
-                    quoteResult = quoteResult,
-                    quoteError = quoteError,
-                    isLoading = isLoading,
-                    reviewing = reviewing,
-                    isButtonEnabled = isButtonEnabled,
-                    onButtonEnabledChange = { isButtonEnabled = it },
-                    onReview = { onReview(it, fromToken!!, toToken!!, inputText) },
-                    keyboardController = keyboardController,
-                    focusManager = focusManager,
-                    scope = scope
-                )
-                Spacer(modifier = Modifier.height(14.dp))
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 20.dp)
+                ) {
+                    ReviewButton(
+                        inputText = inputText,
+                        fromBalance = availableFromBalance,
+                        fromToken = fromToken!!,
+                        quoteResult = quoteResult,
+                        quoteError = quoteError,
+                        isLoading = isLoading,
+                        reviewing = reviewing,
+                        isButtonEnabled = isButtonEnabled,
+                        onButtonEnabledChange = { isButtonEnabled = it },
+                        onReview = { onReview(it, fromToken!!, toToken!!, inputText) },
+                        keyboardController = keyboardController,
+                        focusManager = focusManager,
+                        scope = scope
+                    )
+                }
             }
         }, floating = {
             Row(

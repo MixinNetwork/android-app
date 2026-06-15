@@ -2511,4 +2511,6 @@
     <string name="perps_share_mixin_contact_desc">邀请好友一起交易</string>
     <string name="perps_share_mixin_contact_desc_with_percent">通过此链接赚取 %1$s 分佣</string>
     <string name="perps_top_movers">涨跌榜</string>
+    <string name="top_gainers">涨幅榜</string>
+    <string name="top_losers">跌幅榜</string>
 </resources>

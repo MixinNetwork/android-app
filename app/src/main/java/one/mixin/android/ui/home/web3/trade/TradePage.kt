@@ -64,6 +64,7 @@ import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.home.web3.trade.perps.PerpetualContent
 import one.mixin.android.ui.home.web3.trade.perps.PerpetualViewModel
 import one.mixin.android.ui.home.web3.widget.MarketSort
+import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.WalletCategory
 import java.math.BigDecimal
@@ -88,6 +89,10 @@ fun TradePage(
     initialTabIndex: Int,
     source: String,
     entrySource: String,
+    trendingMarkets: List<MarketItem>,
+    stockTokens: List<SwapToken>,
+    topGainerMarkets: List<MarketItem>,
+    topLoserMarkets: List<MarketItem>,
     onSelectToken: (Boolean, SelectTokenType, Boolean) -> Unit,
     onReview: (QuoteResult, SwapToken, SwapToken, String) -> Unit,
     onLimitReview: (SwapToken, SwapToken, CreateLimitOrderResponse) -> Unit,
@@ -103,6 +108,9 @@ fun TradePage(
     onShowTradingGuideIfNeeded: (Int) -> Unit,
     onShowTradingGuide: (Int) -> Unit,
     onShowHelpBottomSheet: (() -> Unit, () -> Unit) -> Unit,
+    onRecommendedMarketClick: (MarketItem) -> Unit,
+    onRecommendedStockClick: (SwapToken) -> Unit,
+    onRecommendedMarketViewAllClick: (SwapRecommendedMarketType) -> Unit,
     onShowMarketList: (Boolean) -> Unit,
     onShowAllMarkets: (String?, MarketSort?) -> Unit,
     onShowAllOpenPositions: () -> Unit,
@@ -168,9 +176,16 @@ fun TradePage(
             lastOrderTime = lastOrderTime,
             reviewing = reviewing,
             source = source,
+            trendingMarkets = trendingMarkets,
+            stockTokens = stockTokens,
+            topGainerMarkets = topGainerMarkets,
+            topLoserMarkets = topLoserMarkets,
             onSelectToken = { isReverse, type -> onSelectToken(isReverse, type, false) },
             onReview = onReview,
             onDeposit = onDeposit,
+            onRecommendedMarketClick = onRecommendedMarketClick,
+            onRecommendedStockClick = onRecommendedStockClick,
+            onRecommendedMarketViewAllClick = onRecommendedMarketViewAllClick,
             onSwitchToLimitOrder = { inputText, fromToken, toToken ->
                 // Notify parent and request navigation to Limit tab locally
                 onSwitchToLimitOrder(inputText, fromToken, toToken)
@@ -286,7 +301,7 @@ fun TradePage(
                 }
             }
         },
-        verticalScrollable = true,
+        verticalScrollable = false,
         pop = pop,
         actions = {
             val isPerpetualOrderEntry = perpetualTabIndex != null && pagerState.currentPage == perpetualTabIndex

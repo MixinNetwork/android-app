@@ -1105,4 +1105,6 @@
     <string name="take_profit_label">止盈</string>
     <string name="stop_loss_label">止損</string>
     <string name="perps_top_movers">漲跌榜</string>
+    <string name="top_gainers">漲幅榜</string>
+    <string name="top_losers">跌幅榜</string>
 </resources>
