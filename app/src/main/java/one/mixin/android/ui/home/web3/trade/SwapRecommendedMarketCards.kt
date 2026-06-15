@@ -25,6 +25,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.PlatformTextStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -219,6 +221,8 @@ private fun RecommendedMarketGridItem(
     risingColor: Color,
     fallingColor: Color,
 ) {
+    val compactTextStyle = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false))
+
     Column(
         modifier = Modifier
             .clip(RoundedCornerShape(8.dp))
@@ -245,6 +249,8 @@ private fun RecommendedMarketGridItem(
                 Text(
                     text = changePercent,
                     fontSize = 10.sp,
+                    lineHeight = 10.sp,
+                    style = compactTextStyle,
                     fontWeight = FontWeight.Medium,
                     color = Color.White,
                     maxLines = 1,
@@ -264,6 +270,8 @@ private fun RecommendedMarketGridItem(
         Text(
             text = item.symbol,
             fontSize = 14.sp,
+            lineHeight = 14.sp,
+            style = compactTextStyle,
             fontWeight = FontWeight.Medium,
             color = MixinAppTheme.colors.textPrimary,
             maxLines = 1,
@@ -276,6 +284,8 @@ private fun RecommendedMarketGridItem(
             Text(
                 text = price,
                 fontSize = 12.sp,
+                lineHeight = 12.sp,
+                style = compactTextStyle,
                 color = MixinAppTheme.colors.textAssist,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

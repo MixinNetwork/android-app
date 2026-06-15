@@ -221,6 +221,8 @@ fun SwapContent(
                         .weight(1f)
                         .verticalScroll(scrollState)
                 ) {
+                    val hasRecommendedCards = topGainerMarkets.isNotEmpty() || topLoserMarkets.isNotEmpty()
+                    val showRecommendedCards = hasRecommendedCards && inputText.isBlank() && availableHeight == null
                     TradeLayout(
                         centerCompose = {
                             Box(
@@ -296,31 +298,32 @@ fun SwapContent(
                                     selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.From else SelectTokenType.To) },
                                     onDeposit = null,
                                 )
-                                Spacer(modifier = Modifier.height(16.dp))
-                                QuoteInfoBox(
-                                    availableHeight = availableHeight,
-                                    quoteError = quoteError,
-                                    quoteResult = quoteResult,
-                                    fromToken = fromToken,
-                                    toToken = toToken,
-                                    isLoading = isLoading,
-                                    inputText = inputText,
-                                    quoteMin = quoteMin,
-                                    quoteMax = quoteMax,
-                                    onInputTextChange = {
-                                        inputText = limitTradeInputDecimalPlaces(it, fromMaxDecimalPlaces)
-                                    },
-                                    onInvalidFlagChange = { invalidFlag = !invalidFlag },
-                                    onSwitchToLimitOrder = onSwitchToLimitOrder,
-                                )
+                                if (!showRecommendedCards) {
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    QuoteInfoBox(
+                                        availableHeight = availableHeight,
+                                        quoteError = quoteError,
+                                        quoteResult = quoteResult,
+                                        fromToken = fromToken,
+                                        toToken = toToken,
+                                        isLoading = isLoading,
+                                        inputText = inputText,
+                                        quoteMin = quoteMin,
+                                        quoteMax = quoteMax,
+                                        onInputTextChange = {
+                                            inputText = limitTradeInputDecimalPlaces(it, fromMaxDecimalPlaces)
+                                        },
+                                        onInvalidFlagChange = { invalidFlag = !invalidFlag },
+                                        onSwitchToLimitOrder = onSwitchToLimitOrder,
+                                    )
+                                }
                             }
 
                         },
                         margin = 6.dp,
                     )
-                    val hasRecommendedCards = topGainerMarkets.isNotEmpty() || topLoserMarkets.isNotEmpty()
-                    if (hasRecommendedCards && inputText.isBlank() && availableHeight == null) {
-                        Spacer(modifier = Modifier.height(10.dp))
+                    if (showRecommendedCards) {
+                        Spacer(modifier = Modifier.height(4.dp))
                         SwapRecommendedMarketCards(
                             trendingMarkets = emptyList(),
                             topGainerMarkets = topGainerMarkets,
