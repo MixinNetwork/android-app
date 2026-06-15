@@ -3,7 +3,9 @@ package one.mixin.android.util.analytics
 import android.content.Context
 import android.os.Bundle
 import androidx.core.app.NotificationManagerCompat
+import com.appsflyer.AppsFlyerLib
 import com.google.firebase.analytics.FirebaseAnalytics
+import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.Plan
@@ -13,11 +15,30 @@ object AnalyticsTracker {
     private val firebaseAnalytics by lazy { FirebaseAnalytics.getInstance(MixinApplication.get()) }
 
     private fun logEvent(name: String) {
-        firebaseAnalytics.logEvent(name, null)
+        logEvent(name, null)
     }
 
     private inline fun logEvent(name: String, block: Bundle.() -> Unit) {
-        firebaseAnalytics.logEvent(name, Bundle().apply(block))
+        logEvent(name, Bundle().apply(block))
+    }
+
+    private fun logEvent(name: String, params: Bundle?) {
+        firebaseAnalytics.logEvent(name, params)
+        if (BuildConfig.APPSFLYER_DEV_KEY.isBlank()) {
+            return
+        }
+        AnalyticsRules.appsFlyerEventName(name)?.let { appsFlyerEventName ->
+            AppsFlyerLib.getInstance().logEvent(MixinApplication.get(), appsFlyerEventName, params?.toAppsFlyerValues())
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun Bundle.toAppsFlyerValues(): Map<String, Any>? {
+        val values = HashMap<String, Any>()
+        keySet().forEach { key ->
+            get(key)?.let { values[key] = it }
+        }
+        return values.takeIf { it.isNotEmpty() }
     }
 
     fun trackSignUpStart(source: String) {
@@ -26,6 +47,10 @@ object AnalyticsTracker {
         }
     }
 
+    fun trackSignUpAccountCreated(account: Account) {
+        setAppsFlyerCustomerUserId(account)
+        logEvent("sign_up_account_created")
+    }
 
     fun trackSignUpCaptcha() {
         logEvent("sign_up_captcha")
@@ -128,6 +153,19 @@ object AnalyticsTracker {
         firebaseAnalytics.setUserProperty("asset_level", level)
     }
 
+    fun setAppsFlyerCustomerUserId(account: Account) {
+        if (BuildConfig.APPSFLYER_DEV_KEY.isBlank()) {
+            return
+        }
+        AppsFlyerLib.getInstance().setCustomerUserId(account.userId)
+    }
+
+    fun updateAppsFlyerConversionUserProperties(conversionData: Map<String, Any?>) {
+        AnalyticsRules.conversionUserProperties(conversionData).forEach { (key, value) ->
+            firebaseAnalytics.setUserProperty(key, value)
+        }
+    }
+
     fun trackAssetDetail(wallet: String, source: String) {
         logEvent("asset_detail") {
             putString("wallet", wallet)
@@ -181,6 +219,13 @@ object AnalyticsTracker {
 
     fun trackAssetReceiveEnd() {
         logEvent("asset_receive_end")
+    }
+
+    fun trackAssetReceiveSuccess(assetSymbol: String?, amountUsd: BigDecimal) {
+        logEvent("asset_receive_success") {
+            putString("receive_asset_symbol", assetSymbol)
+            putString("receive_asset_level", AnalyticsRules.receiveAssetLevel(amountUsd))
+        }
     }
 
     fun trackAssetSendStart(wallet: String, source: String) {

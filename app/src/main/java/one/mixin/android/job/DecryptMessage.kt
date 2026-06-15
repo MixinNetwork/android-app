@@ -153,6 +153,7 @@ import org.whispersystems.libsignal.SignalProtocolAddress
 import timber.log.Timber
 import java.io.File
 import java.io.IOException
+import java.math.BigDecimal
 import java.util.UUID
 
 class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
@@ -1194,7 +1195,15 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         insertMessage(message, data)
         jobManager.addJobInBackground(RefreshTokensJob(snapshot.assetId, data.conversationId, data.messageId))
         jobManager.addJobInBackground(SyncOutputJob())
-        runBlocking { AnalyticsTracker.setAssetLevel(tokenDao.findTotalUSDBalance() ?: 0) }
+        runBlocking {
+            AnalyticsTracker.setAssetLevel(tokenDao.findTotalUSDBalance() ?: 0)
+            val receivedAmount = snapshot.amount.toBigDecimalOrNull()
+            if (receivedAmount != null && receivedAmount > BigDecimal.ZERO) {
+                val token = tokenDao.simpleAsset(snapshot.assetId)
+                val priceUsd = token?.priceUsd?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                AnalyticsTracker.trackAssetReceiveSuccess(token?.symbol, receivedAmount.multiply(priceUsd))
+            }
+        }
 
         if (snapshot.amount.toFloat() > 0) {
             generateNotification(message, data)

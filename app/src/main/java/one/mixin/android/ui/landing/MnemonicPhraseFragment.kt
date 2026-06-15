@@ -360,6 +360,9 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
             if (r?.isSuccess == true) {
                 val account = r.data!!
                 initializeAccountSession(requireContext(), account, sessionKey)
+                if (words.isNullOrEmpty()) {
+                    AnalyticsTracker.trackSignUpAccountCreated(account)
+                }
                 when {
                     account.fullName.isNullOrBlank() -> {
                         withContext(Dispatchers.IO) {
