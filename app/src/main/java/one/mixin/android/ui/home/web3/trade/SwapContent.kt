@@ -222,7 +222,6 @@ fun SwapContent(
                         .fillMaxWidth()
                         .weight(1f)
                         .verticalScroll(scrollState)
-                        .verticalScrollbar(scrollState)
                 ) {
                     TradeLayout(
                         centerCompose = {
@@ -323,7 +322,7 @@ fun SwapContent(
                     )
                     val hasRecommendedCards = stockTokens.isNotEmpty() || topGainerMarkets.isNotEmpty() || topLoserMarkets.isNotEmpty()
                     if (hasRecommendedCards && inputText.isBlank() && availableHeight == null) {
-                        Spacer(modifier = Modifier.height(10.dp))
+                        Spacer(modifier = Modifier.height(20.dp))
                         SwapRecommendedMarketCards(
                             trendingMarkets = emptyList(),
                             stockTokens = stockTokens,

@@ -125,7 +125,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     } else toast(R.string.Please_wait_a_bit)
                 }
             }
-            swapAlert.swap.setOnClickListener {
+            bottomTrade.setOnClickListener {
                 viewLifecycleOwner.lifecycleScope.launch {
                     val ids = walletViewModel.findTokenIdsByCoinId(marketItem.coinId)
                     val tokens = walletViewModel.findTokensByCoinId(marketItem.coinId)
@@ -169,8 +169,8 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
             } else {
                 walletViewModel.anyAlertByCoinId(marketItem.coinId)
             }.observe(this@MarketDetailsFragment.viewLifecycleOwner) { exist ->
-                swapAlert.setAlertTitle(R.string.Alert)
-                swapAlert.alertVa.setOnClickListener {
+                bottomAlertIcon.setImageResource(if (exist) R.drawable.ic_market_alert_added else R.drawable.ic_market_alert_add)
+                bottomAlert.setOnClickListener {
                     if (NotificationManagerCompat.from(requireContext()).areNotificationsEnabled()) {
                         viewLifecycleOwner.lifecycleScope.launch {
                             var coinItem = if (marketItem.coinId.isBlank()) {
@@ -179,12 +179,12 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                                 walletViewModel.simpleCoinItem(marketItem.coinId)
                             }
                             if (coinItem == null) {
-                                binding.swapAlert.alertVa.displayedChild = 1
+                                setBottomAlertLoading(true)
                                 val m = walletViewModel.refreshMarket(
                                     marketItem.coinId.ifBlank {
                                         marketItem.assetIds!!.first()
                                     }, {
-                                        binding.swapAlert.alertVa.displayedChild = 0
+                                        setBottomAlertLoading(false)
                                     }, { error ->
                                         if (error.errorCode == 404) {
                                             toast(R.string.Alert_Not_Support)
@@ -355,7 +355,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         selectLocalizedMarketDescription(map, lang)
                     }?.let { HtmlCompat.fromHtml(it, HtmlCompat.FROM_HTML_MODE_LEGACY).toString().trim() }
                     aboutContainer.isVisible = !desc.isNullOrBlank()
-                    aboutContent.text = desc.orEmpty()
+                    aboutContent.originalText = desc.orEmpty()
 
                     priceValue.setTextColor(textPrimary)
                     marketCap.setTextColor(textPrimary)
@@ -392,12 +392,19 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     lowValue.setTextColor(textAssist)
                     lowValue.setText(R.string.N_A)
                     aboutContainer.isVisible = false
+                    aboutContent.originalText = ""
                 }
             }
         }
     }
 
     private var isLoading = false
+
+    private fun setBottomAlertLoading(loading: Boolean) {
+        binding.bottomAlertIcon.isVisible = !loading
+        binding.bottomAlertProgress.isVisible = loading
+        binding.bottomAlert.isEnabled = !loading
+    }
 
     private val textAssist by lazy {
         requireContext().colorAttr(R.attr.text_assist)

@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home.web3.trade
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -83,6 +84,7 @@ fun SwapRecommendedMarketCards(
         RecommendedMarketCardData(
             titleRes = R.string.Stocks,
             type = SwapRecommendedMarketType.Stocks,
+            showViewAll = true,
             items = stockTokens.take(RECOMMENDED_MARKET_LIMIT).map { token ->
                 token.toRecommendedMarketUiItem { onStockClick(token) }
             },
@@ -121,6 +123,7 @@ fun SwapRecommendedMarketCards(
 private data class RecommendedMarketCardData(
     val titleRes: Int,
     val type: SwapRecommendedMarketType,
+    val showViewAll: Boolean = false,
     val items: List<RecommendedMarketUiItem>,
 )
 
@@ -143,34 +146,39 @@ private fun RecommendedMarketCard(
             .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
             .padding(vertical = 16.dp),
     ) {
-        Row(
-            modifier = Modifier
+        val headerModifier = if (card.showViewAll) {
+            Modifier
                 .fillMaxWidth()
                 .clickable(onClick = onViewAllClick)
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 16.dp)
+        } else {
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+        }
+
+        Row(
+            modifier = headerModifier,
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 text = stringResource(card.titleRes),
-                fontSize = 14.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
                 color = MixinAppTheme.colors.textPrimary,
                 modifier = Modifier.weight(1f),
             )
-            Text(
-                text = stringResource(R.string.view_all),
-                fontSize = 13.sp,
-                color = MixinAppTheme.colors.textAssist,
-            )
-            Icon(
-                painter = painterResource(R.drawable.ic_arrow_right),
-                contentDescription = null,
-                tint = MixinAppTheme.colors.textAssist,
-                modifier = Modifier.size(16.dp),
-            )
+            if (card.showViewAll) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_arrow_right),
+                    contentDescription = null,
+                    tint = MixinAppTheme.colors.textAssist,
+                    modifier = Modifier.size(18.dp),
+                )
+            }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(18.dp))
 
         val rows = card.items.chunked(RECOMMENDED_MARKET_COLUMNS)
         rows.forEachIndexed { index, rowItems ->
@@ -197,8 +205,22 @@ private fun RecommendedMarketCard(
                 }
             }
             if (index != rows.lastIndex) {
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
             }
+        }
+        if (card.showViewAll) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = stringResource(R.string.view_all),
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium,
+                color = MixinAppTheme.colors.accent,
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .clip(RoundedCornerShape(4.dp))
+                    .clickable(onClick = onViewAllClick)
+                    .padding(horizontal = 12.dp, vertical = 4.dp),
+            )
         }
     }
 }
@@ -213,22 +235,47 @@ private fun RecommendedMarketGridItem(
         modifier = Modifier
             .clip(RoundedCornerShape(8.dp))
             .clickable(onClick = item.onClick)
-            .padding(horizontal = 4.dp, vertical = 8.dp),
+            .padding(horizontal = 4.dp, vertical = 6.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top,
     ) {
-        CoilImage(
-            model = item.iconUrl,
-            placeholder = R.drawable.ic_avatar_place_holder,
+        Box(
             modifier = Modifier
-                .size(42.dp)
-                .clip(CircleShape),
-            contentScale = ContentScale.Crop,
-        )
-        Spacer(modifier = Modifier.height(6.dp))
+                .fillMaxWidth()
+                .height(54.dp),
+            contentAlignment = Alignment.TopCenter,
+        ) {
+            CoilImage(
+                model = item.iconUrl,
+                placeholder = R.drawable.ic_avatar_place_holder,
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop,
+            )
+            item.changePercent?.let { changePercent ->
+                Text(
+                    text = changePercent,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color.White,
+                    maxLines = 1,
+                    overflow = TextOverflow.Clip,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .background(
+                            color = if (item.isPositive) risingColor else fallingColor,
+                            shape = RoundedCornerShape(4.dp),
+                        )
+                        .padding(horizontal = 4.dp, vertical = 1.dp),
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = item.symbol,
-            fontSize = 14.sp,
+            fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
             color = MixinAppTheme.colors.textPrimary,
             maxLines = 1,
@@ -240,21 +287,8 @@ private fun RecommendedMarketGridItem(
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = price,
-                fontSize = 11.sp,
-                color = MixinAppTheme.colors.textAssist,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth(),
-            )
-        }
-        item.changePercent?.let { changePercent ->
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = changePercent,
                 fontSize = 13.sp,
-                fontWeight = FontWeight.Medium,
-                color = if (item.isPositive) risingColor else fallingColor,
+                color = MixinAppTheme.colors.textAssist,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center,
