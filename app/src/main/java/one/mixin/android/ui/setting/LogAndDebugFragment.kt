@@ -1,10 +1,12 @@
 package one.mixin.android.ui.setting
 
+import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.View
+import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.net.toUri
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -15,6 +17,7 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentLogDebugBinding
+import one.mixin.android.databinding.ViewCaptchaPreviewBottomBinding
 import one.mixin.android.db.DatabaseMonitor
 import one.mixin.android.db.property.PropertyHelper.findValueByKey
 import one.mixin.android.db.property.PropertyHelper.updateKeyValue
@@ -33,6 +36,8 @@ import one.mixin.android.ui.home.reminder.VerifyMobileReminderBottomSheetDialogF
 import one.mixin.android.ui.setting.diagnosis.DiagnosisFragment
 import one.mixin.android.util.debug.FileLogTree
 import one.mixin.android.util.viewBinding
+import one.mixin.android.widget.BottomSheet
+import one.mixin.android.widget.CaptchaView
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -45,6 +50,7 @@ class LogAndDebugFragment : BaseFragment(R.layout.fragment_log_debug) {
 
     private val binding by viewBinding(FragmentLogDebugBinding::bind)
     private val viewModel by viewModels<LogAndDebugViewModel>()
+    private var captchaView: CaptchaView? = null
 
     @Inject
     lateinit var jobManager: MixinJobManager
@@ -124,6 +130,10 @@ class LogAndDebugFragment : BaseFragment(R.layout.fragment_log_debug) {
                     toast(R.string.New_Update_Reminder_Will_Show_Once)
                 }
 
+                previewCaptcha.setOnClickListener {
+                    showCaptchaPreviewBottom()
+                }
+
                 resetTpslGuide.setOnClickListener {
                     defaultSharedPreferences.edit()
                         .remove(one.mixin.android.ui.home.web3.trade.perps.PREF_HIDE_TP_GUIDE_UNTIL)
@@ -170,6 +180,59 @@ class LogAndDebugFragment : BaseFragment(R.layout.fragment_log_debug) {
                 }
             }
         }
+    }
+
+    override fun onDestroyView() {
+        captchaView?.release()
+        captchaView = null
+        super.onDestroyView()
+    }
+
+    @SuppressLint("InflateParams")
+    private fun showCaptchaPreviewBottom() {
+        val builder = BottomSheet.Builder(requireActivity())
+        val bottomBinding = ViewCaptchaPreviewBottomBinding.bind(
+            View.inflate(
+                ContextThemeWrapper(requireActivity(), R.style.Custom),
+                R.layout.view_captcha_preview_bottom,
+                null,
+            ),
+        )
+        builder.setCustomView(bottomBinding.root)
+        val bottomSheet = builder.create()
+        bottomBinding.apply {
+            gCaptcha.setOnClickListener {
+                bottomSheet.dismiss()
+                previewCaptcha(CaptchaView.CaptchaType.GCaptcha)
+            }
+            hCaptcha.setOnClickListener {
+                bottomSheet.dismiss()
+                previewCaptcha(CaptchaView.CaptchaType.HCaptcha)
+            }
+            gtCaptcha.setOnClickListener {
+                bottomSheet.dismiss()
+                previewCaptcha(CaptchaView.CaptchaType.GTCaptcha)
+            }
+        }
+        bottomSheet.show()
+    }
+
+    private fun previewCaptcha(captchaType: CaptchaView.CaptchaType) {
+        val view =
+            captchaView ?: CaptchaView(
+                requireContext(),
+                object : CaptchaView.Callback {
+                    override fun onStop() {
+                    }
+
+                    override fun onPostToken(value: Pair<CaptchaView.CaptchaType, String>) {
+                        toast(getString(R.string.Captcha_Preview_Token_Received, value.first.name))
+                    }
+                },
+            ).also {
+                captchaView = it
+            }
+        view.loadCaptchaWithoutFallback(captchaType)
     }
 
     private fun shareLogsFile() {

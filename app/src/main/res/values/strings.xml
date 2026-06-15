@@ -2045,6 +2045,11 @@
     <string name="Recovery_Reminder_Will_Show_Once">Recovery reminder will show once</string>
     <string name="Preview_New_Update_Reminder">Preview New Update Reminder</string>
     <string name="New_Update_Reminder_Will_Show_Once">New update reminder will show once</string>
+    <string name="Preview_Captcha">Preview Captcha</string>
+    <string name="Preview_GCaptcha">Preview GCaptcha</string>
+    <string name="Preview_HCaptcha">Preview HCaptcha</string>
+    <string name="Preview_GTCaptcha">Preview GeeTest Captcha</string>
+    <string name="Captcha_Preview_Token_Received">Captcha preview token received: %1$s</string>
     <string name="Web3_Transactions_Deleted">Web3 transaction data has been deleted and will be re-synchronized</string>
     <string name="Delete_Failed">Delete failed: %1$s</string>
     <string name="Whats_Privacy_Wallet">What\'s the Privacy Wallet?</string>
