@@ -1,7 +1,12 @@
 package one.mixin.android.ui.conversation
 
+import one.mixin.android.extension.PerpsTradeAction
+import one.mixin.android.extension.SpotTradeAction
+import one.mixin.android.extension.toPerpsTradeAction
+import one.mixin.android.extension.toSpotTradeAction
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 class PerpsTradeActionTest {
@@ -52,6 +57,14 @@ class PerpsTradeActionTest {
     }
 
     @Test
+    fun parsesPerpsTradeActionWithoutMarket() {
+        val action = "https://mixin.one/trade?type=perps"
+
+        assertNotNull(action.toPerpsTradeAction())
+        assertEquals(null, action.toPerpsTradeAction()?.marketId)
+    }
+
+    @Test
     fun ignoresNonPerpsTradeAction() {
         val action = "https://mixin.one/trade?type=limit&input=abc&output=def"
 
@@ -63,13 +76,6 @@ class PerpsTradeActionTest {
         val action = "https://mixin.one/trade?type=limit&input=abc&output=def"
 
         assertNull(action.toSpotTradeAction())
-    }
-
-    @Test
-    fun ignoresPerpsTradeActionWithoutMarket() {
-        val action = "https://mixin.one/trade?type=perps"
-
-        assertNull(action.toPerpsTradeAction())
     }
 
     @Test
