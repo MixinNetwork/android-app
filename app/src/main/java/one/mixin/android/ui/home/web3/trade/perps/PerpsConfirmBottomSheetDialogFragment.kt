@@ -80,6 +80,7 @@ import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.tip.wc.compose.ItemWalletContent
 import one.mixin.android.ui.wallet.ItemUserContent
 import one.mixin.android.ui.wallet.components.WalletLabel
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.User
@@ -671,7 +672,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
 
     private fun handleException(t: Throwable) {
         Timber.e(t)
-        errorInfo = t.message ?: t.toString()
+        errorInfo = ErrorHandler.getErrorMessage(t)
         step = Step.Error
     }
 

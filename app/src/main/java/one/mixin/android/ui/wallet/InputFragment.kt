@@ -99,12 +99,12 @@ import one.mixin.android.web3.SOLANA_RENT_EXEMPTION
 import one.mixin.android.web3.SolanaRecipientAccountState
 import one.mixin.android.web3.hasSolBalanceAfterFeeAndRent
 import one.mixin.android.web3.isNativeSolAsset
-import one.mixin.android.web3.nativeSolSpendableBalance
-import one.mixin.android.web3.solanaTransferAmountRange
-import one.mixin.android.web3.solanaRecipientAccountState
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.Web3Signer
+import one.mixin.android.web3.nativeSolSpendableBalance
 import one.mixin.android.web3.send.InsufficientBtcBalanceException
+import one.mixin.android.web3.solanaRecipientAccountState
+import one.mixin.android.web3.solanaTransferAmountRange
 import one.mixin.android.widget.Keyboard
 import org.sol4k.Base58
 import org.sol4k.Constants.SIGNATURE_LENGTH

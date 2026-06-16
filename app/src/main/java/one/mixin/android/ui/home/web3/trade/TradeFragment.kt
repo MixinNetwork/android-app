@@ -132,6 +132,7 @@ class TradeFragment : BaseFragment() {
         const val ARGS_ENTRY_TYPE = "args_entry_type"
 
         const val ARGS_WALLET_ID = "args_wallet_id"
+        const val ARGS_INITIAL_TAB = "args_initial_tab"
 
         const val MaxSlippage = 5000
         const val DangerousSlippage = 500
@@ -157,6 +158,7 @@ class TradeFragment : BaseFragment() {
             walletId: String? = null,
             entrySource: String? = null,
             entryType: String? = null,
+            initialTab: Int? = null,
         ): TradeFragment =
             TradeFragment().withArgs {
                 input?.let { putString(ARGS_INPUT, it) }
@@ -167,6 +169,7 @@ class TradeFragment : BaseFragment() {
                 walletId?.let { putString(ARGS_WALLET_ID, it) }
                 entrySource?.let { putString(ARGS_ENTRY_SOURCE, it) }
                 entryType?.let { putString(ARGS_ENTRY_TYPE, it) }
+                initialTab?.let { putInt(ARGS_INITIAL_TAB, it) }
             }
     }
 
@@ -1250,7 +1253,7 @@ class TradeFragment : BaseFragment() {
         val lastFrom = lastSelectedPair?.getOrNull(0)
         val lastTo = lastSelectedPair?.getOrNull(1)
 
-        val tempFromToken = if (input != null) {
+        var tempFromToken = if (input != null) {
             if (inMixin()) swapViewModel.findToken(input)?.toSwapToken() else swapViewModel.web3TokenItemById(walletId!!, input)?.toSwapToken()
         } else if (lastFrom != null) {
             if (inMixin()) swapViewModel.findToken(lastFrom.assetId)?.toSwapToken() else swapViewModel.web3TokenItemById(walletId!!, lastFrom.assetId)?.toSwapToken()
@@ -1271,8 +1274,14 @@ class TradeFragment : BaseFragment() {
         } else {
             tokens.firstOrNull { t -> t.getUnique() != tempFromToken?.getUnique() && t.getUnique() in Constants.usdIds }
         }
-        if (tempToToken?.getUnique() == tempFromToken?.getUnique()) {
-            tempToToken = tokens.firstOrNull { t -> t.getUnique() != tempFromToken?.getUnique() && t.getUnique() in Constants.usdIds } ?: tokens.firstOrNull { t -> t.getUnique() != tempFromToken?.getUnique() }
+        resolveDuplicateSwapTokenPair(
+            tokens = tokens,
+            fromToken = tempFromToken,
+            toToken = tempToToken,
+            keepToToken = output != null,
+        ).let { pair ->
+            tempFromToken = pair.from
+            tempToToken = pair.to
         }
 
         if (isLimit) {
@@ -1470,6 +1479,12 @@ class TradeFragment : BaseFragment() {
     }
 
     private fun getInitialTabIndex(currentWalletId: String): Int {
+        arguments?.takeIf { it.containsKey(ARGS_INITIAL_TAB) }?.getInt(ARGS_INITIAL_TAB)?.let { tab ->
+            return tab
+        }
+        val entryType = arguments?.getString(ARGS_ENTRY_TYPE)
+        val entrySource = arguments?.getString(ARGS_ENTRY_SOURCE)
+        if (entrySource == AnalyticsTracker.TradeSource.MARKET_DETAIL && entryType == AnalyticsTracker.SpotTradeType.SIMPLE) return TAB_SIMPLE
         val preferenceKey = "$PREF_TRADE_SELECTED_TAB_PREFIX$currentWalletId"
         return defaultSharedPreferences.getInt(preferenceKey, 0)
     }

@@ -81,6 +81,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.home.web3.trade.KeyboardAwareBox
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.Account
 import org.bitcoinj.crypto.MnemonicCode
@@ -513,7 +514,7 @@ fun MnemonicPhraseInput(
                                                                         loading = false
                                                                         if (errorInfo.isBlank()) onComplete.invoke(words)
                                                                     }.onFailure {
-                                                                        errorInfo = it.message ?: ""
+                                                                        errorInfo = ErrorHandler.getErrorMessage(it)
                                                                         loading = false
                                                                     }
                                                                 }
@@ -760,7 +761,7 @@ fun MnemonicPhraseInput(
                                                     loading = false
                                                     if (errorInfo.isBlank()) onComplete.invoke(words)
                                                 }.onFailure {
-                                                    errorInfo = it.message ?: ""
+                                                    errorInfo = ErrorHandler.getErrorMessage(it)
                                                     loading = false
                                                 }
                                             }
