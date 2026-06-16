@@ -355,6 +355,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         selectLocalizedMarketDescription(map, lang)
                     }?.let { HtmlCompat.fromHtml(it, HtmlCompat.FROM_HTML_MODE_LEGACY).toString().trim() }
                     aboutContainer.isVisible = !desc.isNullOrBlank()
+                    aboutContent.expandAction = getString(R.string.More).lowercase()
                     aboutContent.originalText = desc.orEmpty()
 
                     priceValue.setTextColor(textPrimary)
