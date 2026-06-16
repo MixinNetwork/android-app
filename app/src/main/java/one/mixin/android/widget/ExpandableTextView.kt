@@ -4,6 +4,12 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.content.Context
+import android.graphics.BlurMaskFilter
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.LinearGradient
+import android.graphics.Paint
+import android.graphics.Shader
 import android.os.Build
 import android.text.DynamicLayout
 import android.text.Layout.Alignment.ALIGN_NORMAL
@@ -14,6 +20,7 @@ import android.text.StaticLayout
 import android.text.TextUtils
 import android.text.TextUtils.TruncateAt.END
 import android.text.style.ForegroundColorSpan
+import android.text.style.MaskFilterSpan
 import android.util.AttributeSet
 import android.view.View.MeasureSpec.EXACTLY
 import android.view.View.MeasureSpec.UNSPECIFIED
@@ -39,15 +46,7 @@ class ExpandableTextView
         var expandAction: String = ""
             set(value) {
                 field = value
-                val ellipsis = Typography.ellipsis
-                val start = ellipsis.toString().length
-                expandActionSpannable = SpannableString("$ellipsis $value")
-                expandActionSpannable.setSpan(
-                    ForegroundColorSpan(expandActionColor),
-                    start,
-                    expandActionSpannable.length,
-                    SPAN_EXCLUSIVE_EXCLUSIVE,
-                )
+                updateExpandActionSpannable()
                 updateCollapsedDisplayedText(ctaChanged = true)
             }
         var limitedMaxLines: Int = 3
@@ -66,12 +65,30 @@ class ExpandableTextView
         var expandActionColor: Int = ContextCompat.getColor(context, android.R.color.holo_purple)
             set(value) {
                 field = value
-                val colorSpan = ForegroundColorSpan(value)
-                val ellipsis = Typography.ellipsis
-                val start = ellipsis.toString().length
-                expandActionSpannable.setSpan(colorSpan, start, expandActionSpannable.length, SPAN_EXCLUSIVE_EXCLUSIVE)
+                updateExpandActionSpannable()
                 updateCollapsedDisplayedText(ctaChanged = true)
             }
+        var collapsedFadeEnabled: Boolean = false
+            set(value) {
+                field = value
+                setLayerType(if (value) LAYER_TYPE_SOFTWARE else LAYER_TYPE_NONE, null)
+                updateExpandActionSpannable()
+                updateCollapsedDisplayedText(ctaChanged = true)
+            }
+
+        @ColorInt
+        var collapsedFadeColor: Int = Color.TRANSPARENT
+            set(value) {
+                field = value
+                invalidate()
+            }
+
+        var collapsedFadeWidth: Float = resources.displayMetrics.density * 32
+            set(value) {
+                field = value
+                invalidate()
+            }
+        private val collapsedBlurRadius: Float = resources.displayMetrics.density * 2
 
         var collapsed = true
             private set
@@ -82,10 +99,14 @@ class ExpandableTextView
         private var expandActionSpannable = SpannableString("")
         private var expandActionStaticLayout: StaticLayout? = null
         private var collapsedDisplayedText: CharSequence? = null
+        private val collapsedFadePaint = Paint()
 
         init {
             ellipsize = END
             val a = context.obtainStyledAttributes(attrs, R.styleable.ExpandableTextView)
+            collapsedFadeEnabled = a.getBoolean(R.styleable.ExpandableTextView_collapsedFadeEnabled, collapsedFadeEnabled)
+            collapsedFadeColor = a.getColor(R.styleable.ExpandableTextView_collapsedFadeColor, collapsedFadeColor)
+            collapsedFadeWidth = a.getDimension(R.styleable.ExpandableTextView_collapsedFadeWidth, collapsedFadeWidth)
             expandAction = a.getString(R.styleable.ExpandableTextView_expandAction) ?: expandAction
             expandActionColor = a.getColor(R.styleable.ExpandableTextView_expandActionColor, expandActionColor)
             originalText = a.getString(R.styleable.ExpandableTextView_originalText) ?: originalText
@@ -124,6 +145,11 @@ class ExpandableTextView
             }
             super.setMaxLines(maxLines)
             updateCollapsedDisplayedText(ctaChanged = false)
+        }
+
+        override fun onDraw(canvas: Canvas) {
+            super.onDraw(canvas)
+            drawCollapsedFade(canvas)
         }
 
         override fun onDetachedFromWindow() {
@@ -186,6 +212,44 @@ class ExpandableTextView
 
         var heightDifferenceCallback: ((Int, Long) -> Unit)? = null
 
+        private fun updateExpandActionSpannable() {
+            val prefix = if (collapsedFadeEnabled) " " else "${Typography.ellipsis} "
+            val start = prefix.length
+            expandActionSpannable = SpannableString("$prefix$expandAction")
+            expandActionSpannable.setSpan(
+                ForegroundColorSpan(expandActionColor),
+                start,
+                expandActionSpannable.length,
+                SPAN_EXCLUSIVE_EXCLUSIVE,
+            )
+        }
+
+        private fun drawCollapsedFade(canvas: Canvas) {
+            if (!collapsedFadeEnabled || !collapsed || collapsedDisplayedText == originalText) return
+            val cta = expandActionStaticLayout?.text?.toString() ?: return
+            val ctaStartIndex = text.indexOf(cta)
+            if (ctaStartIndex <= 0) return
+            val textLayout = layout ?: return
+            val line = textLayout.getLineForOffset(ctaStartIndex)
+            val fadeEnd = (totalPaddingLeft + textLayout.getPrimaryHorizontal(ctaStartIndex))
+                .coerceAtMost((width - totalPaddingRight).toFloat())
+            val fadeStart = (fadeEnd - collapsedFadeWidth).coerceAtLeast(totalPaddingLeft.toFloat())
+            if (fadeEnd <= fadeStart) return
+            val top = (totalPaddingTop + textLayout.getLineTop(line)).toFloat()
+            val bottom = (totalPaddingTop + textLayout.getLineBottom(line)).toFloat()
+            collapsedFadePaint.shader = LinearGradient(
+                fadeStart,
+                0f,
+                fadeEnd,
+                0f,
+                collapsedFadeColor,
+                Color.TRANSPARENT,
+                Shader.TileMode.CLAMP,
+            )
+            canvas.drawRect(fadeStart, top, fadeEnd, bottom, collapsedFadePaint)
+            collapsedFadePaint.shader = null
+        }
+
         private fun resolveDisplayedText(staticLayout: StaticLayout): CharSequence? {
             val truncatedTextWithoutCta = staticLayout.text
             if (truncatedTextWithoutCta.toString() != originalText) {
@@ -207,10 +271,27 @@ class ExpandableTextView
                     SpannableStringBuilder()
                         .append(textWithoutCta)
                         .replace(defaultEllipsisStart, defaultEllipsisEnd, expandActionStaticLayout!!.text)
-                return maybeRemoveEndingCharacters(staticLayout, span)
+                return applyCollapsedBlur(maybeRemoveEndingCharacters(staticLayout, span))
             } else {
                 return originalText
             }
+        }
+
+        private fun applyCollapsedBlur(span: SpannableStringBuilder): SpannableStringBuilder {
+            if (!collapsedFadeEnabled) return span
+            val ctaIndex = span.indexOf(expandActionStaticLayout!!.text.toString())
+            if (ctaIndex <= 0) return span
+            val blurEnd = ctaIndex.coerceAtMost(span.length)
+            val blurStart = (blurEnd - 8).coerceAtLeast(0)
+            if (blurStart < blurEnd) {
+                span.setSpan(
+                    MaskFilterSpan(BlurMaskFilter(collapsedBlurRadius, BlurMaskFilter.Blur.NORMAL)),
+                    blurStart,
+                    blurEnd,
+                    SPAN_EXCLUSIVE_EXCLUSIVE,
+                )
+            }
+            return span
         }
 
         // sanity check before applying the text. Most of the time, the loop doesn't happen

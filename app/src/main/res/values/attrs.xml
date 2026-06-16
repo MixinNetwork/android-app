@@ -180,6 +180,9 @@
         <attr name="originalText" format="string" />
         <attr name="expandAction" format="string" />
         <attr name="expandActionColor" format="string" />
+        <attr name="collapsedFadeEnabled" format="boolean" />
+        <attr name="collapsedFadeColor" format="color|reference" />
+        <attr name="collapsedFadeWidth" format="dimension" />
     </declare-styleable>
     <declare-styleable name="HeadTailView">
         <attr name="head" format="string" />
