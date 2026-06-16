@@ -91,6 +91,10 @@ interface TokenDao : BaseDao<Token> {
     @Query("$PREFIX_ASSET_ITEM $POSTFIX_ASSET_ITEM_NOT_HIDDEN")
     fun assetItemsNotHidden(defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<TokenItem>>
 
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
+    @Query("$PREFIX_ASSET_ITEM $POSTFIX_ASSET_ITEM_NOT_HIDDEN LIMIT 3")
+    fun topAssetItemsNotHiddenLimit(defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<TokenItem>>
+
     @RawQuery
     fun assetItemsNotHiddenRaw(query: RoomRawQuery): List<TokenItem>
 

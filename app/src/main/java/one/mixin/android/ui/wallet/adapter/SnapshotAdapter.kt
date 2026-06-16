@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import one.mixin.android.R
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.inflate
@@ -13,7 +14,10 @@ import one.mixin.android.util.debug.debugLongClick
 import one.mixin.android.vo.SnapshotItem
 import kotlin.math.abs
 
-class SnapshotAdapter : RecyclerView.Adapter<SnapshotHolder>(),
+class SnapshotAdapter(
+    private val compact: Boolean = false,
+    private val compactAvatarStartMargin: Int = 16.dp,
+) : RecyclerView.Adapter<SnapshotHolder>(),
     StickyRecyclerHeadersAdapter<SnapshotHeaderViewHolder> {
 
     var list = emptyList<SnapshotItem>()
@@ -67,7 +71,12 @@ class SnapshotAdapter : RecyclerView.Adapter<SnapshotHolder>(),
         parent: ViewGroup,
         viewType: Int,
     ): SnapshotHolder {
-        return SnapshotHolder(parent.inflate(R.layout.item_wallet_transactions, false))
+        return SnapshotHolder(
+            parent.inflate(R.layout.item_wallet_transactions, false),
+            layout = compact,
+            compact = compact,
+            compactAvatarStartMargin = compactAvatarStartMargin,
+        )
     }
 
 }

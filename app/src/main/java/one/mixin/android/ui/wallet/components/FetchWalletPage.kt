@@ -132,7 +132,6 @@ fun SelectContent(
     selectedWalletInfos: Set<IndexedWallet>,
     onWalletToggle: (IndexedWallet) -> Unit,
     onContinue: (Set<IndexedWallet>) -> Unit,
-    onBackPressed: () -> Unit,
     onSelectAll: () -> Unit,
     onFindMore: () -> Unit,
     isLoadingMore: Boolean,

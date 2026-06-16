@@ -17,7 +17,6 @@ import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.common.biometric.BiometricItem
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET
-import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET_SOURCE
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_FROM_MARKET
 import one.mixin.android.ui.wallet.fiatmoney.CalculateFragment
@@ -77,6 +76,19 @@ class WalletActivity : BlazeBaseActivity() {
                 val walletId = intent.getStringExtra(ARGS_WALLET_ID)
                 navController.setGraph(navGraph, Bundle().apply {
                     putString(WalletSearchWeb3Fragment.ARGS_WALLET_ID, walletId)
+                })
+            }
+            is Destination.AllTokens -> {
+                navGraph.setStartDestination(R.id.wallet_home_all_tokens_fragment)
+                navController.setGraph(navGraph, Bundle().apply {
+                    putString(WalletHomeAllTokensFragment.ARGS_WALLET_TYPE, one.mixin.android.ui.wallet.home.WalletHomeType.PRIVACY.name)
+                })
+            }
+            is Destination.AllWeb3Tokens -> {
+                navGraph.setStartDestination(R.id.wallet_home_all_tokens_fragment)
+                navController.setGraph(navGraph, Bundle().apply {
+                    putString(WalletHomeAllTokensFragment.ARGS_WALLET_TYPE, destination.walletType.name)
+                    putString(WalletHomeAllTokensFragment.ARGS_WALLET_ID, destination.walletId)
                 })
             }
             is Destination.AllTransactions -> {
@@ -205,6 +217,13 @@ class WalletActivity : BlazeBaseActivity() {
         object Transactions : Destination()
         object Search : Destination()
         data class SearchWeb3(val walletId: String? = null) : Destination()
+        object AllTokens : Destination() {
+            private fun readResolve(): Any = AllTokens
+        }
+        data class AllWeb3Tokens(
+            val walletId: String,
+            val walletType: one.mixin.android.ui.wallet.home.WalletHomeType = one.mixin.android.ui.wallet.home.WalletHomeType.CLASSIC,
+        ) : Destination()
         object AllTransactions : Destination()
         data class AllWeb3Transactions(val walletId: String) : Destination()
         object Hidden : Destination()
@@ -253,13 +272,15 @@ class WalletActivity : BlazeBaseActivity() {
             activity: Activity,
             tokenItem: TokenItem,
             destination: Destination,
-            fromMarket: Boolean = false
+            fromMarket: Boolean = false,
+            source: String = AnalyticsTracker.AssetSource.WALLET_HOME,
         ) {
             activity.startActivity(
                 Intent(activity, WalletActivity::class.java).apply {
                     putExtra(DESTINATION, destination)
                     putExtra(ASSET, tokenItem)
                     putExtra(ARGS_FROM_MARKET, fromMarket)
+                    putExtra(TransactionsFragment.ARGS_SOURCE, source)
                 },
             )
         }
@@ -294,6 +315,8 @@ class WalletActivity : BlazeBaseActivity() {
                     putExtra(DESTINATION, destination)
                     putExtra(PENDING_TYPE, pendingType)
                     if (destination is Destination.AllWeb3Transactions) {
+                        putExtra(ARGS_WALLET_ID, destination.walletId)
+                    } else if (destination is Destination.AllWeb3Tokens) {
                         putExtra(ARGS_WALLET_ID, destination.walletId)
                     } else if (destination is Destination.Web3Hidden) {
                         putExtra(ARGS_WALLET_ID, destination.walletId)
