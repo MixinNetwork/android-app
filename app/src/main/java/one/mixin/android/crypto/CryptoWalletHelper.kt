@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package one.mixin.android.crypto
 
 import android.content.Context
@@ -325,6 +327,7 @@ object CryptoWalletHelper {
         secureStorage(context)?.remove(walletId)
     }
 
+    @Suppress("DEPRECATION")
     fun clear(context: Context) {
         synchronized(secureStorageLock) {
             secureStorage?.edit()?.clear()?.commit()

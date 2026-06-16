@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.paging.DataSource
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.RawQuery
 import androidx.room.RoomWarnings
 import androidx.sqlite.db.SupportSQLiteQuery
@@ -28,6 +29,7 @@ import one.mixin.android.vo.QuoteMinimal
 import one.mixin.android.vo.SearchMessageDetailItem
 
 @Dao
+@RewriteQueriesToDropUnusedColumns
 @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
 interface MessageDao : BaseDao<Message> {
     companion object {
@@ -66,7 +68,7 @@ interface MessageDao : BaseDao<Message> {
     }
 
     // Read SQL
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_MESSAGE_ITEM WHERE m.conversation_id = :conversationId AND m.category IN $CHAT_CATEGORY ORDER BY m.created_at ASC LIMIT :limit OFFSET :offset")
     suspend fun getChatMessages(
         conversationId: String,
@@ -86,7 +88,7 @@ interface MessageDao : BaseDao<Message> {
         messageId: String,
     ): String?
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """
         SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
@@ -104,7 +106,7 @@ interface MessageDao : BaseDao<Message> {
     )
     fun getMediaMessages(conversationId: String): DataSource.Factory<Int, MessageItem>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """
         SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
@@ -181,7 +183,7 @@ interface MessageDao : BaseDao<Message> {
         """)
     suspend fun countIndexMediaMessages(conversationId: String): Int
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """
         SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
@@ -220,7 +222,7 @@ interface MessageDao : BaseDao<Message> {
         """)
     suspend fun countIndexMediaMessagesExcludeLive(conversationId: String): Int
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """
         SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId, u.avatar_url AS userAvatarUrl,
@@ -236,7 +238,7 @@ interface MessageDao : BaseDao<Message> {
     )
     fun getAudioMessages(conversationId: String): DataSource.Factory<Int, MessageItem>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """
         SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId, u.avatar_url AS userAvatarUrl,
@@ -281,7 +283,7 @@ interface MessageDao : BaseDao<Message> {
     )
     fun getLinkMessages(conversationId: String): DataSource.Factory<Int, HyperlinkItem>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """
         SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
@@ -296,7 +298,7 @@ interface MessageDao : BaseDao<Message> {
     )
     fun getFileMessages(conversationId: String): DataSource.Factory<Int, MessageItem>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """
         SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId, 
@@ -400,7 +402,7 @@ interface MessageDao : BaseDao<Message> {
         limit: Int,
     ): List<Message>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """
         SELECT m.* FROM messages m 
@@ -414,7 +416,7 @@ interface MessageDao : BaseDao<Message> {
         rowId: Long,
     ): List<TransferMessage>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """
         SELECT m.* FROM messages m 
@@ -429,7 +431,7 @@ interface MessageDao : BaseDao<Message> {
         conversationIds: Collection<String>,
     ): List<TransferMessage>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """
         SELECT m.* FROM messages m 
@@ -444,7 +446,7 @@ interface MessageDao : BaseDao<Message> {
         createdAt: String,
     ): List<TransferMessage>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """
         SELECT m.* FROM messages m 
@@ -470,7 +472,7 @@ interface MessageDao : BaseDao<Message> {
     @Query("SELECT DISTINCT conversation_id FROM messages WHERE id IN (:messages)")
     fun findConversationsByMessages(messages: List<String>): List<String>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """
         SELECT rowid, id FROM messages WHERE conversation_id = :conversationId
@@ -502,7 +504,7 @@ interface MessageDao : BaseDao<Message> {
         encryptedCategory: String,
     ): List<MediaMessageMinimal>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """
         $PREFIX_MESSAGE_ITEM WHERE m.conversation_id = :conversationId AND (m.category IN ($AUDIOS)) AND m.created_at >= :createdAt AND 
@@ -515,7 +517,7 @@ interface MessageDao : BaseDao<Message> {
         messageId: String,
     ): MessageItem?
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """
         SELECT * FROM messages WHERE conversation_id = :conversationId AND (category IN ($AUDIOS))
@@ -643,7 +645,7 @@ interface MessageDao : BaseDao<Message> {
     @Query("SELECT count(id) FROM messages WHERE conversation_id = :conversationId")
     suspend fun countDeleteMessageByConversationId(conversationId: String): Int
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """
         SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
@@ -660,7 +662,7 @@ interface MessageDao : BaseDao<Message> {
     )
     fun findAudiosByConversationId(conversationId: String): DataSource.Factory<Int, MessageItem>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """
         SELECT count(1) FROM messages
@@ -677,7 +679,7 @@ interface MessageDao : BaseDao<Message> {
         conversationId: String,
     ): Int
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """
         SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
@@ -694,7 +696,7 @@ interface MessageDao : BaseDao<Message> {
         ids: List<String>,
     ): List<MessageItem>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_MESSAGE_ITEM WHERE m.id = :messageId")
     fun findMessageItemByMessageId(messageId: String): LiveData<MessageItem?>
 
@@ -704,7 +706,7 @@ interface MessageDao : BaseDao<Message> {
     @Query("SELECT id FROM messages LIMIT 1")
     suspend fun hasMessage(): String?
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("SELECT * FROM messages WHERE id = :messageId")
     fun findMessageMediaById(messageId: String): MessageMedia?
 

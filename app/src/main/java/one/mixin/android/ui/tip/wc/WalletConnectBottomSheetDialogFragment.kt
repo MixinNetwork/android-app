@@ -348,10 +348,6 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         val tx = signData.signMessage
         if (tx !is WCEthereumTransaction) return
         val assetId = chain.getWeb3ChainId()
-        if (assetId == null) {
-            Timber.d("$TAG refreshEstimatedGasAndAsset assetId not support")
-            return
-        }
 
         stopEstimatedGasRefresh("restart")
         Timber.d("$TAG estimateGas start topic=$topic requestId=${sessionRequest?.request?.id} step=$step chain=${chain.chainId} assetId=$assetId from=${tx.from} to=${tx.to} value=${tx.value} dataLength=${tx.data?.length ?: 0}")
@@ -385,8 +381,8 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                             tipGas = buildTipGas(chain.chainId, r.data!!)
                             Timber.d("$TAG estimateGas result topic=$topic requestId=${sessionRequest?.request?.id} step=$step success=true gasLimit=${tipGas?.gasLimit} maxFeePerGas=${tipGas?.maxFeePerGas} maxPriorityFeePerGas=${tipGas?.maxPriorityFeePerGas}")
                         }
-                        if (tipGas != null) {
-                            (signData as? WalletConnect.WCSignData.V2SignData)?.tipGas = tipGas
+                        if (tipGas != null && signData is WalletConnect.WCSignData.V2SignData) {
+                            signData.tipGas = tipGas
                         }
                     } catch (e: Exception) {
                         Timber.e(e, "$TAG estimateGas exception topic=$topic requestId=${sessionRequest?.request?.id} step=$step")

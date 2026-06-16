@@ -501,7 +501,7 @@ private fun ScrollableCandleChart(
                             contentAlignment = Alignment.CenterEnd
                         ) {
                             Text(
-                                text = marketPriceText ?: currentPrice?.toPlainString() ?: "",
+                                text = marketPriceText ?: currentPrice.toPlainString(),
                                 fontSize = 10.sp,
                                 color = MixinAppTheme.colors.textPrimary,
                                 textAlign = TextAlign.End,

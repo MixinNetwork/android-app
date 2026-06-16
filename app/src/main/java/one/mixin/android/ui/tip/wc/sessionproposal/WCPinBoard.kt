@@ -1,4 +1,5 @@
 @file:OptIn(ExperimentalAnimationApi::class)
+@file:Suppress("DEPRECATION")
 
 package one.mixin.android.ui.tip.wc.sessionproposal
 

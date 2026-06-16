@@ -3,11 +3,13 @@ package one.mixin.android.db
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.RoomWarnings
 import one.mixin.android.ui.transfer.vo.compatible.TransferMessageMention
 import one.mixin.android.vo.MessageMention
 
 @Dao
+@RewriteQueriesToDropUnusedColumns
 @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
 interface MessageMentionDao : BaseDao<MessageMention> {
     @Query("SELECT count(1) FROM message_mentions WHERE conversation_id = :conversationId AND has_read = 0")
@@ -54,14 +56,14 @@ interface MessageMentionDao : BaseDao<MessageMention> {
     @Query("SELECT * FROM message_mentions WHERE message_id = :id")
     fun findMessageMentionById(id: String): MessageMention?
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("SELECT mm.* FROM message_mentions mm WHERE mm.rowid > :rowId ORDER BY mm.rowid ASC LIMIT :limit")
     fun getMessageMentionByLimitAndRowId(
         limit: Int,
         rowId: Long,
     ): List<TransferMessageMention>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("SELECT mm.* FROM message_mentions mm WHERE mm.rowid > :rowId AND conversation_id IN (:conversationIds) ORDER BY mm.rowid ASC LIMIT :limit")
     fun getMessageMentionByLimitAndRowId(
         limit: Int,

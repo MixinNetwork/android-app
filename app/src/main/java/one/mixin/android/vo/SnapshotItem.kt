@@ -143,7 +143,7 @@ data class SnapshotItem(
         val simulateType = simulateType()
         return when (simulateType) {
             SafeSnapshotType.withdrawal -> {
-                withdrawal?.receiver.isNullOrBlank() || withdrawal?.withdrawalHash.isNullOrBlank()
+                withdrawal?.receiver.isNullOrBlank() || withdrawal.withdrawalHash.isNullOrBlank()
             }
 
             SafeSnapshotType.deposit -> {

@@ -12,6 +12,6 @@ val Int.sp: Int
 val Float.dp: Int
     get() = MixinApplication.appContext.dpToPx(this)
 val Float.composeDp: Dp
-    get() = Dp(this.toFloat())
+    get() = Dp(this)
 val Float.sp: Int
     get() = MixinApplication.appContext.spToPx(this)

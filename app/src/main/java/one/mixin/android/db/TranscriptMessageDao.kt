@@ -3,6 +3,7 @@ package one.mixin.android.db
 import androidx.paging.DataSource
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.RoomWarnings
 import one.mixin.android.db.contants.AUDIOS
 import one.mixin.android.db.contants.DATA
@@ -15,6 +16,7 @@ import one.mixin.android.vo.TranscriptAttachmentMigration
 import one.mixin.android.vo.TranscriptMessage
 
 @Dao
+@RewriteQueriesToDropUnusedColumns
 @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
 interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
     companion object {
@@ -31,7 +33,7 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
     @Query("SELECT * FROM transcript_messages WHERE message_id = :messageId AND category IN ($IMAGES, $VIDEOS, $DATA, $AUDIOS) AND (media_status = 'DONE' OR media_status = 'READ')")
     fun findAttachmentMessage(messageId: String): TranscriptMessage?
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("SELECT * FROM transcript_messages WHERE transcript_id = :transcriptId")
     fun getTranscript(transcriptId: String): List<TranscriptMessage>
 
@@ -62,7 +64,7 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
         mediaStatus: String,
     )
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """
         SELECT t.transcript_id AS transcriptId, t.message_id AS messageId, t.user_id AS userId , IFNULL(u.full_name, t.user_full_name) AS userFullName, u.app_id AS appId, u.identity_number AS userIdentityNumber,
@@ -88,7 +90,7 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
         messageId: String,
     ): Int
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """  SELECT t.transcript_id AS transcriptId, t.message_id AS messageId, t.user_id AS userId , IFNULL(u.full_name, t.user_full_name) AS userFullName, u.app_id AS appId, u.identity_number AS userIdentityNumber,
         t.category AS type, t.content, t.created_at AS createdAt, t.media_status AS mediaStatus, t.media_name AS mediaName, 

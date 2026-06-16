@@ -1,3 +1,5 @@
+@file:Suppress("OVERRIDE_DEPRECATION")
+
 package one.mixin.android.widget.audio
 
 import android.animation.ObjectAnimator

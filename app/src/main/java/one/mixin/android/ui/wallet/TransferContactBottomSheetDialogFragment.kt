@@ -99,7 +99,7 @@ class TransferContactBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
     }
 
     private fun filter(s: String) {
-        keyWord = s.toString()
+        keyWord = s
         adapter.filter = keyWord
         userCallback.filter = keyWord
     }

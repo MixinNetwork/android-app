@@ -1,3 +1,5 @@
+@file:Suppress("OVERRIDE_DEPRECATION", "DEPRECATION")
+
 package one.mixin.android.job
 
 import android.app.IntentService

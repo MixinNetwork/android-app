@@ -203,8 +203,8 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
             viewModel.loadPositionDetail(
                 positionId = positionId,
                 onSuccess = { position ->
-                    latestMarkPrice = position.markPrice ?: "0"
-                    latestUnrealizedPnl = position.unrealizedPnl ?: "0"
+                    latestMarkPrice = position.markPrice
+                    latestUnrealizedPnl = position.unrealizedPnl
 
                     lifecycleScope.launch {
                         viewModel.getMarketFromDb(position.marketId)?.let { market ->

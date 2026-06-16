@@ -5,6 +5,7 @@ import androidx.paging.DataSource
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.RawQuery
 import androidx.room.RoomWarnings
 import androidx.room.Transaction
@@ -19,6 +20,7 @@ import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.Token
 
 @Dao
+@RewriteQueriesToDropUnusedColumns
 @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
 interface SafeSnapshotDao : BaseDao<SafeSnapshot> {
     companion object {
@@ -162,5 +164,4 @@ interface SafeSnapshotDao : BaseDao<SafeSnapshot> {
 
     @Query("SELECT * FROM safe_snapshots WHERE withdrawal LIKE '%'||:receiver||'%' ORDER BY created_at DESC LIMIT 1")
     suspend fun findLastWithdrawalSnapshotByReceiver(receiver: String): SafeSnapshot?
-
 }
