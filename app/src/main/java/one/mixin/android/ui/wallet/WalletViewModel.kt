@@ -181,7 +181,7 @@ internal constructor(
             config = PagingConfig(
                 pageSize = PAGE_SIZE,
                 prefetchDistance = PAGE_SIZE * 2,
-                enablePlaceholders = true,
+                enablePlaceholders = false,
             ),
             pagingSourceFactory = { web3Repository.web3TransactionPagingSource(filterParams) }
         ).flow.map { pagingData ->
