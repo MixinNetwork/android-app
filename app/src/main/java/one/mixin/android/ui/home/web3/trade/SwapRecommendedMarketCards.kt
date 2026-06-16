@@ -2,7 +2,6 @@ package one.mixin.android.ui.home.web3.trade
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,6 +14,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -22,15 +23,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.Constants
@@ -222,8 +220,6 @@ private fun RecommendedMarketGridItem(
     risingColor: Color,
     fallingColor: Color,
 ) {
-    val compactTextStyle = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false))
-
     Column(
         modifier = Modifier
             .offset(y = 6.dp)
@@ -231,7 +227,6 @@ private fun RecommendedMarketGridItem(
             .clickable(onClick = item.onClick)
             .padding(horizontal = 4.dp, vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top,
     ) {
         Box(
             modifier = Modifier.size(width = 42.dp, height = 46.dp),
@@ -243,55 +238,60 @@ private fun RecommendedMarketGridItem(
                 modifier = Modifier
                     .size(42.dp)
                     .clip(CircleShape),
-                contentScale = ContentScale.Crop,
             )
             item.changePercent?.let { changePercent ->
-                Text(
+                BasicText(
                     text = changePercent,
-                    fontSize = 10.sp,
-                    lineHeight = 10.sp,
-                    style = compactTextStyle,
-                    fontWeight = FontWeight.Medium,
-                    color = Color.White,
+                    style = TextStyle(
+                        fontSize = 12.sp,
+                        lineHeight = 14.sp,
+                        color = Color.White,
+                    ),
                     maxLines = 1,
-                    overflow = TextOverflow.Clip,
-                    textAlign = TextAlign.Center,
+                    autoSize = TextAutoSize.StepBased(
+                        minFontSize = 8.sp,
+                        maxFontSize = 12.sp,
+                        stepSize = 0.5.sp,
+                    ),
                     modifier = Modifier
-                        .align(Alignment.TopCenter)
                         .offset(y = 32.dp)
-                        .background(
-                            color = if (item.isPositive) risingColor else fallingColor,
-                            shape = RoundedCornerShape(4.dp),
-                        )
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(if (item.isPositive) risingColor else fallingColor)
                         .padding(horizontal = 3.dp, vertical = 1.dp),
                 )
             }
         }
         Spacer(modifier = Modifier.height(4.dp))
-        Text(
+        BasicText(
             text = item.symbol,
-            fontSize = 14.sp,
-            lineHeight = 18.sp,
-            style = compactTextStyle,
-            fontWeight = FontWeight.Medium,
-            color = MixinAppTheme.colors.textPrimary,
+            style = TextStyle(
+                fontSize = 14.sp,
+                lineHeight = 18.sp,
+                color = MixinAppTheme.colors.textPrimary,
+                textAlign = TextAlign.Center,
+            ),
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth(),
+            autoSize = TextAutoSize.StepBased(
+                minFontSize = 8.sp,
+                maxFontSize = 14.sp,
+                stepSize = 0.5.sp,
+            ),
         )
         item.price?.let { price ->
             Spacer(modifier = Modifier.height(2.dp))
-            Text(
+            BasicText(
                 text = price,
-                fontSize = 13.sp,
-                lineHeight = 13.sp,
-                style = compactTextStyle,
-                color = MixinAppTheme.colors.textAssist,
+                style = TextStyle(
+                    fontSize = 13.sp,
+                    color = MixinAppTheme.colors.textAssist,
+                    textAlign = TextAlign.Center,
+                ),
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth(),
+                autoSize = TextAutoSize.StepBased(
+                    minFontSize = 8.sp,
+                    maxFontSize = 13.sp,
+                    stepSize = 0.5.sp,
+                ),
             )
         }
     }
