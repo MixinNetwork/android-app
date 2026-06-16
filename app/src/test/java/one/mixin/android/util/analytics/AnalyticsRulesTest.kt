@@ -64,4 +64,15 @@ class AnalyticsRulesTest {
         assertEquals("trade_spot_order_detail", event.name)
         assertEquals(mapOf("type" to "simple"), event.params)
     }
+
+    @Test
+    fun receiveAssetLevelUsesV0ForNoMoney() {
+        assertEquals("v0", AnalyticsRules.receiveAssetLevel("0".toBigDecimal()))
+    }
+
+    @Test
+    fun receiveAssetLevelUsesV1ForPositiveAmountsUnderV100() {
+        assertEquals("v1", AnalyticsRules.receiveAssetLevel("0.01".toBigDecimal()))
+        assertEquals("v1", AnalyticsRules.receiveAssetLevel("99.99".toBigDecimal()))
+    }
 }

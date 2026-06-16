@@ -84,6 +84,7 @@ internal object AnalyticsRules {
             amountUsd >= BigDecimal("10000") -> "v10,000"
             amountUsd >= BigDecimal("1000") -> "v1,000"
             amountUsd >= BigDecimal("100") -> "v100"
-            else -> "v1"
+            amountUsd > BigDecimal.ZERO -> "v1"
+            else -> "v0"
         }
 }
