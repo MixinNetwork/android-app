@@ -154,7 +154,7 @@ private fun RecommendedMarketCard(
         ) {
             Text(
                 text = stringResource(card.titleRes),
-                fontSize = 16.sp,
+                fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
                 color = MixinAppTheme.colors.textPrimary,
                 modifier = Modifier.weight(1f),
@@ -169,7 +169,7 @@ private fun RecommendedMarketCard(
             }
         }
 
-        Spacer(modifier = Modifier.height(18.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         val rows = card.items.chunked(RECOMMENDED_MARKET_COLUMNS)
         rows.forEachIndexed { index, rowItems ->
@@ -196,7 +196,7 @@ private fun RecommendedMarketCard(
                 }
             }
             if (index != rows.lastIndex) {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(12.dp))
             }
         }
         if (card.showViewAll) {
@@ -226,16 +226,15 @@ private fun RecommendedMarketGridItem(
 
     Column(
         modifier = Modifier
+            .offset(y = 6.dp)
             .clip(RoundedCornerShape(8.dp))
             .clickable(onClick = item.onClick)
-            .padding(horizontal = 4.dp, vertical = 6.dp),
+            .padding(horizontal = 4.dp, vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top,
     ) {
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(48.dp),
+            modifier = Modifier.size(width = 42.dp, height = 46.dp),
             contentAlignment = Alignment.TopCenter,
         ) {
             CoilImage(
@@ -259,10 +258,10 @@ private fun RecommendedMarketGridItem(
                     textAlign = TextAlign.Center,
                     modifier = Modifier
                         .align(Alignment.TopCenter)
-                        .offset(y = 36.dp)
+                        .offset(y = 32.dp)
                         .background(
                             color = if (item.isPositive) risingColor else fallingColor,
-                            shape = RoundedCornerShape(3.dp),
+                            shape = RoundedCornerShape(4.dp),
                         )
                         .padding(horizontal = 3.dp, vertical = 1.dp),
                 )
@@ -272,7 +271,7 @@ private fun RecommendedMarketGridItem(
         Text(
             text = item.symbol,
             fontSize = 14.sp,
-            lineHeight = 14.sp,
+            lineHeight = 18.sp,
             style = compactTextStyle,
             fontWeight = FontWeight.Medium,
             color = MixinAppTheme.colors.textPrimary,
@@ -285,8 +284,8 @@ private fun RecommendedMarketGridItem(
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = price,
-                fontSize = 12.sp,
-                lineHeight = 12.sp,
+                fontSize = 13.sp,
+                lineHeight = 13.sp,
                 style = compactTextStyle,
                 color = MixinAppTheme.colors.textAssist,
                 maxLines = 1,
