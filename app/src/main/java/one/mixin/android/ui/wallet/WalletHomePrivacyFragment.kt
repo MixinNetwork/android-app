@@ -74,6 +74,8 @@ import one.mixin.android.ui.wallet.home.WalletHomeState
 import one.mixin.android.ui.wallet.home.WalletHomeBalanceHandoff
 import one.mixin.android.ui.wallet.home.WalletHomeBalanceSnapshot
 import one.mixin.android.ui.wallet.home.WalletHomeType
+import one.mixin.android.ui.wallet.home.calculateWalletHomeBtcTotal
+import one.mixin.android.ui.wallet.home.calculateWalletHomeTokenFiat
 import one.mixin.android.ui.wallet.home.calculateWalletHomeTotalFiat
 import one.mixin.android.ui.wallet.home.formatWalletHomeBtcTotal
 import one.mixin.android.ui.wallet.home.getWalletHomeCacheState
@@ -91,6 +93,7 @@ import one.mixin.android.util.reportException
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.PendingDisplay
 import one.mixin.android.vo.SnapshotItem
+import one.mixin.android.vo.WalletHomeTokenSummary
 import one.mixin.android.vo.notMessengerUser
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.toSnapshot
@@ -105,7 +108,6 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import javax.inject.Inject
 import kotlin.math.abs
-import kotlin.time.measureTime
 
 @AndroidEntryPoint
 class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet), HeaderAdapter.OnItemListener {
@@ -124,7 +126,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
 
     private val walletViewModel by viewModels<WalletViewModel>()
     private var assets: List<TokenItem> = listOf()
-    private var topTokens: List<TokenItem> = emptyList()
+    private var tokenSummary = WalletHomeTokenSummary()
     private var recentSnapshots: List<SnapshotItem> = emptyList()
     private var positions: List<PerpsPositionItem> = emptyList()
     private var topMovers: List<PerpsMarket> = emptyList()
@@ -155,6 +157,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
 
     private var distance = 0
     private var snackBar: Snackbar? = null
+    private var bitcoinPriceUsd: BigDecimal? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -186,33 +189,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         super.onViewCreated(view, savedInstanceState)
         Timber.e("onViewCreated called in WalletHomePrivacyFragment")
         _walletId.value = Session.getAccountId().orEmpty()
-        lifecycleScope.launch {
-            val queryDuration = measureTime {
-                val data = walletViewModel.assetItemsNotHiddenRaw()
-                assets = data
-                Timber.e("assetItemsNotHiddenRaw query completed: data size: ${data.size}")
-            }
-            Timber.e("assetItemsNotHiddenRaw query took: $queryDuration")
-            if (isAdded) {
-                walletHomeDataState = WalletHomeDataState.DATABASE
-                isLoading = false
-                assetsAdapter.setAssetList(assets)
-                if (lastFiatCurrency != Session.getFiatCurrency()) {
-                    lastFiatCurrency = Session.getFiatCurrency()
-                    assetsAdapter.notifyDataSetChanged()
-                }
-                if (assets.isNotEmpty()) {
-                    isLoading = false
-                    renderHome()
-                }
-                var bitcoin = assets.find { a -> a.assetId == Constants.ChainId.BITCOIN_CHAIN_ID }
-                if (bitcoin == null) {
-                    bitcoin = walletViewModel.findOrSyncAsset(Constants.ChainId.BITCOIN_CHAIN_ID)
-                }
-                renderPie(assets, bitcoin)
-                renderHome()
-            }
-        }
+        refreshBitcoinPrice()
 
         binding.apply {
             _headBinding =
@@ -305,10 +282,8 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             )
         }
 
-        walletViewModel.assetItemsNotHidden().observe(viewLifecycleOwner) {
-            Timber.e("observe assetItemsNotHidden data size: ${it.size}")
-            walletHomeDataState = WalletHomeDataState.DATABASE
-            isLoading = false
+        walletViewModel.walletHomeAssetItemsNotHiddenLimit(WalletHomeSection.PREVIEW_LIMIT).observe(viewLifecycleOwner) {
+            Timber.e("observe walletHomeAssetItemsNotHiddenLimit data size: ${it.size}")
             if (it.isEmpty()) {
                 setEmpty()
                 assets = emptyList()
@@ -321,20 +296,14 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
                     lastFiatCurrency = Session.getFiatCurrency()
                     assetsAdapter.notifyDataSetChanged()
                 }
-                lifecycleScope.launch {
-                    var bitcoin = assets.find { a -> a.assetId == Constants.ChainId.BITCOIN_CHAIN_ID }
-                    if (bitcoin == null) {
-                        bitcoin = walletViewModel.findOrSyncAsset(Constants.ChainId.BITCOIN_CHAIN_ID)
-                    }
-
-                    renderPie(assets, bitcoin)
-                    renderHome()
-                }
+                renderHome()
             }
         }
 
-        walletViewModel.topAssetItemsNotHiddenLimit().observe(viewLifecycleOwner) {
-            topTokens = it
+        walletViewModel.walletHomeTokenSummary().observe(viewLifecycleOwner) {
+            tokenSummary = it
+            walletHomeDataState = WalletHomeDataState.DATABASE
+            isLoading = false
             renderHome()
         }
 
@@ -399,18 +368,24 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
     private var isLoading = true
 
     private fun buildHomeState(): WalletHomeState {
-        val tokenFiat = assets.fold(BigDecimal.ZERO) { acc, item -> acc + item.fiat() }
+        val fiatRate = Fiats.getRate().toBigDecimal()
+        val tokenFiat = calculateWalletHomeTokenFiat(
+            totalUsd = BigDecimal.valueOf(tokenSummary.totalUsd),
+            fiatRate = fiatRate,
+        )
         val totalFiat = calculateWalletHomeTotalFiat(tokenFiat, positions.positionMarginUsdTotal())
-        val tokenBtc = assets.fold(BigDecimal.ZERO) { acc, item -> acc + item.btc() }
-        val totalBtc = assets
-            .find { it.assetId == Constants.ChainId.BITCOIN_CHAIN_ID }
-            ?.priceUsd
-            ?.toBigDecimalOrNull()
-            ?.takeIf { it > BigDecimal.ZERO }
-            ?.let { bitcoinPriceUsd ->
-                totalFiat.divide(BigDecimal(Fiats.getRate()), 16, RoundingMode.HALF_UP)
-                    .divide(bitcoinPriceUsd, 16, RoundingMode.HALF_UP)
-            } ?: tokenBtc
+        val tokenBtc = calculateWalletHomeBtcTotal(
+            tokenFiat = tokenFiat,
+            tokenBtc = BigDecimal.valueOf(tokenSummary.totalBtc),
+            bitcoinPriceUsd = homeBitcoinPriceUsd(),
+            fiatRate = fiatRate,
+        )
+        val totalBtc = calculateWalletHomeBtcTotal(
+            tokenFiat = totalFiat,
+            tokenBtc = tokenBtc,
+            bitcoinPriceUsd = homeBitcoinPriceUsd(),
+            fiatRate = fiatRate,
+        )
         val showAddWalletBanner = !defaultSharedPreferences.getBoolean(PREF_WALLET_HOME_ADD_WALLET_BANNER_CLOSED, false)
         val showBanner = showAddWalletBanner
         val showReferral = !defaultSharedPreferences.getBoolean(PREF_WALLET_HOME_REFERRAL_CLOSED, false)
@@ -436,12 +411,12 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             privacyTransactions = recentSnapshots.take(WalletHomeSection.PREVIEW_LIMIT),
             positions = positions.take(WalletHomeSection.PREVIEW_LIMIT),
             positionSummary = positions.toWalletHomePositionSummary(),
-            totalTokenCount = assets.size,
+            totalTokenCount = tokenSummary.tokenCount,
             totalTransactionCount = recentSnapshots.size,
             totalPositionCount = positions.size,
             isLoading = isLoading,
             topMovers = topMovers,
-            allTokensHidden = assets.isEmpty() && topTokens.isNotEmpty(),
+            allTokensHidden = tokenSummary.hasOnlyHiddenTokens(),
             pendingIndicator = pendingDisplays.toWalletHomePendingIndicator(),
             quoteColorReversed = defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false),
             showAddWalletBanner = showAddWalletBanner,
@@ -453,6 +428,23 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         defaultSharedPreferences.putWalletHomeCache(privacyWalletHomeCacheKey(), state)
         return state
     }
+
+    private fun refreshBitcoinPrice() {
+        lifecycleScope.launch {
+            bitcoinPriceUsd = walletViewModel.findOrSyncAsset(Constants.ChainId.BITCOIN_CHAIN_ID)
+                ?.priceUsd
+                ?.toBigDecimalOrNull()
+                ?.takeIf { it > BigDecimal.ZERO }
+            renderHome()
+        }
+    }
+
+    private fun homeBitcoinPriceUsd(): BigDecimal? =
+        tokenSummary.bitcoinPriceUsd
+            ?.toBigDecimalOrNull()
+            ?.takeIf { it > BigDecimal.ZERO }
+            ?: bitcoinPriceUsd
+
 
     private fun privacyWalletHomeCacheKey(): String =
         walletHomeCacheKey(WalletHomeType.PRIVACY, Session.getAccountId().orEmpty())
@@ -554,39 +546,14 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         override fun onImportKeyLearnMoreClicked() = Unit
 
         override fun onViewMoreTokensClicked() {
-            // Pass the token-only balance (excluding perps position margin) so the AllTokens
-            // header shows its token-list baseline immediately and avoids a flicker when
-            // positions load on a separate, slower path. Fall back to the cached home state
-            // when the token list has not been loaded from the database yet.
             val state = _homeState.value
-            val snapshot = if (assets.isEmpty()) {
-                WalletHomeBalanceSnapshot(
-                    fiatTotal = state.tokenFiatTotal ?: state.fiatTotal,
-                    tokenFiatTotal = state.tokenFiatTotal,
-                    btcTotal = state.btcTotal,
-                    fiatSymbol = state.fiatSymbol,
-                    totalTokenCount = state.totalTokenCount,
-                )
-            } else {
-                val tokenFiat = assets.fold(BigDecimal.ZERO) { acc, item -> acc + item.fiat() }
-                val tokenBtc = assets.fold(BigDecimal.ZERO) { acc, item -> acc + item.btc() }
-                val btcTotal = assets
-                    .find { it.assetId == Constants.ChainId.BITCOIN_CHAIN_ID }
-                    ?.priceUsd
-                    ?.toBigDecimalOrNull()
-                    ?.takeIf { it > BigDecimal.ZERO }
-                    ?.let { bitcoinPriceUsd ->
-                        tokenFiat.divide(BigDecimal(Fiats.getRate()), 16, RoundingMode.HALF_UP)
-                            .divide(bitcoinPriceUsd, 16, RoundingMode.HALF_UP)
-                    } ?: tokenBtc
-                WalletHomeBalanceSnapshot(
-                    fiatTotal = tokenFiat.numberFormat2(),
-                    tokenFiatTotal = tokenFiat.numberFormat2(),
-                    btcTotal = formatWalletHomeBtcTotal(btcTotal),
-                    fiatSymbol = Fiats.getSymbol(),
-                    totalTokenCount = assets.size,
-                )
-            }
+            val snapshot = WalletHomeBalanceSnapshot(
+                fiatTotal = state.tokenFiatTotal ?: state.fiatTotal,
+                tokenFiatTotal = state.tokenFiatTotal,
+                btcTotal = state.btcTotal,
+                fiatSymbol = state.fiatSymbol,
+                totalTokenCount = state.totalTokenCount,
+            )
             WalletHomeBalanceHandoff.savePrivacyBalance(snapshot)
             WalletActivity.show(requireActivity(), WalletActivity.Destination.AllTokens)
         }

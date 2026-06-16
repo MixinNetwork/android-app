@@ -101,6 +101,11 @@ internal constructor(
 
     fun assetItemsNotHidden(): LiveData<List<TokenItem>> = tokenRepository.assetItemsNotHidden()
 
+    fun walletHomeAssetItemsNotHiddenLimit(limit: Int): LiveData<List<TokenItem>> =
+        tokenRepository.walletHomeAssetItemsNotHiddenLimit(limit)
+
+    fun walletHomeTokenSummary() = tokenRepository.walletHomeTokenSummary()
+
     suspend fun assetItemsNotHiddenRaw(): List<TokenItem> = withContext(Dispatchers.IO){
         return@withContext tokenRepository.assetItemsNotHiddenRaw()
     }

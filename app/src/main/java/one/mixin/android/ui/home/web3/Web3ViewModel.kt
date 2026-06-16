@@ -101,6 +101,13 @@ class Web3ViewModel @Inject constructor(
 
     fun web3TokensExcludeHidden(walletId: String) = web3Repository.web3TokensExcludeHidden(walletId)
 
+    fun walletHomeWeb3TokenPreview(
+        walletId: String,
+        limit: Int,
+    ) = web3Repository.walletHomeWeb3TokenPreview(walletId, limit)
+
+    fun walletHomeWeb3TokenSummary(walletId: String) = web3Repository.walletHomeWeb3TokenSummary(walletId)
+
     fun topWeb3TokenItems(walletId: String) = web3Repository.topWeb3TokenItems(walletId)
 
     suspend fun web3TokensExcludeHiddenRaw(walletId: String) = withContext(Dispatchers.IO) {

@@ -71,6 +71,8 @@ import one.mixin.android.ui.wallet.home.WalletHomeState
 import one.mixin.android.ui.wallet.home.WalletHomeBalanceHandoff
 import one.mixin.android.ui.wallet.home.WalletHomeBalanceSnapshot
 import one.mixin.android.ui.wallet.home.WalletHomeType
+import one.mixin.android.ui.wallet.home.calculateWalletHomeBtcTotal
+import one.mixin.android.ui.wallet.home.calculateWalletHomeTokenFiat
 import one.mixin.android.ui.wallet.home.formatWalletHomeBtcTotal
 import one.mixin.android.ui.wallet.home.getWalletHomeCache
 import one.mixin.android.ui.wallet.home.putWalletHomeCache
@@ -88,6 +90,7 @@ import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.WalletCategory
+import one.mixin.android.vo.WalletHomeTokenSummary
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.details.Web3TransactionFragment
 import one.mixin.android.web3.details.Web3TransactionsFragment
@@ -104,7 +107,6 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import javax.inject.Inject
 import kotlin.math.abs
-import kotlin.time.measureTime
 
 @AndroidEntryPoint
 class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet), HeaderAdapter.OnItemListener {
@@ -123,7 +125,7 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
 
     private val web3ViewModel by viewModels<Web3ViewModel>()
     private var assets: List<Web3TokenItem> = listOf()
-    private var topTokens: List<Web3TokenItem> = emptyList()
+    private var tokenSummary = WalletHomeTokenSummary()
     private var recentTransactions: List<Web3TransactionItem> = emptyList()
     private var isWatchWallet: Boolean = false
     private var importKeyAction: WalletHomeImportKeyAction? = null
@@ -136,7 +138,7 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
     private var distance = 0
     private var snackBar: Snackbar? = null
     private var lastFiatCurrency :String? = null
-    private var cachedBtcTotal: String = "0.00"
+    private var bitcoinPriceUsd: BigDecimal? = null
     private var walletHomeDataState = WalletHomeDataState.EMPTY
     private val _homeState = MutableStateFlow(
         WalletHomeState(
@@ -164,7 +166,7 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             if (id.isNullOrEmpty()) {
                 MutableLiveData()
             } else {
-                web3ViewModel.web3TokensExcludeHidden(id)
+                web3ViewModel.walletHomeWeb3TokenPreview(id, WalletHomeSection.PREVIEW_LIMIT)
             }
         }
     }
@@ -186,12 +188,12 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             }
         }
     }
-    private val topTokensLiveData by lazy {
+    private val tokenSummaryLiveData by lazy {
         _walletId.switchMap { id ->
             if (id.isNullOrEmpty()) {
-                MutableLiveData<List<Web3TokenItem>>(emptyList())
+                MutableLiveData(WalletHomeTokenSummary())
             } else {
-                web3ViewModel.topWeb3TokenItems(id)
+                web3ViewModel.walletHomeWeb3TokenSummary(id)
             }
         }
     }
@@ -230,31 +232,7 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
     ) {
         super.onViewCreated(view, savedInstanceState)
         Timber.e("onViewCreated called in WalletHomeClassicFragment")
-        lifecycleScope.launch {
-            val queryDuration = measureTime {
-                val data = web3ViewModel.web3TokensExcludeHiddenRaw(walletId)
-                assets = data
-                Timber.e("web3TokensExcludeHiddenRaw query completed: data size: ${data.size}, walletId: $walletId")
-            }
-            Timber.e("web3TokensExcludeHiddenRaw query took: $queryDuration")
-            if (isAdded) {
-                walletHomeDataState = WalletHomeDataState.DATABASE
-                isLoading = false
-                assetsAdapter.setAssetList(assets)
-                if (lastFiatCurrency != Session.getFiatCurrency()) {
-                    lastFiatCurrency = Session.getFiatCurrency()
-                    assetsAdapter.notifyDataSetChanged()
-                }
-                if (assets.isNotEmpty()) {
-                    isLoading = false
-                    renderHome()
-                }
-
-                val bitcoin = web3ViewModel.findOrSyncAsset(Constants.ChainId.BITCOIN_CHAIN_ID)
-                renderPie(assets, bitcoin)
-                renderHome()
-            }
-        }
+        refreshBitcoinPrice()
 
         binding.apply {
             _headBinding =
@@ -440,8 +418,10 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             renderHome()
         }
         tokensLiveData.observe(viewLifecycleOwner, observer)
-        topTokensLiveData.observe(viewLifecycleOwner) {
-            topTokens = it
+        tokenSummaryLiveData.observe(viewLifecycleOwner) {
+            tokenSummary = it
+            walletHomeDataState = WalletHomeDataState.DATABASE
+            isLoading = false
             renderHome()
         }
         recentTransactionsLiveData.observe(viewLifecycleOwner) {
@@ -460,9 +440,7 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
     }
 
     private val observer = Observer<List<Web3TokenItem>> { data ->
-        Timber.e("observe web3TokensExcludeHidden data size: ${data.size}, walletId: $walletId")
-        walletHomeDataState = WalletHomeDataState.DATABASE
-        isLoading = false
+        Timber.e("observe walletHomeWeb3TokenPreview data size: ${data.size}, walletId: $walletId")
         if (data.isEmpty()) {
             setEmpty()
             assets = data
@@ -479,11 +457,7 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
                 lastFiatCurrency = Session.getFiatCurrency()
                 assetsAdapter.notifyDataSetChanged()
             }
-            lifecycleScope.launch(Dispatchers.IO) {
-                val bitcoin = web3ViewModel.findOrSyncAsset(Constants.ChainId.BITCOIN_CHAIN_ID)
-                renderPie(assets, bitcoin)
-                renderHome()
-            }
+            renderHome()
         }
     }
 
@@ -499,7 +473,17 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
     }
 
     private fun buildHomeState(): WalletHomeState {
-        val totalFiat = assets.fold(BigDecimal.ZERO) { acc, item -> acc + item.fiat() }
+        val fiatRate = Fiats.getRate().toBigDecimal()
+        val totalFiat = calculateWalletHomeTokenFiat(
+            totalUsd = BigDecimal.valueOf(tokenSummary.totalUsd),
+            fiatRate = fiatRate,
+        )
+        val totalBtc = calculateWalletHomeBtcTotal(
+            tokenFiat = totalFiat,
+            tokenBtc = BigDecimal.valueOf(tokenSummary.totalBtc),
+            bitcoinPriceUsd = homeBitcoinPriceUsd(),
+            fiatRate = fiatRate,
+        )
         val showAddWalletBanner = !defaultSharedPreferences.getBoolean(PREF_WALLET_HOME_ADD_WALLET_BANNER_CLOSED, false)
         val showBanner = showAddWalletBanner
         val showReferral = !defaultSharedPreferences.getBoolean(PREF_WALLET_HOME_REFERRAL_CLOSED, false)
@@ -522,14 +506,14 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             cards = cards,
             fiatTotal = totalFiat.numberFormat2(),
             tokenFiatTotal = totalFiat.numberFormat2(),
-            btcTotal = cachedBtcTotal,
+            btcTotal = formatWalletHomeBtcTotal(totalBtc),
             fiatSymbol = Fiats.getSymbol(),
             web3Tokens = assets.take(WalletHomeSection.PREVIEW_LIMIT),
             web3Transactions = recentTransactions.take(WalletHomeSection.PREVIEW_LIMIT),
-            totalTokenCount = assets.size,
+            totalTokenCount = tokenSummary.tokenCount,
             totalTransactionCount = recentTransactions.size,
             isLoading = isLoading,
-            allTokensHidden = assets.isEmpty() && topTokens.isNotEmpty(),
+            allTokensHidden = tokenSummary.hasOnlyHiddenTokens(),
             isWatchWallet = isWatchWallet,
             pendingIndicator = walletHomePendingTransactionIndicator(pendingCount),
             watchIndicator = if (isWatchWallet) walletHomeWatchIndicator(watchAddresses) else null,
@@ -546,6 +530,22 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         )
         return state
     }
+
+    private fun refreshBitcoinPrice() {
+        lifecycleScope.launch {
+            bitcoinPriceUsd = web3ViewModel.findOrSyncAsset(Constants.ChainId.BITCOIN_CHAIN_ID)
+                ?.priceUsd
+                ?.toBigDecimalOrNull()
+                ?.takeIf { it > BigDecimal.ZERO }
+            renderHome()
+        }
+    }
+
+    private fun homeBitcoinPriceUsd(): BigDecimal? =
+        tokenSummary.bitcoinPriceUsd
+            ?.toBigDecimalOrNull()
+            ?.takeIf { it > BigDecimal.ZERO }
+            ?: bitcoinPriceUsd
 
     private suspend fun refreshWalletHomeMetadata(id: String) {
         val wallet = web3ViewModel.findWalletById(id)
@@ -838,7 +838,6 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
                 totalFiat.divide(BigDecimal(Fiats.getRate()), 16, RoundingMode.HALF_UP)
                     .divide(BigDecimal(bitcoin.priceUsd), 16, RoundingMode.HALF_UP)
         }
-        cachedBtcTotal = formatWalletHomeBtcTotal(totalBTC)
         withContext(Dispatchers.Main) {
             _headBinding?.apply {
                 totalAsTv.text =
