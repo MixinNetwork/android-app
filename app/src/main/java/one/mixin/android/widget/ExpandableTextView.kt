@@ -4,7 +4,6 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.content.Context
-import android.graphics.BlurMaskFilter
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.LinearGradient
@@ -20,7 +19,6 @@ import android.text.StaticLayout
 import android.text.TextUtils
 import android.text.TextUtils.TruncateAt.END
 import android.text.style.ForegroundColorSpan
-import android.text.style.MaskFilterSpan
 import android.util.AttributeSet
 import android.view.View.MeasureSpec.EXACTLY
 import android.view.View.MeasureSpec.UNSPECIFIED
@@ -71,7 +69,6 @@ class ExpandableTextView
         var collapsedFadeEnabled: Boolean = false
             set(value) {
                 field = value
-                setLayerType(if (value) LAYER_TYPE_SOFTWARE else LAYER_TYPE_NONE, null)
                 updateExpandActionSpannable()
                 updateCollapsedDisplayedText(ctaChanged = true)
             }
@@ -88,7 +85,6 @@ class ExpandableTextView
                 field = value
                 invalidate()
             }
-        private val collapsedBlurRadius: Float = resources.displayMetrics.density * 2
 
         var collapsed = true
             private set
@@ -242,8 +238,8 @@ class ExpandableTextView
                 0f,
                 fadeEnd,
                 0f,
-                collapsedFadeColor,
                 Color.TRANSPARENT,
+                collapsedFadeColor,
                 Shader.TileMode.CLAMP,
             )
             canvas.drawRect(fadeStart, top, fadeEnd, bottom, collapsedFadePaint)
@@ -253,6 +249,9 @@ class ExpandableTextView
         private fun resolveDisplayedText(staticLayout: StaticLayout): CharSequence? {
             val truncatedTextWithoutCta = staticLayout.text
             if (truncatedTextWithoutCta.toString() != originalText) {
+                if (collapsedFadeEnabled) {
+                    return resolveFadedDisplayedText(staticLayout)
+                }
                 val totalTextWidthWithoutCta =
                     (0 until staticLayout.lineCount).sumOf { staticLayout.getLineWidth(it).toInt() }
                 val totalTextWidthWithCta = totalTextWidthWithoutCta - expandActionStaticLayout!!.getLineWidth(0)
@@ -271,27 +270,47 @@ class ExpandableTextView
                     SpannableStringBuilder()
                         .append(textWithoutCta)
                         .replace(defaultEllipsisStart, defaultEllipsisEnd, expandActionStaticLayout!!.text)
-                return applyCollapsedBlur(maybeRemoveEndingCharacters(staticLayout, span))
+                return maybeRemoveEndingCharacters(staticLayout, span)
             } else {
                 return originalText
             }
         }
 
-        private fun applyCollapsedBlur(span: SpannableStringBuilder): SpannableStringBuilder {
-            if (!collapsedFadeEnabled) return span
-            val ctaIndex = span.indexOf(expandActionStaticLayout!!.text.toString())
-            if (ctaIndex <= 0) return span
-            val blurEnd = ctaIndex.coerceAtMost(span.length)
-            val blurStart = (blurEnd - 8).coerceAtLeast(0)
-            if (blurStart < blurEnd) {
-                span.setSpan(
-                    MaskFilterSpan(BlurMaskFilter(collapsedBlurRadius, BlurMaskFilter.Blur.NORMAL)),
-                    blurStart,
-                    blurEnd,
-                    SPAN_EXCLUSIVE_EXCLUSIVE,
-                )
+        private fun resolveFadedDisplayedText(staticLayout: StaticLayout): SpannableStringBuilder {
+            val textWidth = staticLayout.width
+            var low = 0
+            var high = originalText.length
+            var best = 0
+            while (low <= high) {
+                val mid = (low + high) / 2
+                val candidate = buildFadedCandidate(mid)
+                val lineCount = getDynamicLayout(candidate, textWidth).lineCount
+                if (lineCount <= limitedMaxLines) {
+                    best = mid
+                    low = mid + 1
+                } else {
+                    high = mid - 1
+                }
             }
-            return span
+            return maybeRemoveEndingCharacters(staticLayout, buildFadedCandidate(best))
+        }
+
+        private fun buildFadedCandidate(textEnd: Int): SpannableStringBuilder {
+            var visibleText = originalText
+                .take(textEnd)
+                .trimEnd { it.isWhitespace() || it == '.' || it == Typography.ellipsis }
+            if (textEnd < originalText.length &&
+                visibleText.lastOrNull()?.isLetterOrDigit() == true &&
+                originalText.getOrNull(textEnd)?.isLetterOrDigit() == true
+            ) {
+                val wordBoundary = visibleText.indexOfLast { it.isWhitespace() }
+                if (wordBoundary >= 0) {
+                    visibleText = visibleText.substring(0, wordBoundary).trimEnd()
+                }
+            }
+            return SpannableStringBuilder()
+                .append(visibleText)
+                .append(expandActionStaticLayout!!.text)
         }
 
         // sanity check before applying the text. Most of the time, the loop doesn't happen
@@ -300,17 +319,7 @@ class ExpandableTextView
             span: SpannableStringBuilder,
         ): SpannableStringBuilder {
             val textWidth = staticLayout.width
-            val dynamicLayout =
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                    DynamicLayout.Builder.obtain(span, paint, textWidth)
-                        .setAlignment(ALIGN_NORMAL)
-                        .setIncludePad(false)
-                        .setLineSpacing(lineSpacingExtra, lineSpacingMultiplier)
-                        .build()
-                } else {
-                    @Suppress("DEPRECATION")
-                    DynamicLayout(span, span, paint, textWidth, ALIGN_NORMAL, lineSpacingMultiplier, lineSpacingExtra, false)
-                }
+            val dynamicLayout = getDynamicLayout(span, textWidth)
 
             val ctaIndex = span.indexOf(expandActionStaticLayout!!.text.toString())
             var removingCharIndex = ctaIndex - 1
@@ -319,6 +328,22 @@ class ExpandableTextView
                 removingCharIndex--
             }
             return span
+        }
+
+        private fun getDynamicLayout(
+            text: CharSequence,
+            textWidth: Int,
+        ): DynamicLayout {
+            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                DynamicLayout.Builder.obtain(text, paint, textWidth)
+                    .setAlignment(ALIGN_NORMAL)
+                    .setIncludePad(false)
+                    .setLineSpacing(lineSpacingExtra, lineSpacingMultiplier)
+                    .build()
+            } else {
+                @Suppress("DEPRECATION")
+                DynamicLayout(text, text, paint, textWidth, ALIGN_NORMAL, lineSpacingMultiplier, lineSpacingExtra, false)
+            }
         }
 
         private fun updateCollapsedDisplayedText(

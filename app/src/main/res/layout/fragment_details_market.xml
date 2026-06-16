@@ -595,7 +595,7 @@
                     app:collapsedFadeColor="?attr/bg_white"
                     app:collapsedFadeEnabled="true"
                     app:collapsedFadeWidth="32dp"
-                    app:expandAction="@string/More"
+                    app:expandAction="@string/more_lowercase"
                     app:expandActionColor="?attr/text_blue"
                     app:limitedMaxLines="2" />
             </LinearLayout>

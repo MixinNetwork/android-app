@@ -722,6 +722,7 @@
     <string name="Model">Model</string>
     <string name="Monday">Monday</string>
     <string name="More">More</string>
+    <string name="more_lowercase">more</string>
     <string name="Multisig_by_PIN">Multisig by PIN</string>
     <string name="multisig_senders_threshold">Senders (%1$s)</string>
     <string name="multisig_receivers_threshold">Receivers (%1$s)</string>
