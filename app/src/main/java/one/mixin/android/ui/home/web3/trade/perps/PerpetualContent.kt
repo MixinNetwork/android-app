@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -278,13 +279,13 @@ fun PerpetualContent(
                         Text(
                             text = stringResource(R.string.positions_count, openPositionsCount),
                             fontSize = 14.sp,
-                            color = MixinAppTheme.colors.textPrimary,
+                            color = MixinAppTheme.colors.textMinor,
                         )
                         Icon(
-                            painter = painterResource(R.drawable.ic_arrow_right),
+                            painter = painterResource(R.drawable.ic_arrow_gray_right),
                             contentDescription = null,
-                            tint = MixinAppTheme.colors.textAssist,
-                            modifier = Modifier.size(16.dp)
+                            tint = Color.Unspecified,
+                            modifier = Modifier.size(16.dp).offset(x = 4.dp)
                         )
                     }
                     Spacer(modifier = Modifier.height(12.dp))
@@ -454,13 +455,13 @@ fun PerpetualContent(
                     Text(
                         text = stringResource(R.string.perps_activity),
                         fontSize = 14.sp,
-                        color = MixinAppTheme.colors.textPrimary,
+                        color = MixinAppTheme.colors.textMinor,
                     )
                     Icon(
-                        painter = painterResource(R.drawable.ic_arrow_right),
+                        painter = painterResource(R.drawable.ic_arrow_gray_right),
                         contentDescription = null,
-                        tint = MixinAppTheme.colors.textAssist,
-                        modifier = Modifier.size(16.dp)
+                        tint = Color.Unspecified,
+                        modifier = Modifier.size(16.dp).offset(x = 4.dp)
                     )
                 }
                 Spacer(modifier = Modifier.height(12.dp))
@@ -612,13 +613,13 @@ private fun MarketPreviewSection(
         Text(
             text = title,
             fontSize = 14.sp,
-            color = MixinAppTheme.colors.textPrimary,
+            color = MixinAppTheme.colors.textMinor,
         )
         Icon(
-            painter = painterResource(R.drawable.ic_arrow_right),
+            painter = painterResource(R.drawable.ic_arrow_gray_right),
             contentDescription = null,
-            tint = MixinAppTheme.colors.textAssist,
-            modifier = Modifier.size(16.dp),
+            tint = Color.Unspecified,
+            modifier = Modifier.size(16.dp).offset(x = 4.dp),
         )
     }
     Spacer(modifier = Modifier.height(12.dp))

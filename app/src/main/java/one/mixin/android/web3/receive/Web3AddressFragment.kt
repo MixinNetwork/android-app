@@ -106,6 +106,7 @@ class Web3AddressFragment : BaseFragment() {
             val wallet = walletViewModel.getWalletByDestination(address)
             if (wallet != null) {
                 binding.title.setSubTitle(getString(R.string.Receive), wallet.name)
+                binding.title.setWalletNameSubTitleStyle()
             }
             binding.copy.setOnClickListener {
                 context?.heavyClickVibrate()

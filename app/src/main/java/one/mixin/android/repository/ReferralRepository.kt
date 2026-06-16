@@ -56,6 +56,38 @@ class ReferralRepository
                 requestSession = { userRepository.fetchSessionsSuspend(it) },
             )
         }
+
+        suspend fun fetchHasBeenInvitedOrNull(logLabel: String): Boolean? {
+            if (!hasValidReferralMembership(Session.getAccount()?.membership)) {
+                Timber.d("Skip fetch referral before %s because membership is invalid or expired", logLabel)
+                return null
+            }
+
+            runCatching {
+                userRepository.getBotPublicKey(REFERRAL_BOT_USER_ID, false)
+            }.onFailure {
+                Timber.w(it, "Failed to warm up referral bot session before %s", logLabel)
+            }
+
+            return requestReferralMixinAPI(
+                invokeNetwork = { referralService.referral() },
+                successBlock = { response -> response.data?.hasBeenInvited },
+                failureBlock = { response ->
+                    Timber.d(
+                        "Fetch referral before %s failed code=%s message=%s",
+                        logLabel,
+                        response.errorCode,
+                        response.errorDescription,
+                    )
+                    true
+                },
+                exceptionBlock = {
+                    Timber.w(it, "Fetch referral before %s failed", logLabel)
+                    true
+                },
+                requestSession = { userRepository.fetchSessionsSuspend(it) },
+            )
+        }
     }
 
 internal fun hasValidReferralMembership(membership: Membership?): Boolean = membership?.isMembership() == true

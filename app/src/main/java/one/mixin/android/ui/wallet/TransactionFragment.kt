@@ -60,6 +60,7 @@ class TransactionFragment : BaseFragment(R.layout.fragment_transaction), Transac
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
         binding.titleView.setSubTitle(getString(R.string.Transaction), getString(R.string.Privacy_Wallet), R.drawable.ic_wallet_privacy)
+        binding.titleView.setWalletNameSubTitleStyle()
         binding.titleView.rightAnimator.visibility = View.VISIBLE
         binding.titleView.rightIb.setOnClickListener {
             showBottom()
