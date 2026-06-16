@@ -248,6 +248,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                         R.drawable.ic_wallet_privacy
                     )
                 }
+                titleView.setWalletNameSubTitleStyle()
                 assetRl.setOnClickListener {
                     if (isLoading) return@setOnClickListener
                     val routeProfile = (requireActivity() as WalletActivity).routeProfile

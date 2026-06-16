@@ -137,6 +137,7 @@ class TradeFragment : BaseFragment() {
         const val ARGS_ENTRY_TYPE = "args_entry_type"
 
         const val ARGS_WALLET_ID = "args_wallet_id"
+        const val ARGS_INITIAL_TAB = "args_initial_tab"
 
         const val MaxSlippage = 5000
         const val DangerousSlippage = 500
@@ -167,6 +168,7 @@ class TradeFragment : BaseFragment() {
             walletId: String? = null,
             entrySource: String? = null,
             entryType: String? = null,
+            initialTab: Int? = null,
         ): TradeFragment =
             TradeFragment().withArgs {
                 input?.let { putString(ARGS_INPUT, it) }
@@ -177,6 +179,7 @@ class TradeFragment : BaseFragment() {
                 walletId?.let { putString(ARGS_WALLET_ID, it) }
                 entrySource?.let { putString(ARGS_ENTRY_SOURCE, it) }
                 entryType?.let { putString(ARGS_ENTRY_TYPE, it) }
+                initialTab?.let { putInt(ARGS_INITIAL_TAB, it) }
             }
     }
 
@@ -1567,6 +1570,9 @@ class TradeFragment : BaseFragment() {
     }
 
     private fun getInitialTabIndex(currentWalletId: String): Int {
+        arguments?.takeIf { it.containsKey(ARGS_INITIAL_TAB) }?.getInt(ARGS_INITIAL_TAB)?.let { tab ->
+            return tab
+        }
         val entryType = arguments?.getString(ARGS_ENTRY_TYPE)
         val entrySource = arguments?.getString(ARGS_ENTRY_SOURCE)
         if (entrySource == AnalyticsTracker.TradeSource.MARKET_DETAIL && entryType == AnalyticsTracker.SpotTradeType.SIMPLE) return TAB_SIMPLE

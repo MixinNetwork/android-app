@@ -1,6 +1,5 @@
 package one.mixin.android.ui.wallet.components
 
-import one.mixin.android.ui.home.web3.components.PageScaffold
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -59,6 +58,7 @@ import one.mixin.android.crypto.isSolanaHexPrivateKeyValid
 import one.mixin.android.crypto.isSolanaPrivateKeyValid
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.home.web3.Web3ViewModel
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.wallet.WalletSecurityActivity
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.encodeToBase58String
@@ -247,9 +247,13 @@ fun ImportWalletDetailPage(
         else -> ""
     }
     val hint = when (mode) {
-        WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY -> stringResource(R.string.private_key_hint)
+        WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY,
+        WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY -> when {
+            isSolana -> stringResource(R.string.solana_private_key_hint)
+            isBitcoin -> stringResource(R.string.bitcoin_private_key_hint)
+            else -> stringResource(R.string.ethereum_private_key_hint)
+        }
         WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS -> stringResource(R.string.address_hint)
-        WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY -> stringResource(R.string.private_key_hint)
         else -> ""
     }
 

@@ -20,7 +20,7 @@ import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentTransactionsBinding
 import one.mixin.android.databinding.ViewWalletTransactionsBottomBinding
-import one.mixin.android.extension.buildAmountSymbol
+import one.mixin.android.extension.buildBalanceAmountSymbol
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
@@ -75,6 +75,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         const val TAG = "TransactionsFragment"
         const val ARGS_ASSET = "args_asset"
         const val ARGS_FROM_MARKET = "args_from_market"
+        const val ARGS_SOURCE = "args_source"
     }
 
     private val binding by viewBinding(FragmentTransactionsBinding::bind)
@@ -94,6 +95,9 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
     private val fromMarket by lazy {
         requireArguments().getBoolean(ARGS_FROM_MARKET, false)
     }
+    private val source by lazy {
+        requireArguments().getString(ARGS_SOURCE)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -112,7 +116,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        AnalyticsTracker.trackAssetDetail(TradeWallet.MAIN, if (fromMarket) AnalyticsTracker.AssetSource.MARKET_DETAIL else AnalyticsTracker.AssetSource.WALLET_HOME)
+        AnalyticsTracker.trackAssetDetail(TradeWallet.MAIN, resolveAssetDetailSource(fromMarket, source))
         jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(asset.assetId))))
         jobManager.addJobInBackground(RefreshPriceJob(asset.assetId))
 
@@ -464,7 +468,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                     asset.balance.numberFormat()
                 }
             val color = requireContext().colorFromAttribute(R.attr.text_primary)
-            balance.text = buildAmountSymbol(requireContext(), amountText, asset.symbol, color, color)
+            balance.text = buildBalanceAmountSymbol(requireContext(), amountText, asset.symbol, color, color)
             balanceAs.text =
                 try {
                     if (asset.fiat().toFloat() == 0f) {
@@ -494,3 +498,6 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         }
     }
 }
+
+internal fun resolveAssetDetailSource(fromMarket: Boolean, source: String?): String =
+    if (fromMarket) AnalyticsTracker.AssetSource.MARKET_DETAIL else source ?: AnalyticsTracker.AssetSource.WALLET_HOME

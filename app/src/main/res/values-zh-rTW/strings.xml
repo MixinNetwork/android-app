@@ -21,6 +21,7 @@
     <string name="access_your_snapshots">存取你的轉帳記錄</string>
     <string name="Account">帳號</string>
     <string name="Add">新增</string>
+    <string name="add_wallet">新增錢包</string>
     <string name="Add_address">新增地址</string>
     <string name="Add_bot">新增機器人</string>
     <string name="Add_circle">新增圈子</string>
@@ -509,6 +510,7 @@
     <string name="Learn_More">瞭解更多</string>
     <string name="Line_busy">忙線未接聽</string>
     <string name="Line_busy_remote">對方忙</string>
+    <string name="leave_message_to_team_mixin">給 Mixin 客服留言</string>
     <string name="Link_desktop_failed">登入桌面端失敗</string>
     <string name="Link_desktop_success">登入桌面端成功</string>
     <string name="Links">連結</string>
@@ -896,7 +898,7 @@
     <string name="transaction_Hash">交易雜湊</string>
     <string name="Transaction_Id">交易編號</string>
     <string name="Transaction_Type">交易型別</string>
-    <string name="Transactions">轉賬記錄</string>
+    <string name="Transactions">交易記錄</string>
     <string name="Transcript">聊天記錄</string>
     <string name="Transfer">轉賬</string>
     <string name="Transfer_Amount">轉賬金額</string>
@@ -1107,4 +1109,32 @@
     <string name="perps_top_movers">漲跌榜</string>
     <string name="top_gainers">漲幅榜</string>
     <string name="top_losers">跌幅榜</string>
+    <string name="positions_count">倉位(%d)</string>
+
+    <string name="wallet_home_empty_title">添加資金</string>
+    <string name="wallet_home_empty_desc">立即儲值，開始交易並賺取收益</string>
+    <string name="wallet_home_buy_crypto">快捷買幣</string>
+    <string name="wallet_home_receive_crypto">鏈上儲值</string>
+    <string name="wallet_home_add_wallet_banner_title">透過私鑰、助記詞或觀察地址添加錢包</string>
+    <string name="wallet_home_cashback_banner_title">購買加密貨幣，獲得 100% 手續費返現</string>
+    <string name="wallet_home_cashback_banner_cta">立即領取</string>
+    <string name="wallet_home_referral_banner_title">邀請返佣</string>
+    <string name="wallet_home_referral_banner_desc">邀請好友可獲得高達 60% 的交易返利和會員佣金。</string>
+    <string name="wallet_home_top_movers">熱門漲跌</string>
+    <string name="wallet_home_tokens">代幣</string>
+    <string name="wallet_home_support">支持</string>
+    <string name="wallet_home_contact_us">聯繫我們</string>
+    <string name="wallet_home_help_center_desc">指南、文檔和常見問題</string>
+    <string name="wallet_home_help_center_url">https://support.mixin.one/zh-hant/</string>
+    <string name="wallet_home_common_wallet_reason_title">什麼需要普通錢包？</string>
+    <string name="wallet_home_common_wallet_reason_1">連接任意應用，暢玩 DeFi 與 SocialFi</string>
+    <string name="wallet_home_common_wallet_reason_2">支持 Solana、以太坊等多鏈跨鏈交易</string>
+    <string name="wallet_home_common_wallet_reason_3">可導入其他錢包，一站管理鏈上資產</string>
+    <string name="wallet_home_privacy_wallet_reason_title">為什麼需要隱私錢包？</string>
+    <string name="wallet_home_privacy_wallet_reason_1">隱藏餘額與交易紀錄，鏈上完全匿名</string>
+    <string name="wallet_home_privacy_wallet_reason_2">不必輸入複雜地址，徹底告別轉帳錯誤</string>
+    <string name="wallet_home_privacy_wallet_reason_3">攔截惡意授權，杜絕應用偷轉資產</string>
+    <string name="solana_private_key_hint">輸入 Base58 或 64 字節 HEX 格式私鑰，例如 3fZb...9Qp 或 0x1a2b...cdef</string>
+    <string name="bitcoin_private_key_hint">輸入 WIF 或 32 字節 HEX 格式私鑰，例如 Kx45...9Ab 或 0x1a2b...cdef</string>
+    <string name="ethereum_private_key_hint">輸入 HEX 格式私鑰，例如 0x1a2b...cdef</string>
 </resources>

@@ -274,6 +274,9 @@
         <attr name="maxLength" format="integer" />
         <attr name="lines" format="integer" />
     </declare-styleable>
+    <declare-styleable name="SendReceiveView">
+        <attr name="walletHomeStyle" format="boolean" />
+    </declare-styleable>
     <declare-styleable name="InscriptionView">
         <attr name="iconSize" format="dimension"/>
         <attr name="iconRoundSize" format="dimension"/>

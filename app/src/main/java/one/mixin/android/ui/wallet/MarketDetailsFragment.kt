@@ -52,10 +52,10 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.TokenItem
+import timber.log.Timber
 import java.math.BigDecimal
 import java.util.Locale
 import javax.inject.Inject
-import timber.log.Timber
 
 @AndroidEntryPoint
 class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
