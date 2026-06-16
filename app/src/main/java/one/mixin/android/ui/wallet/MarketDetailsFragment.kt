@@ -17,7 +17,9 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants.AssetId.USDT_ASSET_ETH_ID
 import one.mixin.android.Constants.AssetId.XIN_ASSET_ID
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentDetailsMarketBinding
+import one.mixin.android.event.TradeMarketSelectedEvent
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.dayTime
 import one.mixin.android.extension.defaultSharedPreferences
@@ -64,6 +66,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
         const val ARGS_MARKET = "args_market"
         const val ARGS_ASSET_ID = "args_asset_id"
         const val ARGS_MARKET_SOURCE = "args_market_source"
+        const val ARGS_RETURN_TO_TRADE = "args_return_to_trade"
         private const val PREF_MARKET_CHART_TYPE = "pref_market_chart_type"
     }
 
@@ -85,6 +88,9 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
     private val typeState = mutableStateOf("1D")
     private val marketSource by lazy {
         requireArguments().getString(ARGS_MARKET_SOURCE) ?: AnalyticsTracker.MarketSource.MORE_MARKET_CAP
+    }
+    private val returnToTrade by lazy {
+        requireArguments().getBoolean(ARGS_RETURN_TO_TRADE, false)
     }
     private fun marketFavoriteSource(): String =
         if (marketSource == AnalyticsTracker.MarketSource.MORE_MARKET_CAP) {
@@ -155,13 +161,18 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         USDT_ASSET_ETH_ID
                     }
                     AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.MARKET_DETAIL)
-                    view.navigate(R.id.action_market_details_to_swap,
-                        Bundle().apply {
-                            putString(ARGS_INPUT, input)
-                            putString(ARGS_OUTPUT, token.assetId)
-                            putString(TradeFragment.ARGS_ENTRY_SOURCE, TradeSource.MARKET_DETAIL)
-                            putString(TradeFragment.ARGS_ENTRY_TYPE, AnalyticsTracker.SpotTradeType.SIMPLE)
-                        })
+                    if (returnToTrade) {
+                        RxBus.publish(TradeMarketSelectedEvent(input, token.assetId))
+                        requireActivity().finish()
+                    } else {
+                        view.navigate(R.id.action_market_details_to_swap,
+                            Bundle().apply {
+                                putString(ARGS_INPUT, input)
+                                putString(ARGS_OUTPUT, token.assetId)
+                                putString(TradeFragment.ARGS_ENTRY_SOURCE, TradeSource.MARKET_DETAIL)
+                                putString(TradeFragment.ARGS_ENTRY_TYPE, AnalyticsTracker.SpotTradeType.SIMPLE)
+                            })
+                    }
                 }
             }
             if (marketItem.coinId.isBlank()) {

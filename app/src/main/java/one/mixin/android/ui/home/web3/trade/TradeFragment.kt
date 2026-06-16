@@ -24,10 +24,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.gson.reflect.TypeToken
+import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
@@ -56,6 +59,7 @@ import one.mixin.android.db.web3.vo.Web3TokenFeeItem
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.buildTransaction
 import one.mixin.android.event.BadgeEvent
+import one.mixin.android.event.TradeMarketSelectedEvent
 import one.mixin.android.extension.addToList
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
@@ -155,7 +159,6 @@ class TradeFragment : BaseFragment() {
         const val TAB_PERPETUAL = 2
 
         private const val RECOMMENDED_MARKET_LIMIT = 8
-        private const val MARKET_SORT_MARKET_CAP_DESC = "market_cap_desc"
         private const val MARKET_CATEGORY_TOP_GAINERS = "top_gainers"
         private const val MARKET_CATEGORY_TOP_LOSERS = "top_losers"
 
@@ -222,6 +225,7 @@ class TradeFragment : BaseFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         orderBadge = defaultSharedPreferences.getInt(Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) != 1
+        observeTradeMarketSelection()
     }
 
     private var orderBadge: Boolean by mutableStateOf(false)
@@ -252,9 +256,15 @@ class TradeFragment : BaseFragment() {
                 }
             }
             initFromTo()
-            refreshTokens(chainIds)
-            refreshStocks(chainIds)
-            refreshRecommendedMarkets()
+            coroutineScope {
+                launch {
+                    refreshRecommendedMarkets()
+                }
+                launch {
+                    refreshTokens(chainIds)
+                    refreshStocks(chainIds)
+                }
+            }
         }
         return ComposeView(inflater.context).apply {
             setContent {
@@ -782,6 +792,41 @@ class TradeFragment : BaseFragment() {
                     val serializedPair = GsonHelper.customGson.toJson(tokenPair)
                     defaultSharedPreferences.putString(getPreferenceKey(false), serializedPair)
                 }
+            }
+        }
+    }
+
+    private fun observeTradeMarketSelection() {
+        RxBus.listen(TradeMarketSelectedEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(destroyScope)
+            .subscribe { event ->
+                lifecycleScope.launch(coroutineErrorHandler) {
+                    selectMarketToken(event.inputAssetId, event.outputAssetId)
+                }
+            }
+    }
+
+    private suspend fun selectMarketToken(
+        inputAssetId: String,
+        outputAssetId: String,
+    ) {
+        if (!inMixin()) return
+        val input = swapViewModel.findToken(inputAssetId)?.toSwapToken() ?: return
+        val output = swapViewModel.findToken(outputAssetId)?.toSwapToken() ?: return
+        resolveDuplicateSwapTokenPair(
+            tokens = swapTokens.ifEmpty { listOf(input, output) },
+            fromToken = input,
+            toToken = output,
+            keepToToken = true,
+        ).let { pair ->
+            fromToken = pair.from
+            toToken = pair.to
+        }
+        fromToken?.let { from ->
+            toToken?.let { to ->
+                val serializedPair = GsonHelper.customGson.toJson(listOf(from, to))
+                defaultSharedPreferences.putString(getPreferenceKey(false), serializedPair)
             }
         }
     }
@@ -1321,22 +1366,25 @@ class TradeFragment : BaseFragment() {
             marketItem,
             Destination.Market,
             AnalyticsTracker.MarketSource.MORE_MARKET_CAP,
+            returnToTrade = true,
         )
     }
 
     private suspend fun refreshRecommendedMarkets() {
-        refreshRecommendedMarket(
-            sort = MARKET_SORT_MARKET_CAP_DESC,
-            onSuccess = { trendingMarkets = it },
-        )
-        refreshRecommendedMarket(
-            category = MARKET_CATEGORY_TOP_GAINERS,
-            onSuccess = { topGainerMarkets = it },
-        )
-        refreshRecommendedMarket(
-            category = MARKET_CATEGORY_TOP_LOSERS,
-            onSuccess = { topLoserMarkets = it },
-        )
+        coroutineScope {
+            launch {
+                refreshRecommendedMarket(
+                    category = MARKET_CATEGORY_TOP_GAINERS,
+                    onSuccess = { topGainerMarkets = it },
+                )
+            }
+            launch {
+                refreshRecommendedMarket(
+                    category = MARKET_CATEGORY_TOP_LOSERS,
+                    onSuccess = { topLoserMarkets = it },
+                )
+            }
+        }
     }
 
     private suspend fun refreshRecommendedMarket(
