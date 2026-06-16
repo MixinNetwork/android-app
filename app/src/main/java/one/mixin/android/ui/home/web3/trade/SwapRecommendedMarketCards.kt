@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -234,14 +235,14 @@ private fun RecommendedMarketGridItem(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(54.dp),
+                .height(48.dp),
             contentAlignment = Alignment.TopCenter,
         ) {
             CoilImage(
                 model = item.iconUrl,
                 placeholder = R.drawable.ic_avatar_place_holder,
                 modifier = Modifier
-                    .size(44.dp)
+                    .size(42.dp)
                     .clip(CircleShape),
                 contentScale = ContentScale.Crop,
             )
@@ -257,7 +258,8 @@ private fun RecommendedMarketGridItem(
                     overflow = TextOverflow.Clip,
                     textAlign = TextAlign.Center,
                     modifier = Modifier
-                        .align(Alignment.BottomCenter)
+                        .align(Alignment.TopCenter)
+                        .offset(y = 36.dp)
                         .background(
                             color = if (item.isPositive) risingColor else fallingColor,
                             shape = RoundedCornerShape(3.dp),
