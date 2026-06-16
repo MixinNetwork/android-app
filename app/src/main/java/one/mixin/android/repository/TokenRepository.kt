@@ -457,6 +457,8 @@ class TokenRepository
 
         fun snapshotsLimit(id: String) = safeSnapshotDao.snapshotsLimit(id)
 
+        fun recentSnapshotsLimit() = safeSnapshotDao.recentSnapshotsLimit()
+
         suspend fun snapshotLocal(
             assetId: String,
             snapshotId: String,
@@ -603,6 +605,8 @@ class TokenRepository
 
         fun getPendingDisplays() = safeSnapshotDao.getPendingDisplays()
 
+        suspend fun getPendingSnapshot(assetId: String) = safeSnapshotDao.getPendingSnapshot(assetId)
+
         suspend fun pendingDeposits(
             asset: String,
         ) = tokenService.pendingDeposits(asset)
@@ -691,6 +695,8 @@ class TokenRepository
         private suspend fun getIconUrl(id: String) = chainDao.getIconUrl(id)
 
         fun observeTopAssets() = hotAssetDao.topAssets()
+
+        fun topAssetItemsNotHiddenLimit() = tokenDao.topAssetItemsNotHiddenLimit()
 
         suspend fun findAssetItemById(assetId: String) = tokenDao.findAssetItemById(assetId)
 
@@ -1749,6 +1755,8 @@ class TokenRepository
     }
 
     fun getPendingTransactionCount(walletId: String): LiveData<Int> = web3TransactionDao.getPendingTransactionCount(walletId)
+
+    fun getPendingRawTransactionCount(walletId: String): LiveData<Int> = web3RawTransactionDao.getPendingRawTransactionCount(walletId)
 
     suspend fun rampWebUrl(request: RampWebUrlRequest): MixinResponse<RampWebUrlResponse> = routeService.rampWebUrl(request)
 

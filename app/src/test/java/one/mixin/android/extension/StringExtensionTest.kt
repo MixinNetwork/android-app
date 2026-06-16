@@ -10,6 +10,19 @@ import org.robolectric.RobolectricTestRunner
 @RunWith(RobolectricTestRunner::class)
 class StringExtensionTest {
     @Test
+    fun formatTransactionHashIfNeeded() {
+        assertEquals(
+            "0x8863D3...94Ce19",
+            "0x8863D37FACfc0EF866893609aaF2d871bf94Ce19".formatTransactionHashIfNeeded(),
+        )
+        assertEquals(
+            "5pH6im2Q...5WXhmq",
+            "5pH6im2QHBHRFhTaGjZmPkfaCLTZUntWxZ584T5WXhmq".formatTransactionHashIfNeeded(),
+        )
+        assertEquals("ikk", "ikk".formatTransactionHashIfNeeded())
+    }
+
+    @Test
     fun getPattern() {
         val s1 = "12345678901"
         val s2 = "123456789.1234567"
