@@ -818,8 +818,9 @@ class ConversationFragment() :
                 if (openInputAction(action)) return
 
                 lifecycleScope.launch {
+                    val context = context ?: return@launch
                     val app = chatViewModel.findAppById(appId ?: userId)
-                    action.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, lifecycleScope, app)
+                    action.openAsUrlOrWeb(context, conversationId, parentFragmentManager, lifecycleScope, app)
                 }
             }
 
