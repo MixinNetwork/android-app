@@ -160,6 +160,11 @@
     </fragment>
 
     <fragment
+        android:id="@+id/wallet_home_all_tokens_fragment"
+        android:name="one.mixin.android.ui.wallet.WalletHomeAllTokensFragment"
+        tools:layout="@layout/fragment_wallet_home_all_tokens" />
+
+    <fragment
         android:id="@+id/transaction_fragment"
         android:name="one.mixin.android.ui.wallet.TransactionFragment"
         tools:layout="@layout/fragment_transaction">

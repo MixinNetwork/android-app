@@ -1108,7 +1108,7 @@
     <string name="transaction_Hash">交易哈希</string>
     <string name="Transaction_Id">交易编号</string>
     <string name="Transaction_Type">交易类型</string>
-    <string name="Transactions">转账记录</string>
+    <string name="Transactions">交易记录</string>
     <string name="Transcript">聊天记录</string>
     <string name="Transfer">转账</string>
     <string name="Transfer_Amount">转账金额</string>
@@ -1915,8 +1915,8 @@
     <string name="url_perps_stop_loss">https://support.mixin.one/zh/article/mixin-1ftc7wn/#1-5q2i5o2f</string>
     <string name="deposit_url">https://support.mixin.one/zh/article/mixin-messenger-5ynqjm</string>
     <string name="emergency_url">https://support.mixin.one/zh/article/5aac5l2v6k6572u57sn5ocl6igu57o75lq6-d2nssy</string>
-    <string name="Deposit_Pending_Confirmation">%1$s 充值确认中</string>
-    <string name="Deposits_Pending_Confirmation">有 %1$d 笔充值确认中</string>
+    <string name="Deposit_Pending_Confirmation">%1$s 确认中</string>
+    <string name="Deposits_Pending_Confirmation">%1$d 笔充值确认中</string>
     <string name="open_source">版权所有 Mixin\n根据 GPL-3.0 授权许可</string>
     <string name="asset_changes">资产变动</string>
     <string name="asset_changes_estimate">资产变动（预估）</string>
@@ -1991,7 +1991,7 @@
     <string name="classic_wallet_btc_unlock_by_pin">使用 PIN 解锁</string>
     <string name="Total_Balance">所有资产</string>
     <string name="total_balance_tip">隐藏的资产不计入统计</string>
-    <string name="Reset_TpSl_Guide">重置 TP/SL 引导卡片</string>
+    <string name="Reset_TpSl_Guide">重置隐藏偏好</string>
     <string name="Delete_Web3_Transactions">删除 Web3 交易数据</string>
     <string name="Delete_Web3_Transactions_Confirmation">确定要删除所有 Web3 交易数据吗？此操作不可恢复。删除后系统将重新同步数据。</string>
     <string name="Preview_Verify_Mobile_Reminder">预览手机号提醒弹窗</string>
@@ -2016,8 +2016,8 @@
     <string name="safe_create_guideline_url" translatable="false">https://support.mixin.one/zh/article/safe-1ljf7ld/</string>
     <string name="Approval">授权</string>
     <string name="unlimited">无限量</string>
-    <string name="Transaction_Pending_Confirmation">有 1 笔交易处理中</string>
-    <string name="Transactions_Pending_Confirmation">有 %1$d 笔交易处理中</string>
+    <string name="Transaction_Pending_Confirmation">1 笔交易确认中</string>
+    <string name="Transactions_Pending_Confirmation">%1$d 笔交易确认中</string>
     <string name="Speed_Up">加速</string>
     <string name="Cancel_Transaction">取消交易</string>
     <string name="Speed_Up_Transaction">加速交易</string>
@@ -2144,6 +2144,9 @@
     <string name="import_private_key">导入私钥</string>
     <string name="add_watch_address">添加观察地址</string>
     <string name="private_key_hint">输入你的私钥</string>
+    <string name="solana_private_key_hint">输入 Base58 或 64 字节 HEX 格式私钥，例如 3fZb...9Qp 或 0x1a2b...cdef</string>
+    <string name="bitcoin_private_key_hint">输入 WIF 或 32 字节 HEX 格式私钥，例如 Kx45...9Ab 或 0x1a2b...cdef</string>
+    <string name="ethereum_private_key_hint">输入 HEX 格式私钥，例如 0x1a2b...cdef</string>
     <string name="address_hint">输入你的钱包地址</string>
     <string name="import_private_key_description">导入单链钱包。</string>
     <string name="add_watch_address_description">追踪公开钱包地址。</string>
@@ -2511,4 +2514,28 @@
     <string name="perps_share_mixin_contact_desc">邀请好友一起交易</string>
     <string name="perps_share_mixin_contact_desc_with_percent">通过此链接赚取 %1$s 分佣</string>
     <string name="perps_top_movers">涨跌榜</string>
+    <string name="wallet_home_empty_title">添加资金</string>
+    <string name="wallet_home_empty_desc">立即充值，开始交易并赚取收益</string>
+    <string name="wallet_home_buy_crypto">快捷买币</string>
+    <string name="wallet_home_receive_crypto">链上充值</string>
+    <string name="wallet_home_add_wallet_banner_title">通过私钥、助记词或观察地址添加钱包</string>
+    <string name="wallet_home_cashback_banner_title">购买加密货币，获得 100% 手续费返现</string>
+    <string name="wallet_home_cashback_banner_cta">立即领取</string>
+    <string name="wallet_home_referral_banner_title">邀请返佣</string>
+    <string name="wallet_home_referral_banner_desc">邀请好友可获得高达 60% 的交易返利和会员佣金。</string>
+    <string name="wallet_home_top_movers">热门涨跌</string>
+    <string name="wallet_home_tokens">代币</string>
+    <string name="wallet_home_support">支持</string>
+    <string name="wallet_home_contact_us">联系我们</string>
+    <string name="wallet_home_help_center_desc">指南、文档和常见问题</string>
+    <string name="wallet_home_help_center_url">https://support.mixin.one/zh/</string>
+    <string name="wallet_home_common_wallet_reason_title">什么需要普通钱包？</string>
+    <string name="wallet_home_common_wallet_reason_1">连接任意应用，畅玩 DeFi 与 SocialFi</string>
+    <string name="wallet_home_common_wallet_reason_2">支持 Solana、以太坊等多链跨链交易</string>
+    <string name="wallet_home_common_wallet_reason_3">可导入其他钱包，一站管理链上资产</string>
+    <string name="wallet_home_privacy_wallet_reason_title">为什么需要隐私钱包？</string>
+    <string name="wallet_home_privacy_wallet_reason_1">隐藏余额与交易记录，链上完全匿名</string>
+    <string name="wallet_home_privacy_wallet_reason_2">不必输入复杂地址，彻底告别转账错误</string>
+    <string name="wallet_home_privacy_wallet_reason_3">拦截恶意授权，杜绝应用偷转资产</string>
+    <string name="no_tokens">没有代币</string>
 </resources>
