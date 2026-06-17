@@ -340,8 +340,13 @@ class WalletHomeAllTokensFragment : BaseFragment() {
                 )
             }
         }
+        val fiatRate = Fiats.getRate().toBigDecimal()
         val tokenFiat = privacyTokens.fold(BigDecimal.ZERO) { acc, item -> acc + item.fiat() }
-        val totalFiat = calculateWalletHomeTotalFiat(tokenFiat, positions.positionMarginUsdTotal())
+        val totalFiat = calculateWalletHomeTotalFiat(
+            tokenFiat = tokenFiat,
+            positionUsd = positions.positionMarginUsdTotal(),
+            fiatRate = fiatRate,
+        )
         val tokenBtc = privacyTokens.fold(BigDecimal.ZERO) { acc, item -> acc + item.btc() }
         val totalBtc = privacyTokens
             .find { it.assetId == Constants.ChainId.BITCOIN_CHAIN_ID }
@@ -349,7 +354,7 @@ class WalletHomeAllTokensFragment : BaseFragment() {
             ?.toBigDecimalOrNull()
             ?.takeIf { it > BigDecimal.ZERO }
             ?.let { bitcoinPriceUsd ->
-                totalFiat.divide(BigDecimal(Fiats.getRate()), 16, RoundingMode.HALF_UP)
+                totalFiat.divide(fiatRate, 16, RoundingMode.HALF_UP)
                     .divide(bitcoinPriceUsd, 16, RoundingMode.HALF_UP)
             } ?: tokenBtc
         return WalletHomeState(

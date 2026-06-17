@@ -7,7 +7,8 @@ import java.math.RoundingMode
 internal fun calculateWalletHomeTotalFiat(
     tokenFiat: BigDecimal,
     positionUsd: BigDecimal,
-): BigDecimal = tokenFiat + positionUsd
+    fiatRate: BigDecimal,
+): BigDecimal = tokenFiat + positionUsd.multiply(fiatRate)
 
 internal fun calculateWalletHomeTokenFiat(
     totalUsd: BigDecimal,

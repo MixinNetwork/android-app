@@ -362,7 +362,9 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         if (assets.isNotEmpty() || recentSnapshots.isNotEmpty() || topMovers.isNotEmpty() || positions.isNotEmpty()) {
             isLoading = false
         }
-        _homeState.value = buildHomeState()
+        val state = buildHomeState()
+        _homeState.value = state
+        renderHeaderTotals(state)
     }
 
     private var isLoading = true
@@ -373,7 +375,11 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             totalUsd = BigDecimal.valueOf(tokenSummary.totalUsd),
             fiatRate = fiatRate,
         )
-        val totalFiat = calculateWalletHomeTotalFiat(tokenFiat, positions.positionMarginUsdTotal())
+        val totalFiat = calculateWalletHomeTotalFiat(
+            tokenFiat = tokenFiat,
+            positionUsd = positions.positionMarginUsdTotal(),
+            fiatRate = fiatRate,
+        )
         val tokenBtc = calculateWalletHomeBtcTotal(
             tokenFiat = tokenFiat,
             tokenBtc = BigDecimal.valueOf(tokenSummary.totalBtc),
@@ -427,6 +433,14 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         )
         defaultSharedPreferences.putWalletHomeCache(privacyWalletHomeCacheKey(), state)
         return state
+    }
+
+    private fun renderHeaderTotals(state: WalletHomeState) {
+        _headBinding?.apply {
+            totalAsTv.text = state.btcTotal
+            totalTv.text = state.fiatTotal
+            symbol.text = state.fiatSymbol
+        }
     }
 
     private fun refreshBitcoinPrice() {

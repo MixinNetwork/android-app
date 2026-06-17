@@ -468,7 +468,9 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             if (assets.isNotEmpty() || recentTransactions.isNotEmpty()) {
                 isLoading = false
             }
-            _homeState.value = buildHomeState()
+            val state = buildHomeState()
+            _homeState.value = state
+            renderHeaderTotals(state)
         }
     }
 
@@ -529,6 +531,14 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             importKeyChainId = importKeyChainId,
         )
         return state
+    }
+
+    private fun renderHeaderTotals(state: WalletHomeState) {
+        _headBinding?.apply {
+            totalAsTv.text = state.btcTotal
+            totalTv.text = state.fiatTotal
+            symbol.text = state.fiatSymbol
+        }
     }
 
     private fun refreshBitcoinPrice() {

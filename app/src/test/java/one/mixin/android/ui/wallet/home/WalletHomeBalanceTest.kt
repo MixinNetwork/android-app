@@ -6,13 +6,14 @@ import java.math.BigDecimal
 
 class WalletHomeBalanceTest {
     @Test
-    fun totalFiatAddsTokenFiatAndPositionUsd() {
+    fun totalFiatConvertsPositionUsdToSelectedFiat() {
         val total = calculateWalletHomeTotalFiat(
             tokenFiat = BigDecimal("100.25"),
             positionUsd = BigDecimal("25.25"),
+            fiatRate = BigDecimal("7.2"),
         )
 
-        assertEquals(0, total.compareTo(BigDecimal("125.50")))
+        assertEquals(0, total.compareTo(BigDecimal("282.050")))
     }
 
     @Test
