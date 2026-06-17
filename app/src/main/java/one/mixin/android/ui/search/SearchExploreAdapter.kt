@@ -23,7 +23,9 @@ import one.mixin.android.vo.SearchBot
 import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.safe.TokenItem
 
-class SearchExploreAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRecyclerHeadersAdapter<HeaderHolder> {
+class SearchExploreAdapter(
+    private val marketLimit: Boolean = true,
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRecyclerHeadersAdapter<HeaderHolder> {
     var onItemClickListener: SearchFragment.OnSearchClickListener? = null
     var query: String = ""
         set(value) {
@@ -31,7 +33,7 @@ class SearchExploreAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), St
             data.showTip = shouldTips()
         }
 
-    private var data = SearchExploreDataPackage()
+    private var data = SearchExploreDataPackage(marketLimit = marketLimit)
 
     override fun getHeaderId(position: Int): Long =
         if (position == 0 && data.showTip) {
@@ -56,13 +58,13 @@ class SearchExploreAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), St
 
     @SuppressLint("NotifyDataSetChanged")
     fun clear() {
-        data = SearchExploreDataPackage()
+        data = SearchExploreDataPackage(marketLimit = marketLimit)
         notifyDataSetChanged()
     }
 
     @SuppressLint("NotifyDataSetChanged")
     fun setData(marketList: List<Market>?, dappList: List<Dapp>?, botList: List<SearchBot>?, url: String?) {
-        data = SearchExploreDataPackage(assetList = null, marketList = marketList, dappList = dappList, botList = botList, url = url)
+        data = SearchExploreDataPackage(assetList = null, marketList = marketList, dappList = dappList, botList = botList, url = url, marketLimit = marketLimit)
         data.showTip = shouldTips()
         notifyDataSetChanged()
     }
@@ -145,4 +147,3 @@ class SearchExploreAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), St
             else -> 0
         }
 }
-

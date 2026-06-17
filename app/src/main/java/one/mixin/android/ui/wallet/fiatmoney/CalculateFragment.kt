@@ -15,7 +15,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_ROUTE_BOT_PK
-import one.mixin.android.Constants.AssetId.USDT_ASSET_ETH_ID
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -38,9 +37,8 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.home.web3.Web3ViewModel
-import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
 import one.mixin.android.ui.home.reminder.VerifyMobileReminderBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.setting.getCurrencyData
 import one.mixin.android.ui.wallet.AssetListFixedBottomSheetDialogFragment
@@ -228,7 +226,10 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     activity?.onBackPressedDispatcher?.onBackPressed()
                 }
                 titleView.rightIb.setOnClickListener {
-                    openCustomerService()
+                    openCustomerService(
+                        source = AnalyticsTracker.CustomerServiceSource.DEPOSIT,
+                        wallet = if (isWeb3) AnalyticsTracker.TradeWallet.WEB3 else AnalyticsTracker.TradeWallet.MAIN,
+                    )
                 }
                 if (isWeb3) {
                     val wallet = walletIdForCalculate?.let { web3ViewModel.findWalletById(it) }
@@ -247,6 +248,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                         R.drawable.ic_wallet_privacy
                     )
                 }
+                titleView.setWalletNameSubTitleStyle()
                 assetRl.setOnClickListener {
                     if (isLoading) return@setOnClickListener
                     val routeProfile = (requireActivity() as WalletActivity).routeProfile
@@ -376,7 +378,8 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                             if (VerifyMobileReminderBottomSheetDialogFragment.shouldShowForBuy(requireContext()) && isFragmentVisible()) {
                                 VerifyMobileReminderBottomSheetDialogFragment.showSafely(
                                     parentFragmentManager,
-                                    false,
+                                    enableSnooze = false,
+                                    addPhoneSource = AnalyticsTracker.AddPhoneSource.BUY_GUIDE,
                                 )
                                 setLoading(false)
                                 return@launch

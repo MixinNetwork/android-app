@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -18,9 +19,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -28,7 +30,11 @@ import one.mixin.android.compose.theme.MixinAppTheme
 @Composable
 fun InputAction(
     text: String,
+    modifier: Modifier = Modifier,
     showBorder: Boolean = true,
+    horizontalPadding: Dp = 20.dp,
+    verticalPadding: Dp = 6.dp,
+    fontSize: TextUnit = 14.sp,
     onAction: () -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -36,7 +42,7 @@ fun InputAction(
 
     Box(
         modifier = if (showBorder) {
-            Modifier
+            modifier
                 .wrapContentWidth()
                 .wrapContentHeight()
                 .clip(RoundedCornerShape(20.dp))
@@ -47,9 +53,10 @@ fun InputAction(
                 ) {
                     onAction.invoke()
                 }
-                .padding(20.dp, 6.dp)
+                .defaultMinSize(minHeight = 32.dp)
+                .padding(horizontalPadding, verticalPadding)
         } else {
-            Modifier
+            modifier
                 .wrapContentWidth()
                 .wrapContentHeight()
                 .clickable(
@@ -58,7 +65,8 @@ fun InputAction(
                 ) {
                     onAction.invoke()
                 }
-                .padding(6.dp, 6.dp)
+                .defaultMinSize(minHeight = 32.dp)
+                .padding(verticalPadding, verticalPadding)
         },
         contentAlignment = Alignment.Center,
     ) {
@@ -66,6 +74,7 @@ fun InputAction(
             text = text,
             textAlign = TextAlign.Center,
             style = TextStyle(
+                fontSize = fontSize,
                 lineHeight = 16.sp,
                 color = if (isPressed) MixinAppTheme.colors.textAssist else MixinAppTheme.colors.textPrimary,
             ),
@@ -78,4 +87,3 @@ fun InputAction(
 fun PreviewInputActionMax() {
     InputAction("MAX") {}
 }
-

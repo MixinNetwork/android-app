@@ -6,12 +6,9 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.os.Build
 import androidx.sqlite.db.SupportSQLiteDatabase
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.extension.moveTo
-import one.mixin.android.session.Session
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.Account
 import timber.log.Timber

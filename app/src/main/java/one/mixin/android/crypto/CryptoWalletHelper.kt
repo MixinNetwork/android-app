@@ -7,7 +7,6 @@ import androidx.security.crypto.MasterKey
 import blockchain.Blockchain
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Tip.ENCRYPTED_WEB3_KEY
-import one.mixin.android.MixinApplication
 import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.putString
@@ -47,12 +46,17 @@ object CryptoWalletHelper {
         }.getOrNull()
     }
 
-    private val secureStorage by lazy {
-        getSecureStorage(MixinApplication.appContext)
+    private val secureStorageLock = Any()
+    private var secureStorage: SharedPreferences? = null
+
+    private fun secureStorage(context: Context): SharedPreferences? = synchronized(secureStorageLock) {
+        secureStorage ?: getSecureStorage(context).also {
+            secureStorage = it
+        }
     }
 
     fun hasPrivateKey(context: Context, walletId: String): Boolean {
-        return secureStorage?.contains(walletId) ?: false
+        return secureStorage(context)?.contains(walletId) ?: false
     }
 
     fun extractIndexFromPath(path: String): Int? {
@@ -103,7 +107,7 @@ object CryptoWalletHelper {
                 ?: throw IllegalArgumentException("Private key generation failed")
             val address = EthKeyGenerator.privateKeyToAddress(privateKey)
             val addressFromGo = Blockchain.generateEvmAddressFromMnemonic(mnemonic, path)
-            assert(addressFromGo.equals(address)) { "Address mismatch: $addressFromGo != $address" }
+            check(addressFromGo.equals(address, ignoreCase = true)) { "Ethereum address mismatch: $addressFromGo != $address" }
             return CryptoWallet(
                 mnemonic = mnemonic,
                 privateKey = Numeric.toHexString(privateKey),
@@ -122,7 +126,7 @@ object CryptoWalletHelper {
             val keyPair = newKeyPairFromSeed(privateKey)
             val address = keyPair.publicKey.encodeToBase58String()
             val addressFromGo = Blockchain.generateSolanaAddressFromMnemonic(mnemonic, path)
-            assert(addressFromGo.equals(address)) { "Address mismatch: $addressFromGo != $address" }
+            check(addressFromGo == address) { "Solana address mismatch: $addressFromGo != $address" }
 
             return CryptoWallet(
                 mnemonic = mnemonic,
@@ -314,17 +318,19 @@ object CryptoWalletHelper {
     }
 
     fun saveWeb3PrivateKey(context: Context, walletId: String, encryptedString: String) {
-        val secureStorage = getSecureStorage(context)
-        secureStorage?.putString(walletId, encryptedString)
+        secureStorage(context)?.putString(walletId, encryptedString)
     }
 
     fun removePrivate(context: Context, walletId: String) {
-        val encryptedPrefs = getSecureStorage(context)
-        encryptedPrefs?.remove(walletId)
+        secureStorage(context)?.remove(walletId)
     }
 
     fun clear(context: Context) {
-        context.deleteSharedPreferences(ENCRYPTED_WEB3_KEY)
+        synchronized(secureStorageLock) {
+            secureStorage?.edit()?.clear()?.commit()
+            secureStorage = null
+            context.deleteSharedPreferences(ENCRYPTED_WEB3_KEY)
+        }
     }
 
 }

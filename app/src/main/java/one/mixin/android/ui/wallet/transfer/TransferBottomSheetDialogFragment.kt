@@ -19,8 +19,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
-import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
-import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.Constants.INTERVAL_48_HOURS
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -77,6 +75,7 @@ import one.mixin.android.ui.wallet.transfer.data.TransferStatus
 import one.mixin.android.ui.wallet.transfer.data.TransferType
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.msg
 import one.mixin.android.util.viewBinding
@@ -423,17 +422,14 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 // check withdraw within 30 days
                 val withdrawBiometricItem = t as WithdrawBiometricItem
                 val tips = mutableListOf<String>()
-                val ethAddress = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
-                val solAddress = PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
-                val addressWarning = withdrawBiometricItem.address.destination !in listOf(ethAddress, solAddress) &&
-                    withContext(Dispatchers.IO) {
-                        val snapshot = transferViewModel.findLastWithdrawalSnapshotByReceiver(formatDestination(withdrawBiometricItem.address.destination, withdrawBiometricItem.address.tag))
-                        if (snapshot != null) {
-                            !isCreatedAtWithinLast30Days(snapshot.createdAt)
-                        } else {
-                            false
-                        }
+                val addressWarning = withContext(Dispatchers.IO) {
+                    val snapshot = transferViewModel.findLastWithdrawalSnapshotByReceiver(formatDestination(withdrawBiometricItem.address.destination, withdrawBiometricItem.address.tag))
+                    if (snapshot != null) {
+                        !isCreatedAtWithinLast30Days(snapshot.createdAt)
+                    } else {
+                        false
                     }
+                }
 
                 if (addressWarning) {
                     tips.add(getString(R.string.address_validity_reminder, formatDestination(withdrawBiometricItem.address.destination, withdrawBiometricItem.address.tag), withdrawBiometricItem.address.label, 30))
@@ -644,6 +640,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun showPin() {
+        transferViewModel.errorMessage = null
         PinInputBottomSheetDialogFragment.newInstance(biometricInfo = getBiometricInfo(), from = 1).setOnPinComplete { pin ->
             lifecycleScope.launch(
                 CoroutineExceptionHandler { _, error ->
@@ -728,6 +725,16 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     )
                     context?.updatePinCheck()
                     isSuccess = true
+                    when (t) {
+                        is AddressManageBiometricItem -> {
+                            if (t.type == ADD) {
+                                AnalyticsTracker.trackAddressBookAddEnd()
+                            }
+                        }
+                        is TransferBiometricItem, is AddressTransferBiometricItem, is WithdrawBiometricItem -> {
+                            AnalyticsTracker.trackAssetSendEnd()
+                        }
+                    }
 
                     val transactionHash = runCatching {
                         val data = response.data as? List<TransactionResponse>

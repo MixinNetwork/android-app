@@ -3,6 +3,7 @@ package one.mixin.android.ui.home.reminder
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
+import android.os.Bundle
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -48,11 +49,52 @@ class RecoveryReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
 
         @Volatile
         private var isShowing = false
-        private var pendingOnDismissContinueAction: (() -> Unit)? = null
+        private var pendingContinueAction: (() -> Unit)? = null
+
+        private data class ReminderEntryConfig(
+            val dismissTextRes: Int,
+            val enableSnooze: Boolean,
+            val continueOnDismiss: Boolean,
+        ) {
+            fun toBundle(): Bundle =
+                Bundle().apply {
+                    putBoolean(ARGS_ENABLE_SNOOZE, enableSnooze)
+                    putBoolean(ARGS_CONTINUE_ON_DISMISS, continueOnDismiss)
+                    putInt(ARGS_DISMISS_TEXT, dismissTextRes)
+                }
+        }
+
+        private data class ReminderDialogArgs(
+            val enableSnooze: Boolean,
+            val continueOnDismiss: Boolean,
+            val dismissTextRes: Int,
+        ) {
+            companion object {
+                fun from(arguments: Bundle?): ReminderDialogArgs {
+                    return ReminderDialogArgs(
+                        enableSnooze = arguments?.getBoolean(ARGS_ENABLE_SNOOZE, true) ?: true,
+                        continueOnDismiss = arguments?.getBoolean(ARGS_CONTINUE_ON_DISMISS, false) ?: false,
+                        dismissTextRes = arguments?.getInt(ARGS_DISMISS_TEXT, R.string.Skip) ?: R.string.Skip,
+                    )
+                }
+            }
+        }
+
+        private val homeEntryConfig = ReminderEntryConfig(
+            dismissTextRes = R.string.Not_Now,
+            enableSnooze = true,
+            continueOnDismiss = false,
+        )
+
+        private val logoutEntryConfig = ReminderEntryConfig(
+            dismissTextRes = R.string.Cancel,
+            enableSnooze = false,
+            continueOnDismiss = false,
+        )
 
         fun showForHome(fragmentManager: FragmentManager): Boolean {
             if (!RecoveryReminderState.shouldShowOnHome()) return false
-            return showSafely(fragmentManager, enableSnooze = true, continueOnDismiss = false)
+            return showSafely(fragmentManager, entryConfig = homeEntryConfig)
         }
 
         fun showForRiskAction(
@@ -60,10 +102,14 @@ class RecoveryReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
             onContinue: (() -> Unit)? = null,
         ): Boolean {
             if (!RecoveryReminderState.shouldShowOnRiskAction()) return false
+            val entryConfig = ReminderEntryConfig(
+                dismissTextRes = R.string.Skip,
+                enableSnooze = false,
+                continueOnDismiss = onContinue != null,
+            )
             return showSafely(
                 fragmentManager,
-                enableSnooze = false,
-                continueOnDismiss = false,
+                entryConfig = entryConfig,
                 onContinue = onContinue,
             )
         }
@@ -72,9 +118,7 @@ class RecoveryReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
             if (!RecoveryReminderState.shouldShowOnLogout()) return false
             return showSafely(
                 fragmentManager,
-                enableSnooze = false,
-                continueOnDismiss = false,
-                dismissTextRes = R.string.Cancel,
+                entryConfig = logoutEntryConfig,
             )
         }
 
@@ -85,7 +129,7 @@ class RecoveryReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
             context.defaultSharedPreferences.putBoolean(PREF_RECOVERY_REMINDER_DEBUG_ALLOW_ONCE, allow)
         }
 
-        fun snoozeFromNow(context: Context) {
+        private fun snoozeFromNow(context: Context) {
             context.defaultSharedPreferences.putLong(
                 PREF_RECOVERY_REMINDER_SNOOZE,
                 System.currentTimeMillis(),
@@ -95,19 +139,13 @@ class RecoveryReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
 
         private fun showSafely(
             fragmentManager: FragmentManager,
-            enableSnooze: Boolean,
-            continueOnDismiss: Boolean,
-            dismissTextRes: Int = R.string.Not_Now,
+            entryConfig: ReminderEntryConfig,
             onContinue: (() -> Unit)? = null,
         ): Boolean {
             if (isShowing) return false
-            pendingOnDismissContinueAction = if (continueOnDismiss) onContinue else null
+            pendingContinueAction = if (entryConfig.continueOnDismiss) onContinue else null
             val fragment = RecoveryReminderBottomSheetDialogFragment().apply {
-                arguments = android.os.Bundle().apply {
-                    putBoolean(ARGS_ENABLE_SNOOZE, enableSnooze)
-                    putBoolean(ARGS_CONTINUE_ON_DISMISS, continueOnDismiss)
-                    putInt(ARGS_DISMISS_TEXT, dismissTextRes)
-                }
+                arguments = entryConfig.toBundle()
             }
             return try {
                 if (fragmentManager.isStateSaved) {
@@ -119,13 +157,13 @@ class RecoveryReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
                 }
             } catch (e: Exception) {
                 isShowing = false
-                pendingOnDismissContinueAction = null
+                pendingContinueAction = null
                 false
             }
         }
 
         object RecoveryReminderState {
-            fun recoveryMethodCount(): Int {
+            private fun recoveryMethodCount(): Int {
                 val hasPhone = Session.hasPhone()
                 val hasMnemonic = Session.saltExported()
                 val hasRecoveryContact = hasPhone && Session.hasEmergencyContact()
@@ -138,7 +176,7 @@ class RecoveryReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
 
             fun shouldShowOnHome(context: Context = MixinApplication.appContext): Boolean {
                 if (consumeDebugShowOnce(context)) return true
-                if (recoveryMethodCount() != 1) return false
+                if (recoveryMethodCount() > 1) return false
                 return isSnoozeExpired(context)
             }
 
@@ -196,7 +234,7 @@ class RecoveryReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
     override fun onDestroy() {
         super.onDestroy()
         isShowing = false
-        pendingOnDismissContinueAction = null
+        pendingContinueAction = null
     }
 
     override fun dismiss() {
@@ -211,33 +249,20 @@ class RecoveryReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
 
     @Composable
     override fun ComposeContent() {
-        val enableSnooze = arguments?.getBoolean(ARGS_ENABLE_SNOOZE, true) ?: true
-        val continueOnDismiss = arguments?.getBoolean(ARGS_CONTINUE_ON_DISMISS, false) ?: false
-        val dismissTextRes = arguments?.getInt(ARGS_DISMISS_TEXT, R.string.Not_Now) ?: R.string.Not_Now
+        val dialogArgs = ReminderDialogArgs.from(arguments)
         val context = LocalContext.current
         val recoveryKitHelpUrl = stringResource(R.string.recovery_kit_help_url)
         MixinAppTheme {
             ReminderPage(
                 contentImage = R.drawable.bg_recovery_kit,
                 title = R.string.Recovery_Kit,
-                actionStr = R.string.Continue,
-                dismissStr = dismissTextRes,
+                actionStr = R.string.Set_Up_Now,
+                dismissStr = dialogArgs.dismissTextRes,
                 action = {
-                    pendingOnDismissContinueAction = null
-                    dismissAllowingStateLoss()
-                    SettingActivity.showRecoveryKit(requireContext())
+                    openRecoveryKit()
                 },
                 dismiss = {
-                    val continueAction = if (continueOnDismiss) pendingOnDismissContinueAction else null
-                    pendingOnDismissContinueAction = null
-                    if (enableSnooze) {
-                        requireContext().defaultSharedPreferences.putLong(
-                            PREF_RECOVERY_REMINDER_SNOOZE,
-                            System.currentTimeMillis(),
-                        )
-                    }
-                    dismissAllowingStateLoss()
-                    continueAction?.invoke()
+                    handleDismiss(dialogArgs)
                 },
                 contentSlot = {
                     HighlightedTextWithClick(
@@ -268,6 +293,7 @@ class RecoveryReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
                         )
                     }
                 },
+                stickyFooter = true,
             )
         }
     }
@@ -277,5 +303,26 @@ class RecoveryReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
     }
 
     override fun showError(error: String) {
+    }
+
+    private fun openRecoveryKit() {
+        pendingContinueAction = null
+        dismissAllowingStateLoss()
+        SettingActivity.showRecoveryKit(requireContext())
+    }
+
+    private fun handleDismiss(dialogArgs: ReminderDialogArgs) {
+        val continueAction = takePendingContinueAction(continueOnDismiss = dialogArgs.continueOnDismiss)
+        if (dialogArgs.enableSnooze) {
+            snoozeFromNow(requireContext())
+        }
+        dismissAllowingStateLoss()
+        continueAction?.invoke()
+    }
+
+    private fun takePendingContinueAction(continueOnDismiss: Boolean): (() -> Unit)? {
+        val continueAction = if (continueOnDismiss) pendingContinueAction else null
+        pendingContinueAction = null
+        return continueAction
     }
 }

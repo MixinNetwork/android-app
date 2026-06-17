@@ -7,12 +7,13 @@ import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
+import one.mixin.android.db.converter.DescriptionsConverter
 import one.mixin.android.db.converter.OptionalListConverter
 
 @Entity(
     tableName = "markets",
 )
-@TypeConverters(OptionalListConverter::class)
+@TypeConverters(OptionalListConverter::class, DescriptionsConverter::class)
 @Parcelize
 data class Market(
     @PrimaryKey
@@ -105,5 +106,8 @@ data class Market(
     val sparklineIn24h: String,
     @SerializedName("updated_at")
     @ColumnInfo(name = "updated_at")
-    val updatedAt: String
+    val updatedAt: String,
+    @SerializedName("descriptions")
+    @ColumnInfo(name = "descriptions")
+    val descriptions: Map<String, String>? = null,
 ) : Parcelable

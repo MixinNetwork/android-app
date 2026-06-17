@@ -64,6 +64,7 @@ import one.mixin.android.Constants.INTERVAL_7_DAYS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
@@ -74,7 +75,6 @@ import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.UserDao
-import one.mixin.android.db.WalletDatabase
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.event.BadgeEvent
 import one.mixin.android.event.TipEvent
@@ -269,7 +269,8 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
     private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+        val restoreState = if (Session.checkToken()) savedInstanceState else null
+        super.onCreate(restoreState)
         navigationController = NavigationController()
 
         var deviceId = defaultSharedPreferences.getString(DEVICE_ID, null)
@@ -342,7 +343,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        initFragmentsFromSavedState(savedInstanceState)
+        initFragmentsFromSavedState(restoreState)
 
         val account = Session.getAccount()
         account?.let {
@@ -357,6 +358,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         handlerCode(intent)
 
         updateSessionWhenOpen()
+
         checkAsync()
 
         RxBus.listen(TipEvent::class.java)
@@ -377,11 +379,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             .autoDispose(destroyScope)
             .subscribe { e ->
                 lifecycleScope.launch {
-                    if (e is WCEvent.V2) {
-                        WalletConnectActivity.show(this@MainActivity, e)
-                    } else {
-                        WalletConnectActivity.show(this@MainActivity, e)
-                    }
+                    WalletConnectActivity.show(this@MainActivity, e)
                 }
             }
         RxBus.listen(WCErrorEvent::class.java)
@@ -444,7 +442,9 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                 .request(Manifest.permission.POST_NOTIFICATIONS)
                 .autoDispose(stopScope)
                 .subscribe(
-                    { _ -> },
+                    { _ -> 
+                        AnalyticsTracker.setNotificationAuthStatus(this)
+                    },
                     {},
                 )
         }
@@ -564,7 +564,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             val hasClassicWallet: Boolean = web3Repository.hasClassicWallet()
             // Only show login verify when it has not been verified and there is no classic wallet.
             Timber.e("isLoginVerified: $isLoginVerified, hasClassicWallet: $hasClassicWallet")
-            if (!isLoginVerified && !hasClassicWallet) {
+            if (!isLoginVerified && !hasClassicWallet && Session.getAccount()?.hasSafe == true) {
                 lifecycleScope.launch {
                     withContext(Dispatchers.Main) {
                         try {
@@ -831,7 +831,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
     private var bottomSheet: DialogFragment? = null
     private var alertDialog: Dialog? = null
 
-    private fun handlerCode(intent: Intent) {
+    fun handlerCode(intent: Intent) {
         if (intent.hasExtra(SCAN)) {
             val scan = intent.getStringExtra(SCAN)!!
             bottomSheet?.dismiss()
@@ -1001,6 +1001,25 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         }
     }
 
+    private fun <T> requireMixinData(
+        response: MixinResponse<T>,
+        action: String,
+    ): T {
+        if (!response.isSuccess) {
+            throw IllegalStateException("$action failed: ${response.errorDescription}")
+        }
+        return requireNotNull(response.data) { "$action returned empty data" }
+    }
+
+    private fun requireMixinSuccess(
+        response: MixinResponse<*>,
+        action: String,
+    ) {
+        if (!response.isSuccess) {
+            throw IllegalStateException("$action failed: ${response.errorDescription}")
+        }
+    }
+
     private fun showDialog() {
         alertDialog?.dismiss()
         alertDialog =
@@ -1038,7 +1057,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             bottomNav.setOnApplyWindowInsetsListener(null)
             bottomNav.setPadding(0,0,0,0)
             bottomNav.itemIconTintList = null
-            bottomNav.menu.findItem(R.id.nav_chat).isChecked = true
+            bottomNav.menu.findItem(lastBottomNavItemId).isChecked = true
 
             bottomNav.setOnItemSelectedListener {
                 if (isRestoringBottomNavSelection) {
@@ -1105,11 +1124,13 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
     private fun handleNavigationItemSelected(itemId: Int) {
         when (itemId) {
             R.id.nav_chat -> {
+                AnalyticsTracker.trackHomeTabSwitch(AnalyticsTracker.HomeTabMethod.CHATS)
                 switchToDestination(NavigationController.ConversationList)
                 lastBottomNavItemId = itemId
             }
 
             R.id.nav_wallet -> {
+                AnalyticsTracker.trackHomeTabSwitch(AnalyticsTracker.HomeTabMethod.WALLETS)
                 Timber.e("nav_wallet: ${Session.getAccount()?.hasPin}")
                 if (Session.getAccount()?.hasPin == true) {
                     lifecycleScope.launch {
@@ -1131,6 +1152,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             }
 
             R.id.nav_market -> {
+                AnalyticsTracker.trackMoreTabSwitch(AnalyticsTracker.MoreTabMethod.MARKETS)
                 switchToDestination(NavigationController.Market)
                 lastBottomNavItemId = itemId
                 findFragmentByTagTyped<MarketFragment>(NavigationController.Market.tag)?.updateUI()
@@ -1139,6 +1161,8 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             }
 
             R.id.nav_more -> {
+                AnalyticsTracker.trackHomeTabSwitch(AnalyticsTracker.HomeTabMethod.MORE)
+                AnalyticsTracker.trackMoreTabSwitch(AnalyticsTracker.MoreTabMethod.BOTS)
                 if (!defaultSharedPreferences.getBoolean(Account.PREF_NAV_MORE_BADGE_DISMISSED, false)) {
                     defaultSharedPreferences.putBoolean(Account.PREF_NAV_MORE_BADGE_DISMISSED, true)
                     RxBus.publish(BadgeEvent(Account.PREF_NAV_MORE_BADGE_DISMISSED))
@@ -1312,10 +1336,17 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         }
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt(KEY_LAST_BOTTOM_NAV, lastBottomNavItemId)
+    }
+
     private fun initFragmentsFromSavedState(savedInstanceState: Bundle?) {
+        if (savedInstanceState != null) {
+            lastBottomNavItemId = savedInstanceState.getInt(KEY_LAST_BOTTOM_NAV, R.id.nav_chat)
+            return
+        }
         navigationController.navigate(supportFragmentManager, NavigationController.ConversationList, ConversationListFragment.newInstance())
-        binding.bottomNav.selectedItemId = R.id.nav_chat
-        Timber.e("initFragmentsFromSavedState: nav_chat")
     }
 
     companion object {
@@ -1324,6 +1355,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         const val TRANSFER = "transfer"
         private const val WALLET = "wallet"
         const val WALLET_CONNECT = "wallet_connect"
+        private const val KEY_LAST_BOTTOM_NAV = "last_bottom_nav_item_id"
 
         fun showWallet(
             context: Context,

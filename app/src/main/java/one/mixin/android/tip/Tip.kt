@@ -26,7 +26,7 @@ import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.crypto.removeValueFromEncryptedPreferences
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.crypto.storeValueInEncryptedPreferences
-import one.mixin.android.crypto.toCompleteMnemonic
+import one.mixin.android.crypto.toMnemonicWithChecksum
 import one.mixin.android.crypto.toMnemonic
 import one.mixin.android.event.TipEvent
 import one.mixin.android.extension.base64RawURLDecode
@@ -208,10 +208,16 @@ class Tip
         fun generateEntropyAndStore(context: Context): ByteArray {
             var entropy: ByteArray
             var mnemonicPhrase: List<String>
-            do {
+            // Non-standard: BIP39 permits duplicate words, but we reject them to avoid
+            // confusing users during backup/restore. Negligible entropy impact at 128 bits.
+            while (true) {
                 entropy = generateRandomBytes(16)
-                mnemonicPhrase = toCompleteMnemonic(toMnemonic(entropy))
-            } while (mnemonicPhrase.distinct().size != mnemonicPhrase.size && isMnemonicValid(mnemonicPhrase))
+                val words = toMnemonic(entropy).split(" ")
+                if (words.distinct().size != words.size) continue
+                if (!isMnemonicValid(words)) continue
+                mnemonicPhrase = toMnemonicWithChecksum(words)
+                if (mnemonicPhrase.distinct().size == mnemonicPhrase.size) break
+            }
             storeValueInEncryptedPreferences(context, Constants.Tip.MNEMONIC, entropy)
             return entropy
         }
@@ -247,7 +253,11 @@ class Tip
                 return salt
             }
             val account = tipNetwork { accountService.getMeSuspend() }.getOrThrow()
-            val pinTokenEncryptedSalt = account.salt?.base64RawURLDecode() ?: throw TipNullException("account has no salt")
+            val pinTokenEncryptedSalt = account.salt
+                ?.takeIf { it.isNotBlank() }
+                ?.base64RawURLDecode()
+                ?.takeIf { it.isNotEmpty() }
+                ?: throw TipNullException("account has no salt")
             Session.storeAccount(account)
             val pinToken = Session.getPinToken()?.decodeBase64() ?: throw TipNullException("no pin token")
             salt = aesDecrypt(pinToken, pinTokenEncryptedSalt)
@@ -635,7 +645,11 @@ class Tip
                 )
             Timber.e("getAesKey before readTipSecret")
             val response = tipNetwork { tipService.readTipSecret(tipSecretReadRequest) }.getOrThrow()
-            return response.seedBase64?.base64RawURLDecode() ?: throw TipNullException("Not get tip secret")
+            return response.seedBase64
+                ?.takeIf { it.isNotBlank() }
+                ?.base64RawURLDecode()
+                ?.takeIf { it.isNotEmpty() }
+                ?: throw TipNullException("Not get tip secret")
         }
 
         private fun signTimestamp(

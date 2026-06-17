@@ -1,306 +1,137 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
-import androidx.core.view.isVisible
+import android.view.ViewGroup
+import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
-import androidx.paging.PagedList
-import androidx.recyclerview.widget.ConcatAdapter
-import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
-import one.mixin.android.api.response.perps.PerpsPositionItem
-import one.mixin.android.databinding.FragmentAllClosedPositionsBinding
+import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.perps.PerpsMarketDao
-import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.openUrl
-import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.home.web3.trade.ClosedPositionAdapter
-import one.mixin.android.ui.home.web3.trade.TotalPositionValueAdapter
-import one.mixin.android.util.viewBinding
-import java.math.BigDecimal
-import java.math.RoundingMode
+import one.mixin.android.util.analytics.AnalyticsTracker
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class AllPositionsFragment : BaseFragment(R.layout.fragment_all_closed_positions) {
+class AllPositionsFragment : BaseFragment() {
 
     companion object {
         const val TAG = "AllPositionsFragment"
         private const val ARGS_POSITION_TYPE = "args_position_type"
+        private const val ARGS_SOURCE = "args_source"
         private const val TYPE_OPEN = "type_open"
         private const val TYPE_CLOSED = "type_closed"
-        private const val POSITION_REFRESH_INTERVAL_MS = 3_000L
-        private const val CLOSED_POSITION_REFRESH_LIMIT = 100
 
-        fun newInstance(showOpenPositions: Boolean = false) = AllPositionsFragment().apply {
+        fun newInstance(
+            showOpenPositions: Boolean = false,
+            source: String = AnalyticsTracker.PerpsSource.PERPS_ALL_POSITIONS,
+        ) = AllPositionsFragment().apply {
             arguments = Bundle().apply {
                 putString(ARGS_POSITION_TYPE, if (showOpenPositions) TYPE_OPEN else TYPE_CLOSED)
+                putString(ARGS_SOURCE, source)
             }
         }
 
-        fun newOpenInstance() = newInstance(showOpenPositions = true)
+        fun newOpenInstance(source: String = AnalyticsTracker.PerpsSource.PERPS_ALL_POSITIONS) =
+            newInstance(showOpenPositions = true, source = source)
 
-        fun newClosedInstance() = newInstance(showOpenPositions = false)
+        fun newClosedInstance(source: String = AnalyticsTracker.PerpsSource.PERPS_ALL_POSITIONS) =
+            newInstance(showOpenPositions = false, source = source)
     }
 
     @Inject
     lateinit var perpsMarketDao: PerpsMarketDao
 
-    private val binding by viewBinding(FragmentAllClosedPositionsBinding::bind)
     private val viewModel by viewModels<PerpetualViewModel>()
-    private val totalValueAdapter by lazy { TotalPositionValueAdapter(isQuoteColorReversed) }
-    private val isQuoteColorReversed by lazy {
-        requireContext().defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
-    }
 
-    private val openPositionAdapter by lazy {
-        OpenPositionAdapter(isQuoteColorReversed) { position ->
-            lifecycleScope.launch {
-                val market = withContext(Dispatchers.IO) {
-                    perpsMarketDao.getMarket(position.marketId)
-                }
-                activity?.let { ctx ->
-                    PerpsActivity.showDetail(
-                        context = ctx,
-                        marketId = position.marketId,
-                        marketSymbol = market?.displaySymbol ?: "",
-                        marketDisplaySymbol = market?.displaySymbol ?: "",
-                        marketTokenSymbol = market?.tokenSymbol ?: ""
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
+    ): View {
+        val positionType = when (arguments?.getString(ARGS_POSITION_TYPE, TYPE_CLOSED)) {
+            TYPE_OPEN -> AllPositionsType.OPEN
+            else -> AllPositionsType.CLOSED
+        }
+        val source = arguments?.getString(ARGS_SOURCE) ?: AnalyticsTracker.PerpsSource.PERPS_ALL_POSITIONS
+        if (positionType == AllPositionsType.OPEN) {
+            AnalyticsTracker.trackPerpsAllPositions(source)
+        }
+        if (positionType == AllPositionsType.CLOSED) {
+            AnalyticsTracker.trackPerpsActivity(source)
+        }
+
+        return ComposeView(inflater.context).apply {
+            setContent {
+                MixinAppTheme(
+                    darkTheme = context.isNightMode(),
+                ) {
+                    AllPositionsPage(
+                        positionType = positionType,
+                        viewModel = viewModel,
+                        onBack = {
+                            activity?.onBackPressedDispatcher?.onBackPressed()
+                        },
+                        onSupport = {
+                            context.openUrl(
+                                Constants.HelpLink.CUSTOMER_SERVICE,
+                                source = AnalyticsTracker.CustomerServiceSource.PERPS_ALL_POSITIONS,
+                                wallet = AnalyticsTracker.TradeWallet.WEB3,
+                            )
+                        },
+                        onShowTradingGuide = {
+                            AnalyticsTracker.trackPerpsGuide(AnalyticsTracker.PerpsSource.PERPS_ALL_POSITIONS)
+                            PerpetualGuideBottomSheetDialogFragment.newInstance(
+                                initialTab = PerpetualGuideBottomSheetDialogFragment.TAB_OVERVIEW
+                            ).show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
+                        },
+                        onOpenPositionClick = { position ->
+                            lifecycleScope.launch {
+                                val market = withContext(Dispatchers.IO) {
+                                    perpsMarketDao.getMarket(position.marketId)
+                                }
+                                activity?.let { ctx ->
+                                    PerpsActivity.showDetail(
+                                        context = ctx,
+                                        marketId = position.marketId,
+                                        marketSymbol = market?.displaySymbol ?: "",
+                                        marketDisplaySymbol = market?.displaySymbol ?: "",
+                                        marketTokenSymbol = market?.tokenSymbol ?: "",
+                                        source = AnalyticsTracker.PerpsSource.PERPS_ALL_POSITIONS,
+                                    )
+                                }
+                            }
+                        },
+                        onClosedPositionClick = { position ->
+                            activity?.supportFragmentManager?.let { fm ->
+                                fm.beginTransaction()
+                                    .setCustomAnimations(
+                                        R.anim.slide_in_right,
+                                        0,
+                                        0,
+                                        R.anim.slide_out_right,
+                                    )
+                                    .add(
+                                        android.R.id.content,
+                                        PositionDetailFragment.newInstance(position, AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_LIST),
+                                        PositionDetailFragment.TAG,
+                                    )
+                                    .addToBackStack(null)
+                                    .commit()
+                            }
+                        },
                     )
                 }
             }
         }
-    }
-
-    private val closedPositionAdapter by lazy {
-        ClosedPositionAdapter(isQuoteColorReversed) { position ->
-            activity?.supportFragmentManager?.let { fm ->
-                fm.beginTransaction()
-                    .setCustomAnimations(
-                        R.anim.slide_in_right,
-                        0,
-                        0,
-                        R.anim.slide_out_right
-                    )
-                    .add(
-                        android.R.id.content,
-                        PositionDetailFragment.Companion.newInstance(position),
-                        PositionDetailFragment.Companion.TAG
-                    )
-                    .addToBackStack(null)
-                    .commit()
-            }
-        }
-    }
-
-    private enum class PositionType {
-        OPEN,
-        CLOSED
-    }
-
-    private var positionType: PositionType = PositionType.CLOSED
-    private var openPositionsLiveData: LiveData<PagedList<PerpsPositionItem>>? = null
-    private var closedPositionsLiveData: LiveData<PagedList<PerpsPositionHistoryItem>>? = null
-    private var totalValueJob: Job? = null
-    private var previousOpenPositionsCount: Int? = null
-    
-    private var lastOpenTotalMargin: Double = 0.0
-    private var lastOpenTotalPnl: Double = 0.0
-    private var lastClosedTotalPnl: Double = 0.0
-    private var lastClosedTotalMargin: Double = 0.0
-
-    private val openPositionsObserver = Observer<PagedList<PerpsPositionItem>> { pagedList ->
-        binding.progressBar.isVisible = false
-        openPositionAdapter.submitList(pagedList)
-        val isEmpty = pagedList.isEmpty()
-        binding.emptyView.walletTransactionsEmpty.text = getString(R.string.No_Position)
-        binding.emptyView.helpAction.isVisible = isEmpty
-        binding.emptyView.root.isVisible = isEmpty
-    }
-
-    private val closedPositionsObserver = Observer<PagedList<PerpsPositionHistoryItem>> { pagedList ->
-        binding.progressBar.isVisible = false
-        closedPositionAdapter.submitList(pagedList)
-        val isEmpty = pagedList.isEmpty()
-        binding.emptyView.walletTransactionsEmpty.text = getString(R.string.No_Activity)
-        binding.emptyView.helpAction.isVisible = false
-        binding.emptyView.root.isVisible = isEmpty
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        binding.apply {
-            titleView.leftIb.setOnClickListener {
-                activity?.onBackPressedDispatcher?.onBackPressed()
-            }
-            titleView.rightIb.setImageResource(R.drawable.ic_support)
-            titleView.rightAnimator.visibility = View.VISIBLE
-            titleView.rightAnimator.displayedChild = 0
-            titleView.rightAnimator.setOnClickListener {
-                context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
-            }
-            positionType = when (arguments?.getString(ARGS_POSITION_TYPE, TYPE_CLOSED)) {
-                TYPE_OPEN -> PositionType.OPEN
-                else -> PositionType.CLOSED
-            }
-            titleView.setSubTitle(
-                getString(if (positionType == PositionType.OPEN) R.string.perps_positions else R.string.perps_activity),
-                ""
-            )
-
-            positionsRv.layoutManager = LinearLayoutManager(requireContext())
-            emptyView.helpAction.setOnClickListener {
-                PerpetualGuideBottomSheetDialogFragment.newInstance(
-                    initialTab = PerpetualGuideBottomSheetDialogFragment.TAB_OVERVIEW
-                ).show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
-            }
-        }
-
-        loadPositions()
-        observeOpenPositionCountChanges()
-        observePeriodicRefresh()
-    }
-
-    private fun loadPositions() {
-        openPositionsLiveData?.removeObservers(viewLifecycleOwner)
-        closedPositionsLiveData?.removeObservers(viewLifecycleOwner)
-        totalValueJob?.cancel()
-        
-        lastOpenTotalMargin = 0.0
-        lastOpenTotalPnl = 0.0
-        lastClosedTotalPnl = 0.0
-        lastClosedTotalMargin = 0.0
-        previousOpenPositionsCount = null
-
-        if (positionType == PositionType.OPEN) {
-            binding.titleView.setSubTitle(getString(R.string.perps_positions), "")
-            totalValueAdapter.submitTitle(R.string.Total_Position_Value)
-            binding.positionsRv.adapter = ConcatAdapter(totalValueAdapter, openPositionAdapter)
-            loadOpenPositions()
-        } else {
-            binding.titleView.setSubTitle(getString(R.string.perps_activity), "")
-            binding.positionsRv.adapter = closedPositionAdapter
-            loadClosedPositions()
-        }
-    }
-
-    private fun loadOpenPositions() {
-        val walletId = Session.getAccountId() ?: run {
-            binding.progressBar.isVisible = false
-            return
-        }
-
-        binding.progressBar.isVisible = true
-        binding.emptyView.root.isVisible = false
-        binding.emptyView.helpAction.isVisible = false
-        totalValueAdapter.submitTotal(BigDecimal.ZERO)
-        totalValueAdapter.submitSubtitle(BigDecimal.ZERO, BigDecimal.ZERO)
-
-        openPositionsLiveData = viewModel.getOpenPositionsPaged(walletId)
-        openPositionsLiveData?.observe(viewLifecycleOwner, openPositionsObserver)
-        observeOpenTotals(walletId)
-    }
-
-    private fun loadClosedPositions() {
-        val walletId = Session.getAccountId() ?: run {
-            binding.progressBar.isVisible = false
-            return
-        }
-
-        binding.progressBar.isVisible = true
-        binding.emptyView.root.isVisible = false
-        binding.emptyView.helpAction.isVisible = false
-
-        closedPositionsLiveData = viewModel.getClosedPositionsPaged(walletId)
-        closedPositionsLiveData?.observe(viewLifecycleOwner, closedPositionsObserver)
-    }
-
-    private fun observeOpenTotals(walletId: String) {
-        totalValueJob?.cancel()
-        totalValueJob = viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                combine(
-                    viewModel.observeOpenPositions(walletId),
-                    viewModel.observeTotalUnrealizedPnl(walletId)
-                ) { positions, totalPnl ->
-                    calculateOpenTotalMargin(positions) to totalPnl
-                }.collect { (totalMargin, totalPnl) ->
-                    if (lastOpenTotalMargin != totalMargin || lastOpenTotalPnl != totalPnl) {
-                        lastOpenTotalMargin = totalMargin
-                        lastOpenTotalPnl = totalPnl
-                        val percent = calculatePnlPercent(totalPnl, totalMargin)
-                        totalValueAdapter.submitTotal(BigDecimal.valueOf(totalMargin))
-                        totalValueAdapter.submitSubtitle(BigDecimal.valueOf(totalPnl), BigDecimal.valueOf(percent))
-                    }
-                }
-            }
-        }
-    }
-
-    private fun observePeriodicRefresh() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                val walletId = Session.getAccountId() ?: return@repeatOnLifecycle
-                viewModel.refreshPositionHistory(
-                    walletId = walletId,
-                    limit = CLOSED_POSITION_REFRESH_LIMIT
-                )
-                while (isActive) {
-                    viewModel.refreshPositions(walletId)
-                    delay(POSITION_REFRESH_INTERVAL_MS)
-                }
-            }
-        }
-    }
-
-    private fun observeOpenPositionCountChanges() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                val walletId = Session.getAccountId() ?: return@repeatOnLifecycle
-                viewModel.observeOpenPositions(walletId).collect { positions ->
-                    val currentCount = positions.size
-                    val lastCount = previousOpenPositionsCount
-                    if (lastCount != null && currentCount < lastCount) {
-                        viewModel.refreshPositionHistory(
-                            walletId = walletId,
-                            limit = CLOSED_POSITION_REFRESH_LIMIT
-                        )
-                    }
-                    previousOpenPositionsCount = currentCount
-                }
-            }
-        }
-    }
-
-    private fun calculateOpenTotalMargin(positions: List<PerpsPositionItem>): Double {
-        return positions.sumOf { position ->
-            position.margin?.toDoubleOrNull() ?: 0.0
-        }
-    }
-    private fun calculatePnlPercent(pnl: Double, margin: Double): Double {
-        if (margin == 0.0) {
-            return 0.0
-        }
-        return BigDecimal.valueOf(pnl)
-            .divide(BigDecimal.valueOf(margin), 8, RoundingMode.HALF_UP)
-            .multiply(BigDecimal(100))
-            .toDouble()
     }
 }

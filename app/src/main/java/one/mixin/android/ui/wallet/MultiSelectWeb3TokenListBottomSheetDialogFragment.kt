@@ -24,14 +24,12 @@ import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.hideKeyboard
-import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.adapter.SelectableWeb3TokenAdapter
 import one.mixin.android.ui.wallet.adapter.SelectedWeb3TokenAdapter
 import one.mixin.android.ui.wallet.adapter.WalletSearchWeb3TokenItemCallback
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
-import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 @SuppressLint("NotifyDataSetChanged")

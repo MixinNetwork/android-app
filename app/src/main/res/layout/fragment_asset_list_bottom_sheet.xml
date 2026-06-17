@@ -117,6 +117,18 @@
                 android:visibility="gone"/>
 
             <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/radio_btc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/selector_radio"
+                android:button="@null"
+                android:text="@string/Bitcoin"
+                android:textSize="14sp"
+                android:textColor="@drawable/radio_button_text_selector"
+                android:visibility="gone"/>
+
+            <androidx.appcompat.widget.AppCompatRadioButton
                 android:id="@+id/radio_eth"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -126,6 +138,7 @@
                 android:text="@string/Ethereum"
                 android:textSize="14sp"
                 android:textColor="@drawable/radio_button_text_selector" />
+
 
             <androidx.appcompat.widget.AppCompatRadioButton
                 android:id="@+id/radio_solana"
@@ -223,6 +236,17 @@
                 android:background="@drawable/selector_radio"
                 android:button="@null"
                 android:text="@string/Avalanche"
+                android:textSize="14sp"
+                android:textColor="@drawable/radio_button_text_selector" />
+
+            <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/radio_hyperevm"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/selector_radio"
+                android:button="@null"
+                android:text="@string/HyperEVM"
                 android:textSize="14sp"
                 android:textColor="@drawable/radio_button_text_selector" />
         </RadioGroup>

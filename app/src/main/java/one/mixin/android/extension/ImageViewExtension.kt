@@ -17,6 +17,7 @@ import coil3.request.allowHardware
 import coil3.request.bitmapConfig
 import coil3.request.error
 import coil3.request.placeholder
+import coil3.request.CachePolicy
 import coil3.request.transformations
 import coil3.transform.Transformation
 import androidx.core.widget.TextViewCompat
@@ -49,9 +50,18 @@ fun ImageView.loadImage(
     onError: ((request: ImageRequest, result: ErrorResult) -> Unit)? = null,
     transformation: Transformation? = null,
 ) {
+    if (data == null) {
+        dispose()
+        if (base64Holder != null) {
+            setImageDrawable(base64Holder.toDrawable(layoutParams?.width ?: 0, layoutParams?.height ?: 0))
+        } else if (holder != null) {
+            setImageResource(holder)
+        }
+        return
+    }
     this.load(data) {
         if (base64Holder != null) {
-            placeholder(base64Holder.toDrawable(layoutParams.width, layoutParams.height))
+            placeholder(base64Holder.toDrawable(layoutParams?.width ?: 0, layoutParams?.height ?: 0))
         } else if (holder != null) {
             placeholder(holder)
             error(holder)
@@ -80,9 +90,18 @@ fun ImageView.loadImageCompat(
     onError: ((request: ImageRequest, result: ErrorResult) -> Unit)? = null,
     transformation: Transformation? = null,
 ) {
+    if (data == null) {
+        dispose()
+        if (base64Holder != null) {
+            setImageDrawable(base64Holder.toDrawable(layoutParams?.width ?: 0, layoutParams?.height ?: 0))
+        } else if (holder != null) {
+            setImageResource(holder)
+        }
+        return
+    }
     this.load(data) {
         if (base64Holder != null) {
-            placeholder(base64Holder.toDrawable(layoutParams.width, layoutParams.height))
+            placeholder(base64Holder.toDrawable(layoutParams?.width ?: 0, layoutParams?.height ?: 0))
         } else if (holder != null) {
             placeholder(holder)
             error(holder)
@@ -104,9 +123,18 @@ fun ImageView.loadImage(
     @DrawableRes holder: Int? = null,
     base64Holder: String? = null,
 ) {
+    if (uri == null) {
+        dispose()
+        if (base64Holder != null) {
+            setImageDrawable(base64Holder.toDrawable(layoutParams?.width ?: 0, layoutParams?.height ?: 0))
+        } else if (holder != null) {
+            setImageResource(holder)
+        }
+        return
+    }
     this.load(uri) {
         if (base64Holder != null) {
-            placeholder(base64Holder.toDrawable(layoutParams.width, layoutParams.height))
+            placeholder(base64Holder.toDrawable(layoutParams?.width ?: 0, layoutParams?.height ?: 0))
         } else if (holder != null) {
             placeholder(holder)
             error(holder)
@@ -123,7 +151,9 @@ fun ImageView.loadSvgWithTint(url: String, isRising: Boolean, isColorReversed: B
         else -> R.color.wallet_green
     }
     setColorFilter(ContextCompat.getColor(context, colorRes))
-    load(url)
+    load(url) {
+        memoryCachePolicy(CachePolicy.DISABLED)
+    }
 }
 
 fun ImageView.clear() {
@@ -420,6 +450,10 @@ fun ImageView.loadRoundImage(
 }
 
 fun TextView.loadImage(data: Any?, size: Int, @DrawableRes placeholder: Int? = null) {
+    if (data == null) {
+        TextViewCompat.setCompoundDrawablesRelative(this, null, null, null, null)
+        return
+    }
     val request = ImageRequest.Builder(context).data(data).apply {
         placeholder?.let { placeholder(it) }
         transformations(CoilRoundedHexagonTransformation())

@@ -3,15 +3,19 @@ package one.mixin.android.ui.home.reminder
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
+import android.os.Bundle
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentManager
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
@@ -19,12 +23,10 @@ import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
-import one.mixin.android.extension.screenHeight
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyFragment
@@ -40,20 +42,26 @@ class VerifyMobileReminderBottomSheetDialogFragment : MixinComposeBottomSheetDia
         const val TAG: String = "VerifyMobileReminderBottomSheetDialogFragment"
         private const val PREF_VERIFY_MOBILE_REMINDER_SNOOZE = "pref_verify_mobile_reminder_snooze"
         private const val PREF_VERIFY_MOBILE_REMINDER_DEBUG_ALLOW_ONCE = "pref_verify_mobile_reminder_debug_allow_once"
+        private const val ARGS_SUBTITLE_RES_ID = "args_subtitle_res_id"
         private const val ARGS_ENABLE_SNOOZE = "args_enable_snooze"
+        private const val ARGS_ADD_PHONE_SOURCE = "args_add_phone_source"
 
         @Volatile
         private var isShowing = false
 
         fun showSafely(
             fragmentManager: FragmentManager,
+            subtitleResId: Int = R.string.verify_mobile_reminder_desc,
             enableSnooze: Boolean = true,
+            addPhoneSource: String = one.mixin.android.util.analytics.AnalyticsTracker.AddPhoneSource.SETTINGS,
         ): Boolean {
             if (isShowing) return false
 
             val fragment = VerifyMobileReminderBottomSheetDialogFragment().apply {
-                arguments = android.os.Bundle().apply {
+                arguments = Bundle().apply {
+                    putInt(ARGS_SUBTITLE_RES_ID, subtitleResId)
                     putBoolean(ARGS_ENABLE_SNOOZE, enableSnooze)
+                    putString(ARGS_ADD_PHONE_SOURCE, addPhoneSource)
                 }
             }
 
@@ -155,11 +163,18 @@ class VerifyMobileReminderBottomSheetDialogFragment : MixinComposeBottomSheetDia
     @Composable
     override fun ComposeContent() {
         val enableSnooze = arguments?.getBoolean(ARGS_ENABLE_SNOOZE, true) ?: true
+        val addPhoneSource = arguments?.getString(ARGS_ADD_PHONE_SOURCE)
+            ?: one.mixin.android.util.analytics.AnalyticsTracker.AddPhoneSource.SETTINGS
         val phoneNumber = if (Session.hasPhone()) Session.getAccount()?.phone else null
         val hasPhoneNumber = !phoneNumber.isNullOrBlank()
         val titleResId = if (hasPhoneNumber) R.string.Verify_Mobile_Number else R.string.verify_mobile_reminder_title
         val actionResId = if (hasPhoneNumber) R.string.Verify_Now else R.string.verify_mobile_reminder_action
-        val subtitleResId = if (hasPhoneNumber) R.string.Verify_Mobile_Number_Desc else R.string.verify_mobile_reminder_desc
+        val subtitleResId = if (hasPhoneNumber) {
+            R.string.Verify_Mobile_Number_Desc
+        } else {
+            arguments?.getInt(ARGS_SUBTITLE_RES_ID, R.string.verify_mobile_reminder_desc)
+                ?: R.string.verify_mobile_reminder_desc
+        }
         MixinAppTheme {
             ReminderPage(
                 contentImage = R.drawable.bg_reminder_verify_mobile,
@@ -168,9 +183,9 @@ class VerifyMobileReminderBottomSheetDialogFragment : MixinComposeBottomSheetDia
                 action = {
                     dismissAllowingStateLoss()
                     if (phoneNumber.isNullOrBlank()) {
-                        navTo(AddPhoneBeforeFragment.newInstance(), AddPhoneBeforeFragment.TAG)
+                        navTo(AddPhoneBeforeFragment.newInstance(addPhoneSource), AddPhoneBeforeFragment.TAG)
                     } else {
-                        navTo(VerifyFragment.newInstance(VerifyFragment.FROM_PHONE, phoneNumber), VerifyFragment.TAG)
+                        navTo(VerifyFragment.newInstance(VerifyFragment.FROM_PHONE, phoneNumber, addPhoneSource), VerifyFragment.TAG)
                     }
                 },
                 dismiss = {
@@ -183,19 +198,21 @@ class VerifyMobileReminderBottomSheetDialogFragment : MixinComposeBottomSheetDia
                     dismissAllowingStateLoss()
                 },
                 contentSlot = {
-                    Text(
-                        text = stringResource(subtitleResId),
-                        color = MixinAppTheme.colors.textAssist,
-                        modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.Center,
-                    )
+                    Box(modifier = Modifier.padding(bottom = 44.dp)) {
+                        Text(
+                            text = stringResource(subtitleResId),
+                            color = MixinAppTheme.colors.textAssist,
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Center,
+                        )
+                    }
                 },
             )
         }
     }
 
     override fun getBottomSheetHeight(view: View): Int {
-        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+        return view.height
     }
 
     override fun showError(error: String) {

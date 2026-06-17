@@ -22,6 +22,8 @@ import one.mixin.android.Constants.Account.PREF_WALLET_RECEIVE
 import one.mixin.android.Constants.Account.PREF_WALLET_SEND
 import one.mixin.android.Constants.ChainId.Arbitrum
 import one.mixin.android.Constants.ChainId.Avalanche
+import one.mixin.android.Constants.ChainId.HyperEVM
+import one.mixin.android.Constants.ChainId.BITCOIN_CHAIN_ID
 import one.mixin.android.Constants.ChainId.Base
 import one.mixin.android.Constants.ChainId.BinanceSmartChain
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
@@ -29,6 +31,7 @@ import one.mixin.android.Constants.ChainId.Optimism
 import one.mixin.android.Constants.ChainId.Polygon
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.Constants.ChainId.TON_CHAIN_ID
+import one.mixin.android.Constants.Web3EvmChainIds
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAssetListBottomSheetBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
@@ -102,6 +105,7 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             radioAll.isChecked = true
             radio.scrollToCenterCheckedRadio(radioGroup)
             radioAll.isVisible = true
+            radioBtc.isVisible = true
             radioEth.isVisible = true
             radioTron.isVisible = false
             radioToncoin.isVisible = false
@@ -113,6 +117,10 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 currentChain = when (id) {
                     R.id.radio_eth -> {
                         ETHEREUM_CHAIN_ID
+                    }
+
+                    R.id.radio_btc -> {
+                        BITCOIN_CHAIN_ID
                     }
 
                     R.id.radio_solana -> {
@@ -145,6 +153,10 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
                     R.id.radio_avalanche -> {
                         Avalanche
+                    }
+
+                    R.id.radio_hyperevm -> {
+                        HyperEVM
                     }
 
                     else -> {
@@ -359,16 +371,7 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         binding.pb.isVisible = true
         val fuzzyResults = bottomViewModel.queryAsset(walletId = walletId, query = query, web3 = true)
         val remoteAssets = fuzzyResults.filter {
-            it.chainId in listOf(
-                SOLANA_CHAIN_ID,
-                ETHEREUM_CHAIN_ID,
-                Base,
-                Optimism,
-                Arbitrum,
-                Avalanche,
-                BinanceSmartChain,
-                Polygon,
-            )
+            it.chainId in Web3EvmChainIds || it.chainId == BITCOIN_CHAIN_ID || it.chainId == SOLANA_CHAIN_ID
         }.map { item ->
             bottomViewModel.web3TokenItemById(walletId ?: "", item.assetId).let { local ->
                 if (local != null && (local.level >= 10 || local.hidden == false)) {

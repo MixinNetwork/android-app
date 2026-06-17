@@ -45,3 +45,18 @@ data class Web3RawTransaction(
     @SerializedName("simulate_tx")
     var simulateTx: ParsedTx? = null
 }
+
+private const val GASLESS_PENDING_SPONSOR_PREFIX = "gasless:sponsor:"
+private const val GASLESS_PENDING_BROADCAST_PREFIX = "gasless:broadcast:"
+
+fun Web3RawTransaction.isGaslessPending(): Boolean =
+    raw.startsWith(GASLESS_PENDING_SPONSOR_PREFIX) || raw.startsWith(GASLESS_PENDING_BROADCAST_PREFIX)
+
+fun Web3RawTransaction.isGaslessSponsorPending(): Boolean =
+    raw.startsWith(GASLESS_PENDING_SPONSOR_PREFIX)
+
+fun buildGaslessSponsorPendingRawMarker(sponsorTxId: String): String =
+    "$GASLESS_PENDING_SPONSOR_PREFIX$sponsorTxId"
+
+fun buildGaslessBroadcastPendingRawMarker(broadcastTxHash: String): String =
+    "$GASLESS_PENDING_BROADCAST_PREFIX$broadcastTxHash"

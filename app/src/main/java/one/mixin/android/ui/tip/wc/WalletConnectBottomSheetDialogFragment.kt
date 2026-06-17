@@ -20,6 +20,7 @@ import com.reown.walletkit.client.Wallet
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -30,6 +31,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.putLong
@@ -132,6 +134,7 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     private var sessionRequest: Wallet.Model.SessionRequest? by mutableStateOf(null)
     private var account: String by mutableStateOf("")
     private var signedTransactionData: Any? = null
+    private var estimateGasJob: Job? = null
 
     @Inject
     lateinit var rpc: Rpc
@@ -185,6 +188,7 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     showPin = { showPin() },
                 )
             }
+            RequestType.Pay -> {}
         }
     }
 
@@ -195,11 +199,15 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                 RequestType.Connect -> Step.Connecting
                 RequestType.SessionProposal -> Step.Input
                 RequestType.SessionRequest -> Step.Sign
+                RequestType.Pay -> Step.Done
             }
         checkV2ChainAndParseSignData()
     }
 
     override fun getBottomSheetHeight(view: View): Int {
+        if (requestType == RequestType.Connect) {
+            return 200.dp
+        }
         return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
     }
 
@@ -233,6 +241,7 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     }
 
     override fun onDismiss(dialog: DialogInterface) {
+        stopEstimatedGasRefresh("dismiss")
         if (!processCompleted) {
             Timber.d("$TAG dismiss onReject")
             if (onRejectAction != null) {
@@ -325,6 +334,14 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             }
         }
 
+    private fun stopEstimatedGasRefresh(reason: String) {
+        estimateGasJob?.let {
+            Timber.d("$TAG estimateGas stop topic=$topic requestId=${sessionRequest?.request?.id} step=$step reason=$reason")
+            it.cancel()
+            estimateGasJob = null
+        }
+    }
+
     private fun refreshEstimatedGasAndAsset(chain: Chain) {
         val signData = this.signData ?: return
 
@@ -336,8 +353,15 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             return
         }
 
-        tickerFlow(15.seconds)
+        stopEstimatedGasRefresh("restart")
+        Timber.d("$TAG estimateGas start topic=$topic requestId=${sessionRequest?.request?.id} step=$step chain=${chain.chainId} assetId=$assetId from=${tx.from} to=${tx.to} value=${tx.value} dataLength=${tx.data?.length ?: 0}")
+        estimateGasJob = tickerFlow(15.seconds)
             .onEach {
+                if (processCompleted || step == Step.Done || step == Step.Sending) {
+                    stopEstimatedGasRefresh("step_$step")
+                    return@onEach
+                }
+                Timber.d("$TAG estimateGas tick topic=$topic requestId=${sessionRequest?.request?.id} step=$step chain=${chain.chainId}")
                 asset = viewModel.refreshAsset(assetId)
                 if (version == WalletConnect.Version.V2) {
                     try {
@@ -353,16 +377,19 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                                 )
                             )
                         if (r.isSuccess.not()){
+                            Timber.d("$TAG estimateGas result topic=$topic requestId=${sessionRequest?.request?.id} step=$step success=false errorCode=${r.errorCode} errorDescription=${r.errorDescription}")
                             step = Step.Error
                             ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
                             tipGas = null
                         } else {
                             tipGas = buildTipGas(chain.chainId, r.data!!)
+                            Timber.d("$TAG estimateGas result topic=$topic requestId=${sessionRequest?.request?.id} step=$step success=true gasLimit=${tipGas?.gasLimit} maxFeePerGas=${tipGas?.maxFeePerGas} maxPriorityFeePerGas=${tipGas?.maxPriorityFeePerGas}")
                         }
                         if (tipGas != null) {
                             (signData as? WalletConnect.WCSignData.V2SignData)?.tipGas = tipGas
                         }
                     } catch (e: Exception) {
+                        Timber.e(e, "$TAG estimateGas exception topic=$topic requestId=${sessionRequest?.request?.id} step=$step")
                         Timber.e(e)
                     }
                 }
@@ -372,6 +399,7 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
 
     private fun doAfterPinComplete(pin: String) =
         lifecycleScope.launch {
+            stopEstimatedGasRefresh("confirm")
             step = Step.Loading
             try {
                 val error =
@@ -392,13 +420,16 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                                     withContext(Dispatchers.IO) {
                                         val sessionRequest = this@WalletConnectBottomSheetDialogFragment.sessionRequest ?: return@withContext "sessionRequest is null"
                                         val signedTransactionData = this@WalletConnectBottomSheetDialogFragment.signedTransactionData ?: return@withContext "signedTransactionData is null"
+                                        Timber.d("$TAG sendTransaction start topic=$topic requestId=${sessionRequest.request.id} step=${Step.Sending} chain=${chain.chainId}")
                                         viewModel.sendTransaction(signedTransactionData, chain, sessionRequest, account, null)
                                     }
                                 if (sendError == null) {
+                                    Timber.d("$TAG sendTransaction success topic=$topic requestId=${sessionRequest?.request?.id} step=$step chain=${chain.chainId}")
                                     processCompleted = true
                                     RxBus.publish(WCChangeEvent())
                                     Step.Done
                                 } else {
+                                    Timber.d("$TAG sendTransaction error topic=$topic requestId=${sessionRequest?.request?.id} step=$step chain=${chain.chainId} error=$sendError")
                                     errorInfo = sendError
                                     Step.Error
                                 }
@@ -442,6 +473,7 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                             return@approveRequest nonce
                         })
                     }
+                    RequestType.Pay -> {}
                 }
             }
             WalletConnect.Version.TIP -> {
@@ -462,6 +494,7 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     RequestType.SessionRequest -> {
                         WalletConnectV2.rejectRequest(topic = topic)
                     }
+                    RequestType.Pay -> {}
                 }
             }
             WalletConnect.Version.TIP -> {

@@ -75,14 +75,13 @@ import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapter
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.circle.CirclesFragment
-import one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment
 import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
+import one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment
 import one.mixin.android.ui.home.reminder.VerifyMobileReminderBottomSheetDialogFragment
 import one.mixin.android.ui.landing.MobileFragment
 import one.mixin.android.ui.landing.VerificationFragment
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.ui.setting.AddPhoneBeforeFragment
-import one.mixin.android.ui.setting.AddPhoneFragment
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.analytics.AnalyticsTracker
@@ -366,10 +365,14 @@ class ConversationListFragment : LinkFragment() {
     }
 
     private fun analytics() {
-        lifecycleScope.launch{
+        lifecycleScope.launch {
             val totalUsd = conversationListViewModel.findTotalUSDBalance()
             AnalyticsTracker.setAssetLevel(totalUsd)
             AnalyticsTracker.setNotificationAuthStatus(requireContext())
+            Session.getAccount()?.let {
+                AnalyticsTracker.setHasRecoveryContact(it)
+                AnalyticsTracker.setMembership(it)
+            }
         }
     }
 
@@ -757,6 +760,7 @@ class ConversationListFragment : LinkFragment() {
             this.circleId = circleId
         }
         lifecycleScope.launch {
+            if (!isAdded || parentFragmentManager.isStateSaved) return@launch
             val blockedByPhoneFlow = parentFragmentManager.fragments.any {
                 it.tag in listOf(AddPhoneBeforeFragment.TAG, VerifyFragment.TAG, VerificationFragment.TAG, MobileFragment.TAG)
             }
@@ -766,6 +770,7 @@ class ConversationListFragment : LinkFragment() {
                 if (VerifyMobileReminderBottomSheetDialogFragment.shouldShow(requireContext())) {
                     if (VerifyMobileReminderBottomSheetDialogFragment.showSafely(
                         parentFragmentManager,
+                        addPhoneSource = AnalyticsTracker.AddPhoneSource.SETTINGS,
                     )) {
                         return@launch
                     }

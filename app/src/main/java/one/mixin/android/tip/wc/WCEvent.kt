@@ -22,6 +22,13 @@ sealed class WCEvent(
         override val version: WalletConnect.Version,
         override val requestType: RequestType,
     ) : WCEvent(version, requestType)
+
+    @Parcelize
+    data class Pay(
+        override val version: WalletConnect.Version,
+        override val requestType: RequestType,
+        val paymentLink: String,
+    ) : WCEvent(version, requestType)
 }
 
 class WCErrorEvent(val error: WCError)

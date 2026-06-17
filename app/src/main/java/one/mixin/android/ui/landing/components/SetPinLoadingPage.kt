@@ -43,11 +43,13 @@ import one.mixin.android.ui.tip.RetryConnect
 import one.mixin.android.ui.tip.RetryProcess
 import one.mixin.android.ui.tip.RetryRegister
 import one.mixin.android.ui.tip.TryConnecting
+import one.mixin.android.util.analytics.AnalyticsTracker
 
 @Composable
 fun SetPinLoadingPage(
     pin: String,
     next: () -> Unit,
+    onTopBarLongClick: (() -> Unit)? = null,
 ) {
     val viewModel = hiltViewModel<SetupPinViewModel>()
     val coroutineScope = rememberCoroutineScope()
@@ -102,9 +104,13 @@ fun SetPinLoadingPage(
     PageScaffold(
         title = "",
         verticalScrollable = false,
+        onTopBarLongClick = onTopBarLongClick,
         actions = {
             IconButton(onClick = {
-                context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                context.openUrl(
+                    Constants.HelpLink.CUSTOMER_SERVICE,
+                    source = AnalyticsTracker.CustomerServiceSource.SIGN_UP_MNEMONIC_PHRASE_CREATING,
+                )
             }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_support),
@@ -154,7 +160,11 @@ fun SetPinLoadingPage(
                             .height(48.dp),
                         onClick = {
                             coroutineScope.launch {
-                                viewModel.executeCreatePin(context, pin)
+                                viewModel.executeCreatePin(
+                                    context = context,
+                                    pin = pin,
+                                    preserveRetryRegisterStep = tipStep is RetryRegister,
+                                )
                             }
                         },
                         colors = ButtonDefaults.outlinedButtonColors(

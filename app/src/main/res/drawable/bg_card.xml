@@ -3,7 +3,7 @@
 
     <stroke
         android:width="0.8dp"
-        android:color="@color/nftBorder" />
+        android:color="?attr/nft_border" />
 
     <corners android:radius="8dp" />
 </shape>

@@ -14,3 +14,5 @@ data class Web3RawTransactionRequest(
     @SerializedName("fee_type")
     val feeType: String? = null,
 )
+
+const val WEB3_FEE_TYPE_FREE = "free"

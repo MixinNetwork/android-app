@@ -2,11 +2,13 @@ package one.mixin.android.ui.tip.wc.sessionrequest
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -28,18 +30,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -48,7 +47,6 @@ import com.google.gson.Gson
 import com.reown.walletkit.client.Wallet
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
-
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.composeDp
@@ -70,10 +68,10 @@ import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.compose.ItemContent
 import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.ui.wallet.components.WalletLabel
-import one.mixin.android.widget.components.MixinButton
 import one.mixin.android.vo.priceUSD
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.web3.js.Web3Signer
+import one.mixin.android.widget.components.MixinButton
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import timber.log.Timber
@@ -101,6 +99,7 @@ fun SessionRequestPage(
 ) {
     val viewModel = hiltViewModel<SessionRequestViewModel>()
     val context = LocalContext.current
+    val commonWallet = stringResource(R.string.Common_Wallet)
     var walletName by remember { mutableStateOf<String?>(null) }
     var walletDisplayInfo by remember { mutableStateOf<Triple<String?, Int, Boolean?>?>(null) }
     var chainToken by remember { mutableStateOf<Web3TokenItem?>(null) }
@@ -136,9 +135,9 @@ fun SessionRequestPage(
     LaunchedEffect(Unit) {
         try {
             val wallet = viewModel.findWalletById(Web3Signer.currentWalletId)
-            walletName = wallet?.name?.takeIf { it.isNotEmpty() } ?: context.getString(R.string.Common_Wallet)
+            walletName = wallet?.name?.takeIf { it.isNotEmpty() } ?: commonWallet
         } catch (e: Exception) {
-            walletName = context.getString(R.string.Common_Wallet)
+            walletName = commonWallet
         }
     }
 
@@ -516,6 +515,7 @@ fun FeeInfo(
     fee: BigDecimal,
     gasPrice: String? = null,
     isFree: Boolean = false,
+    isLoading: Boolean = false,
     onFreeClick: (() -> Unit)? = null,
 ) {
     Column(
@@ -535,43 +535,50 @@ fun FeeInfo(
                 Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Column {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = amount,
-                        color = MixinAppTheme.colors.textPrimary,
-                        fontSize = 14.sp,
-                        style = TextStyle(textDecoration = if (isFree) TextDecoration.LineThrough else TextDecoration.None),
-                    )
-                    if (gasPrice != null) {
-                        Box(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "($gasPrice Gwei)",
-                            color = MixinAppTheme.colors.textAssist,
-                            fontSize = 12.sp,
-                        )
-                    }
-                    if (isFree) {
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = stringResource(id = R.string.FREE),
-                            color = Color.White,
-                            fontSize = 10.sp,
-                            lineHeight = 10.sp,
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(MixinAppTheme.colors.accent)
-                                .padding(horizontal = 3.dp, vertical = 1.dp)
-                                .let { m -> if (onFreeClick != null) m.clickable { onFreeClick.invoke() } else m }
-                        )
-                    }
-                }
-                Box(modifier = Modifier.height(4.dp))
-                Text(
-                    text = fee.currencyFormat(),
-                    color = MixinAppTheme.colors.textAssist,
-                    fontSize = 14.sp,
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = MixinAppTheme.colors.accent,
                 )
+            } else {
+                Column {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = amount,
+                            color = MixinAppTheme.colors.textPrimary,
+                            fontSize = 14.sp,
+                            style = TextStyle(textDecoration = if (isFree) TextDecoration.LineThrough else TextDecoration.None),
+                        )
+                        if (gasPrice != null) {
+                            Box(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "($gasPrice Gwei)",
+                                color = MixinAppTheme.colors.textAssist,
+                                fontSize = 12.sp,
+                            )
+                        }
+                        if (isFree) {
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = stringResource(id = R.string.FREE),
+                                color = Color.White,
+                                fontSize = 10.sp,
+                                lineHeight = 10.sp,
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(MixinAppTheme.colors.accent)
+                                    .padding(horizontal = 3.dp, vertical = 1.dp)
+                                    .let { m -> if (onFreeClick != null) m.clickable { onFreeClick.invoke() } else m }
+                            )
+                        }
+                    }
+                    Box(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = fee.currencyFormat(),
+                        color = MixinAppTheme.colors.textAssist,
+                        fontSize = 14.sp,
+                    )
+                }
             }
             Box(modifier = Modifier)
         }
