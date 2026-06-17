@@ -44,7 +44,7 @@ interface Web3TransactionDao : BaseDao<Web3Transaction> {
         LEFT JOIN tokens c ON c.asset_id = w.chain_id AND c.wallet_id = :walletId
         LEFT JOIN tokens s ON s.asset_id = w.send_asset_id AND s.wallet_id = :walletId
         LEFT JOIN tokens r ON r.asset_id = w.receive_asset_id AND r.wallet_id = :walletId
-        WHERE w.address in (SELECT destination FROM addresses WHERE wallet_id = :walletId)
+        WHERE w.address in (SELECT destination FROM addresses WHERE wallet_id = :walletId) AND w.level >= 11
         ORDER BY w.transaction_at DESC
         LIMIT 4
     """)
