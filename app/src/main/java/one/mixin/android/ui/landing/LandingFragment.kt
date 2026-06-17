@@ -170,7 +170,7 @@ class LandingFragment : Fragment(R.layout.fragment_landing) {
 
         binding.version.text = getString(R.string.current_version, BuildConfig.VERSION_NAME)
         binding.createTv.setOnClickListener {
-            AnalyticsTracker.trackSignUpStart()
+            AnalyticsTracker.trackSignUpStart(AnalyticsTracker.SignUpStartSource.LANDING)
             CreateAccountConfirmBottomSheetDialogFragment.newInstance()
                 .setOnCreateAccount {
                     activity?.addFragment(

@@ -29,7 +29,7 @@ import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.db.web3.vo.solLamportToAmount
 import one.mixin.android.db.web3.vo.toWeb3Wallet
-import one.mixin.android.extension.buildAmountSymbol
+import one.mixin.android.extension.buildBalanceAmountSymbol
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
@@ -68,6 +68,7 @@ import one.mixin.android.ui.wallet.AllWeb3TransactionsFragment
 import one.mixin.android.ui.wallet.ImportKeyBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_ASSET_ID
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET
+import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET_SOURCE
 import one.mixin.android.ui.wallet.Web3FilterParams
 import one.mixin.android.ui.wallet.Web3FilterParams.Companion.FILTER_GOOD_AND_SPAM
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
@@ -360,6 +361,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                             Bundle().apply {
                                 putParcelable(ARGS_MARKET, market)
                                 putString(ARGS_ASSET_ID, token.assetId)
+                                putString(ARGS_MARKET_SOURCE, AnalyticsTracker.MarketSource.TOKEN_DETAIL)
                             },
                         )
                     }
@@ -472,7 +474,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                     asset.balance.numberFormat()
                 }
             val color = requireContext().colorFromAttribute(R.attr.text_primary)
-            balance.text = buildAmountSymbol(requireContext(), amountText, asset.symbol, color, color)
+            balance.text = buildBalanceAmountSymbol(requireContext(), amountText, asset.symbol, color, color)
             balanceAs.text =
                 try {
                     if (asset.fiat().toFloat() == 0f) {

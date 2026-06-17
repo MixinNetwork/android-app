@@ -1,7 +1,5 @@
 package one.mixin.android.vo
 
-import androidx.compose.ui.unit.Constraints
-import com.google.android.gms.common.internal.service.Common
 import one.mixin.android.Constants
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.extension.base64RawURLDecode
@@ -9,11 +7,8 @@ import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.hexString
 import one.mixin.android.extension.isByteArrayValidUtf8
 import one.mixin.android.util.UUIDUtils
-import timber.log.Timber
 import java.math.BigInteger
 import java.nio.ByteBuffer
-import java.util.UUID
-import kotlin.text.toBigInteger
 
 const val MixinInvoicePrefix = "MIN"
 

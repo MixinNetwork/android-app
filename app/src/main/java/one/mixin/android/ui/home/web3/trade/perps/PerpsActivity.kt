@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -17,9 +18,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.perps.PerpsMarketDao
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshPerpsPositionsJob
@@ -27,6 +32,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletActivity
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.safe.TokenItem
 import javax.inject.Inject
 
@@ -38,6 +44,8 @@ class PerpsActivity : BaseActivity() {
     @Inject
     lateinit var perpsMarketDao: PerpsMarketDao
 
+    private val viewModel by viewModels<PerpetualViewModel>()
+
     private var selectedToken by mutableStateOf<TokenItem?>(null)
     private var renderJob: Job? = null
 
@@ -48,6 +56,7 @@ class PerpsActivity : BaseActivity() {
         private const val EXTRA_MARKET_TOKEN_SYMBOL = "extra_market_token_symbol"
         private const val EXTRA_MODE = "extra_mode"
         private const val EXTRA_IS_LONG = "extra_is_long"
+        private const val EXTRA_SOURCE = "extra_source"
         private const val POSITION_REFRESH_INTERVAL_MS = 3_000L
 
         const val MODE_DETAIL = "detail"
@@ -59,6 +68,7 @@ class PerpsActivity : BaseActivity() {
             marketSymbol: String,
             marketDisplaySymbol: String,
             marketTokenSymbol: String = "",
+            source: String? = null,
         ) {
             val intent = Intent(context, PerpsActivity::class.java).apply {
                 addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
@@ -67,6 +77,7 @@ class PerpsActivity : BaseActivity() {
                 putExtra(EXTRA_MARKET_DISPLAY_SYMBOL, marketDisplaySymbol)
                 putExtra(EXTRA_MARKET_TOKEN_SYMBOL, marketTokenSymbol)
                 putExtra(EXTRA_MODE, MODE_DETAIL)
+                source?.let { putExtra(EXTRA_SOURCE, it) }
             }
             context.startActivity(intent)
         }
@@ -78,6 +89,7 @@ class PerpsActivity : BaseActivity() {
             marketDisplaySymbol: String,
             marketTokenSymbol: String = "",
             isLong: Boolean,
+            source: String,
         ) {
             val intent = Intent(context, PerpsActivity::class.java).apply {
                 addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
@@ -87,6 +99,7 @@ class PerpsActivity : BaseActivity() {
                 putExtra(EXTRA_MARKET_TOKEN_SYMBOL, marketTokenSymbol)
                 putExtra(EXTRA_MODE, MODE_OPEN_POSITION)
                 putExtra(EXTRA_IS_LONG, isLong)
+                putExtra(EXTRA_SOURCE, source)
             }
             context.startActivity(intent)
         }
@@ -113,6 +126,7 @@ class PerpsActivity : BaseActivity() {
         val tokenSymbolExtra = currentIntent.getStringExtra(EXTRA_MARKET_TOKEN_SYMBOL).orEmpty()
         val mode = currentIntent.getStringExtra(EXTRA_MODE) ?: MODE_DETAIL
         val isLong = currentIntent.getBooleanExtra(EXTRA_IS_LONG, true)
+        val source = currentIntent.getStringExtra(EXTRA_SOURCE) ?: AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL
 
         if (mode == MODE_OPEN_POSITION) {
             renderJob = lifecycleScope.launch {
@@ -124,18 +138,26 @@ class PerpsActivity : BaseActivity() {
                     finish()
                     return@launch
                 }
+                AnalyticsTracker.trackPerpsOpenPositionStart(
+                    direction = if (isLong) AnalyticsTracker.PerpsDirection.LONG else AnalyticsTracker.PerpsDirection.SHORT,
+                    source = source,
+                )
+
                 setContent {
                     MixinAppTheme {
                         OpenPositionPage(
                             market = market,
                             isLong = isLong,
+                            source = source,
                             onBack = { finish() },
                             onOpenSuccess = { openedMarketId ->
                                 showDetail(this@PerpsActivity, openedMarketId, "", "", "")
                             },
                             selectedToken = selectedToken,
                             onTokenSelect = { showTokenSelection() },
-                            onCurrentTokenChange = { token -> selectedToken = token }
+                            onCurrentTokenChange = { token ->
+                                selectedToken = token
+                            }
                         )
                     }
                 }
@@ -159,7 +181,9 @@ class PerpsActivity : BaseActivity() {
                         displaySymbol = displaySymbol,
                         tokenSymbol = tokenSymbol,
                         initialMarket = market,
-                        onBack = { finish() }
+                        onBack = { finish() },
+                        onSharePosition = ::showSharePosition,
+                        source = source,
                     )
                 }
             }
@@ -202,5 +226,10 @@ class PerpsActivity : BaseActivity() {
                 }
             }
         }
+    }
+
+    private fun showSharePosition(position: PerpsPositionItem) {
+        PerpsPositionShareBottomFragment.newInstance(position)
+            .show(supportFragmentManager, PerpsPositionShareBottomFragment.TAG)
     }
 }

@@ -42,7 +42,6 @@ import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
-import org.bitcoinj.core.Transaction as BtcTransaction
 
 @Parcelize
 data class Web3TokenItem(
@@ -196,6 +195,7 @@ fun Web3TokenItem.getChainFromName(): Chain {
         chainId == Constants.ChainId.Polygon-> Chain.Polygon
         chainId == Constants.ChainId.BinanceSmartChain-> Chain.BinanceSmartChain
         chainId == Constants.ChainId.Avalanche -> Chain.Avalanche
+        chainId == Constants.ChainId.HyperEVM -> Chain.HyperEVM
         chainId == Constants.ChainId.SOLANA_CHAIN_ID -> Chain.Solana
         chainId == Constants.ChainId.BITCOIN_CHAIN_ID -> Chain.Bitcoin
         else -> throw IllegalArgumentException("Not support: $chainId")
@@ -209,6 +209,7 @@ fun Web3TokenItem.getChainSymbolFromName(): String {
         chainId == Constants.ChainId.Optimism -> "ETH"
         chainId == Constants.ChainId.Arbitrum -> "ETH"
         chainId == Constants.ChainId.Avalanche -> "AVAX"
+        chainId == Constants.ChainId.HyperEVM -> "HYPE"
         chainId == Constants.ChainId.BinanceSmartChain -> "BNB"
         chainId == Constants.ChainId.Polygon -> "POL"
         chainId == Constants.ChainId.BITCOIN_CHAIN_ID -> "BTC"
@@ -310,7 +311,8 @@ suspend fun Web3TokenItem.buildTransaction(
                 (chainId == Constants.ChainId.BinanceSmartChain && assetKey == "0x0000000000000000000000000000000000000000") ||
                 (chainId == Constants.ChainId.Optimism && assetKey == "0x0000000000000000000000000000000000000000") ||
                 (chainId == Constants.ChainId.Arbitrum && assetKey == "0x0000000000000000000000000000000000000000") ||
-                (chainId == Constants.ChainId.Avalanche && assetKey == "0x0000000000000000000000000000000000000000")
+                (chainId == Constants.ChainId.Avalanche && assetKey == "0x0000000000000000000000000000000000000000") ||
+                (chainId == Constants.ChainId.HyperEVM && assetKey == "0x0000000000000000000000000000000000000000")
             ) {
                 val value = Numeric.toHexStringWithPrefix(Convert.toWei(v, Convert.Unit.ETHER).toBigInteger())
                 WCEthereumTransaction(fromAddress, toAddress, null, null, null, null, null, null, value, null)

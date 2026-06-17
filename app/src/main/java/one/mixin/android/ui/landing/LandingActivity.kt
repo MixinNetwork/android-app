@@ -17,9 +17,9 @@ import one.mixin.android.extension.putInt
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.landing.MobileFragment.Companion.ARGS_PHONE_NUM
 import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_CHANGE_PHONE_ACCOUNT
 import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_VERIFY_MOBILE_REMINDER
-import one.mixin.android.ui.landing.MobileFragment.Companion.ARGS_PHONE_NUM
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.viewBinding
 import timber.log.Timber

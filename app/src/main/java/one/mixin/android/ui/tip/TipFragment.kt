@@ -350,7 +350,10 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
     private fun processTip() =
         lifecycleScope.launch {
             when (tipBundle.tipType) {
-                TipType.Change -> AnalyticsTracker.trackLoginPinVerify("pin_change")
+                TipType.Change -> {
+                    AnalyticsTracker.trackLoginPinVerify("pin_change")
+                    AnalyticsTracker.trackAccountResumePin(AnalyticsTracker.AccountResumePinType.PIN_CHANGE)
+                }
                 TipType.Upgrade -> AnalyticsTracker.trackLoginPinVerify("pin_upgrade")
                 else -> Unit
             }

@@ -32,6 +32,7 @@ import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.ConversationFragment
 import one.mixin.android.ui.search.SearchFragment.Companion.SEARCH_DEBOUNCE
 import one.mixin.android.ui.search.SearchSingleFragment.Companion.ARGS_QUERY
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.SearchMessageDetailItem
@@ -114,6 +115,12 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
             object : SearchMessageAdapter.SearchMessageCallback {
                 override fun onItemClick(item: SearchMessageDetailItem) {
                     val keyword = binding.searchEt.text.toString()
+                    if (searchMessageItem.isBot()) {
+                        AnalyticsTracker.trackOpenBotConversation(
+                            AnalyticsTracker.BotSource.SEARCH_KEY_MESSAGE,
+                            searchMessageItem.userIdentityNumber,
+                        )
+                    }
                     searchViewModel.findConversationById(searchMessageItem.conversationId)
                         .autoDispose(stopScope)
                         .subscribe {
@@ -126,7 +133,6 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
                                 lifecycleScope.launch {
                                     activity.supportFragmentManager.inTransaction {
                                         setCustomAnimations(R.anim.slide_in_right, 0, 0, R.anim.slide_out_right)
-                                        show(conversationFragment)
                                         hide(this@SearchMessageFragment)
                                         addToBackStack(null)
                                     }

@@ -3,13 +3,11 @@ package one.mixin.android.ui.wallet
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.DialogInterface
-import android.net.Uri
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.google.gson.JsonElement
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -58,6 +56,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.google.gson.JsonElement
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
@@ -93,8 +92,8 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.isNightMode
-import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.stripAmountZero
@@ -136,15 +135,10 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.membershipIcon
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toUser
-import one.mixin.android.widget.components.MixinButton
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.Web3Signer
-import org.sol4k.Base58
-import org.sol4k.Constants.SIGNATURE_LENGTH
-import org.sol4kt.VersionedTransactionCompat
-import org.web3j.utils.Convert
-import org.web3j.utils.Numeric
+import one.mixin.android.widget.components.MixinButton
 import org.bitcoinj.base.BitcoinNetwork
 import org.bitcoinj.base.Coin
 import org.bitcoinj.base.ScriptType
@@ -154,11 +148,16 @@ import org.bitcoinj.core.TransactionWitness
 import org.bitcoinj.crypto.ECKey
 import org.bitcoinj.script.Script
 import org.bitcoinj.script.ScriptBuilder
+import org.sol4k.Base58
+import org.sol4k.Constants.SIGNATURE_LENGTH
+import org.sol4kt.VersionedTransactionCompat
+import org.web3j.utils.Convert
+import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
-import java.util.UUID
 import java.nio.ByteBuffer
+import java.util.UUID
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 
@@ -167,7 +166,6 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
 
     companion object {
         const val TAG = "SwapTransferBottomSheetDialogFragment"
-        private const val GASLESS_EIP7702_AUTHORIZED_ADDRESS = "0xe6cae83bde06e4c305530e199d7217f42808555b"
         private const val ARGS_LINK = "args_link"
         private const val ARGS_ADDRESS = "args_address"
         private const val ARGS_IN_AMOUNT = "args_in_amount"
@@ -598,8 +596,14 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                         .align(Alignment.BottomCenter),
                                 cancelTitle = stringResource(R.string.Cancel),
                                 confirmTitle = stringResource(id = R.string.Retry),
-                                cancelAction = { dismiss() },
-                                confirmAction = { showPin() },
+                                cancelAction = {
+                                    AnalyticsTracker.trackSpotPreviewCancel()
+                                    dismiss()
+                                },
+                                confirmAction = {
+                                    AnalyticsTracker.trackSpotPreviewConfirm()
+                                    showPin()
+                                },
                             )
                         }
 
@@ -610,8 +614,14 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                         .align(Alignment.BottomCenter),
                                 cancelTitle = stringResource(R.string.Cancel),
                                 confirmTitle = stringResource(id = R.string.Continue),
-                                cancelAction = { dismiss() },
-                                confirmAction = { showPin() },
+                                cancelAction = {
+                                    AnalyticsTracker.trackSpotPreviewCancel()
+                                    dismiss()
+                                },
+                                confirmAction = {
+                                    AnalyticsTracker.trackSpotPreviewConfirm()
+                                    showPin()
+                                },
                             )
                         }
 
@@ -678,8 +688,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                 )
                                 context?.updatePinCheck()
                                 step = Step.Done
-                                val wallet = if (inAsset.isWeb3) AnalyticsTracker.TradeWallet.WEB3 else AnalyticsTracker.TradeWallet.MAIN
-                                AnalyticsTracker.trackTradeEnd(wallet, inAmount, inAsset.price)
+                                trackSwapSuccess()
                             }
 
                             JsSignMessage.TYPE_RAW_TRANSACTION -> {
@@ -698,8 +707,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                 )
                                 context?.updatePinCheck()
                                 step = Step.Done
-                                val wallet = if (inAsset.isWeb3) AnalyticsTracker.TradeWallet.WEB3 else AnalyticsTracker.TradeWallet.MAIN
-                                AnalyticsTracker.trackTradeEnd(wallet, inAmount, inAsset.price)
+                                trackSwapSuccess()
                             }
 
                             JsSignMessage.TYPE_TRANSACTION -> {
@@ -716,8 +724,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                 )
                                 context?.updatePinCheck()
                                 step = Step.Done
-                                val wallet = if (inAsset.isWeb3) AnalyticsTracker.TradeWallet.WEB3 else AnalyticsTracker.TradeWallet.MAIN
-                                AnalyticsTracker.trackTradeEnd(wallet, inAmount, inAsset.price)
+                                trackSwapSuccess()
                             }
 
                             JsSignMessage.TYPE_BTC_TRANSACTION -> {
@@ -735,8 +742,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                 )
                                 context?.updatePinCheck()
                                 step = Step.Done
-                                val wallet = if (inAsset.isWeb3) AnalyticsTracker.TradeWallet.WEB3 else AnalyticsTracker.TradeWallet.MAIN
-                                AnalyticsTracker.trackTradeEnd(wallet, inAmount, inAsset.price)
+                                trackSwapSuccess()
                             }
 
                             else -> {
@@ -777,12 +783,17 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
             )
             context?.updatePinCheck()
             step = Step.Done
-            val wallet = if (inAsset.isWeb3) AnalyticsTracker.TradeWallet.WEB3 else AnalyticsTracker.TradeWallet.MAIN
-            AnalyticsTracker.trackTradeEnd(wallet, inAmount, inAsset.price)
+            trackSwapSuccess()
         } else {
             errorInfo = handleError(response.error) ?: response.errorDescription
             step = Step.Error
         }
+    }
+
+    private fun trackSwapSuccess() {
+        val wallet = if (inAsset.isWeb3) AnalyticsTracker.TradeWallet.WEB3 else AnalyticsTracker.TradeWallet.MAIN
+        AnalyticsTracker.trackTradeEnd(wallet, inAmount, inAsset.price)
+        AnalyticsTracker.trackSpotEnd(wallet, inAmount, inAsset.price)
     }
 
     private suspend fun handleError(
@@ -940,7 +951,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                             }
                         } catch (e: Exception) {
                             Timber.e(e, "Failed to build transaction")
-                            errorInfo = if (e is EmptyUtxoException) getString(R.string.no_available_utxo) else e.message
+                            errorInfo = if (e is EmptyUtxoException) getString(R.string.no_available_utxo) else ErrorHandler.getErrorMessage(e)
                             step = Step.Error
                         }
                     }
@@ -1257,18 +1268,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
             message = ethPayload.signing.userOperation.message,
             type = JsSignMessage.TYPE_GASLESS_TRANSFER,
         )
-        val eip7702AuthSignature = ethPayload.signing.eip7702Auth
-            ?.takeIf { it.required }
-            ?.let { auth ->
-                if (!auth.address.equals(GASLESS_EIP7702_AUTHORIZED_ADDRESS, ignoreCase = true)) {
-                    throw IllegalArgumentException("Unsupported EIP-7702 auth target")
-                }
-                Web3Signer.signEthMessage(
-                    priv = privateKey,
-                    message = auth.message,
-                    type = JsSignMessage.TYPE_GASLESS_TRANSFER,
-                )
-            }
+        val eip7702AuthSignature = Web3Signer.signEip7702Auth(privateKey, ethPayload.signing.eip7702Auth)
         val response = web3ViewModel.submitGaslessTx(
             SubmitGaslessTxRequest(
                 chainId = chainId,
@@ -1288,7 +1288,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
             account = fromAddress,
             assetId = token.assetId,
             amount = amount.stripAmountZero(),
-            fee = "0",
+            fee = "",
             to = toAddress,
             nonce = ethPayload.userOperation.nonce,
             createdAt = now,

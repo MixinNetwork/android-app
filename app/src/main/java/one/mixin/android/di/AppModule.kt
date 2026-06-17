@@ -29,7 +29,6 @@ import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.ResponseBody.Companion.toResponseBody
 import okhttp3.logging.HttpLoggingInterceptor
-import okio.Timeout
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.ALLOW_INTERVAL
@@ -37,8 +36,10 @@ import one.mixin.android.Constants.API.FOURSQUARE_URL
 import one.mixin.android.Constants.API.GIPHY_URL
 import one.mixin.android.Constants.API.Mixin_URL
 import one.mixin.android.Constants.API.URL
+import one.mixin.android.Constants.Account.PREF_REFERRAL_BOT_PK
 import one.mixin.android.Constants.Account.PREF_ROUTE_BOT_PK
 import one.mixin.android.Constants.DNS
+import one.mixin.android.Constants.RouteConfig.REFERRAL_API_URL
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_URL
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.DataErrorException
@@ -60,6 +61,7 @@ import one.mixin.android.api.service.GiphyService
 import one.mixin.android.api.service.MemberService
 import one.mixin.android.api.service.MessageService
 import one.mixin.android.api.service.ProvisioningService
+import one.mixin.android.api.service.ReferralService
 import one.mixin.android.api.service.RouteService
 import one.mixin.android.api.service.SignalKeyService
 import one.mixin.android.api.service.TipNodeService
@@ -84,8 +86,8 @@ import one.mixin.android.extension.show
 import one.mixin.android.extension.toUri
 import one.mixin.android.job.BaseJob
 import one.mixin.android.job.JobLogger
-import one.mixin.android.job.MixinJob
 import one.mixin.android.job.JobNetworkUtil
+import one.mixin.android.job.MixinJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.MyJobService
 import one.mixin.android.job.TipCounterSyncedLiveData
@@ -173,7 +175,7 @@ object AppModule {
             reportException(e)
             null
         } catch (e: Exception) {
-            if (e is TimeoutException || e is Timeout) {
+            if (e is TimeoutException) {
                 Timber.e(e)
             } else {
                 reportException(e)
@@ -549,6 +551,49 @@ object AppModule {
                 .client(client)
                 .build()
         return retrofit.create(RouteService::class.java)
+    }
+
+    @Singleton
+    @Provides
+    fun provideReferralService(
+        resolver: ContentResolver,
+        httpLoggingInterceptor: HttpLoggingInterceptor?,
+        @ApplicationContext appContext: Context,
+    ): ReferralService {
+        val builder = OkHttpClient.Builder()
+        builder.connectTimeout(15, TimeUnit.SECONDS)
+        builder.writeTimeout(15, TimeUnit.SECONDS)
+        builder.readTimeout(15, TimeUnit.SECONDS)
+        builder.dns(DNS)
+        val client =
+            builder.apply {
+                httpLoggingInterceptor?.let { interceptor ->
+                    addNetworkInterceptor(interceptor)
+                }
+                addInterceptor { chain ->
+                    val sourceRequest = chain.request()
+                    val b = sourceRequest.newBuilder()
+                    b.addHeader("User-Agent", API_UA)
+                        .addHeader("Accept-Language", Locale.getDefault().language)
+                        .addHeader("Mixin-Device-Id", getStringDeviceId(resolver))
+                        .addHeader(xRequestId, UUID.randomUUID().toString())
+                    val botPublicKey = appContext.defaultSharedPreferences.getString(PREF_REFERRAL_BOT_PK, null)
+                    if (botPublicKey.isNullOrBlank()) return@addInterceptor chain.proceed(b.build())
+                    val (ts, signature) = Session.getBotSignature(botPublicKey, sourceRequest)
+                    b.addHeader(mrAccessTimestamp, ts.toString())
+                    b.addHeader(mrAccessSign, signature)
+                    val request = b.build()
+                    return@addInterceptor chain.proceed(request)
+                }
+            }.build()
+        val retrofit =
+            Retrofit.Builder()
+                .baseUrl(REFERRAL_API_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .addCallAdapterFactory(CoroutineCallAdapterFactory())
+                .client(client)
+                .build()
+        return retrofit.create(ReferralService::class.java)
     }
 
     @Provides

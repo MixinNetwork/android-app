@@ -39,6 +39,7 @@ import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_SHOW_SCAN
 import one.mixin.android.ui.wallet.DepositShareActivity
 import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.toUser
@@ -108,7 +109,11 @@ class ReceiveQrActivity : BaseActivity() {
             finish()
         }
         binding.titleView.rightIb.setOnClickListener {
-            openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+            openUrl(
+                Constants.HelpLink.CUSTOMER_SERVICE,
+                source = AnalyticsTracker.CustomerServiceSource.DEPOSIT,
+                wallet = AnalyticsTracker.TradeWallet.MAIN,
+            )
         }
         Session.getAccount()?.let { user ->
             binding.apply {

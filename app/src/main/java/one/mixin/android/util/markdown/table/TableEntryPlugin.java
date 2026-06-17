@@ -1,14 +1,17 @@
 package one.mixin.android.util.markdown.table;
 
 import android.content.Context;
+
 import androidx.annotation.NonNull;
-import io.noties.markwon.AbstractMarkwonPlugin;
-import io.noties.markwon.ext.tables.TablePlugin;
-import io.noties.markwon.ext.tables.TableTheme;
+
 import org.commonmark.ext.gfm.tables.TablesExtension;
 import org.commonmark.parser.Parser;
 
 import java.util.Collections;
+
+import io.noties.markwon.AbstractMarkwonPlugin;
+import io.noties.markwon.ext.tables.TablePlugin;
+import io.noties.markwon.ext.tables.TableTheme;
 
 /**
  * This plugin must be used instead of {@link TablePlugin} when a markdown

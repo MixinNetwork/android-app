@@ -6,6 +6,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.api.response.web3.toPendingStatusOrNull
 import one.mixin.android.db.web3.vo.TransactionStatus
 import one.mixin.android.db.web3.vo.isGaslessSponsorPending
 import one.mixin.android.db.web3.vo.isTerminalTransactionStatus
@@ -14,7 +15,6 @@ import one.mixin.android.job.RefreshWeb3BitCoinJob
 import one.mixin.android.job.RefreshWeb3TransactionsJob
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.web3.js.Web3Signer
-import one.mixin.android.api.response.web3.toPendingStatusOrNull
 import timber.log.Timber
 
 object PendingTransactionRefreshHelper {

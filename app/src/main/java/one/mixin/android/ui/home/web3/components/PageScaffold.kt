@@ -26,6 +26,7 @@ fun PageScaffold(
     subtitleText: String?,
     verticalScrollable: Boolean = true,
     pop: (() -> Unit)?,
+    onTopBarLongClick: (() -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},
     body: @Composable ColumnScope.() -> Unit,
 ) {
@@ -45,6 +46,7 @@ fun PageScaffold(
         },
         verticalScrollable = verticalScrollable,
         pop = pop,
+        onTopBarLongClick = onTopBarLongClick,
         actions = actions,
         body = body
     )
@@ -56,6 +58,7 @@ fun PageScaffold(
     subtitle: @Composable (() -> Unit)? = null,
     verticalScrollable: Boolean = true,
     pop: (() -> Unit)?,
+    onTopBarLongClick: (() -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},
     backIcon: Int = R.drawable.ic_back,
     body: @Composable ColumnScope.() -> Unit,
@@ -75,6 +78,7 @@ fun PageScaffold(
                     }
                 },
                 actions = actions,
+                onLongClick = onTopBarLongClick,
                 navigationIcon = {
                     pop?.let { pop ->
                         IconButton(onClick = { pop() }) {
