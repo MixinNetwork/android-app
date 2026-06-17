@@ -201,9 +201,6 @@ private fun RecommendedMarketCard(
                     Spacer(modifier = Modifier.weight(1f))
                 }
             }
-            if (index != rows.lastIndex) {
-                Spacer(modifier = Modifier.height(12.dp))
-            }
         }
     }
 }
