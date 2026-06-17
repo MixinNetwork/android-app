@@ -1,12 +1,13 @@
 package one.mixin.android.api.request
 
+import android.os.Build
 import com.google.gson.annotations.SerializedName
 import one.mixin.android.BuildConfig
 
 data class SessionRequest(
     val platform: String = "Android",
     @SerializedName("platform_version")
-    val platformVersion: String = android.os.Build.VERSION.RELEASE,
+    val platformVersion: String = Build.VERSION.RELEASE,
     @SerializedName("app_version")
     val appVersion: String = BuildConfig.VERSION_NAME,
     @SerializedName("notification_token")

@@ -75,11 +75,12 @@ class ImportingWalletFragment : BaseFragment(R.layout.fragment_compose) {
         } else if (fromDetail) {
             val key = arguments?.getString(ARG_KEY) ?: return
             val chainId = arguments?.getString(ARG_CHAIN_ID) ?: return
+            val walletName = arguments?.getString(ARG_WALLET_NAME)
             val modeOrdinal =
                 arguments?.getInt(ARG_MODE, WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY.ordinal)
                     ?: WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY.ordinal
             val mode = WalletSecurityActivity.Mode.entries[modeOrdinal]
-            viewModel.importWallet(key, chainId, mode)
+            viewModel.importWallet(key, chainId, mode, walletName)
         } else {
             viewModel.startImporting()
         }
@@ -89,6 +90,7 @@ class ImportingWalletFragment : BaseFragment(R.layout.fragment_compose) {
         const val TAG = "importing"
         private const val ARG_KEY = "arg_key"
         private const val ARG_CHAIN_ID = "arg_chain_id"
+        private const val ARG_WALLET_NAME = "arg_wallet_name"
         private const val ARG_MODE = "arg_mode"
         private const val ARG_FROM_DETAIL = "arg_from_detail"
 
@@ -107,12 +109,14 @@ class ImportingWalletFragment : BaseFragment(R.layout.fragment_compose) {
         fun newInstance(
             key: String,
             chainId: String,
-            mode: WalletSecurityActivity.Mode
+            mode: WalletSecurityActivity.Mode,
+            walletName: String? = null
         ): ImportingWalletFragment {
             val fragment = ImportingWalletFragment()
             val args = Bundle()
             args.putString(ARG_KEY, key)
             args.putString(ARG_CHAIN_ID, chainId)
+            walletName?.let { args.putString(ARG_WALLET_NAME, it) }
             args.putInt(ARG_MODE, mode.ordinal)
             args.putBoolean(ARG_FROM_DETAIL, true)
             fragment.arguments = args

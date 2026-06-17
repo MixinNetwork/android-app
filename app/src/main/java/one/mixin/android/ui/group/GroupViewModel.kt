@@ -1,11 +1,12 @@
 package one.mixin.android.ui.group
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
-import androidx.paging.LivePagedListBuilder
-import androidx.paging.PagedList
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.api.request.ConversationRequest
@@ -89,32 +90,30 @@ class GroupViewModel
 
     fun getConversationStatusById(id: String) = conversationRepository.getConversationById(id)
 
-    fun observeGroupParticipants(conversationId: String): LiveData<PagedList<ParticipantItem>> {
-        return LivePagedListBuilder(
-            conversationRepository.observeGroupParticipants(conversationId),
-            PagedList.Config.Builder()
-                .setPrefetchDistance(Constants.PAGE_SIZE * 2)
-                .setPageSize(Constants.PAGE_SIZE)
-                .setEnablePlaceholders(true)
-                .build(),
-        )
-            .build()
+    fun observeGroupParticipants(conversationId: String): Flow<PagingData<ParticipantItem>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = Constants.PAGE_SIZE,
+                prefetchDistance = Constants.PAGE_SIZE * 2,
+                enablePlaceholders = true,
+            ),
+            pagingSourceFactory = { conversationRepository.observeGroupParticipantsPagingSource(conversationId) },
+        ).flow
     }
 
     fun fuzzySearchGroupParticipants(
         conversationId: String,
         query: String,
-    ): LiveData<PagedList<ParticipantItem>> {
+    ): Flow<PagingData<ParticipantItem>> {
         val escapedQuery = query.trim().escapeSql()
-        return LivePagedListBuilder(
-            conversationRepository.fuzzySearchGroupParticipants(conversationId, escapedQuery, escapedQuery),
-            PagedList.Config.Builder()
-                .setPrefetchDistance(Constants.PAGE_SIZE * 2)
-                .setPageSize(Constants.PAGE_SIZE)
-                .setEnablePlaceholders(true)
-                .build(),
-        )
-            .build()
+        return Pager(
+            config = PagingConfig(
+                pageSize = Constants.PAGE_SIZE,
+                prefetchDistance = Constants.PAGE_SIZE * 2,
+                enablePlaceholders = true,
+            ),
+            pagingSourceFactory = { conversationRepository.fuzzySearchGroupParticipantsPagingSource(conversationId, escapedQuery, escapedQuery) },
+        ).flow
     }
 
     fun getConversationById(conversationId: String) =

@@ -24,7 +24,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import one.mixin.android.widget.components.MixinButton
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -82,10 +81,13 @@ import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.handleMixinError
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.route.Order
 import one.mixin.android.vo.route.OrderState
+import one.mixin.android.web3.isNativeSolAsset
 import one.mixin.android.web3.js.Web3Signer
+import one.mixin.android.web3.nativeSolSpendableBalance
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Duration
@@ -94,6 +96,25 @@ import java.time.Instant
 enum class FocusedField { NONE, IN_AMOUNT, OUT_AMOUNT, PRICE }
 
 private const val MAX_DISPLAY_ORDER_COUNT: Int = 10
+
+private fun formatBalanceInput(balance: String?, isWeb3: Boolean): String {
+    val amount = balance?.toBigDecimalOrNull() ?: return ""
+    if (amount <= BigDecimal.ZERO) return ""
+    return if (isWeb3) {
+        amount.stripTrailingZeros().toPlainString()
+    } else {
+        amount.setScale(8, RoundingMode.DOWN).stripTrailingZeros().toPlainString()
+    }
+}
+
+private fun formatLimitOrderAmount(value: String, isWeb3: Boolean): String {
+    val amount = value.toBigDecimalOrNull() ?: return value
+    return if (isWeb3) {
+        amount.stripTrailingZeros().toPlainString()
+    } else {
+        amount.setScale(8, RoundingMode.DOWN).stripTrailingZeros().toPlainString()
+    }
+}
 
 enum class ExpiryOption(@get:StringRes val labelRes: Int) {
     NEVER(R.string.expiry_never), MIN_10(R.string.expiry_10_min), HOUR_1(R.string.expiry_1_hour), DAY_1(R.string.expiry_1_day), DAY_3(R.string.expiry_3_days), WEEK_1(R.string.expiry_1_week), MONTH_1(R.string.expiry_1_month), YEAR_1(R.string.expiry_1_year);
@@ -119,24 +140,17 @@ fun LimitOrderContent(
     inMixin: Boolean,
     initialAmount: String?,
     lastOrderTime: Long?,
+    reviewing: Boolean,
     onSelectToken: (Boolean, SelectTokenType) -> Unit,
     onLimitReview: (SwapToken, SwapToken, CreateLimitOrderResponse) -> Unit,
     onDeposit: (SwapToken) -> Unit,
     onLimitOrderClick: (String) -> Unit,
-    onOrderList: (String, Boolean) -> Unit,
+    onOrderList: (String, Boolean, String) -> Unit,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
     val viewModel = hiltViewModel<SwapViewModel>()
-
-    var inputText by remember { mutableStateOf(initialAmount ?: "") }
-    var outputText by remember { mutableStateOf("") }
-
-    LaunchedEffect(lastOrderTime) {
-        inputText = initialAmount ?: ""
-        outputText = ""
-    }
 
     var limitPriceText by remember { mutableStateOf("") }
     var marketPriceClickTime by remember { mutableStateOf(lastOrderTime) }
@@ -153,6 +167,18 @@ fun LimitOrderContent(
     }
     var toToken by remember(from, to, isReverse) {
         mutableStateOf(if (isReverse) from else to)
+    }
+    val fromMaxDecimalPlaces = fromToken.tradeInputMaxDecimalPlaces()
+    val toMaxDecimalPlaces = toToken.tradeInputMaxDecimalPlaces()
+
+    var inputText by remember {
+        mutableStateOf(limitTradeInputDecimalPlaces(initialAmount ?: "", fromMaxDecimalPlaces))
+    }
+    var outputText by remember { mutableStateOf("") }
+
+    LaunchedEffect(lastOrderTime, fromMaxDecimalPlaces) {
+        inputText = limitTradeInputDecimalPlaces(initialAmount ?: "", fromMaxDecimalPlaces)
+        outputText = ""
     }
 
     var isButtonEnabled by remember { mutableStateOf(true) }
@@ -194,7 +220,7 @@ fun LimitOrderContent(
 
         if (fromAmount != null && standardPrice != null && fromAmount > BigDecimal.ZERO && standardPrice > BigDecimal.ZERO) {
             val toAmount = fromAmount.multiply(standardPrice).setScale(8, RoundingMode.DOWN)
-            outputText = toAmount.stripTrailingZeros().toPlainString()
+            outputText = limitTradeInputDecimalPlaces(toAmount.stripTrailingZeros().toPlainString(), toMaxDecimalPlaces)
         } else {
             outputText = ""
         }
@@ -205,6 +231,13 @@ fun LimitOrderContent(
     fromToken?.let {
         val fromBalance = viewModel.tokenExtraFlow(it).collectAsStateWithLifecycle(it.balance).value
         val toBalance = toToken?.let { viewModel.tokenExtraFlow(it).collectAsStateWithLifecycle(it.balance).value }
+        val rawFromBalanceValue = fromBalance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+        val availableFromBalanceValue = if (it.isNativeSolAsset()) {
+            nativeSolSpendableBalance(rawFromBalanceValue)
+        } else {
+            rawFromBalanceValue
+        }
+        val availableFromBalance = availableFromBalanceValue.stripTrailingZeros().toPlainString()
         KeyboardAwareBox(modifier = Modifier.fillMaxHeight(), content = { availableHeight ->
             Column(
                 modifier = if (availableHeight != null) {
@@ -241,8 +274,10 @@ fun LimitOrderContent(
                                     .clip(CircleShape)
                                     .background(MixinAppTheme.colors.accent)
                                     .clickable {
+                                        AnalyticsTracker.trackSpotSwitchSendReceive()
                                         isReverse = !isReverse
-                                        inputText = outputText
+                                        val nextFromMaxDecimalPlaces = toToken.tradeInputMaxDecimalPlaces()
+                                        inputText = limitTradeInputDecimalPlaces(outputText, nextFromMaxDecimalPlaces)
 
                                         val oldPrice = limitPriceText.toBigDecimalOrNull()
                                         if (oldPrice != null && oldPrice > BigDecimal.ZERO) {
@@ -291,24 +326,20 @@ fun LimitOrderContent(
                                     val standardPrice = limitPriceText.toBigDecimalOrNull()
                                     if (fromAmount != null && standardPrice != null && fromAmount > BigDecimal.ZERO && standardPrice > BigDecimal.ZERO) {
                                         val calculatedOutput = fromAmount.multiply(standardPrice).setScale(8, RoundingMode.DOWN)
-                                        outputText = calculatedOutput.stripTrailingZeros().toPlainString()
+                                        outputText = limitTradeInputDecimalPlaces(calculatedOutput.stripTrailingZeros().toPlainString(), toMaxDecimalPlaces)
                                     } else if (fromAmount == null || fromAmount == BigDecimal.ZERO) {
                                         outputText = ""
                                     }
                                 }
-                            }, onDeposit = onDeposit, onMax = {
-                                val balance = fromBalance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-                                if (balance > BigDecimal.ZERO) {
-                                    inputText = balance.setScale(8, RoundingMode.DOWN).stripTrailingZeros().toPlainString()
-                                } else {
-                                    inputText = ""
-                                }
+                            }, onDeposit = onDeposit, displayBalanceOverride = if (it.isNativeSolAsset()) fromBalance else null, maxDecimalPlaces = fromMaxDecimalPlaces, onMax = {
+                                AnalyticsTracker.trackSpotSendInputBalance()
+                                inputText = limitTradeInputDecimalPlaces(formatBalanceInput(availableFromBalance, fromToken?.isWeb3 == true), fromMaxDecimalPlaces)
                                 if (inputText.isNotBlank()) {
                                     val fromAmount = inputText.toBigDecimalOrNull()
                                     val standardPrice = limitPriceText.toBigDecimalOrNull()
                                     if (fromAmount != null && standardPrice != null && fromAmount > BigDecimal.ZERO && standardPrice > BigDecimal.ZERO) {
                                         val calculatedOutput = fromAmount.multiply(standardPrice).setScale(8, RoundingMode.DOWN)
-                                        outputText = calculatedOutput.stripTrailingZeros().toPlainString()
+                                        outputText = limitTradeInputDecimalPlaces(calculatedOutput.stripTrailingZeros().toPlainString(), toMaxDecimalPlaces)
                                     } else if (fromAmount == null || fromAmount == BigDecimal.ZERO) {
                                         outputText = ""
                                     }
@@ -339,26 +370,22 @@ fun LimitOrderContent(
                                         val standardPrice = limitPriceText.toBigDecimalOrNull()
                                         if (toAmount != null && standardPrice != null && toAmount > BigDecimal.ZERO && standardPrice > BigDecimal.ZERO) {
                                             val calculatedInput = toAmount.divide(standardPrice, 8, RoundingMode.DOWN)
-                                            inputText = calculatedInput.stripTrailingZeros().toPlainString()
+                                            inputText = limitTradeInputDecimalPlaces(calculatedInput.stripTrailingZeros().toPlainString(), fromMaxDecimalPlaces)
                                         } else if (toAmount == null || toAmount == BigDecimal.ZERO) {
                                             inputText = ""
                                         }
                                     }
                                 },
                                 onDeposit = null,
+                                maxDecimalPlaces = toMaxDecimalPlaces,
                                 onMax = {
-                                    val balance = toBalance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-                                    if (balance > BigDecimal.ZERO) {
-                                        outputText = balance.setScale(8, RoundingMode.DOWN).stripTrailingZeros().toPlainString()
-                                    } else {
-                                        outputText = ""
-                                    }
+                                    outputText = limitTradeInputDecimalPlaces(formatBalanceInput(toBalance, toToken?.isWeb3 == true), toMaxDecimalPlaces)
                                     if (outputText.isNotBlank()) {
                                         val toAmount = outputText.toBigDecimalOrNull()
                                         val standardPrice = limitPriceText.toBigDecimalOrNull()
                                         if (toAmount != null && standardPrice != null && toAmount > BigDecimal.ZERO && standardPrice > BigDecimal.ZERO) {
                                             val calculatedInput = toAmount.divide(standardPrice, 8, RoundingMode.DOWN)
-                                            inputText = calculatedInput.stripTrailingZeros().toPlainString()
+                                            inputText = limitTradeInputDecimalPlaces(calculatedInput.stripTrailingZeros().toPlainString(), fromMaxDecimalPlaces)
                                         } else if (toAmount == null || toAmount == BigDecimal.ZERO) {
                                             inputText = ""
                                         }
@@ -377,13 +404,19 @@ fun LimitOrderContent(
                                     lastOrderTime = marketPriceClickTime,
                                     priceMultiplier = priceMultiplier,
                                     isPriceInverted = isPriceInverted,
-                                    onPriceInvertedChange = { isPriceInverted = it },
+                                    onPriceInvertedChange = {
+                                        AnalyticsTracker.trackSpotSwitchQuoteDirection()
+                                        isPriceInverted = it
+                                    },
                                     onStandardPriceChanged = { limitPriceText = it },
                                 )
                                 Spacer(modifier = Modifier.height(10.dp))
                                 ExpirySelector(
                                     expiryOption = expiryOption,
-                                    onExpiryChange = { option -> expiryOption = option }
+                                    onExpiryChange = { option ->
+                                        expiryOption = option
+                                        AnalyticsTracker.trackSpotExpirySelect(option.analyticsMethod())
+                                    }
                                 )
                             }
                         },
@@ -400,11 +433,12 @@ fun LimitOrderContent(
                         if (availableHeight == null) {
                             Spacer(modifier = Modifier.weight(1f))
                         }
-                        val checkBalance = checkBalance(inputText, fromBalance)
+                        val checkBalance = checkBalance(inputText, availableFromBalance)
                         val isInputValid = inputText.toBigDecimalOrNull()?.let { it > BigDecimal.ZERO } == true
                         val isPriceValid = limitPriceText.toBigDecimalOrNull()?.let { it > BigDecimal.ZERO } == true
                         val isOutputValid = outputText.toBigDecimalOrNull()?.let { it > BigDecimal.ZERO } == true
                         val isEnabled = isInputValid && isPriceValid && isOutputValid && checkBalance == true && toToken != null
+                        val isBusy = isSubmitting || reviewing
                         val buttonBackgroundColor = if (isEnabled) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight
                         val buttonContentColor = if (isEnabled) Color.White else MixinAppTheme.colors.textAssist
                         MixinButton(
@@ -414,7 +448,7 @@ fun LimitOrderContent(
                             onClick = {
                                 keyboardController?.hide()
                                 focusManager.clearFocus()
-                                if (isButtonEnabled && toToken != null) {
+                                if (isButtonEnabled && !isBusy && toToken != null) {
                                     isButtonEnabled = false
                                     isSubmitting = true
                                     keyboardController?.hide()
@@ -431,8 +465,8 @@ fun LimitOrderContent(
                                                 viewModel.getAddressesByChainId(Web3Signer.currentWalletId, toTokenValue.chain.chainId)?.destination
                                             } else null
 
-                                            val scaledAmount = inputText.toBigDecimalOrNull()?.setScale(8, RoundingMode.DOWN)?.stripTrailingZeros()?.toPlainString() ?: inputText
-                                            val scaledExpected = outputText.toBigDecimalOrNull()?.setScale(8, RoundingMode.DOWN)?.stripTrailingZeros()?.toPlainString() ?: outputText
+                                            val scaledAmount = formatLimitOrderAmount(inputText, fromTokenValue.isWeb3)
+                                            val scaledExpected = formatLimitOrderAmount(outputText, toTokenValue.isWeb3)
                                             val request = LimitOrderRequest(
                                                 walletId = walletId,
                                                 assetId = fromTokenValue.assetId,
@@ -458,9 +492,11 @@ fun LimitOrderContent(
                                     }
                                 }
                             },
-                            enabled = isEnabled,
+                            enabled = isEnabled && !isBusy,
                             backgroundColor = buttonBackgroundColor,
                             contentColor = buttonContentColor,
+                            disabledBackgroundColor = MixinAppTheme.colors.backgroundGrayLight,
+                            disabledContentColor = MixinAppTheme.colors.textAssist,
                         ) {
                             Box(
                                 modifier = Modifier
@@ -468,7 +504,7 @@ fun LimitOrderContent(
                                     .height(24.dp),
                                 contentAlignment = Alignment.Center
                             ) {
-                                if (isSubmitting) {
+                                if (isBusy) {
                                     CircularProgressIndicator(
                                         modifier = Modifier
                                             .width(18.dp)
@@ -501,12 +537,12 @@ fun LimitOrderContent(
                                 .padding(vertical = 16.dp),
                         ) {
                             Row(modifier = Modifier
-                                .padding(horizontal = 16.dp)
-                                .clickable {
-                                    keyboardController?.hide()
-                                    focusManager.clearFocus()
-                                    onOrderList(walletId, true)
-                                }) {
+                                    .padding(horizontal = 16.dp)
+                                    .clickable {
+                                        keyboardController?.hide()
+                                        focusManager.clearFocus()
+                                        onOrderList(walletId, true, AnalyticsTracker.SpotTradeType.ADVANCED)
+                                    }) {
                                 Text(text = "${stringResource(id = R.string.open_orders)} (${limitOrders.size})", color = MixinAppTheme.colors.textPrimary)
                                 Spacer(modifier = Modifier.weight(1f))
                                 Icon(
@@ -531,7 +567,7 @@ fun LimitOrderContent(
                                         .clickable {
                                             keyboardController?.hide()
                                             focusManager.clearFocus()
-                                            onOrderList(walletId, true)
+                                            onOrderList(walletId, true, AnalyticsTracker.SpotTradeType.ADVANCED)
                                         },
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
@@ -585,18 +621,25 @@ fun LimitOrderContent(
         }, floating = {
             FloatingActions(
                 focusedField = focusedField,
-                fromBalance = fromBalance,
+                fromBalance = availableFromBalance,
                 fromToken = fromToken,
                 toToken = toToken,
                 isPriceInverted = isPriceInverted,
-                onSetPriceMultiplier = { priceMultiplier = it },
+                onInputQuickAction = {
+                    AnalyticsTracker.trackSpotSendInputPercent(it)
+                },
+                onSetPriceMultiplier = { label, multiplier ->
+                    priceMultiplier = multiplier
+                    AnalyticsTracker.trackSpotPriceInputPercent(label)
+                },
                 onSetInput = {
-                    inputText = it
-                    val fromAmount = it.toBigDecimalOrNull()
+                    val limitedInput = limitTradeInputDecimalPlaces(it, fromMaxDecimalPlaces)
+                    inputText = limitedInput
+                    val fromAmount = limitedInput.toBigDecimalOrNull()
                     val standardPrice = limitPriceText.toBigDecimalOrNull()
                     if (fromAmount != null && standardPrice != null && fromAmount > BigDecimal.ZERO && standardPrice > BigDecimal.ZERO) {
                         val calculatedOutput = fromAmount.multiply(standardPrice).setScale(8, RoundingMode.DOWN)
-                        outputText = calculatedOutput.stripTrailingZeros().toPlainString()
+                        outputText = limitTradeInputDecimalPlaces(calculatedOutput.stripTrailingZeros().toPlainString(), toMaxDecimalPlaces)
                     } else if (fromAmount == null || fromAmount == BigDecimal.ZERO) {
                         outputText = ""
                     }
@@ -612,6 +655,19 @@ fun LimitOrderContent(
         })
     } ?: run {
         Loading()
+    }
+}
+
+private fun ExpiryOption.analyticsMethod(): String {
+    return when (this) {
+        ExpiryOption.NEVER -> AnalyticsTracker.SpotExpiryMethod.NEVER
+        ExpiryOption.MIN_10 -> AnalyticsTracker.SpotExpiryMethod.MIN_10
+        ExpiryOption.HOUR_1 -> AnalyticsTracker.SpotExpiryMethod.HOUR_1
+        ExpiryOption.DAY_1 -> AnalyticsTracker.SpotExpiryMethod.DAY_1
+        ExpiryOption.DAY_3 -> AnalyticsTracker.SpotExpiryMethod.DAY_3
+        ExpiryOption.WEEK_1 -> AnalyticsTracker.SpotExpiryMethod.WEEK_1
+        ExpiryOption.MONTH_1 -> AnalyticsTracker.SpotExpiryMethod.MONTH_1
+        ExpiryOption.YEAR_1 -> AnalyticsTracker.SpotExpiryMethod.YEAR_1
     }
 }
 

@@ -114,7 +114,7 @@ fun TotalAssetsCard(
                             ),
                             onDismissRequest = { showTooltip = false },
                             offset = IntOffset(xOffset, with(LocalDensity.current) {
-                                (44).dp.toPx()
+                                (4).dp.toPx()
                             }.toInt()),
                             arrowOffsetX = 24.dp,
                         )

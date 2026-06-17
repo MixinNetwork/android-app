@@ -3,9 +3,9 @@ package one.mixin.android.ui.home.web3.widget
 import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
+import android.widget.ImageView
 import android.widget.RelativeLayout
 import androidx.annotation.StringRes
-import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -14,10 +14,13 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 
 class MarketTitleView : RelativeLayout {
+    companion object {
+        private const val SORT_DEFAULT = -1
+    }
 
     private val _binding: ViewMarketTitleBinding
     private var isSevenDays: Boolean = true
-    private var currentSort: MarketSort? = null
+    private var currentSort: MarketSort = MarketSort.RANK_ASCENDING
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
@@ -29,11 +32,14 @@ class MarketTitleView : RelativeLayout {
     }
 
     fun updatePadding(horizontalPadding: Int) {
-        _binding.priceOrder.updateLayoutParams<MarginLayoutParams> {
-            marginEnd = horizontalPadding * 2 + 60.dp
-        }
         _binding.percentageOrder.updateLayoutParams<MarginLayoutParams> {
             marginEnd = horizontalPadding
+        }
+        _binding.pricePercentageDivider.updateLayoutParams<MarginLayoutParams> {
+            marginEnd = 10.dp
+        }
+        _binding.priceOrder.updateLayoutParams<MarginLayoutParams> {
+            marginEnd = 10.dp
         }
         _binding.rankOrder.updateLayoutParams<MarginLayoutParams> {
             marginStart = horizontalPadding
@@ -42,74 +48,92 @@ class MarketTitleView : RelativeLayout {
 
     private fun setupListeners() {
         _binding.rankOrder.setOnClickListener {
-            onTitleClicked(MarketSort.RANK_ASCENDING, MarketSort.RANK_DESCENDING)
+            currentSort =
+                when (currentSort) {
+                    MarketSort.RANK_ASCENDING -> MarketSort.RANK_DESCENDING
+                    else -> MarketSort.RANK_ASCENDING
+                }
+            updateSortOrder(currentSort)
+            saveSortPreference()
+            callback(currentSortOrDefault())
         }
         _binding.priceOrder.setOnClickListener {
-            onTitleClicked(MarketSort.PRICE_ASCENDING, MarketSort.PRICE_DESCENDING)
+            onTitleClicked(MarketSort.PRICE_DESCENDING, MarketSort.PRICE_ASCENDING)
         }
         _binding.percentageOrder.setOnClickListener {
             if (isSevenDays) {
-                onTitleClicked(MarketSort.SEVEN_DAYS_PERCENTAGE_ASCENDING, MarketSort.SEVEN_DAYS_PERCENTAGE_DESCENDING)
+                onTitleClicked(MarketSort.SEVEN_DAYS_PERCENTAGE_DESCENDING, MarketSort.SEVEN_DAYS_PERCENTAGE_ASCENDING)
             } else {
-                onTitleClicked(MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_ASCENDING, MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_DESCENDING)
+                onTitleClicked(MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_DESCENDING, MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_ASCENDING)
             }
         }
     }
 
-    private fun onTitleClicked(ascending: MarketSort, descending: MarketSort) {
-        currentSort = if (currentSort == ascending) {
-            updateSortOrder(descending)
-            descending
-        } else {
-            updateSortOrder(ascending)
-            ascending
-        }
+    private fun onTitleClicked(descending: MarketSort, ascending: MarketSort) {
+        currentSort =
+            when (currentSort) {
+                descending -> ascending
+                ascending -> MarketSort.RANK_ASCENDING
+                else -> descending
+            }
+        updateSortOrder(currentSort)
         saveSortPreference()
-        currentSort?.let { callback(it) }
+        callback(currentSortOrDefault())
     }
 
     private fun updateSortOrder(sort: MarketSort) {
         resetAllIcons()
         when (sort) {
             MarketSort.RANK_ASCENDING, MarketSort.RANK_DESCENDING -> {
-                _binding.rankIcon.isVisible = true
-                _binding.rankIcon.rotation = if (sort == MarketSort.RANK_ASCENDING) 0f else 180f
+                _binding.rankIcon.setImageResource(
+                    if (sort == MarketSort.RANK_ASCENDING) R.drawable.ic_perps_sort_asc else R.drawable.ic_perps_sort_desc
+                )
             }
 
             MarketSort.PRICE_ASCENDING, MarketSort.PRICE_DESCENDING -> {
-                _binding.priceIcon.isVisible = true
-                _binding.priceIcon.rotation = if (sort == MarketSort.PRICE_ASCENDING) 0f else 180f
+                _binding.priceIcon.setImageResource(
+                    if (sort == MarketSort.PRICE_ASCENDING) R.drawable.ic_perps_sort_asc else R.drawable.ic_perps_sort_desc
+                )
             }
 
             MarketSort.SEVEN_DAYS_PERCENTAGE_ASCENDING, MarketSort.SEVEN_DAYS_PERCENTAGE_DESCENDING -> {
-                _binding.percentageIcon.isVisible = true
-                _binding.percentageIcon.rotation = if (sort == MarketSort.SEVEN_DAYS_PERCENTAGE_ASCENDING) 0f else 180f
+                _binding.percentageIcon.setImageResource(
+                    if (sort == MarketSort.SEVEN_DAYS_PERCENTAGE_ASCENDING) R.drawable.ic_perps_sort_asc else R.drawable.ic_perps_sort_desc
+                )
             }
 
             MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_ASCENDING, MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_DESCENDING -> {
-                _binding.percentageIcon.isVisible = true
-                _binding.percentageIcon.rotation = if (sort == MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_ASCENDING) 0f else 180f
+                _binding.percentageIcon.setImageResource(
+                    if (sort == MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_ASCENDING) R.drawable.ic_perps_sort_asc else R.drawable.ic_perps_sort_desc
+                )
             }
         }
     }
 
     private fun resetAllIcons() {
-        _binding.rankIcon.isVisible = false
-        _binding.priceIcon.isVisible = false
-        _binding.percentageIcon.isVisible = false
+        resetIcon(_binding.rankIcon)
+        resetIcon(_binding.priceIcon)
+        resetIcon(_binding.percentageIcon)
+    }
+
+    private fun resetIcon(icon: ImageView) {
+        icon.setImageResource(R.drawable.ic_perps_sort_default)
     }
 
     private fun saveSortPreference() {
-        currentSort?.let {
-            sharedPreferences.edit().putInt(Constants.Account.PREF_MARKET_ORDER, it.value).apply()
+        val editor = sharedPreferences.edit()
+        if (currentSort == MarketSort.RANK_ASCENDING) {
+            editor.putInt(Constants.Account.PREF_MARKET_ORDER, SORT_DEFAULT)
+        } else {
+            editor.putInt(Constants.Account.PREF_MARKET_ORDER, currentSort.value)
         }
+        editor.apply()
     }
 
     private fun loadSortPreference() {
-        val sortValue = sharedPreferences.getInt(Constants.Account.PREF_MARKET_ORDER, 0)
-        val sort = MarketSort.fromValue(sortValue)
-        updateSortOrder(sort)
-        currentSort = sort
+        val sortValue = sharedPreferences.getInt(Constants.Account.PREF_MARKET_ORDER, SORT_DEFAULT)
+        currentSort = MarketSort.fromValueOrNull(sortValue) ?: MarketSort.RANK_ASCENDING
+        updateSortOrder(currentSort)
     }
 
     fun setOnSortChangedListener(callback: (MarketSort) -> Unit) {
@@ -120,11 +144,13 @@ class MarketTitleView : RelativeLayout {
         _binding.rankTitle.setText(str)
     }
 
+    fun currentSortOrDefault(): MarketSort = currentSort
+
     private fun updatePercentageText() {
         _binding.percentage.text = if (isSevenDays) {
             context.getString(R.string.change_percent_period_day, 7)
         } else {
-            context.getString(R.string.change_percent_period_hour, 24)
+            context.getString(R.string.change_24h, 24)
         }
     }
 
@@ -140,7 +166,9 @@ class MarketTitleView : RelativeLayout {
         }
         if (newSort != currentSort) {
             currentSort = newSort
-            callback(currentSort!!)
+            updateSortOrder(currentSort)
+            saveSortPreference()
+            callback(currentSortOrDefault())
         }
     }
 

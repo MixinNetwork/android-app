@@ -62,6 +62,7 @@ import one.mixin.android.ui.wallet.TransferContactBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.decodeICAP
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.isIcapAddress
@@ -246,6 +247,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                         TransferContactBottomSheetDialogFragment.newInstance()
                                             .apply {
                                                 onUserClick = { user ->
+                                                    AnalyticsTracker.trackAssetSendRecipient(AnalyticsTracker.AssetSendRecipientType.CONTACT)
                                                     navigateToInputFragmentWithBundle(
                                                         Bundle().apply {
                                                             putParcelable(InputFragment.ARGS_TO_USER, user)
@@ -268,6 +270,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                                             toast(R.string.Alert_Not_Support)
                                                             return@launch
                                                         }
+                                                        AnalyticsTracker.trackAssetSendRecipient(AnalyticsTracker.AssetSendRecipientType.CONTACT)
                                                         val chain = chainToken ?: web3ViewModel.web3TokenItemById(t.walletId, t.chainId)
                                                         if (chain == null) {
                                                             toast(R.string.Alert_Not_Support)
@@ -298,6 +301,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                             this@TransferDestinationInputFragment.lifecycleScope.launch(CoroutineExceptionHandler { _, error ->
                                                 Timber.e(error)
                                             }) {
+                                                AnalyticsTracker.trackAssetSendRecipient(AnalyticsTracker.AssetSendRecipientType.WALLET)
                                                 when {
                                                     destinationWallet?.isMixinSafe()  == true-> {
                                                         val toAddress = destinationWallet.safeAddress.orEmpty()
@@ -383,6 +387,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
 
                                 },
                                 toAddAddress = {
+                                    AnalyticsTracker.trackAddressBookAddStart()
                                     navController.navigate(TransferDestination.Address.name)
                                 },
                                 onSend = { address ->
@@ -393,6 +398,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                             LinkBottomSheetDialogFragment.TAG
                                         )
                                     } else {
+                                        AnalyticsTracker.trackAssetSendRecipient(AnalyticsTracker.AssetSendRecipientType.ADDRESS)
                                         val memoEnabled =
                                             token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE || token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSSIBLE
                                         if (memoEnabled) {
@@ -441,6 +447,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 errorInfo = errorInfo,
                                 onAddressClick = { address ->
                                     requireView().hideKeyboard()
+                                    AnalyticsTracker.trackAssetSendRecipient(AnalyticsTracker.AssetSendRecipientType.ADDRESS_BOOK)
                                     if (web3Token != null) {
                                         val dialog =
                                             indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
@@ -487,6 +494,72 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                     } else {
                                         toast(R.string.Data_error)
                                     }
+                                },
+                                onShowAddressBook = {
+                                    val chainId = token?.chainId ?: web3Token?.chainId ?: return@TransferDestinationInputPage
+                                    AddressSearchBottomSheetDialogFragment.newInstance(chainId).apply {
+                                        onAddressClick = { address ->
+                                            this@TransferDestinationInputFragment.requireView().hideKeyboard()
+                                            AnalyticsTracker.trackAssetSendRecipient(AnalyticsTracker.AssetSendRecipientType.ADDRESS_BOOK)
+                                            if (web3Token != null) {
+                                                val selectedWeb3Token = web3Token!!
+                                                val dialog =
+                                                    indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                                                        setCancelable(false)
+                                                    }
+                                                this@TransferDestinationInputFragment.lifecycleScope.launch {
+                                                    dialog.show()
+                                                    try {
+                                                        val fromAddress = web3ViewModel.getAddressesByChainId(
+                                                            selectedWeb3Token.walletId,
+                                                            selectedWeb3Token.chainId
+                                                        )?.destination
+                                                        if (fromAddress.isNullOrBlank()) {
+                                                            toast(R.string.Alert_Not_Support)
+                                                        } else {
+                                                            (chainToken ?: web3ViewModel.web3TokenItemById(
+                                                                selectedWeb3Token.walletId,
+                                                                selectedWeb3Token.chainId
+                                                            ))?.let { chain ->
+                                                                navigateToInputFragmentWithBundle(Bundle().apply {
+                                                                    putString(InputFragment.ARGS_FROM_ADDRESS, fromAddress)
+                                                                    putString(InputFragment.ARGS_TO_ADDRESS, address.destination)
+                                                                    putString(InputFragment.ARGS_TO_ADDRESS_TAG, address.tag)
+                                                                    putParcelable(InputFragment.ARGS_WEB3_TOKEN, selectedWeb3Token)
+                                                                    putParcelable(InputFragment.ARGS_WEB3_CHAIN_TOKEN, chain)
+                                                                    putParcelable(ARGS_WALLET, wallet)
+                                                                })
+                                                            }
+                                                        }
+                                                    } finally {
+                                                        dialog.dismiss()
+                                                    }
+                                                }
+                                            } else if (token != null) {
+                                                navigateToInputFragmentWithBundle(Bundle().apply {
+                                                    putParcelable(InputFragment.ARGS_TOKEN, token)
+                                                    putString(InputFragment.ARGS_TO_ADDRESS, address.destination)
+                                                    putString(InputFragment.ARGS_TO_ADDRESS_TAG, address.tag)
+                                                })
+                                            }
+                                        }
+                                        onDeleteAddress = { address ->
+                                            if (token == null && web3Token != null) {
+                                                lifecycleScope.launch {
+                                                    val t = web3ViewModel.syncAsset(web3Token!!.assetId) ?: return@launch
+                                                    showDeleteBottomSheet(address, t)
+                                                }
+                                            } else if (token != null) {
+                                                showDeleteBottomSheet(address, token!!)
+                                            } else {
+                                                toast(R.string.Data_error)
+                                            }
+                                        }
+                                        onAddClick = {
+                                            AnalyticsTracker.trackAddressBookAddStart()
+                                            navController.navigate(TransferDestination.Address.name)
+                                        }
+                                    }.show(parentFragmentManager, AddressSearchBottomSheetDialogFragment.TAG)
                                 }
                             )
                         }
@@ -538,6 +611,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 onNext = { memo ->
                                     errorInfo = null
                                     requireView().hideKeyboard()
+                                    AnalyticsTracker.trackAddressBookAddMemo("memo")
                                     validateAndNavigateToInput(
                                         assetId = token?.assetId ?: web3Token?.assetId ?: "",
                                         chainId = token?.chainId ?: web3Token?.chainId ?: "",
@@ -567,6 +641,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 contentText = scannedMemo,
                                 onNext = { memo ->
                                     errorInfo = null
+                                    AnalyticsTracker.trackAddressBookAddMemo("memo")
                                     validateAndNavigateToInput(
                                         assetId = token?.assetId ?: web3Token?.assetId ?: "",
                                         chainId = token?.chainId ?: web3Token?.chainId ?: "",
@@ -607,8 +682,9 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 onScan = { startQrScan(ScanType.LABEL) },
                                 onComplete = { label ->
                                     errorInfo = null
+                                    AnalyticsTracker.trackAddressBookAddLabel()
                                     if (token == null && web3Token != null) {
-                                        lifecycleScope.launch {
+                                        this@TransferDestinationInputFragment.lifecycleScope.launch {
                                             val t = web3ViewModel.syncAsset(web3Token!!.assetId) ?: return@launch
                                             handleLabelComplete(t, address, memo, label, navController)
                                         }
@@ -772,6 +848,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                 type = TransferBottomSheetDialogFragment.ADD,
             ),
         )
+        AnalyticsTracker.trackAddressBookAddPreview()
         bottomSheet.showNow(
             parentFragmentManager,
             TransferBottomSheetDialogFragment.TAG
@@ -818,4 +895,3 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
         return bottomSheet
     }
 }
-

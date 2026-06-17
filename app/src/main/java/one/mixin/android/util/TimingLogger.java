@@ -1,9 +1,10 @@
 package one.mixin.android.util;
 
 import android.os.SystemClock;
-import timber.log.Timber;
 
 import java.util.ArrayList;
+
+import timber.log.Timber;
 
 public class TimingLogger {
 

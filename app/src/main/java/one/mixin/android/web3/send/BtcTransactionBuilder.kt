@@ -4,6 +4,7 @@ import one.mixin.android.api.response.web3.WalletOutput
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.toHex
 import org.bitcoinj.base.AddressParser
+import org.bitcoinj.base.BitcoinNetwork
 import org.bitcoinj.base.Coin
 import org.bitcoinj.base.Sha256Hash
 import org.bitcoinj.core.TransactionInput
@@ -87,7 +88,7 @@ object BtcTransactionBuilder {
         feeRate: BigDecimal,
         minimumChangeSatoshis: Long,
     ): BuiltBtcTransaction {
-        val addressParser = AddressParser.getDefault()
+        val addressParser = AddressParser.getDefault(BitcoinNetwork.MAINNET)
         val changeAddress = addressParser.parseAddress(fromAddress)
         val recipientAddress = addressParser.parseAddress(toAddress)
         val sendAmount = Coin.parseCoin(amountBtc)
@@ -335,7 +336,7 @@ object BtcTransactionBuilder {
     }
 
     private fun buildP2wpkhScript(address: String): Script {
-        val addressParser: AddressParser = AddressParser.getDefault()
+        val addressParser: AddressParser = AddressParser.getDefault(BitcoinNetwork.MAINNET)
         val parsedAddress = addressParser.parseAddress(address)
         return ScriptBuilder.createOutputScript(parsedAddress)
     }

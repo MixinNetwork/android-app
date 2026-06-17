@@ -1,6 +1,5 @@
 package one.mixin.android.ui.wallet
 
-import one.mixin.android.ui.home.web3.components.PageScaffold
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -52,8 +51,10 @@ import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.util.analytics.AnalyticsTracker
 
 @AndroidEntryPoint
 class ViewWalletAddressFragment : BaseFragment() {
@@ -102,7 +103,13 @@ fun ViewAddressScreen(walletId: String, learnMoreAction: () -> Unit, pop: () -> 
             verticalScrollable = true,
             pop = pop,
             actions = {
-                IconButton(onClick = { context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE) }) {
+                IconButton(onClick = {
+                    context.openUrl(
+                        Constants.HelpLink.CUSTOMER_SERVICE,
+                        source = AnalyticsTracker.CustomerServiceSource.ASSET_DETAIL,
+                        wallet = AnalyticsTracker.TradeWallet.WEB3,
+                    )
+                }) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_support),
                         contentDescription = null,

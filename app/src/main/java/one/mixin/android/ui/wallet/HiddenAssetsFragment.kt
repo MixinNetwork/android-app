@@ -57,6 +57,7 @@ class HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), Head
                 getString(R.string.Privacy_Wallet),
                 R.drawable.ic_wallet_privacy
             )
+            titleView.setWalletNameSubTitleStyle()
             titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             ItemTouchHelper(
                 AssetItemCallback(

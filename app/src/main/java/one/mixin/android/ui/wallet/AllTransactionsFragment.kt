@@ -9,9 +9,8 @@ import androidx.appcompat.widget.ListPopupWindow
 import androidx.core.content.ContextCompat
 import androidx.core.util.Pair
 import androidx.core.view.isVisible
-import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
-import androidx.paging.PagedList
+import androidx.paging.LoadState
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.datepicker.CalendarConstraints
@@ -20,6 +19,7 @@ import com.google.android.material.datepicker.MaterialDatePicker
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
@@ -40,6 +40,7 @@ import one.mixin.android.ui.wallet.TransactionFragment.Companion.ARGS_SNAPSHOT
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.ui.wallet.adapter.SnapshotPagedAdapter
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AddressItem
@@ -52,7 +53,7 @@ import one.mixin.android.vo.safe.toSnapshot
 import timber.log.Timber
 
 @AndroidEntryPoint
-class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(R.layout.fragment_all_transactions), OnSnapshotListener, MultiSelectTokenListBottomSheetDialogFragment.DataProvider, MultiSelectRecipientsListBottomSheetDialogFragment.DataProvider {
+class AllTransactionsFragment : BaseTransactionsFragment(R.layout.fragment_all_transactions), OnSnapshotListener, MultiSelectTokenListBottomSheetDialogFragment.DataProvider, MultiSelectRecipientsListBottomSheetDialogFragment.DataProvider {
     companion object {
         const val TAG = "AllTransactionsFragment"
         const val ARGS_USER = "args_user"
@@ -88,7 +89,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         val type = if (pendingType) SnapshotType.pending else SnapshotType.all
         FilterParams(
             type = type,
-            recipients = userItem?.let { listOf(it) }, 
+            recipients = userItem?.let { listOf(it) },
             tokenItems = tokenItem?.let { listOf(it) }
         )
     }
@@ -98,6 +99,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        AnalyticsTracker.trackAllTransactions(AnalyticsTracker.AssetSource.WALLET_HOME)
 
         adapter.listener = this
         binding.apply {
@@ -132,23 +134,24 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                 },
             )
         }
-        dataObserver =
-            Observer { pagedList ->
-                if (pagedList.isNotEmpty()) {
-                    showEmpty(false)
-                    val opponentIds =
-                        pagedList.filter {
-                            !it?.opponentId.isNullOrBlank()
-                        }.map {
-                            it.opponentId
-                        }
-                    walletViewModel.checkAndRefreshUsers(opponentIds)
-                } else {
-                    showEmpty(true)
-                }
-                adapter.submitList(pagedList)
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            adapter.loadStateFlow.collectLatest { loadStates ->
+                val isEmpty = loadStates.refresh is LoadState.NotLoading && adapter.itemCount == 0
+                showEmpty(isEmpty)
             }
-        bindLiveData()
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            adapter.onPagesUpdatedFlow.collect {
+                val items = adapter.snapshot().items
+                if (items.isNotEmpty()) {
+                    val opponentIds = items.filter { !it.opponentId.isNullOrBlank() }.map { it.opponentId }
+                    walletViewModel.checkAndRefreshUsers(opponentIds)
+                }
+            }
+        }
+
         binding.apply {
             filterType.setOnClickListener {
                 filterType.open()
@@ -192,6 +195,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
     }
 
     override fun <T> onNormalItemClick(item: T) {
+        AnalyticsTracker.trackTransactionDetail(AnalyticsTracker.AssetSource.ALL_TRANSACTIONS)
         lifecycleScope.launch {
             val snapshot = item as SnapshotItem
             val a =
@@ -279,7 +283,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         }
 
     private fun bindLiveData() {
-        bindLiveData(walletViewModel.allSnapshots(initialLoadKey = initialLoadKey, filterParams))
+        bindPagingData(adapter, walletViewModel.allSnapshots(filterParams))
     }
 
     private fun showEmpty(show: Boolean) {

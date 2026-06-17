@@ -14,6 +14,7 @@ import androidx.annotation.RequiresApi
 import androidx.camera.camera2.Camera2Config
 import androidx.camera.core.CameraXConfig
 import androidx.hilt.work.HiltWorkerFactory
+import androidx.media3.common.util.UnstableApi
 import androidx.work.Configuration
 import coil3.ImageLoader
 import coil3.PlatformContext
@@ -30,7 +31,6 @@ import com.bugsnag.android.Bugsnag
 import com.bugsnag.android.Configuration as BugsnagConfiguration
 import com.appsflyer.AppsFlyerConversionListener
 import com.appsflyer.AppsFlyerLib
-import com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedulerService
 import com.google.android.gms.net.CronetProviderInstaller
 import com.google.firebase.analytics.FirebaseAnalytics
 import dagger.hilt.EntryPoint
@@ -40,12 +40,10 @@ import dagger.hilt.components.SingletonComponent
 import io.reactivex.plugins.RxJavaPlugins
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import leakcanary.AppWatcher
-import leakcanary.LeakCanaryProcess
-import leakcanary.ReachabilityWatcher
 import okhttp3.OkHttpClient
 import one.mixin.android.Constants.Account.PREF_APP_AUTH
 import one.mixin.android.crypto.CryptoWalletHelper
@@ -65,6 +63,7 @@ import one.mixin.android.extension.putLong
 import one.mixin.android.extension.remove
 import one.mixin.android.job.BlazeMessageService
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.session.resolveCurrentUserScopeManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.PipVideoView
 import one.mixin.android.ui.auth.AppAuthActivity
@@ -79,6 +78,7 @@ import one.mixin.android.ui.player.MusicService
 import one.mixin.android.ui.transfer.TransferActivity
 import one.mixin.android.ui.web.FloatingWebClip
 import one.mixin.android.ui.web.WebActivity
+import one.mixin.android.util.BiometricUtil
 import one.mixin.android.ui.web.clips
 import one.mixin.android.ui.web.refresh
 import one.mixin.android.ui.web.releaseAll
@@ -147,12 +147,26 @@ open class MixinApplication :
     private var activityReferences: Int = 0
     private var isActivityChangingConfigurations = false
 
-    @Inject
-    @ApplicationScope
+    @EntryPoint
+    @InstallIn(SingletonComponent::class)
+    interface ApplicationScopeEntryPoint {
+        @one.mixin.android.di.ApplicationScope
+        fun getApplicationScope(): CoroutineScope
+    }
+
+    private fun getAppScope(): CoroutineScope {
+        return try {
+            EntryPointAccessors.fromApplication(this, ApplicationScopeEntryPoint::class.java).getApplicationScope()
+        } catch (e: Exception) {
+            CoroutineScope(Dispatchers.Main + SupervisorJob())
+        }
+    }
+
     lateinit var applicationScope: CoroutineScope
 
     override fun onCreate() {
         super.onCreate()
+        applicationScope = getAppScope()
         init()
         registerActivityLifecycleCallbacks(this)
         SignalProtocolLoggerProvider.setProvider(MixinSignalProtocolLogger())
@@ -186,9 +200,9 @@ open class MixinApplication :
         config.enabledErrorTypes.ndkCrashes = true
         config.enabledErrorTypes.unhandledExceptions = true
         if (BuildConfig.DEBUG) {
-            config.setReleaseStage("development");
+            config.releaseStage = "development"
         } else {
-            config.setReleaseStage("production");
+            config.releaseStage = "production"
         }
         Bugsnag.start(this, config)
     }
@@ -215,12 +229,22 @@ open class MixinApplication :
             }
         }, this)
         AppsFlyerLib.getInstance().start(this)
-        FirebaseAnalytics.getInstance(this).appInstanceId.addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val additionalData = mapOf("app_instance_id" to task.result)
-                AppsFlyerLib.getInstance().setAdditionalData(additionalData)
+        val firebaseAnalytics = FirebaseAnalytics.getInstance(this)
+        val appInstanceIdTask = firebaseAnalytics.appInstanceId
+        val sessionIdTask = firebaseAnalytics.sessionId
+        com.google.android.gms.tasks.Tasks.whenAllComplete(appInstanceIdTask, sessionIdTask)
+            .addOnCompleteListener {
+                val additionalData = mutableMapOf<String, Any>()
+                if (appInstanceIdTask.isSuccessful) {
+                    additionalData["app_instance_id"] = appInstanceIdTask.result
+                }
+                if (sessionIdTask.isSuccessful && sessionIdTask.result != null) {
+                    additionalData["ga_session_id"] = sessionIdTask.result
+                }
+                if (additionalData.isNotEmpty()) {
+                    AppsFlyerLib.getInstance().setAdditionalData(additionalData)
+                }
             }
-        }
     }
 
     override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
@@ -237,18 +261,6 @@ open class MixinApplication :
         CursorWindowFixer.fix(this)
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree(), FileLogTree())
-            // ignore known leaks
-            val delegate =
-                ReachabilityWatcher { watchedObject, description ->
-                    if (watchedObject !is JobInfoSchedulerService) {
-                        AppWatcher.objectWatcher.expectWeaklyReachable(watchedObject, description)
-                    }
-                }
-            val watchersToInstall = AppWatcher.appDefaultWatchers(this, delegate)
-            AppWatcher.manualInstall(application = this, watchersToInstall = watchersToInstall)
-            if (LeakCanaryProcess.isInAnalyzerProcess(this)) {
-                return
-            }
         } else {
             Timber.plant(FileLogTree())
         }
@@ -296,6 +308,7 @@ open class MixinApplication :
         }
     }
 
+
     fun closeAndClear(force: Boolean = false) {
         val activity = currentActivity
         if (activity is TransferActivity) {
@@ -305,25 +318,14 @@ open class MixinApplication :
 
         if (force || isOnline.compareAndSet(true, false)) {
             val sessionId = Session.getSessionId()
-            BlazeMessageService.stopService(this)
-            val callState = getCallState()
-            if (callState.isGroupCall()) {
-                disconnect<GroupCallService>(this)
-            } else if (callState.isVoiceCall()) {
-                disconnect<VoiceCallService>(this)
-            }
-            notificationManager.cancelAll()
-            CryptoWalletHelper.clear(this)
-            Session.clearAccount()
-            CookieManager.getInstance().removeAllCookies(null)
-            CookieManager.getInstance().flush()
-            WebStorage.getInstance().deleteAllData()
-            releaseAll()
-            PipVideoView.release()
-            removeValueFromEncryptedPreferences(this@MixinApplication, Constants.Tip.MNEMONIC)
-            defaultSharedPreferences.remove(PREF_APP_AUTH)
+            val identityNumber = Session.getAccount()?.identityNumber
+            stopRealtimeServices()
+            clearLocalAuthState()
+            clearWebState()
+            releaseRuntimeState()
             applicationScope.launch {
-                clearData(sessionId)
+                clearData(sessionId, identityNumber)
+                resolveCurrentUserScopeManager(this@MixinApplication).exit("closeAndClear")
                 withContext(Dispatchers.Main) {
                     val entryPoint =
                         EntryPointAccessors.fromApplication(
@@ -337,8 +339,44 @@ open class MixinApplication :
         }
     }
 
+    private fun stopRealtimeServices() {
+        BlazeMessageService.stopService(this)
+        val callState = getCallState()
+        if (callState.isGroupCall()) {
+            disconnect<GroupCallService>(this)
+        } else if (callState.isVoiceCall()) {
+            disconnect<VoiceCallService>(this)
+        }
+        notificationManager.cancelAll()
+    }
+
+    private fun clearLocalAuthState() {
+        CryptoWalletHelper.clear(this)
+        // Clear biometric key material and prefs so a later relogin cannot reuse the old fingerprint state.
+        BiometricUtil.deleteKey(this)
+        defaultSharedPreferences.remove(PREF_APP_AUTH)
+        // Remove the in-memory and persisted account session, including session id and account profile.
+        Session.clearAccount()
+        // Remove locally cached mnemonic from encrypted storage during logout.
+        removeValueFromEncryptedPreferences(this, Constants.Tip.MNEMONIC)
+    }
+
+    private fun clearWebState() {
+        // Clear all WebView cookies so embedded login/auth pages do not keep the old session.
+        CookieManager.getInstance().removeAllCookies(null)
+        CookieManager.getInstance().flush()
+        // Clear WebView local storage/cache for web-based auth and app pages.
+        WebStorage.getInstance().deleteAllData()
+    }
+
+    @UnstableApi
+    private fun releaseRuntimeState() {
+        releaseAll()
+        PipVideoView.release()
+    }
+
     fun reject() {
-        MixinDatabase.destroy()
+        resolveCurrentUserScopeManager(this).ensureScopeFromSession()
         val entryPoint =
             EntryPointAccessors.fromApplication(
                 this@MixinApplication,
@@ -347,12 +385,17 @@ open class MixinApplication :
         entryPoint.inject(this@MixinApplication)
     }
 
-    private fun clearData(sessionId: String?) {
+    private fun clearData(
+        sessionId: String?,
+        identityNumber: String?,
+    ) {
         val jobManager = getJobManager()
         jobManager.cancelAllJob()
         jobManager.clear()
         clearPrivacyPreferences(this)
-        MixinDatabase.getDatabase(this).participantSessionDao().clearKey(sessionId)
+        identityNumber?.let { scopedIdentity ->
+            MixinDatabase.getDatabase(this, scopedIdentity).participantSessionDao().clearKey(sessionId)
+        }
         SignalDatabase.getDatabase(this).clearAllTables()
         removeValueFromEncryptedPreferences(this, Constants.Tip.MNEMONIC)
     }
@@ -459,7 +502,7 @@ open class MixinApplication :
     }
 
     fun checkAndShowAppAuth(activity: Activity): Boolean {
-        val appAuth = defaultSharedPreferences.getInt(Constants.Account.PREF_APP_AUTH, -1)
+        val appAuth = defaultSharedPreferences.getInt(PREF_APP_AUTH, -1)
         if (appAuth != -1) {
             if (appAuth == 0) {
                 appAuthShown = true

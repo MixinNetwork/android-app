@@ -56,6 +56,7 @@ import one.mixin.android.ui.web.replaceApp
 import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.PENDING_DB_THREAD
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.hyperlink.parseHyperlink
 import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.util.reportException
@@ -66,6 +67,7 @@ import one.mixin.android.vo.AttachmentExtra
 import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.ExpiredMessage
+import one.mixin.android.vo.Account
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
@@ -162,9 +164,11 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
     private var refreshKeyMap = arrayMapOf<String, Long?>()
     private val gson = GsonHelper.customGson
 
-    private val accountId = Session.getAccountId()
+    private val accountId: String?
+        get() = Session.getAccountId()
 
     fun onRun(data: BlazeMessageData) {
+        ensureSessionInjection()
         if (isExistMessage(data.messageId)) {
             updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
             return
@@ -1156,6 +1160,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         snapshotDao.insert(snapshot)
         insertMessage(message, data)
         jobManager.addJobInBackground(RefreshAssetsJob(snapshot.assetId))
+        runBlocking { AnalyticsTracker.setAssetLevel(tokenDao.findTotalUSDBalance() ?: 0) }
 
         if (snapshot.type == SnapshotType.transfer.name && snapshot.amount.toFloat() > 0) {
             generateNotification(message, data)
@@ -1189,6 +1194,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         insertMessage(message, data)
         jobManager.addJobInBackground(RefreshTokensJob(snapshot.assetId, data.conversationId, data.messageId))
         jobManager.addJobInBackground(SyncOutputJob())
+        runBlocking { AnalyticsTracker.setAssetLevel(tokenDao.findTotalUSDBalance() ?: 0) }
 
         if (snapshot.amount.toFloat() > 0) {
             generateNotification(message, data)

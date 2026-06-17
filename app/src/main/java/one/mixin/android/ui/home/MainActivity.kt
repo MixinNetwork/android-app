@@ -58,13 +58,13 @@ import one.mixin.android.Constants.Account.PREF_LOGIN_VERIFY
 import one.mixin.android.Constants.Account.PREF_SYNC_CIRCLE
 import one.mixin.android.Constants.DEVICE_ID
 import one.mixin.android.Constants.DataBase.CURRENT_VERSION
-import one.mixin.android.Constants.DataBase.DB_NAME
 import one.mixin.android.Constants.DataBase.MINI_VERSION
 import one.mixin.android.Constants.INTERVAL_24_HOURS
 import one.mixin.android.Constants.INTERVAL_7_DAYS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
@@ -72,9 +72,9 @@ import one.mixin.android.crypto.PrivacyPreference.getIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
 import one.mixin.android.databinding.ActivityMainBinding
 import one.mixin.android.db.ConversationDao
+import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.UserDao
-import one.mixin.android.db.WalletDatabase
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.event.BadgeEvent
 import one.mixin.android.event.TipEvent
@@ -144,6 +144,7 @@ import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.circle.ConversationCircleEditFragment
+import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
 import one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.MarketFragment
 import one.mixin.android.ui.landing.InitializeActivity
@@ -174,6 +175,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.RomUtil
 import one.mixin.android.util.RootUtil
 import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.database.databaseFile
 import one.mixin.android.util.reportException
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.Conversation
@@ -190,6 +192,7 @@ import one.mixin.android.worker.SessionWorker
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import javax.inject.Provider
 
 @AndroidEntryPoint
 class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callback {
@@ -205,28 +208,46 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
     lateinit var userService: UserService
 
     @Inject
-    lateinit var conversationDao: ConversationDao
+    lateinit var conversationDaoProvider: Provider<ConversationDao>
 
     @Inject
-    lateinit var userDao: UserDao
+    lateinit var userDaoProvider: Provider<UserDao>
 
     @Inject
-    lateinit var userRepo: UserRepository
+    lateinit var userRepoProvider: Provider<UserRepository>
 
     @Inject
-    lateinit var accountRepo: AccountRepository
+    lateinit var accountRepoProvider: Provider<AccountRepository>
 
     @Inject
-    lateinit var web3Repository: Web3Repository
+    lateinit var web3RepositoryProvider: Provider<Web3Repository>
 
     private var lastBottomNavItemId: Int = R.id.nav_chat
     private var isRestoringBottomNavSelection: Boolean = false
 
     @Inject
-    lateinit var participantDao: ParticipantDao
+    lateinit var participantDaoProvider: Provider<ParticipantDao>
 
     @Inject
     lateinit var tip: Tip
+
+    private val conversationDao: ConversationDao
+        get() = conversationDaoProvider.get()
+
+    private val userDao: UserDao
+        get() = userDaoProvider.get()
+
+    private val userRepo: UserRepository
+        get() = userRepoProvider.get()
+
+    private val accountRepo: AccountRepository
+        get() = accountRepoProvider.get()
+
+    private val web3Repository: Web3Repository
+        get() = web3RepositoryProvider.get()
+
+    private val participantDao: ParticipantDao
+        get() = participantDaoProvider.get()
 
     private val appUpdateManager by lazy { AppUpdateManagerFactory.create(this) }
     private val updatedListener =
@@ -248,7 +269,8 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
     private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+        val restoreState = if (Session.checkToken()) savedInstanceState else null
+        super.onCreate(restoreState)
         navigationController = NavigationController()
 
         var deviceId = defaultSharedPreferences.getString(DEVICE_ID, null)
@@ -294,6 +316,10 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             return
         }
 
+        Session.getAccount()?.let {
+            MixinDatabase.migrateRelatedDatabaseFilesIfNeeded(this, it)
+        }
+
         MixinApplication.get().isOnline.set(true)
         if (checkNeedGo2MigrationPage()) {
             InitializeActivity.showDBUpgrade(this)
@@ -314,12 +340,10 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             finish()
             return
         }
-
-        WalletDatabase.moveTempDatabaseFileIfNeeded(this, Session.getAccount()?.identityNumber)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        initFragmentsFromSavedState(savedInstanceState)
+        initFragmentsFromSavedState(restoreState)
 
         val account = Session.getAccount()
         account?.let {
@@ -334,6 +358,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         handlerCode(intent)
 
         updateSessionWhenOpen()
+
         checkAsync()
 
         RxBus.listen(TipEvent::class.java)
@@ -354,11 +379,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             .autoDispose(destroyScope)
             .subscribe { e ->
                 lifecycleScope.launch {
-                    if (e is WCEvent.V2) {
-                        WalletConnectActivity.show(this@MainActivity, e)
-                    } else {
-                        WalletConnectActivity.show(this@MainActivity, e)
-                    }
+                    WalletConnectActivity.show(this@MainActivity, e)
                 }
             }
         RxBus.listen(WCErrorEvent::class.java)
@@ -421,7 +442,9 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                 .request(Manifest.permission.POST_NOTIFICATIONS)
                 .autoDispose(stopScope)
                 .subscribe(
-                    { _ -> },
+                    { _ -> 
+                        AnalyticsTracker.setNotificationAuthStatus(this)
+                    },
                     {},
                 )
         }
@@ -541,7 +564,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             val hasClassicWallet: Boolean = web3Repository.hasClassicWallet()
             // Only show login verify when it has not been verified and there is no classic wallet.
             Timber.e("isLoginVerified: $isLoginVerified, hasClassicWallet: $hasClassicWallet")
-            if (!isLoginVerified && !hasClassicWallet) {
+            if (!isLoginVerified && !hasClassicWallet && Session.getAccount()?.hasSafe == true) {
                 lifecycleScope.launch {
                     withContext(Dispatchers.Main) {
                         try {
@@ -604,9 +627,18 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
 
     @SuppressLint("RestrictedApi")
     private fun checkNeedGo2MigrationPage(): Boolean {
+        val dbFile =
+            Session.getAccount()?.identityNumber?.let { identityNumber ->
+                val scopedDbFile = databaseFile(this, identityNumber)
+                if (scopedDbFile.exists()) {
+                    scopedDbFile
+                } else {
+                    null
+                }
+            } ?: return false
         val currentVersion =
             try {
-                readVersion(getDatabasePath(DB_NAME))
+                readVersion(dbFile)
             } catch (_: Exception) {
                 0
             }
@@ -799,7 +831,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
     private var bottomSheet: DialogFragment? = null
     private var alertDialog: Dialog? = null
 
-    private fun handlerCode(intent: Intent) {
+    fun handlerCode(intent: Intent) {
         if (intent.hasExtra(SCAN)) {
             val scan = intent.getStringExtra(SCAN)!!
             bottomSheet?.dismiss()
@@ -821,6 +853,24 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         } else if (intent.hasExtra(TRANSFER)) {
             val userId = intent.getStringExtra(TRANSFER) ?: return
             if (Session.getAccount()?.hasPin == true) {
+                if (
+                    RecoveryReminderBottomSheetDialogFragment.showForRiskAction(supportFragmentManager) {
+                        lifecycleScope.launch {
+                            val user = userRepo.refreshUser(userId) ?: return@launch
+                            val bottom = TokenListBottomSheetDialogFragment.newInstance(TYPE_FROM_TRANSFER)
+                                .apply {
+                                    asyncOnAsset = { selectedAsset ->
+                                        this@MainActivity.defaultSharedPreferences.putString(ASSET_PREFERENCE, selectedAsset.assetId)
+                                        WalletActivity.navigateToWalletActivity(this@MainActivity, buildTransferBiometricItem(user, selectedAsset, "", null, null, null))
+                                    }
+                                }
+                            bottom.show(supportFragmentManager, TokenListBottomSheetDialogFragment.TAG)
+                        }
+                    }
+                ) {
+                    clearCodeAfterConsume(intent, TRANSFER)
+                    return
+                }
                 lifecycleScope.launch {
                     val user = userRepo.refreshUser(userId) ?: return@launch
                     val bottom = TokenListBottomSheetDialogFragment.newInstance(TYPE_FROM_TRANSFER)
@@ -951,6 +1001,25 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         }
     }
 
+    private fun <T> requireMixinData(
+        response: MixinResponse<T>,
+        action: String,
+    ): T {
+        if (!response.isSuccess) {
+            throw IllegalStateException("$action failed: ${response.errorDescription}")
+        }
+        return requireNotNull(response.data) { "$action returned empty data" }
+    }
+
+    private fun requireMixinSuccess(
+        response: MixinResponse<*>,
+        action: String,
+    ) {
+        if (!response.isSuccess) {
+            throw IllegalStateException("$action failed: ${response.errorDescription}")
+        }
+    }
+
     private fun showDialog() {
         alertDialog?.dismiss()
         alertDialog =
@@ -988,7 +1057,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             bottomNav.setOnApplyWindowInsetsListener(null)
             bottomNav.setPadding(0,0,0,0)
             bottomNav.itemIconTintList = null
-            bottomNav.menu.findItem(R.id.nav_chat).isChecked = true
+            bottomNav.menu.findItem(lastBottomNavItemId).isChecked = true
 
             bottomNav.setOnItemSelectedListener {
                 if (isRestoringBottomNavSelection) {
@@ -1055,11 +1124,13 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
     private fun handleNavigationItemSelected(itemId: Int) {
         when (itemId) {
             R.id.nav_chat -> {
+                AnalyticsTracker.trackHomeTabSwitch(AnalyticsTracker.HomeTabMethod.CHATS)
                 switchToDestination(NavigationController.ConversationList)
                 lastBottomNavItemId = itemId
             }
 
             R.id.nav_wallet -> {
+                AnalyticsTracker.trackHomeTabSwitch(AnalyticsTracker.HomeTabMethod.WALLETS)
                 Timber.e("nav_wallet: ${Session.getAccount()?.hasPin}")
                 if (Session.getAccount()?.hasPin == true) {
                     lifecycleScope.launch {
@@ -1081,6 +1152,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             }
 
             R.id.nav_market -> {
+                AnalyticsTracker.trackMoreTabSwitch(AnalyticsTracker.MoreTabMethod.MARKETS)
                 switchToDestination(NavigationController.Market)
                 lastBottomNavItemId = itemId
                 findFragmentByTagTyped<MarketFragment>(NavigationController.Market.tag)?.updateUI()
@@ -1089,6 +1161,8 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             }
 
             R.id.nav_more -> {
+                AnalyticsTracker.trackHomeTabSwitch(AnalyticsTracker.HomeTabMethod.MORE)
+                AnalyticsTracker.trackMoreTabSwitch(AnalyticsTracker.MoreTabMethod.BOTS)
                 if (!defaultSharedPreferences.getBoolean(Account.PREF_NAV_MORE_BADGE_DISMISSED, false)) {
                     defaultSharedPreferences.putBoolean(Account.PREF_NAV_MORE_BADGE_DISMISSED, true)
                     RxBus.publish(BadgeEvent(Account.PREF_NAV_MORE_BADGE_DISMISSED))
@@ -1262,10 +1336,17 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         }
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt(KEY_LAST_BOTTOM_NAV, lastBottomNavItemId)
+    }
+
     private fun initFragmentsFromSavedState(savedInstanceState: Bundle?) {
+        if (savedInstanceState != null) {
+            lastBottomNavItemId = savedInstanceState.getInt(KEY_LAST_BOTTOM_NAV, R.id.nav_chat)
+            return
+        }
         navigationController.navigate(supportFragmentManager, NavigationController.ConversationList, ConversationListFragment.newInstance())
-        binding.bottomNav.selectedItemId = R.id.nav_chat
-        Timber.e("initFragmentsFromSavedState: nav_chat")
     }
 
     companion object {
@@ -1274,6 +1355,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         const val TRANSFER = "transfer"
         private const val WALLET = "wallet"
         const val WALLET_CONNECT = "wallet_connect"
+        private const val KEY_LAST_BOTTOM_NAV = "last_bottom_nav_item_id"
 
         fun showWallet(
             context: Context,

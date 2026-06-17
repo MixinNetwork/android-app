@@ -78,6 +78,19 @@ class WalletActivity : BlazeBaseActivity() {
                     putString(WalletSearchWeb3Fragment.ARGS_WALLET_ID, walletId)
                 })
             }
+            is Destination.AllTokens -> {
+                navGraph.setStartDestination(R.id.wallet_home_all_tokens_fragment)
+                navController.setGraph(navGraph, Bundle().apply {
+                    putString(WalletHomeAllTokensFragment.ARGS_WALLET_TYPE, one.mixin.android.ui.wallet.home.WalletHomeType.PRIVACY.name)
+                })
+            }
+            is Destination.AllWeb3Tokens -> {
+                navGraph.setStartDestination(R.id.wallet_home_all_tokens_fragment)
+                navController.setGraph(navGraph, Bundle().apply {
+                    putString(WalletHomeAllTokensFragment.ARGS_WALLET_TYPE, destination.walletType.name)
+                    putString(WalletHomeAllTokensFragment.ARGS_WALLET_ID, destination.walletId)
+                })
+            }
             is Destination.AllTransactions -> {
                 navGraph.setStartDestination(R.id.all_transactions_fragment)
                 val pendingType = intent.getBooleanExtra(PENDING_TYPE, false)
@@ -137,6 +150,9 @@ class WalletActivity : BlazeBaseActivity() {
                 navController.setGraph(navGraph, Bundle().apply {
                     marketItem?.let {
                         putParcelable(ARGS_MARKET, it)
+                    }
+                    intent.getStringExtra(ARGS_MARKET_SOURCE)?.let {
+                        putString(ARGS_MARKET_SOURCE, it)
                     }
                 })
             }
@@ -201,6 +217,13 @@ class WalletActivity : BlazeBaseActivity() {
         object Transactions : Destination()
         object Search : Destination()
         data class SearchWeb3(val walletId: String? = null) : Destination()
+        object AllTokens : Destination() {
+            private fun readResolve(): Any = AllTokens
+        }
+        data class AllWeb3Tokens(
+            val walletId: String,
+            val walletType: one.mixin.android.ui.wallet.home.WalletHomeType = one.mixin.android.ui.wallet.home.WalletHomeType.CLASSIC,
+        ) : Destination()
         object AllTransactions : Destination()
         data class AllWeb3Transactions(val walletId: String) : Destination()
         object Hidden : Destination()
@@ -224,6 +247,7 @@ class WalletActivity : BlazeBaseActivity() {
         const val WEB3_TOKEN = "web3_token"
         const val PENDING_TYPE = "pending_type"
         const val ARGS_WALLET_ID = "args_wallet_id"
+        const val ARGS_MARKET_SOURCE = "args_market_source"
 
         fun navigateToWalletActivity(activity: Activity, address: String?, token: Web3TokenItem, chain: Web3TokenItem, wallet: Web3Wallet) {
             val intent = Intent(activity, WalletActivity::class.java).apply {
@@ -248,13 +272,15 @@ class WalletActivity : BlazeBaseActivity() {
             activity: Activity,
             tokenItem: TokenItem,
             destination: Destination,
-            fromMarket: Boolean = false
+            fromMarket: Boolean = false,
+            source: String = AnalyticsTracker.AssetSource.WALLET_HOME,
         ) {
             activity.startActivity(
                 Intent(activity, WalletActivity::class.java).apply {
                     putExtra(DESTINATION, destination)
                     putExtra(ASSET, tokenItem)
                     putExtra(ARGS_FROM_MARKET, fromMarket)
+                    putExtra(TransactionsFragment.ARGS_SOURCE, source)
                 },
             )
         }
@@ -290,6 +316,8 @@ class WalletActivity : BlazeBaseActivity() {
                     putExtra(PENDING_TYPE, pendingType)
                     if (destination is Destination.AllWeb3Transactions) {
                         putExtra(ARGS_WALLET_ID, destination.walletId)
+                    } else if (destination is Destination.AllWeb3Tokens) {
+                        putExtra(ARGS_WALLET_ID, destination.walletId)
                     } else if (destination is Destination.Web3Hidden) {
                         putExtra(ARGS_WALLET_ID, destination.walletId)
                     } else if (destination is Destination.SearchWeb3) {
@@ -303,11 +331,13 @@ class WalletActivity : BlazeBaseActivity() {
             activity: Activity,
             marketItem: MarketItem,
             destination: Destination,
+            source: String? = null,
         ) {
             activity.startActivity(
                 Intent(activity, WalletActivity::class.java).apply {
                     putExtra(DESTINATION, destination)
                     putExtra(ARGS_MARKET, marketItem)
+                    source?.let { putExtra(ARGS_MARKET_SOURCE, it) }
                 },
             )
         }

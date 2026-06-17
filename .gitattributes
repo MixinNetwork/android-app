@@ -1,0 +1,12 @@
+# Android project - primary languages: Java, Kotlin, XML
+*.java linguist-detectable=true
+*.kt linguist-detectable=true
+*.kts linguist-detectable=true
+*.xml linguist-detectable=true
+
+# Exclude non-primary languages
+*.js linguist-detectable=false
+*.ts linguist-detectable=false
+*.json linguist-detectable=false
+*.properties linguist-detectable=false
+*.sh linguist-detectable=false

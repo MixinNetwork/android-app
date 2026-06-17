@@ -643,7 +643,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
 
     private val defaultErrorHandler =
         CoroutineExceptionHandler { _, error ->
-            showError(error.localizedMessage)
+            showError(ErrorHandler.getErrorMessage(error))
         }
 
     private suspend fun createToken(tokenJson: String) {

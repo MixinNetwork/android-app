@@ -18,19 +18,21 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.os.Build;
 import android.text.TextUtils;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
 import io.reactivex.ObservableTransformer;
 import io.reactivex.functions.Function;
 import io.reactivex.subjects.PublishSubject;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class RxPermissions {
 

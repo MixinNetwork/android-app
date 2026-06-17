@@ -1,6 +1,5 @@
 package one.mixin.android.ui.home.web3.stake
 
-import one.mixin.android.ui.home.web3.components.PageScaffold
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -41,6 +40,7 @@ import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.solLamportToAmount
 import one.mixin.android.extension.formatPublicKey
+import one.mixin.android.ui.home.web3.components.PageScaffold
 
 @Composable
 fun UnstakePage(

@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.core.content.edit
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -17,7 +18,6 @@ import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants
 import one.mixin.android.RxBus
 import one.mixin.android.event.BadgeEvent
 import one.mixin.android.event.MembershipEvent
@@ -27,18 +27,14 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.profile.InputReferralBottomSheetDialogFragment
-import one.mixin.android.ui.common.profile.ReferralBottomSheetDialogFragment
 import one.mixin.android.ui.home.ExploreFragment.Companion.PREF_BOT_CLICKED_IDS
 import one.mixin.android.ui.home.bot.INTERNAL_REFERRAL_ID
-import one.mixin.android.ui.setting.SettingViewModel
 import one.mixin.android.ui.setting.ui.page.MixinMemberInvoicesPage
 import one.mixin.android.ui.viewmodel.MemberViewModel
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.vo.Membership
 import one.mixin.android.vo.Plan
 import javax.inject.Inject
-import androidx.core.content.edit
 
 @AndroidEntryPoint
 class MixinMemberInvoicesFragment : BaseFragment() {

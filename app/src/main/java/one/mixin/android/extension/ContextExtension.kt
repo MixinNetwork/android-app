@@ -9,6 +9,7 @@ import android.app.NotificationManager.BUBBLE_PREFERENCE_NONE
 import android.app.PendingIntent
 import android.app.UiModeManager
 import android.content.ActivityNotFoundException
+import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.ComponentName
 import android.content.ContentResolver
@@ -40,6 +41,7 @@ import android.os.VibrationEffect.EFFECT_HEAVY_CLICK
 import android.os.VibrationEffect.EFFECT_TICK
 import android.os.Vibrator
 import android.os.VibratorManager
+import android.os.PersistableBundle
 import android.os.storage.StorageManager
 import android.os.storage.StorageVolume
 import android.provider.Browser
@@ -57,8 +59,6 @@ import androidx.annotation.ColorInt
 import androidx.annotation.RequiresApi
 import androidx.browser.customtabs.CustomTabColorSchemeParams
 import androidx.browser.customtabs.CustomTabsIntent
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.ui.platform.LocalDensity
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -70,6 +70,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailabilityLight
 import com.google.android.gms.common.GooglePlayServicesUtil
@@ -858,7 +861,14 @@ fun Fragment.openGalleryFromSticker() {
         .forResult(REQUEST_GALLERY)
 }
 
-fun Context.openUrl(url: String) {
+fun Context.openUrl(
+    url: String,
+    source: String? = null,
+    wallet: String = one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet.MAIN,
+) {
+    if (openCustomerServiceIfMatched(url, source, wallet)) {
+        return
+    }
     var uri = url.toUri()
     if (uri.scheme.isNullOrBlank()) {
         uri = Uri.parse("http://$url")
@@ -894,6 +904,45 @@ fun Context.openUrl(url: String) {
     }
 }
 
+fun Context.openInBrowser(
+    url: String,
+    extraHeaders: Bundle? = null,
+): Boolean {
+    val browserUrl = url.toOpenInBrowserUrlOrNull() ?: return false
+    val uri = browserUrl.toUri()
+
+    try {
+        val customTabsIntent =
+            CustomTabsIntent.Builder()
+                .setDefaultColorSchemeParams(
+                    CustomTabColorSchemeParams.Builder()
+                        .setToolbarColor(ContextCompat.getColor(this, android.R.color.white))
+                        .build(),
+                )
+                .setShowTitle(true)
+                .build()
+        extraHeaders?.let {
+            customTabsIntent.intent.putExtra(Browser.EXTRA_HEADERS, it)
+        }
+        customTabsIntent.launchUrl(this, uri)
+        return true
+    } catch (e: Exception) {
+        Timber.e(e, "OpenInBrowser")
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, uri)
+                .putExtra(Browser.EXTRA_APPLICATION_ID, packageName)
+            extraHeaders?.let {
+                intent.putExtra(Browser.EXTRA_HEADERS, it)
+            }
+            startActivity(intent)
+            return true
+        } catch (e: Exception) {
+            Timber.e(e, "OpenInBrowser")
+        }
+    }
+    return false
+}
+
 fun Context.openExternalUrl(url: String) {
     try {
         var uri = Uri.parse(url)
@@ -908,6 +957,29 @@ fun Context.openExternalUrl(url: String) {
 }
 
 fun Context.getClipboardManager(): ClipboardManager = requireNotNull(getSystemService())
+
+fun Context.copySensitiveTextToClipboard(content: String, scope: CoroutineScope) {
+    val clipboard = getClipboardManager()
+    val clip = ClipData.newPlainText("", content)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        @Suppress("NewApi")
+        clip.description.extras = PersistableBundle().apply {
+            putBoolean("android.content.extra.IS_SENSITIVE", true)
+        }
+    }
+    clipboard.setPrimaryClip(clip)
+    scope.launch {
+        delay(60_000L)
+        val current = clipboard.primaryClip?.getItemAt(0)?.text?.toString()
+        if (current == content) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                clipboard.clearPrimaryClip()
+            } else {
+                clipboard.setPrimaryClip(ClipData.newPlainText("", ""))
+            }
+        }
+    }
+}
 
 fun Window.isNotchScreen(): Boolean {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -1091,7 +1163,8 @@ fun Fragment.getTipsByAsset(asset: TokenItem) =
         Constants.ChainId.Optimism,
         Constants.ChainId.Polygon,
         Constants.ChainId.BitShares,
-        Constants.ChainId.Avalanche
+        Constants.ChainId.Avalanche,
+        Constants.ChainId.HyperEVM
             -> getString(R.string.deposit_tip_chain, asset.symbol, asset.chainName ?: getChainName(asset.chainId, asset.chainName, asset.assetKey ?: ""))
         else -> getString(R.string.deposit_tip_common, asset.symbol)
     }

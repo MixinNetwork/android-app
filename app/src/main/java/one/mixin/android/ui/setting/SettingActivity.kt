@@ -14,6 +14,10 @@ import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.replaceFragment
+import one.mixin.android.session.Session
+import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
+import one.mixin.android.ui.home.reminder.VerifyMobileReminderBottomSheetDialogFragment
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.App
 import one.mixin.android.widget.theme.ThemeActivity
@@ -28,6 +32,7 @@ class SettingActivity : ThemeActivity() {
         const val EXTRA_MIGRATE_RESTORE = "extra_migrate_restore"
         const val EXTRA_SHOW_PERMISSION_LIST = "extra_show_permission_list"
         const val EXTRA_SHOW_COMPOSE = "extra_show_compose"
+        const val EXTRA_SHOW_RECOVERY_KIT = "extra_show_recovery_kit"
         const val EXTRA_APP = "extra_app"
         const val EXTRA_AUTH = "extra_auth"
         const val ARGS_SUCCESS = "args_success"
@@ -65,6 +70,14 @@ class SettingActivity : ThemeActivity() {
             context.startActivity(
                 Intent(context, SettingActivity::class.java).apply {
                     putExtra(EXTRA_MNEMONIC_PHRASE, true)
+                },
+            )
+        }
+
+        fun showRecoveryKit(context: Context) {
+            context.startActivity(
+                Intent(context, SettingActivity::class.java).apply {
+                    putExtra(EXTRA_SHOW_RECOVERY_KIT, true)
                 },
             )
         }
@@ -116,7 +129,32 @@ class SettingActivity : ThemeActivity() {
                 replaceFragment(MnemonicPhraseBackupFragment.newInstance(), R.id.container, MnemonicPhraseBackupFragment.TAG)
             }
             intent.getBooleanExtra(EXTRA_EMERGENCY_CONTACT, false) -> {
-                replaceFragment(EmergencyContactFragment.newInstance(), R.id.container, EmergencyContactFragment.TAG)
+                if (!Session.hasPhone()) {
+                    replaceFragment(RecoveryFragment.newInstance(), R.id.container, RecoveryFragment.TAG)
+                    binding.root.post {
+                        VerifyMobileReminderBottomSheetDialogFragment.showSafely(
+                            supportFragmentManager,
+                            enableSnooze = false,
+                            addPhoneSource = AnalyticsTracker.AddPhoneSource.SETTINGS,
+                        )
+                    }
+                } else if (Session.isAnonymous() && !Session.saltExported()) {
+                    if (RecoveryReminderBottomSheetDialogFragment.shouldShowOnRiskAction()) {
+                        replaceFragment(RecoveryFragment.newInstance(), R.id.container, RecoveryFragment.TAG)
+                        binding.root.post {
+                            RecoveryReminderBottomSheetDialogFragment.showForRiskAction(supportFragmentManager) {
+                                replaceFragment(EmergencyContactFragment.newInstance(), R.id.container, EmergencyContactFragment.TAG)
+                            }
+                        }
+                    } else {
+                        replaceFragment(EmergencyContactFragment.newInstance(), R.id.container, EmergencyContactFragment.TAG)
+                    }
+                } else {
+                    replaceFragment(EmergencyContactFragment.newInstance(), R.id.container, EmergencyContactFragment.TAG)
+                }
+            }
+            intent.getBooleanExtra(EXTRA_SHOW_RECOVERY_KIT, false) -> {
+                replaceFragment(RecoveryFragment.newInstance(), R.id.container, RecoveryFragment.TAG)
             }
             intent.getBooleanExtra(EXTRA_SHOW_PERMISSION_LIST, false) -> {
                 val app = requireNotNull(intent.getParcelableExtra<App>(EXTRA_APP))

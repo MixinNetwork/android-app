@@ -9,7 +9,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.isLowDisk
-import one.mixin.android.util.reportException
 import timber.log.Timber
 
 private val mlExtractor by lazy {

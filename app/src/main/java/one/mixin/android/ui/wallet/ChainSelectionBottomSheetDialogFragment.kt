@@ -123,7 +123,7 @@ class ChainSelectionBottomSheetDialogFragment : MixinBottomSheetDialogFragment()
                 root.setPadding(20.dp, 11.dp, 20.dp, 11.dp)
                 assetIcon.loadImage(
                     chainItem.iconUrl,
-                    one.mixin.android.R.drawable.ic_avatar_place_holder,
+                    R.drawable.ic_avatar_place_holder,
                 )
                 nameTv.text = chainItem.name
                 address.text = chainItem.destination.formatPublicKey(32)

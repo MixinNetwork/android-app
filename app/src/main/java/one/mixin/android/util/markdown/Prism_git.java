@@ -1,11 +1,14 @@
 package one.mixin.android.util.markdown;
 
-import io.noties.prism4j.Prism4j;
-import org.jetbrains.annotations.NotNull;
-
-import static io.noties.prism4j.Prism4j.*;
 import static java.util.regex.Pattern.MULTILINE;
 import static java.util.regex.Pattern.compile;
+import static io.noties.prism4j.Prism4j.grammar;
+import static io.noties.prism4j.Prism4j.pattern;
+import static io.noties.prism4j.Prism4j.token;
+
+import org.jetbrains.annotations.NotNull;
+
+import io.noties.prism4j.Prism4j;
 
 @SuppressWarnings("unused")
 public class Prism_git {

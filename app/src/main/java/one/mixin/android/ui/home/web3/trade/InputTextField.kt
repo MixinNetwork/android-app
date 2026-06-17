@@ -55,6 +55,47 @@ import one.mixin.android.ui.home.inscription.component.AutoSizeText
 import one.mixin.android.widget.CoilRoundedHexagonTransformation
 import java.math.BigDecimal
 
+internal const val TRADE_INPUT_MAX_DECIMAL_PLACES = 8
+
+internal fun tradePriceInputMaxDecimalPlaces(): Int = TRADE_INPUT_MAX_DECIMAL_PLACES
+
+internal fun tradeInputMaxDecimalPlaces(
+    isCommonWallet: Boolean,
+    precision: Int,
+): Int {
+    return if (isCommonWallet && precision >= 0) {
+        precision
+    } else {
+        TRADE_INPUT_MAX_DECIMAL_PLACES
+    }
+}
+
+internal fun SwapToken?.tradeInputMaxDecimalPlaces(): Int {
+    return this?.let { token ->
+        tradeInputMaxDecimalPlaces(token.walletId != null, token.decimals)
+    } ?: TRADE_INPUT_MAX_DECIMAL_PLACES
+}
+
+internal fun isTradeInputDecimalAllowed(
+    value: String,
+    maxDecimalPlaces: Int? = TRADE_INPUT_MAX_DECIMAL_PLACES,
+): Boolean {
+    maxDecimalPlaces ?: return true
+    val decimalIndex = value.indexOf('.')
+    return decimalIndex < 0 || value.length - decimalIndex - 1 <= maxDecimalPlaces
+}
+
+internal fun limitTradeInputDecimalPlaces(
+    value: String,
+    maxDecimalPlaces: Int? = TRADE_INPUT_MAX_DECIMAL_PLACES,
+): String {
+    maxDecimalPlaces ?: return value
+    val decimalIndex = value.indexOf('.')
+    if (decimalIndex < 0) return value
+    val endIndex = (decimalIndex + 1 + maxDecimalPlaces).coerceAtMost(value.length)
+    return value.substring(0, endIndex)
+}
+
 @SuppressLint("UnrememberedMutableState")
 @Composable
 fun InputContent(
@@ -67,6 +108,8 @@ fun InputContent(
     tokenIconSize: Dp = 32.dp,
     inputFontSize: TextUnit = 24.sp,
     inputFontWeight: FontWeight = FontWeight.Black,
+    autoFocus: Boolean = false,
+    maxDecimalPlaces: Int? = null,
 ) {
     if (readOnly) {
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -96,6 +139,12 @@ fun InputContent(
     } else {
         val focusRequester = remember { FocusRequester() }
         val keyboardController = LocalSoftwareKeyboardController.current
+        LaunchedEffect(Unit) {
+            if (autoFocus) {
+                focusRequester.requestFocus()
+                keyboardController?.show()
+            }
+        }
         val interactionSource = remember { MutableInteractionSource() }
         var textFieldValue by remember {
             mutableStateOf(
@@ -129,8 +178,11 @@ fun InputContent(
                     BasicTextField(
                         value = textFieldValue,
                         onValueChange = {
+                            if (!isTradeInputDecimalAllowed(it.text, maxDecimalPlaces)) {
+                                return@BasicTextField
+                            }
                             textFieldValue = it
-                            val v = try {
+                            try {
                                 if (it.text.isBlank()) BigDecimal.ZERO else BigDecimal(it.text)
                             } catch (e: Exception) {
                                 return@BasicTextField

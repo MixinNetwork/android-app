@@ -24,12 +24,14 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
+import one.mixin.android.session.resolveCurrentUserScopeManager
 import one.mixin.android.tip.TipBody
 import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.ui.common.PinCodeFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
 import one.mixin.android.ui.logs.LogViewerBottomSheet
 import one.mixin.android.util.viewBinding
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
 import timber.log.Timber
@@ -124,7 +126,9 @@ class VerificationEmergencyFragment : PinCodeFragment(R.layout.fragment_verifica
                 successBlock = { response ->
                     val a = response.data as Account
                     Session.storeAccount(a)
+                    resolveCurrentUserScopeManager(requireContext()).enter(a)
                     Session.setHasEmergencyContact(a.hasEmergencyContact)
+                    AnalyticsTracker.setHasRecoveryContact(a)
                     activity?.supportFragmentManager?.findFragmentByTag(EmergencyContactFragment.TAG)?.let {
                         (it as? EmergencyContactFragment)?.setEmergencySet()
                     }

@@ -66,6 +66,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.webkit.WebSettingsCompat
+import androidx.webkit.WebViewFeature
 import coil3.annotation.ExperimentalCoilApi
 import coil3.imageLoader
 import coil3.request.ImageRequest
@@ -118,10 +120,12 @@ import one.mixin.android.extension.matchResourcePattern
 import one.mixin.android.extension.openAsUrl
 import one.mixin.android.extension.openAsUrlOrQrScan
 import one.mixin.android.extension.openCamera
+import one.mixin.android.extension.openInBrowser
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.showPipPermissionNotification
+import one.mixin.android.extension.toOpenInBrowserUrlOrNull
 import one.mixin.android.extension.toUri
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
@@ -150,6 +154,7 @@ import one.mixin.android.ui.home.web3.showGasCheckAndBrowserBottomSheetDialogFra
 import one.mixin.android.ui.player.MusicActivity
 import one.mixin.android.ui.player.MusicService
 import one.mixin.android.ui.player.MusicService.Companion.MUSIC_PLAYLIST
+import one.mixin.android.ui.player.collapse as collapsePlayer
 import one.mixin.android.ui.qr.QRCodeProcessor
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.setting.SettingActivity.Companion.ARGS_SUCCESS
@@ -550,7 +555,10 @@ class WebFragment : BaseFragment() {
             WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
         webView.settings.mediaPlaybackRequiresUserGesture = false
         webView.settings.userAgentString =
-            webView.settings.userAgentString + " Mixin/" + BuildConfig.VERSION_NAME
+            webView.settings.userAgentString + " Mixin/" + BuildConfig.VERSION_NAME + " GOOGLE_PAY_SUPPORTED"
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.PAYMENT_REQUEST)) {
+            WebSettingsCompat.setPaymentRequestEnabled(webView.settings, true)
+        }
 
         webView.webViewClient =
             WebViewClientImpl(
@@ -948,7 +956,10 @@ class WebFragment : BaseFragment() {
                     },
                     signBotSignature = { appId, reloadPublicKey, metho, path, body, callbackFunction ->
                         botSign(appId, reloadPublicKey, metho, path, body, callbackFunction)
-                    }
+                    },
+                    openInBrowserAction = { url ->
+                        openInBrowser(url)
+                    },
                 )
             webAppInterface?.let { webView.addJavascriptInterface(it, "MixinContext") }
             webView.addJavascriptInterface(
@@ -1018,7 +1029,37 @@ class WebFragment : BaseFragment() {
                 return
             }
             webView.loadUrl(url, extraHeaders)
+            if (WebViewFeature.isFeatureSupported(WebViewFeature.WEB_AUTHENTICATION)) {
+                WebSettingsCompat.setWebAuthenticationSupport(
+                    webView.settings,
+                    WebSettingsCompat.WEB_AUTHENTICATION_SUPPORT_FOR_APP,
+                )
+                Log.e(
+                    "WebFragment",
+                    "getWebAuthenticationSupport result: " + WebSettingsCompat.getWebAuthenticationSupport(
+                        webView.settings
+                    ),
+                )
+            } else {
+                Log.e("WebFragment", "WebView does not support passkeys.")
+            }
         }
+    }
+
+    private fun openInBrowser(url: String): Boolean {
+        if (viewDestroyed()) return false
+        val browserUrl = url.toOpenInBrowserUrlOrNull() ?: return false
+        val context = context ?: return false
+        lifecycleScope.launch {
+            if (viewDestroyed()) return@launch
+            context.openInBrowser(
+                browserUrl,
+                Bundle().apply {
+                    putString("Mixin", BuildConfig.VERSION_NAME)
+                },
+            )
+        }
+        return true
     }
 
     private fun closeSelf() {
@@ -1034,7 +1075,7 @@ class WebFragment : BaseFragment() {
 
             MusicService.playUrls(requireContext(), playlist)
             if (checkFloatingPermission()) {
-                one.mixin.android.ui.player.collapse(MUSIC_PLAYLIST)
+                collapsePlayer(MUSIC_PLAYLIST)
             } else {
                 requireActivity().showPipPermissionNotification(
                     MusicActivity::class.java,
@@ -1187,8 +1228,7 @@ class WebFragment : BaseFragment() {
                 },
                 callback = {
                     if (isAdded) {
-                        val spendKey = it
-                        val priv = requireNotNull(CryptoWalletHelper.getWeb3PrivateKey(requireContext(), spendKey, chainId))
+                        val priv = requireNotNull(CryptoWalletHelper.getWeb3PrivateKey(requireContext(), it, chainId))
                         val sig = TipSignSpec.Ecdsa.Secp256k1.sign(priv, message.toByteArray())
                         lifecycleScope.launch {
                             webView.evaluateJavascript("$callbackFunction('$sig')") {}
@@ -1757,6 +1797,10 @@ class WebFragment : BaseFragment() {
             JsInjectorClient()
         }
 
+        private fun closeWebContainer() {
+            fragment.activity?.finish()
+        }
+
         override fun onPageStarted(
             view: WebView?,
             url: String?,
@@ -1842,6 +1886,9 @@ class WebFragment : BaseFragment() {
                 if (wcUrl != null) {
                     // handle wallet connect url
                     UrlInterpreterActivity.show(view.context, wcUrl)
+                    if (request.isForMainFrame) {
+                        closeWebContainer()
+                    }
                 }
                 // ignore wallet connect data url
                 return true
@@ -1886,6 +1933,9 @@ class WebFragment : BaseFragment() {
                     }
                     try {
                         context.startActivity(intent)
+                        if (request.isForMainFrame) {
+                            closeWebContainer()
+                        }
                     } catch (e: ActivityNotFoundException) {
                         val fallbackUrl = intent.extras?.getString("browser_fallback_url")
                         if (fallbackUrl != null && isFallbackUrlValid(fallbackUrl)) {
@@ -1933,7 +1983,7 @@ class WebFragment : BaseFragment() {
     ) {
         @JavascriptInterface
         fun postMessage(json: String) {
-            Timber.e("postMessage $json")
+            if (BuildConfig.DEBUG) Timber.d("postMessage $json")
             val obj = JSONObject(json)
             val id = obj.getLong("id")
             val method = DAppMethod.fromValue(obj.getString("name"))
@@ -2010,6 +2060,10 @@ class WebFragment : BaseFragment() {
                             null
                         }
 
+                    if (!from.equals(Web3Signer.evmAddress, ignoreCase = true)) {
+                        onWalletActionError(id)
+                        return
+                    }
                     signTransaction(id, WCEthereumTransaction(from, to, null, null, maxFeePerGas, maxPriorityFeePerGas, gas, null, value, data))
                 }
 
@@ -2141,6 +2195,7 @@ class WebFragment : BaseFragment() {
         var tipSignAction: ((String, String, String) -> Unit)? = null,
         var getAssetAction: ((Array<String>, String) -> Unit)? = null,
         var signBotSignature: ((String, Boolean, String, String, String, String) -> Unit)? = null,
+        var openInBrowserAction: ((String) -> Boolean)? = null,
     ) {
         @JavascriptInterface
         fun showToast(toast: String) {
@@ -2183,6 +2238,11 @@ class WebFragment : BaseFragment() {
         @JavascriptInterface
         fun close() {
             closeAction?.invoke()
+        }
+
+        @JavascriptInterface
+        fun openInBrowser(url: String): Boolean {
+            return openInBrowserAction?.invoke(url) ?: false
         }
 
         @JavascriptInterface

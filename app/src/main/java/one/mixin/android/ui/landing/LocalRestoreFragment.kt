@@ -29,9 +29,12 @@ import one.mixin.android.extension.getRelativeTimeSpan
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putString
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.session.resolveCurrentUserScopeManager
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.logs.LogViewerBottomSheet
 import one.mixin.android.ui.setting.ChooseFolderContract
 import one.mixin.android.util.backup.BackupInfo
 import one.mixin.android.util.backup.BackupNotification
@@ -70,6 +73,10 @@ class LocalRestoreFragment : BaseFragment(R.layout.fragment_local_restore) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        binding.restoreTitle.setOnLongClickListener {
+            LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
+            true
+        }
         alertDialogBuilder()
             .setMessage(R.string.restore_message)
             .setNegativeButton(R.string.Skip) { dialog, _ ->
@@ -108,23 +115,32 @@ class LocalRestoreFragment : BaseFragment(R.layout.fragment_local_restore) {
 
     private fun findBackupInfo() =
         lifecycleScope.launch(Dispatchers.IO) {
-            val backupInfo =
-                when {
-                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
-                        findBackupApi29(requireContext(), coroutineContext)
+            try {
+                val backupInfo =
+                    when {
+                        Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
+                            findBackupApi29(requireContext(), coroutineContext)
+                        }
+                        ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED -> {
+                            findBackup(requireContext(), coroutineContext)
+                        }
+                        else -> {
+                            null
+                        }
                     }
-                    ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED -> {
-                        findBackup(requireContext(), coroutineContext)
-                    }
-                    else -> {
-                        null
+                withContext(Dispatchers.Main) {
+                    if (backupInfo == null) {
+                        showErrorAlert(Result.NOT_FOUND)
+                    } else {
+                        initUI(backupInfo)
                     }
                 }
-            withContext(Dispatchers.Main) {
-                if (backupInfo == null) {
-                    showErrorAlert(Result.NOT_FOUND)
-                } else {
-                    initUI(backupInfo)
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to find backup info")
+                withContext(Dispatchers.Main) {
+                    if (isAdded) {
+                        showRestoreFailure(e)
+                    }
                 }
             }
         }
@@ -204,17 +220,24 @@ class LocalRestoreFragment : BaseFragment(R.layout.fragment_local_restore) {
 
     private fun callbackChooseFolder(uri: Uri?) {
         if (uri != null) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                Timber.d(requireActivity().getDisplayPath(uri))
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    Timber.d(requireActivity().getDisplayPath(uri))
+                }
+                defaultSharedPreferences.putString(Constants.Account.PREF_BACKUP_DIRECTORY, uri.toString())
+                val takeFlags =
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                        Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                requireActivity().contentResolver
+                    .takePersistableUriPermission(uri, takeFlags)
+                Timber.d("${canUserAccessBackupDirectory(requireContext())}")
+                findBackupInfo()
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to access chosen backup folder")
+                if (isAdded) {
+                    showRestoreFailure(e)
+                }
             }
-            defaultSharedPreferences.putString(Constants.Account.PREF_BACKUP_DIRECTORY, uri.toString())
-            val takeFlags =
-                Intent.FLAG_GRANT_READ_URI_PERMISSION or
-                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-            requireActivity().contentResolver
-                .takePersistableUriPermission(uri, takeFlags)
-            Timber.d("${canUserAccessBackupDirectory(requireContext())}")
-            findBackupInfo()
         }
     }
 
@@ -223,9 +246,16 @@ class LocalRestoreFragment : BaseFragment(R.layout.fragment_local_restore) {
         binding.restoreTime.text = backupInfo.lastModified.getRelativeTimeSpan()
         binding.restoreRestore.setOnClickListener {
             fun afterGranted() {
-                showProgress()
-                BackupNotification.show(false)
-                internalRestore()
+                try {
+                    showProgress()
+                    BackupNotification.show(false)
+                    internalRestore()
+                } catch (e: Exception) {
+                    Timber.e(e, "Failed to start restore")
+                    BackupNotification.cancel()
+                    hideProgress()
+                    showRestoreFailure(e)
+                }
             }
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
                 RxPermissions(this)
@@ -239,9 +269,11 @@ class LocalRestoreFragment : BaseFragment(R.layout.fragment_local_restore) {
                                 afterGranted()
                             }
                         },
-                        {
+                        { e ->
+                            Timber.e(e, "Failed to request storage permission for restore")
                             BackupNotification.cancel()
                             hideProgress()
+                            showRestoreFailure(e)
                         },
                     )
             } else {
@@ -249,9 +281,17 @@ class LocalRestoreFragment : BaseFragment(R.layout.fragment_local_restore) {
             }
         }
         binding.restoreSkip.setOnClickListener {
-            InitializeActivity.showLoading(requireContext(), source = InitializeActivity.SOURCE_LOGIN)
-            defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
-            requireActivity().finish()
+            try {
+                InitializeActivity.showLoading(
+                    requireContext(),
+                    source = InitializeActivity.SOURCE_LOGIN,
+                )
+                defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
+                requireActivity().finish()
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to skip restore")
+                showRestoreFailure(e)
+            }
         }
     }
 
@@ -260,25 +300,58 @@ class LocalRestoreFragment : BaseFragment(R.layout.fragment_local_restore) {
         lifecycleScope.launch {
             if (viewDestroyed()) return@launch
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                restoreApi29(requireContext(), restoreCallback)
-            } else {
-                restore(requireContext(), restoreCallback)
+            try {
+                val context = context ?: return@launch
+                withContext(Dispatchers.IO) {
+                    resolveCurrentUserScopeManager(context).exit("local restore overwrite")
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    restoreApi29(context, restoreCallback)
+                } else {
+                    restore(context, restoreCallback)
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Restore crashed")
+                BackupNotification.cancel()
+                hideProgress()
+                showRestoreFailure(e)
             }
         }
 
     private val restoreCallback: (result: Result) -> Unit = { result ->
         BackupNotification.cancel()
         if (result == Result.SUCCESS) {
-            InitializeActivity.showLoading(requireContext(), source = InitializeActivity.SOURCE_LOGIN)
-            defaultSharedPreferences.putBoolean(
-                Constants.Account.PREF_RESTORE,
-                false,
-            )
-            requireActivity().finish()
+            lifecycleScope.launch {
+                try {
+                    val context = context ?: return@launch
+                    withContext(Dispatchers.IO) {
+                        resolveCurrentUserScopeManager(context).ensureScopeFromSession()
+                    }
+                    context.defaultSharedPreferences.putBoolean(
+                        Constants.Account.PREF_RESTORE,
+                        false,
+                    )
+                    InitializeActivity.showLoading(
+                        context,
+                        source = InitializeActivity.SOURCE_LOGIN,
+                    )
+                    activity?.finish()
+                } catch (e: Exception) {
+                    Timber.e(e, "Failed to re-inject restored database")
+                    hideProgress()
+                    showRestoreFailure(e)
+                }
+            }
         } else {
             hideProgress()
+            showErrorAlert(result)
         }
+    }
+
+    private fun showRestoreFailure(error: Throwable? = null) {
+        val context = context ?: return
+        val errorMessage = error?.localizedMessage?.takeIf { it.isNotBlank() } ?: context.getString(R.string.Failure)
+        toast(context.getString(R.string.error_unknown_with_message, errorMessage))
     }
 
     private fun showProgress() {

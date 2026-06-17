@@ -40,7 +40,7 @@ class LandingFeatureAdapter(
             if (!hasSetFeatureHeight) {
                 val screenHeightPx: Int = binding.root.resources.displayMetrics.heightPixels
                 val screenHeightDp = binding.root.resources.configuration.screenHeightDp
-                val featureHeightPercent = if (screenHeightDp <= 700) 0.33f else 0.38f
+                val featureHeightPercent = if (screenHeightDp <= 700) 0.33f else 0.45f
                 binding.featureFl.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                     height = (screenHeightPx * featureHeightPercent).toInt()
                 }

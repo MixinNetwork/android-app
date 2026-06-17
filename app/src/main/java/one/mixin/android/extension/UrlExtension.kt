@@ -13,13 +13,17 @@ import android.provider.Settings
 import android.webkit.WebView
 import androidx.fragment.app.FragmentManager
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.crypto.Base64
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.PerpsDatabase
+import one.mixin.android.db.TokenDao
 import one.mixin.android.job.RefreshExternalSchemeJob.Companion.PREF_EXTERNAL_SCHEMES
 import one.mixin.android.pay.externalTransferAssetIdMap
 import one.mixin.android.session.Session
@@ -30,10 +34,17 @@ import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.forward.ForwardActivity
+import one.mixin.android.ui.home.web3.trade.SwapActivity
+import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.PREF_TRADE_SELECTED_TAB_PREFIX
+import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.TAB_PERPETUAL
+import one.mixin.android.ui.home.web3.trade.perps.PerpsActivity
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.web.WebActivity
+import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ForwardAction
@@ -45,6 +56,9 @@ import one.mixin.android.vo.getShareCategory
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.widget.gallery.MimeType
 import timber.log.Timber
+import java.net.URI
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 
 fun String.openAsUrlOrWeb(
     context: Context,
@@ -87,6 +101,7 @@ fun String.isMixinUrl(): Boolean {
         startsWith(Constants.Scheme.CONVERSATIONS, true) ||
         startsWith(Constants.Scheme.TIP, true) ||
         startsWith(Constants.Scheme.BUY, true) ||
+        startsWith(Constants.Scheme.MIXIN_BUY, true) ||
         startsWith(Constants.Scheme.MIXIN_PAY, true) ||
         startsWith(Constants.Scheme.HTTPS_SEND, true) ||
         startsWith(Constants.Scheme.HTTPS_MULTISIGS, true) ||
@@ -101,6 +116,7 @@ fun String.isMixinUrl(): Boolean {
         startsWith(Constants.Scheme.HTTPS_SWAP, true) ||
         startsWith(Constants.Scheme.MIXIN_SWAP, true) ||
         startsWith(Constants.Scheme.HTTPS_TRADE, true) ||
+        startsWith(Constants.Scheme.HTTPS_BUY, true) ||
         startsWith(Constants.Scheme.MIXIN_TRADE, true) ||
         startsWith(Constants.Scheme.DEBUG, true)
     ) {
@@ -122,7 +138,7 @@ fun String.isMixinUrl(): Boolean {
         } else if (startsWith(Constants.Scheme.HTTPS_TRANSFER, true)) {
             segments.size >= 2 && segments[1].isUUID()
         } else {
-            startsWith(Constants.Scheme.HTTPS_ADDRESS, true) || startsWith(Constants.Scheme.HTTPS_INSCRIPTION, true) || startsWith(Constants.Scheme.MIXIN_MARKET, true) || startsWith(Constants.Scheme.HTTPS_MARKET, true) || startsWith(Constants.Scheme.MIXIN_REFERRALS, true) || startsWith(Constants.Scheme.HTTPS_REFERRALS, true)
+            startsWith(Constants.Scheme.HTTPS_ADDRESS, true) || startsWith(Constants.Scheme.HTTPS_INSCRIPTION, true) || startsWith(Constants.Scheme.MIXIN_MARKET, true) || startsWith(Constants.Scheme.HTTPS_MARKET, true) || startsWith(Constants.Scheme.HTTPS_BUY, true) || startsWith(Constants.Scheme.MIXIN_BUY, true) || startsWith(Constants.Scheme.MIXIN_REFERRALS, true) || startsWith(Constants.Scheme.HTTPS_REFERRALS, true)
         }
     }
 }
@@ -189,6 +205,8 @@ BTC Address: ${Web3Signer.btcAddress}
         ConfirmBottomFragment.show(MixinApplication.appContext, supportFragmentManager, this)
     } else if (isUserScheme() || isAppScheme()) {
         checkUserOrApp(context, supportFragmentManager, scope)
+    } else if (isTradeScheme()) {
+        checkTradeUrl(context, supportFragmentManager, scope)
     } else if (isMembershipScheme()) {
         MixinMemberUpgradeBottomSheetDialogFragment.newInstance(Session.getAccount()?.membership?.plan).showNow(supportFragmentManager,
             MixinMemberUpgradeBottomSheetDialogFragment.TAG)
@@ -244,7 +262,13 @@ fun String.checkUserOrApp(
         return
     }
 
-    val db = MixinDatabase.getDatabase(ctx)
+    val identityNumber = Session.getAccount()?.identityNumber
+    if (identityNumber.isNullOrBlank()) {
+        val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString())
+        bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
+        return
+    }
+    val db = MixinDatabase.getDatabase(ctx, identityNumber)
     val userDao = db.userDao()
     val appDao = db.appDao()
     scope.launch {
@@ -263,6 +287,7 @@ fun String.checkUserOrApp(
                         } catch (e: Exception) {
                             app.homeUri
                         }
+                    AnalyticsTracker.trackOpenBotHomePage(AnalyticsTracker.BotSource.SCHEME, app.appNumber)
                     WebActivity.show(context, url, null, app)
                     if (context is UrlInterpreterActivity) {
                         context.finish()
@@ -270,7 +295,7 @@ fun String.checkUserOrApp(
                     return@launch
                 }
             }
-            showUserBottom(supportFragmentManager, user)
+            showUserBottom(supportFragmentManager, user, botEntrySource = AnalyticsTracker.BotSource.SCHEME)
         }
     }
 }
@@ -284,7 +309,11 @@ fun String.checkConversation(
     val segments = uri.pathSegments
     if (segments.isEmpty()) return
     scope.launch {
-        val db = MixinDatabase.getDatabase(context)
+        val identityNumber = Session.getAccount()?.identityNumber ?: run {
+            elseAction.invoke()
+            return@launch
+        }
+        val db = MixinDatabase.getDatabase(context, identityNumber)
         val conversationDao = db.conversationDao()
         val conversationId = segments[0]
         if (!conversationId.isNullOrBlank() && conversationId.isUUID()) { // Judge in advance before displaying the interface
@@ -327,6 +356,192 @@ private fun String.isAppScheme() =
     startsWith(Constants.Scheme.APPS, true) ||
         startsWith(Constants.Scheme.HTTPS_APPS, true)
 
+fun String.isTradeScheme() =
+    startsWith(Constants.Scheme.HTTPS_SWAP, true) ||
+        startsWith(Constants.Scheme.MIXIN_SWAP, true) ||
+        startsWith(Constants.Scheme.HTTPS_TRADE, true) ||
+        startsWith(Constants.Scheme.MIXIN_TRADE, true)
+
+fun String.checkTradeUrl(
+    context: Context,
+    supportFragmentManager: FragmentManager,
+    scope: CoroutineScope,
+    from: Int = LinkBottomSheetDialogFragment.FROM_INTERNAL,
+) {
+    scope.launch {
+        if (openLocalMixinTradeAction(context)) return@launch
+
+        LinkBottomSheetDialogFragment.newInstance(this@checkTradeUrl, from)
+            .showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
+    }
+}
+
+internal data class PerpsTradeAction(
+    val marketId: String?,
+)
+
+internal data class SpotTradeAction(
+    val input: String?,
+    val output: String?,
+    val amount: String?,
+    val referral: String?,
+    val openLimit: Boolean,
+)
+
+internal fun String.toPerpsTradeAction(): PerpsTradeAction? {
+    if (!startsWith(Constants.Scheme.HTTPS_TRADE, true) && !startsWith(Constants.Scheme.MIXIN_TRADE, true)) {
+        return null
+    }
+
+    val query = runCatching { URI(this).rawQuery }.getOrNull() ?: return null
+    val type = query.queryParameter("type") ?: return null
+    if (!type.equals("perps", true) && !type.equals("perpetual", true)) {
+        return null
+    }
+
+    val marketId = query.queryParameter("market")?.takeIf(String::isNotBlank) ?: return PerpsTradeAction(null)
+    if (!marketId.isUUID()) return null
+    return PerpsTradeAction(marketId)
+}
+
+internal fun String.toSpotTradeAction(): SpotTradeAction? {
+    val isSwap = startsWith(Constants.Scheme.HTTPS_SWAP, true) || startsWith(Constants.Scheme.MIXIN_SWAP, true)
+    val isTrade = startsWith(Constants.Scheme.HTTPS_TRADE, true) || startsWith(Constants.Scheme.MIXIN_TRADE, true)
+    if (!isSwap && !isTrade) {
+        return null
+    }
+
+    val query = runCatching { URI(this).rawQuery }.getOrElse { return null }
+    val type = query?.queryParameter("type")
+    if (type.equals("perps", true) || type.equals("perpetual", true)) {
+        return null
+    }
+
+    val input = query?.queryParameter("input")?.takeIf(String::isNotBlank)
+    val output = query?.queryParameter("output")?.takeIf(String::isNotBlank)
+    if (input != null && !input.isUUID()) return null
+    if (output != null && !output.isUUID()) return null
+
+    return SpotTradeAction(
+        input = input,
+        output = output,
+        amount = query?.queryParameter("amount"),
+        referral = query?.queryParameter("referral"),
+        openLimit = type.equals("limit", true),
+    )
+}
+
+private suspend fun String.openLocalMixinTradeAction(context: Context): Boolean {
+    val perpsTradeAction = toPerpsTradeAction()
+    if (perpsTradeAction != null) {
+        return openLocalPerpsTradeAction(context, perpsTradeAction)
+    }
+
+    val spotTradeAction = toSpotTradeAction() ?: return false
+    if (!hasLocalSpotTradeData(context, spotTradeAction)) return false
+
+    val source = tradeSource(context)
+    AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, source)
+    context.defaultSharedPreferences.putInt(
+        "$PREF_TRADE_SELECTED_TAB_PREFIX${Session.getAccountId() ?: ""}",
+        if (spotTradeAction.openLimit) 1 else 0,
+    )
+    SwapActivity.show(
+        context,
+        spotTradeAction.input,
+        spotTradeAction.output,
+        spotTradeAction.amount,
+        spotTradeAction.referral,
+        entrySource = source,
+        entryType = if (spotTradeAction.openLimit) {
+            AnalyticsTracker.SpotTradeType.ADVANCED
+        } else {
+            AnalyticsTracker.SpotTradeType.SIMPLE
+        },
+    )
+    closeSourceWebActivityIfNeeded(context)
+    return true
+}
+
+private suspend fun openLocalPerpsTradeAction(
+    context: Context,
+    action: PerpsTradeAction,
+): Boolean {
+    val marketId = action.marketId
+    if (marketId == null) {
+        context.defaultSharedPreferences.putInt(
+            "$PREF_TRADE_SELECTED_TAB_PREFIX${Session.getAccountId() ?: ""}",
+            TAB_PERPETUAL,
+        )
+        SwapActivity.show(
+            context,
+            entrySource = tradeSource(context),
+            entryType = AnalyticsTracker.SpotTradeType.PERPETUAL,
+        )
+        closeSourceWebActivityIfNeeded(context)
+        return true
+    }
+
+    val market = withContext(Dispatchers.IO) {
+        val identityNumber = Session.getAccount()?.identityNumber ?: return@withContext null
+        PerpsDatabase.getDatabase(context, identityNumber).perpsMarketDao().getMarket(marketId)
+    } ?: return false
+
+    PerpsActivity.showDetail(
+        context,
+        market.marketId,
+        market.displaySymbol,
+        market.displaySymbol,
+        market.tokenSymbol,
+        AnalyticsTracker.PerpsSource.APP_CARD,
+    )
+    closeSourceWebActivityIfNeeded(context)
+    return true
+}
+
+private suspend fun hasLocalSpotTradeData(
+    context: Context,
+    action: SpotTradeAction,
+): Boolean {
+    val assetIds = listOfNotNull(action.input, action.output)
+    if (assetIds.isEmpty()) return true
+
+    return withContext(Dispatchers.IO) {
+        val identityNumber = Session.getAccount()?.identityNumber ?: return@withContext false
+        val tokenDao = MixinDatabase.getDatabase(context, identityNumber).tokenDao()
+        assetIds.all { assetId -> hasLocalTokenData(tokenDao, assetId) }
+    }
+}
+
+private suspend fun hasLocalTokenData(
+    tokenDao: TokenDao,
+    assetId: String,
+): Boolean {
+    val token = tokenDao.findAssetItemById(assetId) ?: return false
+    return token.assetId == token.chainId || tokenDao.findAssetItemById(token.chainId) != null
+}
+
+private fun tradeSource(context: Context) =
+    if (context is ConversationActivity) TradeSource.APP_CARD else TradeSource.SCHEMA
+
+private fun closeSourceWebActivityIfNeeded(context: Context) {
+    (context as? WebActivity)?.finish()
+}
+
+private fun String.queryParameter(name: String): String? =
+    split("&")
+        .asSequence()
+        .mapNotNull { parameter ->
+            val parts = parameter.split("=", limit = 2)
+            val key = parts.getOrNull(0)?.urlDecode()
+            val value = parts.getOrNull(1)?.urlDecode()
+            if (key == name) value else null
+        }
+        .firstOrNull()
+
+private fun String.urlDecode(): String? =
+    runCatching { URLDecoder.decode(this, StandardCharsets.UTF_8.name()) }.getOrNull()
+
 private fun getUserOrAppNotFoundTip(isApp: Boolean) =
     if (isApp) R.string.Bot_not_found else R.string.User_not_found
 
@@ -356,7 +571,8 @@ fun Uri.handleSchemeSend(
     if (text != null) {
         if (userId != null) {
             scope.launch {
-                val db = MixinDatabase.getDatabase(context)
+                val identityNumber = Session.getAccount()?.identityNumber ?: return@launch
+                val db = MixinDatabase.getDatabase(context, identityNumber)
                 val userDao = db.userDao()
                 val user = userDao.suspendFindUserById(userId)
                 if (user == null) {
@@ -389,7 +605,8 @@ fun Uri.handleSchemeSend(
         if (shareCategory != null && data != null) {
             if (userId != null) {
                 scope.launch {
-                    val db = MixinDatabase.getDatabase(context)
+                    val identityNumber = Session.getAccount()?.identityNumber ?: return@launch
+                    val db = MixinDatabase.getDatabase(context, identityNumber)
                     val userDao = db.userDao()
                     val user = userDao.suspendFindUserById(userId)
                     if (user == null) {

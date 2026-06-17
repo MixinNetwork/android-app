@@ -17,7 +17,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
-import one.mixin.android.Constants.DEVICE_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
@@ -26,7 +25,6 @@ import one.mixin.android.api.request.AnonymousMessage
 import one.mixin.android.api.request.VerificationPurpose
 import one.mixin.android.api.request.doAnonymousPOW
 import one.mixin.android.crypto.CryptoPreference
-import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.EdKeyPair
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.generateEd25519KeyPair
@@ -38,29 +36,23 @@ import one.mixin.android.crypto.toEntropy
 import one.mixin.android.crypto.toMnemonic
 import one.mixin.android.databinding.FragmentComposeBinding
 import one.mixin.android.extension.base64Encode
-import one.mixin.android.extension.clear
 import one.mixin.android.extension.containsIgnoreCase
-import one.mixin.android.extension.decodeBase64
-import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.getStringDeviceId
 import one.mixin.android.extension.hexString
 import one.mixin.android.extension.nowInUtc
-import one.mixin.android.extension.putString
 import one.mixin.android.extension.toHex
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
-import one.mixin.android.session.Session
-import one.mixin.android.session.decryptPinToken
+import one.mixin.android.repository.UserRepository
+import one.mixin.android.session.initializeAccountSession
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.components.MnemonicPhrasePage
 import one.mixin.android.ui.landing.vo.MnemonicPhraseState
+import one.mixin.android.ui.logs.LogViewerBottomSheet
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.analytics.AnalyticsTracker
-import one.mixin.android.util.database.clearDatabase
-import one.mixin.android.util.database.clearJobsAndRawTransaction
-import one.mixin.android.util.database.getLastUserId
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.toUser
@@ -69,6 +61,7 @@ import one.mixin.android.widget.CaptchaView.Companion.gtCAPTCHA
 import one.mixin.android.widget.CaptchaView.Companion.hCAPTCHA
 import timber.log.Timber
 import javax.inject.Inject
+import javax.inject.Provider
 
 @AndroidEntryPoint
 class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
@@ -86,12 +79,15 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
             }
     }
 
-    private val mobileViewModel by viewModels<MobileViewModel>()
+    private val landingViewModel by viewModels<LandingViewModel>()
     private val binding by viewBinding(FragmentComposeBinding::bind)
     private var errorInfo by mutableStateOf<String?>(null)
 
     @Inject
     lateinit var tip: Tip
+
+    @Inject
+    lateinit var userRepositoryProvider: Provider<UserRepository>
 
     private val words by lazy {
         requireArguments().getStringArrayList(ARGS_MNEMONIC_PHRASE)
@@ -108,6 +104,10 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
         Timber.e("MnemonicPhraseFragment onViewCreated")
         binding.titleView.leftIb.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
+        }
+        binding.titleView.setOnLongClickListener {
+            LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
+            true
         }
         binding.compose.setContent {
             MnemonicPhrasePage(!words.isNullOrEmpty(), errorInfo) {
@@ -129,7 +129,8 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
 
     private fun anonymousRequest(words: List<String>? = null) {
         lifecycleScope.launch {
-            mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Creating)
+            errorInfo = null
+            landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Creating)
             val sessionKey = generateEd25519KeyPair()
             val edKey = if (!words.isNullOrEmpty()) {
                 val w = words.let {
@@ -172,9 +173,10 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
             }
             Timber.e("PublicKey:${edKey.publicKey.hexString()}")
             val (messageHex, signatureHex) = buildAnonymousRequestPayload(edKey)
+            var needCaptcha = false
             val r = handleMixinResponse(
                 invokeNetwork = {
-                    mobileViewModel.anonymousRequest(edKey.publicKey.hexString(), messageHex, signatureHex)
+                    landingViewModel.anonymousRequest(edKey.publicKey.hexString(), messageHex, signatureHex)
                 },
 
                 successBlock = { r ->
@@ -182,23 +184,26 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 },
 
                 exceptionBlock = { t ->
-                    mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
-                    errorInfo = t.message
+                    landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
+                    errorInfo = ErrorHandler.getErrorMessage(t)
                     Timber.e(t)
                     true
                 },
 
                 failureBlock = { r ->
-                        if (r.errorCode == NEED_CAPTCHA) {
-                            if (words.isNullOrEmpty()) {
-                                AnalyticsTracker.trackSignUpCaptcha()
-                            } else {
-                                AnalyticsTracker.trackLoginCaptcha("mnemonic_phrase")
-                            }
+                    if (r.errorCode == NEED_CAPTCHA) {
+                        needCaptcha = true
+                        errorInfo = null
+                        landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Creating)
+                        if (words.isNullOrEmpty()) {
+                            AnalyticsTracker.trackSignUpCaptcha()
+                        } else {
+                            AnalyticsTracker.trackLoginCaptcha("mnemonic_phrase")
+                        }
                         initAndLoadCaptcha(sessionKey, edKey, r.errorDescription)
                     } else {
                         errorInfo = requireContext().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
-                        mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
+                        landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
                     }
                     true
                 }
@@ -213,8 +218,8 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 } else {
                     createAccount(sessionKey, edKey, r.data!!.id)
                 }
-            } else if (r != null) {
-                errorInfo = requireActivity().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
+            } else if (needCaptcha) {
+                return@launch
             }
         }
     }
@@ -222,6 +227,8 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
     private var captchaView: CaptchaView? = null
     private fun initAndLoadCaptcha(sessionKey: EdKeyPair, edKey: EdKeyPair, errorDescription: String) =
         lifecycleScope.launch {
+            errorInfo = null
+            landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Creating)
             if (captchaView == null) {
                 captchaView =
                     CaptchaView(
@@ -264,10 +271,13 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
 
     private fun reSend(sessionKey: EdKeyPair, edKey: EdKeyPair, hCaptchaResponse: String? = null, gRecaptchaResponse: String? = null, gtRecaptchaResponse: String? = null) {
         lifecycleScope.launch {
+            errorInfo = null
+            landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Creating)
             val (messageHex, signatureHex) = buildAnonymousRequestPayload(edKey)
+            var needCaptcha = false
             val r = handleMixinResponse(
                 invokeNetwork = {
-                    mobileViewModel.anonymousRequest(edKey.publicKey.hexString(), messageHex, signatureHex, hCaptchaResponse, gRecaptchaResponse, gtRecaptchaResponse)
+                    landingViewModel.anonymousRequest(edKey.publicKey.hexString(), messageHex, signatureHex, hCaptchaResponse, gRecaptchaResponse, gtRecaptchaResponse)
                 },
 
                 successBlock = { r ->
@@ -275,19 +285,21 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 },
 
                 exceptionBlock = { t ->
-                    mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
-                    errorInfo = t.message
+                    landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
+                    errorInfo = ErrorHandler.getErrorMessage(t)
                     Timber.e(t)
                     true
                 },
 
                 failureBlock = { r ->
                     if (r.errorCode == NEED_CAPTCHA) {
-                        mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Creating)
+                        needCaptcha = true
+                        errorInfo = null
+                        landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Creating)
                         initAndLoadCaptcha(sessionKey, edKey, r.errorDescription)
                     } else {
                         errorInfo = requireContext().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
-                        mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
+                        landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
                     }
                     true
                 }
@@ -302,16 +314,10 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 } else {
                     createAccount(sessionKey, edKey, r.data!!.id)
                 }
+            } else if (needCaptcha) {
+                return@launch
             } else {
-                if (r != null) {
-                    if (r.errorCode == NEED_CAPTCHA) {
-                        mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Creating)
-                        initAndLoadCaptcha(sessionKey, edKey, r.errorDescription)
-                        return@launch
-                    }
-                    errorInfo = requireActivity().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
-                }
-                mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
+                landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
             }
         }
     }
@@ -323,7 +329,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
             val sessionSecret = sessionKey.publicKey.base64Encode()
             val r = handleMixinResponse(
                 invokeNetwork = {
-                    mobileViewModel.create(
+                    landingViewModel.create(
                         verificationId,
                         AccountRequest(
                             purpose = VerificationPurpose.ANONYMOUS_SESSION.name,
@@ -339,42 +345,26 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 },
 
                 exceptionBlock = { t ->
-                    mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
-                    errorInfo = t.message
+                    landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
+                    errorInfo = ErrorHandler.getErrorMessage(t)
                     Timber.e(t)
                     true
                 },
 
                 failureBlock = { r ->
                     errorInfo = requireContext().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
-                    mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
+                    landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
                     true
                 }
             )
             if (r?.isSuccess == true) {
                 val account = r.data!!
-                val lastUserId = getLastUserId(requireContext())
-                val sameUser = lastUserId != null && lastUserId == account.userId
-                if (sameUser) {
-                    withContext(Dispatchers.IO) {
-                        clearJobsAndRawTransaction(requireContext())
-                    }
-                } else {
-                    withContext(Dispatchers.IO) {
-                        clearDatabase(requireContext())
-                    }
-                    CryptoWalletHelper.clear(requireContext())
-                    defaultSharedPreferences.clear()
-                }
-                val privateKey = sessionKey.privateKey
-                val pinToken = decryptPinToken(account.pinToken.decodeBase64(), privateKey)
-                Session.storeEd25519Seed(privateKey.base64Encode())
-                Session.storePinToken(pinToken.base64Encode())
-                Session.storeAccount(account)
-                defaultSharedPreferences.putString(DEVICE_ID, requireContext().getStringDeviceId())
+                initializeAccountSession(requireContext(), account, sessionKey)
                 when {
                     account.fullName.isNullOrBlank() -> {
-                        mobileViewModel.insertUser(account.toUser())
+                        withContext(Dispatchers.IO) {
+                            userRepositoryProvider.get().insertUser(account.toUser())
+                        }
                         InitializeActivity.showSetupName(requireContext())
                     }
 
@@ -382,14 +372,14 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                         RestoreActivity.show(requireContext())
                     }
                 }
-                mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Success)
+                landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Success)
                 MixinApplication.get().reject()
                 activity?.finish()
             } else {
                 if (r != null) {
                     errorInfo = requireActivity().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
                 }
-                mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
+                landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
             }
         }
     }

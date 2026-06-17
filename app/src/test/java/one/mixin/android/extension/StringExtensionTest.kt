@@ -10,6 +10,19 @@ import org.robolectric.RobolectricTestRunner
 @RunWith(RobolectricTestRunner::class)
 class StringExtensionTest {
     @Test
+    fun formatTransactionHashIfNeeded() {
+        assertEquals(
+            "0x8863D3...94Ce19",
+            "0x8863D37FACfc0EF866893609aaF2d871bf94Ce19".formatTransactionHashIfNeeded(),
+        )
+        assertEquals(
+            "5pH6im2Q...5WXhmq",
+            "5pH6im2QHBHRFhTaGjZmPkfaCLTZUntWxZ584T5WXhmq".formatTransactionHashIfNeeded(),
+        )
+        assertEquals("ikk", "ikk".formatTransactionHashIfNeeded())
+    }
+
+    @Test
     fun getPattern() {
         val s1 = "12345678901"
         val s2 = "123456789.1234567"
@@ -180,5 +193,29 @@ class StringExtensionTest {
         val inputUrlWithTrailingSlash: String = "https://example.com/a"
         assertTrue(inputUrlWithTrailingSlash.matchResourcePattern(listOf("https://example.com/a")))
         assertFalse(inputUrl.matchResourcePattern(listOf("https://example.com/a/")))
+    }
+
+    @Test
+    fun isMixinUrlRecognizesHttpsBuy() {
+        assertTrue("https://mixin.one/buy".isMixinUrl())
+    }
+
+    @Test
+    fun isMixinUrlRecognizesMixinBuy() {
+        assertTrue("mixin://mixin.one/buy".isMixinUrl())
+    }
+
+    @Test
+    fun openInBrowserUrlRequiresExplicitWebScheme() {
+        assertEquals("https://mixin.one/pay", " https://mixin.one/pay ".toOpenInBrowserUrlOrNull())
+        assertEquals("http://mixin.one/pay", "http://mixin.one/pay".toOpenInBrowserUrlOrNull())
+        assertEquals(null, "mixin.one/pay".toOpenInBrowserUrlOrNull())
+        assertEquals(null, "http:foo".toOpenInBrowserUrlOrNull())
+        assertEquals(null, "https:mixin.one".toOpenInBrowserUrlOrNull())
+        assertEquals(null, "https://".toOpenInBrowserUrlOrNull())
+        assertEquals(null, "".toOpenInBrowserUrlOrNull())
+        assertEquals(null, "undefined".toOpenInBrowserUrlOrNull())
+        assertEquals(null, "javascript:alert(1)".toOpenInBrowserUrlOrNull())
+        assertEquals(null, "mixin://codes/test".toOpenInBrowserUrlOrNull())
     }
 }

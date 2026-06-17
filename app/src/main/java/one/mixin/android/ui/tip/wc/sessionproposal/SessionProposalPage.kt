@@ -38,7 +38,6 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.reown.walletkit.client.Wallet
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
-
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.composeDp
 import one.mixin.android.extension.notNullWithElse
@@ -49,8 +48,8 @@ import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.compose.ItemContent
 import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.ui.wallet.components.WalletLabel
-import one.mixin.android.widget.components.MixinButton
 import one.mixin.android.web3.js.Web3Signer
+import one.mixin.android.widget.components.MixinButton
 
 @Composable
 fun SessionProposalPage(
@@ -70,6 +69,7 @@ fun SessionProposalPage(
         return
     }
     val context = LocalContext.current
+    val commonWallet = stringResource(R.string.Common_Wallet)
     var walletName by remember { mutableStateOf<String?>(null) }
     var walletDisplayInfo by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
 
@@ -81,7 +81,7 @@ fun SessionProposalPage(
 
     LaunchedEffect(Unit) {
         val wallet = viewModel.findWalletById(Web3Signer.currentWalletId)
-        walletName = wallet?.name.takeIf { !it.isNullOrEmpty() } ?: context.getString(R.string.Common_Wallet)
+        walletName = wallet?.name.takeIf { !it.isNullOrEmpty() } ?: commonWallet
     }
 
     LaunchedEffect(account) {
