@@ -128,22 +128,25 @@ fun AboutPage() {
                     context.openUrl("https://fb.com/MixinMessenger")
                 },
             )
+            val helpLink = stringResource(R.string.help_link)
             AboutTile(
                 text = stringResource(id = R.string.Help_center),
                 onClick = {
-                    context.openUrl(context.getString(R.string.help_link))
+                    context.openUrl(helpLink)
                 },
             )
+            val termsUrl = stringResource(R.string.landing_terms_url)
             AboutTile(
                 text = stringResource(id = R.string.Terms_of_Service),
                 onClick = {
-                    context.openUrl(context.getString(R.string.landing_terms_url))
+                    context.openUrl(termsUrl)
                 },
             )
+            val privacyPolicyUrl = stringResource(R.string.landing_privacy_policy_url)
             AboutTile(
                 text = stringResource(id = R.string.Privacy_Policy),
                 onClick = {
-                    context.openUrl(context.getString(R.string.landing_privacy_policy_url))
+                    context.openUrl(privacyPolicyUrl)
                 },
             )
             AboutTile(

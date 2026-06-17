@@ -40,6 +40,7 @@ import dagger.hilt.components.SingletonComponent
 import io.reactivex.plugins.RxJavaPlugins
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -146,12 +147,26 @@ open class MixinApplication :
     private var activityReferences: Int = 0
     private var isActivityChangingConfigurations = false
 
-    @Inject
-    @ApplicationScope
+    @EntryPoint
+    @InstallIn(SingletonComponent::class)
+    interface ApplicationScopeEntryPoint {
+        @one.mixin.android.di.ApplicationScope
+        fun getApplicationScope(): CoroutineScope
+    }
+
+    private fun getAppScope(): CoroutineScope {
+        return try {
+            EntryPointAccessors.fromApplication(this, ApplicationScopeEntryPoint::class.java).getApplicationScope()
+        } catch (e: Exception) {
+            CoroutineScope(Dispatchers.Main + SupervisorJob())
+        }
+    }
+
     lateinit var applicationScope: CoroutineScope
 
     override fun onCreate() {
         super.onCreate()
+        applicationScope = getAppScope()
         init()
         registerActivityLifecycleCallbacks(this)
         SignalProtocolLoggerProvider.setProvider(MixinSignalProtocolLogger())
@@ -214,12 +229,22 @@ open class MixinApplication :
             }
         }, this)
         AppsFlyerLib.getInstance().start(this)
-        FirebaseAnalytics.getInstance(this).appInstanceId.addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val additionalData = mapOf("app_instance_id" to task.result)
-                AppsFlyerLib.getInstance().setAdditionalData(additionalData)
+        val firebaseAnalytics = FirebaseAnalytics.getInstance(this)
+        val appInstanceIdTask = firebaseAnalytics.appInstanceId
+        val sessionIdTask = firebaseAnalytics.sessionId
+        com.google.android.gms.tasks.Tasks.whenAllComplete(appInstanceIdTask, sessionIdTask)
+            .addOnCompleteListener {
+                val additionalData = mutableMapOf<String, Any>()
+                if (appInstanceIdTask.isSuccessful) {
+                    additionalData["app_instance_id"] = appInstanceIdTask.result
+                }
+                if (sessionIdTask.isSuccessful && sessionIdTask.result != null) {
+                    additionalData["ga_session_id"] = sessionIdTask.result
+                }
+                if (additionalData.isNotEmpty()) {
+                    AppsFlyerLib.getInstance().setAdditionalData(additionalData)
+                }
             }
-        }
     }
 
     override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {

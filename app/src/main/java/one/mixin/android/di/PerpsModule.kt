@@ -6,8 +6,8 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import one.mixin.android.db.PerpsDatabase
 import one.mixin.android.db.perps.PerpsMarketDao
+import one.mixin.android.db.perps.PerpsOrderDao
 import one.mixin.android.db.perps.PerpsPositionDao
-import one.mixin.android.db.perps.PerpsPositionHistoryDao
 import one.mixin.android.session.CurrentUserScopeManager
 import javax.inject.Provider
 
@@ -25,8 +25,8 @@ object PerpsModule {
     }
 
     @Provides
-    fun providePerpsPositionHistoryDao(database: PerpsDatabase): PerpsPositionHistoryDao {
-        return database.perpsPositionHistoryDao()
+    fun providePerpsOrderDao(database: PerpsDatabase): PerpsOrderDao {
+        return database.perpsOrderDao()
     }
 
     @Provides

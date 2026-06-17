@@ -6,7 +6,9 @@ import androidx.lifecycle.asLiveData
 import androidx.lifecycle.map
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants.Account.PREF_REFERRAL_BOT_PK
 import one.mixin.android.Constants.Account.PREF_ROUTE_BOT_PK
+import one.mixin.android.Constants.RouteConfig.REFERRAL_BOT_USER_ID
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
@@ -359,9 +361,13 @@ class UserRepository
             )
         }
 
-        @Suppress("KotlinConstantConditions")
         suspend fun getBotPublicKey(botId: String, force: Boolean) {
-            if (botId != ROUTE_BOT_USER_ID) return
+            val prefKey =
+                when (botId) {
+                    ROUTE_BOT_USER_ID -> PREF_ROUTE_BOT_PK
+                    REFERRAL_BOT_USER_ID -> PREF_REFERRAL_BOT_PK
+                    else -> return
+                }
 
             val key =
                 findBotPublicKey(
@@ -372,9 +378,7 @@ class UserRepository
                     botId,
                 )
             if (key != null && !force) {
-                if (botId == ROUTE_BOT_USER_ID) {
-                    MixinApplication.appContext.defaultSharedPreferences.putString(PREF_ROUTE_BOT_PK, key)
-                }
+                MixinApplication.appContext.defaultSharedPreferences.putString(prefKey, key)
             } else {
                 val sessionResponse = fetchSessionsSuspend(listOf(botId))
                 if (sessionResponse.isSuccess) {
@@ -390,9 +394,7 @@ class UserRepository
                             publicKey = sessionData.publicKey,
                         ),
                     )
-                    if (botId == ROUTE_BOT_USER_ID) {
-                        MixinApplication.appContext.defaultSharedPreferences.putString(PREF_ROUTE_BOT_PK, sessionData.publicKey)
-                    }
+                    MixinApplication.appContext.defaultSharedPreferences.putString(prefKey, sessionData.publicKey)
                 } else {
                     throw MixinResponseException(
                         sessionResponse.errorCode,

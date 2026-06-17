@@ -1,6 +1,5 @@
 package one.mixin.android.ui.setting.ui.page
 
-import one.mixin.android.ui.home.web3.components.PageScaffold
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.landing.components.NumberedText
 
 @Composable

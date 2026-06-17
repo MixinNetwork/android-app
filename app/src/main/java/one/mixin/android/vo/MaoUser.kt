@@ -1,8 +1,5 @@
 package one.mixin.android.vo
 
-import kotlinx.parcelize.Parcelize
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
 import one.mixin.android.extension.isMao
 
 class MaoUser(

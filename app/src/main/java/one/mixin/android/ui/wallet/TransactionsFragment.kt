@@ -20,7 +20,7 @@ import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentTransactionsBinding
 import one.mixin.android.databinding.ViewWalletTransactionsBottomBinding
-import one.mixin.android.extension.buildAmountSymbol
+import one.mixin.android.extension.buildBalanceAmountSymbol
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
@@ -49,6 +49,7 @@ import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.wallet.AllTransactionsFragment.Companion.ARGS_TOKEN
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_ASSET_ID
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET
+import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET_SOURCE
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
@@ -74,6 +75,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         const val TAG = "TransactionsFragment"
         const val ARGS_ASSET = "args_asset"
         const val ARGS_FROM_MARKET = "args_from_market"
+        const val ARGS_SOURCE = "args_source"
     }
 
     private val binding by viewBinding(FragmentTransactionsBinding::bind)
@@ -93,6 +95,9 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
     private val fromMarket by lazy {
         requireArguments().getBoolean(ARGS_FROM_MARKET, false)
     }
+    private val source by lazy {
+        requireArguments().getString(ARGS_SOURCE)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -111,6 +116,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        AnalyticsTracker.trackAssetDetail(TradeWallet.MAIN, resolveAssetDetailSource(fromMarket, source))
         jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(asset.assetId))))
         jobManager.addJobInBackground(RefreshPriceJob(asset.assetId))
 
@@ -140,7 +146,9 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                                 requireActivity(),
                                 inMixin = true,
                                 input = asset.assetId,
-                                output = output
+                                output = output,
+                                entrySource = TradeSource.ASSET_DETAIL,
+                                entryType = AnalyticsTracker.SpotTradeType.SIMPLE,
                             )
                         }
                     }
@@ -158,7 +166,9 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                         requireActivity(),
                         inMixin = true,
                         input = asset.assetId,
-                        output = output
+                        output = output,
+                        entrySource = TradeSource.ASSET_DETAIL,
+                        entryType = AnalyticsTracker.SpotTradeType.SIMPLE,
                     )
                 }
             }
@@ -234,6 +244,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                         Bundle().apply {
                             putParcelable(ARGS_MARKET, market)
                             putString(ARGS_ASSET_ID, asset.assetId)
+                            putString(ARGS_MARKET_SOURCE, AnalyticsTracker.MarketSource.TOKEN_DETAIL)
                         },
                     )
                 }
@@ -342,6 +353,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         bottomBinding.apply {
             hide.setText(if (asset.hidden == true) R.string.Show else R.string.Hide)
             hide.setOnClickListener {
+                AnalyticsTracker.trackAssetDetailHide()
                 lifecycleScope.launch(Dispatchers.IO) {
                     walletViewModel.updateAssetHidden(asset.assetId, asset.hidden != true)
                 }
@@ -355,6 +367,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
     }
 
     override fun <T> onNormalItemClick(item: T) {
+        AnalyticsTracker.trackTransactionDetail(AnalyticsTracker.AssetSource.ASSET_DETAIL)
         view?.navigate(
             R.id.action_transactions_fragment_to_transaction_fragment,
             Bundle().apply {
@@ -382,6 +395,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
     }
 
     override fun onMoreClick() {
+        AnalyticsTracker.trackAllTransactions(AnalyticsTracker.AssetSource.ASSET_DETAIL)
         view?.navigate(
             R.id.action_transactions_fragment_to_all_transactions_fragment,
             Bundle().apply {
@@ -391,6 +405,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
     }
 
     private fun navigateToTransferDestination(asset: TokenItem) {
+        AnalyticsTracker.trackAssetSendStart(TradeWallet.MAIN, AnalyticsTracker.AssetSource.ASSET_DETAIL)
         findNavController().navigate(
             R.id.action_transactions_to_transfer_destination,
             Bundle().apply {
@@ -415,6 +430,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             sendReceiveView.receive.setOnClickListener {
                 if (
                     showRecoveryReminderForRiskAction {
+                        AnalyticsTracker.trackAssetReceiveStart(AnalyticsTracker.AssetSource.ASSET_DETAIL, TradeWallet.MAIN)
                         sendReceiveView.navigate(
                             R.id.action_transactions_to_deposit,
                             Bundle().apply { putParcelable(ARGS_ASSET, asset) },
@@ -423,6 +439,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                 ) {
                     return@setOnClickListener
                 }
+                AnalyticsTracker.trackAssetReceiveStart(AnalyticsTracker.AssetSource.ASSET_DETAIL, TradeWallet.MAIN)
                 sendReceiveView.navigate(
                     R.id.action_transactions_to_deposit,
                     Bundle().apply { putParcelable(ARGS_ASSET, asset) },
@@ -451,7 +468,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                     asset.balance.numberFormat()
                 }
             val color = requireContext().colorFromAttribute(R.attr.text_primary)
-            balance.text = buildAmountSymbol(requireContext(), amountText, asset.symbol, color, color)
+            balance.text = buildBalanceAmountSymbol(requireContext(), amountText, asset.symbol, color, color)
             balanceAs.text =
                 try {
                     if (asset.fiat().toFloat() == 0f) {
@@ -481,3 +498,6 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         }
     }
 }
+
+internal fun resolveAssetDetailSource(fromMarket: Boolean, source: String?): String =
+    if (fromMarket) AnalyticsTracker.AssetSource.MARKET_DETAIL else source ?: AnalyticsTracker.AssetSource.WALLET_HOME

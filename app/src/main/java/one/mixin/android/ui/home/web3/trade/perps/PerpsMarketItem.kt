@@ -2,7 +2,6 @@ package one.mixin.android.ui.home.web3.trade.perps
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -26,8 +25,6 @@ import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.numberFormatCompact
-import one.mixin.android.extension.priceFormat
-import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
 @Composable
@@ -52,17 +49,10 @@ fun PerpsMarketItem(
         }
     }
     val changeText = formatPerpsSignedPercent(changePercent)
-    val fiatRate = BigDecimal(Fiats.getRate())
-    val fiatSymbol = Fiats.getSymbol()
-
-    val formattedPrice = try {
-        BigDecimal(market.last).multiply(fiatRate).priceFormat()
-    } catch (e: Exception) {
-        market.last
-    }
+    val displayPrice = market.last
 
     val formattedVolume = try {
-        BigDecimal(market.volume).multiply(fiatRate).numberFormatCompact()
+        BigDecimal(market.volume).numberFormatCompact()
     } catch (e: Exception) {
         market.volume
     }
@@ -71,26 +61,26 @@ fun PerpsMarketItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.weight(1f)
-        ) {
-            CoilImage(
-                model = market.iconUrl,
-                placeholder = R.drawable.ic_avatar_place_holder,
-                modifier = Modifier
-                    .size(42.dp)
-                    .clip(CircleShape)
-            )
+        CoilImage(
+            model = market.iconUrl,
+            placeholder = R.drawable.ic_avatar_place_holder,
+            modifier = Modifier
+                .size(42.dp)
+                .clip(CircleShape)
+        )
 
-            Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(12.dp))
 
-            Column {
+        Column(modifier = Modifier.weight(1f)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Row(
+                    modifier = Modifier.weight(1f),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
@@ -107,32 +97,31 @@ fun PerpsMarketItem(
                         modifier = Modifier
                             .clip(RoundedCornerShape(4.dp))
                             .background(MixinAppTheme.colors.backgroundGrayLight)
-                            .padding(horizontal = 3.dp, vertical = 2.dp)
+                            .padding(horizontal = 3.dp, vertical = 1.dp)
                     )
                 }
-                Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = stringResource(R.string.Vol, "$fiatSymbol$formattedVolume"),
+                    text = "$PERPS_USD_SYMBOL$displayPrice",
                     fontSize = 14.sp,
-                    color = MixinAppTheme.colors.textAssist,
+                    color = MixinAppTheme.colors.textPrimary,
                 )
             }
-        }
-
-        Column(
-            horizontalAlignment = Alignment.End
-        ) {
-            Text(
-                text = "$fiatSymbol$formattedPrice",
-                fontSize = 14.sp,
-                color = MixinAppTheme.colors.textPrimary,
-            )
             Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = changeText,
-                fontSize = 14.sp,
-                color = changeColor,
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = stringResource(R.string.Vol, formattedVolume),
+                    fontSize = 14.sp,
+                    color = MixinAppTheme.colors.textAssist,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    text = changeText,
+                    fontSize = 14.sp,
+                    color = changeColor,
+                )
+            }
         }
     }
 }

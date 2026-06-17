@@ -66,13 +66,13 @@ import one.mixin.android.ui.tip.wc.sessionrequest.FeeInfo
 import one.mixin.android.ui.tip.wc.sessionrequest.SessionRequestViewModel
 import one.mixin.android.ui.wallet.components.WalletLabel
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.widget.components.MixinButton
 import one.mixin.android.vo.User
 import one.mixin.android.vo.priceUSD
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.js.Web3Signer
+import one.mixin.android.widget.components.MixinButton
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import java.math.BigDecimal
@@ -113,6 +113,7 @@ fun BrowserPage(
 ) {
     val viewModel = hiltViewModel<SessionRequestViewModel>()
     val context = LocalContext.current
+    val commonWallet = stringResource(R.string.Common_Wallet)
     var showWarning by remember { mutableStateOf(false) }
     var walletName by remember { mutableStateOf<String?>(null) }
     var addressDisplayInfo by remember { mutableStateOf<Triple<String?, Int, Boolean?>?>(null) }
@@ -124,7 +125,7 @@ fun BrowserPage(
 
     LaunchedEffect(Unit) {
         val wallet = viewModel.findWalletById(Web3Signer.currentWalletId)
-        walletName = wallet?.name.takeIf { !it.isNullOrEmpty() } ?: context.getString(R.string.Common_Wallet)
+        walletName = wallet?.name.takeIf { !it.isNullOrEmpty() } ?: commonWallet
     }
 
     LaunchedEffect(toAddress, token?.chainId) {

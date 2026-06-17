@@ -31,7 +31,6 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.adapter.SearchWeb3Adapter
 import one.mixin.android.ui.home.web3.adapter.Web3SearchCallback
-import one.mixin.android.web3.js.Web3Signer
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint

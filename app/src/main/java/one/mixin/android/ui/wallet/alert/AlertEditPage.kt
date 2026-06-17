@@ -1,6 +1,5 @@
 package one.mixin.android.ui.wallet.alert
 
-import one.mixin.android.ui.home.web3.components.PageScaffold
 import android.content.Context
 import android.graphics.Rect
 import androidx.annotation.DrawableRes
@@ -62,9 +61,8 @@ import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.removeEnd
-import one.mixin.android.ui.wallet.alert.components.AlertFrequencyBottom
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.wallet.alert.components.AlertFrequencySelector
-import one.mixin.android.ui.wallet.alert.components.AlertTypeBottom
 import one.mixin.android.ui.wallet.alert.components.AlertTypeSelector
 import one.mixin.android.ui.wallet.alert.components.PercentagesRow
 import one.mixin.android.ui.wallet.alert.components.cardBackground
@@ -101,7 +99,7 @@ fun AlertEditPage(
     alert: Alert?,
     onAdd: (CoinItem) -> Unit,
     pop: () -> Unit,
-    onSaved: (Boolean) -> Unit,
+    onSaved: (Boolean, String, String) -> Unit,
     onShowTypeSelector: (AlertType, (AlertType) -> Unit) -> Unit,
     onShowFrequencySelector: (AlertFrequency, (AlertFrequency) -> Unit) -> Unit,
 ) {
@@ -431,7 +429,7 @@ fun AlertEditPage(
                                         )
                                         val re = viewModel.updateAlert(alert.alertId, alertRequest)
                                         if (re?.isSuccess == true) {
-                                            onSaved(false)
+                                            onSaved(false, selectedAlertFrequency.value, selectedAlertType.value)
                                         }
                                     } else {
                                         val alertRequest = AlertRequest(
@@ -450,7 +448,7 @@ fun AlertEditPage(
                                         val re = viewModel.add(alertRequest)
                                         if (re?.isSuccess == true) {
                                             onAdd.invoke(coin)
-                                            onSaved(true)
+                                            onSaved(true, selectedAlertFrequency.value, selectedAlertType.value)
                                         }
                                     }
                                     isLoading = false

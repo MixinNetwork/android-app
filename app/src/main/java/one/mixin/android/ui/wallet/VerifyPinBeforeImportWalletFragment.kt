@@ -5,12 +5,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
-import one.mixin.android.extension.navTo
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.components.VerifyPinBeforeImportWalletPage
@@ -67,77 +68,50 @@ class VerifyPinBeforeImportWalletFragment : BaseFragment(R.layout.fragment_compo
                                 viewModel.setSpendKey(spendKey)
                                 when (mode) {
                                     WalletSecurityActivity.Mode.IMPORT_MNEMONIC -> {
-                                        navTo(
+                                        replaceAsRoot(
                                             AddWalletFragment.newInstance(),
                                             AddWalletFragment.TAG
                                         )
-                                        requireActivity().supportFragmentManager
-                                            .beginTransaction()
-                                            .remove(this@VerifyPinBeforeImportWalletFragment)
-                                            .commit()
                                     }
 
                                     WalletSecurityActivity.Mode.VIEW_MNEMONIC -> {
-                                        navTo(
-                                            DisplayWalletSecurityFragment.newInstance(mode, walletId = walletId), DisplayWalletSecurityFragment.TAG
+                                        replaceAsRoot(
+                                            DisplayWalletSecurityFragment.newInstance(mode, walletId = walletId),
+                                            DisplayWalletSecurityFragment.TAG
                                         )
-                                        requireActivity().supportFragmentManager
-                                            .beginTransaction()
-                                            .remove(this@VerifyPinBeforeImportWalletFragment)
-                                            .commit()
                                     }
 
                                     WalletSecurityActivity.Mode.VIEW_PRIVATE_KEY -> {
-                                        navTo(
-                                            DisplayWalletSecurityFragment.newInstance(mode, chainId = chainId, walletId = walletId), DisplayWalletSecurityFragment.TAG
+                                        replaceAsRoot(
+                                            DisplayWalletSecurityFragment.newInstance(mode, chainId = chainId, walletId = walletId),
+                                            DisplayWalletSecurityFragment.TAG
                                         )
-
-                                        requireActivity().supportFragmentManager
-                                            .beginTransaction()
-                                            .remove(this@VerifyPinBeforeImportWalletFragment)
-                                            .commit()
                                     }
 
                                     WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY, WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS -> {
-                                        navTo(
+                                        replaceAsRoot(
                                             ImportWalletDetailFragment.newInstance(mode),
                                             ImportWalletDetailFragment.TAG
                                         )
-                                        requireActivity().supportFragmentManager
-                                            .beginTransaction()
-                                            .remove(this@VerifyPinBeforeImportWalletFragment)
-                                            .commit()
                                     }
                                     WalletSecurityActivity.Mode.RE_IMPORT_MNEMONIC -> {
-                                        navTo(
+                                        replaceAsRoot(
                                             ReImportMnemonicFragment.newInstance(walletId),
                                             ReImportMnemonicFragment.TAG
                                         )
-                                        requireActivity().supportFragmentManager
-                                            .beginTransaction()
-                                            .remove(this@VerifyPinBeforeImportWalletFragment)
-                                            .commit()
                                     }
                                     WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY -> {
-                                        navTo(
+                                        replaceAsRoot(
                                             ReImportPrivateKeyFragment.newInstance(walletId, chainId),
                                             ReImportPrivateKeyFragment.TAG
                                         )
-                                        requireActivity().supportFragmentManager
-                                            .beginTransaction()
-                                            .remove(this@VerifyPinBeforeImportWalletFragment)
-                                            .commit()
                                     }
                                     WalletSecurityActivity.Mode.CREATE_WALLET -> {
-                                        navTo(
+                                        replaceAsRoot(
                                             ImportingWalletFragment.newInstance(WalletSecurityActivity.Mode.CREATE_WALLET),
                                             ImportingWalletFragment.TAG
                                         )
                                         viewModel.createClassicWallet()
-                                        requireActivity().supportFragmentManager
-                                            .beginTransaction()
-                                            .remove(this@VerifyPinBeforeImportWalletFragment)
-                                            .commit()
                                     }
                                     WalletSecurityActivity.Mode.VIEW_ADDRESS -> {
                                        requireActivity().finish()
@@ -151,6 +125,17 @@ class VerifyPinBeforeImportWalletFragment : BaseFragment(R.layout.fragment_compo
                 )
             }
         }
+    }
+
+    private fun replaceAsRoot(fragment: Fragment, tag: String) {
+        val hostActivity = activity ?: return
+        if (hostActivity.isFinishing || hostActivity.isDestroyed) return
+
+        val fragmentManager = hostActivity.supportFragmentManager
+        fragmentManager.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+        fragmentManager.beginTransaction()
+            .replace(R.id.container, fragment, tag)
+            .commit()
     }
 
     companion object {

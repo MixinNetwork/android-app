@@ -17,6 +17,7 @@ import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
 import org.sol4kt.VersionedTransactionCompat
 import org.web3j.crypto.Hash
+import timber.log.Timber
 import java.util.Base64
 import javax.inject.Inject
 
@@ -80,11 +81,14 @@ class WalletConnectBottomSheetViewModel
                 signedTransactionData
             }
             try {
+                Timber.d("${WalletConnectV2.TAG} sendTransaction postRawTx start topic=${sessionRequest.topic} requestId=${sessionRequest.request.id} chain=${chain.chainId} account=$account to=$to txId=$signature")
                 assetRepo.postRawTx(Web3RawTransactionRequest(chain.getWeb3ChainId(), rawTx, account, to))
             } catch (e: Exception) {
+                Timber.d("${WalletConnectV2.TAG} sendTransaction postRawTx error topic=${sessionRequest.topic} requestId=${sessionRequest.request.id} chain=${chain.chainId} txId=$signature error=${e.message}")
                 WalletConnectV2.rejectRequest(e.message, sessionRequest)
                 throw e
             }
+            Timber.d("${WalletConnectV2.TAG} sendTransaction postRawTx success topic=${sessionRequest.topic} requestId=${sessionRequest.request.id} chain=${chain.chainId} txId=$signature")
             if (chain == Chain.Solana) {
                 WalletConnectV2.approveSolanaTransaction(signature, sessionRequest)
             } else {

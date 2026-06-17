@@ -63,13 +63,8 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.SessionRequest
-import one.mixin.android.api.request.web3.GaslessFeeRequest
-import one.mixin.android.api.request.web3.GaslessTxRequest
-import one.mixin.android.api.request.web3.SubmitGaslessTxRequest
-import one.mixin.android.api.response.web3.EthGaslessTxPayload
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
-import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PrivacyPreference.getIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
 import one.mixin.android.databinding.ActivityMainBinding
@@ -77,7 +72,6 @@ import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.UserDao
-import one.mixin.android.db.WalletDatabase
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.event.BadgeEvent
 import one.mixin.android.event.TipEvent
@@ -87,7 +81,6 @@ import one.mixin.android.extension.checkStorageNotLow
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getStringDeviceId
-import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isExternalTransferUrl
@@ -188,7 +181,6 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.isGroupConversation
-import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.websocket.ReconnectWorker
 import one.mixin.android.worker.SessionWorker
@@ -272,7 +264,8 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
     private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+        val restoreState = if (Session.checkToken()) savedInstanceState else null
+        super.onCreate(restoreState)
         navigationController = NavigationController()
 
         var deviceId = defaultSharedPreferences.getString(DEVICE_ID, null)
@@ -345,7 +338,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        initFragmentsFromSavedState(savedInstanceState)
+        initFragmentsFromSavedState(restoreState)
 
         val account = Session.getAccount()
         account?.let {
@@ -381,11 +374,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             .autoDispose(destroyScope)
             .subscribe { e ->
                 lifecycleScope.launch {
-                    if (e is WCEvent.V2) {
-                        WalletConnectActivity.show(this@MainActivity, e)
-                    } else {
-                        WalletConnectActivity.show(this@MainActivity, e)
-                    }
+                    WalletConnectActivity.show(this@MainActivity, e)
                 }
             }
         RxBus.listen(WCErrorEvent::class.java)
@@ -448,7 +437,9 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                 .request(Manifest.permission.POST_NOTIFICATIONS)
                 .autoDispose(stopScope)
                 .subscribe(
-                    { _ -> },
+                    { _ -> 
+                        AnalyticsTracker.setNotificationAuthStatus(this)
+                    },
                     {},
                 )
         }
@@ -812,7 +803,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
     private var bottomSheet: DialogFragment? = null
     private var alertDialog: Dialog? = null
 
-    private fun handlerCode(intent: Intent) {
+    fun handlerCode(intent: Intent) {
         if (intent.hasExtra(SCAN)) {
             val scan = intent.getStringExtra(SCAN)!!
             bottomSheet?.dismiss()
@@ -1038,7 +1029,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             bottomNav.setOnApplyWindowInsetsListener(null)
             bottomNav.setPadding(0,0,0,0)
             bottomNav.itemIconTintList = null
-            bottomNav.menu.findItem(R.id.nav_chat).isChecked = true
+            bottomNav.menu.findItem(lastBottomNavItemId).isChecked = true
 
             bottomNav.setOnItemSelectedListener {
                 if (isRestoringBottomNavSelection) {
@@ -1105,11 +1096,13 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
     private fun handleNavigationItemSelected(itemId: Int) {
         when (itemId) {
             R.id.nav_chat -> {
+                AnalyticsTracker.trackHomeTabSwitch(AnalyticsTracker.HomeTabMethod.CHATS)
                 switchToDestination(NavigationController.ConversationList)
                 lastBottomNavItemId = itemId
             }
 
             R.id.nav_wallet -> {
+                AnalyticsTracker.trackHomeTabSwitch(AnalyticsTracker.HomeTabMethod.WALLETS)
                 Timber.e("nav_wallet: ${Session.getAccount()?.hasPin}")
                 if (Session.getAccount()?.hasPin == true) {
                     lifecycleScope.launch {
@@ -1131,6 +1124,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             }
 
             R.id.nav_market -> {
+                AnalyticsTracker.trackMoreTabSwitch(AnalyticsTracker.MoreTabMethod.MARKETS)
                 switchToDestination(NavigationController.Market)
                 lastBottomNavItemId = itemId
                 findFragmentByTagTyped<MarketFragment>(NavigationController.Market.tag)?.updateUI()
@@ -1139,6 +1133,8 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             }
 
             R.id.nav_more -> {
+                AnalyticsTracker.trackHomeTabSwitch(AnalyticsTracker.HomeTabMethod.MORE)
+                AnalyticsTracker.trackMoreTabSwitch(AnalyticsTracker.MoreTabMethod.BOTS)
                 if (!defaultSharedPreferences.getBoolean(Account.PREF_NAV_MORE_BADGE_DISMISSED, false)) {
                     defaultSharedPreferences.putBoolean(Account.PREF_NAV_MORE_BADGE_DISMISSED, true)
                     RxBus.publish(BadgeEvent(Account.PREF_NAV_MORE_BADGE_DISMISSED))
@@ -1312,33 +1308,18 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         }
     }
 
-    private fun initFragmentsFromSavedState(savedInstanceState: Bundle?) {
-        navigationController.navigate(supportFragmentManager, NavigationController.ConversationList, ConversationListFragment.newInstance())
-        binding.bottomNav.selectedItemId = R.id.nav_chat
-        Timber.e("initFragmentsFromSavedState: nav_chat")
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt(KEY_LAST_BOTTOM_NAV, lastBottomNavItemId)
     }
 
-    private data class Eip7702GaslessDemoArgs(
-        val from: String?,
-        val to: String,
-        val assetId: String,
-        val amount: String,
-        val chainId: String,
-        val feeAssetId: String?,
-    )
-
-    private data class Eip7702GaslessDemoResult(
-        val from: String,
-        val to: String,
-        val assetId: String,
-        val amount: String,
-        val chainId: String,
-        val feeAssetId: String,
-        val userOpSignType: String,
-        val userOpSignature: String,
-        val eip7702Required: Boolean,
-        val eip7702AuthSignature: String?,
-    )
+    private fun initFragmentsFromSavedState(savedInstanceState: Bundle?) {
+        if (savedInstanceState != null) {
+            lastBottomNavItemId = savedInstanceState.getInt(KEY_LAST_BOTTOM_NAV, R.id.nav_chat)
+            return
+        }
+        navigationController.navigate(supportFragmentManager, NavigationController.ConversationList, ConversationListFragment.newInstance())
+    }
 
     companion object {
         const val URL = "url"
@@ -1346,6 +1327,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         const val TRANSFER = "transfer"
         private const val WALLET = "wallet"
         const val WALLET_CONNECT = "wallet_connect"
+        private const val KEY_LAST_BOTTOM_NAV = "last_bottom_nav_item_id"
 
         fun showWallet(
             context: Context,

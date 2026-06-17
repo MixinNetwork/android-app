@@ -1,6 +1,7 @@
 package one.mixin.android.web3.js
 
 import okio.Buffer
+import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.ChainId.BITCOIN_CHAIN_ID
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
@@ -137,12 +138,12 @@ object Web3Signer {
         return when (hex) {
             Chain.Ethereum.hexReference -> Chain.Ethereum
             Chain.Base.hexReference -> Chain.Base
-            Chain.Blast.hexReference -> Chain.Blast
             Chain.Arbitrum.hexReference -> Chain.Arbitrum
             Chain.Optimism.hexReference -> Chain.Optimism
             Chain.Avalanche.hexReference -> Chain.Avalanche
             Chain.Polygon.hexReference -> Chain.Polygon
             Chain.BinanceSmartChain.hexReference -> Chain.BinanceSmartChain
+            Chain.HyperEVM.hexReference -> Chain.HyperEVM
             Chain.Solana.hexReference -> Chain.Solana
             else -> null
         }
@@ -241,11 +242,6 @@ object Web3Signer {
                 persist()
                 Result.success(Chain.Base.name)
             }
-            Chain.Blast.hexReference -> {
-                currentChain = Chain.Blast
-                persist()
-                Result.success(Chain.Blast.name)
-            }
             Chain.Arbitrum.hexReference -> {
                 currentChain = Chain.Arbitrum
                 persist()
@@ -270,6 +266,11 @@ object Web3Signer {
                 currentChain = Chain.BinanceSmartChain
                 persist()
                 Result.success(Chain.BinanceSmartChain.name)
+            }
+            Chain.HyperEVM.hexReference -> {
+                currentChain = Chain.HyperEVM
+                persist()
+                Result.success(Chain.HyperEVM.name)
             }
             Chain.Solana.hexReference -> {
                 currentChain = Chain.Solana
@@ -299,16 +300,16 @@ object Web3Signer {
         val maxPriorityFeePerGas = tipGas.maxPriorityFeePerGas
         val maxFeePerGas = tipGas.selectMaxFeePerGas(transaction.maxFeePerGas?.let { Numeric.decodeQuantity(it) } ?: BigInteger.ZERO)
         val gasLimit = tipGas.gasLimit
-        Timber.e(
-            "$TAG dapp gas: ${transaction.gas?.let { Numeric.decodeQuantity(it) }} gasLimit: ${transaction.gasLimit?.let { Numeric.decodeQuantity(it) }} maxFeePerGas: ${transaction.maxFeePerGas?.let { Numeric.decodeQuantity(it) }} maxPriorityFeePerGas: ${
-                transaction.maxPriorityFeePerGas?.let {
-                    Numeric.decodeQuantity(
-                        it,
-                    )
-                }
-            } ",
-        )
-        Timber.e("$TAG nonce: $nonce, value $v wei, gasLimit: $gasLimit maxFeePerGas: $maxFeePerGas maxPriorityFeePerGas: $maxPriorityFeePerGas")
+        if (BuildConfig.DEBUG) {
+            Timber.d(
+                "$TAG dapp gas: ${transaction.gas?.let { Numeric.decodeQuantity(it) }} gasLimit: ${transaction.gasLimit?.let { Numeric.decodeQuantity(it) }} maxFeePerGas: ${transaction.maxFeePerGas?.let { Numeric.decodeQuantity(it) }} maxPriorityFeePerGas: ${
+                    transaction.maxPriorityFeePerGas?.let {
+                        Numeric.decodeQuantity(it)
+                    }
+                } ",
+            )
+            Timber.d("$TAG nonce: $nonce, value $v wei, gasLimit: $gasLimit maxFeePerGas: $maxFeePerGas maxPriorityFeePerGas: $maxPriorityFeePerGas")
+        }
         val rawTransaction =
             RawTransaction.createTransaction(
                 (chain ?: currentChain).chainReference.toLong(),
@@ -322,7 +323,7 @@ object Web3Signer {
             )
         val signedMessage = TransactionEncoder.signMessage(rawTransaction, (chain ?: currentChain).chainReference.toLong(), credential)
         val hexMessage = Numeric.toHexString(signedMessage)
-        Timber.d("$TAG signTransaction $hexMessage")
+        if (BuildConfig.DEBUG) Timber.d("$TAG signTransaction $hexMessage")
         return Pair(hexMessage, credential.address)
     }
 

@@ -15,7 +15,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Icon
 import androidx.compose.material.Slider
 import androidx.compose.material.SliderDefaults
 import androidx.compose.material.Text
@@ -26,10 +29,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dagger.hilt.android.AndroidEntryPoint
@@ -58,7 +66,7 @@ class LeverageBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
             currentLeverage: Float,
             maxLeverage: Int,
             amount: String,
-            isLong: Boolean
+            isLong: Boolean,
         ): LeverageBottomSheetDialogFragment {
             return LeverageBottomSheetDialogFragment().apply {
                 this.currentLeverage = currentLeverage
@@ -142,12 +150,14 @@ private fun LeverageContent(
     amount: String,
     isLong: Boolean,
     onCancel: () -> Unit,
-    onApply: (Float) -> Unit
+    onApply: (Float) -> Unit,
 ) {
     val boundedMaxLeverage = maxLeverage.coerceAtLeast(1)
     var tempLeverage by remember(currentLeverage, boundedMaxLeverage) {
         mutableIntStateOf(currentLeverage.roundToInt().coerceIn(1, boundedMaxLeverage))
     }
+    val stepperEdgePadding = (LocalConfiguration.current.screenWidthDp.dp * 0.16f).coerceAtMost(60.dp)
+    val stepperTouchPadding = (stepperEdgePadding - 8.dp).coerceAtLeast(0.dp)
 
     Column(
         modifier = Modifier
@@ -171,13 +181,43 @@ private fun LeverageContent(
                 .padding(16.dp)
         ) {
             Spacer(modifier = Modifier.height(24.dp))
-            Text(
-                text = "${tempLeverage}x",
-                fontSize = 48.sp,
-                fontWeight = FontWeight.Bold,
-                color = MixinAppTheme.colors.textPrimary,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            )
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center,
+            ) {
+                LeverageStepperButton(
+                    iconRes = R.drawable.ic_perps_minus,
+                    enabled = tempLeverage > 1,
+                    onClick = { tempLeverage = (tempLeverage - 1).coerceAtLeast(1) },
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .padding(start = stepperTouchPadding),
+                )
+                Box(contentAlignment = Alignment.Center) {
+                    Text(
+                        text = "000x",
+                        fontSize = 48.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MixinAppTheme.colors.textPrimary,
+                        modifier = Modifier.alpha(0f),
+                    )
+                    Text(
+                        text = "${tempLeverage}x",
+                        fontSize = 48.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MixinAppTheme.colors.textPrimary,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+                LeverageStepperButton(
+                    iconRes = R.drawable.ic_perps_add,
+                    enabled = tempLeverage < boundedMaxLeverage,
+                    onClick = { tempLeverage = (tempLeverage + 1).coerceAtMost(boundedMaxLeverage) },
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .padding(end = stepperTouchPadding),
+                )
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -275,16 +315,42 @@ private fun LeverageContent(
 }
 
 @Composable
+private fun LeverageStepperButton(
+    iconRes: Int,
+    enabled: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    Box(
+        modifier = modifier
+            .size(48.dp)
+            .clip(CircleShape)
+            .alpha(if (enabled) 1f else 0.5f)
+            .clickable(enabled = enabled, onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+
+        Icon(
+            painter = painterResource(id = iconRes),
+            contentDescription = null,
+            tint = Color.Unspecified,
+            modifier = Modifier.size(16.dp),
+        )
+    }
+}
+
+@Composable
 private fun ProfitLossInfo(
     amount: String,
     leverage: Int,
-    isLong: Boolean
+    isLong: Boolean,
 ) {
+    val context = LocalContext.current
     val amountValue = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val priceChangePercent = 1
     val profitPercent = leverage
     val liquidationPercent = 100.0 / leverage.toDouble()
-    
+
     if (amountValue == BigDecimal.ZERO) {
         Column(
             modifier = Modifier
@@ -292,20 +358,21 @@ private fun ProfitLossInfo(
                 .padding(horizontal = 4.dp)
         ) {
             Text(
-                text = if (isLong) {
-                    stringResource(R.string.Price_Up_Profit, priceChangePercent.toString(), profitPercent.toString(), "$0.00")
-                } else {
-                    stringResource(R.string.Price_Down_Profit, priceChangePercent.toString(), profitPercent.toString(), "$0.00")
-                },
+                text = context.formatPerpsProfitPreview(
+                    isLong = isLong,
+                    priceChangeText = priceChangePercent.toString(),
+                    profitPercentText = profitPercent.toString(),
+                    profitAmountText = formatPerpsRawUsdDecimal(BigDecimal.ZERO),
+                ),
                 fontSize = 13.sp,
                 color = MixinAppTheme.colors.textAssist
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = if (isLong) {
-                    stringResource(R.string.Price_Down_Loss, String.format("%.2f", liquidationPercent), "$0.00", "")
+                    stringResource(R.string.Price_Down_Loss, String.format("%.2f", liquidationPercent), formatPerpsRawUsdDecimal(BigDecimal.ZERO), "")
                 } else {
-                    stringResource(R.string.Price_Up_Loss, String.format("%.2f", liquidationPercent), "$0.00", "")
+                    stringResource(R.string.Price_Up_Loss, String.format("%.2f", liquidationPercent), formatPerpsRawUsdDecimal(BigDecimal.ZERO), "")
                 },
                 fontSize = 13.sp,
                 color = MixinAppTheme.colors.textAssist
@@ -323,21 +390,12 @@ private fun ProfitLossInfo(
             .padding(horizontal = 4.dp)
     ) {
         Text(
-            text = if (isLong) {
-                stringResource(
-                    R.string.Price_Up_Profit,
-                    priceChangePercent.toString(),
-                    profitPercent.toString(),
-                    String.format("$%.2f", profitAmount)
-                )
-            } else {
-                stringResource(
-                    R.string.Price_Down_Profit,
-                    priceChangePercent.toString(),
-                    profitPercent.toString(),
-                    String.format("$%.2f", profitAmount)
-                )
-            },
+            text = context.formatPerpsProfitPreview(
+                isLong = isLong,
+                priceChangeText = priceChangePercent.toString(),
+                profitPercentText = profitPercent.toString(),
+                profitAmountText = formatPerpsRawUsdDecimal(profitAmount),
+            ),
             fontSize = 13.sp,
             color = MixinAppTheme.colors.textAssist
         )
@@ -347,14 +405,14 @@ private fun ProfitLossInfo(
                 stringResource(
                     R.string.Price_Down_Loss,
                     String.format("%.2f", liquidationPercent),
-                    String.format("$%.2f", lossAmount),
+                    formatPerpsRawUsdDecimal(lossAmount),
                     ""
                 )
             } else {
                 stringResource(
                     R.string.Price_Up_Loss,
                     String.format("%.2f", liquidationPercent),
-                    String.format("$%.2f", lossAmount),
+                    formatPerpsRawUsdDecimal(lossAmount),
                     ""
                 )
             },

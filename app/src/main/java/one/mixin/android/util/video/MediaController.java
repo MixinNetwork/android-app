@@ -8,9 +8,10 @@ import com.coremedia.iso.boxes.SampleSizeBox;
 import com.coremedia.iso.boxes.TrackBox;
 import com.coremedia.iso.boxes.TrackHeaderBox;
 import com.googlecode.mp4parser.util.Path;
-import timber.log.Timber;
 
 import java.util.List;
+
+import timber.log.Timber;
 
 public class MediaController {
 
