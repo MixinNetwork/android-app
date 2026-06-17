@@ -1,6 +1,5 @@
 package one.mixin.android.ui.setting.ui.page
 
-import one.mixin.android.ui.home.web3.components.PageScaffold
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -23,6 +22,7 @@ import one.mixin.android.R
 import one.mixin.android.api.response.MembershipOrder
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.openUrl
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.setting.ui.components.InvoicesList
 import one.mixin.android.ui.viewmodel.MemberViewModel
 import one.mixin.android.ui.wallet.alert.components.cardBackground

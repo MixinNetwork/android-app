@@ -79,8 +79,11 @@ import one.mixin.android.ui.home.web3.components.PriceInfo
 import one.mixin.android.ui.home.web3.components.TradeLayout
 import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.getMixinErrorStringByCode
+import one.mixin.android.web3.isNativeSolAsset
+import one.mixin.android.web3.nativeSolSpendableBalance
 import java.math.BigDecimal
 
 @Composable
@@ -110,11 +113,6 @@ fun SwapContent(
     var quoteMin by remember { mutableStateOf<String?>(null) }
     var quoteMax by remember { mutableStateOf<String?>(null) }
 
-    var inputText by remember { mutableStateOf(initialAmount ?: "") }
-    LaunchedEffect(lastOrderTime) {
-        inputText = initialAmount ?: ""
-    }
-
     var isLoading by remember { mutableStateOf(false) }
     var isReverse by remember { mutableStateOf(false) }
     var invalidFlag by remember { mutableStateOf(false) }
@@ -124,6 +122,14 @@ fun SwapContent(
     }
     var toToken by remember(from, to, isReverse) {
         mutableStateOf(if (isReverse) from else to)
+    }
+    val fromMaxDecimalPlaces = fromToken.tradeInputMaxDecimalPlaces()
+
+    var inputText by remember {
+        mutableStateOf(limitTradeInputDecimalPlaces(initialAmount ?: "", fromMaxDecimalPlaces))
+    }
+    LaunchedEffect(lastOrderTime, fromMaxDecimalPlaces) {
+        inputText = limitTradeInputDecimalPlaces(initialAmount ?: "", fromMaxDecimalPlaces)
     }
 
     val shouldRefreshQuote = remember { MutableStateFlow(inputText) }
@@ -182,6 +188,13 @@ fun SwapContent(
 
     fromToken?.let { from ->
         val fromBalance = viewModel.tokenExtraFlow(from).collectAsStateWithLifecycle(from.balance).value
+        val rawFromBalanceValue = fromBalance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+        val availableFromBalanceValue = if (from.isNativeSolAsset()) {
+            nativeSolSpendableBalance(rawFromBalanceValue)
+        } else {
+            rawFromBalanceValue
+        }
+        val availableFromBalance = availableFromBalanceValue.stripTrailingZeros().toPlainString()
         KeyboardAwareBox(modifier = Modifier.fillMaxHeight(), content = { availableHeight ->
             Column(
                 modifier = if (availableHeight != null) {
@@ -216,6 +229,7 @@ fun SwapContent(
                                     .clip(CircleShape)
                                     .background(MixinAppTheme.colors.accent)
                                     .clickable {
+                                        AnalyticsTracker.trackSpotSwitchSendReceive()
                                         isLoading = true
                                         isReverse = !isReverse
                                         invalidFlag = !invalidFlag
@@ -231,7 +245,8 @@ fun SwapContent(
                                             }
                                         }
                                         quoteResult?.let {
-                                            inputText = it.outAmount
+                                            val nextFromMaxDecimalPlaces = toToken.tradeInputMaxDecimalPlaces()
+                                            inputText = limitTradeInputDecimalPlaces(it.outAmount, nextFromMaxDecimalPlaces)
                                             quoteResult = null
                                         }
                                         context.clickVibrate()
@@ -256,10 +271,13 @@ fun SwapContent(
                                 selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.To else SelectTokenType.From) },
                                 onInputChanged = { inputText = it },
                                 onDeposit = onDeposit,
+                                displayBalanceOverride = if (from.isNativeSolAsset()) fromBalance else null,
+                                maxDecimalPlaces = fromMaxDecimalPlaces,
                                 onMax = {
-                                    val balance = fromBalance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                                    AnalyticsTracker.trackSpotSendInputBalance()
+                                    val balance = availableFromBalanceValue
                                     if (balance > BigDecimal.ZERO) {
-                                        inputText = balance.stripTrailingZeros().toPlainString()
+                                        inputText = limitTradeInputDecimalPlaces(balance.stripTrailingZeros().toPlainString(), fromMaxDecimalPlaces)
                                     } else {
                                         inputText = ""
                                     }
@@ -288,7 +306,9 @@ fun SwapContent(
                                     inputText = inputText,
                                     quoteMin = quoteMin,
                                     quoteMax = quoteMax,
-                                    onInputTextChange = { inputText = it },
+                                    onInputTextChange = {
+                                        inputText = limitTradeInputDecimalPlaces(it, fromMaxDecimalPlaces)
+                                    },
                                     onInvalidFlagChange = { invalidFlag = !invalidFlag },
                                     onSwitchToLimitOrder = onSwitchToLimitOrder,
                                 )
@@ -301,7 +321,7 @@ fun SwapContent(
                 Spacer(modifier = Modifier.height(if (availableHeight == null) 14.dp else 8.dp))
                 ReviewButton(
                     inputText = inputText,
-                    fromBalance = fromBalance,
+                    fromBalance = availableFromBalance,
                     fromToken = fromToken!!,
                     quoteResult = quoteResult,
                     quoteError = quoteError,
@@ -323,25 +343,28 @@ fun SwapContent(
                     .background(MixinAppTheme.colors.backgroundWindow)
                     .padding(horizontal = 12.dp, vertical = 8.dp), horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                val balance = fromBalance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                val balance = availableFromBalanceValue
 
                 InputAction("25%", showBorder = true) {
+                    AnalyticsTracker.trackSpotSendInputPercent("25%")
                     if (balance > BigDecimal.ZERO) {
-                        inputText = (balance * BigDecimal("0.25")).stripTrailingZeros().toPlainString()
+                        inputText = limitTradeInputDecimalPlaces((balance * BigDecimal("0.25")).stripTrailingZeros().toPlainString(), fromMaxDecimalPlaces)
                     } else {
                         inputText = ""
                     }
                 }
                 InputAction("50%", showBorder = true) {
+                    AnalyticsTracker.trackSpotSendInputPercent("50%")
                     if (balance > BigDecimal.ZERO) {
-                        inputText = (balance * BigDecimal("0.5")).stripTrailingZeros().toPlainString()
+                        inputText = limitTradeInputDecimalPlaces((balance * BigDecimal("0.5")).stripTrailingZeros().toPlainString(), fromMaxDecimalPlaces)
                     } else {
                         inputText = ""
                     }
                 }
                 InputAction(stringResource(R.string.Max), showBorder = true) {
+                    AnalyticsTracker.trackSpotSendInputPercent("max")
                     if (balance > BigDecimal.ZERO) {
-                        inputText = balance.stripTrailingZeros().toPlainString()
+                        inputText = limitTradeInputDecimalPlaces(balance.stripTrailingZeros().toPlainString(), fromMaxDecimalPlaces)
                     } else {
                         inputText = ""
                     }

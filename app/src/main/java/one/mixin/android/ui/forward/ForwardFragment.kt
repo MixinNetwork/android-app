@@ -19,7 +19,6 @@ import androidx.collection.ArraySet
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.net.toFile
 import androidx.core.net.toUri
-import androidx.core.os.bundleOf
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
@@ -113,10 +112,10 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         ): ForwardFragment {
             val fragment = ForwardFragment()
             val b =
-                bundleOf(
-                    ARGS_MESSAGES to messages,
-                    ARGS_ACTION to action,
-                )
+                Bundle().apply {
+                    putParcelableArrayList(ARGS_MESSAGES, messages)
+                    putParcelable(ARGS_ACTION, action)
+                }
             fragment.arguments = b
             return fragment
         }
@@ -127,10 +126,10 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         ): ForwardFragment {
             val fragment = ForwardFragment()
             val b =
-                bundleOf(
-                    ARGS_COMBINE_MESSAGES to messages,
-                    ARGS_ACTION to action,
-                )
+                Bundle().apply {
+                    putParcelableArrayList(ARGS_COMBINE_MESSAGES, messages)
+                    putParcelable(ARGS_ACTION, action)
+                }
             fragment.arguments = b
             return fragment
         }

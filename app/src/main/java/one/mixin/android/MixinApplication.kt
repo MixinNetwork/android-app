@@ -31,7 +31,6 @@ import com.bugsnag.android.Bugsnag
 import com.bugsnag.android.Configuration as BugsnagConfiguration
 import com.appsflyer.AppsFlyerConversionListener
 import com.appsflyer.AppsFlyerLib
-import com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedulerService
 import com.google.android.gms.net.CronetProviderInstaller
 import com.google.firebase.analytics.FirebaseAnalytics
 import dagger.hilt.EntryPoint
@@ -41,12 +40,10 @@ import dagger.hilt.components.SingletonComponent
 import io.reactivex.plugins.RxJavaPlugins
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import leakcanary.AppWatcher
-import leakcanary.LeakCanaryProcess
-import leakcanary.ReachabilityWatcher
 import okhttp3.OkHttpClient
 import one.mixin.android.Constants.Account.PREF_APP_AUTH
 import one.mixin.android.crypto.CryptoWalletHelper
@@ -150,12 +147,26 @@ open class MixinApplication :
     private var activityReferences: Int = 0
     private var isActivityChangingConfigurations = false
 
-    @Inject
-    @ApplicationScope
+    @EntryPoint
+    @InstallIn(SingletonComponent::class)
+    interface ApplicationScopeEntryPoint {
+        @one.mixin.android.di.ApplicationScope
+        fun getApplicationScope(): CoroutineScope
+    }
+
+    private fun getAppScope(): CoroutineScope {
+        return try {
+            EntryPointAccessors.fromApplication(this, ApplicationScopeEntryPoint::class.java).getApplicationScope()
+        } catch (e: Exception) {
+            CoroutineScope(Dispatchers.Main + SupervisorJob())
+        }
+    }
+
     lateinit var applicationScope: CoroutineScope
 
     override fun onCreate() {
         super.onCreate()
+        applicationScope = getAppScope()
         init()
         registerActivityLifecycleCallbacks(this)
         SignalProtocolLoggerProvider.setProvider(MixinSignalProtocolLogger())
@@ -189,9 +200,9 @@ open class MixinApplication :
         config.enabledErrorTypes.ndkCrashes = true
         config.enabledErrorTypes.unhandledExceptions = true
         if (BuildConfig.DEBUG) {
-            config.setReleaseStage("development");
+            config.releaseStage = "development"
         } else {
-            config.setReleaseStage("production");
+            config.releaseStage = "production"
         }
         Bugsnag.start(this, config)
     }
@@ -218,12 +229,22 @@ open class MixinApplication :
             }
         }, this)
         AppsFlyerLib.getInstance().start(this)
-        FirebaseAnalytics.getInstance(this).appInstanceId.addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val additionalData = mapOf("app_instance_id" to task.result)
-                AppsFlyerLib.getInstance().setAdditionalData(additionalData)
+        val firebaseAnalytics = FirebaseAnalytics.getInstance(this)
+        val appInstanceIdTask = firebaseAnalytics.appInstanceId
+        val sessionIdTask = firebaseAnalytics.sessionId
+        com.google.android.gms.tasks.Tasks.whenAllComplete(appInstanceIdTask, sessionIdTask)
+            .addOnCompleteListener {
+                val additionalData = mutableMapOf<String, Any>()
+                if (appInstanceIdTask.isSuccessful) {
+                    additionalData["app_instance_id"] = appInstanceIdTask.result
+                }
+                if (sessionIdTask.isSuccessful && sessionIdTask.result != null) {
+                    additionalData["ga_session_id"] = sessionIdTask.result
+                }
+                if (additionalData.isNotEmpty()) {
+                    AppsFlyerLib.getInstance().setAdditionalData(additionalData)
+                }
             }
-        }
     }
 
     override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
@@ -240,18 +261,6 @@ open class MixinApplication :
         CursorWindowFixer.fix(this)
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree(), FileLogTree())
-            // ignore known leaks
-            val delegate =
-                ReachabilityWatcher { watchedObject, description ->
-                    if (watchedObject !is JobInfoSchedulerService) {
-                        AppWatcher.objectWatcher.expectWeaklyReachable(watchedObject, description)
-                    }
-                }
-            val watchersToInstall = AppWatcher.appDefaultWatchers(this, delegate)
-            AppWatcher.manualInstall(application = this, watchersToInstall = watchersToInstall)
-            if (LeakCanaryProcess.isInAnalyzerProcess(this)) {
-                return
-            }
         } else {
             Timber.plant(FileLogTree())
         }
@@ -493,7 +502,7 @@ open class MixinApplication :
     }
 
     fun checkAndShowAppAuth(activity: Activity): Boolean {
-        val appAuth = defaultSharedPreferences.getInt(Constants.Account.PREF_APP_AUTH, -1)
+        val appAuth = defaultSharedPreferences.getInt(PREF_APP_AUTH, -1)
         if (appAuth != -1) {
             if (appAuth == 0) {
                 appAuthShown = true

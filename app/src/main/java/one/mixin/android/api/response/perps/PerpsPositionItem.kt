@@ -1,10 +1,12 @@
 package one.mixin.android.api.response.perps
 
 import android.os.Parcelable
+import androidx.compose.runtime.Immutable
 import androidx.room.ColumnInfo
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 
+@Immutable
 @Parcelize
 data class PerpsPositionItem(
     @SerializedName("position_id")
@@ -40,6 +42,15 @@ data class PerpsPositionItem(
     @SerializedName("open_pay_asset_id")
     @ColumnInfo(name = "open_pay_asset_id")
     val openPayAssetId: String? = null,
+    @SerializedName("take_profit_price")
+    @ColumnInfo(name = "take_profit_price")
+    val takeProfitPrice: String? = null,
+    @SerializedName("stop_loss_price")
+    @ColumnInfo(name = "stop_loss_price")
+    val stopLossPrice: String? = null,
+    @SerializedName("liquidation_price")
+    @ColumnInfo(name = "liquidation_price")
+    val liquidationPrice: String? = null,
     @SerializedName("state")
     @ColumnInfo(name = "state")
     val state: String? = null,
@@ -66,4 +77,6 @@ data class PerpsPositionItem(
     val iconUrl: String? = null,
     @ColumnInfo(name = "token_symbol")
     val tokenSymbol: String? = null,
+    @ColumnInfo(name = "price_scale")
+    val priceScale: Int = 2,
 ) : Parcelable

@@ -33,6 +33,7 @@ import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.ui.wallet.fiatmoney.OrderStatusFragment.Companion.ARGS_INFO
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.cardIcon
 import one.mixin.android.vo.safe.TokenItem
@@ -232,7 +233,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
 
     @SuppressLint("SetTextI18n")
     private fun refresh() {
-        lifecycleScope.launch {
+        lifecycleScope.launch(ErrorHandler.errorHandler) {
             var time = 10
             while (isActive) {
                 if (time == 10) {

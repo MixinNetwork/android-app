@@ -48,6 +48,7 @@ import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.web.refreshScreenshot
 import one.mixin.android.util.ErrorHandler.Companion.ADDRESS_GENERATING
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getChainName
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.TokenItem
@@ -95,6 +96,7 @@ class DepositFragment : BaseFragment() {
     }
 
     override fun onDestroyView() {
+        AnalyticsTracker.trackAssetReceiveEnd()
         super.onDestroyView()
         _binding = null
     }
@@ -107,6 +109,7 @@ class DepositFragment : BaseFragment() {
                 rightAnimator.setOnClickListener { context?.openUrl(getString(R.string.deposit_url)) }
             }
             title.setSubTitle(getString(R.string.Deposit_Token, asset.symbol), getString(R.string.Privacy_Wallet), R.drawable.ic_wallet_privacy)
+            title.setWalletNameSubTitleStyle()
             addressDesc.text = getTipsByAsset(asset)
             if (notSupport) {
                 notSupportLl.isVisible = true
@@ -173,6 +176,7 @@ class DepositFragment : BaseFragment() {
                         }
                         setOnClickListener {
                             if (same) return@setOnClickListener
+                            AnalyticsTracker.trackAssetReceiveTokenSelect(AnalyticsTracker.TradeTokenSelectMethod.CHAIN_ITEM_CLICK)
                             syncJob?.cancel()
                             syncJob =
                                 lifecycleScope.launch {
@@ -342,6 +346,7 @@ class DepositFragment : BaseFragment() {
                 Constants.ChainId.Solana,
                 Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID,
                 Constants.ChainId.Avalanche,
+                Constants.ChainId.HyperEVM,
                 Constants.ChainId.TON_CHAIN_ID -> true
 
                 else -> false

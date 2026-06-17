@@ -26,13 +26,22 @@ import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshWeb3TransactionsJob
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
+import one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment
 import one.mixin.android.ui.home.reminder.VerifyMobileReminderBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.trade.TradeFragment
+import one.mixin.android.ui.home.web3.trade.perps.PREF_HIDE_SL_GUIDE_UNTIL
+import one.mixin.android.ui.home.web3.trade.perps.PREF_HIDE_TP_GUIDE_UNTIL
 import one.mixin.android.ui.setting.diagnosis.DiagnosisFragment
+import one.mixin.android.ui.wallet.PREF_WALLET_HOME_ADD_WALLET_BANNER_CLOSED
+import one.mixin.android.ui.wallet.PREF_WALLET_HOME_REFERRAL_CLOSED
 import one.mixin.android.util.debug.FileLogTree
 import one.mixin.android.util.viewBinding
 import javax.inject.Inject
+
+private const val PREF_WALLET_HOME_CASHBACK_BANNER_CLOSED = "pref_wallet_home_cashback_banner_closed"
 
 @AndroidEntryPoint
 class LogAndDebugFragment : BaseFragment(R.layout.fragment_log_debug) {
@@ -118,6 +127,16 @@ class LogAndDebugFragment : BaseFragment(R.layout.fragment_log_debug) {
                     toast(R.string.Recovery_Reminder_Will_Show_Once)
                 }
 
+                previewNewUpdateReminder.setOnClickListener {
+                    ReminderBottomSheetDialogFragment.allowDebugShowOnce(requireContext())
+                    toast(R.string.New_Update_Reminder_Will_Show_Once)
+                }
+
+                resetTpslGuide.setOnClickListener {
+                    resetDebugSharedPreferences()
+                    toast(R.string.Reset_TpSl_Guide)
+                }
+
                 deleteWeb3Transactions.setOnClickListener {
                     context?.let { ctx ->
                         alertDialogBuilder()
@@ -157,6 +176,37 @@ class LogAndDebugFragment : BaseFragment(R.layout.fragment_log_debug) {
             }
         }
     }
+
+    private fun resetDebugSharedPreferences() {
+        val editor = defaultSharedPreferences.edit()
+        debugSharedPreferenceKeys().forEach { key ->
+            editor.remove(key)
+        }
+        editor.apply()
+    }
+
+    private fun debugSharedPreferenceKeys(): List<String> =
+        buildList {
+            add(PREF_HIDE_TP_GUIDE_UNTIL)
+            add(PREF_HIDE_SL_GUIDE_UNTIL)
+            add(TradeFragment.PREF_TRADE_SPOT_GUIDE_SHOWN)
+            add(TradeFragment.PREF_TRADE_PERPETUAL_GUIDE_SHOWN)
+            add(Constants.Account.PREF_GLOBAL_MARKET)
+            add(Constants.Account.PREF_MARKET_TYPE)
+            add(Constants.Account.PREF_MARKET_ORDER)
+            add(Constants.Account.PREF_MARKET_TOP_PERCENTAGE)
+            add(Constants.Account.PREF_HAS_USED_BUY)
+            add(Constants.Account.PREF_HAS_USED_SWAP)
+            add(PREF_WALLET_HOME_ADD_WALLET_BANNER_CLOSED)
+            add(PREF_WALLET_HOME_REFERRAL_CLOSED)
+            add(PREF_WALLET_HOME_CASHBACK_BANNER_CLOSED)
+            Session.getAccountId()?.let { accountId ->
+                add("${TradeFragment.PREF_TRADE_SELECTED_TAB_PREFIX}$accountId")
+                add("${Constants.Account.PREF_TRADE_LIMIT_ORDER_BADGE_DISMISSED}_$accountId")
+                add("${Constants.Account.PREF_TRADE_PERPETUAL_BADGE_DISMISSED}_$accountId")
+                add("${Constants.Account.PREF_TRADE_PERPETUAL_ORDER_BADGE_DISMISSED}_$accountId")
+            }
+        }
 
     private fun shareLogsFile() {
         val dialog =

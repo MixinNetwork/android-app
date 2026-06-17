@@ -1,10 +1,9 @@
 package one.mixin.android.crypto
 
+import org.bitcoinj.crypto.MnemonicCode
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 import javax.crypto.Mac
-import javax.crypto.SecretKeyFactory
-import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.SecretKeySpec
 
 /**
@@ -14,8 +13,6 @@ import javax.crypto.spec.SecretKeySpec
  */
 object SolanaKeyGenerator {
 
-    private const val PBKDF2_ITERATION_COUNT = 2048
-    private const val SEED_SIZE_BITS = 512
     private const val HMAC_SHA512_ALGORITHM = "HmacSHA512"
 
     /**
@@ -28,8 +25,9 @@ object SolanaKeyGenerator {
      * @return A 32-byte array representing the private key seed.
      */
     fun getPrivateKeyFromMnemonic(mnemonic: String, passphrase: String = "", index: Int = 0): ByteArray {
-        // 1. Mnemonic to Seed
-        val seed = mnemonicToSeed(mnemonic, passphrase)
+        // Use MnemonicCode.toSeed which applies NFKD normalization to both mnemonic and
+        // passphrase per BIP39, ensuring correct seed derivation for non-ASCII inputs.
+        val seed = MnemonicCode.toSeed(mnemonic.split(" "), passphrase)
 
         // 2. Seed to Master Key/Chain Code via SLIP-0010
         val masterKey = hmacSha512("ed25519 seed".toByteArray(StandardCharsets.UTF_8), seed)
@@ -53,21 +51,6 @@ object SolanaKeyGenerator {
         }
 
         return currentKey
-    }
-
-    /**
-     * Converts a mnemonic phrase to a BIP-39 seed using PBKDF2 with HMAC-SHA512.
-     */
-    private fun mnemonicToSeed(mnemonic: String, passphrase: String): ByteArray {
-        val salt = "mnemonic$passphrase".toByteArray(StandardCharsets.UTF_8)
-        val spec = PBEKeySpec(
-            mnemonic.toCharArray(),
-            salt,
-            PBKDF2_ITERATION_COUNT,
-            SEED_SIZE_BITS
-        )
-        val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512")
-        return factory.generateSecret(spec).encoded
     }
 
     /**

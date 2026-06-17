@@ -1,6 +1,5 @@
 package one.mixin.android.ui.wallet.components
 
-import one.mixin.android.ui.home.web3.components.PageScaffold
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -59,6 +58,7 @@ import one.mixin.android.crypto.isSolanaHexPrivateKeyValid
 import one.mixin.android.crypto.isSolanaPrivateKeyValid
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.home.web3.Web3ViewModel
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.wallet.WalletSecurityActivity
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.encodeToBase58String
@@ -69,17 +69,19 @@ import org.bitcoinj.crypto.ECKey
 import org.web3j.crypto.Keys
 import org.web3j.utils.Numeric
 import timber.log.Timber
+import java.math.BigInteger
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ImportWalletDetailPage(
     mode: WalletSecurityActivity.Mode,
     pop: () -> Unit,
-    onConfirmClick: (String, String) -> Unit,
+    onConfirmClick: (String, String, String?) -> Unit,
     onScan: (() -> Unit)? = null,
     contentText: String = "",
     walletId: String? = null,
     chainId: String? = null,
+    defaultWalletName: String? = null,
 ) {
     val context = LocalContext.current
     var text by remember(contentText) { mutableStateOf(contentText) }
@@ -95,6 +97,7 @@ fun ImportWalletDetailPage(
         "Arbitrum" to Constants.ChainId.Arbitrum,
         "Optimism" to Constants.ChainId.Optimism,
         "Avalanche" to Constants.ChainId.Avalanche,
+        "HyperEVM" to Constants.ChainId.HyperEVM,
         "Solana" to Constants.ChainId.SOLANA_CHAIN_ID
     )
     var expanded by remember { mutableStateOf(false) }
@@ -106,10 +109,21 @@ fun ImportWalletDetailPage(
     var selectedNetworkName by remember(initialNetworkName) {
         mutableStateOf(initialNetworkName ?: "Ethereum")
     }
+    val showWalletNameInput = mode == WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY ||
+        mode == WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS
+    var walletName by remember(showWalletNameInput) { mutableStateOf("") }
+    var hasInitializedWalletName by remember(showWalletNameInput) { mutableStateOf(false) }
+
+    LaunchedEffect(defaultWalletName, showWalletNameInput) {
+        if (showWalletNameInput && !hasInitializedWalletName && !defaultWalletName.isNullOrBlank()) {
+            walletName = defaultWalletName
+            hasInitializedWalletName = true
+        }
+    }
 
 
     val isEvmNetwork = when (selectedNetworkName) {
-        "Ethereum", "Base", "BSC", "Polygon", "Arbitrum", "Optimism", "Avalanche" -> true
+        "Ethereum", "Base", "BSC", "Polygon", "Arbitrum", "Optimism", "Avalanche", "HyperEVM" -> true
         else -> false
     }
     val isBitcoin: Boolean = selectedNetworkName == "Bitcoin"
@@ -215,10 +229,15 @@ fun ImportWalletDetailPage(
             mode == WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY && text.isNotEmpty() && isInputValid && isAddressMismatched
         }
     }
+    val isWalletNameValid by remember(showWalletNameInput, walletName) {
+        derivedStateOf {
+            !showWalletNameInput || walletName.trim().isNotEmpty()
+        }
+    }
 
     val isButtonEnabled = when (mode) {
         WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY -> isInputValid && !isAddressMismatched
-        else -> isInputValid && !addressExists
+        else -> isInputValid && !addressExists && isWalletNameValid
     }
 
     val title = when (mode) {
@@ -228,9 +247,13 @@ fun ImportWalletDetailPage(
         else -> ""
     }
     val hint = when (mode) {
-        WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY -> stringResource(R.string.private_key_hint)
+        WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY,
+        WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY -> when {
+            isSolana -> stringResource(R.string.solana_private_key_hint)
+            isBitcoin -> stringResource(R.string.bitcoin_private_key_hint)
+            else -> stringResource(R.string.ethereum_private_key_hint)
+        }
         WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS -> stringResource(R.string.address_hint)
-        WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY -> stringResource(R.string.private_key_hint)
         else -> ""
     }
 
@@ -250,6 +273,36 @@ fun ImportWalletDetailPage(
                     .fillMaxSize()
                     .padding(16.dp)
             ) {
+                if (showWalletNameInput) {
+                    TextField(
+                        value = walletName,
+                        onValueChange = { if (it.length <= 36) walletName = it },
+                        label = { Text(stringResource(R.string.Wallet_Name), color = MixinAppTheme.colors.accent) },
+                        singleLine = true,
+                        colors = TextFieldDefaults.textFieldColors(
+                            textColor = MixinAppTheme.colors.textPrimary,
+                            backgroundColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            disabledIndicatorColor = Color.Transparent,
+                            cursorColor = MixinAppTheme.colors.accent,
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(
+                                color = MixinAppTheme.colors.background,
+                            )
+                            .border(
+                                width = 1.dp,
+                                color = MixinAppTheme.colors.borderColor,
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+
                 ExposedDropdownMenuBox(
                     expanded = expanded,
                     onExpandedChange = {
@@ -446,7 +499,8 @@ fun ImportWalletDetailPage(
                         .height(48.dp),
                     onClick = {
                         onConfirmClick(
-                            currentChainId, if (mode == WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS && isEvmNetwork) {
+                            currentChainId,
+                            if (mode == WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS && isEvmNetwork) {
                                 Keys.toChecksumAddress(text)
                             } else if ((mode == WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY || mode == WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY) && isBitcoin) {
                                 requireNotNull(normalizeBitcoinPrivateKeyToWif(text))
@@ -456,7 +510,8 @@ fun ImportWalletDetailPage(
                                 Numeric.hexStringToByteArray(text).encodeToBase58String()
                             } else {
                                 text
-                            }
+                            },
+                            walletName.trim().takeIf { showWalletNameInput }
                         )
                     },
                     enabled = isButtonEnabled,
@@ -494,12 +549,9 @@ private fun isBitcoinPrivateKeyValid(privateKey: String): Boolean {
 
         if (privateKey.matches(Regex("^[0-9a-fA-F]+$"))) {
             val privateKeyBytes = Numeric.hexStringToByteArray(privateKey)
-            val valid = privateKeyBytes.size == 32
-            if (!valid) {
-                Timber.e("Invalid bitcoin private key length: %d bytes, expected 32",
-                    privateKeyBytes.size)
-            }
-            return valid
+            if (privateKeyBytes.size != 32) return false
+            val scalar = BigInteger(1, privateKeyBytes)
+            return scalar >= BigInteger.ONE && scalar < ECKey.ecDomainParameters().n
         }
 
         Timber.e("Unknown private key format")
@@ -538,10 +590,9 @@ private fun normalizeBitcoinPrivateKeyToWif(privateKey: String): String? {
 
 private fun isBitcoinAddressValid(address: String): Boolean {
     return try {
-        AddressParser.getDefault().parseAddress(address)
+        AddressParser.getDefault(BitcoinNetwork.MAINNET).parseAddress(address)
         true
     } catch (e: Exception) {
         false
     }
 }
-

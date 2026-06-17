@@ -44,6 +44,7 @@ import one.mixin.android.ui.wallet.DepositFragment
 import one.mixin.android.ui.wallet.DepositShareActivity
 import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.ui.web.refreshScreenshot
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getChainNetwork
 import one.mixin.android.web3.js.Web3Signer
 
@@ -90,7 +91,11 @@ class Web3AddressFragment : BaseFragment() {
         binding.title.setOnClickListener { }
         binding.title.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
         binding.title.rightIb.setOnClickListener {
-            requireContext().openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+            requireContext().openUrl(
+                Constants.HelpLink.CUSTOMER_SERVICE,
+                source = AnalyticsTracker.CustomerServiceSource.DEPOSIT,
+                wallet = AnalyticsTracker.TradeWallet.WEB3,
+            )
         }
         lifecycleScope.launch {
             val address = this@Web3AddressFragment.address
@@ -101,6 +106,7 @@ class Web3AddressFragment : BaseFragment() {
             val wallet = walletViewModel.getWalletByDestination(address)
             if (wallet != null) {
                 binding.title.setSubTitle(getString(R.string.Receive), wallet.name)
+                binding.title.setWalletNameSubTitleStyle()
             }
             binding.copy.setOnClickListener {
                 context?.heavyClickVibrate()
@@ -227,11 +233,12 @@ class Web3AddressFragment : BaseFragment() {
             walletViewModel.getTokenByWalletAndAssetId(Web3Signer.currentWalletId,id)?.let {
                 web3Token = it
             }
-            if (web3Token.isSolanaChain()) {
-                address = Web3Signer.solanaAddress
-            } else {
-                address = Web3Signer.evmAddress
-            }
+            address =
+                when (web3Token.chainId) {
+                    Constants.ChainId.SOLANA_CHAIN_ID -> Web3Signer.solanaAddress
+                    Constants.ChainId.BITCOIN_CHAIN_ID -> Web3Signer.btcAddress
+                    else -> Web3Signer.evmAddress
+                }
             updateUI()
             updateChips()
         }
@@ -268,7 +275,7 @@ class Web3AddressFragment : BaseFragment() {
                 } else {
                     it.setTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
                     it.chipBackgroundColor = ColorStateList.valueOf(Color.TRANSPARENT)
-                    it.chipStrokeColor = ColorStateList.valueOf(requireContext().colorFromAttribute(R.attr.bg_window))
+                    it.chipStrokeColor = ColorStateList.valueOf(requireContext().colorFromAttribute(R.attr.bg_gray))
                     it.chipStrokeWidth = 1.dp.toFloat()
                 }
             }

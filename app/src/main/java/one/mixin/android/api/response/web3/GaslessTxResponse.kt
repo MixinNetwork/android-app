@@ -39,11 +39,13 @@ data class UserOpSignRequest(
 )
 
 data class EIP7702SignRequest(
-    val required: Boolean,
-    val signType: String,
-    val message: String,
+    val signType: String?,
+    val message: String?,
     @SerializedName("chainId")
-    val chainId: String,
-    val address: String,
-    val nonce: String,
+    val chainId: String?,
+    val address: String?,
+    val nonce: String?,
 )
+
+val EIP7702SignRequest.shouldSign: Boolean
+    get() = !message.isNullOrBlank()

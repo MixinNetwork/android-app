@@ -49,13 +49,13 @@ import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
+import one.mixin.android.tip.Tip
 import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.buildTipGas
 import one.mixin.android.tip.wc.internal.estimateFeeInBtc
-import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.biometric.NftBiometricItem
 import one.mixin.android.ui.common.biometric.maxUtxoCount
 import one.mixin.android.ui.home.inscription.component.OwnerState
@@ -93,9 +93,15 @@ class Web3ViewModel @Inject constructor(
 ) : ViewModel() {
     var scrollOffset: Int = 0
 
+    suspend fun refreshUser(userId: String) = userRepository.refreshUser(userId)
+
+    suspend fun findOrSyncApp(appId: String) = userRepository.findOrSyncApp(appId)
+
     suspend fun findMarketItemByAssetId(assetId: String) = tokenRepository.findMarketItemByAssetId(assetId)
 
     fun web3TokensExcludeHidden(walletId: String) = web3Repository.web3TokensExcludeHidden(walletId)
+
+    fun topWeb3TokenItems(walletId: String) = web3Repository.topWeb3TokenItems(walletId)
 
     suspend fun web3TokensExcludeHiddenRaw(walletId: String) = withContext(Dispatchers.IO) {
         return@withContext web3Repository.web3TokensExcludeHiddenRaw(walletId)
@@ -122,6 +128,10 @@ class Web3ViewModel @Inject constructor(
 
     fun web3Transactions(walletId: String, assetId: String) = web3Repository.web3Transactions(walletId, assetId)
 
+    fun recentWeb3Transactions(walletId: String) = web3Repository.recentWeb3Transactions(walletId)
+
+    suspend fun getPendingTransactionItems(walletId: String) = web3Repository.getPendingTransactionItems(walletId)
+
     fun web3TokenExtraFlow(walletId: String, assetId: String) =
         tokenRepository.web3TokenExtraFlow(walletId, assetId)
 
@@ -133,8 +143,11 @@ class Web3ViewModel @Inject constructor(
         }
     }
 
-    suspend fun estimateBtcFeeRate(rawTransactionHex: String, currentRate: String?): EstimateFeeResponse? {
-        val cleanedRawHex: String = rawTransactionHex.removePrefix("0x").trim()
+    suspend fun estimateBtcFeeRate(rawTransactionHex: String? = null, currentRate: String?): EstimateFeeResponse? {
+        val cleanedRawHex: String? = rawTransactionHex
+            ?.removePrefix("0x")
+            ?.trim()
+            ?.takeIf { it.isNotEmpty() }
         val response = withContext(Dispatchers.IO) {
             runCatching {
                 web3Repository.estimateFee(
@@ -576,6 +589,8 @@ class Web3ViewModel @Inject constructor(
     suspend fun getRawTransactionByHashAndChain(walletId: String, hash: String, chainId: String) = tokenRepository.getRawTransactionByHashAndChain(walletId, hash, chainId)
 
     suspend fun getPendingTransactions(walletId: String) = tokenRepository.getPendingTransactions(walletId)
+
+    fun getPendingRawTransactionCount(walletId: String): LiveData<Int> = tokenRepository.getPendingRawTransactionCount(walletId)
 
     fun getPendingTransactionCount(walletId: String): LiveData<Int> = tokenRepository.getPendingTransactionCount(walletId)
 

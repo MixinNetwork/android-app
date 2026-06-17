@@ -10,10 +10,19 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.Account.PREF_LOGIN_OR_SIGN_UP
 import one.mixin.android.Constants.Account.PREF_LOGIN_VERIFY
 import one.mixin.android.Constants.Account.PREF_TRIED_UPDATE_KEY
+import one.mixin.android.Constants.DEFAULT_BOTS
+import one.mixin.android.Constants.DEFAULT_CN_BOTS
 import one.mixin.android.Constants.DEVICE_ID
+import one.mixin.android.Constants.MIXIN_ALERT_USER_ID
+import one.mixin.android.Constants.MIXIN_CARD_USER_ID
+import one.mixin.android.Constants.MIXIN_COMMUNITY_USER_ID
+import one.mixin.android.Constants.MIXIN_DISCOURSE_USER_ID
+import one.mixin.android.Constants.MIXIN_REWARD_USER_ID
+import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.Constants.TEAM_MIXIN_USER_ID
 import one.mixin.android.Constants.TEAM_MIXIN_USER_NAME
 import one.mixin.android.MixinApplication
@@ -37,11 +46,13 @@ import one.mixin.android.session.Session
 import one.mixin.android.session.decryptPinToken
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.logs.LogViewerBottomSheet
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipType
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.isSimplifiedChineseLocale
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import timber.log.Timber
@@ -71,6 +82,10 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        binding.loadingTitle.setOnLongClickListener {
+            LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
+            true
+        }
         MixinApplication.get().isOnline.set(true)
         when (arguments?.getString(ARGS_SOURCE)) {
             InitializeActivity.SOURCE_SIGN_UP -> AnalyticsTracker.trackSignUpSignalInit()
@@ -126,9 +141,22 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
                     TipActivity.show(requireActivity(), tipType, shouldWatch = true)
                 }
             }
-            jobManager.addJobInBackground(InitializeJob(TEAM_MIXIN_USER_ID, TEAM_MIXIN_USER_NAME))
+            initializeBots()
             activity?.finish()
         }
+
+    private fun initializeBots() {
+        val phone = Session.getAccount()?.phone.orEmpty()
+        val testAccountPrefix = BuildConfig.TEST_ACCOUNT_PREFIX
+        if (testAccountPrefix.isNotBlank() && phone.startsWith(testAccountPrefix)) {
+            return
+        }
+
+        val bots = if (isSimplifiedChineseLocale()) DEFAULT_CN_BOTS else DEFAULT_BOTS
+        bots.forEach { botId ->
+            jobManager.addJobInBackground(InitializeJob(botId))
+        }
+    }
 
     private suspend fun updateRsa2EdDsa() {
         val sessionKey = generateEd25519KeyPair()

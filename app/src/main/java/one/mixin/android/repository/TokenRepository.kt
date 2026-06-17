@@ -2,7 +2,6 @@ package one.mixin.android.repository
 
 import android.os.CancellationSignal
 import androidx.lifecycle.LiveData
-import androidx.paging.DataSource
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
@@ -458,6 +457,8 @@ class TokenRepository
 
         fun snapshotsLimit(id: String) = safeSnapshotDao.snapshotsLimit(id)
 
+        fun recentSnapshotsLimit() = safeSnapshotDao.recentSnapshotsLimit()
+
         suspend fun snapshotLocal(
             assetId: String,
             snapshotId: String,
@@ -561,21 +562,23 @@ class TokenRepository
 
         fun usdAssetItemsWithBalance() = tokenDao.usdAssetItemsWithBalance(Constants.usdIds)
 
-        fun allSnapshots(filterParams: FilterParams): DataSource.Factory<Int, SnapshotItem> {
-            return safeSnapshotDao.getSnapshots(filterParams.buildQuery()).map {
-                if (!it.withdrawal?.receiver.isNullOrBlank()) {
-                    val receiver = it.withdrawal.receiver
-                    val index: Int = receiver.indexOf(":")
-                    if (index == -1) {
-                        it.label = addressDao.findAddressByDestination(receiver, "")
-                    } else {
-                        val destination: String = receiver.substring(0, index)
-                        val tag: String = receiver.substring(index + 1)
-                        it.label = addressDao.findAddressByDestination(destination, tag)
-                    }
+        fun snapshotsPagingSource(filterParams: FilterParams): PagingSource<Int, SnapshotItem> {
+            return safeSnapshotDao.getSnapshots(filterParams.buildQuery())
+        }
+
+        suspend fun mapSnapshotItem(item: SnapshotItem): SnapshotItem = withContext(Dispatchers.IO) {
+            if (!item.withdrawal?.receiver.isNullOrBlank()) {
+                val receiver = item.withdrawal.receiver
+                val index: Int = receiver.indexOf(":")
+                if (index == -1) {
+                    item.label = addressDao.findAddressByDestination(receiver, "")
+                } else {
+                    val destination: String = receiver.substring(0, index)
+                    val tag: String = receiver.substring(index + 1)
+                    item.label = addressDao.findAddressByDestination(destination, tag)
                 }
-                it
             }
+            item
         }
 
         suspend fun deleteAllWeb3Transactions() {
@@ -601,6 +604,8 @@ class TokenRepository
         suspend fun allPendingDeposit() = tokenService.allPendingDeposits()
 
         fun getPendingDisplays() = safeSnapshotDao.getPendingDisplays()
+
+        suspend fun getPendingSnapshot(assetId: String) = safeSnapshotDao.getPendingSnapshot(assetId)
 
         suspend fun pendingDeposits(
             asset: String,
@@ -690,6 +695,8 @@ class TokenRepository
         private suspend fun getIconUrl(id: String) = chainDao.getIconUrl(id)
 
         fun observeTopAssets() = hotAssetDao.topAssets()
+
+        fun topAssetItemsNotHiddenLimit() = tokenDao.topAssetItemsNotHiddenLimit()
 
         suspend fun findAssetItemById(assetId: String) = tokenDao.findAssetItemById(assetId)
 
@@ -1748,6 +1755,8 @@ class TokenRepository
     }
 
     fun getPendingTransactionCount(walletId: String): LiveData<Int> = web3TransactionDao.getPendingTransactionCount(walletId)
+
+    fun getPendingRawTransactionCount(walletId: String): LiveData<Int> = web3RawTransactionDao.getPendingRawTransactionCount(walletId)
 
     suspend fun rampWebUrl(request: RampWebUrlRequest): MixinResponse<RampWebUrlResponse> = routeService.rampWebUrl(request)
 

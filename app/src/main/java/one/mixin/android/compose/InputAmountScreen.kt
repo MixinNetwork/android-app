@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.IconButton
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
@@ -57,6 +58,7 @@ import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.session.Session
+import one.mixin.android.ui.common.roundQrBackground
 import one.mixin.android.ui.home.web3.components.ActionButton
 import one.mixin.android.util.getChainName
 import one.mixin.android.vo.safe.TokenItem
@@ -495,6 +497,27 @@ private fun generateDepositUri(
             }
         }
 
+        ChainId.HyperEVM -> {
+            if (assetId == ChainId.HyperEVM) {
+                val weiAmount = try {
+                    BigDecimal(cleanAmount).multiply(BigDecimal.TEN.pow(18)).toBigInteger().toString()
+                } catch (_: Exception) {
+                    cleanAmount
+                }
+                "ethereum:$address@999?value=$weiAmount"
+            } else {
+                val uint256Amount = try {
+                    val tokenAmount = BigDecimal(cleanAmount)
+                    val decimals = precision ?: 18
+                    val multiplier = BigDecimal.TEN.pow(decimals)
+                    tokenAmount.multiply(multiplier).toBigInteger().toString()
+                } catch (_: Exception) {
+                    cleanAmount
+                }
+                "ethereum:${assetKey}@999/transfer?address=$address&amount=$cleanAmount&uint256=$uint256Amount"
+            }
+        }
+
         ChainId.Litecoin -> {
             "litecoin:$address?amount=$cleanAmount"
         }
@@ -553,7 +576,6 @@ private fun generateDepositUri(
 }
 
 // Helper function to generate QR code bitmap from deposit URI
-@Composable
 private fun generateQrCodeBitmap(
     assetId: String,
     chainId: String,
@@ -570,9 +592,15 @@ private fun generateQrCodeBitmap(
         amount = amount.split(" ").first(),
         precision = precision
     )
-    return depositUri?.generateQRCode(200.dip, 0, 32.dip)?.first
-        ?: // Generate a fallback QR code with the address if URI generation fails
-        (address ?: "").generateQRCode(200.dip, 0, 32.dip).first
+    return (depositUri ?: address.orEmpty()).generateInputAmountQrCode()
+}
+
+private fun String.generateInputAmountQrCode(): Bitmap {
+    val qrSize = 200.dip
+    val qrPadding = 8.dip
+    return generateQRCode(qrSize, qrPadding, outputSize = qrSize)
+        .first
+        .roundQrBackground(qrPadding, 6.dip.toFloat())
 }
 
 @Composable
@@ -702,11 +730,13 @@ fun InputAmountPreviewScreen(
             ) {
                 Box(
                     modifier = Modifier
-                        .size(200.dp),
+                        .size(200.dp)
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(Color.White),
                     contentAlignment = Alignment.Center
                 ) {
                     Image(
-                        bitmap = invoiceUri?.generateQRCode(200.dip, 0, 32.dip)?.first?.asImageBitmap() ?: generateQrCodeBitmap(
+                        bitmap = invoiceUri?.generateInputAmountQrCode()?.asImageBitmap() ?: generateQrCodeBitmap(
                             assetId = tokenAssetId,
                             chainId = tokenChainId,
                             assetKey = tokenAssetKey,

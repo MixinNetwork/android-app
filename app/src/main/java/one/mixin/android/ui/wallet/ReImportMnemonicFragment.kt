@@ -26,6 +26,9 @@ import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshSingleWalletJob
+import one.mixin.android.repository.Web3Repository
+import one.mixin.android.session.Session
+import one.mixin.android.tip.bip44.Bip44Path
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.components.MnemonicPhraseInput
 import one.mixin.android.ui.landing.components.MnemonicState
@@ -33,9 +36,6 @@ import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.wallet.viewmodel.FetchWalletViewModel
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.WalletCategory
-import one.mixin.android.repository.Web3Repository
-import one.mixin.android.session.Session
-import one.mixin.android.tip.bip44.Bip44Path
 import org.bitcoinj.base.ScriptType
 import org.bitcoinj.crypto.ECKey
 import org.web3j.utils.Numeric

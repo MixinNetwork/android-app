@@ -37,6 +37,15 @@ import one.mixin.android.ui.home.web3.trade.SwapViewModel
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import java.math.BigDecimal
 
+private fun displayBalance(balance: String?, isWeb3: Boolean): String {
+    if (balance.isNullOrBlank()) return "0"
+    return if (isWeb3) {
+        balance.toBigDecimalOrNull()?.stripTrailingZeros()?.toPlainString() ?: balance
+    } else {
+        balance.numberFormat8()
+    }
+}
+
 @Composable
 fun InputArea(
     modifier: Modifier = Modifier,
@@ -48,8 +57,10 @@ fun InputArea(
     onInputChanged: ((String) -> Unit)? = null,
     onDeposit: ((SwapToken) -> Unit)? = null,
     onMax: (() -> Unit)? = null,
+    displayBalanceOverride: String? = null,
     bottomCompose: (@Composable () -> Unit)? = null,
     inlineEndCompose: (@Composable () -> Unit)? = null,
+    maxDecimalPlaces: Int? = null,
 ) {
     val viewModel = hiltViewModel<SwapViewModel>()
     val balance = if (token == null) {
@@ -57,6 +68,7 @@ fun InputArea(
     } else {
         viewModel.tokenExtraFlow(token).collectAsStateWithLifecycle(token.balance).value
     }
+    val displayedBalance = displayBalanceOverride ?: balance
     Column(
         modifier =
             modifier
@@ -81,7 +93,15 @@ fun InputArea(
             }
         }
         Box(modifier = Modifier.height(10.dp))
-        InputContent(token = token, text = text, selectClick = selectClick, onInputChanged = onInputChanged, readOnly = readOnly, inlineEndCompose = inlineEndCompose)
+        InputContent(
+            token = token,
+            text = text,
+            selectClick = selectClick,
+            onInputChanged = onInputChanged,
+            readOnly = readOnly,
+            inlineEndCompose = inlineEndCompose,
+            maxDecimalPlaces = maxDecimalPlaces,
+        )
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
             token?.let { t ->
                 val depositVisible = !readOnly && onDeposit != null && (balance?.toBigDecimalOrNull()?.compareTo(BigDecimal.ZERO) ?: 0) == 0
@@ -95,11 +115,7 @@ fun InputArea(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = if (token.isWeb3) {
-                            balance?.numberFormat8() ?: "0"
-                        } else {
-                            balance?.numberFormat8() ?: "0"
-                        },
+                        text = displayBalance(balance = displayedBalance, isWeb3 = token.isWeb3),
                         style = TextStyle(
                             fontSize = 12.sp,
                             color = MixinAppTheme.colors.textAssist,

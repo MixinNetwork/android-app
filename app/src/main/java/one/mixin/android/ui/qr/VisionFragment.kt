@@ -73,6 +73,8 @@ fun handleResult(
         }
     if (content.isExternalScheme(activity) || content.isExternalTransferUrl() || content.isLightningUrl()) {
         result.putExtra(MainActivity.URL, content)
+    } else if (WalletConnect.isEnabled() && WalletConnect.isPaymentLink(content)) {
+        result.putExtra(MainActivity.WALLET_CONNECT, content)
     } else if (content.startsWith(Constants.Scheme.WALLET_CONNECT_PREFIX) && WalletConnect.isEnabled()) {
         result.putExtra(MainActivity.WALLET_CONNECT, content)
     } else if (!content.isMixinUrl()) {

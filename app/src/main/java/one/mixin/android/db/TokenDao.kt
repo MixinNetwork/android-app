@@ -18,6 +18,7 @@ import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.UnifiedAssetItem
 
 @Dao
+@SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
 interface TokenDao : BaseDao<Token> {
     companion object {
         const val PREFIX_ASSET_ITEM =
@@ -89,6 +90,10 @@ interface TokenDao : BaseDao<Token> {
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM $POSTFIX_ASSET_ITEM_NOT_HIDDEN")
     fun assetItemsNotHidden(defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<TokenItem>>
+
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
+    @Query("$PREFIX_ASSET_ITEM $POSTFIX_ASSET_ITEM_NOT_HIDDEN LIMIT 3")
+    fun topAssetItemsNotHiddenLimit(defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<TokenItem>>
 
     @RawQuery
     fun assetItemsNotHiddenRaw(query: RoomRawQuery): List<TokenItem>
