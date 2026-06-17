@@ -12,12 +12,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicText
-import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -28,8 +25,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.Constants
@@ -48,11 +43,6 @@ import java.text.DecimalFormat
 private const val RECOMMENDED_MARKET_COLUMNS = 4
 private const val RECOMMENDED_MARKET_LIMIT = 8
 private val RecommendedMarketIconSize = 42.dp
-private val RecommendedMarketChangeHeight = 16.dp
-private val RecommendedMarketChangeMinWidth = 44.dp
-private val RecommendedMarketChangeMaxWidth = 52.dp
-private val RecommendedMarketSymbolHeight = 18.dp
-private val RecommendedMarketPriceHeight = 16.dp
 
 enum class SwapRecommendedMarketType {
     Stocks,
@@ -66,7 +56,6 @@ private data class RecommendedMarketUiItem(
     val iconUrl: String?,
     val price: String?,
     val changePercent: String?,
-    val shrinkChangePercent: Boolean,
     val isPositive: Boolean,
     val onClick: () -> Unit,
 )
@@ -236,7 +225,7 @@ private fun RecommendedMarketGridItem(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Box(
-            modifier = Modifier.size(width = RecommendedMarketChangeMaxWidth, height = 46.dp),
+            modifier = Modifier.padding(bottom = 6.dp),
             contentAlignment = Alignment.TopCenter,
         ) {
             CoilImage(
@@ -247,85 +236,38 @@ private fun RecommendedMarketGridItem(
                     .clip(CircleShape),
             )
             item.changePercent?.let { changePercent ->
-                val changePercentFontSize = if (item.shrinkChangePercent) 10.sp else 12.sp
-                Box(
+                Text(
+                    text = changePercent,
+                    fontSize = 12.sp,
+                    lineHeight = 14.sp,
+                    color = Color.White,
+                    maxLines = 1,
                     modifier = Modifier
-                        .offset(y = 32.dp)
-                        .widthIn(min = RecommendedMarketChangeMinWidth, max = RecommendedMarketChangeMaxWidth)
-                        .height(RecommendedMarketChangeHeight)
+                        .align(Alignment.BottomCenter)
+                        .offset(y = 6.dp)
                         .clip(RoundedCornerShape(4.dp))
                         .background(if (item.isPositive) risingColor else fallingColor)
-                        .padding(horizontal = 4.dp),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    BasicText(
-                        text = changePercent,
-                        style = TextStyle(
-                            fontSize = changePercentFontSize,
-                            lineHeight = 14.sp,
-                            color = Color.White,
-                            textAlign = TextAlign.Center,
-                        ),
-                        maxLines = 1,
-                        autoSize = TextAutoSize.StepBased(
-                            minFontSize = 8.sp,
-                            maxFontSize = changePercentFontSize,
-                            stepSize = 0.5.sp,
-                        ),
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
-            }
-        }
-        Spacer(modifier = Modifier.height(4.dp))
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(RecommendedMarketSymbolHeight),
-            contentAlignment = Alignment.Center,
-        ) {
-            BasicText(
-                text = item.symbol,
-                style = TextStyle(
-                    fontSize = 14.sp,
-                    lineHeight = 18.sp,
-                    color = MixinAppTheme.colors.textPrimary,
-                    textAlign = TextAlign.Center,
-                ),
-                maxLines = 1,
-                autoSize = TextAutoSize.StepBased(
-                    minFontSize = 8.sp,
-                    maxFontSize = 14.sp,
-                    stepSize = 0.5.sp,
-                ),
-                modifier = Modifier.fillMaxWidth(),
-            )
-        }
-        Spacer(modifier = Modifier.height(2.dp))
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(RecommendedMarketPriceHeight),
-            contentAlignment = Alignment.Center,
-        ) {
-            item.price?.let { price ->
-                BasicText(
-                    text = price,
-                    style = TextStyle(
-                        fontSize = 13.sp,
-                        lineHeight = 16.sp,
-                        color = MixinAppTheme.colors.textAssist,
-                        textAlign = TextAlign.Center,
-                    ),
-                    maxLines = 1,
-                    autoSize = TextAutoSize.StepBased(
-                        minFontSize = 8.sp,
-                        maxFontSize = 13.sp,
-                        stepSize = 0.5.sp,
-                    ),
-                    modifier = Modifier.fillMaxWidth(),
+                        .padding(horizontal = 4.dp, vertical = 1.dp),
                 )
             }
+        }
+        Spacer(modifier = Modifier.height(5.dp))
+        Text(
+            text = item.symbol,
+            fontSize = 14.sp,
+            lineHeight = 18.sp,
+            color = MixinAppTheme.colors.textPrimary,
+            maxLines = 1,
+        )
+        Spacer(modifier = Modifier.height(2.dp))
+        item.price?.let { price ->
+            Text(
+                text = price,
+                fontSize = 12.sp,
+                color = MixinAppTheme.colors.textAssist,
+                lineHeight = 12.sp,
+                maxLines = 1,
+            )
         }
     }
 }
@@ -337,7 +279,6 @@ private fun MarketItem.toRecommendedMarketUiItem(onClick: () -> Unit): Recommend
         iconUrl = iconUrl,
         price = currentPrice.formatFiatPrice(),
         changePercent = changeValue.formatSignedPercent(),
-        shrinkChangePercent = changeValue?.abs()?.let { it >= BigDecimal("100") } ?: false,
         isPositive = changeValue?.let { it >= BigDecimal.ZERO } ?: true,
         onClick = onClick,
     )
@@ -357,6 +298,7 @@ internal fun formatRecommendedMarketFiatPrice(
 ): String? {
     if (value <= BigDecimal.ZERO) return null
     if (value < BigDecimal("0.0001")) return "<${fiatSymbol}0.0001"
+    if (value >= BigDecimal("1000")) return "$fiatSymbol${formatRecommendedMarketPriceCompact(value)}"
     val pattern = if (value >= BigDecimal.ONE) ",##0.00" else ",##0.0000"
     val formatted = DecimalFormat(pattern).apply {
         roundingMode = RoundingMode.DOWN
@@ -364,8 +306,34 @@ internal fun formatRecommendedMarketFiatPrice(
     return "$fiatSymbol$formatted"
 }
 
+private fun formatRecommendedMarketPriceCompact(value: BigDecimal): String {
+    val thousands = value.divide(BigDecimal("1000"), 2, RoundingMode.DOWN)
+    return "${thousands.stripTrailingZeros().toPlainString()}K"
+}
+
 private fun BigDecimal?.formatSignedPercent(): String? {
     val value = this ?: return null
-    val sign = if (value >= BigDecimal.ZERO) "+" else ""
-    return "$sign${value.numberFormat2()}%"
+    return formatRecommendedMarketSignedPercent(value)
+}
+
+internal fun formatRecommendedMarketSignedPercent(value: BigDecimal): String {
+    val percentText = "${formatRecommendedMarketPercentDecimal(value)}%"
+    return if (value >= BigDecimal.ZERO) {
+        "+$percentText"
+    } else {
+        "-$percentText"
+    }
+}
+
+private fun formatRecommendedMarketPercentDecimal(value: BigDecimal): String {
+    val safeValue = value.abs()
+    if (safeValue >= BigDecimal("1000")) {
+        val thousands = safeValue.divide(BigDecimal("1000"), 1, RoundingMode.FLOOR)
+        return if (thousands.stripTrailingZeros().scale() <= 0) {
+            "${thousands.toBigInteger()}K"
+        } else {
+            "${thousands.stripTrailingZeros().toPlainString()}K"
+        }
+    }
+    return safeValue.numberFormat2()
 }

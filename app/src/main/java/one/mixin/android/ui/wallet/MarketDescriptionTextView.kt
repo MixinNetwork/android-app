@@ -102,10 +102,7 @@ class MarketDescriptionTextView
             var visibleText = descriptionText
                 .take(textEnd)
                 .trimEnd { it.isWhitespace() || it == '.' }
-            if (textEnd < descriptionText.length &&
-                visibleText.lastOrNull()?.isLetterOrDigit() == true &&
-                descriptionText.getOrNull(textEnd)?.isLetterOrDigit() == true
-            ) {
+            if (textEnd < descriptionText.length && shouldKeepCollapsedWordBoundary(visibleText.lastOrNull(), descriptionText.getOrNull(textEnd))) {
                 val wordBoundary = visibleText.indexOfLast { it.isWhitespace() }
                 if (wordBoundary >= 0) {
                     visibleText = visibleText.substring(0, wordBoundary).trimEnd()
@@ -192,3 +189,21 @@ class MarketDescriptionTextView
             private const val COLLAPSED_FADE_WIDTH = 32
         }
     }
+
+internal fun shouldKeepCollapsedWordBoundary(
+    current: Char?,
+    next: Char?,
+): Boolean = current?.isCollapsedWordCharacter() == true && next?.isCollapsedWordCharacter() == true
+
+private fun Char.isCollapsedWordCharacter(): Boolean {
+    if (!isLetterOrDigit()) return false
+    return when (Character.UnicodeScript.of(code)) {
+        Character.UnicodeScript.HAN,
+        Character.UnicodeScript.HIRAGANA,
+        Character.UnicodeScript.KATAKANA,
+        Character.UnicodeScript.HANGUL,
+        Character.UnicodeScript.BOPOMOFO,
+        -> false
+        else -> true
+    }
+}

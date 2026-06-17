@@ -48,7 +48,16 @@ class SwapRecommendedMarketCardsTest {
     fun recommendedMarketPriceUsesCompactFixedDecimals() {
         assertEquals("$1.23", formatRecommendedMarketFiatPrice(BigDecimal("1.234"), "$"))
         assertEquals("$0.1234", formatRecommendedMarketFiatPrice(BigDecimal("0.12345"), "$"))
+        assertEquals("$1.23K", formatRecommendedMarketFiatPrice(BigDecimal("1234.56"), "$"))
         assertEquals("<$0.0001", formatRecommendedMarketFiatPrice(BigDecimal("0.00009"), "$"))
         assertEquals(null, formatRecommendedMarketFiatPrice(BigDecimal.ZERO, "$"))
+    }
+
+    @Test
+    fun recommendedMarketPercentUsesCompactKFormatWhenLarge() {
+        assertEquals("+999.99%", formatRecommendedMarketSignedPercent(BigDecimal("999.99")))
+        assertEquals("+1K%", formatRecommendedMarketSignedPercent(BigDecimal("1000")))
+        assertEquals("+1.2K%", formatRecommendedMarketSignedPercent(BigDecimal("1299.99")))
+        assertEquals("-1.5K%", formatRecommendedMarketSignedPercent(BigDecimal("-1500.12")))
     }
 }
