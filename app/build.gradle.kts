@@ -14,9 +14,9 @@ plugins {
 apply(plugin = "com.google.gms.google-services")
 apply(plugin = "com.google.firebase.crashlytics")
 
-val versionMajor = 4
-val versionMinor = 3
-val versionPatch = 3
+val versionMajor = 5
+val versionMinor = 0
+val versionPatch = 0
 val versionBuild = 0
 
 
