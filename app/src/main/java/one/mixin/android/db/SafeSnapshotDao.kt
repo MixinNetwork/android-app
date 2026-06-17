@@ -48,6 +48,9 @@ interface SafeSnapshotDao : BaseDao<SafeSnapshot> {
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId ORDER BY s.created_at DESC, s.snapshot_id DESC LIMIT 21")
     fun snapshotsLimit(assetId: String): LiveData<List<SnapshotItem>>
 
+    @Query("$SNAPSHOT_ITEM_PREFIX ORDER BY s.created_at DESC, s.snapshot_id DESC LIMIT 4")
+    fun recentSnapshotsLimit(): LiveData<List<SnapshotItem>>
+
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId ORDER BY abs(s.amount) DESC, s.snapshot_id DESC")
     fun snapshotsOrderByAmount(assetId: String): DataSource.Factory<Int, SnapshotItem>
 
@@ -123,6 +126,9 @@ interface SafeSnapshotDao : BaseDao<SafeSnapshot> {
 
     @Query("SELECT t.symbol, t.icon_url, s.amount, t.asset_id FROM safe_snapshots s LEFT JOIN tokens t ON t.asset_id = s.asset_id WHERE s.type = 'pending' AND t.symbol IS NOT NULL")
     fun getPendingDisplays(): LiveData<List<PendingDisplay>>
+
+    @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.type = 'pending' AND s.asset_id = :assetId ORDER BY s.created_at DESC, s.snapshot_id DESC LIMIT 1")
+    suspend fun getPendingSnapshot(assetId: String): SnapshotItem?
 
     @Query("DELETE FROM safe_snapshots WHERE type = 'pending'")
     suspend fun clearAllPendingDeposits()

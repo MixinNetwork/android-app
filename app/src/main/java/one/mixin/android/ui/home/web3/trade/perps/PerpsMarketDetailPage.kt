@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -379,6 +380,12 @@ fun PerpsMarketDetailPage(
                     }
                     MarketInfoCard(
                         market = market!!,
+                        onFundingRateTipClick = {
+                            val activity = context as? FragmentActivity ?: return@MarketInfoCard
+                            PerpetualGuideBottomSheetDialogFragment.newInstance(
+                                PerpetualGuideBottomSheetDialogFragment.TAB_FUNDING_RATE
+                            ).show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
+                        }
                     )
                 }
 
@@ -685,6 +692,7 @@ private fun HowPerpsWorksCard(
 @Composable
 private fun MarketInfoCard(
     market: PerpsMarket,
+    onFundingRateTipClick: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -706,11 +714,22 @@ private fun MarketInfoCard(
         )
 
         Spacer(modifier = Modifier.height(12.dp))
-        Text(
-            text = stringResource(R.string.Funding_Rate).uppercase(),
-            fontSize = 14.sp,
-            color = MixinAppTheme.colors.textAssist
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = stringResource(R.string.Funding_Rate).uppercase(),
+                fontSize = 14.sp,
+                color = MixinAppTheme.colors.textAssist
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Icon(
+                painter = painterResource(id = R.drawable.ic_tip),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(12.dp)
+                    .clickable(onClick = onFundingRateTipClick),
+                tint = MixinAppTheme.colors.textAssist
+            )
+        }
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = formatFundingRate(market.fundingRate),
@@ -973,11 +992,10 @@ private fun OpenPositionCard(
         ) {
             Text(
                 text = stringResource(R.string.perps_position),
-                fontSize = 16.sp,
-                lineHeight = 16.sp,
+                fontSize = 14.sp,
                 style = compactTextStyle,
-                fontWeight = FontWeight.Medium,
-                color = MixinAppTheme.colors.textPrimary
+                fontWeight = FontWeight.W400,
+                color = MixinAppTheme.colors.textMinor
             )
             Spacer(modifier = Modifier.weight(1f))
             Icon(
@@ -1339,10 +1357,10 @@ private fun TpSlActionCell(
             } else if (!loading) {
                 Spacer(modifier = Modifier.width(4.dp))
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_arrow_right),
+                    painter = painterResource(id = R.drawable.ic_arrow_gray_right),
                     contentDescription = null,
-                    tint = MixinAppTheme.colors.textAssist,
-                    modifier = Modifier.size(16.dp)
+                    tint = Color.Unspecified,
+                    modifier = Modifier.size(16.dp).offset(x = 4.dp)
                 )
             }
         }
@@ -1382,16 +1400,16 @@ private fun ClosedPositionsSection(
         ) {
             Text(
                 text = stringResource(R.string.perps_activity),
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium,
-                color = MixinAppTheme.colors.textPrimary
+                fontSize = 14.sp,
+                fontWeight = FontWeight.W400,
+                color = MixinAppTheme.colors.textMinor
             )
 
             Icon(
-                painter = painterResource(R.drawable.ic_arrow_right),
+                painter = painterResource(R.drawable.ic_arrow_gray_right),
                 contentDescription = null,
-                tint = MixinAppTheme.colors.textAssist,
-                modifier = Modifier.size(16.dp)
+                tint = Color.Unspecified,
+                modifier = Modifier.size(16.dp).offset(x = 4.dp)
             )
         }
 
