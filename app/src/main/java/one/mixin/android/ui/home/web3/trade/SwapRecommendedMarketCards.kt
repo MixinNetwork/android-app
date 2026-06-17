@@ -263,9 +263,9 @@ private fun RecommendedMarketGridItem(
         item.price?.let { price ->
             Text(
                 text = price,
-                fontSize = 12.sp,
+                fontSize = 13.sp,
                 color = MixinAppTheme.colors.textAssist,
-                lineHeight = 12.sp,
+                lineHeight = 13.sp,
                 maxLines = 1,
             )
         }
