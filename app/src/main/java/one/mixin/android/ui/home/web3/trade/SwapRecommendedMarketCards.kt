@@ -177,8 +177,6 @@ private fun RecommendedMarketCard(
             }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
-
         val rows = card.items.chunked(RECOMMENDED_MARKET_COLUMNS)
         rows.forEachIndexed { index, rowItems ->
             Row(
