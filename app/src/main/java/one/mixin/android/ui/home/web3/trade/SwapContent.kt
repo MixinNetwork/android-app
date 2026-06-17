@@ -122,6 +122,7 @@ fun SwapContent(
     var isLoading by remember { mutableStateOf(false) }
     var isReverse by remember { mutableStateOf(false) }
     var invalidFlag by remember { mutableStateOf(false) }
+    var isSendFocused by remember { mutableStateOf(false) }
 
     var fromToken by remember(from, to, isReverse) {
         mutableStateOf(if (isReverse) to else from)
@@ -215,14 +216,19 @@ fun SwapContent(
                     Modifier.fillMaxSize()
                 }
             ) {
+                val hasRecommendedCards = topGainerMarkets.isNotEmpty() || topLoserMarkets.isNotEmpty()
+                val showRecommendedCards = shouldShowSwapRecommendedMarketCards(
+                    hasRecommendedCards = hasRecommendedCards,
+                    inputText = inputText,
+                    isSendFocused = isSendFocused,
+                    isKeyboardVisible = availableHeight != null,
+                )
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
                         .verticalScroll(scrollState)
                 ) {
-                    val hasRecommendedCards = topGainerMarkets.isNotEmpty() || topLoserMarkets.isNotEmpty()
-                    val showRecommendedCards = hasRecommendedCards && inputText.isBlank() && availableHeight == null
                     TradeLayout(
                         centerCompose = {
                             Box(
@@ -276,6 +282,7 @@ fun SwapContent(
                                 onDeposit = onDeposit,
                                 displayBalanceOverride = if (from.isNativeSolAsset()) fromBalance else null,
                                 maxDecimalPlaces = fromMaxDecimalPlaces,
+                                onFocusChanged = { isSendFocused = it },
                                 onMax = {
                                     AnalyticsTracker.trackSpotSendInputBalance()
                                     val balance = availableFromBalanceValue
@@ -335,26 +342,28 @@ fun SwapContent(
                         Spacer(modifier = Modifier.height(14.dp))
                     }
                 }
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 20.dp)
-                ) {
-                    ReviewButton(
-                        inputText = inputText,
-                        fromBalance = availableFromBalance,
-                        fromToken = fromToken!!,
-                        quoteResult = quoteResult,
-                        quoteError = quoteError,
-                        isLoading = isLoading,
-                        reviewing = reviewing,
-                        isButtonEnabled = isButtonEnabled,
-                        onButtonEnabledChange = { isButtonEnabled = it },
-                        onReview = { onReview(it, fromToken!!, toToken!!, inputText) },
-                        keyboardController = keyboardController,
-                        focusManager = focusManager,
-                        scope = scope
-                    )
+                if (!showRecommendedCards) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 20.dp)
+                    ) {
+                        ReviewButton(
+                            inputText = inputText,
+                            fromBalance = availableFromBalance,
+                            fromToken = fromToken!!,
+                            quoteResult = quoteResult,
+                            quoteError = quoteError,
+                            isLoading = isLoading,
+                            reviewing = reviewing,
+                            isButtonEnabled = isButtonEnabled,
+                            onButtonEnabledChange = { isButtonEnabled = it },
+                            onReview = { onReview(it, fromToken!!, toToken!!, inputText) },
+                            keyboardController = keyboardController,
+                            focusManager = focusManager,
+                            scope = scope
+                        )
+                    }
                 }
             }
         }, floating = {
@@ -400,6 +409,13 @@ fun SwapContent(
         Loading()
     }
 }
+
+internal fun shouldShowSwapRecommendedMarketCards(
+    hasRecommendedCards: Boolean,
+    inputText: String,
+    isSendFocused: Boolean,
+    isKeyboardVisible: Boolean,
+): Boolean = hasRecommendedCards && inputText.isBlank() && !isSendFocused && !isKeyboardVisible
 
 @Composable
 fun ReviewButton(

@@ -2,6 +2,7 @@ package one.mixin.android.ui.home.web3.trade
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -27,7 +29,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -37,11 +38,12 @@ import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.numberFormat2
-import one.mixin.android.extension.priceFormat
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.market.MarketItem
 import java.math.BigDecimal
+import java.math.RoundingMode
+import java.text.DecimalFormat
 
 private const val RECOMMENDED_MARKET_COLUMNS = 4
 private const val RECOMMENDED_MARKET_LIMIT = 8
@@ -57,6 +59,7 @@ private data class RecommendedMarketUiItem(
     val iconUrl: String?,
     val price: String?,
     val changePercent: String?,
+    val shrinkChangePercent: Boolean,
     val isPositive: Boolean,
     val onClick: () -> Unit,
 )
@@ -74,6 +77,7 @@ fun SwapRecommendedMarketCards(
         RecommendedMarketCardData(
             titleRes = R.string.Trending,
             type = SwapRecommendedMarketType.Trending,
+            showViewAll = true,
             items = trendingMarkets.take(RECOMMENDED_MARKET_LIMIT).map { market ->
                 market.toRecommendedMarketUiItem { onMarketClick(market) }
             },
@@ -81,6 +85,7 @@ fun SwapRecommendedMarketCards(
         RecommendedMarketCardData(
             titleRes = R.string.top_gainers,
             type = SwapRecommendedMarketType.TopGainers,
+            showViewAll = true,
             items = topGainerMarkets.take(RECOMMENDED_MARKET_LIMIT).map { market ->
                 market.toRecommendedMarketUiItem { onMarketClick(market) }
             },
@@ -88,6 +93,7 @@ fun SwapRecommendedMarketCards(
         RecommendedMarketCardData(
             titleRes = R.string.top_losers,
             type = SwapRecommendedMarketType.TopLosers,
+            showViewAll = true,
             items = topLoserMarkets.take(RECOMMENDED_MARKET_LIMIT).map { market ->
                 market.toRecommendedMarketUiItem { onMarketClick(market) }
             },
@@ -149,20 +155,19 @@ private fun RecommendedMarketCard(
         Row(
             modifier = headerModifier,
             verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text(
                 text = stringResource(card.titleRes),
                 fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
                 color = MixinAppTheme.colors.textPrimary,
-                modifier = Modifier.weight(1f),
             )
             if (card.showViewAll) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_arrow_right),
+                    painter = painterResource(R.drawable.ic_arrow_gray_right),
                     contentDescription = null,
-                    tint = MixinAppTheme.colors.textAssist,
-                    modifier = Modifier.size(18.dp),
+                    tint = Color.Unspecified,
+                    modifier = Modifier.size(16.dp).offset(x = 4.dp),
                 )
             }
         }
@@ -197,20 +202,6 @@ private fun RecommendedMarketCard(
                 Spacer(modifier = Modifier.height(12.dp))
             }
         }
-        if (card.showViewAll) {
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = stringResource(R.string.view_all),
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium,
-                color = MixinAppTheme.colors.accent,
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .clip(RoundedCornerShape(4.dp))
-                    .clickable(onClick = onViewAllClick)
-                    .padding(horizontal = 12.dp, vertical = 4.dp),
-            )
-        }
     }
 }
 
@@ -240,24 +231,27 @@ private fun RecommendedMarketGridItem(
                     .clip(CircleShape),
             )
             item.changePercent?.let { changePercent ->
+                val changePercentFontSize = if (item.shrinkChangePercent) 10.sp else 12.sp
                 BasicText(
                     text = changePercent,
                     style = TextStyle(
-                        fontSize = 12.sp,
+                        fontSize = changePercentFontSize,
                         lineHeight = 14.sp,
                         color = Color.White,
+                        textAlign = TextAlign.Center,
                     ),
                     maxLines = 1,
                     autoSize = TextAutoSize.StepBased(
                         minFontSize = 8.sp,
-                        maxFontSize = 12.sp,
+                        maxFontSize = changePercentFontSize,
                         stepSize = 0.5.sp,
                     ),
                     modifier = Modifier
                         .offset(y = 32.dp)
+                        .widthIn(min = 44.dp, max = 68.dp)
                         .clip(RoundedCornerShape(4.dp))
                         .background(if (item.isPositive) risingColor else fallingColor)
-                        .padding(horizontal = 3.dp, vertical = 1.dp),
+                        .padding(horizontal = 4.dp, vertical = 1.dp),
                 )
             }
         }
@@ -304,6 +298,7 @@ private fun MarketItem.toRecommendedMarketUiItem(onClick: () -> Unit): Recommend
         iconUrl = iconUrl,
         price = currentPrice.formatFiatPrice(),
         changePercent = changeValue.formatSignedPercent(),
+        shrinkChangePercent = changeValue?.abs()?.let { it >= BigDecimal("100") } ?: false,
         isPositive = changeValue?.let { it >= BigDecimal.ZERO } ?: true,
         onClick = onClick,
     )
@@ -311,8 +306,23 @@ private fun MarketItem.toRecommendedMarketUiItem(onClick: () -> Unit): Recommend
 
 private fun String?.formatFiatPrice(): String? {
     val value = this?.toBigDecimalOrNull() ?: return null
+    return formatRecommendedMarketFiatPrice(
+        value = value.multiply(BigDecimal(Fiats.getRate())),
+        fiatSymbol = Fiats.getSymbol(),
+    )
+}
+
+internal fun formatRecommendedMarketFiatPrice(
+    value: BigDecimal,
+    fiatSymbol: String,
+): String? {
     if (value <= BigDecimal.ZERO) return null
-    return "${Fiats.getSymbol()}${value.multiply(BigDecimal(Fiats.getRate())).priceFormat()}"
+    if (value < BigDecimal("0.0001")) return "<${fiatSymbol}0.0001"
+    val pattern = if (value >= BigDecimal.ONE) ",##0.00" else ",##0.0000"
+    val formatted = DecimalFormat(pattern).apply {
+        roundingMode = RoundingMode.DOWN
+    }.format(value)
+    return "$fiatSymbol$formatted"
 }
 
 private fun BigDecimal?.formatSignedPercent(): String? {
